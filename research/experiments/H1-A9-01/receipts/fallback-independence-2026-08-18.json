@@ -1,0 +1,45 @@
+{
+  "fallback_pages_in_union": 37,
+  "fallback_vs_outcome": {
+    "fisher_exact_p": 9.16051356829976e-08,
+    "not_severe_with_fallback": 23,
+    "not_severe_without_fallback": 668,
+    "severe_rate_among_fallback_pages": 0.3783783783783784,
+    "severe_rate_among_other_pages": 0.06179775280898876,
+    "severe_with_fallback": 14,
+    "severe_without_fallback": 44
+  },
+  "generated_at": "2026-08-18T11:28:36.935981+00:00",
+  "pages_tested": 749,
+  "per_evaluation_run": {
+    "repeat-1": {
+      "abstained_fallback_rate": 0.0891089108910891,
+      "abstained_with_fallback": 9,
+      "abstained_without_fallback": 92,
+      "accepted_fallback_rate": 0.029320987654320986,
+      "accepted_with_fallback": 19,
+      "accepted_without_fallback": 629,
+      "fallback_pages": 28,
+      "fisher_exact_p": 0.0078097546354886725,
+      "independent_at_0_05": false,
+      "log": "D:\\a9h\\eval-r2\\repeat-1\\stdout.log",
+      "rate_ratio_abstained_over_accepted": 3.0390828556539864
+    }
+  },
+  "primary_gate_vs_fallback": {
+    "abstained_fallback_rate": 0.12871287128712872,
+    "abstained_with_fallback": 13,
+    "abstained_without_fallback": 88,
+    "accepted_fallback_rate": 0.037037037037037035,
+    "accepted_with_fallback": 24,
+    "accepted_without_fallback": 624,
+    "fisher_exact_p": 0.000501767334044085,
+    "independent_at_0_05": false,
+    "rate_ratio_abstained_over_accepted": 3.4752475247524757
+  },
+  "receipt_sha256": "sha256:6731acddd34abe54c23b3b8d49bbdafb3728ce45d0a9e4001ced6d2f067bcfea",
+  "schema": "tavonel.a9-fallback-independence-test.v1",
+  "status": "DIAGNOSTIC on the pre-correction evaluator",
+  "verdict": "NOT INDEPENDENT -- the measurement's failure mode is correlated with the comparison being measured, so the 'independent noise only attenuates' argument does not apply and the evidence must be re-measured with a deterministic instrument",
+  "why_this_had_to_be_tested_rather_than_argued": "the gate not reading the evaluator makes the gate independent of the evaluator's *output*, not of the evaluator's *failure mode*. Both the gate decision and the matcher's running time are functions of the same page, and long pages with disordered content are plausibly both slow to match and likely to be abstained on. Independence between two quantities computed from the same object is a claim about the world, and claims about the world get tested."
+}

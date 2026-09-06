@@ -1,0 +1,75 @@
+{
+  "conditions": [
+    {
+      "condition": "sfir8_equivalence_j1_j2",
+      "detail": "47 passed in 2.75s",
+      "establishes": "segmented traversal equals uninterrupted traversal, and a canonical address equals the redirect-followed one",
+      "how": "evaluated in this run",
+      "state": "PASS"
+    },
+    {
+      "condition": "component_suites",
+      "detail": "779 passed in 40.66s",
+      "establishes": "every component the freeze binds passes its own controls",
+      "how": "evaluated in this run",
+      "state": "PASS"
+    },
+    {
+      "condition": "seam_verification",
+      "detail": "13 passed in 0.41s",
+      "establishes": "catalogue parser to live transport, bound at every stage, with the selected set fixed by an external oracle",
+      "how": "evaluated in this run",
+      "state": "PASS"
+    },
+    {
+      "condition": "execution_closure",
+      "detail": "10 components bound five ways",
+      "establishes": "ten components, each verified by path, hash, committed blob, working bytes and import origin",
+      "how": "evaluated in this run",
+      "state": "PASS"
+    },
+    {
+      "condition": "historical_isolation",
+      "detail": "53 passed in 1.20s",
+      "establishes": "the prospective chain depends on no historical authority",
+      "how": "evaluated in this run",
+      "state": "PASS"
+    },
+    {
+      "condition": "hostile_audit",
+      "detail": "sfir9-hostile-audit.json verified, audit_digest recomputes",
+      "establishes": "thirteen attacks mounted for real, each refused with the code it should refuse with",
+      "how": "evaluated in this run",
+      "state": "PASS"
+    },
+    {
+      "condition": "legacy_failure_taxonomy",
+      "detail": "sfir9-legacy-failure-taxonomy.json verified, taxonomy_digest recomputes",
+      "establishes": "no failure anywhere in this repository is a defect in code the prospective chain depends on",
+      "how": "read from its receipt, digest recomputed",
+      "state": "PASS"
+    },
+    {
+      "condition": "mutation_baselines",
+      "detail": "sfir9-mutation-baselines.json verified, baselines_digest recomputes",
+      "establishes": "every component's tests still notice when the component is weakened",
+      "how": "read from its receipt, digest recomputed",
+      "state": "PASS"
+    },
+    {
+      "condition": "roster_not_yet_opened",
+      "detail": "no real cohort artifact exists",
+      "establishes": "no real cohort has been observed, so nothing downstream of the roster could have been fitted to it",
+      "how": "evaluated in this run",
+      "state": "PASS"
+    }
+  ],
+  "conditions_checked": 9,
+  "conditions_passed": 9,
+  "gate_digest": "sha256:3d9df412059bedcd75e38e29077a9b14efea8da4b57e5e8d8eff5af1bbf074ca",
+  "gate_opens": true,
+  "schema": "tavonel.sfir9.freeze_gate.v1",
+  "unproven_does_not_pass": "a condition nobody could measure and a condition that failed are different problems. Neither opens the gate.",
+  "what_this_gate_does_not_establish": "that any threshold here is calibrated, or that the instrument measures what the protocol says it measures. It establishes that the instrument is the one that was committed, and that nothing downstream of the cohort has seen the cohort.",
+  "why_the_seam_has_its_own_condition": "`component_suites` runs the seam file too. The narrow condition is not redundant with the broad one: a suite that vanished and a suite that passed look identical to a count of failures, and asking about the seam by name makes its absence say UNPROVEN rather than nothing."
+}

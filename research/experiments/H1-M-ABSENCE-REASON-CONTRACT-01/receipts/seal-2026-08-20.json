@@ -1,0 +1,32 @@
+{
+  "decision_rule": "PASS only if every required test remains present by name and pytest exits zero",
+  "evidence_class": "CONTROLLED_IMPLEMENTATION_CONTRACT_AUDIT",
+  "experiment": "H1-M-ABSENCE-REASON-CONTRACT-01",
+  "frozen_at": "2026-08-20T12:03:15.056192+00:00",
+  "pinned_files": {
+    "packages/cir-python/src/akc_cir/identity.py": "sha256:0b27e1b505d4684eaaf07aea0d6ffc1df3f30e4b8b1d95c5025f83572a05fafc",
+    "research/experiments/H1-M-ABSENCE-REASON-CONTRACT-01/PROTOCOL_2026-08-20.md": "sha256:5e42e2bbaa617fafcc8f1a862619f6f560d3170c78d63b45bb62c7d6eba801e2",
+    "research/experiments/H1-M-ABSENCE-REASON-CONTRACT-01/scripts/audit_absence_reason_contract.py": "sha256:c979667c879f922691ee2b6a041cf081358f2d9d697ebd962a002d40e96078a0",
+    "tests/unit/test_absence_reason_contract.py": "sha256:3b7db86c5799712c638408dc8ac2350707a00220937c5748839903c4ad1771b4"
+  },
+  "pytest_targets": [
+    "tests/unit/test_absence_reason_contract.py"
+  ],
+  "required_contract_tests": {
+    "test_a_complete_evaluation_records_no_absence": "POSITIVE CONTROL",
+    "test_a_failure_to_evaluate_produces_no_decision_at_all": "recital: distinct",
+    "test_an_absence_abstention_is_distinguishable_from_a_complete_evaluation": "recital: distinct",
+    "test_an_absence_abstention_is_distinguishable_from_a_tie_abstention": "recital: distinct",
+    "test_an_absence_abstention_names_the_absent_critical_signal_in_its_reason": "operator record",
+    "test_an_abstention_records_the_identities_of_the_absent_signals": "recital: absent",
+    "test_an_abstention_records_the_identities_of_the_present_signals": "recital: present",
+    "test_each_absent_signal_carries_an_enumerated_absence_reason": "recital: reason",
+    "test_present_and_absent_are_disjoint_and_a_signal_is_never_zero_filled": "N4.4 no zero-fill",
+    "test_the_absence_record_survives_serialization": "serialization",
+    "test_the_contract_predicate_refuses_a_zero_filled_absence": "BREAK CONTROL",
+    "test_the_contract_predicate_refuses_an_unenumerated_absence_reason": "BREAK CONTROL"
+  },
+  "schema": "tavonel.absence-reason-contract-audit-seal.v1",
+  "seal_sha256": "sha256:24949905b72099189c110ae162b3285621d150f0cf9afa76e349eacbd62f102a",
+  "trust_boundary": "Controlled implementation/unit-contract evidence only. It establishes what the live implementation records when an identity signal has no value. It does not measure how often absence occurs in real documents, and it does not establish that MissingReason enumerates every possible absence cause."
+}

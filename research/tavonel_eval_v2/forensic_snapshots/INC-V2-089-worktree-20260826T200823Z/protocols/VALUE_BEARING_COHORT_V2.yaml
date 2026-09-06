@@ -1,0 +1,266 @@
+# VALUE_BEARING_COHORT_V2 — the acquisition unit changes; nothing else does.
+#
+# V1 asked a document for two spaced revisions and then tested whether a value
+# had moved. Across 511 development documents and 45 fresh ones that draw came
+# up 39 and 0. The predicate was never the constraint: 174 properties were read
+# out of the probe and paired, and 154 held identical values.
+#
+# V2 changes what is acquired. The unit is no longer a document plus an
+# arbitrary revision pair; it is a *value transition* inside a lineage's own
+# revision history, and the pair is whatever brackets it.
+#
+# Frozen before any lineage list is enumerated and before any history is read.
+
+schema: tavonel.v2.protocol.value_bearing_cohort.v2
+protocol_id: VALUE_BEARING_COHORT_V2
+version: 2
+authored: 2026-08-23
+supersedes: VALUE_BEARING_COHORT_V1
+
+succeeds:
+  VALUE_BEARING_COHORT_V1:
+    state: PRESERVED, READ-ONLY, NOT RE-RUN
+    result: 45 fresh documents, 174 properties read, 0 value facts, 0 questions
+    kept_as: >-
+      development evidence that the pair-sampling primitive does not reach the
+      target population. Its protocol, its probe and INC-V2-019 are not modified.
+  MODEL_ENDPOINT_V1: {state: PRESERVED, READ-ONLY, verdict: FAIL, final_cohort: 10}
+  P4i_cohort_expansion: {state: PRESERVED, READ-ONLY, eligible_Q1: 296}
+
+relates_to:
+  INC-V2-019: the pair-sampling primitive, measured at zero on fresh sources
+  INC-V2-020: >-
+    the primary power count must not be inflated by within-lineage clustered
+    questions. New hard gate below.
+  INC-V2-018: content-addressed question identity, inherited unchanged
+
+# ---------------------------------------------------------------------------
+# 1. The acquisition unit
+# ---------------------------------------------------------------------------
+
+acquisition_unit:
+  retired: document -> arbitrary spaced revision pair -> test whether a ValueFact changed
+  adopted: document lineage -> revision history -> stable-property value transition -> revision pair
+
+what_this_is_not:
+  not_outcome_fitting: >-
+    selection is not by model outcome, retrieval score or coverage result.
+    A value-bearing change is this study's preregistered target-population
+    inclusion predicate, declared in V1 before any of this was measured.
+  correct_description: case ascertainment within the preregistered target population
+  forbidden_phrasing:
+    - selecting cases that make the effect look larger
+    - outcome fitting
+    - choosing revisions by result
+
+# ---------------------------------------------------------------------------
+# 2. Pair selection
+# ---------------------------------------------------------------------------
+
+pair_selection:
+  enumerate: each pre-frozen lineage's revision history, in time order
+  per_revision: >-
+    property state produced by the frozen ValueFact extractor and nothing else.
+    No other reader touches a revision.
+  qualifying_transition:
+    all_required:
+      - the same property_id is present in both the before and the after revision
+      - the values differ after the frozen scorer's normalization
+      - both values are of the same value kind
+      - the frozen single-property / single-value criterion holds
+  pair_definition: >-
+    the closest source revisions bracketing the transition — the consecutive
+    observable states of that property across which the value actually changed.
+    Never two arbitrarily distant revisions.
+  purpose_of_closeness: >-
+    to MINIMISE unrelated simultaneous edits, not to maximise value change. A
+    tight bracket keeps the contrast attributable to the property under test.
+  never_select_by:
+    - largest delta
+    - most dramatic value
+    - shortest context
+    - easiest pair to retrieve
+    - anything read from a downstream score
+
+spacing_rule:
+  v1_rule: minimum 180 days between revisions
+  inherited: false
+  why_not: >-
+    that rule was a sampling heuristic for manufacturing generic
+    semantic-change pairs. Here the value transition itself demonstrates
+    temporal separation, so a 180-day minimum adds nothing and actively harms
+    the design by admitting more unrelated edits into the same bracket.
+  v1_not_retroactively_changed: >-
+    V1, P4i and P4g keep their spacing rule exactly as frozen. V2 is a new
+    sampling contract, not an amendment of theirs.
+  v2_requirements:
+    - before_version < after_version
+    - the two revisions are distinct
+  nothing_else: true
+
+history_search_bounds:
+  frozen_before_acquisition: true
+  basis: API availability, compute and reproducibility
+  explicitly_not_basis: observed value-fact yield
+  never_changed_to_reach_a_number: true
+  horizon_days: 1460
+  acquisition_cutoff: "2026-08-23T00:00:00Z"
+  max_revisions_inspected_per_lineage: 12
+  walk_order: newest first, stopping at the first qualifying transition
+  why_the_walk_stops: >-
+    stopping early is what makes the selection deterministic and cheap. It is
+    not a search for the best transition; it is the newest one.
+
+multiple_qualifying_transitions:
+  rule: newest qualifying transition before the frozen acquisition cutoff
+  never: chosen by looking at the result
+
+multiple_qualifying_properties_in_one_transition:
+  rule: the first by ascending canonical property_id hash
+  the_rest: recorded as acquisition diagnostics
+  the_rest_are_excluded_from: the primary McNemar sample
+
+# ---------------------------------------------------------------------------
+# 3. Statistical independence — INC-V2-020
+# ---------------------------------------------------------------------------
+
+primary_cohort:
+  rule: one primary question per source-document lineage
+  gate: G_VBC2_ONE_QUESTION_PER_LINEAGE
+  predicate: number_of_primary_questions == number_of_distinct_primary_document_lineages
+  on_failure: STOP
+  why: >-
+    the exact McNemar power calculation assumes independent paired
+    observations. Several ValueFacts from one document share a revision pair, a
+    retrieval index, an evidence neighbourhood and usually one editorial act.
+    Counting them separately would inflate n without adding information.
+  floor_unchanged: 190
+  floor_now_means: at least 190 independent document lineages
+
+# ---------------------------------------------------------------------------
+# 4. Freshness
+# ---------------------------------------------------------------------------
+
+freshness:
+  excluded_from_the_confirmatory_cohort:
+    - every P4i lineage
+    - MODEL_ENDPOINT_V1's ten surviving questions and their lineages
+    - the 45 lineages of the V1 feasibility probe
+  frozen_before_history_inspection:
+    - the candidate lineage list
+    - family ordering
+    - reserve ordering
+    - the history-search cutoff
+  gate: G_VBC2_FRESH_LINEAGES
+  checked_not_asserted: >-
+    overlap is computed against the declared source lists of all three
+    predecessors and the acquisition refuses to start if any is non-empty.
+
+family_weighting:
+  inherited_from_v1_unchanged: true
+  declared_share: {git_docs: 0.40, regulation_ecfr: 0.30, encyclopedia_wikipedia: 0.20, sec_edgar: 0.10}
+  not_revised_after_the_probe: >-
+    the V1 probe's per-family outcome is not a reason to re-weight. The shares
+    were declared before any yield existed and they stay declared.
+  on_family_yielding_zero: report zero
+
+# ---------------------------------------------------------------------------
+# 5. Everything carried forward unchanged
+# ---------------------------------------------------------------------------
+
+unchanged:
+  value_scorer: byte-identical to the version MODEL_ENDPOINT_V1 froze
+  value_fact_extractor: unchanged, with its frozen taxonomy and thirteen controls
+  property_taxonomy: the same two source-native shapes
+  context_budget_tokens: 4096
+  model_and_tokenizer_pin: unchanged
+  question_generation_blindness: unchanged
+  context_retention_contract: unchanged
+  question_identity: content-addressed, injective, unchanged
+  arms: unchanged
+  schedule: unchanged
+  assay_sensitivity_gate: unchanged
+  primary_test: one exact McNemar, compiled_current versus append_only_stale_capable
+
+query_generation:
+  pair_selector_may_read_values: true
+  query_generator_receives: [the property label, permitted intent metadata]
+  query_generator_never_receives: [the current value, the superseded value]
+  why: >-
+    the selector must compare values to find a transition at all. The generator
+    must not see them, or the question would carry its own answer. They are
+    separate stages precisely so this boundary can be stated and tested.
+
+# ---------------------------------------------------------------------------
+# 6. The CPU pipeline, in order
+# ---------------------------------------------------------------------------
+
+pipeline:
+  1: fresh lineage
+  2: history enumeration
+  3: frozen ValueFact state per revision
+  4: qualifying adjacent value transition
+  5: one deterministic primary transition and property per lineage
+  6: local source coverage
+  7: revision-neutral query
+  8: tokenizer and context materialization
+  9: target evidence retention
+  10: final model-endpoint cohort
+  rule: each step only subtracts, and every refusal carries a code
+
+# ---------------------------------------------------------------------------
+# 7. Gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_VBC2_SCORER_UNCHANGED:
+    predicate: value_scorer.py digest equals the frozen digest and its controls pass
+  G_VBC2_EXTRACTOR_UNCHANGED:
+    predicate: value_fact.py digest equals the frozen digest and its controls pass
+  G_VBC2_FRESH_LINEAGES:
+    predicate: no lineage appears in P4i, in MODEL_ENDPOINT_V1's survivors or in the V1 probe
+  G_VBC2_SELECTION_BLIND:
+    predicate: >-
+      lineage lists, family ordering, reserve ordering and the history cutoff
+      were frozen before any history was read, and no coverage, retrieval or
+      model figure existed when they were
+  G_VBC2_PAIR_IS_ADJACENT:
+    predicate: >-
+      every admitted pair brackets the transition across consecutive observed
+      revisions of that lineage
+  G_VBC2_ONE_QUESTION_PER_LINEAGE:
+    predicate: number_of_primary_questions == number_of_distinct_primary_document_lineages
+    on_failure: STOP
+  G_VBC2_QUESTION_ID_INJECTIVE:
+    predicate: number_of_unique_question_ids == number_of_question_rows
+    on_failure: STOP
+  G_VBC2_QUESTION_BLIND_TO_VALUE:
+    predicate: no generated query contains either value or any token that changed
+  G_VBC2_FAMILIES:
+    predicate: at least 2 families contribute primary questions
+  G_VBC2_CONTEXT_VALIDITY:
+    predicate: >-
+      in the three single-revision arms, every retained question's target
+      evidence atom is present after truncation
+  G_VBC2_TRUNCATION:
+    predicate: no arm's truncation rate exceeds 0.25
+  G_VBC2_COHORT_FLOOR:
+    predicate: at least 190 distinct document lineages in the primary cohort
+  G_VBC2_TOKENIZER_PARITY:
+    predicate: >-
+      every pinned tokenizer field is recorded and the frozen probe battery
+      returns identical results on the CPU materializer and the GPU runtime
+  G_VBC2_NO_GPU_YET:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0 at preflight time
+
+execution_authorisation:
+  rule: >-
+    if the final primary cohort has >= 190 distinct lineages across >= 2
+    families, question ids are injective, context validity passes, per-arm
+    truncation is <= 0.25 and tokenizer parity passes, the GPU study executes
+    under the existing founder approval without a further check-in.
+  budget: {gpu_hours: 6, hard_spend_cap_usd: 40}
+  if_any_gate_fails: GPU does not start; the result is preserved at 0 GPU seconds.
+
+ip_gate: CLOSED. docs/ip/ is not modified.
+programme_status: PARTIAL — MECHANISM EVIDENCED, ENDPOINT NOT YET ESTABLISHED.

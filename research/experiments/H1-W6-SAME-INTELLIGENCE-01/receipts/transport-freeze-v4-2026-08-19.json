@@ -1,0 +1,17 @@
+{
+  "api_origin": "https://en.wikipedia.org/w/api.php",
+  "candidate_count": 6987,
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T23:36:58.732173+00:00",
+  "receipt_sha256": "sha256:7c98af9544f113ca932c2a476857c020a34d5e0b6fc7ea859088bf1ada7a6e27",
+  "schema": "tavonel.w6-v4-transport-freeze.v1",
+  "scientific_rules_changed": false,
+  "source_category": "Category:Featured articles",
+  "transport_change_only": true,
+  "v3_acquisition_script_sha256": "sha256:d46a577b9a14e335a9846fbc50d31ef4a4914406abfc738097417b199e26669e",
+  "v3_manifest_receipt_sha256": "sha256:a78c476ad831a22f42881a11a4c3163e539709a6af6ba08a45c809ac8ce39144",
+  "v3_manifest_sha256": "sha256:e11100ed64ae31939c5257c02bce98853263c725361b6ae44f3b7aa6da034bfc",
+  "v3_protocol_sha256": "sha256:d5fa91de62576d84c5c4c0faedf7e01c7002814715c57b57a9fc402d11f84b47",
+  "v4_protocol_sha256": "sha256:1c0419bd8ecddd0afd86ef208900e8fd28ad909280ccbf429f4341e3c401fb0e",
+  "v4_wrapper_sha256": "sha256:f82ae95908f76ef83caeda2f31037a48ab7fee72c3219bc68e059dcf1d64f61f"
+}

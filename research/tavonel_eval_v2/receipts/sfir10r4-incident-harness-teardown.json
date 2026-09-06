@@ -1,0 +1,44 @@
+{
+  "caused_by": "agent harness background-task teardown, not the instrument or the provider",
+  "class": "OPERATIONAL_RUNNER_TEARDOWN",
+  "cohort_contact_detail": "35 roster identities reached FRONTIER_EXHAUSTED and one further identity was left STOPPED_BEFORE_EXHAUSTION. Their public repository metadata was fetched from the provider. No identity was written to, messaged or otherwise disturbed.",
+  "cohort_was_contacted": true,
+  "current_ordinal_at_incident": 37,
+  "freeze_digest": "sha256:df6ca140c3a4a1b988d9a2f88b501b8cb6490498d3d802fa40523a3ae685cd2e",
+  "incident_digest": "sha256:89ecb962e3be6f7ba3537db58f3f41c7cf3c7d87f33d558a324e22a35ef22290",
+  "instrument_disposition_if_resumed": "MEASUREMENT_UNPROVEN",
+  "instrument_disposition_reason": "run_segment calls _recover_closed_active_segment first. An active-segment marker with no matching sealed receipt is terminal by design: 'request accounting after a crash cannot be reconstructed'. Sealing it writes sfir10r4-terminal-unproven.json, after which no PASS or FAIL may be sealed from this cohort.",
+  "instrument_intact_at_incident": true,
+  "interrupted_segment_index": 2,
+  "not_done_and_why": [
+    "The active-segment marker was NOT deleted. Removing it would let the runner continue and is exactly the tampering the freeze exists to prevent.",
+    "No protocol constant, threshold, cohort, salt, partition, quota or acceptance rule was changed. Nothing in the instrument was touched after results were seen.",
+    "The terminal receipt was NOT sealed by this session. Sealing ends the cohort and that disposition is left to the study owner."
+  ],
+  "operational_correction_for_any_successor": "A frozen segment must not run inside an agent-harness background task, which can be torn down without the runner being asked to stop. Run it as a detached process with its own log, so only the protocol or the provider can end a segment.",
+  "predecessor_terminations": {
+    "sfir10r1": "per-response provider delta is 2; exclusive attribution is not established (windows_used 0)",
+    "sfir10r2": "per-response provider delta is 2; exclusive attribution is not established (windows_used 0)",
+    "sfir10r3": "provider reset epoch changed mid-segment (windows_used 0)"
+  },
+  "protocol_digest": "sha256:44cadd61df7bfcb60cd74edf619a946c219dc482183dcb790bd777b0d4b5f59d",
+  "provider_charges_at_incident": 2307,
+  "recorded_at_utc": "2026-09-03T05:35:00Z",
+  "root_states_at_incident": {
+    "FRONTIER_EXHAUSTED": 35,
+    "STOPPED_BEFORE_EXHAUSTION": 1,
+    "UNSTARTED": 14
+  },
+  "roster_seal": "sha256:d48d5d28f502129e4b8258093fc43e4d128b28d6fc05cba435eae0b1c2dc00e3",
+  "schema": "tavonel.sfir10r4.incident.v1",
+  "scientific_data_consumed": true,
+  "scientific_data_detail": "Segment 1 is sealed and its 35 exhausted roots are real measurements. The interrupted segment 2 made provider requests whose accounting was never sealed, which is the specific condition the frozen protocol refuses to reconstruct.",
+  "segment_01_digest": "sha256:6710af561c5548dfc6f266930da0fb05438958d1a2ac4c3fa053cbddea2657e8",
+  "segments_sealed": 1,
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R3",
+  "successor_note": "PARTITION_INDEX advances per study (R4 used index 4, successor to R3's 3), so a successor would draw a fresh partition rather than reuse this roster. Whether a fifth attempt is warranted is a research-design decision, not a runtime one.",
+  "successor_permitted": "NOT_DECIDED_BY_THIS_SESSION",
+  "what_happened": "Segment 2 was launched as a background shell task under the agent harness. The harness stopped that task before the segment completed, so the runner process was terminated between its first cohort request and the segment seal. No protocol gate, no provider limit and no scientific outcome caused the stop.",
+  "why_this_attempt_differs": "R1 through R3 all died at windows_used 0, before any cohort measurement. R4 is the first attempt to clear the accounting preflight, seal a segment and measure 35 of 50 roots. The cause of its stop is external to the study.",
+  "windows_used_sealed": 1
+}

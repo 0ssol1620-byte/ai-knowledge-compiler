@@ -1,0 +1,50 @@
+{
+  "attempt_digest": "sha256:d453a3c52f7d4ded1866416e1774eb89fc7ae2084ad3420c9235fb9a46a3a03d",
+  "attempted_at_utc": "2026-09-03T06:19:20Z",
+  "attempted_because": "The study owner directed that R4 be formally sealed by the frozen instrument under its own rules, with no further cohort requests and no interpretation.",
+  "diagnosis": {
+    "failing_root_candidates": 0,
+    "failing_root_ordinal": 45,
+    "failing_root_snapshot": null,
+    "failing_root_status": "STOPPED_BEFORE_EXHAUSTION",
+    "roots_failing_evidence_gate": 1,
+    "roots_passing_evidence_gate": 49,
+    "why_the_gate_exists": "A root counted as EXHAUSTED or STOPPED must carry an immutable revision snapshot. Root 45 was stopped before it recorded any evidence at all, so sealing now would let a root with nothing behind it contribute to the capacity disposition."
+  },
+  "disposition": "SEAL_REFUSED_BY_INSTRUMENT_EVIDENCE_GATE",
+  "how_it_was_attempted": "tools/sfir10r4_runner.py run-segment. With the active-segment marker already consumed and every root in a terminal state, that call routes to finalize(), which reads root evidence from disk and seals receipts. It opens no socket: the no-further-requests constraint was satisfied by the code path itself, not by a promise.",
+  "outcome": "REFUSED",
+  "refusal_message": "counted root carries no immutable revision snapshot",
+  "refusal_source": "sfir10r4_runner._validate_root_evidence",
+  "schema": "tavonel.sfir10r4.seal_attempt.v1",
+  "state_at_attempt": {
+    "measurement_unproven": false,
+    "root_states": {
+      "FRONTIER_EXHAUSTED": 46,
+      "STOPPED_BEFORE_EXHAUSTION": 4
+    },
+    "segment_chain_head": "sha256:14ce28d9fb1c99118ca516285eab3e5f84c59cba9043be3d3daa2e4c3e257639",
+    "stopped_roots": [
+      33,
+      37,
+      45,
+      47
+    ],
+    "windows_permitted": 6,
+    "windows_used": 2
+  },
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R3",
+  "the_only_legitimate_path_forward": "A third segment would replay the four STOPPED roots, including 45, and give it a snapshot; finalize() would then have evidence for all fifty. Four of six permitted windows are unused. That path sends cohort requests, which the current instruction forbids, so it is left to the study owner.",
+  "verified_wrote_nothing": "No census, score, acceptance or terminal-unproven receipt exists. Runtime state is byte-unchanged and the working tree shows no modification under the study. The refusal is a guard, not a partial seal.",
+  "what_this_is_not": [
+    "Not a PASS and not a FAIL. No census, score or acceptance receipt exists and no scientific count has been disclosed.",
+    "Not MEASUREMENT_UNPROVEN. That receipt is written only when a crash makes request accounting unreconstructible, and no such condition exists here.",
+    "Not a defect. The instrument declined to seal an unsupported number, which is the behaviour it was frozen to have."
+  ],
+  "what_was_not_done": [
+    "root-045.sqlite was not touched. Fabricating a snapshot to clear the gate would be inventing evidence for a root that produced none.",
+    "The root state was not reclassified. Moving 45 to REPOSITORY_IDENTITY_REFUSED would clear the gate by relabelling a stop as a refusal, which is a different scientific claim.",
+    "No threshold, criterion, cohort, salt, partition, quota or acceptance rule was changed. Nothing in the instrument was altered after results were seen."
+  ],
+  "wrote_nothing": true
+}

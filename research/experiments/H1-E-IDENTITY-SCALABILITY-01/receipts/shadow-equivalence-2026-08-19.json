@@ -1,0 +1,206 @@
+{
+  "equivalence": {
+    "cells": {
+      "duplicate_text_decoy": {
+        "cases": 60,
+        "decisions_compared": 4800,
+        "divergence_examples": [],
+        "divergences": {
+          "FAIL_CLOSED": 0,
+          "FAIL_OPEN": 0,
+          "OTHER": 0
+        },
+        "identical_cases": 60,
+        "units_per_case": 80
+      },
+      "edited": {
+        "cases": 60,
+        "decisions_compared": 4800,
+        "divergence_examples": [],
+        "divergences": {
+          "FAIL_CLOSED": 0,
+          "FAIL_OPEN": 0,
+          "OTHER": 0
+        },
+        "identical_cases": 60,
+        "units_per_case": 80
+      },
+      "near_tie": {
+        "cases": 60,
+        "decisions_compared": 4800,
+        "divergence_examples": [],
+        "divergences": {
+          "FAIL_CLOSED": 0,
+          "FAIL_OPEN": 0,
+          "OTHER": 0
+        },
+        "identical_cases": 60,
+        "units_per_case": 80
+      },
+      "reordered": {
+        "cases": 60,
+        "decisions_compared": 4800,
+        "divergence_examples": [],
+        "divergences": {
+          "FAIL_CLOSED": 0,
+          "FAIL_OPEN": 0,
+          "OTHER": 0
+        },
+        "identical_cases": 60,
+        "units_per_case": 80
+      },
+      "shared_identifier": {
+        "cases": 60,
+        "decisions_compared": 4800,
+        "divergence_examples": [],
+        "divergences": {
+          "FAIL_CLOSED": 0,
+          "FAIL_OPEN": 0,
+          "OTHER": 0
+        },
+        "identical_cases": 60,
+        "units_per_case": 80
+      },
+      "split_and_merge": {
+        "cases": 60,
+        "decisions_compared": 6000,
+        "divergence_examples": [
+          {
+            "blocked": {
+              "logical_id": "n12a",
+              "match": "new",
+              "score": 0.0
+            },
+            "case": 3,
+            "kind": "OTHER",
+            "legacy": {
+              "logical_id": null,
+              "match": "ambiguous",
+              "score": 0.8162
+            },
+            "position": 15
+          },
+          {
+            "blocked": {
+              "logical_id": null,
+              "match": "ambiguous",
+              "score": 0.8162
+            },
+            "case": 3,
+            "kind": "OTHER",
+            "legacy": {
+              "logical_id": "n12b",
+              "match": "new",
+              "score": 0.0
+            },
+            "position": 16
+          },
+          {
+            "blocked": {
+              "logical_id": null,
+              "match": "ambiguous",
+              "score": 0.8039
+            },
+            "case": 8,
+            "kind": "OTHER",
+            "legacy": {
+              "logical_id": "n24a",
+              "match": "new",
+              "score": 0.0
+            },
+            "position": 30
+          },
+          {
+            "blocked": {
+              "logical_id": "n24b",
+              "match": "new",
+              "score": 0.0
+            },
+            "case": 8,
+            "kind": "OTHER",
+            "legacy": {
+              "logical_id": null,
+              "match": "ambiguous",
+              "score": 0.8039
+            },
+            "position": 31
+          },
+          {
+            "blocked": {
+              "logical_id": null,
+              "match": "ambiguous",
+              "score": 0.8162
+            },
+            "case": 9,
+            "kind": "OTHER",
+            "legacy": {
+              "logical_id": "n48a",
+              "match": "new",
+              "score": 0.0
+            },
+            "position": 60
+          }
+        ],
+        "divergences": {
+          "FAIL_CLOSED": 0,
+          "FAIL_OPEN": 0,
+          "OTHER": 8
+        },
+        "identical_cases": 56,
+        "units_per_case": 80
+      },
+      "stable": {
+        "cases": 60,
+        "decisions_compared": 4800,
+        "divergence_examples": [],
+        "divergences": {
+          "FAIL_CLOSED": 0,
+          "FAIL_OPEN": 0,
+          "OTHER": 0
+        },
+        "identical_cases": 60,
+        "units_per_case": 80
+      }
+    },
+    "totals": {
+      "FAIL_CLOSED": 0,
+      "FAIL_OPEN": 0,
+      "OTHER": 8
+    }
+  },
+  "evidence_class": "controlled generated corpus; not a real document corpus",
+  "external_gpu_cost_usd": 0.0,
+  "falsification": {
+    "arms": [
+      {
+        "divergent_decisions": 0,
+        "separates": false,
+        "topology": "shared_identifier",
+        "units": 80,
+        "weakening": "identifier_and_anchor_union_removed"
+      },
+      {
+        "divergent_decisions": 80,
+        "separates": true,
+        "topology": "stable",
+        "units": 80,
+        "weakening": "path_root_bucket_removed"
+      }
+    ],
+    "claim_carrying_arm": "path_root_bucket_removed",
+    "harness_can_detect_divergence": true,
+    "retained_null_arm_note": "identifier_and_anchor_union_removed cannot separate by construction; retained as a recorded null, not treated as evidence of safety"
+  },
+  "generated_at": "2026-08-19T00:37:23.138379+00:00",
+  "identity_module_sha256": "sha256:aa36a742e43f5ad2a41758c1b9b494fb61f0495b2f42c2f0e07a844bf103ba99",
+  "primary_criterion": "FAIL_OPEN == 0 across every cell",
+  "primary_success": true,
+  "promotion_eligible": true,
+  "promotion_rule": "BLOCKED becomes default only if FAIL_OPEN == 0 and FAIL_CLOSED == 0",
+  "protocol_sha256": "sha256:1ccc1ed4c15a11d162a0d17e47123ed2428041386760315266f70e436a16a548",
+  "python": "3.13.0",
+  "receipt_sha256": "sha256:6a94ea855f5e329c479e44f4985d8c2d659fb7b55fc7d91b3ff4955a5309175c",
+  "schema": "tavonel.identity-matching-shadow-equivalence.v1",
+  "script_sha256": "sha256:1383313d5252295e722ce5ef933dba44e821c5d7a144b1313e4f6fdc87ebde36",
+  "seed": 20260819
+}

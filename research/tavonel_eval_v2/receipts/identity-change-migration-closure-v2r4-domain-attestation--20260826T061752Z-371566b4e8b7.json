@@ -1,0 +1,90 @@
+{
+  "attests": {
+    "receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r4-scorer-freeze--20260826T061751Z-f76342b0a123.json",
+    "receipt_body_sha256": "sha256:92c8ee1bc2121554db4b80a0ec389cd13daed8e248bff429fc8d7fc7065b99b1",
+    "receipt_file_sha256": "sha256:3dd60613d6c06eab72bc23d6062c0b34ae0c88f1047d69accd2df30b6481ac94",
+    "run_id": "20260826T061751Z-f76342b0a123",
+    "stem": "identity-change-migration-closure-v2r4-scorer-freeze"
+  },
+  "invariant_domain": {
+    "compared_as": "set equality on full identifiers, in both directions",
+    "declared": [
+      "INVARIANT_1_identity_decisions_unchanged",
+      "INVARIANT_2_identity_fold_remains_identity_only",
+      "INVARIANT_3_expectation_is_independent",
+      "INVARIANT_4_changed_facet_resolves_typed_or_failclosed",
+      "INVARIANT_5_never_silently_unchanged",
+      "INVARIANT_6_ambiguous_identity_stays_unresolved",
+      "INVARIANT_7_only_predeclared_ignores",
+      "INVARIANT_8_sfi2_cases_cannot_certify"
+    ],
+    "exclusion_domain": {
+      "compared": "set equality on full identifiers, never a count",
+      "declared": [
+        "from_the_14_sfi2_forensic_cases",
+        "from_the_538_pair_retrospective_cohort",
+        "from_v1_universe",
+        "from_v2r1_universe",
+        "from_v2r2_universe",
+        "from_v2r3r1_universe",
+        "from_vbc1_burned_material"
+      ],
+      "enforced": [
+        "from_the_14_sfi2_forensic_cases",
+        "from_the_538_pair_retrospective_cohort",
+        "from_v1_universe",
+        "from_v2r1_universe",
+        "from_v2r2_universe",
+        "from_v2r3r1_universe",
+        "from_vbc1_burned_material"
+      ],
+      "equal": true
+    },
+    "graded": [
+      "INVARIANT_1_identity_decisions_unchanged",
+      "INVARIANT_2_identity_fold_remains_identity_only",
+      "INVARIANT_3_expectation_is_independent",
+      "INVARIANT_4_changed_facet_resolves_typed_or_failclosed",
+      "INVARIANT_5_never_silently_unchanged",
+      "INVARIANT_6_ambiguous_identity_stays_unresolved",
+      "INVARIANT_7_only_predeclared_ignores",
+      "INVARIANT_8_sfi2_cases_cannot_certify"
+    ],
+    "graded_by": "EXECUTING v2r4_grading.grade on a null population and reading the invariant keys it emitted",
+    "held": true,
+    "not_a_count": "a count of eight is satisfied by eight wrong names. INC-V2-067 is what the absence of this comparison cost: a pass rule named eight invariants, the instrument graded one, nothing compared them, and 300 pairs were spent establishing one answer.",
+    "receipt_schema": [
+      "INVARIANT_1_identity_decisions_unchanged",
+      "INVARIANT_2_identity_fold_remains_identity_only",
+      "INVARIANT_3_expectation_is_independent",
+      "INVARIANT_4_changed_facet_resolves_typed_or_failclosed",
+      "INVARIANT_5_never_silently_unchanged",
+      "INVARIANT_6_ambiguous_identity_stays_unresolved",
+      "INVARIANT_7_only_predeclared_ignores",
+      "INVARIANT_8_sfi2_cases_cannot_certify"
+    ],
+    "sfi3_is_not_an_exclusion_population": "SFI3 separation is enforced by SFI3_ROOT_RESERVATION_V1 at rung 0, on container identity, and never by INVARIANT_8 over a cohort that does not exist yet"
+  },
+  "pinned_files": {
+    "protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R4.yaml": "sha256:e686ac21f123c6b8fde6c086dde14b40a9c75bad79298604d130228ea5ee972b",
+    "tools/invariant_domain.py": "sha256:7110172918219a10654c22b763dc3ad5fae70b5bde32c6df8bf9d7b45697a823",
+    "tools/rehearse_v2r4_closure.py": "sha256:8bf2d6de71c22ce4b508bdf6f52144e8aa524da2bb21d5c8e23c6141f2684a2f",
+    "tools/v2r4_grading.py": "sha256:ce3b0b03cfaedd1d271bd10d28657de493728c72cf839c76b5c9aa6ae304b9fd"
+  },
+  "provenance": {
+    "generated_at": "2026-08-26T06:17:52.175935+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R4.yaml",
+    "protocol_sha256": "sha256:e686ac21f123c6b8fde6c086dde14b40a9c75bad79298604d130228ea5ee972b",
+    "receipt_stem": "identity-change-migration-closure-v2r4-domain-attestation",
+    "run_id": "20260826T061752Z-371566b4e8b7",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:8aaa08fb89efe987ccc82838175b69ac213b456d109b371e20552dcd4e451f09"
+  },
+  "receipt_sha256": "sha256:02d2f17b1d894d681071ff515645a4b03c622c3a0a14eaa05c5520e69a8c77f1",
+  "refuses_unless": "DECLARED_INVARIANT_SET == GRADED_INVARIANT_SET == RECEIPT_INVARIANT_SET, as set equality on full identifiers, with GRADED obtained by executing the grading function",
+  "rung": "4a",
+  "rung_name": "domain_attestation",
+  "schema": "tavonel.v2.identity_change_migration_closure.v2r4_attestation.v1"
+}

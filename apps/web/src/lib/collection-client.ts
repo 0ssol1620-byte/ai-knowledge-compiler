@@ -97,6 +97,11 @@ export type CollectionPreflightEstimate = {
   duration_p95_seconds: number | null;
   route_mix: Record<string, number>;
   reserve_ceiling: string | number | null;
+  customer_charge_min_usd: string | number;
+  customer_charge_estimate_usd: string | number;
+  customer_charge_max_usd: string | number;
+  standard_page_rate_usd: string | number;
+  routed_page_rate_usd: string | number;
   confidence: string | number;
   confidence_band: "low" | "medium" | "high";
   known_pages: number;

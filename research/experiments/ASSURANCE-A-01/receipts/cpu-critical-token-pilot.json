@@ -1,0 +1,32 @@
+{
+  "corpus_id": "synthetic-critical-token-v1",
+  "metadata": {
+    "external_cost_usd": 0.0,
+    "generator": "akc_absorption.synthetic_corruption",
+    "mutation_counts": {
+      "currency": 40,
+      "date": 40,
+      "digit": 40,
+      "sign": 40,
+      "unit": 40
+    },
+    "seed_end_exclusive": 40,
+    "seed_start": 0,
+    "verifier": "akc_cir.critical_tokens"
+  },
+  "metrics": {
+    "accuracy": 1.0,
+    "api_cost_usd": 0.0,
+    "gpu_seconds": 0.0,
+    "latency_p50_ms": 0.0,
+    "latency_p95_ms": 0.0,
+    "recovery_rate": 0.0,
+    "samples": 240,
+    "silent_corruption_precision": 1.0,
+    "silent_corruption_recall": 1.0,
+    "unresolved_rate": 0.0
+  },
+  "receipt_id": "assurance_7c5bdf89f8d856db335496a11afb7703",
+  "stage": "cpu",
+  "variant": "critical_token_verifier"
+}

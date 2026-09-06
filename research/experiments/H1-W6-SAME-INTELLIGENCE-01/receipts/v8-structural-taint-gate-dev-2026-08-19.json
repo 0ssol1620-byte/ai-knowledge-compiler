@@ -1,0 +1,255 @@
+{
+  "all_mutants_caught": true,
+  "declared_builder_inputs": [
+    "subject",
+    "attribute",
+    "date",
+    "template_id"
+  ],
+  "development_question_set_sha256": "sha256:1b915787fee4502a559f5edead375e4c353f48594fd5d8ce7de501d2e94dec9e",
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "forbidden_builder_inputs": [
+    "the attribute's value",
+    "the oracle sentence",
+    "the surrounding passage",
+    "any answer-bearing lexical context"
+  ],
+  "gate_is_live": true,
+  "gate_state": "PASS",
+  "generated_at": "2026-08-19T12:45:17.563957+00:00",
+  "items_evaluated": 237,
+  "mutants": {
+    "passage_paraphrase": {
+      "examples": [
+        {
+          "attribute": "successor3",
+          "subject": "John J. Crittenden",
+          "template_id": "current",
+          "tokens_from_passage": [
+            "1787",
+            "1863",
+            "attorney",
+            "description",
+            "from",
+            "general",
+            "his",
+            "kentucky"
+          ]
+        },
+        {
+          "attribute": "successor3",
+          "subject": "John J. Crittenden",
+          "template_id": "as_of",
+          "tokens_from_passage": [
+            "1787",
+            "1863",
+            "attorney",
+            "description",
+            "from",
+            "general",
+            "his",
+            "kentucky"
+          ]
+        },
+        {
+          "attribute": "successor3",
+          "subject": "John J. Crittenden",
+          "template_id": "provenance",
+          "tokens_from_passage": [
+            "1787",
+            "1863",
+            "attorney",
+            "description",
+            "from",
+            "general",
+            "his",
+            "kentucky"
+          ]
+        },
+        {
+          "attribute": "birth place",
+          "subject": "Anne, Queen of Great Britain",
+          "template_id": "current",
+          "tokens_from_passage": [
+            "1702",
+            "1714",
+            "description",
+            "disambiguation",
+            "england",
+            "for",
+            "from",
+            "ireland"
+          ]
+        },
+        {
+          "attribute": "birth place",
+          "subject": "Anne, Queen of Great Britain",
+          "template_id": "as_of",
+          "tokens_from_passage": [
+            "1702",
+            "1714",
+            "description",
+            "disambiguation",
+            "england",
+            "for",
+            "from",
+            "ireland"
+          ]
+        }
+      ],
+      "passes": false,
+      "queries_rendered": 711,
+      "tainted_queries": 711
+    },
+    "single_oracle_token": {
+      "examples": [
+        {
+          "attribute": "successor3",
+          "subject": "John J. Crittenden",
+          "template_id": "current",
+          "tokens_from_passage": [
+            "10"
+          ]
+        },
+        {
+          "attribute": "successor3",
+          "subject": "John J. Crittenden",
+          "template_id": "as_of",
+          "tokens_from_passage": [
+            "10"
+          ]
+        },
+        {
+          "attribute": "successor3",
+          "subject": "John J. Crittenden",
+          "template_id": "provenance",
+          "tokens_from_passage": [
+            "10"
+          ]
+        },
+        {
+          "attribute": "birth place",
+          "subject": "Anne, Queen of Great Britain",
+          "template_id": "current",
+          "tokens_from_passage": [
+            "1665"
+          ]
+        },
+        {
+          "attribute": "birth place",
+          "subject": "Anne, Queen of Great Britain",
+          "template_id": "as_of",
+          "tokens_from_passage": [
+            "1665"
+          ]
+        }
+      ],
+      "passes": false,
+      "queries_rendered": 711,
+      "tainted_queries": 711
+    },
+    "value_appended": {
+      "examples": [
+        {
+          "attribute": "successor3",
+          "subject": "John J. Crittenden",
+          "template_id": "current",
+          "tokens_from_passage": [
+            "attorney",
+            "description",
+            "general",
+            "politician",
+            "short"
+          ]
+        },
+        {
+          "attribute": "successor3",
+          "subject": "John J. Crittenden",
+          "template_id": "as_of",
+          "tokens_from_passage": [
+            "attorney",
+            "description",
+            "general",
+            "politician",
+            "short"
+          ]
+        },
+        {
+          "attribute": "successor3",
+          "subject": "John J. Crittenden",
+          "template_id": "provenance",
+          "tokens_from_passage": [
+            "attorney",
+            "description",
+            "general",
+            "politician",
+            "short"
+          ]
+        },
+        {
+          "attribute": "birth place",
+          "subject": "Anne, Queen of Great Britain",
+          "template_id": "current",
+          "tokens_from_passage": [
+            "description",
+            "from",
+            "ireland",
+            "short"
+          ]
+        },
+        {
+          "attribute": "birth place",
+          "subject": "Anne, Queen of Great Britain",
+          "template_id": "as_of",
+          "tokens_from_passage": [
+            "description",
+            "from",
+            "ireland",
+            "short"
+          ]
+        }
+      ],
+      "passes": false,
+      "queries_rendered": 711,
+      "tainted_queries": 711
+    }
+  },
+  "network_access": false,
+  "protocol": "W6_V8_CONFIRMATORY_PROTOCOL_2026-08-19.md",
+  "protocol_sha256": "sha256:fe6c20a558720d92586c28ceedeb86ed125018894aba1c1ac31a66cacc1d495b",
+  "receipt_sha256": "sha256:586c845abd484098fca8bfb018d44d75f0598630edde291e02285a189f4c7e84",
+  "reference_builder": {
+    "examples": [],
+    "passes": true,
+    "queries_rendered": 711,
+    "tainted_queries": 0
+  },
+  "run_class": "DEVELOPMENT_ONLY",
+  "run_class_note": "measured on the v7 development question set. The v8 holdout is not opened by this script and no result here is a paper endpoint. Protocol section 7 requires the pipeline to be verified on development data before a holdout title is read.",
+  "schema": "tavonel.w6-v8-structural-taint-gate.v1",
+  "template_literal_tokens": [
+    "and",
+    "as",
+    "is",
+    "of",
+    "source",
+    "states",
+    "the",
+    "what",
+    "where",
+    "which"
+  ],
+  "templates": {
+    "as_of": "As of {date}, what is the {attribute} of {subject}?",
+    "current": "What is the {attribute} of {subject}?",
+    "provenance": "Which source states the {attribute} of {subject}, and where?"
+  },
+  "what_this_does_not_establish": [
+    "not a residual-overlap measurement -- that is the second gate and is separate",
+    "not a claim that the questions are hard, only that they are not built from the passage",
+    "a builder could still leak through a token that appears in neither the declared inputs nor the oracle passage; that would be a different defect and this gate does not observe it",
+    "a passage token that coincides with a declared-input token -- a year that is also in the date, a word that is also in the subject -- is invisible to this gate by construction. It carries no information the template had not already licensed, but the gate cannot distinguish the two cases and does not claim to"
+  ],
+  "why_this_is_the_primary_leakage_gate": "v7 measured median overlap 0.750 against a 0.50 ceiling with verbatim containment 0, and 0.667 of the shared tokens were the subject's own name. Overlap asks whether two strings resemble each other. This asks whether the builder could have seen the answer, which is what section 3 was written to ask."
+}

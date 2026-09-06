@@ -1,0 +1,840 @@
+{
+  "frame_declaration": {
+    "availability_probe": {
+      "git_docs": "repository metadata plus the recursive tree at the declared branch; documents counted with acquisition's own predicate. 44 candidates probed, 10 unreachable at the declared prefix, 4 dropped for holding fewer than 17 documents, 40 declared.",
+      "never_asked": "what changed in a revision, whether a unit was renamed, whether the resolver would call anything ambiguous, whether a quarantine would form",
+      "probe_tools": "tools/probe_v2r3_roots.py and tools/scan_v2r3_ecfr_supply.py, both metadata-only and both screening candidates through root_identity before asking anything",
+      "regulation_ecfr": "one versions call per CFR title, from which the number of sections carrying two or more distinct dated versions is computable per PART without asking about any part individually -- which keeps the probe cheap and, more importantly, blind",
+      "sec_edgar": "the published issuer universe plus the submissions API for the first 30 issuers above the start CIK; form types and period dates only"
+    },
+    "burn_scope_read_and_found_none": {
+      "p4c": "acquisition/sources_p4c.py contains no burn, spent or confirmatory-reuse declaration of any kind; its frozen SELECTION_RULE speaks only to cohort construction. Declared burn scope: NONE_DECLARED. Reported exactly and generalised into nothing. Its individual disposition is moot regardless -- one lineage cannot constitute a confirmatory cohort."
+    },
+    "cache_identity": {
+      "historical_artifacts": "UNTOUCHED. Not rewritten, not re-keyed, not migrated.",
+      "key": "sha256 over the full, untruncated lineage/source identity tuple, plus the revision's raw content digest. No truncation anywhere in the path.",
+      "raw_bytes_retained": "every side stores its RAW fetched bytes alongside the canonical document, so a canonicalisation defect can be repaired by RECOMPUTING rather than by re-fetching. INC-V2-058.3 is what the alternative costs: a re-canonicalisation that had to re-read the sources destroyed `known_at` across 564 documents and the corpus was discarded.",
+      "readable_slug_is": "a LABEL only, never a key, never compared for identity",
+      "scheme": "content_addressed",
+      "still_required": "structural collision detection, raw digest verification, canonical digest verification, and whole-collision-group exclusion. A better key reduces collisions; it does not license skipping the check that finds them.",
+      "truncation": "FORBIDDEN in any identity-bearing position"
+    },
+    "container_cap": {
+      "git_docs": 5,
+      "regulation_ecfr": 4,
+      "sec_edgar": 4
+    },
+    "excluded_families": {
+      "encyclopedia_wikipedia": "SFI3 root family. Metadata-only disjointness from SFI3 roots is not reliably provable for it, and expanding an SFI3 category to make it provable is forbidden -- that would spend the prospective confirmatory material of another study to buy a disjointness argument here. `root_identity` reads 324 Wikipedia identities from prior modules, which is why the family is excluded rather than merely unused."
+    },
+    "excluded_sets": [
+      {
+        "id": "v2r2_spent_270",
+        "why": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R2's frozen universe. The run executed exactly once and its corpus is SPENT. That it was adjudicated an invalid instrument does not un-spend the material: the lineages were measured, their outcomes were read, and a cohort whose results are known cannot be a prospective confirmatory denominator. All 270 are excluded by name. The three that produced its thirteen violations -- ecfr:47:20:20.19, ecfr:7:3560:3560.105 and ecfr:7:3560:3560.102 -- are DEVELOPMENT / FORENSIC regression cases only and may never certify V2R3."
+      },
+      {
+        "id": "v2r1_spent_285",
+        "why": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1's frozen universe. Spent for the same reason, one study earlier. Its three violating shapes are likewise development regressions only."
+      },
+      {
+        "id": "v1_closure_514",
+        "why": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V1's universe. V1 is a permanent FAIL and its universe may never become a positive migration-closure denominator after repair."
+      },
+      {
+        "id": "sfi1_spent",
+        "why": "spent by SOURCE_FACT_IR_HELDOUT_V1's own frame and executor"
+      },
+      {
+        "id": "sfi2_spent",
+        "why": "spent by SOURCE_FACT_IR_HELDOUT_V2's own frame and executor"
+      },
+      {
+        "id": "retrospective_538",
+        "why": "the retrospective migration-safety regression cohort, reclassified by founder ruling as retrospective rather than prospective qualification"
+      },
+      {
+        "id": "sfi2_forensic_14",
+        "why": "the fourteen cases that DIAGNOSED the INC-V2-037 defect. A case used to find a defect cannot certify its repair."
+      },
+      {
+        "id": "vbc1_probe",
+        "why": "sources_vbc1_probe.py declares BEFORE use that every lineage listed there is spent the moment the probe reports, and that it is not the confirmatory cohort and must never become it, with burned_after_use=True and not_the_confirmatory_cohort=True. That burn is GLOBAL for confirmatory reuse."
+      },
+      {
+        "id": "earlier_identity_measurements",
+        "why": "any lineage an earlier identity closure or identity regression already measured; burned for THIS question specifically"
+      },
+      {
+        "id": "sfi3_all",
+        "why": "SFI3 roots and every SFI3 lineage, payload and expansion. SFI3 is the next study's prospective confirmatory material and opening any of it here would spend it."
+      },
+      {
+        "id": "contract_declared_spent",
+        "why": "any source whose OWN predeclared contract says it is spent for confirmatory reuse. Read that contract; do not assume, and do not generalise from another corpus's contract."
+      }
+    ],
+    "families": [
+      "git_docs",
+      "regulation_ecfr",
+      "sec_edgar"
+    ],
+    "families_required": 3,
+    "family_floor": {
+      "git_docs": 40,
+      "regulation_ecfr": 40,
+      "sec_edgar": 25
+    },
+    "family_quota": {
+      "git_docs": 170,
+      "regulation_ecfr": 150,
+      "sec_edgar": 160
+    },
+    "family_share": {
+      "git_docs": "17/48",
+      "regulation_ecfr": "5/16",
+      "sec_edgar": "1/3"
+    },
+    "floor": 200,
+    "forbidden_in_selection": [
+      "inspecting revision content in order to choose a candidate",
+      "inspecting any identity outcome",
+      "probing for ambiguity",
+      "probing for quarantine membership",
+      "probing for changed facets",
+      "acquiring until a quarantine case appears",
+      "removing a pair after seeing its outcome",
+      "adding a pair after seeing any outcome",
+      "replacing a family after seeing its yield",
+      "adjusting a quota, the floor or a threshold after acquisition",
+      "adding an ignore entry",
+      "sizing a quota from V2R1's or V2R2's realised admission yield",
+      "selecting for the resolver/quarantine state that broke V2R2"
+    ],
+    "integrity_rejection": {
+      "canonical_digest": "recomputed for every revision side; a mismatch rejects the pair",
+      "canonical_shape": "both sides must canonicalise into the shape production's `selective_build.snapshots` reads, mirrored field-for-field from `canonical_document` and never reinvented per family. V2R1's first eCFR canonicalisation invented `heading_path` with no `heading` and no `text_sha256`, which made 106 pairs unmeasurable for a reason unrelated to the migration (INC-V2-058.2).",
+      "collision_groups": "collisions are detected STRUCTURALLY. If a cache-key or slug collision makes provenance ambiguous, the ENTIRE collision group is excluded -- never whichever member is convenient. Every exclusion is named and counted.",
+      "identical_sides": "a pair whose two sides carry the same raw digest is rejected as not a revision pair. This is a metadata-level identity check, not a content judgement about whether anything meaningful changed.",
+      "parse": "both sides must parse and yield at least 3 canonical units",
+      "raw_digest": "recomputed for every revision side; a mismatch rejects the pair"
+    },
+    "order_salt": ":icmc-v2r3",
+    "primary_target": 480,
+    "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3",
+    "quota_basis": {
+      "basis": "grammar breadth and PROBED container capacity: 40 repositories x 5, 44 CFR parts x 4, and issuers above CIK 21344 x 4",
+      "explicitly_not_basis": "violation rate, pass yield, closure outcome, or any V1 / V2R1 / V2R2 observation -- including V2R2's realised admission of 270 from 460 constructed candidates, and including the 13 units that produced its raw violations",
+      "floor_prior": "FLOOR=200 is carried forward from the founder ruling as a PRE-MEASUREMENT COHORT SUFFICIENCY GATE and is NOT lowered. V1's published 8/514 sized it as a sample-size planning prior and appears nowhere else: not in a quota, not in a numerator, not in a denominator, not in the scorer.",
+      "frozen_before": "any V2R3 fetch, any V2R3 diff, any V2R3 score",
+      "no_selection_for_the_v2r2_shape": "the cohort is NOT selected for quarantine outcomes, ambiguity outcomes, or any other shape. Selecting for the state that broke V2R2 would make the next result a statement about the selection rather than about production, and the frame forbids probing for it.",
+      "redistribution": "forbidden; an under-delivering family is reported short"
+    },
+    "root_disjointness": {
+      "container_level_is_stronger_than_lineage_level": "not one repository, CFR part or CIK below appears among the prior identities. A container that was never touched cannot hold a lineage that was. Lineage-level exclusion still runs on top of it -- a stronger proof does not license skipping the weaker check.",
+      "enumerator_obligation": "reporting an overlap is not enough. The enumerator REMOVES or named-excludes every overlapping row before universe admission and then RE-PROVES disjointness over the survivors. A report that leaves the row in the universe is a note, not a control.",
+      "prior_by_family": {
+        "ecfr": 265,
+        "git": 268,
+        "sec": 18,
+        "wikipedia": 324
+      },
+      "prior_identities": 875,
+      "prior_modules_read": 12,
+      "reader": "tools/root_identity.py",
+      "screening": "every candidate below was canonicalised and checked against the prior set BEFORE it was probed, so a spent container was never even asked about",
+      "unverifiable_at_declaration": 0,
+      "unverifiable_policy": "a root whose shape the reader cannot interpret returns UNVERIFIABLE and BLOCKS. It is NEVER assumed disjoint -- that assumption is exactly how 7 CFR 273, SFI1-spent and a VBC1 declared root, entered the V2R2 frame."
+    },
+    "source_roots": {
+      "git_docs": {
+        "container_count": 40,
+        "containers": [
+          "metallb/metallb",
+          "karmada-io/website",
+          "kubeedge/website",
+          "volcano-sh/website",
+          "goharbor/website",
+          "vmware-tanzu/velero",
+          "spinnaker/spinnaker.io",
+          "gravitational/teleport",
+          "goauthentik/authentik",
+          "camunda/camunda-docs",
+          "windmill-labs/windmill",
+          "refinedev/refine",
+          "payloadcms/payload",
+          "checkmk/checkmk",
+          "zeek/zeek-docs",
+          "scylladb/scylladb",
+          "janusgraph/janusgraph",
+          "memgraph/documentation",
+          "chroma-core/docs",
+          "vllm-project/vllm",
+          "keras-team/keras-io",
+          "iterative/dvc.org",
+          "kedro-org/kedro",
+          "feast-dev/feast",
+          "airbytehq/airbyte",
+          "meltano/meltano",
+          "osquery/osquery",
+          "Icinga/icinga2",
+          "librenms/librenms",
+          "opnsense/docs",
+          "kubevirt/user-guide",
+          "external-secrets/external-secrets",
+          "cert-manager/website",
+          "kubernetes-sigs/cluster-api",
+          "tikv/website",
+          "pingcap/docs",
+          "MaterializeInc/materialize",
+          "VictoriaMetrics/VictoriaMetrics",
+          "semgrep/semgrep-docs",
+          "aquasecurity/trivy"
+        ],
+        "roots": [
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "metallb",
+            "prefix": "website/content",
+            "probed_documents": 24,
+            "repo": "metallb"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "CC-BY-4.0",
+            "owner": "karmada-io",
+            "prefix": "docs",
+            "probed_documents": 228,
+            "repo": "website"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "Apache-2.0",
+            "owner": "kubeedge",
+            "prefix": "docs",
+            "probed_documents": 48,
+            "repo": "website"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "Apache-2.0",
+            "owner": "volcano-sh",
+            "prefix": "docs",
+            "probed_documents": 65,
+            "repo": "website"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "goharbor",
+            "prefix": "docs",
+            "probed_documents": 66,
+            "repo": "website"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "vmware-tanzu",
+            "prefix": "site/content/docs",
+            "probed_documents": 1181,
+            "repo": "velero"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "spinnaker",
+            "prefix": "content/en/docs",
+            "probed_documents": 218,
+            "repo": "spinnaker.io"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "AGPL-3.0",
+            "owner": "gravitational",
+            "prefix": "docs/pages",
+            "probed_documents": 747,
+            "repo": "teleport"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "goauthentik",
+            "prefix": "website/docs",
+            "probed_documents": 273,
+            "repo": "authentik"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "camunda",
+            "prefix": "docs",
+            "probed_documents": 1269,
+            "repo": "camunda-docs"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "windmill-labs",
+            "prefix": "docs",
+            "probed_documents": 22,
+            "repo": "windmill"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "refinedev",
+            "prefix": "documentation/docs",
+            "probed_documents": 315,
+            "repo": "refine"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "payloadcms",
+            "prefix": "docs",
+            "probed_documents": 147,
+            "repo": "payload"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "GPL-2.0",
+            "owner": "checkmk",
+            "prefix": "doc",
+            "probed_documents": 33,
+            "repo": "checkmk"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "zeek",
+            "prefix": "scripts",
+            "probed_documents": 333,
+            "repo": "zeek-docs"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "scylladb",
+            "prefix": "docs",
+            "probed_documents": 280,
+            "repo": "scylladb"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "janusgraph",
+            "prefix": "docs",
+            "probed_documents": 58,
+            "repo": "janusgraph"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "memgraph",
+            "prefix": "pages",
+            "probed_documents": 333,
+            "repo": "documentation"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "chroma-core",
+            "prefix": "docs",
+            "probed_documents": 28,
+            "repo": "docs"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "vllm-project",
+            "prefix": "docs",
+            "probed_documents": 178,
+            "repo": "vllm"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "Apache-2.0",
+            "owner": "keras-team",
+            "prefix": "templates",
+            "probed_documents": 17,
+            "repo": "keras-io"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "iterative",
+            "prefix": "content/docs",
+            "probed_documents": 142,
+            "repo": "dvc.org"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "kedro-org",
+            "prefix": "docs",
+            "probed_documents": 95,
+            "repo": "kedro"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "Apache-2.0",
+            "owner": "feast-dev",
+            "prefix": "docs",
+            "probed_documents": 191,
+            "repo": "feast"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "airbytehq",
+            "prefix": "docs",
+            "probed_documents": 1392,
+            "repo": "airbyte"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "MIT",
+            "owner": "meltano",
+            "prefix": "docs/docs",
+            "probed_documents": 108,
+            "repo": "meltano"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "osquery",
+            "prefix": "docs",
+            "probed_documents": 31,
+            "repo": "osquery"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "GPL-3.0",
+            "owner": "Icinga",
+            "prefix": "doc",
+            "probed_documents": 25,
+            "repo": "icinga2"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "librenms",
+            "prefix": "doc",
+            "probed_documents": 136,
+            "repo": "librenms"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "opnsense",
+            "prefix": "source",
+            "probed_documents": 294,
+            "repo": "docs"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "kubevirt",
+            "prefix": "docs",
+            "probed_documents": 87,
+            "repo": "user-guide"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "external-secrets",
+            "prefix": "docs",
+            "probed_documents": 93,
+            "repo": "external-secrets"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "Apache-2.0",
+            "owner": "cert-manager",
+            "prefix": "content/docs",
+            "probed_documents": 145,
+            "repo": "website"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "kubernetes-sigs",
+            "prefix": "docs",
+            "probed_documents": 152,
+            "repo": "cluster-api"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "tikv",
+            "prefix": "content/docs",
+            "probed_documents": 302,
+            "repo": "website"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "NOASSERTION",
+            "owner": "pingcap",
+            "prefix": "develop",
+            "probed_documents": 82,
+            "repo": "docs"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "NOASSERTION",
+            "owner": "MaterializeInc",
+            "prefix": "doc/user/content",
+            "probed_documents": 346,
+            "repo": "materialize"
+          },
+          {
+            "branch": "master",
+            "license_metadata": "Apache-2.0",
+            "owner": "VictoriaMetrics",
+            "prefix": "docs",
+            "probed_documents": 126,
+            "repo": "VictoriaMetrics"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "LGPL-2.1",
+            "owner": "semgrep",
+            "prefix": "docs",
+            "probed_documents": 358,
+            "repo": "semgrep-docs"
+          },
+          {
+            "branch": "main",
+            "license_metadata": "Apache-2.0",
+            "owner": "aquasecurity",
+            "prefix": "docs",
+            "probed_documents": 109,
+            "repo": "trivy"
+          }
+        ]
+      },
+      "regulation_ecfr": {
+        "container_count": 44,
+        "containers": [
+          "7-1",
+          "9-145",
+          "9-2",
+          "10-1016",
+          "10-1003",
+          "14-1206",
+          "14-1204",
+          "15-27",
+          "16-1",
+          "16-1028",
+          "17-12",
+          "17-140",
+          "21-1",
+          "21-10",
+          "22-123",
+          "24-1006",
+          "29-102",
+          "29-1404",
+          "30-1206",
+          "30-1210",
+          "31-1",
+          "32-161",
+          "33-100",
+          "33-110",
+          "34-200",
+          "36-1194",
+          "37-11",
+          "38-1",
+          "38-16",
+          "40-1036",
+          "40-1037",
+          "42-1001",
+          "42-1003",
+          "45-101",
+          "45-1177",
+          "46-11",
+          "46-10",
+          "47-1",
+          "47-0",
+          "48-12",
+          "48-1201",
+          "49-11",
+          "49-107",
+          "50-12"
+        ],
+        "roots": [
+          {
+            "part": "1",
+            "subject": "Administrative Regulations",
+            "title": "7"
+          },
+          {
+            "part": "145",
+            "subject": "National Poultry Improvement Plan for Breeding Poultry",
+            "title": "9"
+          },
+          {
+            "part": "2",
+            "subject": "Regulations",
+            "title": "9"
+          },
+          {
+            "part": "1016",
+            "subject": "Safeguarding of Restricted Data by Access Permittees",
+            "title": "10"
+          },
+          {
+            "part": "1003",
+            "subject": "Office of Hearings and Appeals Procedural Regulations",
+            "title": "10"
+          },
+          {
+            "part": "1206",
+            "subject": "Procedures for Disclosure of Records Under the FOIA",
+            "title": "14"
+          },
+          {
+            "part": "1204",
+            "subject": "Administrative Authority and Policy",
+            "title": "14"
+          },
+          {
+            "part": "27",
+            "subject": "Protection of Human Subjects",
+            "title": "15"
+          },
+          {
+            "part": "1",
+            "subject": "General Procedures",
+            "title": "16"
+          },
+          {
+            "part": "1028",
+            "subject": "Protection of Human Subjects",
+            "title": "16"
+          },
+          {
+            "part": "12",
+            "subject": "Rules Relating to Reparations",
+            "title": "17"
+          },
+          {
+            "part": "140",
+            "subject": "Organization, Functions, and Procedures of the Commission",
+            "title": "17"
+          },
+          {
+            "part": "1",
+            "subject": "General Enforcement Regulations",
+            "title": "21"
+          },
+          {
+            "part": "10",
+            "subject": "Administrative Practices and Procedures",
+            "title": "21"
+          },
+          {
+            "part": "123",
+            "subject": "Licenses for the Export and Temporary Import of Defense Articles",
+            "title": "22"
+          },
+          {
+            "part": "1006",
+            "subject": "Native Hawaiian Housing Block Grant Program",
+            "title": "24"
+          },
+          {
+            "part": "102",
+            "subject": "Rules and Regulations, Series 8",
+            "title": "29"
+          },
+          {
+            "part": "1404",
+            "subject": "Arbitration Services",
+            "title": "29"
+          },
+          {
+            "part": "1206",
+            "subject": "Product Valuation",
+            "title": "30"
+          },
+          {
+            "part": "1210",
+            "subject": "Forms and Reports",
+            "title": "30"
+          },
+          {
+            "part": "1",
+            "subject": "Disclosure of Records",
+            "title": "31"
+          },
+          {
+            "part": "161",
+            "subject": "Identification (ID) Cards for Members of the Uniformed Services",
+            "title": "32"
+          },
+          {
+            "part": "100",
+            "subject": "Safety of Life on Navigable Waters",
+            "title": "33"
+          },
+          {
+            "part": "110",
+            "subject": "Anchorage Regulations",
+            "title": "33"
+          },
+          {
+            "part": "200",
+            "subject": "Title I - Improving the Academic Achievement of the Disadvantaged",
+            "title": "34"
+          },
+          {
+            "part": "1194",
+            "subject": "Information and Communication Technology Standards and Guidelines",
+            "title": "36"
+          },
+          {
+            "part": "11",
+            "subject": "Representation of Others Before the USPTO",
+            "title": "37"
+          },
+          {
+            "part": "1",
+            "subject": "General Provisions",
+            "title": "38"
+          },
+          {
+            "part": "16",
+            "subject": "Protection of Human Subjects",
+            "title": "38"
+          },
+          {
+            "part": "1036",
+            "subject": "Control of Emissions from New and In-Use Heavy-Duty Highway Engines",
+            "title": "40"
+          },
+          {
+            "part": "1037",
+            "subject": "Control of Emissions from New Heavy-Duty Motor Vehicles",
+            "title": "40"
+          },
+          {
+            "part": "1001",
+            "subject": "Program Integrity - Medicare and State Health Care Programs",
+            "title": "42"
+          },
+          {
+            "part": "1003",
+            "subject": "Civil Money Penalties, Assessments and Exclusions",
+            "title": "42"
+          },
+          {
+            "part": "101",
+            "subject": "Health Resources Priorities and Allocations System (HRPAS)",
+            "title": "45"
+          },
+          {
+            "part": "1177",
+            "subject": "Claims Collection",
+            "title": "45"
+          },
+          {
+            "part": "11",
+            "subject": "Requirements for Officer Endorsements",
+            "title": "46"
+          },
+          {
+            "part": "10",
+            "subject": "Merchant Mariner Credential",
+            "title": "46"
+          },
+          {
+            "part": "1",
+            "subject": "Practice and Procedure",
+            "title": "47"
+          },
+          {
+            "part": "0",
+            "subject": "Commission Organization",
+            "title": "47"
+          },
+          {
+            "part": "12",
+            "subject": "Acquisition of Commercial Products and Commercial Services",
+            "title": "48"
+          },
+          {
+            "part": "1201",
+            "subject": "Federal Acquisition Regulations System",
+            "title": "48"
+          },
+          {
+            "part": "11",
+            "subject": "Protection of Human Subjects",
+            "title": "49"
+          },
+          {
+            "part": "107",
+            "subject": "Hazardous Materials Program Procedures",
+            "title": "49"
+          },
+          {
+            "part": "12",
+            "subject": "Seizure and Forfeiture Procedures",
+            "title": "50"
+          }
+        ]
+      },
+      "sec_edgar": {
+        "container_count": null,
+        "containers": "RULE",
+        "rule": {
+          "availability_probe": "26 of the first 30 issuers above CIK 21344 carry at least one amendment pair, 152 pairs among those 30, so the quota is reachable well inside the ordered universe",
+          "distinct_ciks_at_declaration": 7998,
+          "forms": [
+            "10-K",
+            "10-Q",
+            "20-F",
+            "8-K"
+          ],
+          "order": "ascending by CIK above the start, which is stable and not chosen by us",
+          "pair_construction": "a source document is (CIK, base form, period of report). An amendment pair exists where the same (CIK, base form, period) carries both an original filing and its /A amendment. Both sides are named by accession number from the submissions API -- metadata only.",
+          "start_after_cik": 21344,
+          "stopping": "walk in CIK order until the family quota is met or the universe ends",
+          "submissions_api": "https://data.sec.gov/submissions/CIK##########.json",
+          "universe": "https://www.sec.gov/files/company_tickers.json",
+          "universe_size_at_declaration": 10403,
+          "why_start_after": "21344 is the highest CIK V2R2 admitted, and V2R2's own start was above the highest V2R1 admitted. Starting strictly above it makes the SEC family container-disjoint from BOTH predecessors by construction, matching the treatment of the other two families, rather than relying on lineage-level exclusion alone."
+        }
+      }
+    },
+    "traversal": {
+      "attrition": "a candidate lost to fetch failure, parse failure or integrity rejection is RECORDED with its reason and never silently replaced. The realised count is whatever survives; the gate is FLOOR.",
+      "container_cap": "per-family, from CONTAINER_CAP -- repository, CFR part, issuer -- so no single container dominates the cohort",
+      "duplicate_rule": "deduplicate by lineage id, keeping the first occurrence in traversal order. A lineage reachable from two containers is admitted once.",
+      "insufficient_cohort": "if fewer than FLOOR pairs are admitted, or fewer than FAMILIES_REQUIRED families clear their FAMILY_FLOOR, the study STOPS as INSUFFICIENT_COHORT. It does not proceed with a power disclaimer beside a verdict, and it does not pad after measuring outcomes.",
+      "order": "families in the order FAMILIES declares; within a family, containers sorted lexicographically by container id; within a container, source documents sorted lexicographically by source id. Deterministic, and reproducible from this file without a fetch.",
+      "oversampling": "construct up to PRIMARY_TARGET candidates in this order, then filter. Over-selection precedes every outcome. Padding after measurement is forbidden without exception.",
+      "pair_construction": "one revision pair per source document: the two most recent DISTINCT revisions by the source's own revision metadata, before-side older. Ties broken by the lexicographically smallest revision identifier. Chosen without reading either revision's content.",
+      "stopping_rule": "stop when the family quota is met or the family's declared roots are exhausted, whichever comes first. NEVER 'keep acquiring until a quarantine case appears', and never 'until the cohort looks balanced' -- a stopping rule that reads the outcome makes selection a function of the result."
+    }
+  },
+  "frame_declaration_digest": "sha256:42976f7e864a760f4e641641c58a3cfef1afe10b822709ab0ccb8c3d93f57018",
+  "frame_module": "research/tavonel_eval_v2/acquisition/sources_v2r3.py",
+  "frame_module_sha256": "sha256:26aa683d0d1bad02329ac02e1c014415d859c160bd534dd990f568c860305038",
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3",
+  "provenance": {
+    "generated_at": "2026-08-25T17:32:40.316919+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3.yaml",
+    "protocol_sha256": "sha256:51b8a0b0ec32dc5c04224ed346fa720c21c35929a917db7db2a0335581b74318",
+    "receipt_stem": "identity-change-migration-closure-v2r3-acquisition-frame-freeze",
+    "run_id": "20260825T173240Z-2ddcbbfc3c8d",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:8aaa08fb89efe987ccc82838175b69ac213b456d109b371e20552dcd4e451f09"
+  },
+  "receipt_sha256": "sha256:5090b7cc27ddef2353106e18bd19bc93db6f4cfa69a4f5d9e1ff664b138f2236",
+  "rung": 0,
+  "sealed_before_acquisition": true,
+  "why_rung_0_exists": "V2R1 acquires its own material, so the rules deciding what to acquire are sealed before any content exists. V1 and the abandoned V2 drew from an existing cache and had no equivalent obligation."
+}

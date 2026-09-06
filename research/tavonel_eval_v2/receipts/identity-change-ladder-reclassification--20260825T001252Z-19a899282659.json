@@ -1,0 +1,98 @@
+{
+  "estimated_cost_usd": 0.0,
+  "gpu_seconds": 0,
+  "how_the_numbers_in_them_may_be_read": {
+    "over_fire_1_10_percent": "DESCRIPTIVE ONLY. It is not an acceptance threshold, was never declared as one before the result existed, and no criterion anywhere in the prospective closure is derived from it.",
+    "over_fires_are_not_false_positives": "legacy disagreement is not ground truth: the legacy predicate is the defect under repair. Calling an over-fire a false positive would need an independent oracle saying the unit's compiled-relevant state did not move. None exists.",
+    "under_fire_zero_and_identity_records_agree": "these remain the most load-bearing lines in the two receipts, and the prospective closure re-establishes the identity half independently on a disjoint cohort as INVARIANT_1."
+  },
+  "provenance": {
+    "generated_at": "2026-08-25T00:12:52.099785+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "identity-change-ladder-reclassification",
+    "run_id": "20260825T001252Z-19a899282659",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/reclassify_identity_change_ladder.py",
+    "tool_sha256": "sha256:651501f817b7cc7b72fe0d467f2a0d6bb7be123b3ddc7977fd8fbaa4b6922a02"
+  },
+  "receipt_sha256": "sha256:307c4d189bbd12293e4df62ff643eb78286a7fa8fdb4cecc4ca2f675e791353f",
+  "reclassified": [
+    {
+      "declared_immutable_by_its_own_envelope": true,
+      "generated_at": "2026-08-24T09:20:56.700461+00:00",
+      "modified": false,
+      "opened": "read-only",
+      "receipt": "research/tavonel_eval_v2/receipts/identity-change-benchmark--20260824T092056Z-eb6269afcbd0.json",
+      "receipt_file_sha256": "sha256:0f2422542197ae1995ef69da088043bd23abd731b52c673dc915d8817f1dd0a6",
+      "run_id": "20260824T092056Z-eb6269afcbd0"
+    },
+    {
+      "declared_immutable_by_its_own_envelope": true,
+      "generated_at": "2026-08-24T09:21:41.168642+00:00",
+      "modified": false,
+      "opened": "read-only",
+      "receipt": "research/tavonel_eval_v2/receipts/identity-change-canary--20260824T092141Z-36fa48664af6.json",
+      "receipt_file_sha256": "sha256:cbab2fb172ce85ab4ab60f92d30e282e092d83b7104ac1371b90650f09065b0c",
+      "run_id": "20260824T092141Z-36fa48664af6"
+    }
+  ],
+  "ruling": {
+    "keep_production_implementation": true,
+    "legacy_flag": "akc_cir.semantic_diff.diff_documents(legacy_identity_change_predicate=True)",
+    "preserve_legacy_reference_path": true,
+    "receipts_are_immutable": true,
+    "receipts_deleted_or_rewritten": false,
+    "reclassified_from": "PROSPECTIVE_LADDER_QUALIFICATION",
+    "reclassified_to": "RETROSPECTIVE_MIGRATION_SAFETY_REGRESSION",
+    "source": "founder ruling on INC-V2-042, 2026-08-25"
+  },
+  "schema": "tavonel.v2.identity_change_ladder_reclassification.v1",
+  "what_replaces_them_as_prospective_evidence": {
+    "note": "the closure was frozen before its universe, and its universe before its measurement, each enforced as a refusal rather than as a convention.",
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V1.yaml",
+    "protocol_sha256": "sha256:0b6c86574d861d7f04bfac08a713aadf42d896850237c823844366194d1e795f",
+    "receipts_in_ladder_order": [
+      {
+        "declared_immutable_by_its_own_envelope": true,
+        "generated_at": "2026-08-25T00:06:09.727392+00:00",
+        "modified": false,
+        "opened": "read-only",
+        "receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-protocol-freeze--20260825T000609Z-9edc066095d8.json",
+        "receipt_file_sha256": "sha256:999f01b80351d0017e2fef923646ebcf885561a3106cef110b84c0ff708e8ae6",
+        "run_id": "20260825T000609Z-9edc066095d8",
+        "stem": "identity-change-migration-closure-protocol-freeze"
+      },
+      {
+        "declared_immutable_by_its_own_envelope": true,
+        "generated_at": "2026-08-25T00:08:53.368606+00:00",
+        "modified": false,
+        "opened": "read-only",
+        "receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-universe--20260825T000853Z-b92bccc5bc13.json",
+        "receipt_file_sha256": "sha256:7ddb971caddfd45238f6da3e64936bb8f40a4a8174a69129590c397d97b9ab47",
+        "run_id": "20260825T000853Z-b92bccc5bc13",
+        "stem": "identity-change-migration-closure-universe"
+      },
+      {
+        "declared_immutable_by_its_own_envelope": true,
+        "generated_at": "2026-08-25T00:10:37.197307+00:00",
+        "modified": false,
+        "opened": "read-only",
+        "receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure--20260825T001037Z-bee4064eae33.json",
+        "receipt_file_sha256": "sha256:d7a04d356f95cb87fc620da1c2483dd45c9ceb265479af2458adbc97f9d9449b",
+        "run_id": "20260825T001037Z-bee4064eae33",
+        "stem": "identity-change-migration-closure"
+      }
+    ]
+  },
+  "what_this_artifact_does_not_do": [
+    "it does not re-run, re-score, correct or amend either receipt",
+    "it does not move the SFI2 verdict, which stands as executed",
+    "it does not make the retroactive evidence prospective",
+    "it does not authorise GPU spend or a public claim"
+  ],
+  "what_this_is": "an append-only reclassification of two existing immutable receipts. It changes their STANDING, not their content, and it modifies neither.",
+  "why": "the Protected Core ladder ran out of order (INC-V2-042). The production switch shipped before the benchmark and the canary, which were produced retroactively in a later session by the same agent that wrote the gate grading them. The measurements are not disputed and are not re-run. A benchmark taken after the switch it was meant to authorise is a different instrument from one taken before it, and the favourable direction it came out in is exactly the condition under which a retroactive check is least trustworthy and most tempting to accept."
+}

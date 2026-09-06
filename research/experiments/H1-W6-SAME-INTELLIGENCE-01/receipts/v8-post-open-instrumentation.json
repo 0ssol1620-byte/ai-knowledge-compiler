@@ -1,0 +1,77 @@
+{
+  "classification": "POST_OPEN_PRE_OBSERVATION_NON_ANALYTIC_INSTRUMENTATION",
+  "config_freeze_not_reopened": {
+    "config_freeze_sha256": "sha256:08a0ae93fe764d2866805614a74cee8554e4e3426da29bffefa48bc28fab00fd",
+    "why": "a freeze that is rewritten to absorb whatever is needed next is not a freeze. These tools are pinned in a separate immutable receipt."
+  },
+  "criteria_predate_the_holdout_open": "acquisition integrity and endpoint sealing were required by the confirmatory protocol before the holdout was opened. These scripts implement criteria that already existed; they do not introduce new ones.",
+  "disclosure": "both scripts were written after the v8 holdout was opened. This is stated rather than obscured. They were written before any holdout observation existed, and they are pinned here instead of inside the config freeze, which is not reopened.",
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "forbidden_influence": {
+    "arm_behaviour": false,
+    "cohort_selection": false,
+    "question_selection": false,
+    "retrieval": false,
+    "scan": {
+      "clean": true,
+      "forbidden_identifiers_searched": [
+        "admission",
+        "bm25",
+        "build_question_set",
+        "context_budget",
+        "enable_thinking",
+        "holm",
+        "max_tokens",
+        "mcnemar",
+        "paired_comparison",
+        "primary_attrs",
+        "rm3",
+        "score_answer",
+        "temperature",
+        "threshold",
+        "top_k"
+      ],
+      "hits": {},
+      "scan_domain": "python NAME tokens only, case-insensitive; comments and string literals excluded"
+    },
+    "scoring": false,
+    "statistics": false,
+    "thresholds": false,
+    "verified_by": "identifier scan over the pinned bytes"
+  },
+  "generated_at": "2026-08-20T05:47:53.183995+00:00",
+  "holdout_state_at_creation": {
+    "acquisition_in_flight": true,
+    "acquisition_started_utc": "2026-08-20T03:19:26.302725Z",
+    "holdout_answers_observed": 0,
+    "holdout_arm_results_observed": 0,
+    "holdout_corpus": {
+      "directories": 0,
+      "exists": true,
+      "files": 0,
+      "path": "corpus-v8-holdout"
+    },
+    "holdout_questions_observed": 0,
+    "holdout_scores_observed": 0,
+    "implementation_and_controls_used": "v7 development data only"
+  },
+  "modification_rule": "after this receipt exists the two pinned scripts are not modified. A change to either is a drift finding, not an edit.",
+  "pinned_sources": {
+    "seal_w6_endpoint_v8.py": "sha256:185b1329970d93b23e0ca07aeaeef004985f46207f6a077a785bc856c8e3d2d6",
+    "verify_holdout_corpus_v8.py": "sha256:a420f62ff416a9a8ffdccb407536d4f840450cfa860c7595025b03a0bdf44f93"
+  },
+  "purpose": {
+    "seal_w6_endpoint_v8.py": "one immutable index binding the endpoint to the freeze, attestation, corpus root hash, gates, sources, timestamps and cost",
+    "verify_holdout_corpus_v8.py": "nine fail-closed acquisition integrity checks between a finished acquisition and the question set"
+  },
+  "receipt_sha256": "sha256:331d827082ef106d41ad6e68999e6f6e3ac781413d5a4eb222781bc2948fbafb",
+  "schema": "tavonel.w6-v8-post-open-instrumentation.v1",
+  "supersedes": {
+    "generated_at": "2026-08-20T05:46:14.011545+00:00",
+    "reason": "the first receipt recorded a case-sensitive influence scan. That scan came back clean on vllm_model_v8.py, which holds the decoding contract as TEMPERATURE and MAX_TOKENS, so a tool importing those constants would have passed. The scan is now case-insensitive and is verified to fire on scoring_v8.py, arms_v8.py, vllm_model_v8.py and run_arms_holdout_v8.py. Superseded before any holdout observation existed; the prior receipt is preserved, not deleted.",
+    "receipt": "v8-post-open-instrumentation-superseded-20260820T054753Z.json",
+    "schema_conformance_note": "the superseded file is named under the key `receipt`, which is the key the repository's retraction contract reads. It was originally written as `file`; renaming it changed no filename, digest, reason or finding, and it is what makes this retraction checkable by tests/unit/test_superseded_receipt_contract.py rather than only readable by a person.",
+    "sha256": "sha256:72ee3ac102086982980647fb05ea0809141fedc0149bed3097b29693f1e0e10b"
+  }
+}

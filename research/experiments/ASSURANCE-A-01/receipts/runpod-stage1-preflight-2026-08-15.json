@@ -1,0 +1,43 @@
+{
+  "schema_version": "tavonel.runpod-stage1-preflight.v1",
+  "observed_date": "2026-08-15",
+  "scope": "ASSURANCE-A-01 Stage-1 hard-document GPU admission",
+  "current_ovis_spec_count": 4,
+  "current_ready_spec_count": 0,
+  "current_build_required_spec_count": 4,
+  "builder_contract_present": true,
+  "qualification_only_contract_present": true,
+  "authorized_spend_budget_present": true,
+  "runtime_qualification_producer_present": true,
+  "deterministic_ready_promotion_present": true,
+  "qualification_public_benchmark_inference_allowed": false,
+  "github_build_evidence": {
+    "previous_run_id": 30860545607,
+    "previous_observation": "docker_volume_about_32g_failed_old_55g_preflight_before_model_build",
+    "latest_run_id": 31284919996,
+    "latest_observation": "runner_root_enospc_in_github_worker_diag_during_checkout",
+    "local_workflow_root_reserve_mib": 16384,
+    "local_workflow_root_free_floor_gib": 10,
+    "local_workflow_docker_free_floor_gib": 40,
+    "local_workflow_fix_remotely_executed": false
+  },
+  "credential_boundary": {
+    "runpod_credential_slots_declared_by_operator": 2,
+    "secret_values_copied_to_repository": false,
+    "direct_provider_call_from_local_credential_file_allowed_by_current_tunnel": false,
+    "blocker": "local_secret_classification_boundary_blocks_credential_file_to_network_execution"
+  },
+  "local_build_environment": {
+    "windows_docker_available": false,
+    "windows_podman_available": false,
+    "windows_buildah_available": false,
+    "wsl_available": true,
+    "wsl_distribution_observed": "Ubuntu-24.04",
+    "wsl_oci_builder_available": false
+  },
+  "paid_gpu_started_by_this_work": false,
+  "external_cost_usd_by_this_work": 0.0,
+  "stage1_admission": "BLOCKED_UNTIL_IMMUTABLE_IMAGE_AND_PASSED_RUNTIME_QUALIFICATION",
+  "score_inflation_allowed": false,
+  "claim_boundary": "No real-document Stage-1 GPU performance is claimed by this receipt."
+}

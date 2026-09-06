@@ -1,0 +1,181 @@
+﻿# P4 — retrieval validity preflight, CPU only.
+#
+# Frozen before any P4 result exists.
+#
+# This is the gate that stands between the programme and its first dollar. Its
+# job is to establish, without running a single model, whether the question set
+# and the retrieval representation can discriminate a current fact from a
+# superseded one. If they cannot, an arm comparison would measure the
+# representation and the tie policy rather than the systems under test, and the
+# spend would buy an uninterpretable number.
+#
+# The prior programme's spent holdout and its 10% tie ceiling are NOT reused,
+# reinterpreted or referred to as evidence. New cohort, new thresholds, declared
+# here.
+
+schema: tavonel.v2.protocol.P4.v1
+protocol_id: P4_retrieval_validity
+version: 1
+authored: 2026-08-21
+supersedes: null
+
+boundaries:
+  ip_gate: {state: CLOSED}
+  gpu:
+    approved: false
+    ceiling_usd: 0.0
+    rule: >-
+      P4 runs on CPU with a deterministic lexical representation. No embedding
+      model, no GPU, no paid API. Passing this gate does not authorise spend; it
+      makes a spend request possible.
+  sealed_evidence: {rule: read-only}
+  p0_v1: {rule: read-only}
+  isolation: {rule: every artifact produced lives under research/tavonel_eval_v2/}
+
+split: development
+
+# ---------------------------------------------------------------------------
+# 1. Retrieval representation
+# ---------------------------------------------------------------------------
+
+representation:
+  family: lexical
+  scheme: BM25, k1 = 1.2, b = 0.75
+  tokeniser: casefold, split on non-word characters, drop tokens shorter than 2
+  index_unit: one admitted canonical unit
+  corpus: >-
+    append-only. Both revisions of every admitted pair are indexed, each labelled
+    current or superseded. This is deliberately the pathological configuration:
+    it is the condition under which a retrieval layer can return a superseded
+    fact with full confidence, and it is what the endpoint has to be able to see.
+  rationale: >-
+    Deterministic, inspectable and free. A dense representation is a different
+    experiment; this one asks whether the *question set* discriminates at all,
+    and a lexical representation gives a floor rather than an estimate.
+  known_limitation: >-
+    Two revisions of one section differ in a few tokens, so a lexical scorer may
+    well be unable to separate them. If that is what the run shows, it is a
+    finding about this representation and this question construction, not a
+    finding about retrieval in general.
+
+# ---------------------------------------------------------------------------
+# 2. Question construction
+# ---------------------------------------------------------------------------
+
+questions:
+  source_of_intent: >-
+    the document title and the unit's heading path. Never the answer text. An
+    answer span copied into the query would make retrieval trivially succeed and
+    would measure nothing.
+  types:
+    Q1_REVISED_VALUE:
+      built_from: a unit whose SEMANTIC facet moved between the two revisions
+      oracle_current: the after revision of that unit
+      superseded_competitor: the before revision of that unit
+    C1_UNCHANGED_CONTROL:
+      built_from: a unit whose SEMANTIC facet did not move
+      oracle_current: the after revision of that unit
+      superseded_competitor: none, the two revisions are semantically identical
+      role: >-
+        the control that separates "the representation cannot order revisions"
+        from "this question is hard"
+  per_pair_cap: 6 of each type, taken in reading order, so a long document cannot
+    dominate the set
+  answerability_gate:
+    - an oracle-current unit exists and is indexed
+    - whether a superseded competitor exists is recorded, not assumed
+    - the question is revision-sensitive by construction for Q1 and not for C1
+    - tie handling is fixed before any score is computed
+  ineligible_recorded_as:
+    INELIGIBLE_NO_ORACLE_UNIT: the current unit is not in the index
+    INELIGIBLE_EMPTY_QUERY: the title and heading path tokenise to nothing
+
+# ---------------------------------------------------------------------------
+# 3. Tie policy, fixed before any score exists
+# ---------------------------------------------------------------------------
+
+tie_policy:
+  rule: >-
+    An exact top-score tie returns the whole tied set. Ties are never broken by
+    list position, by index order, by document id or by any other incidental
+    ordering.
+  scoring_consequence: >-
+    A question whose tied set contains both the current and the superseded unit
+    is scored as a tie, not as a success and not as a failure.
+  determinism_check: >-
+    The index is built twice, the second time with the document insertion order
+    reversed. Every question's score vector and tied set must be identical.
+
+# ---------------------------------------------------------------------------
+# 4. Measures
+# ---------------------------------------------------------------------------
+
+measures:
+  exact_top_score_tie_rate: questions whose maximum score is shared by two or more units
+  oracle_current_retrievable_at_10: questions whose current unit appears in the top 10
+  oracle_current_top_1: questions whose current unit is the unique top-scoring unit
+  wrong_revision_dominance: >-
+    Q1 questions where the superseded unit strictly outranks its current
+    counterpart
+  unchanged_control_stability: >-
+    C1 questions where the current unit ranks at or above its own prior revision
+  representation_separation: >-
+    the share of Q1 questions where the current and superseded units receive
+    different scores at all. A question where they score identically cannot
+    discriminate any system, and this is the measure that decides whether the
+    question set is usable.
+
+# ---------------------------------------------------------------------------
+# 5. Pre-arm gate. Thresholds declared before any score is computed.
+# ---------------------------------------------------------------------------
+
+gates:
+  G_P4_SCALE:
+    predicate: at least 200 admitted questions across at least 10 source lineages
+  G_P4_DETERMINISM:
+    predicate: >-
+      the reversed-order index reproduces every score vector and every tied set
+      exactly
+    on_fail: STOP. A non-deterministic representation cannot support a frozen holdout.
+  G_P4_TIE_CEILING:
+    predicate: exact_top_score_tie_rate <= 0.10
+    basis: >-
+      A tie is the representation saying it cannot order the two revisions. Above
+      one question in ten, an arm comparison would be measuring the tie policy
+      rather than the systems.
+  G_P4_RETRIEVABILITY:
+    predicate: oracle_current_retrievable_at_10 >= 0.90
+    basis: a question whose answer is not retrievable cannot discriminate arms
+  G_P4_SEPARATION:
+    predicate: representation_separation >= 0.90 on Q1
+    basis: >-
+      The decisive one. If the current and superseded revisions of a unit score
+      identically, no downstream system can be shown to prefer the current one,
+      and every arm would produce the same number for reasons that have nothing
+      to do with the arm.
+  G_P4_CONTROL:
+    predicate: unchanged_control_stability >= 0.95 on C1
+  G_P4_COST:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+on_gate_failure: >-
+  STOP. Do not proceed to any model arm, do not request spend, and do not relax a
+  threshold after seeing a score. A failed preflight is a result: it says the
+  question set or the representation must be rebuilt before the endpoint can be
+  measured at all. Rebuilding either means a new protocol and a new cohort.
+
+# ---------------------------------------------------------------------------
+# 6. Claim boundary
+# ---------------------------------------------------------------------------
+
+claim_boundary:
+  permitted: >-
+    Under a BM25 lexical representation over an append-only index of both
+    revisions, this question set separated current from superseded units at this
+    rate, with these ties.
+  forbidden:
+    - any statement about a dense or hybrid representation, which was not run
+    - any statement about answer correctness; no model is executed in P4
+    - reading a passed preflight as evidence that the endpoint will show anything
+    - reusing the prior programme's spent holdout or its tie ceiling as support
+    - treating a development-split result as confirmatory

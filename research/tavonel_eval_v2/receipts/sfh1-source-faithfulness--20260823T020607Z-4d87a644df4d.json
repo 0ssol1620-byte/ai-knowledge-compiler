@@ -1,0 +1,380 @@
+{
+  "by_family": {
+    "encyclopedia_wikipedia": 3,
+    "git_docs": 0,
+    "regulation_ecfr": 0,
+    "sec_edgar": 0
+  },
+  "cache": {
+    "extractor_digest": "sha256:f67345b4b47ff9b131979e5a04cd776716214a1de4bb029b92b15091dbb55b8b",
+    "is_evidence": false,
+    "note": "a cache accelerates a run and proves nothing about it. Every hit is verified against the payload hash it is filed under, and deleting this directory changes run time, not results.",
+    "payload_hits": 6,
+    "payload_misses": 0,
+    "rejected_entries": 0,
+    "state_hits": 0,
+    "state_misses": 0
+  },
+  "controls": {
+    "all_passed": true,
+    "controls": [
+      {
+        "detail": {
+          "blocking_regions": 2,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 2,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 2,
+          "modeled_claims_unverified": 2,
+          "unclassified": 0
+        },
+        "kind": "burned_positive",
+        "name": "burned_reference_target_only",
+        "passed": true,
+        "why": "INC-V2-006 on a fixture. Only the link target moves; the compiled state cannot carry it and must not be reported as clean."
+      },
+      {
+        "detail": {
+          "blocking_regions": 2,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 0,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 2
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 0,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "burned_positive",
+        "name": "burned_short_block_dropped",
+        "passed": true,
+        "why": "the canonicaliser discards blocks below its minimum text length. The source changed and no unit exists to carry it."
+      },
+      {
+        "detail": {
+          "blocking_regions": 2,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 2,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 2,
+          "modeled_claims_unverified": 2,
+          "unclassified": 0
+        },
+        "kind": "burned_positive",
+        "name": "burned_html_href_only",
+        "passed": true,
+        "why": "the same loss in the markup grammar, where the facet map is what catches it"
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 2,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": true,
+          "modeled_claims": 2,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "positive",
+        "name": "positive_prose_value_change_is_verified",
+        "passed": true,
+        "why": "a number inside prose does reach the compiled state and must verify"
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 4,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": true,
+          "modeled_claims": 4,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "positive",
+        "name": "positive_heading_change_is_verified",
+        "passed": true,
+        "why": "headings are one of the four things a compiled artifact carries"
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 2,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": true,
+          "modeled_claims": 2,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "positive",
+        "name": "positive_html_text_change_is_verified",
+        "passed": true,
+        "why": "character data traceable into canonical text verifies in the markup grammar too"
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 6,
+            "MODELED": 0,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 0,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "negative",
+        "name": "negative_html_comment_change_is_ignored",
+        "passed": true,
+        "why": "an editorial comment is declared non-semantic by the frozen policy"
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 2,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 2,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "adversarial",
+        "name": "adversarial_emphasis_markers_are_not_a_loss",
+        "passed": true,
+        "why": "an instrument that scores punctuation as a lost fact produces a large alarming number that means nothing"
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 1,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 1,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "adversarial",
+        "name": "adversarial_trailing_whitespace_is_not_a_loss",
+        "passed": true,
+        "why": "whitespace folds away under the frozen projection and must not register"
+      },
+      {
+        "detail": {
+          "blocking_regions": 2,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 2,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 2,
+          "modeled_claims_unverified": 2,
+          "unclassified": 0
+        },
+        "kind": "adversarial",
+        "name": "adversarial_structural_attribute_is_seen_not_ignored",
+        "passed": true,
+        "why": "colspan changes which header a cell belongs to. INC-V2-010 records the old policy calling it presentation; it must not be IGNORED here."
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 1,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": true,
+          "modeled_claims": 1,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "positive",
+        "name": "deletion_is_seen_on_the_side_it_happened",
+        "passed": true,
+        "why": "a deleted region has no position in the newer revision. Scoring only the newer side would blind this protocol to whole blocks vanishing."
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "UNCLASSIFIED_CHANGED_REGION": 1
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 0,
+          "modeled_claims_unverified": 0,
+          "unclassified": 1
+        },
+        "kind": "reachability",
+        "name": "unclassified_is_reachable",
+        "passed": true,
+        "why": "the hard-failure state must be producible, or the gate that forbids it passes by construction. No natural fixture reached it; the scanner's own parse-failure span is the route, and it is exercised directly rather than claimed."
+      }
+    ],
+    "failed": [],
+    "passed": 12,
+    "total": 12
+  },
+  "ended_at": "2026-08-23T02:06:07.728581+00:00",
+  "estimated_cost_usd": 0.0,
+  "family_quota": {
+    "encyclopedia_wikipedia": 70,
+    "git_docs": 120,
+    "regulation_ecfr": 100,
+    "sec_edgar": 30
+  },
+  "frame": {
+    "candidates": 8,
+    "digest": "sha256:d8bcae4100f372ba1208926355867118bdbfa484d33ea89b2055af004effbd30",
+    "order": "ascending sha256 of the lineage id, fixed before any payload was read",
+    "source": "research/tavonel_eval_v2/artifacts/development/vbc2_lineages.json",
+    "spent_excluded": [
+      "git:backstage/backstage:docs/.well-known/skills/mui-to-bui-migration/SKILL.md",
+      "git:denoland/docs:runtime/desktop/comparison.md",
+      "wikipedia:en:Reykjanesbær"
+    ]
+  },
+  "gates": {
+    "G_SFH1_COHORT_FLOOR": false,
+    "G_SFH1_CONTROLS_PASS": true,
+    "G_SFH1_FAMILIES": false,
+    "G_SFH1_LOCALLY_COMPLETE_CLEAN": true,
+    "G_SFH1_NO_CONSTRUCT_REMOVED": true,
+    "G_SFH1_NO_GPU": true,
+    "G_SFH1_NO_SILENT_DROP": true,
+    "G_SFH1_NO_UNCLASSIFIED": true,
+    "G_SFH1_UNRESOLVED_FAIL_CLOSED": true
+  },
+  "gpu_seconds": 0,
+  "grammar": {
+    "frozen_policy_digest": "sha256:7dfa3dac52cf9a06cefc9e9eec4482aab5a15884dff6143a88f2d603df586f12",
+    "instrument": "research/tavonel_eval_v2/canonicalization/changed_regions.py",
+    "instrument_sha256": "sha256:f67345b4b47ff9b131979e5a04cd776716214a1de4bb029b92b15091dbb55b8b",
+    "policy_digest": "sha256:7dfa3dac52cf9a06cefc9e9eec4482aab5a15884dff6143a88f2d603df586f12",
+    "policy_id": "MARKUP_SEMANTICS_V1",
+    "policy_version": 1
+  },
+  "history_bounds": {
+    "acquisition_cutoff": "2026-08-23T00:00:00Z",
+    "basis": "API availability, compute and reproducibility",
+    "explicitly_not_basis": "observed classification outcome",
+    "horizon_days": 1460,
+    "inherited_from": "VALUE_BEARING_COHORT_V2",
+    "max_revisions_inspected_per_lineage": 12
+  },
+  "http": {
+    "api.github.com": {
+      "errors": 0,
+      "limit": 8,
+      "min_interval": 0.05,
+      "requests": 3,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "en.wikipedia.org": {
+      "errors": 0,
+      "limit": 6,
+      "min_interval": 0.05,
+      "requests": 3,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "www.ecfr.gov": {
+      "errors": 0,
+      "limit": 4,
+      "min_interval": 0.2,
+      "requests": 2,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    }
+  },
+  "lineages_considered": 8,
+  "pairs_path": "research/tavonel_eval_v2/artifacts/development/sfh1/sfh1_pairs.json",
+  "pairs_sha256": "sha256:64b621eed252d100b107335908715933b98710d809db80e767fb61b1af04d252",
+  "protocol": "research/tavonel_eval_v2/protocols/SOURCE_FAITHFULNESS_HELDOUT_V1.yaml",
+  "protocol_sha256": "sha256:34bead18593ac8b97b6a587c0284e5e55450f30481fc3821a1297a5a9fe2e124",
+  "provenance": {
+    "generated_at": "2026-08-23T02:06:07.740909+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/SOURCE_FAITHFULNESS_HELDOUT_V1.yaml",
+    "protocol_sha256": "sha256:34bead18593ac8b97b6a587c0284e5e55450f30481fc3821a1297a5a9fe2e124",
+    "receipt_stem": "sfh1-source-faithfulness",
+    "run_id": "20260823T020607Z-4d87a644df4d",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/run_sfh1.py",
+    "tool_sha256": "sha256:2a61e557034b5feeea8b42917304169a2351a9501e60e306f9b36fd521c1d11a"
+  },
+  "receipt_sha256": "sha256:565a9792077facc9cf7c40dac13fdf0e9360e6dac2fed38245e0c00dcca8899d",
+  "rejected_by_code": {
+    "TOO_FEW_REVISIONS": 5
+  },
+  "result_digest": "sha256:986d75ca7c5f88a983503180056da2242821b49f4aa3be935badbbf2c731a743",
+  "schema": "tavonel.v2.source_faithfulness_heldout.v1",
+  "split": "held_out",
+  "started_at": "2026-08-23T02:06:03.015289+00:00",
+  "summary": {
+    "by_state": {
+      "IGNORED_BY_PREDECLARED_POLICY": 439,
+      "MODELED": 129,
+      "UNCLASSIFIED_CHANGED_REGION": 0,
+      "UNRESOLVED_SOURCE_FACT": 19
+    },
+    "families": [
+      "encyclopedia_wikipedia"
+    ],
+    "modeled_claims": 129,
+    "modeled_claims_unverified": 70,
+    "modeled_claims_verified": 59,
+    "pairs_carrying_unresolved": 2,
+    "pairs_carrying_unresolved_and_refused": 2,
+    "pairs_scored": 3,
+    "pairs_where_compiled_state_did_not_move": 1,
+    "pairs_with_a_silent_drop": 0,
+    "regions_total": 587,
+    "scopes_declared_complete": 0,
+    "scopes_examined": 3,
+    "silent_drop_detail": [],
+    "silent_source_drops": 0,
+    "unclassified_changed_regions": 0,
+    "unresolved_inside_a_complete_scope": 0,
+    "unverified_by_reason": {
+      "FACET_NOT_REPRESENTABLE_IN_COMPILED_STATE": 70
+    }
+  },
+  "verdict": "FAIL",
+  "wall_seconds": 4.7
+}

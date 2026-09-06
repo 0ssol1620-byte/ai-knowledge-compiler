@@ -1,0 +1,50 @@
+{
+  "chain_status": "ABORTED_PRE_RESULT_INSTRUMENT_CRASH",
+  "corpus_status": "ACQUIRED_AND_FROZEN_BUT_UNSCORED",
+  "crash": "KeyError: 'effective'",
+  "digest_note": "the first digest belongs to the abandoned V2R3 chain and its rung 4 receipt keeps it. The second becomes eligible only under V2R3R1's NEW rung 4. Neither history is overwritten.",
+  "exact_carry_forward_to": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3R1",
+  "non_disclosure_attestation": {
+    "receipt": "receipts\\identity-change-migration-closure-v2r3-non-disclosure--20260825T204825Z-9a9095df6202.json",
+    "receipt_file_sha256": "sha256:3a686499abf0c70ea10d5de9e44c8bd9860b6cf9f0f974bc3dca0f060f4377f4"
+  },
+  "old_chain_reexecution_permitted": false,
+  "old_frozen_scorer_sha256": "sha256:2b392c8fd63439493f620e1314ab7fc140ceda866d7c417b917bd50bb7fe138d",
+  "outcome_disclosure": "NONE_ESTABLISHED",
+  "production_verdict": "NONE",
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3",
+  "provenance": {
+    "generated_at": "2026-08-25T20:48:25.813240+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "identity-change-migration-closure-v2r3-chain-disposition",
+    "run_id": "20260825T204825Z-620d496e43b9",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/v2r3_chain_disposition.py",
+    "tool_sha256": "sha256:3fd7f059fd6bc293352e7740b6eee45f69c8d9f1dbfd923a3729a1ecf0470b66"
+  },
+  "raw_scientific_verdict": "NONE",
+  "receipt_sha256": "sha256:118430a229aea21392c1402a2909dfbaa7f6847c8a3a79548afcdc793c6f92d3",
+  "repaired_scorer_sha256": "sha256:f5b8de50019ef4efe6a83ddeb295178c35848f78c94daabef0669fe044eb1e0d",
+  "reseal_forbidden": {
+    "receipts_preserved": [
+      "identity-change-migration-closure-v2r3-acquisition-frame-freeze--20260825T173240Z-2ddcbbfc3c8d.json",
+      "identity-change-migration-closure-v2r3-exclusion-freeze--20260825T180316Z-38ee80b8cb07.json",
+      "identity-change-migration-closure-v2r3-frame-attestation--20260825T173240Z-8d8c7cbeb23e.json",
+      "identity-change-migration-closure-v2r3-non-disclosure--20260825T204825Z-9a9095df6202.json",
+      "identity-change-migration-closure-v2r3-protocol-attestation--20260825T173258Z-5954c7c33e27.json",
+      "identity-change-migration-closure-v2r3-protocol-freeze--20260825T173257Z-170b873cf8c2.json",
+      "identity-change-migration-closure-v2r3-scorer-freeze--20260825T180251Z-bb65b8985c08.json",
+      "identity-change-migration-closure-v2r3-universe--20260825T180058Z-914589827af0.json",
+      "identity-change-migration-closure-v2r3-universe-attestation--20260825T180058Z-82b34786f311.json"
+    ],
+    "rule": "the frozen V2R3 protocol says there is no amend path and no force flag after rung 4. The scorer digest changed, so the old chain is permanently non-executable.",
+    "supersede_scorer_not_used": "its own contract states the scorer CODE is unchanged and only the rung-3 link moves. Here the code did change, so using it would write a receipt asserting something false about the very distinction it exists to preserve."
+  },
+  "result_receipt_exists": false,
+  "schema": "tavonel.v2.identity_change_migration_closure.v2r3_chain_disposition.v1",
+  "scorer_changed_after_rung4": true,
+  "successor_reason": "PRE_RESULT_INSTRUMENT_RUNTIME_REPAIR"
+}

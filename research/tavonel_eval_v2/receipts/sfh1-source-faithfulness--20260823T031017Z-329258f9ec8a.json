@@ -1,0 +1,1865 @@
+{
+  "by_family": {
+    "encyclopedia_wikipedia": 70,
+    "git_docs": 120,
+    "regulation_ecfr": 100,
+    "sec_edgar": 20
+  },
+  "cache": {
+    "extractor_digest": "sha256:148e664296622651496dacabc5c14a99ef1ab9a6c5f1c66a7c956860fb957e9c",
+    "is_evidence": false,
+    "note": "a cache accelerates a run and proves nothing about it. Every hit is verified against the payload hash it is filed under, and deleting this directory changes run time, not results.",
+    "payload_hits": 2315,
+    "payload_misses": 1,
+    "rejected_entries": 0,
+    "state_hits": 0,
+    "state_misses": 0
+  },
+  "controls": {
+    "all_passed": true,
+    "controls": [
+      {
+        "detail": {
+          "blocking_regions": 2,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 2,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 2,
+          "modeled_claims_unverified": 2,
+          "unclassified": 0
+        },
+        "kind": "burned_positive",
+        "name": "burned_reference_target_only",
+        "passed": true,
+        "why": "INC-V2-006 on a fixture. Only the link target moves; the compiled state cannot carry it and must not be reported as clean."
+      },
+      {
+        "detail": {
+          "blocking_regions": 2,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 0,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 2
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 0,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "burned_positive",
+        "name": "burned_short_block_dropped",
+        "passed": true,
+        "why": "the canonicaliser discards blocks below its minimum text length. The source changed and no unit exists to carry it."
+      },
+      {
+        "detail": {
+          "blocking_regions": 2,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 2,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 2,
+          "modeled_claims_unverified": 2,
+          "unclassified": 0
+        },
+        "kind": "burned_positive",
+        "name": "burned_html_href_only",
+        "passed": true,
+        "why": "the same loss in the markup grammar, where the facet map is what catches it"
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 2,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": true,
+          "modeled_claims": 2,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "positive",
+        "name": "positive_prose_value_change_is_verified",
+        "passed": true,
+        "why": "a number inside prose does reach the compiled state and must verify"
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 4,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": true,
+          "modeled_claims": 4,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "positive",
+        "name": "positive_heading_change_is_verified",
+        "passed": true,
+        "why": "headings are one of the four things a compiled artifact carries"
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 2,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": true,
+          "modeled_claims": 2,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "positive",
+        "name": "positive_html_text_change_is_verified",
+        "passed": true,
+        "why": "character data traceable into canonical text verifies in the markup grammar too"
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 6,
+            "MODELED": 0,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 0,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "negative",
+        "name": "negative_html_comment_change_is_ignored",
+        "passed": true,
+        "why": "an editorial comment is declared non-semantic by the frozen policy"
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 2,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 2,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "adversarial",
+        "name": "adversarial_emphasis_markers_are_not_a_loss",
+        "passed": true,
+        "why": "an instrument that scores punctuation as a lost fact produces a large alarming number that means nothing"
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 1,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 1,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "adversarial",
+        "name": "adversarial_trailing_whitespace_is_not_a_loss",
+        "passed": true,
+        "why": "whitespace folds away under the frozen projection and must not register"
+      },
+      {
+        "detail": {
+          "blocking_regions": 2,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 2,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 2,
+          "modeled_claims_unverified": 2,
+          "unclassified": 0
+        },
+        "kind": "adversarial",
+        "name": "adversarial_structural_attribute_is_seen_not_ignored",
+        "passed": true,
+        "why": "colspan changes which header a cell belongs to. INC-V2-010 records the old policy calling it presentation; it must not be IGNORED here."
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "IGNORED_BY_PREDECLARED_POLICY": 0,
+            "MODELED": 1,
+            "UNCLASSIFIED_CHANGED_REGION": 0,
+            "UNRESOLVED_SOURCE_FACT": 0
+          },
+          "compiled_state_changed": true,
+          "modeled_claims": 1,
+          "modeled_claims_unverified": 0,
+          "unclassified": 0
+        },
+        "kind": "positive",
+        "name": "deletion_is_seen_on_the_side_it_happened",
+        "passed": true,
+        "why": "a deleted region has no position in the newer revision. Scoring only the newer side would blind this protocol to whole blocks vanishing."
+      },
+      {
+        "detail": {
+          "blocking_regions": 0,
+          "by_state": {
+            "UNCLASSIFIED_CHANGED_REGION": 1
+          },
+          "compiled_state_changed": false,
+          "modeled_claims": 0,
+          "modeled_claims_unverified": 0,
+          "unclassified": 1
+        },
+        "kind": "reachability",
+        "name": "unclassified_is_reachable",
+        "passed": true,
+        "why": "the hard-failure state must be producible, or the gate that forbids it passes by construction. No natural fixture reached it; the scanner's own parse-failure span is the route, and it is exercised directly rather than claimed."
+      }
+    ],
+    "failed": [],
+    "passed": 12,
+    "total": 12
+  },
+  "ended_at": "2026-08-23T03:10:17.609656+00:00",
+  "estimated_cost_usd": 0.0,
+  "family_quota": {
+    "encyclopedia_wikipedia": 70,
+    "git_docs": 120,
+    "regulation_ecfr": 100,
+    "sec_edgar": 30
+  },
+  "frame": {
+    "candidates": 2268,
+    "digest": "sha256:4c7da3a7b558c20d3e5ec70d0d2e5defbeecea89e058badb2760cb44188b806c",
+    "order": "ascending sha256 of the lineage id, fixed before any payload was read",
+    "source": "research/tavonel_eval_v2/artifacts/development/vbc2_lineages.json",
+    "spent_excluded": [
+      "git:backstage/backstage:docs/.well-known/skills/mui-to-bui-migration/SKILL.md",
+      "git:denoland/docs:runtime/desktop/comparison.md",
+      "wikipedia:en:Reykjanesbær"
+    ]
+  },
+  "gate_power": {
+    "scopes_declared_complete": 601,
+    "silent_drop_gate_exercised": true,
+    "why_it_matters": "G_SFH1_NO_SILENT_DROP compares scopes the run called complete against regions that should have blocked them. With no complete scope it passes vacuously and establishes nothing."
+  },
+  "gates": {
+    "G_SFH1_COHORT_FLOOR": true,
+    "G_SFH1_CONTROLS_PASS": true,
+    "G_SFH1_FAMILIES": true,
+    "G_SFH1_LOCALLY_COMPLETE_CLEAN": false,
+    "G_SFH1_NO_CONSTRUCT_REMOVED": true,
+    "G_SFH1_NO_GPU": true,
+    "G_SFH1_NO_SILENT_DROP": false,
+    "G_SFH1_NO_UNCLASSIFIED": true,
+    "G_SFH1_UNRESOLVED_FAIL_CLOSED": false
+  },
+  "gpu_seconds": 0,
+  "grammar": {
+    "frozen_policy_digest": "sha256:7dfa3dac52cf9a06cefc9e9eec4482aab5a15884dff6143a88f2d603df586f12",
+    "instrument": "research/tavonel_eval_v2/canonicalization/changed_regions.py",
+    "instrument_sha256": "sha256:148e664296622651496dacabc5c14a99ef1ab9a6c5f1c66a7c956860fb957e9c",
+    "policy_digest": "sha256:7dfa3dac52cf9a06cefc9e9eec4482aab5a15884dff6143a88f2d603df586f12",
+    "policy_id": "MARKUP_SEMANTICS_V1",
+    "policy_version": 1
+  },
+  "history_bounds": {
+    "acquisition_cutoff": "2026-08-23T00:00:00Z",
+    "basis": "API availability, compute and reproducibility",
+    "explicitly_not_basis": "observed classification outcome",
+    "horizon_days": 1460,
+    "inherited_from": "VALUE_BEARING_COHORT_V2",
+    "max_revisions_inspected_per_lineage": 12
+  },
+  "http": {
+    "api.github.com": {
+      "errors": 0,
+      "limit": 8,
+      "min_interval": 0.05,
+      "requests": 913,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "data.sec.gov": {
+      "errors": 0,
+      "limit": 4,
+      "min_interval": 0.12,
+      "requests": 128,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "en.wikipedia.org": {
+      "errors": 1,
+      "limit": 6,
+      "min_interval": 0.05,
+      "requests": 362,
+      "retry_after_seconds": 3063.0,
+      "throttles": 63
+    },
+    "raw.githubusercontent.com": {
+      "errors": 6,
+      "limit": 12,
+      "min_interval": 0.05,
+      "requests": 6,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "www.ecfr.gov": {
+      "errors": 1,
+      "limit": 4,
+      "min_interval": 0.2,
+      "requests": 932,
+      "retry_after_seconds": 0.0,
+      "throttles": 3
+    }
+  },
+  "lineages_considered": 2268,
+  "pairs_path": "research/tavonel_eval_v2/artifacts/development/sfh1/sfh1_pairs.json",
+  "pairs_sha256": "sha256:ac23ab94c353d4d8f64e7907ffbb4d1e4a881064e3df0331dc1e3ec9cbf875f1",
+  "payload_bound": {
+    "basis": "compute: the span scanner is superlinear in payload size",
+    "explicitly_not_basis": "observed classification outcome",
+    "max_payload_bytes": 2000000
+  },
+  "protocol": "research/tavonel_eval_v2/protocols/SOURCE_FAITHFULNESS_HELDOUT_V1.yaml",
+  "protocol_sha256": "sha256:e946298b9d8a1ee076caf0b2344d4e09a45eb7fb410ea07c1657ad2edad1a2a8",
+  "provenance": {
+    "generated_at": "2026-08-23T03:10:17.729191+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/SOURCE_FAITHFULNESS_HELDOUT_V1.yaml",
+    "protocol_sha256": "sha256:e946298b9d8a1ee076caf0b2344d4e09a45eb7fb410ea07c1657ad2edad1a2a8",
+    "receipt_stem": "sfh1-source-faithfulness",
+    "run_id": "20260823T031017Z-329258f9ec8a",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/run_sfh1.py",
+    "tool_sha256": "sha256:137588a0091d9768b20f5381aeb9f0a737c5a26c5411d0ec5a5e60f3c3e09880"
+  },
+  "receipt_sha256": "sha256:4704fd6b1cafb844128c38e84dcbecf5054bf687d301c6fe78065797a35275a4",
+  "rejected_by_code": {
+    "BEYOND_FAMILY_QUOTA": 792,
+    "CANONICALISATION_EMPTY": 9,
+    "PAYLOAD_TOO_LARGE_TO_CLASSIFY": 44,
+    "PAYLOAD_UNAVAILABLE": 6,
+    "TOO_FEW_REVISIONS": 1107
+  },
+  "result_digest": "sha256:6003bfcf5a7b2dd43827f1243797146b4aeea54f371c11e12e892c0f76a69148",
+  "schema": "tavonel.v2.source_faithfulness_heldout.v1",
+  "split": "held_out",
+  "started_at": "2026-08-23T02:41:25.265001+00:00",
+  "summary": {
+    "by_state": {
+      "IGNORED_BY_PREDECLARED_POLICY": 97560,
+      "MODELED": 121682,
+      "UNCLASSIFIED_CHANGED_REGION": 0,
+      "UNRESOLVED_SOURCE_FACT": 153764
+    },
+    "families": [
+      "encyclopedia_wikipedia",
+      "git_docs",
+      "regulation_ecfr",
+      "sec_edgar"
+    ],
+    "modeled_claims": 121682,
+    "modeled_claims_unverified": 63196,
+    "modeled_claims_verified": 58486,
+    "pairs_carrying_unresolved": 184,
+    "pairs_carrying_unresolved_and_refused": 176,
+    "pairs_scored": 310,
+    "pairs_where_compiled_state_did_not_move": 60,
+    "pairs_with_a_silent_drop": 30,
+    "regions_total": 373006,
+    "scopes_declared_complete": 601,
+    "scopes_examined": 1010,
+    "silent_drop_detail": [
+      {
+        "family": "git_docs",
+        "lineage_id": "git:grafana/mimir:docs/sources/helm-charts/mimir-distributed/release-notes/v5.2.md",
+        "scopes": [
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "Grafana Mimir Helm chart version 5.2 release notes",
+            "reasons": [],
+            "region": [
+              752,
+              1999
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "Grafana Mimir Helm chart version 5.2 release notes/Important changes",
+            "reasons": [],
+            "region": [
+              752,
+              1999
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "Grafana Mimir Helm chart version 5.2 release notes/Features and enhancements",
+            "reasons": [],
+            "region": [
+              752,
+              1999
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "Grafana Mimir Helm chart version 5.2 release notes/Bug fixes/5.2.1",
+            "reasons": [],
+            "region": [
+              752,
+              1999
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          }
+        ]
+      },
+      {
+        "family": "git_docs",
+        "lineage_id": "git:pypa/pip:docs/html/ux-research-design/contribute.md",
+        "scopes": [
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "How to Contribute/Participate in UX Research",
+            "reasons": [],
+            "region": [
+              538,
+              1281
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "How to Contribute/Report and Work on UX Issues",
+            "reasons": [],
+            "region": [
+              538,
+              1281
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          }
+        ]
+      },
+      {
+        "family": "git_docs",
+        "lineage_id": "git:backstage/backstage:docs/.release-notes-template.md",
+        "scopes": [
+          {
+            "blocking_in_scope": 3,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "lead",
+            "reasons": [],
+            "region": [
+              71,
+              1934
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 3,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Security Fixes",
+            "reasons": [],
+            "region": [
+              71,
+              1934
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 3,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Upgrade path",
+            "reasons": [],
+            "region": [
+              71,
+              1934
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 3,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Links and References",
+            "reasons": [],
+            "region": [
+              71,
+              1934
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          }
+        ]
+      },
+      {
+        "family": "git_docs",
+        "lineage_id": "git:crossplane/docs:content/master/guides/pods.md",
+        "scopes": [
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "lead",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Crossplane pod/Init container",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Crossplane pod/Core container",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Crossplane pod/Core container/Reconcile loop",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Crossplane pod/Core container/Reconcile loop/Enable real time Compositions",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Crossplane pod/Core container/Reconcile loop/Reconcile retry rate",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Crossplane pod/Core container/Reconcile loop/Number of reconcilers",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "RBAC manager pod",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "RBAC manager pod/Disable the RBAC manager",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "RBAC manager pod/RBAC init container",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "RBAC manager pod/RBAC manager container",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "RBAC manager pod/RBAC manager container/Crossplane ClusterRoles",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "RBAC manager pod/RBAC manager container/Crossplane ClusterRoles/crossplane-admin",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "RBAC manager pod/RBAC manager container/Crossplane ClusterRoles/crossplane-edit",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "RBAC manager pod/RBAC manager container/Crossplane ClusterRoles/crossplane-view",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Leader election",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Change pod settings",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Change pod settings/Edit the deployment",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Change pod settings/Use environmental variables",
+            "reasons": [],
+            "region": [
+              694,
+              13407
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          }
+        ]
+      },
+      {
+        "family": "git_docs",
+        "lineage_id": "git:vectordotdev/vector:website/content/en/blog/highlights-february-2025.md",
+        "scopes": [
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Features",
+            "reasons": [],
+            "region": [
+              2352,
+              2517
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Features/Debugging Guide",
+            "reasons": [],
+            "region": [
+              2352,
+              2517
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 2,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Features/IDE Support",
+            "reasons": [],
+            "region": [
+              2352,
+              2517
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          }
+        ]
+      },
+      {
+        "family": "git_docs",
+        "lineage_id": "git:pola-rs/polars:docs/source/user-guide/gpu-support.md",
+        "scopes": [
+          {
+            "blocking_in_scope": 24,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "GPU Support [Open Beta]",
+            "reasons": [],
+            "region": [
+              306,
+              8651
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 24,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "GPU Support [Open Beta]/System Requirements",
+            "reasons": [],
+            "region": [
+              306,
+              8651
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 24,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "GPU Support [Open Beta]/Installation",
+            "reasons": [],
+            "region": [
+              306,
+              8651
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 24,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "GPU Support [Open Beta]/Usage",
+            "reasons": [],
+            "region": [
+              306,
+              8651
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 24,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "GPU Support [Open Beta]/Usage/GPUEngines and multiple GPUs",
+            "reasons": [],
+            "region": [
+              306,
+              8651
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 24,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "GPU Support [Open Beta]/How It Works",
+            "reasons": [],
+            "region": [
+              306,
+              8651
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 24,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "GPU Support [Open Beta]/How It Works/CPU-GPU Interoperability",
+            "reasons": [],
+            "region": [
+              306,
+              8651
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 24,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "GPU Support [Open Beta]/What's Supported on the GPU?",
+            "reasons": [],
+            "region": [
+              306,
+              8651
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 24,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "GPU Support [Open Beta]/What's Supported on the GPU?/Supported",
+            "reasons": [],
+            "region": [
+              306,
+              8651
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 24,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "GPU Support [Open Beta]/What's Supported on the GPU?/Not Supported",
+            "reasons": [],
+            "region": [
+              306,
+              8651
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 24,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "GPU Support [Open Beta]/What's Supported on the GPU?/Did my query use the GPU?",
+            "reasons": [],
+            "region": [
+              306,
+              8651
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 24,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "GPU Support [Open Beta]/Testing",
+            "reasons": [],
+            "region": [
+              306,
+              8651
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 24,
+            "blocking_states": [
+              "MODELED",
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED",
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "GPU Support [Open Beta]/When Should I Use a GPU?",
+            "reasons": [],
+            "region": [
+              306,
+              8651
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          }
+        ]
+      },
+      {
+        "family": "git_docs",
+        "lineage_id": "git:clickhouse/clickhouse-docs:docs/_snippets/clickpipes/bigquery/_intro.md",
+        "scopes": [
+          {
+            "blocking_in_scope": 4,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "lead",
+            "reasons": [],
+            "region": [
+              937,
+              1011
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          }
+        ]
+      },
+      {
+        "family": "git_docs",
+        "lineage_id": "git:duckdb/duckdb-web:docs/0.10/api/cli/overview.md",
+        "scopes": [
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Installation",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Getting Started",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Usage/Options",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Usage/In-Memory vs. Persistent Database",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Usage/Running SQL Statements in the CLI",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Usage/Exiting the CLI",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Usage/Dot Commands",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Usage/Dot Commands/Opening Database Files",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Usage/Dot Commands/Output Formats",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Usage/Dot Commands/Writing Results to a File",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Usage/Dot Commands/Reading SQL from a File",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Configuring the CLI",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Configuring the CLI/Setting a Custom Prompt",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Non-Interactive Usage",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Loading Extensions",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Reading from stdin and Writing to stdout",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Reading Environment Variables/Examples",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Reading Environment Variables/Restrictions for Reading Environment Variables",
+            "reasons": [],
+            "region": [
+              126,
+              10130
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Prepared Statements",
+            "reasons": [],
+            "region": [
+              126,
+              12146
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          }
+        ]
+      },
+      {
+        "family": "git_docs",
+        "lineage_id": "git:elastic/elasticsearch:docs/reference/aggregations/search-aggregations-bucket-multi-terms-aggregation.md",
+        "scopes": [
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "Multi Terms aggregation [search-aggregations-bucket-multi-terms-aggregation]",
+            "reasons": [],
+            "region": [
+              257,
+              11390
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "Multi Terms aggregation [search-aggregations-bucket-multi-terms-aggregation]/Aggregation Parameters [search-aggregations-bucket-multi-terms-aggregation-parameters]",
+            "reasons": [],
+            "region": [
+              257,
+              11390
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "Multi Terms aggregation [search-aggregations-bucket-multi-terms-aggregation]/Script [search-aggregations-bucket-multi-terms-aggregation-script]",
+            "reasons": [],
+            "region": [
+              257,
+              11390
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "Multi Terms aggregation [search-aggregations-bucket-multi-terms-aggregation]/Missing value [missingvalue3]",
+            "reasons": [],
+            "region": [
+              257,
+              11390
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "UNRESOLVED_SOURCE_FACT"
+            ],
+            "blocking_verifications": [
+              "NOT_A_MODELED_CLAIM"
+            ],
+            "path": "Multi Terms aggregation [search-aggregations-bucket-multi-terms-aggregation]/Sub aggregation and sorting examples [subaggregationandsortingexamples]",
+            "reasons": [],
+            "region": [
+              257,
+              11390
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          }
+        ]
+      },
+      {
+        "family": "git_docs",
+        "lineage_id": "git:thanos-io/thanos:docs/blog/welcome.md",
+        "scopes": [
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "lead",
+            "reasons": [],
+            "region": [
+              526,
+              626
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          }
+        ]
+      },
+      {
+        "family": "git_docs",
+        "lineage_id": "git:grafana/mimir:docs/sources/helm-charts/mimir-distributed/release-notes/v4.2.md",
+        "scopes": [
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Grafana Mimir Helm chart version 4.2 release notes",
+            "reasons": [],
+            "region": [
+              644,
+              1534
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 1,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Grafana Mimir Helm chart version 4.2 release notes/Important changes",
+            "reasons": [],
+            "region": [
+              644,
+              1534
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          }
+        ]
+      },
+      {
+        "family": "git_docs",
+        "lineage_id": "git:linkerd/website:linkerd.io/content/2-edge/features/ha.md",
+        "scopes": [
+          {
+            "blocking_in_scope": 5,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "lead",
+            "reasons": [],
+            "region": [
+              1436,
+              5890
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 5,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Enabling HA",
+            "reasons": [],
+            "region": [
+              1436,
+              5890
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 5,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Proxy injector failure policy",
+            "reasons": [],
+            "region": [
+              1436,
+              5890
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 5,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Pod anti-affinity rules",
+            "reasons": [],
+            "region": [
+              1436,
+              5890
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 5,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Scaling Prometheus",
+            "reasons": [],
+            "region": [
+              1436,
+              5890
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          },
+          {
+            "blocking_in_scope": 5,
+            "blocking_states": [
+              "MODELED"
+            ],
+            "blocking_verifications": [
+              "MODELED_CLAIM_NOT_VERIFIED"
+            ],
+            "path": "Working with Cluster AutoScaler",
+            "reasons": [],
+            "region": [
+              1436,
+              5890
+            ],
+            "silent_drop": true,
+            "status": "QUESTION_LOCAL_COVERAGE_COMPLETE"
+          }
+        ]
+      }
+    ],
+    "silent_source_drops": 209,
+    "unclassified_changed_regions": 0,
+    "unresolved_inside_a_complete_scope": 55,
+    "unverified_by_reason": {
+      "FACET_NOT_REPRESENTABLE_IN_COMPILED_STATE": 54053,
+      "PROJECTION_ABSENT_FROM_COMPILED_STATE": 7259,
+      "REGION_HAS_NO_ALPHANUMERIC_PROJECTION": 1884
+    }
+  },
+  "verdict": "FAIL",
+  "wall_seconds": 1732.3
+}

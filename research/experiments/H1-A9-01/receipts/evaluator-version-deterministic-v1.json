@@ -1,0 +1,88 @@
+{
+  "corrected": {
+    "checkout": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\private\\evaluator-checkouts\\omnidocbench-deterministic-v1",
+    "python_source_sha256": "efc1c951a673666c027188dd95b95188210bb80b3698b87c416653a03201f173"
+  },
+  "derived_from": {
+    "checkout": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\private\\evaluator-checkouts\\omnidocbench",
+    "python_source_sha256": "209d559c90866204e4db4f758c24bb23fa168f6884c40813cb47f58b0d55e48f",
+    "revision": "193627ae9e97d89188468ed1ee3b7a856ff76044"
+  },
+  "files_added": [],
+  "files_changed": [
+    "src/dataset/end2end_dataset.py"
+  ],
+  "files_removed": [],
+  "generated_at": "2026-08-18T11:47:41.708789+00:00",
+  "hash_covers": "every .py file under the checkout, sorted by path",
+  "hash_excludes": [
+    ".git",
+    "__pycache__",
+    "assets",
+    "demo_data",
+    "logs",
+    "result"
+  ],
+  "lines_added": 18,
+  "lines_removed": 1,
+  "receipt_sha256": "sha256:0878dbd17e2a2bd4439e3dbf92470cb4482503172a59ac2eff4a2c155a046c2b",
+  "schema": "tavonel.a9-evaluator-version.v1",
+  "unified_diff": {
+    "src/dataset/end2end_dataset.py": [
+      "--- frozen/src/dataset/end2end_dataset.py",
+      "+++ corrected/src/dataset/end2end_dataset.py",
+      "@@ -47,9 +47,18 @@",
+      "         gt_path = cfg_task['dataset']['ground_truth']['data_path']",
+      "         pred_folder = cfg_task['dataset']['prediction']['data_path']",
+      "         self.match_method = cfg_task['dataset'].get('match_method', 'quick_match')",
+      "+        # TAVONEL determinism correction. When set, no wall-clock value may",
+      "+        # influence which algorithm scores a page: the exact matcher always runs",
+      "+        # to completion. Both timeouts are neutralised together, because leaving",
+      "+        # either one live reintroduces load-dependent scoring.",
+      "+        self.deterministic_matching = bool(cfg_task['dataset'].get('deterministic_matching', False))",
+      "         self.enable_timeout_match_fallback = cfg_task['dataset'].get('enable_timeout_match_fallback', True)",
+      "         self.match_timeout_sec = cfg_task['dataset'].get('match_timeout_sec', 420)",
+      "         self.quick_match_truncated_timeout_sec = cfg_task['dataset'].get('quick_match_truncated_timeout_sec', 300)",
+      "+        if self.deterministic_matching:",
+      "+            self.enable_timeout_match_fallback = False",
+      "+            self.match_timeout_sec = None",
+      "+            self.quick_match_truncated_timeout_sec = None",
+      "         self.timeout_fallback_short_line_max_chars = cfg_task['dataset'].get('timeout_fallback_short_line_max_chars')",
+      "         self.timeout_fallback_target_chunk_chars = cfg_task['dataset'].get('timeout_fallback_target_chunk_chars')",
+      "         self.timeout_fallback_max_chunk_chars = cfg_task['dataset'].get('timeout_fallback_max_chunk_chars')",
+      "@@ -63,6 +72,7 @@",
+      "         )",
+      "         self._match_debug_lock = Lock()",
+      "         self.match_debug_info = {",
+      "+            'deterministic_matching': self.deterministic_matching,",
+      "             'workers': self.match_workers,",
+      "             'page_count': 0,",
+      "             'quick_match_truncated_timeout_sec': self.quick_match_truncated_timeout_sec,",
+      "@@ -2191,7 +2201,14 @@",
+      " ",
+      "         stage_start = time.monotonic()",
+      "         try:",
+      "-            match = func_timeout(self.match_timeout_sec, match_gt2pred, args=(gt_mix, pred_dataset_mix, 'text_all', img_name))",
+      "+            if self.deterministic_matching:",
+      "+                # No wall-clock wrapper at all. func_timeout runs the callable in",
+      "+                # a separate thread and interrupts it on a timer; even with a",
+      "+                # very large timeout that is a scheduling-dependent code path,",
+      "+                # so deterministic mode calls the matcher directly.",
+      "+                match = match_gt2pred(gt_mix, pred_dataset_mix, 'text_all', img_name)",
+      "+            else:",
+      "+                match = func_timeout(self.match_timeout_sec, match_gt2pred, args=(gt_mix, pred_dataset_mix, 'text_all', img_name))",
+      "         except FunctionTimedOut as e1:",
+      "             if self.enable_timeout_match_fallback:",
+      "                 print(f\"[match-timeout] {img_name}: quick_match exceeded {self.match_timeout_sec}s, fallback to chunked Hungarian\", flush=True)"
+    ]
+  },
+  "version": "omnidocbench-deterministic-v1",
+  "what_the_change_does": "adds an opt-in `deterministic_matching` dataset flag. When set, the exact matcher runs to completion on every page: the outer func_timeout wrapper is bypassed and the inner truncation deadline is disabled, so no wall-clock value can influence which algorithm scores a page.",
+  "what_the_change_does_not_do": [
+    "no metric definition is altered",
+    "no threshold is altered",
+    "no matching rule, cost function or normalisation is altered",
+    "no ground truth is altered",
+    "the default path is unchanged, so artifacts produced before the correction remain reproducible under the terms they were produced"
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "all_audit_predictions_confirmed": true,
+  "audit_predictions_confirmed": {
+    "fresh_dir_isolated": true,
+    "marker_sound_when_present": true,
+    "no_marker_on_partial": true,
+    "overwrite_confirmed": true,
+    "partial_state_confirmed": true
+  },
+  "corpus_v5_modified": false,
+  "decision_now_rests_on": "measurement: a re-run overwrites an existing complete pair, a kill leaves an incomplete directory, and writing into a fresh corpus directory provably does not touch the old one",
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-19T04:41:51.542664+00:00",
+  "method": "The three write calls at acquire_w6_v3.py:351-386 are transcribed into a local fixture with an injectable kill point. The real script is neither imported nor executed: it self-checks its own sha256 against the frozen manifest and would refuse to run, and it requires the network.",
+  "network_access": false,
+  "purpose": "Demonstrate, rather than infer, the recovery semantics of the acquisition write pattern, so the corpus-v6 decision rests on a measurement.",
+  "receipt_sha256": "sha256:504e381ae454fb1558655b59ac6b520fd900ac0528fa96a26c8aee939ea44e1e",
+  "recovery_decision": "B_FRESH_CORPUS_V6",
+  "results": {
+    "completion_marker": {
+      "caveat": "Sound as a marker only because metadata.json is written last. It is NOT written atomically either, so a kill during the metadata write itself would leave a truncated marker. A resume rule would have to parse it, not merely stat it.",
+      "complete_dir": {
+        "after_sha256": "sha256:559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
+        "before_sha256": "sha256:df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
+        "complete": true,
+        "files": [
+          "after.wikitext",
+          "before.wikitext",
+          "metadata.json"
+        ]
+      },
+      "marker_is_sound": true,
+      "partial_dir": {
+        "after_sha256": null,
+        "before_sha256": "sha256:df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
+        "complete": false,
+        "files": [
+          "before.wikitext"
+        ]
+      },
+      "question": "does metadata.json distinguish a complete pair from a partial one?"
+    },
+    "fresh_dir_isolation": {
+      "question": "does acquiring into a fresh corpus dir modify the old one?",
+      "supports_option_b": true,
+      "v5_before_sha256": "sha256:03ae23a65dc7aa2f864f93315df60d48959f8574a8bcc6e37591816f34ce1e4d",
+      "v5_unchanged": true
+    },
+    "overwrite": {
+      "audit_predicted": "YES",
+      "before_first": "sha256:1bbabbd74c0b89c11589c4655396dc64b8b5388aa672f52c05a4a6c977ba5e3c",
+      "before_second": "sha256:782ca797a862397c679fc82bf3331b74ca69992d028e89819004879fa8cd0069",
+      "confirms_audit": true,
+      "observed_overwrite": true,
+      "question": "does a second run overwrite an existing complete pair?"
+    },
+    "partial_after_kill": {
+      "all_incomplete": true,
+      "audit_predicted": "an incomplete directory with no metadata.json",
+      "metadata_absent_in_all": true,
+      "question": "what is on disk after a kill mid-pair?",
+      "rows": [
+        {
+          "after_sha256": null,
+          "before_sha256": "sha256:df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
+          "complete": false,
+          "error": "died after before.wikitext",
+          "files": [
+            "before.wikitext"
+          ],
+          "kill_after": "before"
+        },
+        {
+          "after_sha256": "sha256:559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd",
+          "before_sha256": "sha256:df7e70e5021544f4834bbee64a9e3789febc4be81470df629cad6ddb03320a5c",
+          "complete": false,
+          "error": "died after after.wikitext, before metadata.json",
+          "files": [
+            "after.wikitext",
+            "before.wikitext"
+          ],
+          "kill_after": "after"
+        }
+      ]
+    },
+    "truncation": {
+      "detectable_only_via_metadata_hash": true,
+      "full_sha256": "sha256:e9cda107c7b4db4ce5b0bee3ca574346a229bfeea83412ffc60ad42a74d2b7e8",
+      "metadata_still_present": true,
+      "note": "metadata.json records before_sha256/after_sha256, so a resume rule CAN detect truncation -- but only by re-hashing and comparing, which no existing code path does.",
+      "question": "is a truncated wikitext file distinguishable without a stored hash?",
+      "truncated_sha256": "sha256:af81629ce0be98133f4909d589e92dfd65f796d4dfb2f40d1b3f400d4fb1bd76"
+    }
+  },
+  "schema": "tavonel.w6-recovery-fixture.v1",
+  "still_required_before_network_run": [
+    "a frozen recovery protocol naming corpus-v6, the same 6,987-title manifest and the same cutoffs",
+    "confirmation that corpus-v5 is retained untouched as failed-run evidence"
+  ],
+  "transcription_risk": "If the transcription is wrong the fixture proves nothing. The pattern is quoted in the module docstring with its line range so the transcription is checkable by eye."
+}

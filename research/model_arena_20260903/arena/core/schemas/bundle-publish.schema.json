@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tavonel:arena:bundle-publish:v1",
+  "title": "TAVONEL arena bundle publication receipt",
+  "description": "ARENA_CONTRACT 11.5 D21. One record per model per campaign, written after the runtime bundle was built, uploaded and read back: it is the only place a canary may learn the bundle sha256 its bootstrap digest is derived from. Extension-open: the controller lane adds upload detail without a schema round-trip; the core keys stay required.",
+  "type": "object",
+  "additionalProperties": true,
+  "$defs": {
+    "sha256_value": {
+      "type": "string",
+      "description": "Either 'sha256:<hex>' (ARENA_CONTRACT section 2 file reference) or the bare hex the on-pod 'sha256sum -c' line uses. Both are unambiguous; neither is inferred from the other.",
+      "pattern": "^(?:sha256:)?[0-9a-f]{64}$"
+    }
+  },
+  "properties": {
+    "schema": { "const": "tavonel.arena.bundle-publish.v1" },
+    "campaign_id": { "type": "string", "minLength": 1 },
+    "model_key": {
+      "enum": [
+        "paddleocr_vl_1_6", "mineru_pipeline", "mineru_vlm", "deepseek_ocr2",
+        "ovisocr2", "unlimited_ocr", "infinity_parser2_pro",
+        "infinity_parser2_flash", "monkeyocrv2_b",
+        "olmocr2", "hpd_parsing", "glm_ocr", "opus5_subscription"
+      ]
+    },
+    "bundle_sha256": { "$ref": "#/$defs/sha256_value" },
+    "bundle_size_bytes": { "type": "integer", "minimum": 1 },
+    "bundle_file_count": { "type": "integer", "minimum": 1 },
+    "bundle_manifest_sha256": { "$ref": "#/$defs/sha256_value" },
+    "r2_bucket": { "type": "string", "minLength": 1 },
+    "r2_key": { "type": "string", "minLength": 1 },
+    "uploaded_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$"
+    }
+  },
+  "required": [
+    "bundle_file_count", "bundle_manifest_sha256", "bundle_sha256",
+    "bundle_size_bytes", "campaign_id", "model_key", "r2_bucket", "r2_key",
+    "schema", "uploaded_at"
+  ]
+}

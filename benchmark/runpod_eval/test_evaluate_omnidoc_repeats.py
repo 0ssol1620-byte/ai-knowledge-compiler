@@ -216,3 +216,4 @@ def test_frozen_source_manifest_schema_is_supported(tmp_path: Path) -> None:
 
     assert evidence["source_count"] == 1
     assert evidence["failure_count"] == 0
+

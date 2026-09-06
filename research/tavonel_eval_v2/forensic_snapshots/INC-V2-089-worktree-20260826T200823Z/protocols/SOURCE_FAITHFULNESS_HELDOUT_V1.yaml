@@ -1,0 +1,358 @@
+# SOURCE_FAITHFULNESS_HELDOUT_V1 — does a meaningful source fact ever vanish
+# without a trace during canonicalisation?
+#
+# Frozen before any held-out pair is acquired, classified or scored.
+#
+# This is not a coverage-percentage protocol and its endpoints are deliberately
+# not percentages. A coverage number can be raised by classifying more things as
+# irrelevant, which is the failure mode the whole programme exists to avoid. The
+# question here is narrower and answerable:
+#
+#     when a source region changes, does the system say what happened to it?
+#
+# Three outcomes are permitted, and only three. A change that produces none of
+# them is a hard failure, because "no state" is exactly what a silent drop looks
+# like from the inside.
+
+schema: tavonel.v2.protocol.source_faithfulness_heldout.v1
+protocol_id: SOURCE_FAITHFULNESS_HELDOUT_V1
+version: 1
+authored: 2026-08-23
+authorised_by: founder ruling 2026-08-23, PAPER CLOSURE PROGRAM workstream A
+supersedes: null
+
+split: held_out
+
+relates_to:
+  P0d_source_coverage:
+    rule: read-only, not re-scored, not retroactively FAILED
+    relation: >-
+      P0d asked the same question on development data with an earlier grammar and
+      answered it 26 of 26 SOURCE_COVERAGE_INCOMPLETE. This protocol asks it on
+      held-out revision pairs with MARKUP_SEMANTICS_V1, and it asks it about
+      *changed* regions rather than whole documents. Neither result restates the
+      other.
+  MARKUP_SEMANTICS_V1:
+    rule: consumed unchanged; the policy digest is recorded, not recomputed
+    relation: the declared grammar this protocol is measured against
+  SOURCE_LOCALITY_V2: {rule: read-only, eligible_Q1: 5, not_re_scored: true}
+  VALUE_BEARING_COHORT_V2:
+    rule: read-only, COMPLETE walk preserved, never re-run
+    relation: >-
+      its frozen lineage list is reused as this protocol's sampling frame. The
+      three lineages VBC2 admitted are excluded, because their canonical
+      documents were built during the VBC2 preflight.
+  STOP-V2-005:
+    relation: >-
+      the stopping record this workstream succeeds. No part of this protocol
+      revisits the exact-value model endpoint, and no GPU authorisation is
+      implied by it.
+
+boundaries:
+  ip_gate: {state: CLOSED}
+  gpu: {approved: false, ceiling_usd: 0.0}
+  model_calls: {approved: false, note: CPU only; this protocol never asks a model anything}
+  sealed_evidence: {rule: read-only}
+  docs_ip: {rule: not modified}
+  receipts: {rule: immutable, per INC-V2-005}
+  isolation: {rule: every artifact produced lives under research/tavonel_eval_v2/}
+
+# ---------------------------------------------------------------------------
+# 1. The declared grammar subset
+# ---------------------------------------------------------------------------
+#
+# Declaring the subset is the precondition for the whole measurement. Without
+# it, "the grammar did not classify this" is indistinguishable from "this is
+# outside what we ever claimed to support", and a protocol that cannot tell
+# those apart can be passed by narrowing what it claims.
+
+grammar:
+  policy: MARKUP_SEMANTICS_V1
+  resolver: canonicalization/markup_semantics.py
+  position_map: canonicalization/source_map_v2.py
+
+  supported:
+    markdown:
+      note: the constructs the frozen markdown scanner emits with positions
+      constructs:
+        - ATX and setext headings
+        - paragraphs and inline text runs
+        - emphasis, strong emphasis and inline code
+        - fenced and indented code blocks
+        - inline links, reference links and link definitions
+        - images
+        - pipe tables, including header rows
+        - ordered and unordered lists
+        - block quotes
+        - HTML comments
+        - YAML front matter delimiters
+        - shortcode and directive constructs of the form {{< >}} and {{% %}}
+    html_and_xml:
+      note: the constructs the frozen HTML/XML scanner emits with positions
+      constructs:
+        - start tags, end tags and self-closing tags
+        - attributes, including every entry in the policy attribute table
+        - attribute prefixes declared in the policy
+        - character data
+        - character references and named entity references
+        - comments and processing instructions
+
+  not_supported:
+    note: >-
+      declared here, in advance. A construct on this list that appears in a
+      changed region is UNRESOLVED_SOURCE_FACT and is refused. It is NOT removed
+      from the cohort and it is NOT reclassified as ignorable.
+    constructs:
+      - the behaviour of JavaScript referenced or inlined by the document
+      - the effect of CSS, external or inline, on interpretation
+      - the contents of an external resource an include or transclusion names
+      - binary and embedded resources (images, fonts, media) as data
+      - PDF, office and other non-markup source formats
+      - MediaWiki template expansion beyond what the rendered HTML carries
+      - anything whose meaning requires a document this protocol did not fetch
+
+# ---------------------------------------------------------------------------
+# 2. The classification contract
+# ---------------------------------------------------------------------------
+
+classification:
+  unit: >-
+    one changed source region: the intersection of a raw-text difference with
+    the frozen position map's total span partition. The partition is total, so a
+    region always lies inside exactly one declared construct.
+
+  states:
+    MODELED: >-
+      the region reached the compiled state, as canonical unit text or as a
+      declared source fact carrying a facet.
+    IGNORED_BY_PREDECLARED_POLICY: >-
+      the region is a construct the frozen policy declares non-semantic, with
+      the declaration and its argument recorded in the policy before this
+      measurement existed. The policy entry is cited by name in the row.
+    UNRESOLVED_SOURCE_FACT: >-
+      the region may carry meaning and the system cannot establish that it does
+      not. It is counted, surfaced, and fail-closed: it may never support a
+      CURRENT or source-faithful verdict.
+
+  exactly_one: >-
+    every changed region resolves to exactly one of the three. A region that
+    resolves to none is UNCLASSIFIED_CHANGED_REGION and is a hard failure of
+    this protocol, not a row in a table.
+
+  four_to_three:
+    note: >-
+      the frozen policy carries four states. UNMODELED_SOURCE_FACT — the grammar
+      did not classify this — is reported here as UNRESOLVED_SOURCE_FACT.
+    why: >-
+      the two already share fail-closed treatment in the frozen resolver
+      (BLOCKS_COMPLETENESS), and collapsing toward the fail-closed state is the
+      conservative direction. The underlying four-state value is preserved on
+      every row, so nothing is lost and the collapse is not a reclassification.
+    forbidden: >-
+      collapsing either of them toward IGNORED. That is the failure
+      source_spans.py names in its own docstring: a model that folds "we did not
+      look" into "we decided it does not matter" reports full coverage and has
+      merely stopped looking.
+
+# ---------------------------------------------------------------------------
+# 3. What counts as a silent drop
+# ---------------------------------------------------------------------------
+
+silent_drop:
+  compiled_state:
+    is: >-
+      exactly what the frozen compiler builds from the canonical document -
+      unit text, headings, explicit paths and document order, via
+      compiler/selective_build.py. Nothing else.
+    is_not: >-
+      the declared source facts this protocol's grammar extracts. Attributes,
+      reference targets and metadata are NOT in the compiled state. Counting
+      them as part of it would credit the system with modelling something it
+      does not store, and would turn this protocol into a description of its own
+      analysis layer.
+
+  two_independent_answers:
+    prediction: >-
+      the frozen grammar classifies each changed region without consulting the
+      compiled state, except for content constructs, where the frozen resolver
+      already performs its own traceability check.
+    observation: >-
+      the compiled state either carries the region's projection or does not.
+    finding: >-
+      where the two disagree, the row is MODELED_CLAIM_NOT_VERIFIED. This is
+      reported as a headline count and is deliberately NOT a gate: the goal of
+      this workstream is not to model every construct. It is to never lose one
+      quietly.
+
+  definition: >-
+    SILENT_SOURCE_DROP is a region that is either MODELED_CLAIM_NOT_VERIFIED or
+    UNRESOLVED_SOURCE_FACT, and that lies inside a scope this run declares
+    locally complete. The loss is then visible nowhere in the output: the source
+    changed, the compiled state did not carry the change, and the system said
+    the scope was complete anyway.
+
+  rationale: >-
+    a fact the system declines to model, and says so, is a limitation. The same
+    fact inside a scope reported as complete is a false statement about the
+    world. INC-V2-006 was the second kind.
+
+  not_a_silent_drop:
+    - a region classified IGNORED_BY_PREDECLARED_POLICY producing no compiled
+      state difference; that is the declaration working as declared
+    - a MODELED_CLAIM_NOT_VERIFIED region in a scope the run refuses; the loss
+      is declared, which is the whole requirement
+    - a region whose raw bytes changed but whose alphanumeric projection did
+      not; emphasis markers and whitespace are syntax residue under the frozen
+      folding and the policy already declares them non-semantic
+
+# ---------------------------------------------------------------------------
+# 4. Sampling. Frozen before acquisition.
+# ---------------------------------------------------------------------------
+
+sampling:
+  frame:
+    source: artifacts/development/vbc2_lineages.json
+    lineages: 2271
+    why_reused: >-
+      the frame was frozen before any history was read, is disjoint from P4i,
+      the VBC1 probe and the MODEL_ENDPOINT_V1 survivors, and no canonical
+      document was ever built from it. It is held out with respect to every
+      instrument this protocol measures.
+  excluded:
+    - the three lineages VBC2 admitted; their canonical documents were built
+      during the VBC2 preflight
+    - every lineage appearing in P0b, P0c, P0d, P2, P3b, P4b-P4i, the VBC1 probe
+      or SOURCE_LOCALITY_V2
+  order: >-
+    ascending sha256 of the lineage id, computed before any payload is read.
+    Not by yield, not by size, not by how easy a family is to fetch.
+  pair_predicate: >-
+    walking newest to oldest, the first adjacent revision pair whose raw payload
+    digests differ. Any raw difference qualifies; this protocol has no interest
+    in what changed, only in whether the system can say what happened to it.
+  history_bounds:
+    inherited_from: VALUE_BEARING_COHORT_V2
+    horizon_days: 1460
+    max_revisions_inspected_per_lineage: 12
+    acquisition_cutoff: "2026-08-23T00:00:00Z"
+    basis: API availability, compute and reproducibility
+    explicitly_not_basis: observed classification outcome
+    note: >-
+      inherited unchanged and for the same declared reasons. STOP-V2-005 forbids
+      refitting these bounds, and that prohibition binds here too even though a
+      different quantity is being measured.
+
+  payload_bound:
+    max_payload_bytes: 2000000
+    amended: 2026-08-23, before any held-out pair was scored
+    basis: >-
+      compute. The frozen span scanner is superlinear in payload size: 3.2 MB
+      takes 16 seconds and 4.6 MB takes 44, so an uncapped run stalls on a
+      handful of documents and never reaches the rest of the frame.
+    explicitly_not_basis: observed classification outcome
+    insensitivity: >-
+      payload sizes in this frame are bimodal. The 95th percentile is 0.49 MB
+      and the next populated band starts above 3 MB, so every bound between
+      1 MB and 3 MB excludes the same 4.2-4.6% of revisions. The value was not
+      tuned, and the distribution is published so a reader can check that.
+    reporting: >-
+      an excluded revision is counted under PAYLOAD_TOO_LARGE_TO_CLASSIFY and
+      appears in the result. It is never silently skipped, and the quota it
+      would have filled is not redistributed.
+
+cohort:
+  primary_target: 320
+  floor: 200
+  family_quota:
+    git_docs: 120
+    regulation_ecfr: 100
+    encyclopedia_wikipedia: 70
+    sec_edgar: 30
+  quota_basis: >-
+    grammar breadth, not yield. The four families exercise three distinct
+    scanners — markdown, MediaWiki-rendered HTML and eCFR XML — and SEC HTML is
+    the only long-form filing grammar in the frame. A family that yields zero is
+    reported as zero and its quota is not redistributed.
+  families_required: 2
+  families_desirable: 3
+
+# ---------------------------------------------------------------------------
+# 5. Gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_SFH1_CONTROLS_PASS:
+    bar: every frozen control fixture returns its expected classification
+    why: >-
+      a run in which the grammar happened to classify everything reads
+      identically to a run in which the residue check does not work. The
+      controls include a burned silent drop that the instrument must catch.
+  G_SFH1_PARTITION_TOTAL:
+    bar: the position map partitions every source document with no gap and no overlap
+    why: a gap in the partition is an unexamined region wearing no state at all
+  G_SFH1_NO_UNCLASSIFIED:
+    bar: unclassified changed regions == 0
+    primary: true
+  G_SFH1_NO_SILENT_DROP:
+    bar: silent source drops == 0
+    primary: true
+    bitable_because: >-
+      the witness decides local completeness from the grammar's four states
+      alone. It has no knowledge of whether a MODELED claim was verified against
+      the compiled state. A construct the policy calls MODELED that the compiler
+      does not store therefore passes the witness unnoticed, and this gate is
+      the only place that shows.
+  G_SFH1_UNRESOLVED_FAIL_CLOSED:
+    bar: >-
+      every pair carrying at least one UNRESOLVED_SOURCE_FACT region is refused
+      a source-faithful CURRENT verdict, with no exceptions
+    primary: true
+  G_SFH1_LOCALLY_COMPLETE_CLEAN:
+    bar: >-
+      relevant UNRESOLVED regions inside a scope this run declares locally
+      complete == 0
+    primary: true
+    why: >-
+      the witness is allowed to declare a scope locally complete. This gate is
+      the check that the declaration is not simply asserted.
+  G_SFH1_COHORT_FLOOR:
+    bar: scored pairs >= 200
+  G_SFH1_FAMILIES:
+    bar: families contributing at least one scored pair >= 2
+  G_SFH1_NO_CONSTRUCT_REMOVED:
+    bar: >-
+      the not_supported list and the policy digest are byte-identical to what
+      was frozen here before acquisition
+    why: >-
+      the cheapest way to pass this protocol is to notice which construct is
+      producing UNRESOLVED rows and declare it out of scope afterwards. The gate
+      makes that visible instead of possible.
+  G_SFH1_NO_GPU:
+    bar: gpu_seconds == 0 and spend == 0
+
+verdict_rule: >-
+  PASS requires every gate. A single unclassified region or a single silent drop
+  is a FAIL of the protocol, regardless of how small a share of the cohort it
+  is. Safety endpoints do not average.
+
+# ---------------------------------------------------------------------------
+# 6. Anti-fitting rules
+# ---------------------------------------------------------------------------
+
+anti_fitting:
+  - an unsupported construct discovered after acquisition is NOT removed from
+    the cohort. It remains UNRESOLVED_SOURCE_FACT and the pair is refused.
+  - the not_supported list is not extended after seeing a result.
+  - the policy is not edited to reclassify a construct that produced UNRESOLVED
+    rows. A policy change is a new policy id with its own digest and its own
+    protocol.
+  - the floor is not lowered and the quotas are not redistributed to reach it.
+  - a FAIL is reported as a FAIL. This protocol exists to find silent drops, and
+    finding one is the instrument working, not the instrument failing.
+
+execution:
+  compute: parallel map over pairs, one deterministic reducer, one evidence writer
+  reduction: >-
+    results are re-sorted into frozen sampling order before any gate is
+    evaluated. Completion order never reaches the verdict.
+  cost: CPU only. 0 GPU seconds, $0.

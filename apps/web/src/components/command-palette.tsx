@@ -122,19 +122,19 @@ const commandDefinitions = [
     },
   },
   {
-    href: "/benchmarks",
+    href: "/app/benchmarks",
     shortcut: "B",
     icon: Flask,
     keywords: "quality method results limitations 벤치마크 품질 방법 결과 한계",
     en: {
-      label: "Open benchmark methodology",
+      label: "Open internal benchmark operations",
       description:
-        "Inspect available methodology, evidence status, and limitations.",
+        "Inspect internal benchmark runs, evidence status, and limitations.",
       category: "Measure",
     },
     ko: {
-      label: "벤치마크 방법론 열기",
-      description: "공개 가능한 방법론, 근거 상태, 한계를 확인합니다.",
+      label: "내부 벤치마크 운영 열기",
+      description: "내부 벤치마크 실행, 근거 상태, 한계를 확인합니다.",
       category: "측정",
     },
   },

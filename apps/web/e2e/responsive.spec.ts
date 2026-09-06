@@ -1,5 +1,12 @@
 import { expect, test } from "@playwright/test";
 
+test.beforeEach(({}, testInfo) => {
+  test.skip(
+    testInfo.project.name === "mobile",
+    "This spec sets its own viewport matrix; mobile behavior is covered by browser-matrix and evidence projects.",
+  );
+});
+
 /**
  * §20 [확정] — the four responsive bands, asserted against the table.
  *

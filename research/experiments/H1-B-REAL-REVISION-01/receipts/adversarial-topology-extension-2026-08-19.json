@@ -1,0 +1,123 @@
+{
+  "all_cells_equivalent": false,
+  "cases_per_cell": 200,
+  "cells": {
+    "cross_document_dependency": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 200,
+        "equivalent_cases": 200,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated_artifacts": 0,
+        "genuinely_changed_artifacts": 600,
+        "max_target_depth": 0,
+        "planned_artifacts": 600
+      }
+    },
+    "deep_chain_64": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 200,
+        "equivalent_cases": 200,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated_artifacts": 0,
+        "genuinely_changed_artifacts": 12800,
+        "max_target_depth": 0,
+        "planned_artifacts": 12800
+      }
+    },
+    "diamond_conflicting_channels_semantic": {
+      "escape_examples": [
+        {
+          "cycles_detected": 0,
+          "equivalent": false,
+          "escaped": [
+            "artifact:diamond:structural"
+          ],
+          "false_invalidated": [],
+          "genuinely_changed": 3,
+          "max_target_depth": 0,
+          "planned": 2
+        },
+        {
+          "cycles_detected": 0,
+          "equivalent": false,
+          "escaped": [
+            "artifact:diamond:structural"
+          ],
+          "false_invalidated": [],
+          "genuinely_changed": 3,
+          "max_target_depth": 0,
+          "planned": 2
+        },
+        {
+          "cycles_detected": 0,
+          "equivalent": false,
+          "escaped": [
+            "artifact:diamond:structural"
+          ],
+          "false_invalidated": [],
+          "genuinely_changed": 3,
+          "max_target_depth": 0,
+          "planned": 2
+        },
+        {
+          "cycles_detected": 0,
+          "equivalent": false,
+          "escaped": [
+            "artifact:diamond:structural"
+          ],
+          "false_invalidated": [],
+          "genuinely_changed": 3,
+          "max_target_depth": 0,
+          "planned": 2
+        },
+        {
+          "cycles_detected": 0,
+          "equivalent": false,
+          "escaped": [
+            "artifact:diamond:structural"
+          ],
+          "false_invalidated": [],
+          "genuinely_changed": 3,
+          "max_target_depth": 0,
+          "planned": 2
+        }
+      ],
+      "totals": {
+        "cases": 200,
+        "equivalent_cases": 0,
+        "escape_artifacts": 200,
+        "escape_cases": 200,
+        "false_invalidated_artifacts": 0,
+        "genuinely_changed_artifacts": 600,
+        "max_target_depth": 0,
+        "planned_artifacts": 400
+      }
+    },
+    "diamond_conflicting_channels_structural": {
+      "escape_examples": [],
+      "totals": {
+        "cases": 200,
+        "equivalent_cases": 200,
+        "escape_artifacts": 0,
+        "escape_cases": 0,
+        "false_invalidated_artifacts": 0,
+        "genuinely_changed_artifacts": 400,
+        "max_target_depth": 0,
+        "planned_artifacts": 400
+      }
+    }
+  },
+  "evidence_class": "development controlled topology sweep; not final holdout",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T23:20:20.731693+00:00",
+  "primary_criterion": "zero stale escapes / exact full-oracle artifact equivalence",
+  "protocol_sha256": "sha256:d51462afce8482aa8a9a63869c62ee4b99c9aad1cd89531ac8026049b977b206",
+  "receipt_sha256": "sha256:b54ade164b7b2b834b53cc617c1808282cd1727d419169b76e6225fc423ea606",
+  "schema": "tavonel.family-b-adversarial-topology-extension.v1",
+  "script_sha256": "sha256:c3175aaca17e1b8bcd2fab86c115bff58414fb15eabb87c23595e0363dd3cef1",
+  "seed": 2026081907
+}

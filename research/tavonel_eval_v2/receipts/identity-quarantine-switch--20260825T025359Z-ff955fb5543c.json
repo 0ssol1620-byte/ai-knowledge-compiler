@@ -1,0 +1,64 @@
+{
+  "blocking": [],
+  "incident": "INC-V2-047",
+  "lower_rungs": [
+    {
+      "digest": "sha256:655fd3d85eebec5209a2489290b34a8ca9d6c4cff8f1ac39e8504e4447f1b101",
+      "document": "COMPAT_IDENTITY_UNCERTAINTY_QUARANTINE.md",
+      "rung": "1 compatibility contract",
+      "state": "PASS"
+    },
+    {
+      "receipt": "identity-quarantine-differential--20260825T022223Z-aeb7bfe3bbf9.json",
+      "run_id": null,
+      "rung": "2 shadow / differential",
+      "state": "PASS",
+      "verdict": "PASS"
+    },
+    {
+      "receipt": "identity-quarantine-canary--20260825T022426Z-0308c9c0ab39.json",
+      "run_id": null,
+      "rung": "4 canary",
+      "state": "PASS",
+      "verdict": "PASS"
+    }
+  ],
+  "observed_production_default": true,
+  "provenance": {
+    "generated_at": "2026-08-25T02:53:59.770517+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "identity-quarantine-switch",
+    "run_id": "20260825T025359Z-ff955fb5543c",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/switch_identity_quarantine.py",
+    "tool_sha256": "sha256:f35589e986ae9faee95761bc0dc05a8c6237cf772b570a8da0d0ff4f38550e52"
+  },
+  "quarantine_digest": "sha256:8d96f7fb8828ec7e1e15ee7b0f9bce1502d4f070fdf124263f6a1fa89d8afe3f",
+  "receipt_sha256": "sha256:52ceaf903735ce908f777b3f2f983a41f43bc436e6c26912348e2f6263cf2814",
+  "rung": 5,
+  "state": "SWITCHED",
+  "subject_digest": "sha256:05b6a7f7234370e4926b64bcdd2b74a5fd065b5ddc631854c8c90d9d72ed4e6b",
+  "suites_run_now": [
+    {
+      "state": "PASS",
+      "suite": "Protected Core consumers",
+      "summary": "993 passed, 68 skipped in 64.60s (0:01:04)",
+      "target": "tests/unit"
+    },
+    {
+      "state": "PASS",
+      "suite": "3 property battery",
+      "summary": "24 passed in 77.52s (0:01:17)",
+      "target": "research/tavonel_eval_v2/tests/test_identity_quarantine.py"
+    }
+  ],
+  "verdict": "PASS",
+  "what_this_does_not_claim": [
+    "not prospective certification -- the 514-pair universe is V1's and the nine cases were seen before the repair was written",
+    "two of the contract's four clauses have no members anywhere and selected_candidate is unreachable as wired (INC-V2-052); they ship inert and stay declared rather than being quietly deleted",
+    "IDENTITY_CHANGE_MIGRATION_CLOSURE_V1 remains FAIL, permanently, and is never repaired, rescored or reused as a positive denominator"
+  ]
+}

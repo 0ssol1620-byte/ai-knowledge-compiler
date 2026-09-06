@@ -1,0 +1,10 @@
+{
+  "is_evidence": false,
+  "note": "NOT EVIDENCE. A mutable convenience pointer to the most recent immutable receipt for this stem. It carries no finding. Cite the file it names, never this one.",
+  "points_to": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r4-preacquisition-gate--20260826T050451Z-55f0e4c41aff.json",
+  "points_to_file_sha256": "sha256:d562499d48efd5a4cf788bf38c103a039e0bab20542b23c7cfb068703fb5b812",
+  "run_id": "20260826T050451Z-55f0e4c41aff",
+  "schema": "tavonel.v2.receipt_pointer.v1",
+  "stem": "identity-change-migration-closure-v2r4-preacquisition-gate",
+  "updated_at": "2026-08-26T05:04:51.559949+00:00"
+}

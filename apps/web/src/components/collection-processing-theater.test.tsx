@@ -115,7 +115,7 @@ describe("CollectionProcessingTheater task evidence", () => {
 
     const retry = screen.getByRole("button", { name: "Retry processing" });
     expect(retry).toBeDisabled();
-    fireEvent.change(screen.getByLabelText("New approved hard cap"), {
+    fireEvent.change(screen.getByLabelText("New internal routing cap"), {
       target: { value: "49" },
     });
     expect(retry).toBeEnabled();

@@ -1,0 +1,85 @@
+schema: tavonel.v2.protocol.gpu_successor_study.v2
+protocol_id: GPU_SUCCESSOR_STUDY_V2
+study_id: SOURCE_FACT_PROPAGATION_MODEL_V2
+version: 2
+authored: 2026-08-27
+status: FROZEN
+freeze_semantics: prospective and result-blind; FROZEN does not imply execution authority
+supersedes: null
+preserves:
+  - GPU_SUCCESSOR_STUDY_V1
+
+authority:
+  source_study: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4
+  source_acceptance_module: explicit_at_freeze_not_assumed
+  source_acceptance_requirement: ACCEPTED/PASS
+  source_acceptance_binding: explicit_path_and_sha256
+  source_acquisition_binding: explicit_path_sha256_schema_and_protocol_id
+  discovery_forbidden: [latest_pointer, newest_wins, receipt_stem_glob, historical_manifest]
+  missing_verifier_disposition: REFUSE
+  exact_v2_universe:
+    schema: tavonel.v2.gpu_successor_v2.cohort_manifest.v1
+    receipt_stem: gpu-successor-v2-universe
+    run_id: SFIR4_GPU_SUCCESSOR_UNIVERSE_V2
+    immutable: true
+    single_authority: true
+    source: SFIR4 accepted acquisition only
+    historical_authority_reuse: false
+
+four_link_gate:
+  clause: source witness -> canonical representation -> fingerprint -> dependency path
+  applies_to: every fact in the exact immutable V2 manifest
+  floor: 450
+  exact_manifest_binding: path_and_sha256
+  independent_revalidation_required: true
+  total_classification_required: true
+  accepted_schema: tavonel.v2.gpu_successor_v2.four_link_acceptance.v1
+  below_floor: STOP
+  historical_green_receipt_reuse: forbidden
+
+run_preconditions:
+  all_required:
+    - this protocol is FROZEN by an immutable protocol-freeze receipt
+    - exact SFIR4 acceptance verifies as ACCEPTED/PASS
+    - exact SFIR4 acquisition path, digest, schema, and protocol id still match
+    - exact immutable V2 universe verifies and contains at least 450 eligible lineages
+    - V2 four-link acceptance independently verifies against that same manifest digest
+    - model, tokenizer, runtime image, prompt schema, and cost budget are frozen
+  on_any_failure: BLOCK_BEFORE_PROVIDER_CALL
+
+scientific_separation:
+  sfi3_and_sfir1_3: historical evidence only, never authorization
+  gpu_successor_study_v1: preserved, never mutated or silently relabeled V2
+  outcome_based_filtering: forbidden
+  floor_relaxation_padding_or_replacement_sampling: forbidden
+
+budget:
+  hard_cap_gpu_hours: 6.0
+  hard_cap_usd: 40.0
+  provider_calls_authorized_by_this_draft: false
+
+inferential_design:
+  unit: lineage
+  question_selection:
+    count_per_lineage: 1
+    method: SHA-256 minimum rank under GPU_SUCCESSOR_V2_ONE_HASH_SELECTED_QUESTION_PER_LINEAGE_V1
+    selected_before_model_output: true
+  target_lineages: 450
+  power_basis:
+    test: exact paired McNemar
+    target_power: 0.90
+    two_sided_alpha: 0.05
+    minimum_effect_risk_difference: 0.10
+    assumed_discordance: 0.40
+    exact_two_sided_power_at_target: 0.9116
+  confidence_interval: deterministic paired-bootstrap percentile risk-difference interval
+  arms:
+    CURRENT_TYPED: current revision with typed representation
+    STALE_TYPED: preceding revision with typed representation
+    CURRENT_TEXT_ONLY: current revision text without typed representation
+  estimands:
+    currency: CURRENT_TYPED versus STALE_TYPED
+    representation_superiority: CURRENT_TYPED versus CURRENT_TEXT_ONLY
+  deterministic_repeats:
+    purpose: stability check only
+    counted_as_independent_observations: false

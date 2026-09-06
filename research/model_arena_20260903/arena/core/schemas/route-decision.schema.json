@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tavonel:arena:route-decision:v1",
+  "title": "TAVONEL arena route decision",
+  "description": "Masterplan section 23.2 plus the ARENA_CONTRACT section 3.5 additions. decided_before_gt is const true: a decision taken with ground truth in hand is not a route decision.",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "sha256_ref": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "model_key": {
+      "enum": [
+        "paddleocr_vl_1_6", "mineru_pipeline", "mineru_vlm", "deepseek_ocr2",
+        "ovisocr2", "unlimited_ocr", "infinity_parser2_pro",
+        "infinity_parser2_flash", "monkeyocrv2_b",
+        "olmocr2", "hpd_parsing", "glm_ocr", "opus5_subscription"
+      ]
+    }
+  },
+  "properties": {
+    "schema": { "const": "tavonel.arena.route-decision.v1" },
+    "campaign_id": { "type": "string", "minLength": 1 },
+    "variant": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$" },
+    "case_key": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$" },
+    "sample_id": { "type": "string", "minLength": 1 },
+    "primary": { "$ref": "#/$defs/model_key" },
+    "signals": { "type": "object" },
+    "signals_sha256": { "$ref": "#/$defs/sha256_ref" },
+    "decision": { "type": "string", "pattern": "^[A-Z][A-Z_]{1,31}$" },
+    "target": {
+      "type": ["string", "null"],
+      "enum": [
+        "paddleocr_vl_1_6", "mineru_pipeline", "mineru_vlm", "deepseek_ocr2",
+        "ovisocr2", "unlimited_ocr", "infinity_parser2_pro", "monkeyocrv2_b",
+        "olmocr2", "hpd_parsing", "glm_ocr", "opus5_subscription", null
+      ]
+    },
+    "decision_sha256": { "$ref": "#/$defs/sha256_ref" },
+    "decided_before_gt": { "const": true },
+    "policy_id": { "type": "string", "minLength": 1 },
+    "policy_sha256": { "$ref": "#/$defs/sha256_ref" }
+  },
+  "required": [
+    "campaign_id", "case_key", "decided_before_gt", "decision",
+    "decision_sha256", "policy_id", "policy_sha256", "primary", "sample_id",
+    "schema", "signals", "signals_sha256", "variant"
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tavonel:arena:evaluator-registry-record:v1",
+  "title": "TAVONEL arena evaluator registry record",
+  "description": "ARENA_CONTRACT section 3.8. gt_paths belong to the evaluator plane only and are never referenced from the inference plane. Once frozen is true, no field changes. Extension-open per ARENA_CONTRACT 11.1 D4.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "schema": { "const": "tavonel.arena.evaluator-registry-record.v1" },
+    "benchmark": { "enum": ["parsebench", "omnidoc", "olmocr"] },
+    "repository": { "type": "string", "minLength": 1 },
+    "historical_pin": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "upstream_head_at_start": { "type": "string", "minLength": 1 },
+    "main_pin": { "type": "string", "minLength": 1 },
+    "main_pin_rationale": { "type": "string", "minLength": 1 },
+    "historical_lane_required": { "type": "boolean" },
+    "entrypoint": { "type": "string", "minLength": 1 },
+    "dataset_repository": { "type": "string", "minLength": 1 },
+    "dataset_revision": { "type": "string", "minLength": 1 },
+    "dataset_manifest_sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "gt_paths": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+    "license": { "type": "string", "minLength": 1 },
+    "frozen": { "type": "boolean" }
+  },
+  "required": [
+    "benchmark", "dataset_manifest_sha256", "dataset_repository",
+    "dataset_revision", "entrypoint", "gt_paths", "historical_lane_required",
+    "historical_pin", "license", "main_pin", "main_pin_rationale",
+    "repository", "schema", "upstream_head_at_start"
+  ],
+  "allOf": [
+    {
+      "if": { "properties": { "benchmark": { "const": "parsebench" } }, "required": ["benchmark"] },
+      "then": {
+        "properties": {
+          "historical_pin": { "const": "1d460294b3b9c57fb3fa944dc17a9c044c24d1e5" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "benchmark": { "const": "omnidoc" } }, "required": ["benchmark"] },
+      "then": {
+        "properties": {
+          "historical_pin": { "const": "193627ae9e97d89188468ed1ee3b7a856ff76044" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "benchmark": { "const": "olmocr" } }, "required": ["benchmark"] },
+      "then": {
+        "properties": {
+          "historical_pin": { "const": "cfa88c1eb1c2ec4495c84d6820ffe85d33b7408c" }
+        }
+      }
+    }
+  ]
+}

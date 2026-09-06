@@ -43,8 +43,16 @@ Before UI, UX, copy, motion, or 3D work, read:
 - CSS variables as the token source of truth; `src/styles/tokens.css` is the
   token layer and new CSS goes inside `@layer`
 - Accessible native semantics before custom widgets
-- No WebGL. `decision.md` G-C dropped TIER 1 3D and W0 removed `three`,
-  `@react-three/fiber`, and `@react-three/drei`. The hero is a drop zone.
+- WebGL returns for the cinematic experience. `decision.md` G-C dropped TIER 1
+  3D and W0 removed `three`, `@react-three/fiber` and `@react-three/drei`, but
+  the owner reversed G-C on 2026-08-09 (see `CLAUDE.md` §Frontend) and
+  `TAVONEL_FINAL_KNOWLEDGE_COMPILER_CINEMATIC_DESIGN_MASTER_SPEC_KO_2026-08-20`
+  §19.1 names R3F + Three.js as the stack. The packages are **not installed
+  yet**: Phase 1 builds the §19.7 fallback tier in authored SVG first, and
+  reinstating them is Phase 4 work that also re-derives the §22 script budget
+  from a new measurement. Outside `/experience`, G-C's other half still stands
+  — the marketing hero is the working drop zone, and
+  `structara-webgl-scene.tsx` does not come back.
 - PDF.js is **not installed**. `pdfjs-dist` arrives in W4 together with the
   `SourceRef` rotation/cropbox contract (G-E). Until then the source surface is
   a thumbnail image, and document virtualization is `react-virtuoso` only.

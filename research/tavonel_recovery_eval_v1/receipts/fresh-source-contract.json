@@ -1,0 +1,61 @@
+{
+  "drdocbench": {
+    "dataset_repo_id": "2077AIDataFoundation/DrDocBench",
+    "evaluation_surface": "matching public dev JSON/Markdown kept outside runtime mount",
+    "page_identity": "document_uuid + original page number + exact image sha256",
+    "requested_revision": "main",
+    "revision_rule": "resolve requested revision once after qualification, then pin commit hash",
+    "rights": "annotation metadata follows the dataset-declared CC0-1.0 terms; underlying source-document rights remain with original publishers and are not relicensed",
+    "runtime_surface": "selected page image bytes only",
+    "split": "dev"
+  },
+  "forbidden_selection_inputs": [
+    "model output",
+    "accuracy",
+    "parser disagreement result",
+    "strong-model recovery result",
+    "hidden evaluator truth",
+    "model-inferred difficulty"
+  ],
+  "primary_family_quotas": {
+    "drdocbench": 150,
+    "sec": 150
+  },
+  "primary_stage1_pages": 300,
+  "qualification_required_before_network_acquisition": true,
+  "schema": "tavonel.recovery.fresh_source_contract.v1",
+  "scientific_outcomes_used_to_define_sources": false,
+  "sec": {
+    "automated_access": {
+      "declared_user_agent_required": true,
+      "max_requests_per_second": 4,
+      "user_agent_env": "TAVONEL_SEC_USER_AGENT"
+    },
+    "date_range_inclusive": [
+      "2026-05-01",
+      "2026-08-28"
+    ],
+    "filing_prefilter_count": 48,
+    "filing_prefilter_rule": "eligible exact-form master-index rows sorted by sha256(prefilter_salt|CIK|form|filed_date|archive_filename), then first N",
+    "filing_prefilter_salt_digest": "sha256:337c6ce601544591ead42987f1011dd3cc1e340f1251025619ddbb36a0a99046",
+    "forms": [
+      "10-K",
+      "10-Q"
+    ],
+    "index_surface": "/Archives/edgar/daily-index/YYYY/QTRN/master.YYYYMMDD.idx",
+    "official_origin": "https://www.sec.gov",
+    "page_identity": "archive filename + primary-document sha256 + pinned renderer digest + page ordinal + rendered page sha256",
+    "primary_document_rule": "parse complete submission SGML; documents whose TYPE exactly equals filing form; choose lowest numeric SEQUENCE then FILENAME",
+    "renderer_requirement": "SEC page candidates cannot enter selection until a separate immutable renderer receipt pins browser/PDF rasterizer versions and output settings",
+    "submission_surface": "/Archives/<master-index filename>"
+  },
+  "secondary_external_validity": {
+    "dart": {
+      "included_in_primary_result": false,
+      "quota": 100,
+      "required": false
+    }
+  },
+  "source_contract_digest": "sha256:0a18007a1bb9be9251cb0da41e284f8d5e6b5a89a9e3b0735eaa1c66de73c430",
+  "state": "PRE_ACQUISITION_TERMS"
+}

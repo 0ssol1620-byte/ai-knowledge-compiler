@@ -1,0 +1,62 @@
+{
+  "acquisition": "research/tavonel_eval_v2/artifacts/development/sfi2/sfi2_acquisition.json",
+  "acquisition_sha256": "sha256:f568e47fb8597882de077980fdec11eb409a8492c409e18cc597094fb027cf0a",
+  "assessment": {
+    "accounted_for": 1859,
+    "admitted": 278,
+    "all_quotas_filled": false,
+    "by_family": {
+      "encyclopedia_wikipedia": 70,
+      "git_docs": 120,
+      "regulation_ecfr": 88
+    },
+    "candidates_in_frame": 1859,
+    "candidates_never_considered": 0,
+    "ending": "EXHAUSTED_EVERY_CANDIDATE_CONSIDERED",
+    "every_candidate_considered": true,
+    "family_quota": {
+      "encyclopedia_wikipedia": 70,
+      "git_docs": 120,
+      "regulation_ecfr": 100
+    },
+    "lineages_considered": 1859,
+    "quotas_filled": {
+      "encyclopedia_wikipedia": true,
+      "git_docs": true,
+      "regulation_ecfr": false
+    },
+    "reconciles": true,
+    "rejected": 1581,
+    "rejected_by_code": {
+      "BEYOND_FAMILY_QUOTA": 480,
+      "CANONICALISATION_EMPTY": 16,
+      "PAYLOAD_UNAVAILABLE": 3,
+      "TOO_FEW_REVISIONS": 1082
+    },
+    "unaccounted": 0
+  },
+  "concerns": [
+    "family regulation_ecfr filled 88 of 100. Reported as a shortfall; the quota is not lowered and the shortfall is not redistributed"
+  ],
+  "estimated_cost_usd": 0.0,
+  "frame_digest": "sha256:7cfed5b946ad3c179424be1a03093f17dbc02bc8241baa8951af4d6d846d84d4",
+  "generated_at": "2026-08-23T08:49:55.346229+00:00",
+  "gpu_seconds": 0,
+  "note": "frame composition only. This tool does not score, does not re-admit and does not fetch",
+  "provenance": {
+    "generated_at": "2026-08-23T08:49:55.347019+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "sfi2-frame-verification",
+    "run_id": "20260823T084955Z-d6d444e65fac",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/verify_sfi2_frame.py",
+    "tool_sha256": "sha256:02216bea34498852c95919dc163d10505769a8e0b3903cfc609dc61118a021f7"
+  },
+  "receipt_sha256": "sha256:9deb80ff206cec52ba7eb42148b622d4fe4c6ef9fae82d4a66ce5ac9cbf35d3c",
+  "reduction_digest": "sha256:3cf602d1659e5a5a98197607db8180fa52a1de6a6d7bf6d4f5b4f09adaeb2d1f",
+  "schema": "tavonel.v2.sfi2_frame_verification.v1",
+  "scorable": true
+}

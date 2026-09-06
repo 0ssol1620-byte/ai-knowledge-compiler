@@ -1,0 +1,378 @@
+{
+  "$id": "tavonel.arena.model-registry-record.v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": true,
+  "description": "Fallback schema for ARENA_CONTRACT section 3.7 plus the lane A3 brief's evidence fields. `license` and `gpu_min_vram_gb` keep masterplan section 10's scalar types so arena/core/schemas can read the same record; the structured evidence lives in `license_detail` and `gpu_min_vram_gb_detail`.",
+  "properties": {
+    "canary_status": {
+      "enum": [
+        "PENDING",
+        "PASS",
+        "FAIL"
+      ]
+    },
+    "code_repositories": {
+      "items": {
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "concurrency_plan": {
+      "type": "object"
+    },
+    "concurrency_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "per_worker": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "scale": {
+          "enum": [
+            "replicas_only",
+            "replicas_and_concurrency"
+          ]
+        }
+      },
+      "required": [
+        "per_worker",
+        "scale"
+      ],
+      "type": "object"
+    },
+    "container_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "container_image": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "cuda": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "display_name": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "full_run_eligible": {
+      "type": "boolean"
+    },
+    "gpu_min_vram_gb": {
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "gpu_min_vram_gb_detail": {
+      "properties": {
+        "basis": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "estimated": {
+          "type": "boolean"
+        },
+        "value": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "value",
+        "estimated",
+        "basis"
+      ],
+      "type": "object"
+    },
+    "gpu_pool_priority": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "historical_evidence": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "license": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "license_detail": {
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "approved",
+            "review_required",
+            "blocked",
+            "verified"
+          ]
+        },
+        "url": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "url",
+        "status",
+        "notes"
+      ],
+      "type": "object"
+    },
+    "license_evidence_url": {
+      "type": "string"
+    },
+    "license_notes": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "license_status": {
+      "enum": [
+        "approved",
+        "review_required",
+        "blocked",
+        "verified"
+      ]
+    },
+    "max_concurrency_per_worker": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "model_key": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "official_inference_config": {
+      "type": "object"
+    },
+    "official_inference_config_sha256": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "official_prompt_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "official_source_urls": {
+      "items": {
+        "pattern": "^https://",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "preprocess_config_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "previous_registry_revision": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "prompt_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "recommended_gpu_pool": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "repo": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resolution_method": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "resolved_at": {
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+      "type": "string"
+    },
+    "revision": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "revision_changed_since_2026_08": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    },
+    "runtime_mode_allowed": {
+      "items": {
+        "enum": [
+          "baked",
+          "bootstrap",
+          "subscription"
+        ]
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "runtime_type": {
+      "enum": [
+        "vllm",
+        "transformers",
+        "pipeline",
+        "paddle",
+        "custom",
+        "subscription"
+      ]
+    },
+    "runtime_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schema": {
+      "const": "tavonel.arena.model-registry-record.v1"
+    },
+    "shard_size_hint": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "shard_size_hint_basis": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "unresolved": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "weights": {
+      "properties": {
+        "largest_file": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "largest_file_sha256": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "repo": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "revision": {
+          "pattern": "^[0-9a-f]{40}$",
+          "type": "string"
+        },
+        "size_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "repo",
+        "revision",
+        "largest_file",
+        "largest_file_sha256",
+        "size_bytes"
+      ],
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "weights_strategy": {
+      "enum": [
+        "baked",
+        "volume_cache",
+        "boot_download"
+      ]
+    }
+  },
+  "required": [
+    "canary_status",
+    "code_repositories",
+    "concurrency_plan",
+    "concurrency_policy",
+    "container_digest",
+    "container_image",
+    "cuda",
+    "display_name",
+    "full_run_eligible",
+    "gpu_min_vram_gb",
+    "gpu_min_vram_gb_detail",
+    "gpu_pool_priority",
+    "historical_evidence",
+    "license",
+    "license_detail",
+    "license_evidence_url",
+    "license_notes",
+    "max_concurrency_per_worker",
+    "model_key",
+    "official_inference_config",
+    "official_inference_config_sha256",
+    "official_prompt_id",
+    "official_source_urls",
+    "preprocess_config_id",
+    "previous_registry_revision",
+    "prompt_id",
+    "recommended_gpu_pool",
+    "repo",
+    "resolution_method",
+    "resolved_at",
+    "revision",
+    "revision_changed_since_2026_08",
+    "runtime_mode_allowed",
+    "runtime_type",
+    "runtime_version",
+    "schema",
+    "shard_size_hint",
+    "shard_size_hint_basis",
+    "torch",
+    "unresolved",
+    "weights",
+    "weights_strategy"
+  ],
+  "title": "TAVONEL arena model registry record",
+  "type": "object"
+}

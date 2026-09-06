@@ -1,0 +1,121 @@
+# R1 — the two-run reproducibility check owed since INC-V2-005.
+#
+# Frozen before any R1 result exists.
+#
+# INC-V2-005 recorded that an evidence-producing run destroyed an earlier one,
+# and that the claim "two independent receipts reproduced byte-identically"
+# could not be made because only one receipt survived. The plumbing was built;
+# the check it was built to make possible was left owed. This is that check.
+#
+# It is deliberately NOT a re-run of P0c, P3b or P4b. Those results are frozen
+# and are not touched. What is under test here is the receipt infrastructure
+# itself, against a fixture whose only job is to be deterministic.
+
+schema: tavonel.v2.protocol.R1.v1
+protocol_id: R1_receipt_reproducibility
+version: 1
+authored: 2026-08-22
+supersedes: null
+relates_to:
+  INC-V2-005: the defect this closes the owed half of
+
+boundaries:
+  ip_gate: {state: CLOSED}
+  gpu: {approved: false, ceiling_usd: 0.0}
+  sealed_evidence: {rule: read-only}
+  frozen_results:
+    rule: >-
+      P0b, P0c, P2, P3b and P4b protocols, results and receipts are read-only.
+      Nothing here re-runs, re-scores or amends any of them.
+  isolation: {rule: every artifact produced lives under research/tavonel_eval_v2/}
+
+# ---------------------------------------------------------------------------
+# 1. Subject and fixture
+# ---------------------------------------------------------------------------
+
+subject:
+  module: research/tavonel_eval_v2/tools/evidence.py
+  under_test:
+    - run-specific immutable receipt paths
+    - refusal to overwrite
+    - provenance fields (run id, tool digest, protocol digest)
+    - the latest/ pointer's status as a non-evidence pointer
+
+fixture:
+  module: research/tavonel_eval_v2/tools/reproducibility_fixture.py
+  requirement: >-
+    deterministic. Its semantic payload is a pure function of its pinned input
+    and its own source, with no clock, no randomness, no environment and no
+    filesystem scan. Anything time-varying belongs in provenance, never in the
+    result.
+  semantic_result_digest: >-
+    the canonical hash of the payload alone, excluding the provenance block and
+    excluding the receipt's own self-hash. This is the field the two runs are
+    compared on, because comparing whole files would fail on the timestamp by
+    design and prove nothing.
+  input: a pinned literal inside the fixture, not a corpus file, so the check
+    does not depend on any other result staying unchanged
+
+# ---------------------------------------------------------------------------
+# 2. Gates. All seven are declared here before the fixture has run once.
+# ---------------------------------------------------------------------------
+
+gates:
+  G_R1_BOTH_RECEIPTS_EXIST:
+    predicate: after two runs, both immutable receipts are present on disk and
+      both self-hashes recompute
+  G_R1_DISTINCT_PATHS:
+    predicate: the two receipts occupy different paths, and their run ids differ
+  G_R1_SAME_SEMANTIC_RESULT:
+    predicate: the two receipts carry the same semantic_result_digest
+  G_R1_SAME_TOOL_AND_PROTOCOL_DIGEST:
+    predicate: >-
+      provenance.tool_sha256 and provenance.protocol_sha256 are identical across
+      the two runs
+    basis: >-
+      a matching result under a changed tool is not reproduction, it is
+      coincidence. The digests are what make the comparison mean anything.
+  G_R1_FIRST_RECEIPT_UNMODIFIED:
+    predicate: >-
+      the first receipt's bytes are identical before and after the second run
+    method: >-
+      the file is hashed immediately after run one and again after run two, and
+      the two digests are compared
+    on_fail: STOP. This is the failure INC-V2-005 recorded.
+  G_R1_OVERWRITE_REFUSED:
+    predicate: >-
+      writing a receipt with a run id that already exists raises ReceiptExists
+      and leaves the existing file byte-unchanged
+    method: >-
+      attempted in the run, against the first receipt's own run id. Demonstrated,
+      not asserted.
+    basis: >-
+      the other six gates can all pass on infrastructure that would happily
+      overwrite if asked. This is the one that tests the refusal.
+  G_R1_POINTER_IS_NOT_EVIDENCE:
+    predicate: >-
+      the latest/ pointer declares is_evidence false, carries no field from the
+      result payload, names the second run's receipt, and its recorded digest
+      matches that file
+    basis: >-
+      a pointer that quietly carried a finding would become a mutable path
+      holding evidence, which is the defect wearing a different hat
+
+# ---------------------------------------------------------------------------
+# 3. Claim boundary
+# ---------------------------------------------------------------------------
+
+claim_boundary:
+  permitted: >-
+    Two runs of a deterministic fixture produced two distinct immutable receipts
+    carrying the same semantic result under identical tool and protocol digests;
+    the second run did not modify the first receipt; a deliberate path collision
+    was refused; and the latest pointer carries no evidence.
+  forbidden:
+    - reading this as reproducing any P0/P2/P3/P4 result. It reproduces a fixture.
+    - claiming the receipts are byte-identical. They are not, and must not be:
+      run id and timestamp differ by design, and a scheme in which they did not
+      would be unable to distinguish two runs at all.
+    - claiming determinism of any protocol driver. Only the fixture is under test.
+    - retroactively supporting the withdrawn INC-V2-005 two-run claim. That claim
+      concerned the forensic tool on the old mutable plumbing and stays withdrawn.

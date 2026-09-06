@@ -1,0 +1,126 @@
+{
+  "Q1_reads_another_checks_output": {
+    "answer": "no -- no check reads `steps` or any value another check produced",
+    "caveat_see": "delegation_finding",
+    "clean": true,
+    "method": "manual read/write transcription with line citations, below",
+    "question": "does any check consume another check's output as input?"
+  },
+  "Q2_mutates_inputs": {
+    "clean": true,
+    "non_local_mutations": [],
+    "question": "does the gate mutate any object it was handed?"
+  },
+  "Q3a_module_level_mutable_state": {
+    "clean": true,
+    "offenders": [],
+    "question": "module-level mutable state in the gate module"
+  },
+  "Q3b_local_accumulators": {
+    "accumulators": {
+      "checked": "written only by check 4; report field only",
+      "steps": "append-only report log; read once, as `steps[-1].outcome`, for control flow only (line 273) -- never as check input",
+      "unverifiable": "written only by check 4; read only by check 4 and the report constructor"
+    },
+    "clean": true,
+    "question": "coupling via the function's own mutable accumulators?"
+  },
+  "Q3c_shared_cache_in_graph": {
+    "clean": true,
+    "dependency_module_sha256": "sha256:3cf21ec387e5fbe5f613bd789280db50a43c9454fc0517dc8040afc60f802cfb",
+    "finding": "DependencyGraph.impact_of builds only local structures (seeds, visited, affected, cycles, queue). The sole mutator on the class is `add` (dependency.py:206-211), which the gate never calls. No memoisation, so no cross-check channel.",
+    "question": "shared cache or memoisation inside graph.impact_of?"
+  },
+  "Q3d_exception_state": {
+    "clean": true,
+    "finding": "The gate raises nothing and catches nothing; refusal is expressed as a returned StepResult. There is no exception channel between checks.",
+    "question": "coupling via exception state?"
+  },
+  "Q4_short_circuit_semantics": {
+    "all_not_reached_is_promotable": false,
+    "all_pass_is_promotable": true,
+    "clean": true,
+    "not_reached_counts_as_pass": false,
+    "note": "NOT_REACHED is a distinct outcome from PASS precisely so a short-circuited run cannot be read as a verified one. This is what makes short-circuiting safe for the verdict: skipping a check can only withhold a PASS, never supply one.",
+    "question": "is acceptance the conjunction of step outcomes, and can a short-circuited (NOT_REACHED) report ever be promotable?",
+    "short_circuited_report_is_promotable": false
+  },
+  "adopted_wording": "a sequence of candidate-state predicates whose conjunctive acceptance result is invariant to evaluation order",
+  "amendment": "AMENDMENT_2_2026-08-19.md",
+  "delegation_finding": {
+    "consequence": "The claim wording is narrowed to what is actually established: a sequence of candidate-state predicates whose conjunctive acceptance result is invariant to evaluation order.",
+    "what": "When no full-rebuild oracle is supplied, check 3 records PASS with the detail 'no full-rebuild oracle; integrity rests on the input fingerprints checked in the next step'. The source comment states outright that check 4 'may not be skipped' for this reason.",
+    "where": "promotion_gate.py:317-330, the INTEGRITY no-oracle branch",
+    "why_it_matters": "No value flows from check 4 to check 3 -- they are independent as data. But check 3's PASS is not self-supporting in that branch: its safety argument is discharged by check 4. Two predicates can be order-invariant in their conjunction while one's guarantee depends on the other being evaluated at all. 'Mutually independent' asserts the second property, and the permutation experiment measured only the first."
+  },
+  "experiment": "H1-I-GATE-ORDERING-01",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-19T02:47:16.202554+00:00",
+  "mechanical_vs_manual": "Q2, Q3a and Q4 are executed checks. Q1, Q3b, Q3c and Q3d are manual readings with line citations, recorded as such. Presenting a manual reading as static analysis would be the same category error this audit exists to correct.",
+  "network_access": false,
+  "promotion_gate_module_sha256": "sha256:905e6387e8f984a6778dc379b4313c92a9ee95f3dfc5a2b9ad373d9518fce99b",
+  "purpose": "Decide whether the static evidence supports the word 'independent' in the claim, given that the permutation experiment established only order-invariance of the conjunction.",
+  "read_write_sets": {
+    "1_changes_accounted": {
+      "reads": [
+        "diff.changed_logical_ids",
+        "diff.unresolved",
+        "graph.impact_of"
+      ],
+      "reads_another_checks_output": false,
+      "source_lines": "219-244",
+      "writes": [
+        "steps"
+      ]
+    },
+    "2_recompile_complete": {
+      "reads": [
+        "plan.targets",
+        "rebuilt_set"
+      ],
+      "reads_another_checks_output": false,
+      "source_lines": "275-294",
+      "writes": [
+        "steps"
+      ]
+    },
+    "3_integrity": {
+      "reads": [
+        "equivalence",
+        "current_input_fingerprints"
+      ],
+      "reads_another_checks_output": false,
+      "source_lines": "296-341",
+      "writes": [
+        "steps"
+      ]
+    },
+    "4_no_stale_current": {
+      "reads": [
+        "plan.targets",
+        "current_input_fingerprints",
+        "expected_input_fingerprints",
+        "graph (via _declares_structural)",
+        "structural_coverage",
+        "equivalence"
+      ],
+      "reads_another_checks_output": false,
+      "source_lines": "343-401",
+      "writes": [
+        "stale_current",
+        "unverifiable",
+        "checked",
+        "steps"
+      ]
+    }
+  },
+  "receipt_sha256": "sha256:685dce287db06ed962f133f1486fdd1e71d84d6dfc7aa1ef3b8c95d63a0de639",
+  "result": "ORDER_INVARIANCE_SUPPORTED_INDEPENDENCE_NOT_SUPPORTED",
+  "schema": "tavonel.gate-check-independence-static-audit.v1",
+  "supersedes": {
+    "receipt": "receipts/check-independence-attempt1-falsepositive-2026-08-19.json",
+    "why": "Attempt 1's module-state check flagged `__all__`, an export declaration rather than a coupling channel. Corrected to skip dunder names. The finding that decides the wording -- the check-3 delegation -- is identical in both runs and was not affected by this false positive."
+  },
+  "supports_wording_mutually_independent": false,
+  "supports_wording_order_invariant_conjunction": true
+}

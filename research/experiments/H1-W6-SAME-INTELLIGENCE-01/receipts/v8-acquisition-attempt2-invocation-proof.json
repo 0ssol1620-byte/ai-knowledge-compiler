@@ -1,0 +1,71 @@
+{
+  "attempt": 2,
+  "attempt_classification": "SAME_COHORT_TRANSPORT_RECOVERY",
+  "cohort_continuity": {
+    "cutoffs_changed": false,
+    "new_title_selection_performed": false,
+    "note": "attempt 2 is a transport recovery over the exact same sealed manifest, seal and cutoffs. It is not a new holdout and no title was reselected.",
+    "title_manifest": "receipts/holdout-manifest-v8.json",
+    "transport_seal": "receipts/single-title-freeze-v8-holdout.json"
+  },
+  "corpus_arg_is_absolute": true,
+  "evidence_source": "Win32_Process.CommandLine of the live acquisition processes",
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-20T06:12:35.871645+00:00",
+  "line_376_simulation": {
+    "attempt_1_negative_control": {
+      "corpus_arg": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/corpus-v8-holdout",
+      "error": "'research\\\\experiments\\\\H1-W6-SAME-INTELLIGENCE-01\\\\corpus-v8-holdout\\\\00002-717f39e67679\\\\before.wikitext' is not in the subpath of 'D:\\\\CodexProjects\\\\ai-knowledge-compiler\\\\research\\\\experiments\\\\H1-W6-SAME-INTELLIGENCE-01'",
+      "relative_before_path": null,
+      "relative_to_succeeds": false
+    },
+    "attempt_2_live": {
+      "corpus_arg": "D:/CodexProjects/ai-knowledge-compiler/research/experiments/H1-W6-SAME-INTELLIGENCE-01/corpus-v8-holdout",
+      "error": null,
+      "relative_before_path": "corpus-v8-holdout/00002-717f39e67679/before.wikitext",
+      "relative_to_succeeds": true
+    },
+    "control_separates": true,
+    "experiment_root": "D:/CodexProjects/ai-knowledge-compiler/research/experiments/H1-W6-SAME-INTELLIGENCE-01",
+    "what_is_simulated": "acquire_w6_v3.py:376 -- str(before_path.relative_to(EXP)) -- against the experiment root, using the live --corpus argument. Absoluteness is the symptom; this is the invariant that failed."
+  },
+  "processes": [
+    {
+      "all_path_args_absolute": true,
+      "corpus_arg": "D:/CodexProjects/ai-knowledge-compiler/research/experiments/H1-W6-SAME-INTELLIGENCE-01/corpus-v8-holdout",
+      "corpus_arg_is_absolute": true,
+      "path_args": {
+        "--corpus": "D:/CodexProjects/ai-knowledge-compiler/research/experiments/H1-W6-SAME-INTELLIGENCE-01/corpus-v8-holdout",
+        "--manifest": "D:/CodexProjects/ai-knowledge-compiler/research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/holdout-manifest-v8.json",
+        "--output": "D:/CodexProjects/ai-knowledge-compiler/research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/acquisition-v8-holdout.json",
+        "--seal": "D:/CodexProjects/ai-knowledge-compiler/research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/single-title-freeze-v8-holdout.json",
+        "--sidecar": "D:/CodexProjects/ai-knowledge-compiler/research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/acquisition-v8-holdout-completion.json"
+      },
+      "pid": 35072
+    },
+    {
+      "all_path_args_absolute": true,
+      "corpus_arg": "D:/CodexProjects/ai-knowledge-compiler/research/experiments/H1-W6-SAME-INTELLIGENCE-01/corpus-v8-holdout",
+      "corpus_arg_is_absolute": true,
+      "path_args": {
+        "--corpus": "D:/CodexProjects/ai-knowledge-compiler/research/experiments/H1-W6-SAME-INTELLIGENCE-01/corpus-v8-holdout",
+        "--manifest": "D:/CodexProjects/ai-knowledge-compiler/research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/holdout-manifest-v8.json",
+        "--output": "D:/CodexProjects/ai-knowledge-compiler/research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/acquisition-v8-holdout.json",
+        "--seal": "D:/CodexProjects/ai-knowledge-compiler/research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/single-title-freeze-v8-holdout.json",
+        "--sidecar": "D:/CodexProjects/ai-knowledge-compiler/research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/acquisition-v8-holdout-completion.json"
+      },
+      "pid": 7536
+    }
+  ],
+  "quarantine_not_reused": {
+    "directory": "corpus-v8-holdout-failed-20260820T0548Z",
+    "reused_in_attempt_2": false
+  },
+  "reads_no_holdout_content": true,
+  "reads_no_holdout_content_note": "this check reads process arguments only. No title, revision, question, score or arm result is touched, so it cannot influence the confirmatory outcome.",
+  "receipt_sha256": "sha256:f31f53e15f6472497fe25f48d889af5f9f8d4f4db8e88e661d600caaa84297cf",
+  "schema": "tavonel.w6-v8-acquisition-invocation-proof.v1",
+  "verdict": "ABSOLUTE_PATH_CONFIRMED_AND_LINE_376_PROVEN",
+  "why_this_receipt_exists": "attempt 1 died after 149 minutes of rate-limit backoff on a deterministic relative_to() failure caused by a repository-relative --corpus argument. The claim that attempt 2 uses an absolute path is therefore not accepted as narration: it is read from the running process's own command line and evaluated by Path.is_absolute."
+}

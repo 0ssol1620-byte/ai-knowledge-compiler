@@ -628,11 +628,11 @@ export function StructaraAppPageLocalized(props: Props) {
             <FileArrowUp size={16} />
             {korean ? "컬렉션 수집" : "Intake collection"}
           </Link>
-          <Link href="/app/projects">
+          <Link href="/projects">
             <FolderOpen size={16} />
             {korean ? "프로젝트 열기" : "Open projects"}
           </Link>
-          <Link href="/app/knowledge-bases">
+          <Link href="/knowledge-bases">
             <TreeStructure size={16} />
             {korean ? "지식 탐색" : "Explore knowledge"}
           </Link>

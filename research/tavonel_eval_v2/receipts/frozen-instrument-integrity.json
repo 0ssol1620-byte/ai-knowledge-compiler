@@ -1,0 +1,1380 @@
+{
+  "advisory_drift": [
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:ea8ee0c82e760d63b8bb2a5e00cc9172b4a7be90812150bdaee2414be2d14ec8",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T021740Z-32ba99a8d893.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:ea8ee0c82e760d63b8bb2a5e00cc9172b4a7be90812150bdaee2414be2d14ec8",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T031253Z-aebcdb184b7e.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:ea8ee0c82e760d63b8bb2a5e00cc9172b4a7be90812150bdaee2414be2d14ec8",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T031320Z-6d05885cae7d.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:ea8ee0c82e760d63b8bb2a5e00cc9172b4a7be90812150bdaee2414be2d14ec8",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T033618Z-2dc6fc955774.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:e44476d3f4ba14e4ad06d8f18257766beb8cd7bdf1fa64f092589605ea02cd5f",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T033713Z-48b896fd929e.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:1fb5aa81611e466e94a2e5f455260233a120053224c80f6b199db362dd398ad1",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T040738Z-0a4edc5bceaf.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:8968b26107619f42a3ef73596308413c2e82f0edfc27f5f0a30e83bc1263eb1b",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T041610Z-7a90b77aa571.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:8dec62d39646de82f00dfe1f1d74d43a021aa7d0018816deeaec3ea348897d9e",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T041644Z-420fff3e35bc.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:8dec62d39646de82f00dfe1f1d74d43a021aa7d0018816deeaec3ea348897d9e",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T051701Z-004f27126a2b.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:8dec62d39646de82f00dfe1f1d74d43a021aa7d0018816deeaec3ea348897d9e",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T052136Z-a91a01f2b2e1.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:1cd07e22d92cff1873bc71aca646eb5cc6b4891d07c4429f2a136cd6a8120098",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T052322Z-4e03a6ad91ea.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:3b0aa50cd7ff38831411d97052964e8628dc93c27f12ee23b26324a049c5bfee",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T062023Z-9b255de0efc9.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:3b0aa50cd7ff38831411d97052964e8628dc93c27f12ee23b26324a049c5bfee",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T062042Z-2cf12b59cdc4.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:3b0aa50cd7ff38831411d97052964e8628dc93c27f12ee23b26324a049c5bfee",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T062245Z-599c013ab49f.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:3b0aa50cd7ff38831411d97052964e8628dc93c27f12ee23b26324a049c5bfee",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T062302Z-7c57bdded327.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:3b0aa50cd7ff38831411d97052964e8628dc93c27f12ee23b26324a049c5bfee",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T071249Z-e96892fbdcfc.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:3b0aa50cd7ff38831411d97052964e8628dc93c27f12ee23b26324a049c5bfee",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T071800Z-c1314e918f92.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:49f072eb586d41fbf5bee63cd3c9b87ea6ed302ee3056e86d4024beb3dd1d736",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260823T082250Z-e0e4ebd228c9.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:2aeec09304de385c2fc4b98b95d99ad10e39d641a74ec9c1db0768ce72b9012e",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260826T120930Z-e194cd5b6f12.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:4d934f0d2e56b7944a380449fb53e0dbd333d6b19e2db9f86ea6aee8f5c22d47",
+      "path": "research/tavonel_eval_v2/paper/TAVONEL_PAPER_DRAFT_INTERNAL.md",
+      "receipt": "claim-matrix--20260826T142712Z-19a0b6dffaf8.json",
+      "worktree": "sha256:09d88b94c5d2cc9cd13a3b420bb4164d9c599e4cf3a77c9ae25d849aaa644e59"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:704884e21145348d0b35b55feb1040df33bcc61a050dcda96109ae156955d663",
+      "path": "research/tavonel_eval_v2/tests/test_launch_gpu_successor.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:f342b93be3747e8e7b0720d3d3a7c3a3fac949d9243c21b977ffedbd4ce63ce9"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:cc6613feeb4e52f9da4b9806b70384bedf1dcb7811c837fb31fa9b975e828f39",
+      "path": "research/tavonel_eval_v2/tools/adjudicate_v2r1.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:f5c119847f58a66bec86af820206cf36d17150eed9e2c88f11cee5d357cb82ab"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:cb2f01daff621a54cf866a181ed55f82fcdf5b037f58bb6a6d7abb131e060fc8",
+      "path": "research/tavonel_eval_v2/tools/adjudicate_v2r2.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:5ac4ef2be5348a150afdbfd325aa486ce6240714c4fe911287e376c35009721e"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:0f263976cc888bafc5f56d75725b89d3c6e074ce5d89e3b70674ce066740226d",
+      "path": "research/tavonel_eval_v2/tools/anti_blocker_audit.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:04ed11e577321e2b37c21ca477a15f968aa8813e9cbb248de7c7cd76424c1061"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:e551bd8b6f7b87c7fa6165c3cfc25ff86800655cf4af3fbdfd9fd0e30c6efae8",
+      "path": "research/tavonel_eval_v2/tools/build_claim_matrix.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:05d600fcbf51eb9f5912fe52ca2494cf23c49d5e2bfe0a46c38cfd06f1dcafbd"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:4b1907c6ca9c616b3c946ad590bd68a527e8e8dad4dd5649c4ae2d3ef7df9f60",
+      "path": "research/tavonel_eval_v2/tools/build_successor_cohort.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:2649df6d949306e3a85434c775fd25d659c9b6646fc2af996054f0222b6495e0"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:89e639efe7def7d6a74b910528685db647dd8dcb7a84a47b22769c1596f85b0e",
+      "path": "research/tavonel_eval_v2/tools/canary_identity_change.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:2e01ae2b16b96f6853fc1ba7b51c2584f59ffdcf3e122995803ed26b9b64cd78"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:6a34c67bd7e5fa382460ea8df3c848446ab700078e9f19b381a42b4692883553",
+      "path": "research/tavonel_eval_v2/tools/canary_identity_quarantine.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:3f0ee669e2988e41f1d70e6c13945772052ae1430fa7f20d7c22607be34ade98"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:caa2dbbf3d84c8812c0f09cfa4d3490f3b2aed78d2f7926495809426bb57f644",
+      "path": "research/tavonel_eval_v2/tools/common.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:4ebfd4935cb9c64474088a99f22b94073eb7316825270787d6653b07744ea87e"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:6b7a09919db1ed185f82218db1249be540b0828d4e62fff25a16cfaa0585b745",
+      "path": "research/tavonel_eval_v2/tools/enumerate_v2r1_universe.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:7985cb576e32534e8ec18e4cd694ae61d0e77ec303026c6843b89d435a35b6c7"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:de6f4695110c08d0f1866d43915ec60fc28acabe7609e9d1cf983fe68075a8c8",
+      "path": "research/tavonel_eval_v2/tools/enumerate_v2r2_universe.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:5450fcb9d42bcfe9ca816985566eeb2ca68bb19ea3274dc52799cad3d4bf867e"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:2fffd4fd03938b7acdbeca66a5406eded5947cedd8f239e96340d82215f1a59b",
+      "path": "research/tavonel_eval_v2/tools/enumerate_v2r4_universe.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:4170ca7075a830be11b4d431f76aab4e31f62c0899bc62cd29d6cd32c2e23920"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:7b5bb003336fd518c4e2c1f53e44df59eee1c9b7e31efea1d85fe09631e8ebc6",
+      "path": "research/tavonel_eval_v2/tools/evidence_hygiene_pass.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:2e4d321dcb70bc3750cb9dd41c604a071289d7b2f6fce5392b331a49abb3e759"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:cb89ef57df34fae778dd7e24f00bebda7ec37a9f697210699b1bf42d2774c5c0",
+      "path": "research/tavonel_eval_v2/tools/forensic_four_divergences_v2.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:a0ae1c49749d480f6c868058c5466ec7ea051bef77de2164d0d1477d8557ecdc"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:9ade45dc2d7b23336541bf8f527ba17734fce9975b5108ba68747294d536d67c",
+      "path": "research/tavonel_eval_v2/tools/forensic_sealed_drift.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:3babbdaa8b85fb26176765e42d96299b59b6a72caa657d5b94b9d20c39bc4b5b"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:95395cbaf9ecbc49aaf63b71b6dd5c7f241195ac5ef4f185e251f0703d1c44a4",
+      "path": "research/tavonel_eval_v2/tools/forensic_sfi2_execution.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:57dcb2dd6103adfb29a5d6b67398f64a814e61d89a6dc880ad1befe22ddff5f1"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:ea1a9facf148419f372f7e5385ce8b6a7ed735a8e824fb9090605273978882b4",
+      "path": "research/tavonel_eval_v2/tools/forensic_stale_escape.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:a81ca36b9c573a63a5a775d4551484fc788b03dc664054d9a3543e5c44a1b370"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:14cba9ae8a0433a37c4b6cf9c81b0042d6d9fc04c555657b98d216c2551033d1",
+      "path": "research/tavonel_eval_v2/tools/forensic_stale_escape_root_cause.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:5b89c20a1c81bbe652f9ce0f5deb45d19c907aea6935420a205078c321151737"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:78e4ba68a6e95d0d3f6f13bc9e54eb50a0393e25b415edaa4e8eb05c019d7b8f",
+      "path": "research/tavonel_eval_v2/tools/four_link_acceptance.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:6028939bcd5d737139c601ea06290ca75bd85ad26b00d365effd1a1dbf1a68a2"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:d401b6e918ca15e934c3d067e8bf386d55525d13ab058cef8114b2b3539b1d18",
+      "path": "research/tavonel_eval_v2/tools/four_link_gate.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:73cb3297160219d98ac2ee65843f969fc30476c4d6859e448d61f7a1a72e9154"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:eaf271a92e40e68a3c5980007ea423213fb798023dd21b9be1f52559c7174a15",
+      "path": "research/tavonel_eval_v2/tools/freeze_gpu_successor_protocols.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:07cf42ddd8bc87e2c390dadf06ba72b8bef3cb4ea9a7cc48777f9704df8ad1d7"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:0120d26829186cc825ea0e4ce4563caf2257ca8d1cece96b87449fc83a69ed00",
+      "path": "research/tavonel_eval_v2/tools/freeze_migration_closure.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:44c991d64cd753a7135effb35ac1a5f9b064b11e7b738aec27731b027dae993a"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:7f5d51a147938b77abe2f9316853781d5f1ead7a245edc50d65d92b97c93958f",
+      "path": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:f613c7ded8cc1d525b54666a96a687e99980ade4beea1322e7c05383a318ab3e"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:8aaa08fb89efe987ccc82838175b69ac213b456d109b371e20552dcd4e451f09",
+      "path": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:bf394b031347035f7b8df12cc31126bae8d0517d3cb3359c135aba8699d3ed8b"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:fb9e786e2d832541ca8b507dc62457e93990ee1ed108df64a4b5b8922244342c",
+      "path": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r3.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:fa2d8950a32095aac64dbc21e14c15b4a72b65d81a34b722f6497693b11a29b6"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:8b8c02537767cb67c793ebf1587f31808b061aa0827ff4dc48a47a74a3d0f45f",
+      "path": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r4.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:21c304167b61eb58410e71c4f2cb000daa0589a8521e8c65ffbb11a0049cd037"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:b8325e3257e1e5bede941b2c7795e035b180ca3a7287d1d496744169cfced9a1",
+      "path": "research/tavonel_eval_v2/tools/freeze_protocol.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:c1f32949adf29d7888184e536bd05a4ecb0336b69fb58ad6485edf3bee6b2fc8"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:11a21e111a91ece1a3395e26e667912f69831670f4b9cdb64238bf01fe30e5d8",
+      "path": "research/tavonel_eval_v2/tools/freeze_sfi1_lineages.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:e22e11222038506a2663f9cc8596e5ae5aa6f933cc0bcd0e6bdb49122927e6d8"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:60462ead52c524ce67dd7a8b272318d20efd605bfee1c5cd1a02fa2487abc105",
+      "path": "research/tavonel_eval_v2/tools/freeze_sfi2_lineages.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:eba06f65cf1b3739f50aa9e5fa176ecb1c3f8bba55febca5e59b758ab9a7ec0a"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:5e2a444cf48d92be615d2347d152a73a861844bc9fd4aa0bd13337730108ff1d",
+      "path": "research/tavonel_eval_v2/tools/freeze_sfi3_lineages.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:8cf8a7eb641fd1077bd5f9bb65ab37b424869193c52c9aed214d3769d0d45568"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:73122e37c988b15de1f20233a252f639a3eb86ac41bf2fae061e3636821a2b84",
+      "path": "research/tavonel_eval_v2/tools/freeze_sfi3_protocol.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:e9c8f28fa29e7bf031c0f4091fd1f5b0f6d9aca4c832d4450177e2efc89ad11c"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:5453dcef00ecdd12f33686b3c1c4ea72f7ecde141c1b61c8e31d7a18278e8541",
+      "path": "research/tavonel_eval_v2/tools/gpu_successor_execution.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:be9d8da296d3917952f0b100ef84cbbb20e9006ba748dc9325ca67b60b5cb6c0"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:fc81b00b3255f67464503aa4182115c00b4c30ed70b0af8ef222c97a4d9d8162",
+      "path": "research/tavonel_eval_v2/tools/gpu_successor_preflight.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:e34a86364f0cf54576d12b6fe2b7743a863807f57c5b0928437dc44cbde8742d"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:768ea544cc8c6019822a0b632044994eab7c4d267ef28b33822b8d140c0982b4",
+      "path": "research/tavonel_eval_v2/tools/identity_change_benchmark.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:bedccca2c16bb99b58e98f36602c70450ea479d829bdb579c157416a60cef3f6"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:b499e8635f4cbbb5aed5748d57de79139d43019041f476e00177934933b6cb59",
+      "path": "research/tavonel_eval_v2/tools/identity_change_migration_closure.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:8705ddf724e20b6ef4a3fb209d2c1a70e48b87a9440000bd0bf6c033e3c891e8"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:02109961da2f7eb5a238efe147446a34eb2b3ff91470b5ef69bf7f98bba52912",
+      "path": "research/tavonel_eval_v2/tools/identity_change_migration_closure_v2r2.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:3e40baf6b7988f4f084f9684a789818e68992fb9d8db0fe2d1dda168b8f75890"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:2e4da7d85ec492e917b3659ee7abe15b6db002ad65d08038a32edb95a6e355c3",
+      "path": "research/tavonel_eval_v2/tools/identity_quarantine_differential.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:bee76d90eb0e23b0ae9644f452ae22d36bb3410060006e89737223af6c9dbf97"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:c768e53ad23cf5d8ecd7ee092baf4dff31a7b3fcc55a018a85ae541def4ef81f",
+      "path": "research/tavonel_eval_v2/tools/inc_v2_001_disposition.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:24eb44e82d655fd8784087d59925f38825ed2ffe6c3a1e29bc556040a96e16a1"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:3e0a2af6f0c7e04c4b0546ab17e5564c3a23c0fea35c5a7c7fd16d3f65c229ed",
+      "path": "research/tavonel_eval_v2/tools/inc_v2_003_impact.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:db615d9ec860c9ab2b50cac6e454e552bf5e3a00165174c029fe7c0343e1df1e"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:7110172918219a10654c22b763dc3ad5fae70b5bde32c6df8bf9d7b45697a823",
+      "path": "research/tavonel_eval_v2/tools/invariant_domain.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:e1ebdcaf0d4c4c83fae7099e3179beb10fc3cea305787748afddb94bf8f97fc0"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:f11736221f2167e14363c597fa0166e38dc008858fe4100883884cdf7a8b316e",
+      "path": "research/tavonel_eval_v2/tools/launch_gpu_successor.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:a8e93f7814aef548ffbe71cead5b5fda70c7b3b2a187d69e398d126a0dd57b5b"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:f33208eb456138c2388a0e8e2eddf41ed9eca8c89ed33455a70326ef1a5d3a72",
+      "path": "research/tavonel_eval_v2/tools/materialize_successor_inputs.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:9fd6aaa29dfb5cf877bb69fb1a38d97658afde6b57f96c0f4d6b527151a97a4f"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:49a217ce8d1f99ade0a9332a2f2163308de1931f324240be0069663722ccd955",
+      "path": "research/tavonel_eval_v2/tools/mcnemar_power.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:b71a1dce3c14ecb88c2f362b4109c58ca0c921fdffbc1b746a7a806b4277f32b"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:6fa3e61c79452b271fd32cf13fd54cc08c8ab4b50402e811a51accac2d8ea950",
+      "path": "research/tavonel_eval_v2/tools/migration_closure_acceptance.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:0d27c9e4a785c3ee51e2d70bdc1bda64f247d0f2786886a89b48bcbbbe883f18"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:c8d4534f55fab3dc9b7666b7d1f6cf4d982239cca87735a6ac0adab744537fb3",
+      "path": "research/tavonel_eval_v2/tools/p4b_lineage_diagnostic.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:ecedc5e5d0f0d065587820803c6b637191d687bfd51ca3eb479e677739b9c139"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:a6396c6b9d0b6227fd73790ee6018f860666e2208e9bc95a47da1632b13da0eb",
+      "path": "research/tavonel_eval_v2/tools/preflight_checks.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:8a16cb01029d32a9d049a48804ab67fa2ca87a35dcefae52a33e7c680f950e63"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:2904c0bb67f79a9136d7c68613abb027b9dec2d18347100a7e58ff8414423a97",
+      "path": "research/tavonel_eval_v2/tools/preflight_sfi3_roots.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:7b8e5a50eb42308dc3e9446f3b5953c9ed159e62476e2170fec80d5241b5abd0"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:aa42a184a9cf28f9290dc1618416003e5f7bf520fe300c4b2e8f2bcbef569615",
+      "path": "research/tavonel_eval_v2/tools/probe_v2r3_roots.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:510d95e07deb51cc81bac15a553e4e37b150077172ce215ca3f6efbd93183d1e"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:b00a38eb38a9eb7b9d6f65ec5aec47c7f584010f312c73f1dd30a88eeac8c1fb",
+      "path": "research/tavonel_eval_v2/tools/probe_v2r4_roots.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:9a4d7d7977bf920c4f78f6a6e890b7881a769eb04c96a161b858e2f1f757acde"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:8bb578c242980351b181d345dfb4ad41fb02973d19c42528f167584e34b91be8",
+      "path": "research/tavonel_eval_v2/tools/recanonicalise_v2r1.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:187bf765ccd0227d407e5041c516c6d729adf06c7254e67270557aadedcf6d1c"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:651501f817b7cc7b72fe0d467f2a0d6bb7be123b3ddc7977fd8fbaa4b6922a02",
+      "path": "research/tavonel_eval_v2/tools/reclassify_identity_change_ladder.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:23a84b4074b8fe908de44d1c69a0eb0868d7d8739d95a3730dbc52d3a6bcaad9"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:70d1700a2ed8b02abcaeac5311f8e753ffa1f03854ca0f81f03a63ecbada0aff",
+      "path": "research/tavonel_eval_v2/tools/record_study_rename.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:c338255decaa156e727b06e2b2f2c4d7b3e2ce7d1ad1861aae68d3967e4a37cb"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:a7b3cfb3cd9a5f4c2c127a6eca4fdf1b9508de89812c73f39be9c999d043ff4b",
+      "path": "research/tavonel_eval_v2/tools/register_legacy_receipts.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:39b370cc7cf7c6672a6eac0e2f8867543fb1cc92ee231d0ff4374538bdb6b8d0"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:71260dbbe9ffe4da99636d86f8b6f1da1052703ebacaf953a8b7b3b4defa8b8f",
+      "path": "research/tavonel_eval_v2/tools/register_route_a_closure.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:986ec57df8898859fbd0da6e96b974a1d2ddf1b17895ee825b4aefc1c4321151"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:e1b88e285c3a6cabb22be297902e2b66c041a9a864793b422d82aae38f68fbcf",
+      "path": "research/tavonel_eval_v2/tools/rehearse_sfi3_execution.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:61cdb4b41aa0f8e47207aeb1e30d6b3910a0a18270bb445c28b2146fc1e0f6f6"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:8bf2d6de71c22ce4b508bdf6f52144e8aa524da2bb21d5c8e23c6141f2684a2f",
+      "path": "research/tavonel_eval_v2/tools/rehearse_v2r4_closure.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:f06a70464b123c05ba418b76b34e070321bc36bbecf1f8a7a46f02b7f6e2a3e3"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:2ef84dfac11a4dc9c6670735d85f64aeaab3fd5f3423b333d519f2ff7638399a",
+      "path": "research/tavonel_eval_v2/tools/replace_sfi3_roots.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:9ef45722e7a7eea896582a01a3a436dae8ad898bee6c7055688e5abd66b36c97"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:a0d4c66950dfcebf6a859b9eb269e4ffe0c912557365c478c7a158fb1ef4af2d",
+      "path": "research/tavonel_eval_v2/tools/reproducibility_fixture.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:30bb3ee3d69beadf597c753a5049791828e179e0b0ff4c2246bc91766bb8b339"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:650766c4b6267b89ba8b730fbae90c134bc5240c458a19362b63d0747c61ab9d",
+      "path": "research/tavonel_eval_v2/tools/root_identity.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:0d172324371fe5be38ba7c9e2617597f3fa9df938f01122799cd1ab2eeb8fa9c"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:69947799fb858c8d45d4a0f074d045f52c82260e960dbc195f09709a26454a4f",
+      "path": "research/tavonel_eval_v2/tools/run_locality_v2.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:d3786b584a20ff2a68e90786e0a6e213837bccbeec4327c2b70641d84d0cd363"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:99fecd23bcb69fb5eb51e73eab6e8dc099212da8c08ce37a288760df9569d9f0",
+      "path": "research/tavonel_eval_v2/tools/run_model_preflight.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:9c56ed46ccbb0af7d01d33a59eac36f6a627f0ceaf3f517db87783621cabbdce"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:b0e6f811cd172c1413d1383980768067e69f815ef457a631fbd9822c16c5eb42",
+      "path": "research/tavonel_eval_v2/tools/run_oracle_v2.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:31321ede127160ad0840b73767b173840ed3d7ef5afeb51522ecd9fd4c9a1071"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:d54b3a297dbfe02de7c444019e3d987efc254ea05bcc1dda2c821e80592c4254",
+      "path": "research/tavonel_eval_v2/tools/run_p0b.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:f40ab0182528400e138517e8da978f0719a036f8450968631dbfeeaaf2236c3c"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:db35a4f52b697453b79038c937f27efa14d6833e14a80e21a9bcaf3187bc6c24",
+      "path": "research/tavonel_eval_v2/tools/run_p0c.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:816dac6d28f26282cc76977250402f1011378fa6cfdf66841e5061bc6f3d2a9f"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:2500fb72e17bfe1c6bc44dde574a6a86a943bbc1261bba7ea993ff182e543571",
+      "path": "research/tavonel_eval_v2/tools/run_p0d.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:41865cf4b391b2069b61c13827ddf5b57d6925b0df7b17bbf2eab49ca24ddf9c"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:c649482bcc4a7a05512614ff822182338aa4015cddbfa3e0c790ab015c8932eb",
+      "path": "research/tavonel_eval_v2/tools/run_p1_smoke.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:5c55efc6f7d0154cb8def1dc63a372cfd3d6f34279d383929b7ab4c25c1cb309"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:0bd07348e77df7373a13b244d1f8cb06a247f322b14dd372a411f275aba67419",
+      "path": "research/tavonel_eval_v2/tools/run_p2.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:dfb2bc10b8f03336f393a14380dec1348dfa926cf67da8eea6490a2c24dfaef3"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:9607a3c1e2361397fbcaa1ce1946906a518d479abb51fd8658090a044a744c6d",
+      "path": "research/tavonel_eval_v2/tools/run_p3.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:504fb02adc3a30d8e8db4da08b5d9bb7f8eba57a262b60348a4af117f3b32843"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:65b87eeaaa68f3cbcd7484cb0ca17ffb671da0bdac99db1912202ffa37dc0dbc",
+      "path": "research/tavonel_eval_v2/tools/run_p3b.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:db0b28fe05e107cc8cd076a8f60e708b9f33e16b1f1d0653de4625da5229c5fa"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:de058fab03a5b2cb949da948149e70843204028dfc2c95894d23570ced6a0bc2",
+      "path": "research/tavonel_eval_v2/tools/run_p4.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:be397ece5a1c38472a2cb119e5c8ae4ca575a865ea6abb1ccc4a2f859c529154"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:3e34117ead25855e00c15dec1b0a88f0818994873d7c93a5f3e2e0bd5a135be6",
+      "path": "research/tavonel_eval_v2/tools/run_p4b.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:18564b967cf86d53d9c13ea43f87787f1975bf84701021bc45ab18cf6f65c6bb"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:f6d382cc06e0367559dc0d530b454a64272c347399742b7177a91ec84d210f9b",
+      "path": "research/tavonel_eval_v2/tools/run_p4c.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:857d328509e54965021ac0c35089fefea70c4b08e3039a8216150b454d8aced9"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:5124cbb76ea87de3efdcb1068adc96419d8f66fa5adb600163bd4c784288b71b",
+      "path": "research/tavonel_eval_v2/tools/run_p4d.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:6b3f45edd588fb57ef00142e750ade1dd2b6ec7faa29150d7aa016ac3206eb80"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:8827cd695de15d388863e8f9f624ad4148c7293c4ebf624dfa2e7fed12c3602a",
+      "path": "research/tavonel_eval_v2/tools/run_p4e.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:62878e14972b041c3a46055959f286f2ceb9b64569bf8647250e9d1abf9387d6"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:65ac2d68154c389ac9078287582f4dd4d4b6e5ecbfb79b09a46e434a66192be4",
+      "path": "research/tavonel_eval_v2/tools/run_p4g.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:35fdadce5eda5750893786ab771eed5b36a024c176dc1765bb51cb6346a5f9b9"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:23a2172adc802b07b527ef9228b375906626b0236d88e90464599405074f2189",
+      "path": "research/tavonel_eval_v2/tools/run_p4i.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:d77d9d0483c78993c73e16ebbe32ed934ad220a878f75889287b17812cd4ec82"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:6342be7f23bd55397e3d7a708f4ce2bf2ba1a2e3543a5c1089e336a60f502025",
+      "path": "research/tavonel_eval_v2/tools/run_r1_reproducibility.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:8700512f4903d24e7349c11e50e772a4763b2ce0d5c3874bb0c6d6029bd80bcf"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:137588a0091d9768b20f5381aeb9f0a737c5a26c5411d0ec5a5e60f3c3e09880",
+      "path": "research/tavonel_eval_v2/tools/run_sfh1.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:35c1ae012e7bc071bff69c253bfd33b08e236648e64e1b03270a8f801db4e70d"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:33acd1285e860b891828eb1b9fad55d8ca2443bef6e7940bf1389e4fcb40caae",
+      "path": "research/tavonel_eval_v2/tools/run_vbc1_probe.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:8ffc107e80159f27cd1d99b44280248bfbe324b0f180966b23d94e5eff0732c7"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:fee435ca7fa92c3f44567f43c6d01632ed006a77e86828f7bf7db9db7eb829c8",
+      "path": "research/tavonel_eval_v2/tools/run_vbc2_acquire.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:fd254ce8071c22d4d16496839ffb436ebdd87e02f2e13c6e0eb6b6790e59c3e8"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:816c057acd17bf58ea1bac5c4ff3d1aaaf027a260a4c5e7a634e5b49f77c0e02",
+      "path": "research/tavonel_eval_v2/tools/run_vbc2_parallel.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:b1bb4f21d2bf6fd7626fa84a4a0f5350e56dc0e7b701ca7256329b675ea78f66"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:a6e14f68772cbc6e2e865f34d9ce0a72c102560b872fbca4212eb7c0dd5636c2",
+      "path": "research/tavonel_eval_v2/tools/run_vbc2_preflight.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:b2fa07425acd54138da3198b337117006ea8f874e9566c78f19968d0840fbcad"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:a8639c355927c7eef8112497dc3bb1637c857ee9de9af8c567af770d229baf00",
+      "path": "research/tavonel_eval_v2/tools/runpod_provisioner.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:aece09a31c2ec853a9b231b1bb9548b4fef5cc9a74c94af3d4165acd7d3c28ef"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:f9d03195a5eb867f8247afe1d4e89725245dfce88af618b84678b6e56012e5c6",
+      "path": "research/tavonel_eval_v2/tools/score_sfi1.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:9d9c7a5d303ac5cdc57fc5a2accf06e507d77b70e58c84caa716408181f3025e"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:670dee3ae7dca4ef8324ca242984b3f78be503759450d5772d770965bdea6062",
+      "path": "research/tavonel_eval_v2/tools/score_sfi3.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:4b5664158b9f63ed8d1085fa442ab8d6bbf5ab3bd34923a90f571dffb6d445b4"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:ec1aa8c3a09cbd188966bad03f84d1c7e359a1edb7ab092ee2bf4bf01d920d09",
+      "path": "research/tavonel_eval_v2/tools/seal_instrument_identity.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:411c2554ef539b75ebd893d2110aea333894265d06ad26e65f8cba016dc55e48"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:1ae1b1de3e509f8ae195d320f28bfda36f912e35c3623683c729fb3e0bc84b87",
+      "path": "research/tavonel_eval_v2/tools/sfi1_worker.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:9bb25e22fc90f25ffe9be61499cd18e676e830519d474730b1e297e71d317d6a"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:8143508c79c5cdfb6890d7822cc84928b83602dec23777b418e2dda5002e5994",
+      "path": "research/tavonel_eval_v2/tools/sfi2_worker.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:0704512fd04af3c5d1cd17e7d38ed554e3aeb51635b42cfc469c59c1c3572240"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:87ead1b46f015b9b36657c675f0ea7a951be01e3a4cf8f30dcf7c3cf9860ac82",
+      "path": "research/tavonel_eval_v2/tools/sfi3_acceptance.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:8abe9d9637e68e3609a976fdb0b480de4b719c8fed0ca4d83196800d19b82dbc"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:a12c637528ee184983170ef1b76393ea888f8fa057fb213ac328d5c5e7ec043c",
+      "path": "research/tavonel_eval_v2/tools/sfi3_root_reservation.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:d612327233a6d78a4e0d4ccfda458309ca7d2584fce503f6e1c82ba36eac22a2"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:66ff5f74c829319ceb264dc092ffce8086dadc2e71521d3d419759b231418c9c",
+      "path": "research/tavonel_eval_v2/tools/sfi3_worker.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:2ff442724607e55b5e22a09b1c1f935381f6bdc44c219d998b27f15340126e55"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:c9cae7f7671e07575db02dd83fe53307e3be062def2a0d61d6b4b33f51a6cb9e",
+      "path": "research/tavonel_eval_v2/tools/supersede_pre_amendment_runs.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:cbbdee06386350d6bbd599161f8cd0fe13c91cc6292832ff3f6c4db9853ad227"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:f35589e986ae9faee95761bc0dc05a8c6237cf772b570a8da0d0ff4f38550e52",
+      "path": "research/tavonel_eval_v2/tools/switch_identity_quarantine.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:3beac6b46770be5a400b168e3d628a4bcec3e453667ec9b8587eefabbe631387"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:bb87c5fd993fbc617b7c336abf9fc1cd10c2d799c3fe50d517082d5082110fdf",
+      "path": "research/tavonel_eval_v2/tools/v2r2_invariant6.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:a0ca9cb55cdc23faf9185164006fc2d0cece55a97ad0b9cf6003776b092cf753"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:a3324d2eb38d048776586eaff89079fac9c2358d3c64acc184d925ec2b58199e",
+      "path": "research/tavonel_eval_v2/tools/v2r3_attestation.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:9c077007fd4f1bf34b5d25cbe1f3e9469d1a5bac01d6aa2e204d1bf3436e9a41"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:11d948a508b4e9c7f0c5b0c77e7809eba9f96ca2577665603d729d8a68cc39d3",
+      "path": "research/tavonel_eval_v2/tools/v2r3_effective_identity.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:b5a65e10b98e7a7112b6b0d0dea3fe136a5670944312686efaaeef1fb366e2ed"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:bbc78267fcc9df4a862302b58f6e15997adc04f6fa2cc3398a2dd5ec34254f2f",
+      "path": "research/tavonel_eval_v2/tools/v2r3_quarantine_oracle.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:09c46cf2d6976a6a104d6e1695be356ecf78117e16ae1e3320038056f8632305"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:95dafe90e5249859e686ad6b771d5b887fc7aeb59170748bef9aa5b11997b1e6",
+      "path": "research/tavonel_eval_v2/tools/v2r3_state_table.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:3fc2f184eb28f93dcea83148ef876a95864c836f26e9f2701d8a1133024422e9"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:df631708a44021d29765a346c4efae16de6ab3e81623124319e3f91d8b79e1d9",
+      "path": "research/tavonel_eval_v2/tools/v2r4_attestation.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:e43bcf029cc2034d9ab85150854e977d2411bffbd0d5c25f696c0c8f9935cec8"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:ce3b0b03cfaedd1d271bd10d28657de493728c72cf839c76b5c9aa6ae304b9fd",
+      "path": "research/tavonel_eval_v2/tools/v2r4_grading.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:afab413f3d88e947fdcf1f655c66f06e0839a5573d2e2e5b73b4b11afe59fbb7"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:20b62487617373dbc1963c0f135b1925406c57c0aeb15f8ecf944a00d0211a22",
+      "path": "research/tavonel_eval_v2/tools/v2r4_preacquisition_gate.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:05187904fa45faa1c2b88692c7a688a2c9c2ad28b81390a81058cd4d7544c2ce"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:0240e973370aa1c42c79874db33ffbcbad3b0bbe5a609c4ece4f11e3c180115e",
+      "path": "research/tavonel_eval_v2/tools/v2r4_semantics_delta.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:7708d011437eff8f5fa85056ce6c3de1cea6b1736ce9d4374b0807267154edfe"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:1c1d7b6fd7531f776b322aeb7b9a5195563f2fd2db0842bb2fec99cb2f6fd898",
+      "path": "research/tavonel_eval_v2/tools/v2r4_sfi3_reservation_handoff.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:e629601e9b585f00e1bc088bd7aba2b9b145c74a3898114881f9289f4ca82c98"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:7ceac5ee52238f09bcace2efde05be8bb99e4bffb9834a29f6fd767314a2ab76",
+      "path": "research/tavonel_eval_v2/tools/verify_claim_pins.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:3355bad1c3f079b8c19f447c437b2e85b2973a8e809bb11be456f67bbb7f41b4"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:4c7784ab29a3e046b4bfb5f27537d358178c626779282dc95f8affbfd782de33",
+      "path": "research/tavonel_eval_v2/tools/verify_sealed_evidence.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:e25a785bab9f8804ed194c9566ec7f8900eb4134acd6d1aa38e49714a3f3c249"
+    },
+    {
+      "class": "ADVISORY",
+      "expected": "sha256:02216bea34498852c95919dc163d10505769a8e0b3903cfc609dc61118a021f7",
+      "path": "research/tavonel_eval_v2/tools/verify_sfi2_frame.py",
+      "receipt": "sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json",
+      "worktree": "sha256:14b10cc834af32d9cecc63de49a6c7c0b913bc9bb8beb24e5bdb8385aeaea128"
+    }
+  ],
+  "does_not_repin": "This verifier never writes a pin. A frozen attestation whose bytes moved is reported, not repaired -- repairing it by writing the current digest would overwrite historical evidence.",
+  "estimated_cost_usd": 0.0,
+  "frozen_drift": [
+    {
+      "class": "FROZEN",
+      "expected": "sha256:02109961da2f7eb5a238efe147446a34eb2b3ff91470b5ef69bf7f98bba52912",
+      "path": "research/tavonel_eval_v2/tools/identity_change_migration_closure_v2r2.py",
+      "receipt": "identity-change-migration-closure-v2r2-scorer-freeze--20260825T104559Z-db606c6abc47.json",
+      "worktree": "sha256:3e40baf6b7988f4f084f9684a789818e68992fb9d8db0fe2d1dda168b8f75890"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:bb87c5fd993fbc617b7c336abf9fc1cd10c2d799c3fe50d517082d5082110fdf",
+      "path": "research/tavonel_eval_v2/tools/v2r2_invariant6.py",
+      "receipt": "identity-change-migration-closure-v2r2-scorer-freeze--20260825T104559Z-db606c6abc47.json",
+      "worktree": "sha256:a0ca9cb55cdc23faf9185164006fc2d0cece55a97ad0b9cf6003776b092cf753"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:650766c4b6267b89ba8b730fbae90c134bc5240c458a19362b63d0747c61ab9d",
+      "path": "research/tavonel_eval_v2/tools/root_identity.py",
+      "receipt": "identity-change-migration-closure-v2r3-frame-attestation--20260825T173240Z-8d8c7cbeb23e.json",
+      "worktree": "sha256:0d172324371fe5be38ba7c9e2617597f3fa9df938f01122799cd1ab2eeb8fa9c"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:c33bf9b1ffaa8036d6a75b3d4812011879bde2f174d00fc51ac511f0575d17ed",
+      "path": "research/tavonel_eval_v2/tests/test_v2r3_contract_consistency.py",
+      "receipt": "identity-change-migration-closure-v2r3-protocol-attestation--20260825T173258Z-5954c7c33e27.json",
+      "worktree": "sha256:f5775f7c10843496ec82ee300f8d9b9788ea3113576b7f16b323e4c81470b7f9"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:11d948a508b4e9c7f0c5b0c77e7809eba9f96ca2577665603d729d8a68cc39d3",
+      "path": "research/tavonel_eval_v2/tools/v2r3_effective_identity.py",
+      "receipt": "identity-change-migration-closure-v2r3-protocol-attestation--20260825T173258Z-5954c7c33e27.json",
+      "worktree": "sha256:b5a65e10b98e7a7112b6b0d0dea3fe136a5670944312686efaaeef1fb366e2ed"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:bbc78267fcc9df4a862302b58f6e15997adc04f6fa2cc3398a2dd5ec34254f2f",
+      "path": "research/tavonel_eval_v2/tools/v2r3_quarantine_oracle.py",
+      "receipt": "identity-change-migration-closure-v2r3-protocol-attestation--20260825T173258Z-5954c7c33e27.json",
+      "worktree": "sha256:09c46cf2d6976a6a104d6e1695be356ecf78117e16ae1e3320038056f8632305"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:95dafe90e5249859e686ad6b771d5b887fc7aeb59170748bef9aa5b11997b1e6",
+      "path": "research/tavonel_eval_v2/tools/v2r3_state_table.py",
+      "receipt": "identity-change-migration-closure-v2r3-protocol-attestation--20260825T173258Z-5954c7c33e27.json",
+      "worktree": "sha256:3fc2f184eb28f93dcea83148ef876a95864c836f26e9f2701d8a1133024422e9"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:fb9e786e2d832541ca8b507dc62457e93990ee1ed108df64a4b5b8922244342c",
+      "path": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r3.py",
+      "receipt": "identity-change-migration-closure-v2r3-scorer-freeze--20260825T180251Z-bb65b8985c08.json",
+      "worktree": "sha256:fa2d8950a32095aac64dbc21e14c15b4a72b65d81a34b722f6497693b11a29b6"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:2b392c8fd63439493f620e1314ab7fc140ceda866d7c417b917bd50bb7fe138d",
+      "path": "research/tavonel_eval_v2/tools/identity_change_migration_closure_v2r3.py",
+      "receipt": "identity-change-migration-closure-v2r3-scorer-freeze--20260825T180251Z-bb65b8985c08.json",
+      "worktree": "sha256:f5b8de50019ef4efe6a83ddeb295178c35848f78c94daabef0669fe044eb1e0d"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:650766c4b6267b89ba8b730fbae90c134bc5240c458a19362b63d0747c61ab9d",
+      "path": "research/tavonel_eval_v2/tools/root_identity.py",
+      "receipt": "identity-change-migration-closure-v2r3-scorer-freeze--20260825T180251Z-bb65b8985c08.json",
+      "worktree": "sha256:0d172324371fe5be38ba7c9e2617597f3fa9df938f01122799cd1ab2eeb8fa9c"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:a3324d2eb38d048776586eaff89079fac9c2358d3c64acc184d925ec2b58199e",
+      "path": "research/tavonel_eval_v2/tools/v2r3_attestation.py",
+      "receipt": "identity-change-migration-closure-v2r3-scorer-freeze--20260825T180251Z-bb65b8985c08.json",
+      "worktree": "sha256:9c077007fd4f1bf34b5d25cbe1f3e9469d1a5bac01d6aa2e204d1bf3436e9a41"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:11d948a508b4e9c7f0c5b0c77e7809eba9f96ca2577665603d729d8a68cc39d3",
+      "path": "research/tavonel_eval_v2/tools/v2r3_effective_identity.py",
+      "receipt": "identity-change-migration-closure-v2r3-scorer-freeze--20260825T180251Z-bb65b8985c08.json",
+      "worktree": "sha256:b5a65e10b98e7a7112b6b0d0dea3fe136a5670944312686efaaeef1fb366e2ed"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:bbc78267fcc9df4a862302b58f6e15997adc04f6fa2cc3398a2dd5ec34254f2f",
+      "path": "research/tavonel_eval_v2/tools/v2r3_quarantine_oracle.py",
+      "receipt": "identity-change-migration-closure-v2r3-scorer-freeze--20260825T180251Z-bb65b8985c08.json",
+      "worktree": "sha256:09c46cf2d6976a6a104d6e1695be356ecf78117e16ae1e3320038056f8632305"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:95dafe90e5249859e686ad6b771d5b887fc7aeb59170748bef9aa5b11997b1e6",
+      "path": "research/tavonel_eval_v2/tools/v2r3_state_table.py",
+      "receipt": "identity-change-migration-closure-v2r3-scorer-freeze--20260825T180251Z-bb65b8985c08.json",
+      "worktree": "sha256:3fc2f184eb28f93dcea83148ef876a95864c836f26e9f2701d8a1133024422e9"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:1098895d17370bc281ff215d6296d39a08b653a5ba1845c905b0db1dadf6fc60",
+      "path": "research/tavonel_eval_v2/tools/enumerate_v2r3r1_universe.py",
+      "receipt": "identity-change-migration-closure-v2r3r1-frame-attestation--20260825T210400Z-fbab51b67a9e.json",
+      "worktree": "sha256:746b12cb7dd317db35c3102fc449ed5872c997fe134487c2072804ebb4794990"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:f33691f7db53202d2eb31137ca6b9120dd587581ceb59db0fdb2bf98251037ed",
+      "path": "research/tavonel_eval_v2/tools/v2r3r1_carry_forward.py",
+      "receipt": "identity-change-migration-closure-v2r3r1-frame-attestation--20260825T210400Z-fbab51b67a9e.json",
+      "worktree": "sha256:1830444b544eccfa372424442cf00d2753952ba8b82fedf522aeb0a6666b1ecd"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:c33bf9b1ffaa8036d6a75b3d4812011879bde2f174d00fc51ac511f0575d17ed",
+      "path": "research/tavonel_eval_v2/tests/test_v2r3_contract_consistency.py",
+      "receipt": "identity-change-migration-closure-v2r3r1-protocol-attestation--20260825T210409Z-b2cca585b5a3.json",
+      "worktree": "sha256:f5775f7c10843496ec82ee300f8d9b9788ea3113576b7f16b323e4c81470b7f9"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:11d948a508b4e9c7f0c5b0c77e7809eba9f96ca2577665603d729d8a68cc39d3",
+      "path": "research/tavonel_eval_v2/tools/v2r3_effective_identity.py",
+      "receipt": "identity-change-migration-closure-v2r3r1-protocol-attestation--20260825T210409Z-b2cca585b5a3.json",
+      "worktree": "sha256:b5a65e10b98e7a7112b6b0d0dea3fe136a5670944312686efaaeef1fb366e2ed"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:bbc78267fcc9df4a862302b58f6e15997adc04f6fa2cc3398a2dd5ec34254f2f",
+      "path": "research/tavonel_eval_v2/tools/v2r3_quarantine_oracle.py",
+      "receipt": "identity-change-migration-closure-v2r3r1-protocol-attestation--20260825T210409Z-b2cca585b5a3.json",
+      "worktree": "sha256:09c46cf2d6976a6a104d6e1695be356ecf78117e16ae1e3320038056f8632305"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:95dafe90e5249859e686ad6b771d5b887fc7aeb59170748bef9aa5b11997b1e6",
+      "path": "research/tavonel_eval_v2/tools/v2r3_state_table.py",
+      "receipt": "identity-change-migration-closure-v2r3r1-protocol-attestation--20260825T210409Z-b2cca585b5a3.json",
+      "worktree": "sha256:3fc2f184eb28f93dcea83148ef876a95864c836f26e9f2701d8a1133024422e9"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:c33bf9b1ffaa8036d6a75b3d4812011879bde2f174d00fc51ac511f0575d17ed",
+      "path": "research/tavonel_eval_v2/tests/test_v2r3_contract_consistency.py",
+      "receipt": "identity-change-migration-closure-v2r3r1-protocol-attestation--20260825T211447Z-702db72e7d2b.json",
+      "worktree": "sha256:f5775f7c10843496ec82ee300f8d9b9788ea3113576b7f16b323e4c81470b7f9"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:11d948a508b4e9c7f0c5b0c77e7809eba9f96ca2577665603d729d8a68cc39d3",
+      "path": "research/tavonel_eval_v2/tools/v2r3_effective_identity.py",
+      "receipt": "identity-change-migration-closure-v2r3r1-protocol-attestation--20260825T211447Z-702db72e7d2b.json",
+      "worktree": "sha256:b5a65e10b98e7a7112b6b0d0dea3fe136a5670944312686efaaeef1fb366e2ed"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:bbc78267fcc9df4a862302b58f6e15997adc04f6fa2cc3398a2dd5ec34254f2f",
+      "path": "research/tavonel_eval_v2/tools/v2r3_quarantine_oracle.py",
+      "receipt": "identity-change-migration-closure-v2r3r1-protocol-attestation--20260825T211447Z-702db72e7d2b.json",
+      "worktree": "sha256:09c46cf2d6976a6a104d6e1695be356ecf78117e16ae1e3320038056f8632305"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:95dafe90e5249859e686ad6b771d5b887fc7aeb59170748bef9aa5b11997b1e6",
+      "path": "research/tavonel_eval_v2/tools/v2r3_state_table.py",
+      "receipt": "identity-change-migration-closure-v2r3r1-protocol-attestation--20260825T211447Z-702db72e7d2b.json",
+      "worktree": "sha256:3fc2f184eb28f93dcea83148ef876a95864c836f26e9f2701d8a1133024422e9"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:650766c4b6267b89ba8b730fbae90c134bc5240c458a19362b63d0747c61ab9d",
+      "path": "research/tavonel_eval_v2/tools/root_identity.py",
+      "receipt": "identity-change-migration-closure-v2r3r1-scorer-freeze--20260825T212103Z-426c31cc4eed.json",
+      "worktree": "sha256:0d172324371fe5be38ba7c9e2617597f3fa9df938f01122799cd1ab2eeb8fa9c"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:11d948a508b4e9c7f0c5b0c77e7809eba9f96ca2577665603d729d8a68cc39d3",
+      "path": "research/tavonel_eval_v2/tools/v2r3_effective_identity.py",
+      "receipt": "identity-change-migration-closure-v2r3r1-scorer-freeze--20260825T212103Z-426c31cc4eed.json",
+      "worktree": "sha256:b5a65e10b98e7a7112b6b0d0dea3fe136a5670944312686efaaeef1fb366e2ed"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:bbc78267fcc9df4a862302b58f6e15997adc04f6fa2cc3398a2dd5ec34254f2f",
+      "path": "research/tavonel_eval_v2/tools/v2r3_quarantine_oracle.py",
+      "receipt": "identity-change-migration-closure-v2r3r1-scorer-freeze--20260825T212103Z-426c31cc4eed.json",
+      "worktree": "sha256:09c46cf2d6976a6a104d6e1695be356ecf78117e16ae1e3320038056f8632305"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:95dafe90e5249859e686ad6b771d5b887fc7aeb59170748bef9aa5b11997b1e6",
+      "path": "research/tavonel_eval_v2/tools/v2r3_state_table.py",
+      "receipt": "identity-change-migration-closure-v2r3r1-scorer-freeze--20260825T212103Z-426c31cc4eed.json",
+      "worktree": "sha256:3fc2f184eb28f93dcea83148ef876a95864c836f26e9f2701d8a1133024422e9"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:7110172918219a10654c22b763dc3ad5fae70b5bde32c6df8bf9d7b45697a823",
+      "path": "research/tavonel_eval_v2/tools/invariant_domain.py",
+      "receipt": "identity-change-migration-closure-v2r4-domain-attestation--20260826T061752Z-371566b4e8b7.json",
+      "worktree": "sha256:e1ebdcaf0d4c4c83fae7099e3179beb10fc3cea305787748afddb94bf8f97fc0"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:8bf2d6de71c22ce4b508bdf6f52144e8aa524da2bb21d5c8e23c6141f2684a2f",
+      "path": "research/tavonel_eval_v2/tools/rehearse_v2r4_closure.py",
+      "receipt": "identity-change-migration-closure-v2r4-domain-attestation--20260826T061752Z-371566b4e8b7.json",
+      "worktree": "sha256:f06a70464b123c05ba418b76b34e070321bc36bbecf1f8a7a46f02b7f6e2a3e3"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:ce3b0b03cfaedd1d271bd10d28657de493728c72cf839c76b5c9aa6ae304b9fd",
+      "path": "research/tavonel_eval_v2/tools/v2r4_grading.py",
+      "receipt": "identity-change-migration-closure-v2r4-domain-attestation--20260826T061752Z-371566b4e8b7.json",
+      "worktree": "sha256:afab413f3d88e947fdcf1f655c66f06e0839a5573d2e2e5b73b4b11afe59fbb7"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:b00a38eb38a9eb7b9d6f65ec5aec47c7f584010f312c73f1dd30a88eeac8c1fb",
+      "path": "research/tavonel_eval_v2/tools/probe_v2r4_roots.py",
+      "receipt": "identity-change-migration-closure-v2r4-frame-attestation--20260826T050508Z-a1a4ec80798a.json",
+      "worktree": "sha256:9a4d7d7977bf920c4f78f6a6e890b7881a769eb04c96a161b858e2f1f757acde"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:650766c4b6267b89ba8b730fbae90c134bc5240c458a19362b63d0747c61ab9d",
+      "path": "research/tavonel_eval_v2/tools/root_identity.py",
+      "receipt": "identity-change-migration-closure-v2r4-frame-attestation--20260826T050508Z-a1a4ec80798a.json",
+      "worktree": "sha256:0d172324371fe5be38ba7c9e2617597f3fa9df938f01122799cd1ab2eeb8fa9c"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:a12c637528ee184983170ef1b76393ea888f8fa057fb213ac328d5c5e7ec043c",
+      "path": "research/tavonel_eval_v2/tools/sfi3_root_reservation.py",
+      "receipt": "identity-change-migration-closure-v2r4-frame-attestation--20260826T050508Z-a1a4ec80798a.json",
+      "worktree": "sha256:d612327233a6d78a4e0d4ccfda458309ca7d2584fce503f6e1c82ba36eac22a2"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:11d948a508b4e9c7f0c5b0c77e7809eba9f96ca2577665603d729d8a68cc39d3",
+      "path": "research/tavonel_eval_v2/tools/v2r3_effective_identity.py",
+      "receipt": "identity-change-migration-closure-v2r4-protocol-attestation--20260826T050543Z-53b2dc7abad8.json",
+      "worktree": "sha256:b5a65e10b98e7a7112b6b0d0dea3fe136a5670944312686efaaeef1fb366e2ed"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:bbc78267fcc9df4a862302b58f6e15997adc04f6fa2cc3398a2dd5ec34254f2f",
+      "path": "research/tavonel_eval_v2/tools/v2r3_quarantine_oracle.py",
+      "receipt": "identity-change-migration-closure-v2r4-protocol-attestation--20260826T050543Z-53b2dc7abad8.json",
+      "worktree": "sha256:09c46cf2d6976a6a104d6e1695be356ecf78117e16ae1e3320038056f8632305"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:95dafe90e5249859e686ad6b771d5b887fc7aeb59170748bef9aa5b11997b1e6",
+      "path": "research/tavonel_eval_v2/tools/v2r3_state_table.py",
+      "receipt": "identity-change-migration-closure-v2r4-protocol-attestation--20260826T050543Z-53b2dc7abad8.json",
+      "worktree": "sha256:3fc2f184eb28f93dcea83148ef876a95864c836f26e9f2701d8a1133024422e9"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:0240e973370aa1c42c79874db33ffbcbad3b0bbe5a609c4ece4f11e3c180115e",
+      "path": "research/tavonel_eval_v2/tools/v2r4_semantics_delta.py",
+      "receipt": "identity-change-migration-closure-v2r4-protocol-attestation--20260826T050543Z-53b2dc7abad8.json",
+      "worktree": "sha256:7708d011437eff8f5fa85056ce6c3de1cea6b1736ce9d4374b0807267154edfe"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:8b8c02537767cb67c793ebf1587f31808b061aa0827ff4dc48a47a74a3d0f45f",
+      "path": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r4.py",
+      "receipt": "identity-change-migration-closure-v2r4-scorer-freeze--20260826T061751Z-f76342b0a123.json",
+      "worktree": "sha256:21c304167b61eb58410e71c4f2cb000daa0589a8521e8c65ffbb11a0049cd037"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:b499e8635f4cbbb5aed5748d57de79139d43019041f476e00177934933b6cb59",
+      "path": "research/tavonel_eval_v2/tools/identity_change_migration_closure.py",
+      "receipt": "identity-change-migration-closure-v2r4-scorer-freeze--20260826T061751Z-f76342b0a123.json",
+      "worktree": "sha256:8705ddf724e20b6ef4a3fb209d2c1a70e48b87a9440000bd0bf6c033e3c891e8"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:7110172918219a10654c22b763dc3ad5fae70b5bde32c6df8bf9d7b45697a823",
+      "path": "research/tavonel_eval_v2/tools/invariant_domain.py",
+      "receipt": "identity-change-migration-closure-v2r4-scorer-freeze--20260826T061751Z-f76342b0a123.json",
+      "worktree": "sha256:e1ebdcaf0d4c4c83fae7099e3179beb10fc3cea305787748afddb94bf8f97fc0"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:650766c4b6267b89ba8b730fbae90c134bc5240c458a19362b63d0747c61ab9d",
+      "path": "research/tavonel_eval_v2/tools/root_identity.py",
+      "receipt": "identity-change-migration-closure-v2r4-scorer-freeze--20260826T061751Z-f76342b0a123.json",
+      "worktree": "sha256:0d172324371fe5be38ba7c9e2617597f3fa9df938f01122799cd1ab2eeb8fa9c"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:11d948a508b4e9c7f0c5b0c77e7809eba9f96ca2577665603d729d8a68cc39d3",
+      "path": "research/tavonel_eval_v2/tools/v2r3_effective_identity.py",
+      "receipt": "identity-change-migration-closure-v2r4-scorer-freeze--20260826T061751Z-f76342b0a123.json",
+      "worktree": "sha256:b5a65e10b98e7a7112b6b0d0dea3fe136a5670944312686efaaeef1fb366e2ed"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:bbc78267fcc9df4a862302b58f6e15997adc04f6fa2cc3398a2dd5ec34254f2f",
+      "path": "research/tavonel_eval_v2/tools/v2r3_quarantine_oracle.py",
+      "receipt": "identity-change-migration-closure-v2r4-scorer-freeze--20260826T061751Z-f76342b0a123.json",
+      "worktree": "sha256:09c46cf2d6976a6a104d6e1695be356ecf78117e16ae1e3320038056f8632305"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:95dafe90e5249859e686ad6b771d5b887fc7aeb59170748bef9aa5b11997b1e6",
+      "path": "research/tavonel_eval_v2/tools/v2r3_state_table.py",
+      "receipt": "identity-change-migration-closure-v2r4-scorer-freeze--20260826T061751Z-f76342b0a123.json",
+      "worktree": "sha256:3fc2f184eb28f93dcea83148ef876a95864c836f26e9f2701d8a1133024422e9"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:df631708a44021d29765a346c4efae16de6ab3e81623124319e3f91d8b79e1d9",
+      "path": "research/tavonel_eval_v2/tools/v2r4_attestation.py",
+      "receipt": "identity-change-migration-closure-v2r4-scorer-freeze--20260826T061751Z-f76342b0a123.json",
+      "worktree": "sha256:e43bcf029cc2034d9ab85150854e977d2411bffbd0d5c25f696c0c8f9935cec8"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:ce3b0b03cfaedd1d271bd10d28657de493728c72cf839c76b5c9aa6ae304b9fd",
+      "path": "research/tavonel_eval_v2/tools/v2r4_grading.py",
+      "receipt": "identity-change-migration-closure-v2r4-scorer-freeze--20260826T061751Z-f76342b0a123.json",
+      "worktree": "sha256:afab413f3d88e947fdcf1f655c66f06e0839a5573d2e2e5b73b4b11afe59fbb7"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:e3ff1a387cb7021ba3c271db32d2ef3a86192672fb391bf25dbd8fe654500611",
+      "path": "research/tavonel_eval_v2/compiler/selective_build.py",
+      "receipt": "p0-v1-seal.json",
+      "worktree": "sha256:29bf90bd07208c13a4109846c897210585800c2ce9a8785dbd802815185651a0"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:caa2dbbf3d84c8812c0f09cfa4d3490f3b2aed78d2f7926495809426bb57f644",
+      "path": "research/tavonel_eval_v2/tools/common.py",
+      "receipt": "p0-v1-seal.json",
+      "worktree": "sha256:4ebfd4935cb9c64474088a99f22b94073eb7316825270787d6653b07744ea87e"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:c649482bcc4a7a05512614ff822182338aa4015cddbfa3e0c790ab015c8932eb",
+      "path": "research/tavonel_eval_v2/tools/run_p1_smoke.py",
+      "receipt": "p0-v1-seal.json",
+      "worktree": "sha256:5c55efc6f7d0154cb8def1dc63a372cfd3d6f34279d383929b7ab4c25c1cb309"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:4c7784ab29a3e046b4bfb5f27537d358178c626779282dc95f8affbfd782de33",
+      "path": "research/tavonel_eval_v2/tools/verify_sealed_evidence.py",
+      "receipt": "p0-v1-seal.json",
+      "worktree": "sha256:e25a785bab9f8804ed194c9566ec7f8900eb4134acd6d1aa38e49714a3f3c249"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:704c0a9bc2f3dd08cb153d93c15386c0dc00a3051ac6d79b299e6cbc5f3c5729",
+      "path": "research/tavonel_eval_v2/tools/probe_sfir1_capacity.py",
+      "receipt": "sfir1-capacity-failure-authority.json",
+      "worktree": "sha256:5985e96f4db8d1ce0870c0d904adebaa7ecf1a1528debf40c37d42ff88f9707e"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:704c0a9bc2f3dd08cb153d93c15386c0dc00a3051ac6d79b299e6cbc5f3c5729",
+      "path": "research/tavonel_eval_v2/tools/probe_sfir1_capacity.py",
+      "receipt": "sfir1-design-charter-freeze.json",
+      "worktree": "sha256:5985e96f4db8d1ce0870c0d904adebaa7ecf1a1528debf40c37d42ff88f9707e"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:650766c4b6267b89ba8b730fbae90c134bc5240c458a19362b63d0747c61ab9d",
+      "path": "research/tavonel_eval_v2/tools/root_identity.py",
+      "receipt": "sfir1-spent-identity-authority.json",
+      "worktree": "sha256:0d172324371fe5be38ba7c9e2617597f3fa9df938f01122799cd1ab2eeb8fa9c"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:ccfd2cb8713c74c16ae92fab790bfc6de3b3abdbd44461066b87e67cd0807f97",
+      "path": "research/tavonel_eval_v2/tools/probe_sfir2_capacity.py",
+      "receipt": "sfir2-capacity-failure-authority.json",
+      "worktree": "sha256:6f6027404af065caba43212b29d0681d8b42a19c0609143fe646ed6c9bedd1e1"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:ccfd2cb8713c74c16ae92fab790bfc6de3b3abdbd44461066b87e67cd0807f97",
+      "path": "research/tavonel_eval_v2/tools/probe_sfir2_capacity.py",
+      "receipt": "sfir2-design-charter-freeze.json",
+      "worktree": "sha256:6f6027404af065caba43212b29d0681d8b42a19c0609143fe646ed6c9bedd1e1"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:440f6f3128581fda144ccb85e49bb4e720819c1fbaefbb4d616dc8168f8b90df",
+      "path": "research/tavonel_eval_v2/tools/probe_sfir3_capacity.py",
+      "receipt": "sfir3-capacity-failure-authority.json",
+      "worktree": "sha256:dc8418ab87c34fca9e3f372aa00f84768eda45e4019cd7d432948823591a406c"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:440f6f3128581fda144ccb85e49bb4e720819c1fbaefbb4d616dc8168f8b90df",
+      "path": "research/tavonel_eval_v2/tools/probe_sfir3_capacity.py",
+      "receipt": "sfir3-design-charter-freeze.json",
+      "worktree": "sha256:dc8418ab87c34fca9e3f372aa00f84768eda45e4019cd7d432948823591a406c"
+    },
+    {
+      "class": "FROZEN",
+      "expected": "sha256:873a3fc325835283d65996fa49680786d2dfba6c4a04bfdd8f368f1e2a32f28e",
+      "path": "research/tavonel_eval_v2/tools/sfir3_spent_authority.py",
+      "receipt": "sfir3-design-charter-freeze.json",
+      "worktree": "sha256:0c5cce70b94a2ea960f2f51dd89ac18f67ace03025ea0ab5ed2c726f0b6eff31"
+    }
+  ],
+  "frozen_files_drifted": [
+    "research/tavonel_eval_v2/compiler/selective_build.py",
+    "research/tavonel_eval_v2/tests/test_v2r3_contract_consistency.py",
+    "research/tavonel_eval_v2/tools/common.py",
+    "research/tavonel_eval_v2/tools/enumerate_v2r3r1_universe.py",
+    "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r3.py",
+    "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r4.py",
+    "research/tavonel_eval_v2/tools/identity_change_migration_closure.py",
+    "research/tavonel_eval_v2/tools/identity_change_migration_closure_v2r2.py",
+    "research/tavonel_eval_v2/tools/identity_change_migration_closure_v2r3.py",
+    "research/tavonel_eval_v2/tools/invariant_domain.py",
+    "research/tavonel_eval_v2/tools/probe_sfir1_capacity.py",
+    "research/tavonel_eval_v2/tools/probe_sfir2_capacity.py",
+    "research/tavonel_eval_v2/tools/probe_sfir3_capacity.py",
+    "research/tavonel_eval_v2/tools/probe_v2r4_roots.py",
+    "research/tavonel_eval_v2/tools/rehearse_v2r4_closure.py",
+    "research/tavonel_eval_v2/tools/root_identity.py",
+    "research/tavonel_eval_v2/tools/run_p1_smoke.py",
+    "research/tavonel_eval_v2/tools/sfi3_root_reservation.py",
+    "research/tavonel_eval_v2/tools/sfir3_spent_authority.py",
+    "research/tavonel_eval_v2/tools/v2r2_invariant6.py",
+    "research/tavonel_eval_v2/tools/v2r3_attestation.py",
+    "research/tavonel_eval_v2/tools/v2r3_effective_identity.py",
+    "research/tavonel_eval_v2/tools/v2r3_quarantine_oracle.py",
+    "research/tavonel_eval_v2/tools/v2r3_state_table.py",
+    "research/tavonel_eval_v2/tools/v2r3r1_carry_forward.py",
+    "research/tavonel_eval_v2/tools/v2r4_attestation.py",
+    "research/tavonel_eval_v2/tools/v2r4_grading.py",
+    "research/tavonel_eval_v2/tools/v2r4_semantics_delta.py",
+    "research/tavonel_eval_v2/tools/verify_sealed_evidence.py"
+  ],
+  "frozen_receipts_affected": [
+    "identity-change-migration-closure-v2r2-scorer-freeze--20260825T104559Z-db606c6abc47.json",
+    "identity-change-migration-closure-v2r3-frame-attestation--20260825T173240Z-8d8c7cbeb23e.json",
+    "identity-change-migration-closure-v2r3-protocol-attestation--20260825T173258Z-5954c7c33e27.json",
+    "identity-change-migration-closure-v2r3-scorer-freeze--20260825T180251Z-bb65b8985c08.json",
+    "identity-change-migration-closure-v2r3r1-frame-attestation--20260825T210400Z-fbab51b67a9e.json",
+    "identity-change-migration-closure-v2r3r1-protocol-attestation--20260825T210409Z-b2cca585b5a3.json",
+    "identity-change-migration-closure-v2r3r1-protocol-attestation--20260825T211447Z-702db72e7d2b.json",
+    "identity-change-migration-closure-v2r3r1-scorer-freeze--20260825T212103Z-426c31cc4eed.json",
+    "identity-change-migration-closure-v2r4-domain-attestation--20260826T061752Z-371566b4e8b7.json",
+    "identity-change-migration-closure-v2r4-frame-attestation--20260826T050508Z-a1a4ec80798a.json",
+    "identity-change-migration-closure-v2r4-protocol-attestation--20260826T050543Z-53b2dc7abad8.json",
+    "identity-change-migration-closure-v2r4-scorer-freeze--20260826T061751Z-f76342b0a123.json",
+    "p0-v1-seal.json",
+    "sfir1-capacity-failure-authority.json",
+    "sfir1-design-charter-freeze.json",
+    "sfir1-spent-identity-authority.json",
+    "sfir2-capacity-failure-authority.json",
+    "sfir2-design-charter-freeze.json",
+    "sfir3-capacity-failure-authority.json",
+    "sfir3-design-charter-freeze.json"
+  ],
+  "generated_at": "2026-08-26T20:06:59.746555+00:00",
+  "gpu_seconds": 0,
+  "read_only": true,
+  "receipt_classes": {
+    "ADVISORY": 30,
+    "FROZEN": 86,
+    "SKIP": 133
+  },
+  "receipt_sha256": "sha256:58756685d4cfeb9a8f3cf4a0c756bafdd569b64fae02c015fc84264306f10119",
+  "schema": "tavonel.v2.frozen_instrument_integrity.v1",
+  "scope": [
+    "research/tavonel_eval_v2/receipts/*.json"
+  ],
+  "totals": {
+    "bindings_advisory_drift": 126,
+    "bindings_checked": 526,
+    "bindings_frozen_drift": 59,
+    "bindings_match": 341,
+    "bindings_unresolvable": 0,
+    "frozen_files_drifted": 29,
+    "frozen_receipts_affected": 20
+  },
+  "unresolvable": [],
+  "verdict": "FAIL"
+}

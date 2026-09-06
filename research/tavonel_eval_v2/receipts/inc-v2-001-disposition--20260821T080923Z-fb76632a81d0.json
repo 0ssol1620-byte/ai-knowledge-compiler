@@ -1,0 +1,74 @@
+{
+  "authority": "founder rulings, 2026-08-21",
+  "estimated_cost_usd": 0.0,
+  "forensic_input": "research/tavonel_eval_v2/receipts/latest/inc-v2-001-provenance-forensic.json (pointer, not evidence)",
+  "git_head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "gpu_seconds": 0,
+  "incident": "INC-V2-001",
+  "incident_state": "OPEN — restoration event appended, incident not closed",
+  "permanent_historical_quarantine": {
+    "artifacts": [
+      {
+        "has_generator": false,
+        "path": "docs/audit/HOSTILE_REVIEW_2026-08-19.md",
+        "pinned_by": "docs/ip/receipts/submission-package-index-2026-08-19.json",
+        "pinned_sha256": "sha256:93420f8b05de5d7c4f64ddd1f0015fdf748b9934ae75c7edcd39117af18c4071"
+      },
+      {
+        "has_generator": true,
+        "path": "docs/repro/TEST_SCOPE_STATUS.json",
+        "pinned_by": "docs/ip/receipts/submission-package-index-2026-08-19.json",
+        "pinned_sha256": "sha256:0c12365dcf854a239a655cba995d04e33ae1009a8b8d1a2a04b936b6270a39ed"
+      },
+      {
+        "has_generator": true,
+        "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v8-dev-2026-08-19.json",
+        "pinned_by": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-development-arm-run-2026-08-19.json",
+        "pinned_sha256": "sha256:1d0f2a775ea244b1a03cb954b60c4dd3fc14ce432c3b8997f3f1072bea4fa09c"
+      }
+    ],
+    "nothing_regenerated_here": true,
+    "regeneration_rule": "old unrecoverable artifact != regenerated artifact. A generator may be re-run, but its output takes a new artifact id, a new version and a new receipt, and inherits nothing from the old binding.",
+    "rule": "the pinned bytes exist in no source on this machine. These bindings cannot be re-established, and no future artifact may be presented as the evidence the old receipt described.",
+    "state": "EVIDENCE_QUARANTINE — permanent"
+  },
+  "provenance": {
+    "generated_at": "2026-08-21T08:09:23.319338+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "inc-v2-001-disposition",
+    "run_id": "20260821T080923Z-fb76632a81d0",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/inc_v2_001_disposition.py",
+    "tool_sha256": "sha256:f6c1b64eb6082c93b5c7439a1ec8193266c3fb88397d3ed418d3881e78e4c3d5"
+  },
+  "receipt_sha256": "sha256:e5fe8550609c6c8fc633ed12b184ff427349ac708477a8d439eea08afa65aedb",
+  "restoration": {
+    "already_matched": false,
+    "binding_verifies_after_restoration": false,
+    "forensic_snapshot": "research/tavonel_eval_v2/forensic_snapshots/INC-V2-001/committed-bytes-verification.json.pre-restoration",
+    "forensic_snapshot_sha256": "sha256:f4831788c84141e4ff236793beff287b4e8860a4d78b526f4528a78b37747018",
+    "not_claimed": "that the later attestation was wrong, or that restoring these bytes re-establishes anything beyond this one binding",
+    "path": "research/experiments/EXP-0101/receipts/committed-bytes-verification.json",
+    "pinned_by": "research/experiments/EXP-0101/receipts/receipts.json",
+    "pinned_sha256": "sha256:287003fa2da00f1d81970b5c7b4c8a286a84a00e281957dc7f3dfe19c67bb28f",
+    "restored": false,
+    "sha256_after_restoration": "sha256:f4831788c84141e4ff236793beff287b4e8860a4d78b526f4528a78b37747018",
+    "sha256_before_restoration": "sha256:f4831788c84141e4ff236793beff287b4e8860a4d78b526f4528a78b37747018",
+    "source": "git_object_database:e305521066691b34219297c96d9968c7d51c73cf",
+    "superseding_receipt_written": false,
+    "what_the_drift_was": "the file was regenerated against a later commit. The pinned bytes attest 25 of 25 receipts at commit 82ca6c4; the bytes found on disk attest 27 of 27 at commit e804a47. Both report GREEN. The later attestation is the more complete one, which is why the bytes it occupied are preserved as a forensic snapshot rather than discarded — but it is not what receipts.json pinned, so it cannot stand under that binding."
+  },
+  "schema": "tavonel.v2.inc_v2_001_disposition.v1",
+  "self_hash_disposition": {
+    "artifacts": [
+      "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v8-dev-2026-08-19.json",
+      "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v8-holdout.json"
+    ],
+    "no_encoding_guessed": true,
+    "rule": "held until the canonicalisation recipe these receipts were sealed under is demonstrated. An encoding chosen because it happens to reproduce the digest would manufacture the provenance, not establish it.",
+    "state": "UNVERIFIED_SELF_HASH / EVIDENCE_QUARANTINE"
+  }
+}

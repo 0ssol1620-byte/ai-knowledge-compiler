@@ -18,6 +18,7 @@ import { useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import { apiRequest } from "@/lib/api-client";
+import { WorldSourcePreview } from "@/components/workspace/world-source-preview";
 import type { StructaraLocale } from "@/lib/locale";
 import {
   publicOriginLabel,
@@ -62,6 +63,7 @@ type ProvenanceResponse = {
   project_id: string;
   cir_schema_version: string;
   active_version: number;
+  active_version_id: string | null;
   source: {
     sha256: string;
     mime_type: string;
@@ -107,7 +109,7 @@ type KnowledgeRelation = {
   evidenceBlockIds: string[];
 };
 
-type Tab = "Graph" | "Notes" | "Relations" | "Evidence";
+type Tab = "Graph" | "Directory" | "Ontology" | "Evidence" | "Versions" | "Files";
 type Perspective = "Document" | "Entity" | "Risk" | "Timeline" | "Evidence";
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_AKC_DEMO_MODE === "true";
@@ -261,9 +263,11 @@ const KNOWLEDGE_COPY = {
     views: "Knowledge views",
     tabs: {
       Graph: "Graph",
-      Notes: "Notes",
-      Relations: "Relations",
+      Directory: "Directory",
+      Ontology: "Ontology",
       Evidence: "Evidence",
+      Versions: "Versions",
+      Files: "Files",
     },
     searchPlaceholder: "Search notes, entities, risks…",
     searchLabel: "Search knowledge",
@@ -332,9 +336,11 @@ const KNOWLEDGE_COPY = {
     views: "지식 보기",
     tabs: {
       Graph: "그래프",
-      Notes: "노트",
-      Relations: "관계",
+      Directory: "디렉터리",
+      Ontology: "온톨로지",
       Evidence: "근거",
+      Versions: "버전",
+      Files: "파일",
     },
     searchPlaceholder: "노트, 엔티티, 위험 검색…",
     searchLabel: "지식 검색",
@@ -482,6 +488,9 @@ export function KnowledgeStudio({
   const evidenceBlocks = blocks.filter((block) =>
     selected?.evidenceBlockIds.includes(block.block_id),
   );
+  const sourcePreviewBlock = evidenceBlocks.find(
+    (block) => block.page_number !== null && block.bbox1000?.length === 4,
+  );
   const coverage = DEMO_MODE
     ? 1
     : (provenance.data?.source_coverage_ratio ?? 0);
@@ -570,7 +579,7 @@ export function KnowledgeStudio({
       </header>
 
       <nav className="knowledge-view-tabs" aria-label={copy.views}>
-        {(["Graph", "Notes", "Relations", "Evidence"] as const).map((item) => (
+        {(["Graph", "Directory", "Ontology", "Evidence", "Versions", "Files"] as const).map((item) => (
           <button
             type="button"
             className={tab === item ? "active" : undefined}
@@ -579,9 +588,11 @@ export function KnowledgeStudio({
             key={item}
           >
             {item === "Graph" && <Graph size={15} />}
-            {item === "Notes" && <ListBullets size={15} />}
-            {item === "Relations" && <TreeStructure size={15} />}
+            {item === "Directory" && <ListBullets size={15} />}
+            {item === "Ontology" && <TreeStructure size={15} />}
             {item === "Evidence" && <ShieldCheck size={15} />}
+            {item === "Versions" && <ClockCounterClockwise size={15} />}
+            {item === "Files" && <FileText size={15} />}
             {copy.tabs[item]}
           </button>
         ))}
@@ -694,7 +705,7 @@ export function KnowledgeStudio({
             </section>
           )}
 
-          {tab === "Notes" && (
+          {tab === "Directory" && (
             <div className="knowledge-table-wrap">
               <table className="knowledge-accessible-table">
                 <caption>{copy.notesCaption}</caption>
@@ -727,29 +738,30 @@ export function KnowledgeStudio({
             </div>
           )}
 
-          {tab === "Relations" && (
+          {tab === "Ontology" && (
             <div className="knowledge-table-wrap">
               <table className="knowledge-accessible-table">
                 <caption>{copy.relationsCaption}</caption>
                 <thead>
                   <tr>
-                    <th>{copy.subject}</th>
                     <th>{copy.predicate}</th>
-                    <th>{copy.object}</th>
+                    <th>{copy.type}</th>
                     <th>{copy.evidence}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {relations.map((relation) => (
-                    <tr key={relation.id}>
-                      <td>{nodeTitle(nodes, relation.subjectId)}</td>
+                  {[...new Set(relations.map((relation) => relation.predicate))].sort().map((predicate) => {
+                    const matching = relations.filter((relation) => relation.predicate === predicate);
+                    return (
+                    <tr key={predicate}>
                       <td>
-                        <code>{relation.predicate}</code>
+                        <code>{predicate}</code>
                       </td>
-                      <td>{nodeTitle(nodes, relation.objectId)}</td>
-                      <td>{relation.evidenceBlockIds.length}</td>
+                      <td>{matching.length} relation{matching.length === 1 ? "" : "s"}</td>
+                      <td>{new Set(matching.flatMap((relation) => relation.evidenceBlockIds)).size}</td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -796,6 +808,22 @@ export function KnowledgeStudio({
               ))}
             </div>
           )}
+
+          {tab === "Versions" && (
+            <div className="knowledge-empty-result">
+              <ClockCounterClockwise size={24} />
+              <h2>{copy.version}{provenance.data?.active_version ?? 1}</h2>
+              <p>Only the active document revision is present in this read model. No version history is inferred.</p>
+            </div>
+          )}
+
+          {tab === "Files" && (
+            <div className="knowledge-empty-result">
+              <FileText size={24} />
+              <h2>Compiled package files not materialized</h2>
+              <p>Files appear here only after the API returns a verified package manifest.</p>
+            </div>
+          )}
         </section>
 
         <aside className="knowledge-evidence-panel">
@@ -839,6 +867,14 @@ export function KnowledgeStudio({
               </section>
               <section>
                 <span>{copy.sourceEvidence}</span>
+                {provenance.data?.active_version_id && sourcePreviewBlock?.page_number && sourcePreviewBlock.bbox1000 ? (
+                  <WorldSourcePreview
+                    documentVersionId={provenance.data.active_version_id}
+                    pageNumber={sourcePreviewBlock.page_number}
+                    bbox1000={sourcePreviewBlock.bbox1000}
+                    label={provenance.data.source.original_filename}
+                  />
+                ) : null}
                 {evidenceBlocks.length > 0 ? (
                   evidenceBlocks.map((block) => (
                     <div className="knowledge-proof-card" key={block.block_id}>

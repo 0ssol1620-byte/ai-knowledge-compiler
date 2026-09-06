@@ -1,0 +1,1816 @@
+{
+  "benchmark_id": "omnidocbench",
+  "complete_input_coverage": true,
+  "complete_source_coverage": false,
+  "content_sha256": "sha256:39b079650f12e9e8d9eb60eee1ff09edea3946cab38152a114e862084ac8a5f7",
+  "dataset_revision": "aa1ee96d106dbe53d0ae59474d75c6e6d9b53fec",
+  "ground_truth_mounted": false,
+  "input_count": 200,
+  "inputs": [
+    {
+      "case_id": "omnidocbench-addefc099ef33594d1a7c87d",
+      "input_relative_path": "inputs/omnidocbench-addefc099ef33594d1a7c87d.png",
+      "input_sha256": "sha256:5f15ff5515b3fb0b4a24a28e1541b9f655ac1c5d0989ac4cc23e4584811f771c",
+      "media_type": "image",
+      "page_index": 33,
+      "source_relative_path": "images/newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_033.png",
+      "source_sha256": "sha256:931b879fcc932486fa924333b50e71b655edbb81035ae1832fdcae8c48c78c7b"
+    },
+    {
+      "case_id": "omnidocbench-c6c62c03ed180526c7536b08",
+      "input_relative_path": "inputs/omnidocbench-c6c62c03ed180526c7536b08.png",
+      "input_sha256": "sha256:9bd619ca6c5306f26db10164d27e000eb75f4b68f2b12dd4982d939fb66dbb98",
+      "media_type": "image",
+      "page_index": 3,
+      "source_relative_path": "images/newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_003.png",
+      "source_sha256": "sha256:f799f774b2beb71792ea4c331f1133d98943e51e044afd06d42ef587a7c4c23f"
+    },
+    {
+      "case_id": "omnidocbench-5a231e75ea90fa1ea617650f",
+      "input_relative_path": "inputs/omnidocbench-5a231e75ea90fa1ea617650f.png",
+      "input_sha256": "sha256:c9545950a0a5a50b56c8856fa9ffc0ff0f473be7039cc294190835359577e560",
+      "media_type": "image",
+      "page_index": 29,
+      "source_relative_path": "images/newspaper_Daily Mirror 2025-1-8@magazinesclubnew_page_029.png",
+      "source_sha256": "sha256:d524e3eb1f7f6f5c6c6789ac21551f72a90d4540b27df11cb97734f7e7522c22"
+    },
+    {
+      "case_id": "omnidocbench-fc5ff0bfb45766b6b7e8ca90",
+      "input_relative_path": "inputs/omnidocbench-fc5ff0bfb45766b6b7e8ca90.png",
+      "input_sha256": "sha256:104151e09e9516a2058df51d18a6b4a3188022b97f2a6f857c0aee411cd87ecb",
+      "media_type": "image",
+      "page_index": 18,
+      "source_relative_path": "images/newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_018.png",
+      "source_sha256": "sha256:c65e0039aa37812192c5ed13d8b9d54e29a8c570c126f226a90f4074ef870b5a"
+    },
+    {
+      "case_id": "omnidocbench-4c48d401d94780c6582b7e5f",
+      "input_relative_path": "inputs/omnidocbench-4c48d401d94780c6582b7e5f.png",
+      "input_sha256": "sha256:ec6966db10cb25bab43025958850c09e02381b42b53b417c702dda1199ae52af",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_74fc3b01b2cc4a7e6ca0f1af2b998187_1.jpg",
+      "source_sha256": "sha256:8eb3ffd5102f055e8b40192563e2fdb9206489d333d158833a026af9ba3e538a"
+    },
+    {
+      "case_id": "omnidocbench-e644b20c9deb0c617811a803",
+      "input_relative_path": "inputs/omnidocbench-e644b20c9deb0c617811a803.png",
+      "input_sha256": "sha256:895374c60283ad2345aa5e6f99d431220b20a5c0bfc1a936ba816880fe919fab",
+      "media_type": "image",
+      "page_index": 3885,
+      "source_relative_path": "images/yanbaor2_1cb2b2a2c6e3a1157a6f2876205bbeaa4d3958d0482e9cdc88dd2c002ed1ffc1.pdf_61.jpg",
+      "source_sha256": "sha256:67c79056a0ccb58df11e6fb89014084558c444ffd858f45804a5eba7235c2af5"
+    },
+    {
+      "case_id": "omnidocbench-ea9f11972e755861872deebd",
+      "input_relative_path": "inputs/omnidocbench-ea9f11972e755861872deebd.png",
+      "input_sha256": "sha256:ea11486c67cd94b61dfeb7c4bd7af48e6eb9811c262d876f23aef28263ea14d7",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_95f2062735b213b3d7d471a48d5ec71b_1.jpg",
+      "source_sha256": "sha256:1f154c9e78ad68038c97f8818a6bd426e939756d3e7acf00a6330c83b5889538"
+    },
+    {
+      "case_id": "omnidocbench-0849977026a1714cecb8c6a9",
+      "input_relative_path": "inputs/omnidocbench-0849977026a1714cecb8c6a9.png",
+      "input_sha256": "sha256:c4fac81e1e8b1a9af0d2002f6f3b1c573184d9208b298bc05d15204966d45161",
+      "media_type": "image",
+      "page_index": 31,
+      "source_relative_path": "images/newspaper_The Times UK_0801@magazinesclubnew_page_031.png",
+      "source_sha256": "sha256:31ee82a52ecf6347b47a04d48571b392af6c2370e1764aa33b53d7e91260cb8b"
+    },
+    {
+      "case_id": "omnidocbench-4620945d1c81082a254e3f46",
+      "input_relative_path": "inputs/omnidocbench-4620945d1c81082a254e3f46.png",
+      "input_sha256": "sha256:95e3065af03b4f33a041ecec6e6c8d6a85d6632915a55bc76983a121174931c2",
+      "media_type": "image",
+      "page_index": 32,
+      "source_relative_path": "images/newspaper_Chicago Tribune_0801@magazinesclubnew_page_032.png",
+      "source_sha256": "sha256:3d5c40de4f222c0c9f01c3298956c3855c163215979468c711394171fc3950a3"
+    },
+    {
+      "case_id": "omnidocbench-1b1c11f1e657ff494b090c76",
+      "input_relative_path": "inputs/omnidocbench-1b1c11f1e657ff494b090c76.png",
+      "input_sha256": "sha256:1793f04aeb347401fbf59c9410a9b728efbf97505cd510f91590dcab5d668059",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_e3842a5681ef54c62a58804adec06c3f_1.jpg",
+      "source_sha256": "sha256:dd8b3c6c066f9835bb1ff5f83b35421e05264254512989341dd7b31ea6a5c948"
+    },
+    {
+      "case_id": "omnidocbench-61ca2eb5c723a7a406390470",
+      "input_relative_path": "inputs/omnidocbench-61ca2eb5c723a7a406390470.png",
+      "input_sha256": "sha256:73d89243a7450e5558d5737bdc4ee0d4148e6ad72d2d6eed6b39396d396b1132",
+      "media_type": "image",
+      "page_index": 4,
+      "source_relative_path": "images/newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_004.png",
+      "source_sha256": "sha256:93b69c7c91a46bf109af9d1842a14164d086ca818da3569b52aa45a55043c638"
+    },
+    {
+      "case_id": "omnidocbench-d3e035598f2fa4e0e4982dbd",
+      "input_relative_path": "inputs/omnidocbench-d3e035598f2fa4e0e4982dbd.png",
+      "input_sha256": "sha256:ad2b878981ba1f2c1f948d9f98d1f7aa2abffc17bbab5025f6a83e35cfb5f822",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_0ce88e1e131aef7a59d0533be36870de_1.jpg",
+      "source_sha256": "sha256:cf53d10f8d07e67ca77edd36eaae0a6a0b4b7110c3b755479950f264a7b22098"
+    },
+    {
+      "case_id": "omnidocbench-0873a7201bf37b1b12500a7f",
+      "input_relative_path": "inputs/omnidocbench-0873a7201bf37b1b12500a7f.png",
+      "input_sha256": "sha256:38ab8c5f743ab7d4a3714a924e71cdc3683349e87f6034c523156e1b1142d2bc",
+      "media_type": "image",
+      "page_index": 0,
+      "source_relative_path": "images/page-6e75aef4-33d0-478a-a3a3-489c782bfa39.png",
+      "source_sha256": "sha256:795473598510c0c5fad3da84fd62cd84188a1acde35d364314c55ba46c696ff2"
+    },
+    {
+      "case_id": "omnidocbench-6a4eea3825a12ee638d0bc8b",
+      "input_relative_path": "inputs/omnidocbench-6a4eea3825a12ee638d0bc8b.png",
+      "input_sha256": "sha256:c2e0a5e11cbd7e5f3b39668cd20d556383822f710bf6a8993413c77155c5f1e6",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_5d4b8e73eacbc6ecac0d7b1396fd01d7_1.jpg",
+      "source_sha256": "sha256:6971b3897d80ce6a17f2f7e786cf90dbd3f358ae102e967d2221560687ca629b"
+    },
+    {
+      "case_id": "omnidocbench-be7e4c709c340be98d775f3a",
+      "input_relative_path": "inputs/omnidocbench-be7e4c709c340be98d775f3a.png",
+      "input_sha256": "sha256:3ce94fb17f7a6fba9a3697eebf4b283fa583be21ac0f2fe1ea67bc4de7fa0d53",
+      "media_type": "image",
+      "page_index": 25,
+      "source_relative_path": "images/newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_025.png",
+      "source_sha256": "sha256:4c47161ad3a07049940eba19cbbc93e57d474562b65942d33cb2af25e594eda3"
+    },
+    {
+      "case_id": "omnidocbench-9bbed7f3e97a5f4819ef6854",
+      "input_relative_path": "inputs/omnidocbench-9bbed7f3e97a5f4819ef6854.png",
+      "input_sha256": "sha256:bc74289fc9ecb14ba967da0ee41545b5ad783fcd08e904edba1b3df955e6dcc4",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_9eafddb83b0f7f99c42ff364b080e2c1_1.jpg",
+      "source_sha256": "sha256:740797e5f6ce7ada4253c25dd3bc8c1287b50a47f56df1266c03ba26b97eec95"
+    },
+    {
+      "case_id": "omnidocbench-94175f165dd8b2e70bdd670e",
+      "input_relative_path": "inputs/omnidocbench-94175f165dd8b2e70bdd670e.png",
+      "input_sha256": "sha256:5d1e1e9f4fb374f4f45e3227015856e91e5ef0c09275075c39f9a778e6a29d03",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_75bb60c3be9959e1be400d6b8281fea1_1.jpg",
+      "source_sha256": "sha256:6af2d6ba2b5e8630df770bfb695123316fdd4cb79b9e8fcf436c32d2939d0ab2"
+    },
+    {
+      "case_id": "omnidocbench-b74b2a3a237c635523557ca9",
+      "input_relative_path": "inputs/omnidocbench-b74b2a3a237c635523557ca9.png",
+      "input_sha256": "sha256:fdc54be3bc935e06d217cfea3465b6e84fa3f7c4ed380607855d9ae2099037ad",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_a7666484ee01a811247e52f784164cbb_1.jpg",
+      "source_sha256": "sha256:cec0aa614e88a1fc64e231efb4890b8aaa44c36117cf9d0254386a719afbeb2b"
+    },
+    {
+      "case_id": "omnidocbench-4831f14d820860e91ffb3d28",
+      "input_relative_path": "inputs/omnidocbench-4831f14d820860e91ffb3d28.png",
+      "input_sha256": "sha256:132f574c589284723fc8dbf974366d187af32feb24323dccff0d5c97a40408b5",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_d1716a12000a38e1e4c0bf66309558db_1.jpg",
+      "source_sha256": "sha256:643f1b7e4c0f1db2890f0f452cea6ce7fc8fb81abd3e2ea45e94c41d3de0b16e"
+    },
+    {
+      "case_id": "omnidocbench-28af5f7376bd242ded41f9a3",
+      "input_relative_path": "inputs/omnidocbench-28af5f7376bd242ded41f9a3.png",
+      "input_sha256": "sha256:a5e2bb4551c56e605f3611d0a865b6e8a58a7f03a464c49bf229578ca78826e1",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_0cfb8a42b5d4194d8c73dba0cdf6256c_1.jpg",
+      "source_sha256": "sha256:d8074d25973602e55736a1502977414487e5000e06b39ff8cf077167f55e6183"
+    },
+    {
+      "case_id": "omnidocbench-2535e11d1b3cdd24548255c4",
+      "input_relative_path": "inputs/omnidocbench-2535e11d1b3cdd24548255c4.png",
+      "input_sha256": "sha256:57979a5b5c33b0419162258778a6b7aa3cbe600a5ad2afd3ee1877ed357fc74a",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_5c4e17f22cdc19d414a3c521f631c899_1.jpg",
+      "source_sha256": "sha256:2f80c5ead1a6f153a4775d293cae63fc7fb64f05ccf1196b5254c760a7f91f80"
+    },
+    {
+      "case_id": "omnidocbench-50c01a4a0115a411d534ede6",
+      "input_relative_path": "inputs/omnidocbench-50c01a4a0115a411d534ede6.png",
+      "input_sha256": "sha256:60ba9cecb6ca254e394a162a163ec72956a4a487df2c0325cfdb3bdf456eb6da",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_14b9d21f7fed39fb42849e9cde233930_1.jpg",
+      "source_sha256": "sha256:9c9316455b275741076dc12b6e78d9ce97433e35ca88ed0244396499cbbfad2d"
+    },
+    {
+      "case_id": "omnidocbench-d729237e4690deb07d243fe5",
+      "input_relative_path": "inputs/omnidocbench-d729237e4690deb07d243fe5.png",
+      "input_sha256": "sha256:0e0920aa5a497fd98c3a307a81b09b39cf08ea957bfff005f4e5a1d44aa024a8",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_571a946262006cd89199b67353c408b8_1.jpg",
+      "source_sha256": "sha256:963899ef10f3b7a0f4bf014396329ee4a084e4a54678a69b35deea02adfa49b9"
+    },
+    {
+      "case_id": "omnidocbench-381fc6ffb8107a3c7d9f27ab",
+      "input_relative_path": "inputs/omnidocbench-381fc6ffb8107a3c7d9f27ab.png",
+      "input_sha256": "sha256:2e508e71110673fc81f0ef2cfe6161f17d18ca71ba7003539369363831ff4222",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_eb569707cf5621d4c71d5898216cdb17_1.jpg",
+      "source_sha256": "sha256:28582172db96587966199297bd09cbadcaefea329f585df873e21676062c6e0f"
+    },
+    {
+      "case_id": "omnidocbench-a283db8deaee2f77c8867c20",
+      "input_relative_path": "inputs/omnidocbench-a283db8deaee2f77c8867c20.png",
+      "input_sha256": "sha256:a23875b78ccd2884dcfb4d4044839a4f3d3b6ba7a8bedd1442f426a2adf69e2d",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_35352f94db65d19e097395380498ec15_1.jpg",
+      "source_sha256": "sha256:612d2ce288c9297293fab253f212959644b1728f1ae0555aedddbbc10bc86b16"
+    },
+    {
+      "case_id": "omnidocbench-7aebfd86e8b7869179a8f3a6",
+      "input_relative_path": "inputs/omnidocbench-7aebfd86e8b7869179a8f3a6.png",
+      "input_sha256": "sha256:0d8b3f90c6b7e7a77130103f37f92a25864d065e11490aeffe79c0182038c4ef",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_87769622e073730af94822416c60c710_1.jpg",
+      "source_sha256": "sha256:fba8269fefbf216f1ddfaa31e62cdf0c0524ff2667fea85d51fb3fbcff374b6a"
+    },
+    {
+      "case_id": "omnidocbench-d91c1fe39d812eba1ba900af",
+      "input_relative_path": "inputs/omnidocbench-d91c1fe39d812eba1ba900af.png",
+      "input_sha256": "sha256:025230b4ddb58e612c62974f9533215cc423aef0877c9e6eae4933d246755bcc",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_635e4e6a64cf2ccfb2560f9b6dfe24b5_1.jpg",
+      "source_sha256": "sha256:11b3b4ef43414e2e74bd047732554cb04436e823250ca71803e5e6f73890bcf3"
+    },
+    {
+      "case_id": "omnidocbench-9073921794521b91dbebf72f",
+      "input_relative_path": "inputs/omnidocbench-9073921794521b91dbebf72f.png",
+      "input_sha256": "sha256:4873c29b79b219dc2edfe5c8de8ae948bac8aa56e4e5b0d9e63777501435ac76",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_a15057349a86850e55b084c235fa2f22_1.jpg",
+      "source_sha256": "sha256:21da004dac819440e567c5a215a4af97fb58620e8703659944e61ee3241fe827"
+    },
+    {
+      "case_id": "omnidocbench-9b634aa2a656d7def2d8c6fd",
+      "input_relative_path": "inputs/omnidocbench-9b634aa2a656d7def2d8c6fd.png",
+      "input_sha256": "sha256:bf296e279958524b4e6375f88e85786c04217199c5feff0edcec0b6246570a15",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_a105e3b0ddb10be6a596f76407c79180_1.jpg",
+      "source_sha256": "sha256:ed53bef165edae76918a4f19287be67ff8426df6d764c173502ca34c3b22f3e9"
+    },
+    {
+      "case_id": "omnidocbench-a521e869f336452580f405a7",
+      "input_relative_path": "inputs/omnidocbench-a521e869f336452580f405a7.png",
+      "input_sha256": "sha256:d32b53289d090695b969fee7993bcb6823f01293de5e2f2e400b771094d279d9",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_f1de032fb6a25cf85c85c15cb2d2a63a_1.jpg",
+      "source_sha256": "sha256:f7815aa99bc9869286f0c07f6438c1223222fd0fe6e5aebe617f76285742b3b0"
+    },
+    {
+      "case_id": "omnidocbench-3e22b2344f8ac082c4924de6",
+      "input_relative_path": "inputs/omnidocbench-3e22b2344f8ac082c4924de6.png",
+      "input_sha256": "sha256:f08bc16cd7f845244ba499c92cd6d76d8badaf7a3dd61070d9825995a5dbd8e4",
+      "media_type": "image",
+      "page_index": 9,
+      "source_relative_path": "images/newspaper_Daily Mail_2022-08-01@magazinesclubnew_page_009.png",
+      "source_sha256": "sha256:5b34e17e35760910b07d4b95c91b41119a84f2d8066afe1c3aa34c2a3dfe2391"
+    },
+    {
+      "case_id": "omnidocbench-ada2e9b5abe025b59bf179a0",
+      "input_relative_path": "inputs/omnidocbench-ada2e9b5abe025b59bf179a0.png",
+      "input_sha256": "sha256:47ab5c0f58a2c10f4c0469850406e22ec74b5b966d51b00585e405ec1d4307d1",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_1cddf9d22ca549f3a86cf1512a3110cc_1.jpg",
+      "source_sha256": "sha256:e72c8708e1be933a4461e7a037534872fb98144b7fcb89b5d7b6a76cc2d379b1"
+    },
+    {
+      "case_id": "omnidocbench-6f072598e6d32657dec2420d",
+      "input_relative_path": "inputs/omnidocbench-6f072598e6d32657dec2420d.png",
+      "input_sha256": "sha256:1c358ca386e7fe3b5be7fa473cb14d97a0a667bc28516ffa9e4a061e7074fb7f",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_5aedf678eff04d8ebac3692d54103e19_1.jpg",
+      "source_sha256": "sha256:af252238b78ceaa1db1901af25dae2ada22c948e90c4b294d59bdc799c1d8a6a"
+    },
+    {
+      "case_id": "omnidocbench-400fe48801bea95b2f9f1063",
+      "input_relative_path": "inputs/omnidocbench-400fe48801bea95b2f9f1063.png",
+      "input_sha256": "sha256:b63efeba6f5342cfc3a4a13ca2a3c2313825953145982e9da5a35b60abb3bbe0",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_c9e9b3e7b8a5f5a5b59304a9924c41b9_1.jpg",
+      "source_sha256": "sha256:b4db3a1d80a5983fadc881bd32a608ef25d7089725d717cb8d6d99ba307eb9d0"
+    },
+    {
+      "case_id": "omnidocbench-37bbaa00260ae3c96f7dc116",
+      "input_relative_path": "inputs/omnidocbench-37bbaa00260ae3c96f7dc116.png",
+      "input_sha256": "sha256:287d20497ef0cdc0175885cb9f39004e568a25c2387ee724fceccd5dc90a3c77",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_f36d00fe3544ae72725aac9dc7f19aa8_1.jpg",
+      "source_sha256": "sha256:9070fd0f85823e7f838562b5c5241422acef828b9feb745a7d65553459a32f17"
+    },
+    {
+      "case_id": "omnidocbench-02040d1d1c3067a27fcb0cca",
+      "input_relative_path": "inputs/omnidocbench-02040d1d1c3067a27fcb0cca.png",
+      "input_sha256": "sha256:3c95dbbcaf6e67075f9aa2aa82fc00ed13595ecda199b63b6d542a5bb1420332",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_4790b51e8fa793743699647c09a93ccb_1.jpg",
+      "source_sha256": "sha256:187a4fff504e52ccf3f5bb68fb6af962b2a6911014290eb81312bb61eaf1f3d1"
+    },
+    {
+      "case_id": "omnidocbench-8338e8e337b65623edee06ce",
+      "input_relative_path": "inputs/omnidocbench-8338e8e337b65623edee06ce.png",
+      "input_sha256": "sha256:f438ab3c37ace15d93a1c527c2bf2b621cfb941c0eea6dcb9b732657a19b4f12",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_019d4d5296ba8f1c21277d72fb0cf0db_1.jpg",
+      "source_sha256": "sha256:7b21b85039e423054e70048d2a7837d10c3a97fffc88dab30a3ff57307babcaf"
+    },
+    {
+      "case_id": "omnidocbench-dc57f81ef4a858ae8c84782d",
+      "input_relative_path": "inputs/omnidocbench-dc57f81ef4a858ae8c84782d.png",
+      "input_sha256": "sha256:d3321470d10786dab3e988f912ec1576d76b44d656f246366842ba8f461d108f",
+      "media_type": "image",
+      "page_index": 17,
+      "source_relative_path": "images/color_textbook_zhonggaokao_小学_13.人教新起点英语（4-5年级）_人教新起点四年级英语下册_课本_人教新起点英语4B电子课本_page_017.png",
+      "source_sha256": "sha256:b5344c0c24c3159823b59fcf4d4a88826b8307ff101bed7d018de93ef965e533"
+    },
+    {
+      "case_id": "omnidocbench-642cd91c8c59bbaad7ca7248",
+      "input_relative_path": "inputs/omnidocbench-642cd91c8c59bbaad7ca7248.png",
+      "input_sha256": "sha256:1c6f2e5526dc55c51dbccc445565254f420c4a771f4f1f005d91442c9a23492d",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_d6cd76e5afe881630173bd4921531a4b_1.jpg",
+      "source_sha256": "sha256:22b208eaf6703c9762cc031f45046e7209fe6475f905a62988abf69e068d7219"
+    },
+    {
+      "case_id": "omnidocbench-d71be1a9035ca5fd002d4b86",
+      "input_relative_path": "inputs/omnidocbench-d71be1a9035ca5fd002d4b86.png",
+      "input_sha256": "sha256:754ceff5f52ae011e51c7e21bc6b0e1512cd67a187a38343932fce0fe74b802c",
+      "media_type": "image",
+      "page_index": 15,
+      "source_relative_path": "images/newspaper_Chicago Tribune_0801@magazinesclubnew_page_015.png",
+      "source_sha256": "sha256:f8088152f7ee7931eb783933e72baf006de885806dff182af98b1f13afb373a4"
+    },
+    {
+      "case_id": "omnidocbench-3cd88d0d26d7d9cefb718706",
+      "input_relative_path": "inputs/omnidocbench-3cd88d0d26d7d9cefb718706.png",
+      "input_sha256": "sha256:df3bb3926ace7e1c83417acfb56f7242a75c8265bfd06505c018a7f10641b985",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_35bdaa11dec104ccbdc9e19ac8527d21_1.jpg",
+      "source_sha256": "sha256:49dfcd74ed2b6499532365c9a5eecbe07305aeebd344925b326ef0f2512e47cd"
+    },
+    {
+      "case_id": "omnidocbench-df5b6be0529e1332b530bf06",
+      "input_relative_path": "inputs/omnidocbench-df5b6be0529e1332b530bf06.png",
+      "input_sha256": "sha256:c450e9cf68261be0b1fda8f9c78e7c300ef1a2b87b05f750082409888f5327fc",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_7746db2ad2ea24c827eac60244375bbf_1.jpg",
+      "source_sha256": "sha256:17713173ab351eeaf364fe121cc4fe11f2c7de493ab322fe0c6a9e5b46d14fdc"
+    },
+    {
+      "case_id": "omnidocbench-85b880ea9c924a502d48c14a",
+      "input_relative_path": "inputs/omnidocbench-85b880ea9c924a502d48c14a.png",
+      "input_sha256": "sha256:3f57f279218b99e64d390a7b546eb5343972ec46b09179fcde985b0f24efe5f4",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_028a1dd5500fbd774e4d85df3c460c4d_1.jpg",
+      "source_sha256": "sha256:0faf0f7c4e5383be5f3fbc3e3c3ccdf545eb639b3b79642554c31ceaa4be0ddc"
+    },
+    {
+      "case_id": "omnidocbench-8112de001683395137dde649",
+      "input_relative_path": "inputs/omnidocbench-8112de001683395137dde649.png",
+      "input_sha256": "sha256:0b8c962c22555cb6b7b8db67aa11cd416606e9fd3ee60f833521e64368e8de41",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_02912feb79994ae24665509d964ad9ce_1.jpg",
+      "source_sha256": "sha256:d4a40d6ddcbab07e9fa4499bd22d49fface95864cd1a0afdb5675811efd49512"
+    },
+    {
+      "case_id": "omnidocbench-5218af25530c4ef41f1a823e",
+      "input_relative_path": "inputs/omnidocbench-5218af25530c4ef41f1a823e.png",
+      "input_sha256": "sha256:18008d572b33ec19c1f1ad1abceef62557ade3fa1f2773d58c2239015f46d32e",
+      "media_type": "image",
+      "page_index": 11,
+      "source_relative_path": "images/newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_011.png",
+      "source_sha256": "sha256:662c292aa740a4ea4f8050e4c8a05e17feb50c545a09b7e5395d50d8ed69192d"
+    },
+    {
+      "case_id": "omnidocbench-8eab912131a9cf89b35c7b2f",
+      "input_relative_path": "inputs/omnidocbench-8eab912131a9cf89b35c7b2f.png",
+      "input_sha256": "sha256:87e8bb8152d6df8d3c1d03fd0bc0d462b80612930cd195e0324029d1975d0f8c",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_c3c88b76543e2caf044c9f7689f23ec9_1.jpg",
+      "source_sha256": "sha256:47cd7fe0d9ad7547801947d8d24caeecb548666644335abd87b16a61c6fb46b5"
+    },
+    {
+      "case_id": "omnidocbench-95d9b754cc8012ad05869bea",
+      "input_relative_path": "inputs/omnidocbench-95d9b754cc8012ad05869bea.png",
+      "input_sha256": "sha256:3788ac0cf34a5b304193b942997f21c63c08cdeca6dbace63aef4dd9f53685e2",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_2a645bfcbcd473423581cd9f1ceb778e_1.jpg",
+      "source_sha256": "sha256:328406e2eeba5c81fdcf08f9b3c277f0e66325fc119a4f0f1243041d20d13f89"
+    },
+    {
+      "case_id": "omnidocbench-b251708d2412df4adfc8e7bd",
+      "input_relative_path": "inputs/omnidocbench-b251708d2412df4adfc8e7bd.png",
+      "input_sha256": "sha256:b4d30fc70c38377e30a18a40409c42d80c1d1015dc02e1e86ce1310a941d7a2a",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_fe2c8b45b2a086cd75984640bb3080e1_1.jpg",
+      "source_sha256": "sha256:762bb191e90d2bc04ac0ca2d477f79bc15efd7fae20c4a8f35adbd96f6b19db8"
+    },
+    {
+      "case_id": "omnidocbench-942859a45d15f8f03e21115f",
+      "input_relative_path": "inputs/omnidocbench-942859a45d15f8f03e21115f.png",
+      "input_sha256": "sha256:589342f2ac7bc1ec5a49624dbb8a921ad77534fd4ba0ffad89c53f4b0bed7f11",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_06b975dbc47dc2dc2a3a1468293f6a2c_1.jpg",
+      "source_sha256": "sha256:ad81f2e035beab829806965cb21e1592dd426edc848564a2c9b1fe8027ae8f34"
+    },
+    {
+      "case_id": "omnidocbench-306da55971cf7ee04da33b0e",
+      "input_relative_path": "inputs/omnidocbench-306da55971cf7ee04da33b0e.png",
+      "input_sha256": "sha256:698a6a968f5f23e317e99442d5b3d59e55004d50bfcc6d37edf517c327443b38",
+      "media_type": "image",
+      "page_index": 43,
+      "source_relative_path": "images/color_textbook_zhonggaokao_小学_13.人教新起点英语（4-5年级）_人教新起点四年级英语下册_课本_人教新起点英语4B电子课本_page_043.png",
+      "source_sha256": "sha256:79e2fc174c7b3960706fb6a62af101dd8101c23183459025bc10ff1b98ae0baf"
+    },
+    {
+      "case_id": "omnidocbench-7fd0882312c3781f500d676d",
+      "input_relative_path": "inputs/omnidocbench-7fd0882312c3781f500d676d.png",
+      "input_sha256": "sha256:1c7398a889d72373d23031b775a1897506739c62dd024548fb618a5e9c327932",
+      "media_type": "image",
+      "page_index": 51,
+      "source_relative_path": "images/newspaper_The Guardian UK_0801@magazinesclubnew_page_051.png",
+      "source_sha256": "sha256:9a90df26d192b857cab1c8c685f77e38816b6e0bf212df287229bab52a3ed3ff"
+    },
+    {
+      "case_id": "omnidocbench-7e9f7c78afe148d984fbf788",
+      "input_relative_path": "inputs/omnidocbench-7e9f7c78afe148d984fbf788.png",
+      "input_sha256": "sha256:e7d0dee3d94f07ea92077d954c93e1e8a1c625d47eb7046acb60218ff0dd3522",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_b615618f3cdb0f2c13ffb5865dea799c_1.jpg",
+      "source_sha256": "sha256:96ec5aede0a3fa79e536144611d57e5adb2b7ad71c03119325d24227eb5617ed"
+    },
+    {
+      "case_id": "omnidocbench-84c87125d9acd3c5af5df5f5",
+      "input_relative_path": "inputs/omnidocbench-84c87125d9acd3c5af5df5f5.png",
+      "input_sha256": "sha256:ce8056277cca7dfaa3455a64e35b4c5b8412d5d16c7899ebea851227433cced4",
+      "media_type": "image",
+      "page_index": 58,
+      "source_relative_path": "images/newspaper_Daily Mirror 2025-1-8@magazinesclubnew_page_058.png",
+      "source_sha256": "sha256:c2f3736dd34334028373ba72229d339b81ebd7e56bd762fa87d07ddf461210dc"
+    },
+    {
+      "case_id": "omnidocbench-b1cdbc7d4532effeb7c51c7d",
+      "input_relative_path": "inputs/omnidocbench-b1cdbc7d4532effeb7c51c7d.png",
+      "input_sha256": "sha256:2196e3b0aa8af5c7a56e6857278a9833094c899a94a0f5fc24e7337f2ffc8eb4",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_41a09cb64841567c220d8cac3c1cc193_1.jpg",
+      "source_sha256": "sha256:506b72589a86e5145d2439aa51c784629cef0c7172fdc9b1d1015c45334c7857"
+    },
+    {
+      "case_id": "omnidocbench-72224bc50295a512378162ed",
+      "input_relative_path": "inputs/omnidocbench-72224bc50295a512378162ed.png",
+      "input_sha256": "sha256:d25aaf47eeb85ba9cb035b29044c52ce361d2a1744f1c1aadbab572a4ca640f1",
+      "media_type": "image",
+      "page_index": 4125,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_4125.jpg",
+      "source_sha256": "sha256:f2e079f35e9813d1054656805e2ad8c5b70b1f5fbbd367073b193c0da8cde394"
+    },
+    {
+      "case_id": "omnidocbench-50c6243ebf3a8fd47715a071",
+      "input_relative_path": "inputs/omnidocbench-50c6243ebf3a8fd47715a071.png",
+      "input_sha256": "sha256:41604b11e70a4fe0cf579bb83ceb012331bdb2fa85b33f776a07e08a980f0170",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_73fc8720a9b2798307ba43a8b8e47b5e_1.jpg",
+      "source_sha256": "sha256:adf28177aa2e35c26b6ad0c704b1d39b4178d38d0f2100704ec7c3166a3aeb0a"
+    },
+    {
+      "case_id": "omnidocbench-ab09222e9b223df2f255949b",
+      "input_relative_path": "inputs/omnidocbench-ab09222e9b223df2f255949b.png",
+      "input_sha256": "sha256:78df3931d5e0930e74721d56cbf32da236506e67315ecc1683f5a86a0e8680f5",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_5a8b7563a3262beecbecd7ddd3ef8827_1.jpg",
+      "source_sha256": "sha256:4edd55786eb79d40731d9ed1175947f2fc62e005ae0917be0193f2e6ce1490e4"
+    },
+    {
+      "case_id": "omnidocbench-866c3e8ddb37a4e495ee29d8",
+      "input_relative_path": "inputs/omnidocbench-866c3e8ddb37a4e495ee29d8.png",
+      "input_sha256": "sha256:38a35569d3642ce8457491422fee3bc9e6c70a3bc29ab162e2a7656a1a42fa52",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_e62730aaeb9b509119e0c3699ac18201_1.jpg",
+      "source_sha256": "sha256:eb29e83bc87a90f4d425e233fbf6d2e6704c9a0a9a17ab2d58eae718681e61a6"
+    },
+    {
+      "case_id": "omnidocbench-7e1655c2c3f5941e12bf405f",
+      "input_relative_path": "inputs/omnidocbench-7e1655c2c3f5941e12bf405f.png",
+      "input_sha256": "sha256:02ff60aead2f563aac4779bce69d9bfb7c009f3447c4e1c38c996bd1d039947c",
+      "media_type": "image",
+      "page_index": 17,
+      "source_relative_path": "images/PPT_EnglishtoAmericanTransition_page_017.png",
+      "source_sha256": "sha256:8e4a301367fde488d761472b7b1dfa1eb0b41926ccc5fa4e17c384a3f9936491"
+    },
+    {
+      "case_id": "omnidocbench-f99576d3772d47b1e24cc071",
+      "input_relative_path": "inputs/omnidocbench-f99576d3772d47b1e24cc071.png",
+      "input_sha256": "sha256:ec4a74303ee04ab1bc44526fed37585b8998178ae6d92f796195722b9fb90833",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_4cec63ef5a813c5a49dd8e577f3180e7_1.jpg",
+      "source_sha256": "sha256:86f80dcad16c5c1fbd970a2ee9a6832ae416bee56c4b9904bd9b20bbb6ddad2d"
+    },
+    {
+      "case_id": "omnidocbench-29819b988852ea6d5705accb",
+      "input_relative_path": "inputs/omnidocbench-29819b988852ea6d5705accb.png",
+      "input_sha256": "sha256:d66de27eb22cf9bfa7d3383a40e85a459598faad74be4142965f390ea58e019c",
+      "media_type": "image",
+      "page_index": 4330,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_4330.jpg",
+      "source_sha256": "sha256:a8998b0b12676794f2541d0c9a5e5f2c905abe62f58c963834a2c858b1df2a91"
+    },
+    {
+      "case_id": "omnidocbench-fac6749298d150a9a72bcf1b",
+      "input_relative_path": "inputs/omnidocbench-fac6749298d150a9a72bcf1b.png",
+      "input_sha256": "sha256:8c345366eb04591255f3e19ffdaa5253dc1fe764786479ff4103ae9755f3e666",
+      "media_type": "image",
+      "page_index": 3290,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_3290.jpg",
+      "source_sha256": "sha256:8a6b1ff6349ee1be034e3027eb5a69599b62c5588f4c08c31ef3c5874b6dfab8"
+    },
+    {
+      "case_id": "omnidocbench-8be6317759cae9579e4d5c05",
+      "input_relative_path": "inputs/omnidocbench-8be6317759cae9579e4d5c05.png",
+      "input_sha256": "sha256:b0c42e318c9f773b5ab3d9833a034fcbef1d0a1bf2e7e43d06921c91e8884246",
+      "media_type": "image",
+      "page_index": 9,
+      "source_relative_path": "images/newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_009.png",
+      "source_sha256": "sha256:ff0db5922c385b194f978a3fd0644d7a02d369ce8ad2f2bd961df349071c0317"
+    },
+    {
+      "case_id": "omnidocbench-b1ac943bde590c6a2d9763b4",
+      "input_relative_path": "inputs/omnidocbench-b1ac943bde590c6a2d9763b4.png",
+      "input_sha256": "sha256:953db8eba4c24a5709a9ca39781ea3cd94a872cb9dc32fcbad27af98a7cd1e11",
+      "media_type": "image",
+      "page_index": 24,
+      "source_relative_path": "images/newspaper_USAToday-2025-01-08@magazinesclubnew_page_024.png",
+      "source_sha256": "sha256:bf1bb1c10ff67c76015a7da6e98570a255be573107314854a745983f7472f87a"
+    },
+    {
+      "case_id": "omnidocbench-93f3ca53a56b6a9fc32cb1e5",
+      "input_relative_path": "inputs/omnidocbench-93f3ca53a56b6a9fc32cb1e5.png",
+      "input_sha256": "sha256:b79333e27d1ad444e157209f5cc8098fed68b419b0ddd0d1bee30f04a4dc5c4d",
+      "media_type": "image",
+      "page_index": 68,
+      "source_relative_path": "images/newspaper_Daily Mail_2022-08-01@magazinesclubnew_page_068.png",
+      "source_sha256": "sha256:615fab6b2ba2c5ce2cf67a30065b8db51a26f84ffadc0264f2a550a4e47e615e"
+    },
+    {
+      "case_id": "omnidocbench-ffb15b765dba96a2bb5d3923",
+      "input_relative_path": "inputs/omnidocbench-ffb15b765dba96a2bb5d3923.png",
+      "input_sha256": "sha256:427eacc9adb87a3f9af96f02078f58237a138bacb83e78725b5c8c9274a00fe2",
+      "media_type": "image",
+      "page_index": 61,
+      "source_relative_path": "images/newspaper_The Guardian UK_0801@magazinesclubnew_page_061.png",
+      "source_sha256": "sha256:6298584bcd96d36bb8340fb7eb37fce9c7e869dad6e1edf337a13acf38f2a646"
+    },
+    {
+      "case_id": "omnidocbench-f494ffde9ff6a72242f79061",
+      "input_relative_path": "inputs/omnidocbench-f494ffde9ff6a72242f79061.png",
+      "input_sha256": "sha256:3970091ab08432a5d709808610195458e42fa0fe15109ca1ac3abd6fdf68feb2",
+      "media_type": "image",
+      "page_index": 19,
+      "source_relative_path": "images/newspaper_Chicago Tribune_0801@magazinesclubnew_page_019.png",
+      "source_sha256": "sha256:5584b20371aae2853936725b2fb268c1961925bf0938ba9b67a19fcd550f88f5"
+    },
+    {
+      "case_id": "omnidocbench-9f7eab3cf098c35dc0535ead",
+      "input_relative_path": "inputs/omnidocbench-9f7eab3cf098c35dc0535ead.png",
+      "input_sha256": "sha256:4547f9ade0f485b88ca4426b2ba32f533b7ff7f4455c5be714f4a50950614393",
+      "media_type": "image",
+      "page_index": 4635,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_4635.jpg",
+      "source_sha256": "sha256:514f51d7fc34b46fb31f1c750409332a7c2255321de271474ffb850ab96e2ee8"
+    },
+    {
+      "case_id": "omnidocbench-ddd099cdecc2a832762b5b97",
+      "input_relative_path": "inputs/omnidocbench-ddd099cdecc2a832762b5b97.png",
+      "input_sha256": "sha256:333eb158ea26f5367b7116ac3e55a31099092ef33a032dbab362a3403dc281dd",
+      "media_type": "image",
+      "page_index": 3215,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_3215.jpg",
+      "source_sha256": "sha256:281075705e0901d26859b9573b069fa5d12fd8cb19a53468b7431fe07148376b"
+    },
+    {
+      "case_id": "omnidocbench-f56d6d5a4690aca38e0803a0",
+      "input_relative_path": "inputs/omnidocbench-f56d6d5a4690aca38e0803a0.png",
+      "input_sha256": "sha256:7fdb3adcdf5376f712bd88743e78057c68024a70461f360537b45042492db0c5",
+      "media_type": "image",
+      "page_index": 7,
+      "source_relative_path": "images/newspaper_NY Daily News_August 1@magazinesclubnew_page_007.png",
+      "source_sha256": "sha256:1daef9a8484cc89363be4ecf45a396339ff993f50c46df7ee3186c9edef3cba6"
+    },
+    {
+      "case_id": "omnidocbench-46ab27679e91168f136bd503",
+      "input_relative_path": "inputs/omnidocbench-46ab27679e91168f136bd503.png",
+      "input_sha256": "sha256:81bfd0288252fb9155768b9cab1e5770040c6e3b2bef06643cfd6ae0683daefe",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_ef5c785d9cc21ccf6b73d143f231b5c5_1.jpg",
+      "source_sha256": "sha256:db951fb0bb4291a9bb7d837465793ecf2c1c651c15d21d8bb9ebad2628f78f1b"
+    },
+    {
+      "case_id": "omnidocbench-967e6d53f62c1906d452ed5a",
+      "input_relative_path": "inputs/omnidocbench-967e6d53f62c1906d452ed5a.png",
+      "input_sha256": "sha256:5229629808d47cd8cd0dcc4107e79a1fce7f551ae7d2f14bf5c8d1d526c0b846",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_8076765115f6c402e81c6bfb48139bc2_1.jpg",
+      "source_sha256": "sha256:ead22d19fbb42ddb2341abc427a2e141e9022ff2f94eed32a9585bfadee1f643"
+    },
+    {
+      "case_id": "omnidocbench-d35cf11740514e9617e78da6",
+      "input_relative_path": "inputs/omnidocbench-d35cf11740514e9617e78da6.png",
+      "input_sha256": "sha256:3bda5de3e492ad74f22491d9e3332f2cd6d18e86f71dc8ab47c2ced5238df6d3",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_6d2b5f833fe20785bc395f757524cb05_1.jpg",
+      "source_sha256": "sha256:c9deedbb502d9324d4ccfbbe54bdf7f722a5b61b035f1a26c604239167c4c977"
+    },
+    {
+      "case_id": "omnidocbench-f35b238a17373ddfb07061a8",
+      "input_relative_path": "inputs/omnidocbench-f35b238a17373ddfb07061a8.png",
+      "input_sha256": "sha256:de13596107a937bddf2bba9d8660588613d3dd9973f93d1124622e8a859577e6",
+      "media_type": "image",
+      "page_index": 12,
+      "source_relative_path": "images/newspaper_USAToday-2025-01-08@magazinesclubnew_page_012.png",
+      "source_sha256": "sha256:9e9881983412a83922be1f9d964ea737f0ea4b2a59241831c7bf9a5fa1675b9b"
+    },
+    {
+      "case_id": "omnidocbench-f645ec1740ae73f732666a09",
+      "input_relative_path": "inputs/omnidocbench-f645ec1740ae73f732666a09.png",
+      "input_sha256": "sha256:b0d73b16df483d3987b8dea7e2a095ea47bfb2158c37e51ace4577ad24102a37",
+      "media_type": "image",
+      "page_index": 16,
+      "source_relative_path": "images/PPT_EnglishtoAmericanTransition_page_016.png",
+      "source_sha256": "sha256:2b276b8c4812406bdcd9551375eb4dad4e376640e82f81c2c8675bbbe0c9acf9"
+    },
+    {
+      "case_id": "omnidocbench-c5f58b436c3740ae4966a0e9",
+      "input_relative_path": "inputs/omnidocbench-c5f58b436c3740ae4966a0e9.png",
+      "input_sha256": "sha256:169dc99a2c23de28d61915de00c3aa19edbab2ef484b9e7b14c5a1db1427ba8c",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_The Times UK_0801@magazinesclubnew_page_001.png",
+      "source_sha256": "sha256:af47df7d4e43620fc1db0c8301c35433b84d380634d5292f9cd497f2f9d8e229"
+    },
+    {
+      "case_id": "omnidocbench-d221f58317123cdb66a051ed",
+      "input_relative_path": "inputs/omnidocbench-d221f58317123cdb66a051ed.png",
+      "input_sha256": "sha256:ccabb0dafc7c539d9b05980217f49fbe4e4e3028b07804067b7e1e428766f954",
+      "media_type": "image",
+      "page_index": 33,
+      "source_relative_path": "images/newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_033.png",
+      "source_sha256": "sha256:602fa027b160f237059d3810c2e15f51f12210aa3fd708530c1bbbaa530145e5"
+    },
+    {
+      "case_id": "omnidocbench-5f6bf47098f0a0a9dc582fb1",
+      "input_relative_path": "inputs/omnidocbench-5f6bf47098f0a0a9dc582fb1.png",
+      "input_sha256": "sha256:db394e53b184fa0f8672cc88402cb96efab4a0e31d7de0ae4b2fe5a7044ed23d",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_354720d92a632709eb8e61795b191390_1.jpg",
+      "source_sha256": "sha256:584687e737788341b57f4f46267886f60e7c38dc96d7c608c2e60b75a29f84c0"
+    },
+    {
+      "case_id": "omnidocbench-7b26affd2aed5768ad018cc1",
+      "input_relative_path": "inputs/omnidocbench-7b26affd2aed5768ad018cc1.png",
+      "input_sha256": "sha256:66d58a36f6cef2c32a5df9c44f83ea00b615f6f0192e87c4c298e14db1b460d0",
+      "media_type": "image",
+      "page_index": 30,
+      "source_relative_path": "images/magazine_TheEconomist.2023.11.18_page_030.png",
+      "source_sha256": "sha256:18659b82a253e73bddae6b2403d2557f55eaa538fb17057c6ecb5355ee0df74a"
+    },
+    {
+      "case_id": "omnidocbench-785575b78df9b402d131c064",
+      "input_relative_path": "inputs/omnidocbench-785575b78df9b402d131c064.png",
+      "input_sha256": "sha256:00f2038f6e68a790eb62cb5f01c922432e3e183acacdc533c3c01b023d4e1ab3",
+      "media_type": "image",
+      "page_index": 20,
+      "source_relative_path": "images/newspaper_NY Daily News_August 1@magazinesclubnew_page_020.png",
+      "source_sha256": "sha256:f876fcee426da6e457a618fce137473193e9229afd6ece22f0554facd10d12f5"
+    },
+    {
+      "case_id": "omnidocbench-a0561a6c744ab0e9b72ecdd8",
+      "input_relative_path": "inputs/omnidocbench-a0561a6c744ab0e9b72ecdd8.png",
+      "input_sha256": "sha256:5bc437cfeaea2cdfd5ee6087888d5f6a12577e3b8a0cba53e03efecca30d1e97",
+      "media_type": "image",
+      "page_index": 18,
+      "source_relative_path": "images/newspaper_The Globe and Mail - 2025-1-8@magazinesclubnew_page_018.png",
+      "source_sha256": "sha256:9ccd21b2b073ce2f97dd4ce6a444fe0da40f370c2a47e50dd2480bff1b8f2a35"
+    },
+    {
+      "case_id": "omnidocbench-6fb428482b123af024d8c62e",
+      "input_relative_path": "inputs/omnidocbench-6fb428482b123af024d8c62e.png",
+      "input_sha256": "sha256:6c06d577556e490c465d288eb464d50e5aba29e3e0fe360d0c4baf1b583747f7",
+      "media_type": "image",
+      "page_index": 0,
+      "source_relative_path": "images/page-00b6ac57-4466-4eb0-937d-bb29a44fa0d3.png",
+      "source_sha256": "sha256:4bb31aee04e81e2e2e52351eb8c8a3f3ededbdc443b7917951aaea3d0f133167"
+    },
+    {
+      "case_id": "omnidocbench-d72b92754767bc997cd55c49",
+      "input_relative_path": "inputs/omnidocbench-d72b92754767bc997cd55c49.png",
+      "input_sha256": "sha256:8bceae6c1e1c745e0134af4275d8474c44d74fc0f1d91f684de0c47cdb2f4445",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_e6ddb0246224fb8bd8788e6cc7839021_1.jpg",
+      "source_sha256": "sha256:d50df982f8b086f1bc6ae479c4f25266c4ffe23aaaaceae5a206854afe4fe313"
+    },
+    {
+      "case_id": "omnidocbench-9e3aaff06ead463c1164674d",
+      "input_relative_path": "inputs/omnidocbench-9e3aaff06ead463c1164674d.png",
+      "input_sha256": "sha256:09a90a13353c040a41c2ea31e2588f665caa7ff390c7a238e71bc611bd57714b",
+      "media_type": "image",
+      "page_index": 21,
+      "source_relative_path": "images/newspaper_USAToday-2025-01-08@magazinesclubnew_page_021.png",
+      "source_sha256": "sha256:15538dd8b944e984d9469618420793fec217264a932068536efbf63fa154864c"
+    },
+    {
+      "case_id": "omnidocbench-e8c441e7a6cf489584da3231",
+      "input_relative_path": "inputs/omnidocbench-e8c441e7a6cf489584da3231.png",
+      "input_sha256": "sha256:98e41708bb153f7f160bbe64b27cd1548973e30ec533931bfddf6f8eaa6d22b3",
+      "media_type": "image",
+      "page_index": 34,
+      "source_relative_path": "images/docstructbench_dianzishu_zhongwenzaixian-o.O-61513005.pdf_179.jpg",
+      "source_sha256": "sha256:7a940a7f468a43f7df3f990a3be23b9346d099a38e638e772d69d618584cf707"
+    },
+    {
+      "case_id": "omnidocbench-04b4d7f35d19879b39a2f2db",
+      "input_relative_path": "inputs/omnidocbench-04b4d7f35d19879b39a2f2db.png",
+      "input_sha256": "sha256:3b46f90b3b14f52048e461738b1b59235864a647705196c7183e654c5e3cca98",
+      "media_type": "image",
+      "page_index": 79,
+      "source_relative_path": "images/magazine_TheEconomist.2024.03.09_page_079.png",
+      "source_sha256": "sha256:45979ad458b9b64ed57d7c8faadc015fe38f5bc329f84cccb0267b81ae138c94"
+    },
+    {
+      "case_id": "omnidocbench-17bda9f592feacc00ca965c0",
+      "input_relative_path": "inputs/omnidocbench-17bda9f592feacc00ca965c0.png",
+      "input_sha256": "sha256:08aedc6f653ee0066ec00b964913886223b9cc15ef0d5777085637c3a0b87cc4",
+      "media_type": "image",
+      "page_index": 68,
+      "source_relative_path": "images/magazine_TheEconomist.2024.02.24_page_068.png",
+      "source_sha256": "sha256:bbcc998991b981e3b4fabed9794516ad905f7d01f8f79bb7c5c7260d97667de9"
+    },
+    {
+      "case_id": "omnidocbench-f01886c568e276f911856cbf",
+      "input_relative_path": "inputs/omnidocbench-f01886c568e276f911856cbf.png",
+      "input_sha256": "sha256:489aa160fee971a18b2e5c616db95a0f2fc1b73c7428af3100b13e5aa7dc6662",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_c79c0c10a5df54b21bccad8f64063ffa_1.jpg",
+      "source_sha256": "sha256:28e4e6000bcab6e75e0d300c2014acc564edaca0868b5dc4fdffd8f3e4b3c424"
+    },
+    {
+      "case_id": "omnidocbench-40f54ca63f6f7e174a4566c5",
+      "input_relative_path": "inputs/omnidocbench-40f54ca63f6f7e174a4566c5.png",
+      "input_sha256": "sha256:9922f285eff0538188166d270fedde5e578b532858f495b0303f25bf0bca6272",
+      "media_type": "image",
+      "page_index": 42,
+      "source_relative_path": "images/newspaper_TheWashingtonPost-2025-01-08@magazinesclubnew_page_042.png",
+      "source_sha256": "sha256:3b77eb5bbd75744e625d356f6902ffd790488bf5611b32e503d71f3a6a0674b5"
+    },
+    {
+      "case_id": "omnidocbench-f28fffe33b5ed0a8548a5fe3",
+      "input_relative_path": "inputs/omnidocbench-f28fffe33b5ed0a8548a5fe3.png",
+      "input_sha256": "sha256:546accf68c959381cd90411638b11f9808e35572296ca89adefc298df6fd4672",
+      "media_type": "image",
+      "page_index": 20,
+      "source_relative_path": "images/newspaper_The Times UK_0801@magazinesclubnew_page_020.png",
+      "source_sha256": "sha256:f8e8bf63ab208873403f609f9b6280fd7d46ad41739edbf3f867eb877cae3963"
+    },
+    {
+      "case_id": "omnidocbench-13e014849e0cd2ce533de7a0",
+      "input_relative_path": "inputs/omnidocbench-13e014849e0cd2ce533de7a0.png",
+      "input_sha256": "sha256:aed9c2113704e1345604d6b5079cc630d40325f143c777ad5b597bb0cffd331f",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_26f4ed67a5e8922e7d42b35d317ebf4b_1.jpg",
+      "source_sha256": "sha256:2704cf0bd8119eb9f20916deeaf6d26f3376250c71f1f23e9aa180d58d0cea38"
+    },
+    {
+      "case_id": "omnidocbench-c9215aabd9022141700b4a86",
+      "input_relative_path": "inputs/omnidocbench-c9215aabd9022141700b4a86.png",
+      "input_sha256": "sha256:16027be0e1a1909b1273caca48f2b739292581114e632d242442a30b21f09546",
+      "media_type": "image",
+      "page_index": 48,
+      "source_relative_path": "images/newspaper_The Guardian UK_0801@magazinesclubnew_page_048.png",
+      "source_sha256": "sha256:0fc48b1811994f28bc4ebf73c15fc903d5cfdcb2f0b878580d15a8498e0cb044"
+    },
+    {
+      "case_id": "omnidocbench-a1a40ea31ec4554ee0f6ea69",
+      "input_relative_path": "inputs/omnidocbench-a1a40ea31ec4554ee0f6ea69.png",
+      "input_sha256": "sha256:2513d4adc87f8d4fcbffca06dd2bf67c47707f7c0c5220fd5886b7ad069538bd",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_5bba361b0a5ca11745edbef140e2a431_1.jpg",
+      "source_sha256": "sha256:54f5badd60764a7737d685e26930b2b5ae94184b04e7fa1601be6f365c84fa53"
+    },
+    {
+      "case_id": "omnidocbench-b5d790ffa357aa979e9ea447",
+      "input_relative_path": "inputs/omnidocbench-b5d790ffa357aa979e9ea447.png",
+      "input_sha256": "sha256:067e8724fd4a79c3a8f4dc12ecd77eacf16f5f399fe2094d0b0771a58b2bf1bf",
+      "media_type": "image",
+      "page_index": 37,
+      "source_relative_path": "images/magazine_TheEconomist.2023.12.16_page_037.png",
+      "source_sha256": "sha256:716ea279a4dae0683fd14fcd193609cfbfad32dcdb641a7a1f11338928e42929"
+    },
+    {
+      "case_id": "omnidocbench-7ecce00ab3c2032cfecdccf7",
+      "input_relative_path": "inputs/omnidocbench-7ecce00ab3c2032cfecdccf7.png",
+      "input_sha256": "sha256:84d50ea61672d2cb28e6c9451f0662c61949200a9ff78b5a504e83a2bc0b4342",
+      "media_type": "image",
+      "page_index": 1431,
+      "source_relative_path": "images/jiaocaineedrop_7bc671081823aec9e2a6ef2a011c3fbb.pdf_20.jpg",
+      "source_sha256": "sha256:03994370171364f57c455fd239ac3ce96073475bc8335b1b05864a280da7e4d4"
+    },
+    {
+      "case_id": "omnidocbench-7042ac1e4bd40fce0c3eac00",
+      "input_relative_path": "inputs/omnidocbench-7042ac1e4bd40fce0c3eac00.png",
+      "input_sha256": "sha256:80a4feeb073ec8050b47be6f54fc4e9db469a48f70026641e438acecc432badb",
+      "media_type": "image",
+      "page_index": 19,
+      "source_relative_path": "images/magazine_TheEconomist.2023.12.16_page_019.png",
+      "source_sha256": "sha256:1cf6737ad4bca84fc82cb93d446aaef001357d7dd08e46a509875f2ed7e6b436"
+    },
+    {
+      "case_id": "omnidocbench-6d0a994d704a97fe4c228bb4",
+      "input_relative_path": "inputs/omnidocbench-6d0a994d704a97fe4c228bb4.png",
+      "input_sha256": "sha256:6b1d389769179bab0f17cdfccae3c61be1203697d482286609db734de29ca4c9",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_c8e8e00e1b1a70aa44afd1fbdaf59430_1.jpg",
+      "source_sha256": "sha256:8b96c50882a717f15746d4c710cda96f8f00b24174d123e8eed9d5957c48e419"
+    },
+    {
+      "case_id": "omnidocbench-91f1ad64e6195d606211435f",
+      "input_relative_path": "inputs/omnidocbench-91f1ad64e6195d606211435f.png",
+      "input_sha256": "sha256:930ebff961048ca2f8c1a20c9e1c6897898f33686b8ce954a6823818732716f6",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_d84e38031cf03d3fd4649910cf0ecce1_1.jpg",
+      "source_sha256": "sha256:f8c873165b20379487eba3f04aba2cdc85776789c12a55617d4bd765ce271ed7"
+    },
+    {
+      "case_id": "omnidocbench-20712a8e7d64f0cf5e386143",
+      "input_relative_path": "inputs/omnidocbench-20712a8e7d64f0cf5e386143.png",
+      "input_sha256": "sha256:5b92c606625632f912785439f3c5830ab1af79189980647e8226c670f1e68014",
+      "media_type": "image",
+      "page_index": 25,
+      "source_relative_path": "images/magazine_TheEconomist.2024.03.02_page_025.png",
+      "source_sha256": "sha256:9a0f121f09882848f76dbd09c0617b6ba859856d4ed7af618ff7ee37b5ea9f37"
+    },
+    {
+      "case_id": "omnidocbench-4d4a45999ad81f2fd9205f51",
+      "input_relative_path": "inputs/omnidocbench-4d4a45999ad81f2fd9205f51.png",
+      "input_sha256": "sha256:4a22a5536a114fb37ebe977b92ac1387432096c4e0ed75244785eadd9df2bb47",
+      "media_type": "image",
+      "page_index": 83,
+      "source_relative_path": "images/newspaper_The Times UK_0801@magazinesclubnew_page_083.png",
+      "source_sha256": "sha256:bce4e102948824826f61dde270bb92fdb9fd5e32bdf8250b38702d7b28e12da8"
+    },
+    {
+      "case_id": "omnidocbench-7684b46c1397c6129dfec1a7",
+      "input_relative_path": "inputs/omnidocbench-7684b46c1397c6129dfec1a7.png",
+      "input_sha256": "sha256:195c274de6a4db65126c490eabf61637a1de65ac761c238bb2cc1262660e4d8d",
+      "media_type": "image",
+      "page_index": 82,
+      "source_relative_path": "images/magazine_TheEconomist.2023.11.18_page_082.png",
+      "source_sha256": "sha256:5962d372b626732e758ab6d10bd0ffe76dfa4e7fab520c524c2c439b183fb967"
+    },
+    {
+      "case_id": "omnidocbench-bebe06d9f16d40c9e12f86cd",
+      "input_relative_path": "inputs/omnidocbench-bebe06d9f16d40c9e12f86cd.png",
+      "input_sha256": "sha256:45c3b6bce33d8b3f628a3349a6b6d589411c7247e4c7702694804bf53f4dac7a",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_e6083de4647ef28434cb6a598b073ae4_1.jpg",
+      "source_sha256": "sha256:61ccf2091938a3d725d04fae2add8503391f7cd52e1ac5c18e9fca0b8c11de03"
+    },
+    {
+      "case_id": "omnidocbench-dc083dcfadde1b7daeb21399",
+      "input_relative_path": "inputs/omnidocbench-dc083dcfadde1b7daeb21399.png",
+      "input_sha256": "sha256:ebb906af2adb0b5070b4d79a7b47cceb9cfe580d86b5deec62dcdd57330be88c",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_2c69e142b52dbb30cac2cb11d3eb25e5_1.jpg",
+      "source_sha256": "sha256:49cb04fe31998f1612202d53e2f6edc15bcc0feb6ae1011fc4be9410f48cbc0c"
+    },
+    {
+      "case_id": "omnidocbench-367001ab4acebb401a73065d",
+      "input_relative_path": "inputs/omnidocbench-367001ab4acebb401a73065d.png",
+      "input_sha256": "sha256:8b09af0d3398d8f194b2b38f354cb1ae4032bd85c974aaf3ea1f1a63252da549",
+      "media_type": "image",
+      "page_index": 5,
+      "source_relative_path": "images/PPT_EnglishtoAmericanTransition_page_005.png",
+      "source_sha256": "sha256:af0f8a14ee618fe3066deb61bf2301aea07b11e37dde59065e4a3097fdd6c008"
+    },
+    {
+      "case_id": "omnidocbench-11293ff300d57af594662899",
+      "input_relative_path": "inputs/omnidocbench-11293ff300d57af594662899.png",
+      "input_sha256": "sha256:60102874254c620c665c4310fc31f7b567fc32f71efabb724c160e0dcaeb2dbb",
+      "media_type": "image",
+      "page_index": 15,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_15.jpg",
+      "source_sha256": "sha256:7da5ed976b27d3c24f6b269e7aaa46b9ab35bc1f3c7997e25119d8180366e860"
+    },
+    {
+      "case_id": "omnidocbench-96f01a4ec93364c13f67f01c",
+      "input_relative_path": "inputs/omnidocbench-96f01a4ec93364c13f67f01c.png",
+      "input_sha256": "sha256:9b7c770cd54895ee3d530a39e951b78db522854d37629148ed05c9eaa236046e",
+      "media_type": "image",
+      "page_index": 3,
+      "source_relative_path": "images/newspaper_fe5ed29024932fad071afc53807b16ba_3.jpg",
+      "source_sha256": "sha256:84c3edfd51e89c7c3028e37ac0770fbe459476d23b8142f53f2fe8f62182257e"
+    },
+    {
+      "case_id": "omnidocbench-ac7e736bd15daf44c7119556",
+      "input_relative_path": "inputs/omnidocbench-ac7e736bd15daf44c7119556.png",
+      "input_sha256": "sha256:db1ff4a29a9dbadeb24db072634ddac01fee4878117ec96f50dca596758a4b12",
+      "media_type": "image",
+      "page_index": 1635,
+      "source_relative_path": "images/jiaocaineedrop_Chap11.pdf_10.jpg",
+      "source_sha256": "sha256:119288827ebafa222fe7d58a00d336f0a02dfcbe9d64eac0ed7352986c0ccb15"
+    },
+    {
+      "case_id": "omnidocbench-4739c4e5d92c7d3108751d1a",
+      "input_relative_path": "inputs/omnidocbench-4739c4e5d92c7d3108751d1a.png",
+      "input_sha256": "sha256:4a83b5f67aefc10c70e906a383a6764d115ae2a5a69d6bfb9dc65b7561dad42f",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/yanbaor2_ec10ef335b55af1612e6ab51b5ebdff506d496da9eb8c17c74fe2751661c22f7.pdf_1.jpg",
+      "source_sha256": "sha256:1d83116a6f047cd11c7f9fda019a4f3bbca5a0181330d915edd4354d36d9aa28"
+    },
+    {
+      "case_id": "omnidocbench-cb22082da49ec3fdb18d4f0e",
+      "input_relative_path": "inputs/omnidocbench-cb22082da49ec3fdb18d4f0e.png",
+      "input_sha256": "sha256:579aa641b98f08f3dc27f7a4e61c2e187be2381a7d5c3900d18e50ff4a6a206e",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_5e8bcc55b922fd521a667c6ef01027d5_1.jpg",
+      "source_sha256": "sha256:0d8a28acfbf529e3712083b19f648adcc79fbf3423cfc73fbc562fe97d596e45"
+    },
+    {
+      "case_id": "omnidocbench-c4b87385e85cdec5b32fdd15",
+      "input_relative_path": "inputs/omnidocbench-c4b87385e85cdec5b32fdd15.png",
+      "input_sha256": "sha256:51cb496de647bece7e1747a44408b2ae12bea185e71f10e354662d833f5b5029",
+      "media_type": "image",
+      "page_index": 12,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_12.jpg",
+      "source_sha256": "sha256:559a38e39f9110bf201c0aa0a2d2940fc555aebeccdc2d3fb67308a19f325ea9"
+    },
+    {
+      "case_id": "omnidocbench-3666388a896d6cb2f4cff5e5",
+      "input_relative_path": "inputs/omnidocbench-3666388a896d6cb2f4cff5e5.png",
+      "input_sha256": "sha256:aa2ff5778f86fe7ed601848c3cc7f1c6d3b656e5fab140084a387de3c905e2bd",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_e567840b2e327602422573ccdc1c4275_1.jpg",
+      "source_sha256": "sha256:57450a34a41b893532564e4c742855fb89e0f93ae4dba846dcb961dd04be69b3"
+    },
+    {
+      "case_id": "omnidocbench-00a0b37ee8bdc921dc127cbb",
+      "input_relative_path": "inputs/omnidocbench-00a0b37ee8bdc921dc127cbb.png",
+      "input_sha256": "sha256:79ef5abf9ea10dc1787a2f7c58547654426f08a5ed7a3b19467c7e255494599f",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_4b4ad1f6cba28a4844d7ffa9306223a4_1.jpg",
+      "source_sha256": "sha256:a09b58b4e7f3a27cd0d549491cc760fb035285a1be2d6f487e34ab995c3f02f0"
+    },
+    {
+      "case_id": "omnidocbench-b465f1e9fd6b5b164839fc43",
+      "input_relative_path": "inputs/omnidocbench-b465f1e9fd6b5b164839fc43.png",
+      "input_sha256": "sha256:53e132b305e4456795374b6c8d82594d759b98f406406ecafe48022d03ab744c",
+      "media_type": "image",
+      "page_index": 14,
+      "source_relative_path": "images/newspaper_The Globe and Mail - 2025-1-8@magazinesclubnew_page_014.png",
+      "source_sha256": "sha256:6e560ae90e4d26a33be3056680d8218077e87734171dffcac6a491229a034b4f"
+    },
+    {
+      "case_id": "omnidocbench-5a885221eeb1f30a0a7bcc6b",
+      "input_relative_path": "inputs/omnidocbench-5a885221eeb1f30a0a7bcc6b.png",
+      "input_sha256": "sha256:19094b7487b028758066c6b73a6852647168ac7b9fd5ee853965c0469850caf4",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_401c73055b88a62c479edd3d490cea8a_1.jpg",
+      "source_sha256": "sha256:2dad64664cb9c5ac383490544cf9fd883f15a48a515534b93fce3f60ae96a1d4"
+    },
+    {
+      "case_id": "omnidocbench-8707b7f4032f39228fa83748",
+      "input_relative_path": "inputs/omnidocbench-8707b7f4032f39228fa83748.png",
+      "input_sha256": "sha256:3db927fc6c81994a7cee5ea1aac8e379ddaf244e6598d31b3080b5f67409df5f",
+      "media_type": "image",
+      "page_index": 3,
+      "source_relative_path": "images/newspaper_5e266dfd9c498cab274e12a7b4a75755_3.jpg",
+      "source_sha256": "sha256:f071e233c34208af408742f801bbcf936140de1794778804fea8cfbeddb4bc34"
+    },
+    {
+      "case_id": "omnidocbench-d906f68547c11bce5fca6c77",
+      "input_relative_path": "inputs/omnidocbench-d906f68547c11bce5fca6c77.png",
+      "input_sha256": "sha256:37ca0ea7b267ae0ca4be2d5550913dd0005bebbca01540501d2be7448dbc4702",
+      "media_type": "image",
+      "page_index": 7,
+      "source_relative_path": "images/magazine_TheEconomist.2024.02.24_page_007.png",
+      "source_sha256": "sha256:ee7a0f9b313d31d6b9d8eb85cfbcc3f953b02569b43c1a8738e1ce3ccbbf1668"
+    },
+    {
+      "case_id": "omnidocbench-5b51e53e1394925dbe165595",
+      "input_relative_path": "inputs/omnidocbench-5b51e53e1394925dbe165595.png",
+      "input_sha256": "sha256:46881b06a1cd9c420ecf6e382dde056ed221bb8731ffe3e4a8e9beaceab6176b",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_e7246d706077d2064a6e667dfc73925e_1.jpg",
+      "source_sha256": "sha256:c7300080427047fa6564402d3bca09285bc1f3ba8d2d939aebd1a3f7632fd3e9"
+    },
+    {
+      "case_id": "omnidocbench-e5a9ffffe5d667ddc0383cf6",
+      "input_relative_path": "inputs/omnidocbench-e5a9ffffe5d667ddc0383cf6.png",
+      "input_sha256": "sha256:33534efde8cf8e573161374237f7844893610b9654141fa862aa414fd65fbd21",
+      "media_type": "image",
+      "page_index": 56,
+      "source_relative_path": "images/magazine_TheEconomist.2023.12.02_page_056.png",
+      "source_sha256": "sha256:298c283d4873ecbdd0acc61a17cb276d50c11bc65d14044d4131d9be885d149f"
+    },
+    {
+      "case_id": "omnidocbench-38dd1da2bf5e18fb8a0e640f",
+      "input_relative_path": "inputs/omnidocbench-38dd1da2bf5e18fb8a0e640f.png",
+      "input_sha256": "sha256:93bcef90061616b9bdbbd1eaea57d6cd57618f3114fe537baf5a28671130d5c2",
+      "media_type": "image",
+      "page_index": 3,
+      "source_relative_path": "images/PPT_EnglishtoAmericanTransition_page_003.png",
+      "source_sha256": "sha256:c6c33093463a0f80beacfdfc853410d2b017777eed4c301367eb390fb2f9c3bb"
+    },
+    {
+      "case_id": "omnidocbench-cf57a711c6ed0dc049a59bf6",
+      "input_relative_path": "inputs/omnidocbench-cf57a711c6ed0dc049a59bf6.png",
+      "input_sha256": "sha256:0cc40bc3ab18f6d1d3a73c7fabcd47fc3993b208ecf0895344132e83b7f2d3c5",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_a9c9e3816aa5cb6866d02c10273dc665_1.jpg",
+      "source_sha256": "sha256:cb41f7e7494587da9cfdebf2596f149a100b81fb2954b4ecfc17da08f7554583"
+    },
+    {
+      "case_id": "omnidocbench-87534b4de7ebb71a01956f5b",
+      "input_relative_path": "inputs/omnidocbench-87534b4de7ebb71a01956f5b.png",
+      "input_sha256": "sha256:51f1ba048dffc73691e5414da89337d371b70f954468f5cea0e9c6698094c7d3",
+      "media_type": "image",
+      "page_index": 16,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_16.jpg",
+      "source_sha256": "sha256:0a20956ff01c1f9292d730cfccf3798f2ca4097c488f2418f1542217a4ad469e"
+    },
+    {
+      "case_id": "omnidocbench-bb687e8556dda994eb1638d4",
+      "input_relative_path": "inputs/omnidocbench-bb687e8556dda994eb1638d4.png",
+      "input_sha256": "sha256:0c8fe214889c3c51b7ecc1c76326e0224e32aa71f4fd1e5f4f426c9dbd8b3d0e",
+      "media_type": "image",
+      "page_index": 60,
+      "source_relative_path": "images/magazine_TheEconomist.2023.12.23_page_060.png",
+      "source_sha256": "sha256:bc920c0b751797682c805b5b937d67853a0b584169f263df8f1bd0461f9adb3d"
+    },
+    {
+      "case_id": "omnidocbench-8d30b31867b9934e77c05aa1",
+      "input_relative_path": "inputs/omnidocbench-8d30b31867b9934e77c05aa1.png",
+      "input_sha256": "sha256:848377171edfc6c28f703316bb17ea6a0e91cd20d463fc3e89b9defe890702c1",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_2140e879cd0d3c1b5ba2ea1e3a75aab6_1.jpg",
+      "source_sha256": "sha256:f554a5e637a5f9ea2f62472e683f02a13221ebf2fe11c63d07ccb56332bc8915"
+    },
+    {
+      "case_id": "omnidocbench-51909f69424c4112d584188d",
+      "input_relative_path": "inputs/omnidocbench-51909f69424c4112d584188d.png",
+      "input_sha256": "sha256:4998bcc64b7df98107c68fc8584e8c78f92d041e05ef578fdbbd471f22027cc7",
+      "media_type": "image",
+      "page_index": 21,
+      "source_relative_path": "images/newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_021.png",
+      "source_sha256": "sha256:aec0559e222ca31527ab0ac78673d155a2b228a23d2f4519de789ac7452c0fb4"
+    },
+    {
+      "case_id": "omnidocbench-ed74f28c0c7a4eacb35d11f3",
+      "input_relative_path": "inputs/omnidocbench-ed74f28c0c7a4eacb35d11f3.png",
+      "input_sha256": "sha256:82056c59ade4e96123ad152ad98286e19cb1d19aa5043924d390d0efc0e6577e",
+      "media_type": "image",
+      "page_index": 75,
+      "source_relative_path": "images/magazine_TheEconomist.2024.03.02_page_075.png",
+      "source_sha256": "sha256:7956a7221d6203c3e8904d063b9e5fc7589776359cf3a82e05366c642ad57024"
+    },
+    {
+      "case_id": "omnidocbench-cea2963957398c4dbcd8c231",
+      "input_relative_path": "inputs/omnidocbench-cea2963957398c4dbcd8c231.png",
+      "input_sha256": "sha256:74020deb0bb55969d2ef56cc6de40727acfb9aa07d7732d52f35287cb5728e63",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_9bb9e05d38b370251a4b0a8d070d1d55_1.jpg",
+      "source_sha256": "sha256:615b5e56756be047673540e6c97716c2ca09bcd959198a32722bac8f537ddbeb"
+    },
+    {
+      "case_id": "omnidocbench-acbd2dc8175b2c19e23ed41d",
+      "input_relative_path": "inputs/omnidocbench-acbd2dc8175b2c19e23ed41d.png",
+      "input_sha256": "sha256:5fdc70f14166b739bd97e5de239f333d97604af1c76329c37e8ea76f3b30eafd",
+      "media_type": "image",
+      "page_index": 27,
+      "source_relative_path": "images/newspaper_The Globe and Mail - 2025-1-8@magazinesclubnew_page_027.png",
+      "source_sha256": "sha256:854a9981be969d8373367d40d21f7c64778148c2fe1b6558e581cb962e29a5b2"
+    },
+    {
+      "case_id": "omnidocbench-db21bf970ea62c283cee08f9",
+      "input_relative_path": "inputs/omnidocbench-db21bf970ea62c283cee08f9.png",
+      "input_sha256": "sha256:e8f1f227da55e24420cdad0d09cc50efd3a106126c585830e3e6e0cb08cd9da6",
+      "media_type": "image",
+      "page_index": 26,
+      "source_relative_path": "images/magazine_TheEconomist.2023.12.16_page_026.png",
+      "source_sha256": "sha256:820ff0ebcaba8b1308ef8c430dec8c61f9f696131a75b594636f7f43bfb7976e"
+    },
+    {
+      "case_id": "omnidocbench-f4cb07bf4bcb79b7f30f4b60",
+      "input_relative_path": "inputs/omnidocbench-f4cb07bf4bcb79b7f30f4b60.png",
+      "input_sha256": "sha256:283eee1b44c4de0adced0e7ea2e1cd6cb45332fb115311323cfcb5d889d0b9ba",
+      "media_type": "image",
+      "page_index": 7,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_7.jpg",
+      "source_sha256": "sha256:a5513ad4fcaaf915d08a8bd523eb9dba111a1cb2f29cd7ad8933afb9a1faf855"
+    },
+    {
+      "case_id": "omnidocbench-71d61ebb2363011e53584336",
+      "input_relative_path": "inputs/omnidocbench-71d61ebb2363011e53584336.png",
+      "input_sha256": "sha256:2929304f4c4ad7a91fcb301a7a82a956dfef096200d159ee05549be993526d6a",
+      "media_type": "image",
+      "page_index": 15,
+      "source_relative_path": "images/newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_015.png",
+      "source_sha256": "sha256:6f3a0084de7f4ba085b18bf0cf137626fb1c6ee5583b16bcb936be205ff20501"
+    },
+    {
+      "case_id": "omnidocbench-c5c9bb6d4b0f0ddf3bb813f9",
+      "input_relative_path": "inputs/omnidocbench-c5c9bb6d4b0f0ddf3bb813f9.png",
+      "input_sha256": "sha256:65835c222dd90807263afd322029e3e24ecd0c1346d7820e511a0ef632210c04",
+      "media_type": "image",
+      "page_index": 7,
+      "source_relative_path": "images/yanbaor2_d599e33e54376640020110ac1733ccdde8c6323d5d5f0c3ca8cb395dc6e46cf5.pdf_7.jpg",
+      "source_sha256": "sha256:a073acd9a763b44cd84def441702f2728f83cfdbad874c2cce884d72285b16cd"
+    },
+    {
+      "case_id": "omnidocbench-7499b9d220d3b633980f416d",
+      "input_relative_path": "inputs/omnidocbench-7499b9d220d3b633980f416d.png",
+      "input_sha256": "sha256:1b0a1fe0119b140b33302fb1cb38f69d68ef54317ae7372e4559182ef474925d",
+      "media_type": "image",
+      "page_index": 12,
+      "source_relative_path": "images/notes_9e951846094758afac08c620144e3a76_12.jpg",
+      "source_sha256": "sha256:778684d955f45782b6b998f9de0e11d02030453633eee365cb0396cb875006fe"
+    },
+    {
+      "case_id": "omnidocbench-cc52d835b2ed92df62577309",
+      "input_relative_path": "inputs/omnidocbench-cc52d835b2ed92df62577309.png",
+      "input_sha256": "sha256:d9b108c46d8fece9451782f4e8c96916d174fce5d4159e83fdfa3225b5caf739",
+      "media_type": "image",
+      "page_index": 10,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_10.jpg",
+      "source_sha256": "sha256:55ac57e573ff05d630cba3c47402bf65ff671f87e3fb74dd278ffa3b373ee470"
+    },
+    {
+      "case_id": "omnidocbench-9a7751e538f404d2fa4a384c",
+      "input_relative_path": "inputs/omnidocbench-9a7751e538f404d2fa4a384c.png",
+      "input_sha256": "sha256:256afc37119cd246128de0f5ae7e62559a59b732d39e875d7f1d09ec6b505ba3",
+      "media_type": "image",
+      "page_index": 8,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_8.jpg",
+      "source_sha256": "sha256:5976a4c32c6ff898ff80702fdb42280b6c8b3bc281bea0e5b01d53eae94f435e"
+    },
+    {
+      "case_id": "omnidocbench-cf236d2398df6915cdfa78ae",
+      "input_relative_path": "inputs/omnidocbench-cf236d2398df6915cdfa78ae.png",
+      "input_sha256": "sha256:399fc1a767118284ba1f9f92bf0946739c0ba608f4776fcb301082bdbc5b24cd",
+      "media_type": "image",
+      "page_index": 13,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_13.jpg",
+      "source_sha256": "sha256:3b4ec71e9c58a5a082534793b804af0650124e3617d66c55399e547dee9fd86f"
+    },
+    {
+      "case_id": "omnidocbench-a3195e3d1fd62ce04c53dbd4",
+      "input_relative_path": "inputs/omnidocbench-a3195e3d1fd62ce04c53dbd4.png",
+      "input_sha256": "sha256:db8b5c982a7c6aafb44f61bace3519dcca7f5be691499c01806db1e388949415",
+      "media_type": "image",
+      "page_index": 14,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_14.jpg",
+      "source_sha256": "sha256:4b79f5631d5352908bce6b4a92dd1898d130d2deea483f94f2be5a6dd027e10d"
+    },
+    {
+      "case_id": "omnidocbench-14de40f197b793aa23016c3a",
+      "input_relative_path": "inputs/omnidocbench-14de40f197b793aa23016c3a.png",
+      "input_sha256": "sha256:ad7f9c99c2ac1967e0a88ac78aa91cd6af8016be38c81ab3661b306a7994d3f5",
+      "media_type": "image",
+      "page_index": 2,
+      "source_relative_path": "images/newspaper_5e266dfd9c498cab274e12a7b4a75755_2.jpg",
+      "source_sha256": "sha256:e8d9a93d30fa7b81e920d83f27f5512c4083add1011c646d199c14c5fae21d39"
+    },
+    {
+      "case_id": "omnidocbench-4906cadcaf681981ec884652",
+      "input_relative_path": "inputs/omnidocbench-4906cadcaf681981ec884652.png",
+      "input_sha256": "sha256:51978eaff404131f78b38ac9f43de3648a024e463b7481eaf137421facaa0758",
+      "media_type": "image",
+      "page_index": 71,
+      "source_relative_path": "images/magazine_TheEconomist.2023.11.18_page_071.png",
+      "source_sha256": "sha256:bcc18202b4bd03c1c9d9fd0ba3d9796d5da80e5789c5e60b6c0cc3db32c6ed36"
+    },
+    {
+      "case_id": "omnidocbench-290d5a4f8e3ca8f401b0c6e2",
+      "input_relative_path": "inputs/omnidocbench-290d5a4f8e3ca8f401b0c6e2.png",
+      "input_sha256": "sha256:1e8ebc5694074bda27fca9dd7242dfacf25f420e1226bab00c35a29e5b22705f",
+      "media_type": "image",
+      "page_index": 17,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_17.jpg",
+      "source_sha256": "sha256:b8f4073f8285f8898b0a4d77bdbe17a40ba0130445faeed4da2516d1de4a572c"
+    },
+    {
+      "case_id": "omnidocbench-03a39e61158c69e953a31edb",
+      "input_relative_path": "inputs/omnidocbench-03a39e61158c69e953a31edb.png",
+      "input_sha256": "sha256:004017621435179fabd23f7f1ffa187fb168ae76ff81873fd72a8797e368256c",
+      "media_type": "image",
+      "page_index": 29,
+      "source_relative_path": "images/newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_029.png",
+      "source_sha256": "sha256:6808412d65c7bb62c264f260d8c8b2e79b649cd609749b512ff7d0e9a69b2703"
+    },
+    {
+      "case_id": "omnidocbench-de5dd6b850684f28cd9576ad",
+      "input_relative_path": "inputs/omnidocbench-de5dd6b850684f28cd9576ad.png",
+      "input_sha256": "sha256:8de7486a1ae7afca0869286c475149587da2573bc158f794ded76ec6d36fd2b6",
+      "media_type": "image",
+      "page_index": 82,
+      "source_relative_path": "images/magazine_TheEconomist.2023.12.09_page_082.png",
+      "source_sha256": "sha256:b35255d3b2c19e3c3b8ff991cb9eccdc9e9ea1d1f9cffe4a33bd102f0e8f91f5"
+    },
+    {
+      "case_id": "omnidocbench-788fa55713f9a15a11ccbde2",
+      "input_relative_path": "inputs/omnidocbench-788fa55713f9a15a11ccbde2.png",
+      "input_sha256": "sha256:137ee867fab251ebcc0681527349240474c9929093033529eb5fc310a5fb82c6",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_bd75af5f4791aa56ef05ce2443e8a7e0_1.jpg",
+      "source_sha256": "sha256:f43f0c71199be12b553e39019b44d8fad137fec5537b5518148cb7ad58bbcc34"
+    },
+    {
+      "case_id": "omnidocbench-297584b8041bafa0c303996f",
+      "input_relative_path": "inputs/omnidocbench-297584b8041bafa0c303996f.png",
+      "input_sha256": "sha256:0226b5a26ac949d520b9ca3b8ffac2f35beaeff5cb7340776487f22cefc770a1",
+      "media_type": "image",
+      "page_index": 9,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_9.jpg",
+      "source_sha256": "sha256:b5aff94116d8b095319b9c549483160cf6c069f55fe1b76c0a13c8f34319cc3b"
+    },
+    {
+      "case_id": "omnidocbench-0cc694d7b1b5ddea70cdd8b9",
+      "input_relative_path": "inputs/omnidocbench-0cc694d7b1b5ddea70cdd8b9.png",
+      "input_sha256": "sha256:aaa49a87ffff0007f585a6dd25dfeddcb09ba94881da5ec2928005ec68b2ed05",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_9729b78cbf9f2820b9f257fff7e3171b_1.jpg",
+      "source_sha256": "sha256:724065cce30367b343548449cabd62098142c630a173a03853d903293b190adc"
+    },
+    {
+      "case_id": "omnidocbench-ab230e331a2808d498d81e92",
+      "input_relative_path": "inputs/omnidocbench-ab230e331a2808d498d81e92.png",
+      "input_sha256": "sha256:221218d4e6f568533329fa26e255bd8b41311b5452064e24f62ddcfdad3d44bc",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_dd99f17cad0992a54fdf424b1c5e86ee_1.jpg",
+      "source_sha256": "sha256:f2852e6f178a80ce9d068f22ef9fec0c8195eab8c63fc4a3d58fb9d7f9351358"
+    },
+    {
+      "case_id": "omnidocbench-e3625643954f036a97894200",
+      "input_relative_path": "inputs/omnidocbench-e3625643954f036a97894200.png",
+      "input_sha256": "sha256:bc0b1f006dc8d9c617c365a4fc9367b33918707b71c49d32b9c850dc37d506ce",
+      "media_type": "image",
+      "page_index": 6,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_6.jpg",
+      "source_sha256": "sha256:617e0a09bb1553eddc206c2820ec8a54a13d6e7c7c047c0c69bf35aff43fd9c0"
+    },
+    {
+      "case_id": "omnidocbench-b2b59fd631d5d9321427f2b0",
+      "input_relative_path": "inputs/omnidocbench-b2b59fd631d5d9321427f2b0.png",
+      "input_sha256": "sha256:379d29a02a8679e234b31a38abed903b7fe7be75561be4f09de372ecbca7ac91",
+      "media_type": "image",
+      "page_index": 29,
+      "source_relative_path": "images/magazine_TheEconomist.2024.03.09_page_029.png",
+      "source_sha256": "sha256:97f3d3a3c10caf447d583f17dfa3c2e293745b4f423dddf86a30886255fb31e0"
+    },
+    {
+      "case_id": "omnidocbench-1a2472b3c2c2cbd1594aa94f",
+      "input_relative_path": "inputs/omnidocbench-1a2472b3c2c2cbd1594aa94f.png",
+      "input_sha256": "sha256:5caa8f793353e4f174647c4b0486d23a5dcd84a984f1078e94755931f696ff7f",
+      "media_type": "image",
+      "page_index": 11,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_11.jpg",
+      "source_sha256": "sha256:37c433fe858c3c48eb4f5ce8be6f1307367767af2b0fd0042cbf9594016b9a16"
+    },
+    {
+      "case_id": "omnidocbench-df59b87097bc1e69a9c4b3bd",
+      "input_relative_path": "inputs/omnidocbench-df59b87097bc1e69a9c4b3bd.png",
+      "input_sha256": "sha256:5aa0ba1db7380b5bda2f77c8d02350ebac338c0bfabeb0615fdd0328f6162bd2",
+      "media_type": "image",
+      "page_index": 5,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_5.jpg",
+      "source_sha256": "sha256:919399f17a04668823ef2e1623bb373184b9b88b67eab88424d951a0ad1ab8db"
+    },
+    {
+      "case_id": "omnidocbench-f536fe8e9c02501c608aed3f",
+      "input_relative_path": "inputs/omnidocbench-f536fe8e9c02501c608aed3f.png",
+      "input_sha256": "sha256:58f0b5cd253ed4e5049fac6e31af695598d5ace2df6f6b9abd33d7e8a0dd3c5a",
+      "media_type": "image",
+      "page_index": 28,
+      "source_relative_path": "images/magazine_TheEconomist.2024.03.02_page_028.png",
+      "source_sha256": "sha256:a0efdec4d2a37be8aaa8fee7bb7c9676b04afd1c3b5f2db073709b2f44e17a79"
+    },
+    {
+      "case_id": "omnidocbench-777ca292057e19a9ce1d6f0c",
+      "input_relative_path": "inputs/omnidocbench-777ca292057e19a9ce1d6f0c.png",
+      "input_sha256": "sha256:674462fae0d2643e2aa5351ff04774e48a81fa71a26ae2255b11c880825a8004",
+      "media_type": "image",
+      "page_index": 0,
+      "source_relative_path": "images/yanbaor2_ey-digital-state-tax-article.pdf_0.jpg",
+      "source_sha256": "sha256:e5075e9524c1e959c5b3ad81df753cb46fd3b99f94d0b5853b0d2e99ad542924"
+    },
+    {
+      "case_id": "omnidocbench-75897e0f4090a23ad1fb0aff",
+      "input_relative_path": "inputs/omnidocbench-75897e0f4090a23ad1fb0aff.png",
+      "input_sha256": "sha256:f8f6160741b4ce763083d12a5e6a6c3f7e6475fd556455263ef8e3ce03da461b",
+      "media_type": "image",
+      "page_index": 5,
+      "source_relative_path": "images/yanbaopptmerge_m3_Unit_1_Where_did_you_go.pdf_5.jpg",
+      "source_sha256": "sha256:eccaaddd01bf9b338a315c3871354433036c53d1476afd4e4131c14564abf717"
+    },
+    {
+      "case_id": "omnidocbench-ceedef3648d11f2a60d00851",
+      "input_relative_path": "inputs/omnidocbench-ceedef3648d11f2a60d00851.png",
+      "input_sha256": "sha256:8ea368904ef4c8441f1595a5c8ced814543480e2c8f2ce704b707e44011064b3",
+      "media_type": "image",
+      "page_index": 24,
+      "source_relative_path": "images/magazine_TheEconomist.2023.12.23_page_024.png",
+      "source_sha256": "sha256:55053b88d1900f46a3c7ff75521f8c0e83ccabcb5fae854fc14b6b81ef828543"
+    },
+    {
+      "case_id": "omnidocbench-3e7f551222c7f0abe0e25bab",
+      "input_relative_path": "inputs/omnidocbench-3e7f551222c7f0abe0e25bab.png",
+      "input_sha256": "sha256:f6e14cfe36b82512748b9b514d3dd002d4fec0136ab6e2a11113ce4854101f4e",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_c0794b9574ba55a589418fa1ae160b9a_1.jpg",
+      "source_sha256": "sha256:e56fe40d5104454ccb935b3637f74f7fedbd8b46b7e8aed9b3ced99e7cf36d6c"
+    },
+    {
+      "case_id": "omnidocbench-891c1720c424d73b0ec01f43",
+      "input_relative_path": "inputs/omnidocbench-891c1720c424d73b0ec01f43.png",
+      "input_sha256": "sha256:89e8dd514cd12eeb9981e0695ce65276f90f00beabc47b529e9de788c6c4e7a5",
+      "media_type": "image",
+      "page_index": 4,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_4.jpg",
+      "source_sha256": "sha256:00627d236c89d48af0beec70b9dc1b3a116d7e49b5073cc80e1871558086add8"
+    },
+    {
+      "case_id": "omnidocbench-402380575f3ed38bfb6c39f5",
+      "input_relative_path": "inputs/omnidocbench-402380575f3ed38bfb6c39f5.png",
+      "input_sha256": "sha256:35c70f16a0a7f81e9ce4c30cca787eda9fc7f389e8838ea624973db1f2aea984",
+      "media_type": "image",
+      "page_index": 3,
+      "source_relative_path": "images/newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_3.jpg",
+      "source_sha256": "sha256:51bd747312c7a9009b5c02bf49218616e4a0b75c7f85481501313689ac408a6c"
+    },
+    {
+      "case_id": "omnidocbench-f720942c94a5bc58ce01f5a4",
+      "input_relative_path": "inputs/omnidocbench-f720942c94a5bc58ce01f5a4.png",
+      "input_sha256": "sha256:28ab499a25f285ec84808ebe184bca2b3b1c212f887b8050de646dcb9177003b",
+      "media_type": "image",
+      "page_index": 1426,
+      "source_relative_path": "images/jiaocaineedrop_5f9c4ab08cac7457e9111a30e4664920607ea2c115a1433d7be98e97e64244ca.pdf_2.jpg",
+      "source_sha256": "sha256:c36e65ab985b0392b96f653fa224d8fdcc986575fbde9936d0a5504a72dd579e"
+    },
+    {
+      "case_id": "omnidocbench-fa62e0f99ea3ea9b35d370f8",
+      "input_relative_path": "inputs/omnidocbench-fa62e0f99ea3ea9b35d370f8.png",
+      "input_sha256": "sha256:dada127df37c9c37a380c50fef496c71419037b2ea865db43410f81954cb7421",
+      "media_type": "image",
+      "page_index": 62,
+      "source_relative_path": "images/magazine_TheEconomist.2023.12.02_page_062.png",
+      "source_sha256": "sha256:ae58071f420a13198bf7a322cb75bc431e7c9c9c6f4ed3e7352286b9396f977c"
+    },
+    {
+      "case_id": "omnidocbench-467e3caa6da1bd5ee456e40b",
+      "input_relative_path": "inputs/omnidocbench-467e3caa6da1bd5ee456e40b.png",
+      "input_sha256": "sha256:8d00177f737841b21b6e6493945919eba68abbfd38f7c67d2a214db10b76ab48",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_0b86dae4d8f328a0e79d9ac394000dec_1.jpg",
+      "source_sha256": "sha256:1f19eaa51aa63dddddbc2afff039b10dfd28a6655bda3e35c974f157be9e0569"
+    },
+    {
+      "case_id": "omnidocbench-4236d2579b6dcccaaba369d4",
+      "input_relative_path": "inputs/omnidocbench-4236d2579b6dcccaaba369d4.png",
+      "input_sha256": "sha256:5a59e4e234d3cdf7447500505cb2116152eaf38f0b93f3e78d7186c9b1e8de04",
+      "media_type": "image",
+      "page_index": 4050,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_4050.jpg",
+      "source_sha256": "sha256:b8a1cabfc4e1ba1a4f0c5a0d415ec9b34348a3461a8981ac2c8faf53a2c12fb2"
+    },
+    {
+      "case_id": "omnidocbench-cd7c6797a01a0744a3dd3a73",
+      "input_relative_path": "inputs/omnidocbench-cd7c6797a01a0744a3dd3a73.png",
+      "input_sha256": "sha256:cbbef0069a6d5bb5a4c39b12a56504e82db6d13f73cec0093814d8ff53b9f767",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_e81b9b3561d4d4e865ff6713782fd432_1.jpg",
+      "source_sha256": "sha256:8a55f297e6456cf5a51bd091de6da2d7903b5cde01c90a1a5506be97aedfe8bc"
+    },
+    {
+      "case_id": "omnidocbench-723ee418ad93332177083635",
+      "input_relative_path": "inputs/omnidocbench-723ee418ad93332177083635.png",
+      "input_sha256": "sha256:78fe992f7cd8d04bea640bd748627b4073199ebd7b6072406deb33d199b56d2f",
+      "media_type": "image",
+      "page_index": 68,
+      "source_relative_path": "images/magazine_TheEconomist.2023.11.25_page_068.png",
+      "source_sha256": "sha256:3e1ae4a9f18408c1ba51ad0e2fdc096a3d3e618128c0da23072f18a85bc3c27b"
+    },
+    {
+      "case_id": "omnidocbench-c21da6f284d78bde875c2064",
+      "input_relative_path": "inputs/omnidocbench-c21da6f284d78bde875c2064.png",
+      "input_sha256": "sha256:02fb8ae723a880eba300756bf0fe776076ecf3e33dec0aeb7809f4ba6d664fef",
+      "media_type": "image",
+      "page_index": 935,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_935.jpg",
+      "source_sha256": "sha256:4b4285e0bdb8686db3e4576804915dbcc141407391ebe2fafe6b1d0625ad9c9e"
+    },
+    {
+      "case_id": "omnidocbench-efda5f2279041b55fb3bb1a4",
+      "input_relative_path": "inputs/omnidocbench-efda5f2279041b55fb3bb1a4.png",
+      "input_sha256": "sha256:186726749ade0797723928719ca5b4ed92991b29086818d1e1887407efccc891",
+      "media_type": "image",
+      "page_index": 4380,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_4380.jpg",
+      "source_sha256": "sha256:80771474e4aa5b9ddd123132158ddc0f73bb8b0b9ab04012e80aac62b88ae15c"
+    },
+    {
+      "case_id": "omnidocbench-ab3fa5c9be14197d9f9d717f",
+      "input_relative_path": "inputs/omnidocbench-ab3fa5c9be14197d9f9d717f.png",
+      "input_sha256": "sha256:ad477e52d12f609e4780c2f0d644acee4e1eb7e8e26e7392bc9820cf62658d28",
+      "media_type": "image",
+      "page_index": 5980,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_5980.jpg",
+      "source_sha256": "sha256:33fd727a16fd09a15798747e1e828deeedefc778610176f52c479a6f5864da0d"
+    },
+    {
+      "case_id": "omnidocbench-49e18416e9ff29ddc0c08f1c",
+      "input_relative_path": "inputs/omnidocbench-49e18416e9ff29ddc0c08f1c.png",
+      "input_sha256": "sha256:54bde6753fb8c9dbeb3634eb515ec6230eb7c064ad721b032e467a0653a887ee",
+      "media_type": "image",
+      "page_index": 33,
+      "source_relative_path": "images/magazine_TheEconomist.2024.02.24_page_033.png",
+      "source_sha256": "sha256:9a6eb90cb7e30c8373ed68ca3e52affe083c76ccc554bf8d42c2f335e0ba86bf"
+    },
+    {
+      "case_id": "omnidocbench-b9849634bbe158a1c2f25ded",
+      "input_relative_path": "inputs/omnidocbench-b9849634bbe158a1c2f25ded.png",
+      "input_sha256": "sha256:9eff2fa2f7256ec4fa301d8c39b7613f0d713f278db14e2d638405d9303ff6fc",
+      "media_type": "image",
+      "page_index": 31,
+      "source_relative_path": "images/magazine_TheEconomist.2023.12.02_page_031.png",
+      "source_sha256": "sha256:37ab3d001ad36a1caf0ccc4c2730bbd8768050dd9e388372098e5f16e7369125"
+    },
+    {
+      "case_id": "omnidocbench-594105735188c1ef1258ca2c",
+      "input_relative_path": "inputs/omnidocbench-594105735188c1ef1258ca2c.png",
+      "input_sha256": "sha256:ce28fcc62f30d1a60b4576ebdb5dda2423aefaec8a62c3e34cb58471e7ffc274",
+      "media_type": "image",
+      "page_index": 45,
+      "source_relative_path": "images/magazine_TheEconomist.2023.12.09_page_045.png",
+      "source_sha256": "sha256:3d3d5be39343c8c7b72a1a515a033a47c5ce24995d9aeb77e8a4ad1b233daaf9"
+    },
+    {
+      "case_id": "omnidocbench-cceed63dd6f962661c61a7f8",
+      "input_relative_path": "inputs/omnidocbench-cceed63dd6f962661c61a7f8.png",
+      "input_sha256": "sha256:b3ce32ff3e089206f1db2dd2b9ce2e31944dd592cbe07bfaa2b498d012bb3d60",
+      "media_type": "image",
+      "page_index": 2,
+      "source_relative_path": "images/newspaper_fe5ed29024932fad071afc53807b16ba_2.jpg",
+      "source_sha256": "sha256:a150c428e0d0c26c23461cd99ae629e8e749e62ff26674ca0f3fe94938a5e816"
+    },
+    {
+      "case_id": "omnidocbench-d270383bbcd919982b1a6ec6",
+      "input_relative_path": "inputs/omnidocbench-d270383bbcd919982b1a6ec6.png",
+      "input_sha256": "sha256:0ba9048aa8a442e11f909864c72ed00c67282b4e82df706b220a238921a1779f",
+      "media_type": "image",
+      "page_index": 23,
+      "source_relative_path": "images/magazine_TheEconomist.2023.12.02_page_023.png",
+      "source_sha256": "sha256:c475a22fda032a902aa6c848ed3f406fddd1f46a52a6ce379c5b00438c9cab38"
+    },
+    {
+      "case_id": "omnidocbench-854f14ff24a872ed8afb3ec0",
+      "input_relative_path": "inputs/omnidocbench-854f14ff24a872ed8afb3ec0.png",
+      "input_sha256": "sha256:46a3f08aa2391141febed5d241a8a5df50a3d7880ab2452c05fa742027f1d9c0",
+      "media_type": "image",
+      "page_index": 1835,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_1835.jpg",
+      "source_sha256": "sha256:06fdecd6be0b231935e86df52cb3a8b1110cff13a656784ac3ec23a365a8b5c9"
+    },
+    {
+      "case_id": "omnidocbench-a4d4270c61cfbc591f15a0da",
+      "input_relative_path": "inputs/omnidocbench-a4d4270c61cfbc591f15a0da.png",
+      "input_sha256": "sha256:9a9d7b41e9fdce488c4a220c8fbb43a88daba103113d5e64765f2e10a1db1e2e",
+      "media_type": "image",
+      "page_index": 398,
+      "source_relative_path": "images/docstructbench_llm-raw-the-eye-o.O-Dragon%20Magazine%20-%20030.pdf_5.jpg",
+      "source_sha256": "sha256:6f3ef81180834ddb3f93c581a17e72991c51213040694bb6743cb7f8597e3c35"
+    },
+    {
+      "case_id": "omnidocbench-770ac6a9c03a87e06e96bd49",
+      "input_relative_path": "inputs/omnidocbench-770ac6a9c03a87e06e96bd49.png",
+      "input_sha256": "sha256:a82affa0e0c943854979dd76a97d5a762283e20c9aad6e1dae7a88c7cd7bd1d0",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_2de954934f60ac538c5bd5dc40833a61_1.jpg",
+      "source_sha256": "sha256:5ee33670c524448a1167eec19b43c2adf91ac4e45de131022dcce1c4e2f75ca3"
+    },
+    {
+      "case_id": "omnidocbench-f2d0266309e1149ddda7b04b",
+      "input_relative_path": "inputs/omnidocbench-f2d0266309e1149ddda7b04b.png",
+      "input_sha256": "sha256:77462c586176dd013137a185b3ca7dc1a1279d2bcd123a09bd86fd95e9c3a4c4",
+      "media_type": "image",
+      "page_index": 14,
+      "source_relative_path": "images/notes_9e951846094758afac08c620144e3a76_14.jpg",
+      "source_sha256": "sha256:bc96105dad52541ee84cc42173ffa5ee07fb7e5d054fe9c9f2cf8861c3a31112"
+    },
+    {
+      "case_id": "omnidocbench-05482b4e40c61839d7282dd5",
+      "input_relative_path": "inputs/omnidocbench-05482b4e40c61839d7282dd5.png",
+      "input_sha256": "sha256:6ae96426e0cb477308b1827ff18b5db674277dbac7e559137d134ac37cbe2629",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_fe5ed29024932fad071afc53807b16ba_1.jpg",
+      "source_sha256": "sha256:2fff5ec6841267756ec4cf5be6f098d4f6570bb4b12f56982e135dac2a7b5d9c"
+    },
+    {
+      "case_id": "omnidocbench-070c45a144e475b4c4c0fb78",
+      "input_relative_path": "inputs/omnidocbench-070c45a144e475b4c4c0fb78.png",
+      "input_sha256": "sha256:c5eeeab1e8584b33c7ed6031defd8d1f9f03fca84df2f37f055768dc0e41544f",
+      "media_type": "image",
+      "page_index": 0,
+      "source_relative_path": "images/page-d127acc0-f8c9-4f01-8e87-b4c19be7cbb0.png",
+      "source_sha256": "sha256:74daf96f3aba6c9e55cb33d9b9c68aa61ae702d45eb12180f791bd897f54cbca"
+    },
+    {
+      "case_id": "omnidocbench-0a7cc1d342d33ea7451b048d",
+      "input_relative_path": "inputs/omnidocbench-0a7cc1d342d33ea7451b048d.png",
+      "input_sha256": "sha256:d1c83ee61ed790b2acce70d4e5b1d27c677680e4d41f0e1df7bd7aaef69eef93",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_17f81b80831d8d58564b9c8e3cf79261_1.jpg",
+      "source_sha256": "sha256:4ca4160a7fd9f23a3d4604ef5790194074dcebde793cf711beed3933b9b0dfe6"
+    },
+    {
+      "case_id": "omnidocbench-8fc4d82c39f620e5a7173607",
+      "input_relative_path": "inputs/omnidocbench-8fc4d82c39f620e5a7173607.png",
+      "input_sha256": "sha256:c8a2f02a356ee6f5fa7d2f969bb7e643d72963e274c09d4f368d3f323770c0d9",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_6fa919bfb48695bc785d9f326e3cdd36_1.jpg",
+      "source_sha256": "sha256:17999c4206e630cace29ce674441cb5d027424477e00954f9ff21cfdc53e301c"
+    },
+    {
+      "case_id": "omnidocbench-113b4912e7bf6a2d093c1160",
+      "input_relative_path": "inputs/omnidocbench-113b4912e7bf6a2d093c1160.png",
+      "input_sha256": "sha256:14235447a581ceb065210021127380c2bd24fd7c1d3dfc20ae3dfc50c7cd04d1",
+      "media_type": "image",
+      "page_index": 16,
+      "source_relative_path": "images/notes_9e951846094758afac08c620144e3a76_16.jpg",
+      "source_sha256": "sha256:3eceae7fe062fd0f6c4e6980780d55f843cb0c33978b864fbadc957a2ec839b4"
+    },
+    {
+      "case_id": "omnidocbench-f9291dcaeaaebef470b5d05a",
+      "input_relative_path": "inputs/omnidocbench-f9291dcaeaaebef470b5d05a.png",
+      "input_sha256": "sha256:69b8587ff4f15c9cdf64a38c32c1f30ebff7cd993837c1861018c41bbfe6225b",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_01f020903d7bc4b3fc69f500f41eb77e_1.jpg",
+      "source_sha256": "sha256:3ab3bc3e7a6700869a927696a70205296d5a32c58a539f7e68564e4bb6a5b94f"
+    },
+    {
+      "case_id": "omnidocbench-f6c28373e0167d799f655f93",
+      "input_relative_path": "inputs/omnidocbench-f6c28373e0167d799f655f93.png",
+      "input_sha256": "sha256:66aee4884dbc40f063ba166251f0bd67e93fdfe77f559baab06f9a23f1ab4b8a",
+      "media_type": "image",
+      "page_index": 26,
+      "source_relative_path": "images/docstructbench_dianzishu_zhongwenzaixian-o.O-61510863.pdf_73.jpg",
+      "source_sha256": "sha256:cee5dfe5832d25aaf999a07ccee36b931340ae088152a0dee79ad05e33aedc54"
+    },
+    {
+      "case_id": "omnidocbench-8b20475e202e779bf546b344",
+      "input_relative_path": "inputs/omnidocbench-8b20475e202e779bf546b344.png",
+      "input_sha256": "sha256:1c4611bfb839ed660e27d2d3e2aa67023638e093fa7eb5dfe3d4b731dac50eda",
+      "media_type": "image",
+      "page_index": 1020,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_1020.jpg",
+      "source_sha256": "sha256:2a9263cb6b8a33322790a7132826cd18e88299540e8e0282836cc61bab417198"
+    },
+    {
+      "case_id": "omnidocbench-2d72c4576893b5ba42381eca",
+      "input_relative_path": "inputs/omnidocbench-2d72c4576893b5ba42381eca.png",
+      "input_sha256": "sha256:97452844c624c0c37349704179dcacd8a633cac6da296b009211a1c7c7b46be7",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_e6cb1ce916e0b7e120c84db53541a3d3_1.jpg",
+      "source_sha256": "sha256:b4be99d27a9afb619f7e10cd407878400208f5cc68601e089f4ad89992434596"
+    },
+    {
+      "case_id": "omnidocbench-edd1c3359e16b750560d6953",
+      "input_relative_path": "inputs/omnidocbench-edd1c3359e16b750560d6953.png",
+      "input_sha256": "sha256:fe60a802b6309437fec45bf5b9e2ab24c8d1db6264613513d398fd0e44933987",
+      "media_type": "image",
+      "page_index": 5,
+      "source_relative_path": "images/newspaper_fe5ed29024932fad071afc53807b16ba_5.jpg",
+      "source_sha256": "sha256:6d820381405635278c2ab73d4e11052439d4be6d4d98764dcbb8ff4a7ec7a782"
+    },
+    {
+      "case_id": "omnidocbench-da364808596cb1a93132c208",
+      "input_relative_path": "inputs/omnidocbench-da364808596cb1a93132c208.png",
+      "input_sha256": "sha256:8708c2c9cbdf987f00b7901f4f1ce6cbf783c45414b5d17b9447c507b67701a9",
+      "media_type": "image",
+      "page_index": 41,
+      "source_relative_path": "images/newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_041.png",
+      "source_sha256": "sha256:2feb3b2298ee6423ee8dff0d7bbbdaaf20d333a991e54fe2f7c018c6330113dc"
+    },
+    {
+      "case_id": "omnidocbench-1de1ff559f71e346724c58d8",
+      "input_relative_path": "inputs/omnidocbench-1de1ff559f71e346724c58d8.png",
+      "input_sha256": "sha256:1345605f50cafc058017e3476a8cc07b854c546d256881359860ff546a3c71c6",
+      "media_type": "image",
+      "page_index": 69,
+      "source_relative_path": "images/magazine_TheEconomist.2023.11.25_page_069.png",
+      "source_sha256": "sha256:0e3d310e57dc459a91b728814f21efedbc2fe1ab7019ea7b55d6a9233263d38b"
+    },
+    {
+      "case_id": "omnidocbench-ce26da18d0c7dfd49a414bc5",
+      "input_relative_path": "inputs/omnidocbench-ce26da18d0c7dfd49a414bc5.png",
+      "input_sha256": "sha256:8f75c325fe72052b667fd3028ce09cdf5a2b26a5c7dc3eac1454deff6258bca6",
+      "media_type": "image",
+      "page_index": 4,
+      "source_relative_path": "images/newspaper_5e266dfd9c498cab274e12a7b4a75755_4.jpg",
+      "source_sha256": "sha256:cc4bb8081eb2229f55fb043430b490a8e3847d5e3cabd88cae07bc2a2a43c036"
+    },
+    {
+      "case_id": "omnidocbench-9335163b299d4b14b021219d",
+      "input_relative_path": "inputs/omnidocbench-9335163b299d4b14b021219d.png",
+      "input_sha256": "sha256:685b12533a23149dc4509a01d9e06bea4a538d1bf1493d9b4654e77c62333c81",
+      "media_type": "image",
+      "page_index": 8,
+      "source_relative_path": "images/magazine_TheEconomist.2024.02.24_page_008.png",
+      "source_sha256": "sha256:2ed9ef3c5a6c885aa2c9669ad9ea8746e74fe96d15639f0e3aaf54a61ab1131d"
+    },
+    {
+      "case_id": "omnidocbench-d884cc1f6a79947795222508",
+      "input_relative_path": "inputs/omnidocbench-d884cc1f6a79947795222508.png",
+      "input_sha256": "sha256:ee2595ed4c91903f52aaff522875a75043e7af16e224306fa615fbf1e8215ec6",
+      "media_type": "image",
+      "page_index": 9,
+      "source_relative_path": "images/docstructbench_llm-raw-scihub-o.O-chem.200701981.pdf_9.jpg",
+      "source_sha256": "sha256:3ac76661178e2b90bd544a9ac76d798a5209465d5d40cc5b0dc8c264a3da2d59"
+    },
+    {
+      "case_id": "omnidocbench-0595ca0d78ac572dfa2655b4",
+      "input_relative_path": "inputs/omnidocbench-0595ca0d78ac572dfa2655b4.png",
+      "input_sha256": "sha256:436082389ea5fbfa126077d885e2bb9e7563d0eb8c6bd6eb379a52c67ae6594f",
+      "media_type": "image",
+      "page_index": 31,
+      "source_relative_path": "images/magazine_TheEconomist.2024.03.02_page_031.png",
+      "source_sha256": "sha256:496d1cb47e276c8d2b57d8c3a6a56e053b6c3992f3dea0132604c8f2158d711c"
+    },
+    {
+      "case_id": "omnidocbench-0c5f0b755c0215b34ff392c3",
+      "input_relative_path": "inputs/omnidocbench-0c5f0b755c0215b34ff392c3.png",
+      "input_sha256": "sha256:fb4a221f07af11c0e12b1ae263240f9f8e599b6eb478d0a3971aa5a7b4506a8f",
+      "media_type": "image",
+      "page_index": 14,
+      "source_relative_path": "images/yanbaor2_bc193526614fd5857f7b5254e67bced76222cf3396b01e516303b92609a20075.pdf_14.jpg",
+      "source_sha256": "sha256:9c5655a8d5ea96a6e67996982011a47e43d775acf155b13d46598219b296a024"
+    },
+    {
+      "case_id": "omnidocbench-ebd3216f1de93784551caa4f",
+      "input_relative_path": "inputs/omnidocbench-ebd3216f1de93784551caa4f.png",
+      "input_sha256": "sha256:33c12442bb012ad5a20b492b7dbf3a65f7c1180d7513d1c40ef430b0e6ad4fcb",
+      "media_type": "image",
+      "page_index": 5070,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_5070.jpg",
+      "source_sha256": "sha256:72e8b6f3fe5b8fea8fa98e9db31d0e78b887e1e91cd81400e5d728b792dc94d4"
+    },
+    {
+      "case_id": "omnidocbench-975ce82abcc34c7f490ae739",
+      "input_relative_path": "inputs/omnidocbench-975ce82abcc34c7f490ae739.png",
+      "input_sha256": "sha256:a5d2d4c3721890ed567fd9eeb3136a5fe61e6e9173022e141761a8881fcdf88a",
+      "media_type": "image",
+      "page_index": 1594,
+      "source_relative_path": "images/jiaocaineedrop_bde81e42743067b574946698491d7f19.pdf_14.jpg",
+      "source_sha256": "sha256:87e14273e1c29326e0642e5b56a0a798954efe0b0d9c468b22cb3e96524008a3"
+    },
+    {
+      "case_id": "omnidocbench-aaea9f836b5feb354f881604",
+      "input_relative_path": "inputs/omnidocbench-aaea9f836b5feb354f881604.png",
+      "input_sha256": "sha256:fd052b063ed79fb5053bcd916847472adbedbd4fa65fb8bab2a2c4cdf17649e9",
+      "media_type": "image",
+      "page_index": 1,
+      "source_relative_path": "images/newspaper_d4ed0f39df940849b16439f49873ff5c_1.jpg",
+      "source_sha256": "sha256:dbebb3f4270a5b130da152499aa1c6f45b9567f6146c4faf20fc35c7968c854b"
+    },
+    {
+      "case_id": "omnidocbench-01658b047cd4e8623664f04f",
+      "input_relative_path": "inputs/omnidocbench-01658b047cd4e8623664f04f.png",
+      "input_sha256": "sha256:88fe6077d295a8b2644b5407779bd987efa63b9ed4ed2eaebb693e617e473d52",
+      "media_type": "image",
+      "page_index": 495,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_495.jpg",
+      "source_sha256": "sha256:c13d340470663266236d8eaf630df7e8a4f83d4358808a9130693de18e69d10b"
+    },
+    {
+      "case_id": "omnidocbench-7e5fea8de7ee5082f81bca33",
+      "input_relative_path": "inputs/omnidocbench-7e5fea8de7ee5082f81bca33.png",
+      "input_sha256": "sha256:7e2cad4098cbf6ae19f5f19e876795f7971ea50a336f38c683323f05b6144d8d",
+      "media_type": "image",
+      "page_index": 1745,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_1745.jpg",
+      "source_sha256": "sha256:209ff3e7f4d83f244a78c28638a0908cc1f68961fc8d3f4e17fb63857d35159d"
+    },
+    {
+      "case_id": "omnidocbench-4c98d6f039f9dacec1dd278d",
+      "input_relative_path": "inputs/omnidocbench-4c98d6f039f9dacec1dd278d.png",
+      "input_sha256": "sha256:c0e7b0d52d0d779222787fa50bd2b203eb7084e612a0d715b8d4db1d20bb2349",
+      "media_type": "image",
+      "page_index": 68,
+      "source_relative_path": "images/magazine_TheEconomist.2023.11.18_page_068.png",
+      "source_sha256": "sha256:cf6ffdb197d5536ec79b6e109bd39e7e1ff73a5dcb7aded058e664a07f934b11"
+    },
+    {
+      "case_id": "omnidocbench-30e88d9e0fd5d4158791194c",
+      "input_relative_path": "inputs/omnidocbench-30e88d9e0fd5d4158791194c.png",
+      "input_sha256": "sha256:f1145525fb49359cdf0937677aff9496162b0e76fcd99ba37b970b8b6c225f3b",
+      "media_type": "image",
+      "page_index": 4020,
+      "source_relative_path": "images/yanbaopptmerge_yanbaoPPT_4020.jpg",
+      "source_sha256": "sha256:1e3ed1af59fa85e96b736dbce9eabafec8a5645f8a56b09c4d45fb0e417effb2"
+    },
+    {
+      "case_id": "omnidocbench-d8cfeb24b70ec637f752faa9",
+      "input_relative_path": "inputs/omnidocbench-d8cfeb24b70ec637f752faa9.png",
+      "input_sha256": "sha256:e2415046a5a5c9f042b97607ddfedff7713739ad0efca5b7ccddda2b06acba79",
+      "media_type": "image",
+      "page_index": 16,
+      "source_relative_path": "images/color_textbook_zhonggaokao_小学_13.人教新起点英语（4-5年级）_人教新起点四年级英语下册_课本_人教新起点英语4B电子课本_page_016.png",
+      "source_sha256": "sha256:fa14feefc64e2cc6e89217507e0798bc4815052efe7cbcebf9b614e947333747"
+    },
+    {
+      "case_id": "omnidocbench-45a7da05e5449c0e6598a049",
+      "input_relative_path": "inputs/omnidocbench-45a7da05e5449c0e6598a049.png",
+      "input_sha256": "sha256:419fc3b8bd8cf6e7013ba0da661e86c89b938bbcf63da1891cc8d7b0e4639df8",
+      "media_type": "image",
+      "page_index": 2617,
+      "source_relative_path": "images/jiaocaineedrop_unit2t03.pdf_63.jpg",
+      "source_sha256": "sha256:bca7667b36e6bddc2235895dfeea4ba11378805c578926cee1e524c165f7c4ab"
+    }
+  ],
+  "parent_input_manifest_sha256": "sha256:4035179aa51eede8f36ec35e6050f8a72d76c0b8cc06b3fa81edd4b44666e149",
+  "schema": "folynta.public-core-inference-shard.v1",
+  "shard_count": 1,
+  "shard_index": 0,
+  "source_count": 1651
+}

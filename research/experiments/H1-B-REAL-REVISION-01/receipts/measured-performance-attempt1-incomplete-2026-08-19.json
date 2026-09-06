@@ -1,0 +1,21 @@
+{
+  "schema": "tavonel.family-b-performance-attempt-incomplete.v1",
+  "status": "INCOMPLETE_DO_NOT_USE_AS_FINAL_PERFORMANCE_RECEIPT",
+  "protocol": "research/experiments/H1-B-REAL-REVISION-01/PERFORMANCE_PROTOCOL_2026-08-19.md",
+  "runner": "research/experiments/H1-B-REAL-REVISION-01/scripts/measure_compute_latency.py",
+  "native_job_id": "native-1787095149817-23aee85f-64cd-47d5-8618-17ce1612c559",
+  "reason": "The 1,000-unit controlled cell completed, then the 10,000-unit cell raised MemoryError inside identity.assign_one_to_one / LogicalIdentityResolver.score_pair while semantic diff attempted all-pairs identity matching. No final receipt was written. The failure is a real scalability limitation of the full change-detection path in this harness, not evidence that selective recompilation itself failed equivalence.",
+  "partial_1000_observation": {
+    "end_to_end_p50_full_over_selective_ratio": 0.002052,
+    "interpretation": "At 1k in this hash-build harness, semantic identity/diff/planning overhead made the selective end-to-end path roughly 487x slower than the trivial full hash rebuild; this is a negative result and is not hidden.",
+    "build_only_p50_full_over_selective_ratio": 3.597294,
+    "interpretation_build_only": "When diff/planning were excluded, rebuilding only selected artifacts was 3.60x faster in the 1k harness. This partial number is exploratory because the preregistered 10k cell did not complete."
+  },
+  "10000_observation": {
+    "status": "MEMORY_ERROR_BEFORE_TIMING_RESULT",
+    "failure_stage": "semantic identity matching during diff_documents",
+    "final_performance_claim_allowed": false
+  },
+  "scientific_response": "Preserve the failure. Separate (a) change-detection/identity scalability from (b) downstream selective plan+rebuild scalability in a new protocol. Do not modify Protected Core after the final fresh-seed equivalence holdout merely to manufacture a speedup.",
+  "external_gpu_cost_usd": 0.0
+}

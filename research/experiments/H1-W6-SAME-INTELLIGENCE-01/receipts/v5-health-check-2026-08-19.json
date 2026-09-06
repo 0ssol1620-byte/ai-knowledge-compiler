@@ -1,0 +1,32 @@
+{
+  "action_taken": "none",
+  "candidate_manifest_count": 6987,
+  "completion_receipt_present": false,
+  "corpus_dir": "corpus-v5",
+  "endpoint_status": "NOT_RUN",
+  "evidence_of_death": [
+    "no python process matching the v5 acquisition wrapper exists",
+    "no completion sidecar receipt was written; the wrapper writes one unconditionally after acquire() returns, so its absence means the process did not reach that line"
+  ],
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-19T03:34:22.596895+00:00",
+  "network_access": false,
+  "pairs": [
+    "00000-c29ae214bf37"
+  ],
+  "pairs_materialized": 1,
+  "prior_session_reporting_error": "An earlier session reported 'corpus files: 0' after listing `corpus/`, a path that does not exist. The live corpus directory is `corpus-v5/` and held one materialized pair. The endpoint status was NOT_RUN then and is NOT_RUN now, so no result moved -- but the check was wrong and is corrected here rather than quietly restated.",
+  "purpose": "Health check of the v5 acquisition worker at session resume. No data was fetched.",
+  "receipt_sha256": "sha256:e0f5f484d208f60448295cfa49264d05360f31c46e083d9fc759bea2f7f71414",
+  "schema": "tavonel.w6-v5-health-check.v1",
+  "scientific_rules_changed": false,
+  "status": "FAILED_INFRASTRUCTURE_RETRYABLE",
+  "what_would_unblock": [
+    "verify acquire() skips existing pair directories, or point v5 at corpus-v6",
+    "re-run acquisition to completion over the frozen 6,987-title manifest",
+    "the manifest was frozen before any revision outcome was inspected, so no selection leakage is inherited by a retry"
+  ],
+  "why_no_restart": "v3's acquire() has no verified resume semantics. A blind re-run risks overwriting the one materialized pair, and this programme has already destroyed one receipt through an unverified write path. Restart requires either confirmed skip-on-exists behaviour or a fresh corpus directory.",
+  "worker_process_alive": false
+}

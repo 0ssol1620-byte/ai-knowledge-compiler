@@ -1,0 +1,14 @@
+flowchart TB
+  C["CANDIDATE state"] --> G1{"1 · every classified change<br/>accounted for in the affected set"}
+  G1 -->|no| F["NOT ACTIVATED<br/>failed check reported"]
+  G1 -->|yes| G2{"2 · every affected artifact<br/>actually rebuilt"}
+  G2 -->|no| F
+  G2 -->|yes| G3{"3 · integrity — carried-forward<br/>fingerprint matches<br/>(declared inputs + structural facts)"}
+  G3 -->|no| F
+  G3 -->|yes| G4{"4 · no artifact marked CURRENT<br/>whose fingerprint is unverifiable"}
+  G4 -->|no| F
+  G4 -->|yes| P["promotable_to_trusted<br/>→ SINGLE-EVENT ACTIVATION"]
+
+  style F fill:#ffd6d6,stroke:#c00
+  style P fill:#d9f2d9,stroke:#090,stroke-width:2px
+  style G4 fill:#e6f0ff,stroke:#06c,stroke-width:2px

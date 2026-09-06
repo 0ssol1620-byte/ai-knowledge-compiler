@@ -1,0 +1,116 @@
+{
+  "attacks_mounted": 13,
+  "attacks_refused": 13,
+  "attacks_whose_control_failed": 0,
+  "audit_digest": "sha256:103dc36d18e07259bf81cf3f65aeeb81800fa9b4caea3846ee42879006dc043d",
+  "audit_passes": true,
+  "results": [
+    {
+      "attack": "selection_rule_omitted_from_closure",
+      "expected_code": "REFUSED_COMPONENT_LISTS_DISAGREE",
+      "observed_code": "REFUSED_COMPONENT_LISTS_DISAGREE",
+      "outcome": "REFUSED",
+      "refused_by": "sfir9_execution_closure",
+      "what_it_tries": "drop the selection rule from the closure, so the code choosing which repositories are studied could change unnoticed"
+    },
+    {
+      "attack": "isolation_gate_omitted_from_closure",
+      "expected_code": "REFUSED_COMPONENT_LISTS_DISAGREE",
+      "observed_code": "REFUSED_COMPONENT_LISTS_DISAGREE",
+      "outcome": "REFUSED",
+      "refused_by": "sfir9_execution_closure",
+      "what_it_tries": "drop the isolation gate from the closure, so the code judging historical dependence could change unnoticed"
+    },
+    {
+      "attack": "scorer_substituted_after_roster_seal",
+      "expected_code": "REFUSED_COMMITTED_BYTES_DIFFER_FROM_WORKING_BYTES",
+      "observed_code": "REFUSED_COMMITTED_BYTES_DIFFER_FROM_WORKING_BYTES",
+      "outcome": "REFUSED",
+      "refused_by": "sfir9_execution_closure",
+      "what_it_tries": "swap the scorer's bytes once the cohort is sealed"
+    },
+    {
+      "attack": "transport_substituted_after_roster_seal",
+      "expected_code": "REFUSED_COMMITTED_BYTES_DIFFER_FROM_WORKING_BYTES",
+      "observed_code": "REFUSED_COMMITTED_BYTES_DIFFER_FROM_WORKING_BYTES",
+      "outcome": "REFUSED",
+      "refused_by": "sfir9_execution_closure",
+      "what_it_tries": "swap the transport's bytes once the cohort is sealed"
+    },
+    {
+      "attack": "upstream_sfir8_module_mutated",
+      "expected_code": "REFUSED_UPSTREAM_HASH_MISMATCH",
+      "observed_code": "REFUSED_UPSTREAM_HASH_MISMATCH",
+      "outcome": "REFUSED",
+      "refused_by": "sfir9_transport",
+      "what_it_tries": "edit a frozen SFIR8 module the instrument executes"
+    },
+    {
+      "attack": "committed_blob_differs_from_working_bytes",
+      "expected_code": "REFUSED_COMMITTED_BYTES_DIFFER_FROM_WORKING_BYTES",
+      "observed_code": "REFUSED_COMMITTED_BYTES_DIFFER_FROM_WORKING_BYTES",
+      "outcome": "REFUSED",
+      "refused_by": "sfir9_execution_closure",
+      "what_it_tries": "run one thing while the commit records another"
+    },
+    {
+      "attack": "import_resolves_from_a_shared_dirty_tree",
+      "expected_code": "REFUSED_IMPORT_ORIGIN_MISMATCH",
+      "observed_code": "REFUSED_IMPORT_ORIGIN_MISMATCH",
+      "outcome": "REFUSED",
+      "refused_by": "sfir9_execution_closure",
+      "what_it_tries": "hash correctly on disk while the interpreter loads another copy"
+    },
+    {
+      "attack": "segment_under_a_different_selection_digest",
+      "expected_code": "REFUSED_SEGMENT_FROM_ANOTHER_SELECTION",
+      "observed_code": "REFUSED_SEGMENT_FROM_ANOTHER_SELECTION",
+      "outcome": "REFUSED",
+      "refused_by": "sfir9_checkpoint_chain",
+      "what_it_tries": "continue a census under a selection rule the roster did not come from"
+    },
+    {
+      "attack": "roster_generated_before_the_protocol_freeze",
+      "expected_code": "PROTOCOL_DRAFT",
+      "observed_code": "ProtocolRefused",
+      "outcome": "REFUSED",
+      "refused_by": "sfir9_protocol",
+      "what_it_tries": "look at the cohort while the salt, partition and N are still adjustable"
+    },
+    {
+      "attack": "spent_sfir7_root_appears_in_the_cohort",
+      "expected_code": "REFUSED_SPENT_ROOT_IN_ROSTER",
+      "observed_code": "REFUSED_SPENT_ROOT_IN_ROSTER",
+      "outcome": "REFUSED",
+      "refused_by": "sfir9_cohort_roster",
+      "what_it_tries": "put a root an earlier study already looked at into the held-out cohort"
+    },
+    {
+      "attack": "drifted_historical_receipt_as_a_scientific_prerequisite",
+      "expected_code": "REFUSED_HISTORICAL_DRIFT_AUTHORITY",
+      "observed_code": "IsolationRefused",
+      "outcome": "REFUSED",
+      "refused_by": "sfir9_isolation_gate",
+      "what_it_tries": "make a receipt from the failed historical chain a prerequisite of an SFIR9 gate"
+    },
+    {
+      "attack": "authority_selected_by_recency_or_shape",
+      "expected_code": "REFUSED_HISTORICAL_DRIFT_AUTHORITY",
+      "observed_code": "IsolationRefused",
+      "outcome": "REFUSED",
+      "refused_by": "sfir9_isolation_gate",
+      "what_it_tries": "let a component pick its authority with a glob instead of a name and digest"
+    },
+    {
+      "attack": "checkpoint_chain_from_another_roster",
+      "expected_code": "REFUSED_SEGMENT_FROM_ANOTHER_ROSTER",
+      "observed_code": "REFUSED_SEGMENT_FROM_ANOTHER_ROSTER",
+      "outcome": "REFUSED",
+      "refused_by": "sfir9_checkpoint_chain",
+      "what_it_tries": "resume a census from a checkpoint belonging to a different cohort"
+    }
+  ],
+  "schema": "tavonel.sfir9.hostile_audit.v1",
+  "why_a_control_failure_is_not_a_pass": "an attack that could not be mounted produces the same silence as an attack that was refused. Without the control, a broken fixture would read as a defence.",
+  "why_the_code_is_asserted": "a refusal for the wrong reason will stop firing when the wrong reason goes away."
+}

@@ -1,0 +1,28 @@
+{
+  "case": "structure changed (block_count 2 -> 3); no unit text changed",
+  "change_kinds": [
+    "structure_changed"
+  ],
+  "changed_logical_ids": [],
+  "confirmatory_receipt_sha256": "sha256:c4e3f8cc9b56dde2f973b639cae8b75438576a27ab32eaa1a8caa69f4c70b27e",
+  "content_changed": true,
+  "diverged": [
+    "artifact:ordered-digest:demo"
+  ],
+  "not_attempted_here": "akc_cir.semantic_diff and akc_cir.recompilation are Protected Core. A change goes through compatibility contract -> shadow -> benchmark -> canary -> rollout, and this program only establishes the defect.",
+  "planned_rebuild": [],
+  "remedy_options_for_founder": [
+    "Narrow the Family B claim to the holdout range, as the handoff permits, and keep FAMILY_B_EXTERNAL_PERFORMANCE_CLAIM = WITHHELD.",
+    "Take the structural channel through the Protected Core replacement ladder so a structure-only change can seed the dependency traversal (compatibility contract -> shadow -> benchmark -> canary -> rollout). This is a change to akc_cir.semantic_diff/recompilation and is not an agent's call to make unilaterally."
+  ],
+  "reproduced_at": "2026-08-18",
+  "reproduces_confirmatory_defect": true,
+  "reproduction_script_sha256": "sha256:33e0179184a2735624c4ab1bfde3900a73958c5b87ae4039369ce2b9139d0106",
+  "root_cause": "_structural_changes builds every STRUCTURE_CHANGED without a logical_id, and SemanticDiff.changed_logical_ids keeps only changes that carry one, so plan_recompilation has nothing to seed its traversal with. An artifact aggregated over document position is then classified CURRENT and carried over stale.",
+  "schema": "tavonel.family-b-structure-only-stale-reproduction.v1",
+  "stale_left_behind": [
+    "artifact:ordered-digest:demo"
+  ],
+  "unresolved_count": 0,
+  "why_this_matters": "The repository rule is fail closed on integrity violations. This path fails open: the run reports success and the artifact is wrong."
+}

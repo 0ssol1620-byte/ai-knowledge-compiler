@@ -1,0 +1,10 @@
+{
+  "is_evidence": false,
+  "note": "NOT EVIDENCE. A mutable convenience pointer to the most recent immutable receipt for this stem. It carries no finding. Cite the file it names, never this one.",
+  "points_to": "research/tavonel_eval_v2/receipts/vbc2-cohort--20260823T003429Z-7a819c36887d.json",
+  "points_to_file_sha256": "sha256:790712bd0b0e83787faf054c1c1ce3ab897be55a5126ddd49cbc70232797eb0c",
+  "run_id": "20260823T003429Z-7a819c36887d",
+  "schema": "tavonel.v2.receipt_pointer.v1",
+  "stem": "vbc2-cohort",
+  "updated_at": "2026-08-23T00:34:30.319681+00:00"
+}

@@ -1,0 +1,45 @@
+{
+  "arm_b_tie_count": 11,
+  "arm_b_validity": "DEGENERATE on this question set. Every comparison was an exact lexical tie, because the query is a section heading and both candidates are that same section's text -- there is nothing for lexical overlap to discriminate on. Arm B's scores are therefore decided entirely by the fixed tie-break (earlier candidate wins) and are NOT a retrieval result. No claim may be made of arm C beating a retrieval baseline on this data; arm B did not produce one.",
+  "arm_c_scope": "arm C is handed the two values already carrying correct valid-time windows, so 1.0/1.0 shows that the resolver *uses* valid time correctly, not that the system can *extract* it from a document. The extraction step is untested here and is the harder half.",
+  "corpora": [
+    {
+      "corpus": "holdout-v2",
+      "pairs": 12,
+      "questions": 6
+    },
+    {
+      "corpus": "confirmatory-v1",
+      "pairs": 11,
+      "questions": 5
+    }
+  ],
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T19:35:49.641079+00:00",
+  "known_time_limitation": "acquisition time is uniform across the corpus, so the known-time axis is not exercised. Only valid time is tested.",
+  "protocol": "research/experiments/H1-C-TEMPORAL-AUTHORITY-01/PROTOCOL_2026-08-19.md",
+  "question_count": 11,
+  "receipt_sha256": "sha256:2582af336545baf34876f0e1657fda54bce4f55e48863b1e707998171d6eb15c",
+  "replay_fidelity": 1.0,
+  "results": {
+    "A": {
+      "abstention_count": 0,
+      "type1_current_value_accuracy": 1.0,
+      "type2_as_of_accuracy": 0.0
+    },
+    "B": {
+      "abstention_count": 0,
+      "type1_current_value_accuracy": 0.0,
+      "type2_as_of_accuracy": 1.0
+    },
+    "C": {
+      "abstention_count": 0,
+      "type1_current_value_accuracy": 1.0,
+      "type2_as_of_accuracy": 1.0
+    }
+  },
+  "sample_size_limitation": "11 questions from 23 revision pairs. Units whose text did not change carry no question, and units present in only one revision are excluded because ground truth would be ambiguous. This is a thin sample and no interval is reported for it.",
+  "schema": "tavonel.temporal-authority-comparison.v1",
+  "type3_conflict_questions_found": 0,
+  "type3_note": "zero, and this is a property of the corpus rather than a result. Protocol prediction 4 -- that arms A and B show a false-confidence rate of 1.0 on conflict questions -- is therefore UNTESTED here, not confirmed. Constructing overlapping windows would be inventing the very conflict arm C is being credited for handling."
+}

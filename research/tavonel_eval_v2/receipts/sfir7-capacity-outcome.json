@@ -1,0 +1,139 @@
+{
+ "content_sha256": "sha256:cb1ee2e7b47ef2d5875bc3437207df318458523989207b478712b85e9c779355",
+ "corpus_spent": false,
+ "criterion": {
+  "formula": "Q_f=min(1000,floor(0.8*C_f))",
+  "inherited_unchanged_from": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4",
+  "minimum_C": 750,
+  "minimum_Q": 600
+ },
+ "estimated_cost_usd": 0.0,
+ "family": {
+  "C": 459,
+  "Q": 367,
+  "family": "git_docs",
+  "is_sealable": false,
+  "meets_C": false,
+  "meets_Q": false,
+  "meets_criterion": false,
+  "root_states": {
+   "COMPLETE": 26,
+   "EXCLUDED_INCOMPLETE_ROOT_DISPOSITION": 24
+  },
+  "roots_complete": 26,
+  "roots_frozen": 50,
+  "roots_truncated_before_exhaustion": 24,
+  "roots_visited": 50,
+  "verdict": "MEASURED_NOT_SEALABLE",
+  "why_a_truncated_root_makes_C_a_floor": "a root the traversal stopped short of exhausting may hold documents nobody counted. C is then a lower bound for that root and the census a floor for the frame, which is a different object from a measurement of it. SFIR6 introduced MEASURED_NOT_SEALABLE for exactly this distinction; it applies here for a different reason."
+ },
+ "frame_change_versus_predecessor": {
+  "delta_C": 166,
+  "predecessor_C": 293,
+  "predecessor_numbers_are_a_comparison_target_not_an_input": "every figure under `family` was computed from SFIR7's own census. The predecessor count appears so a reader can see what changing WHO CHOSE THE ROOTS did, which is the only variable SFIR7 moved.",
+  "predecessor_protocol": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V6",
+  "predecessor_roots": 20,
+  "predecessor_roots_chosen_by": "TAVONEL",
+  "sfir7_C": 459,
+  "sfir7_roots_chosen_by": "Libraries.io published SourceRank, deposited 2020-01-12",
+  "what_a_difference_is_attributable_to": "the frame. Traversal, bounds, identity semantics, salt, criterion and candidate construction are inherited unchanged and the candidate builder is bound to SFIR4's by an equivalence control."
+ },
+ "generated_at": "2026-08-27T18:05:00Z",
+ "gpu_seconds": 0,
+ "identity_attestation": {
+  "attested_on": "the repository metadata response the traversal itself fetches, not a separate verification request that could succeed while the traversal went elsewhere",
+  "gate": "LIVE_REPOSITORY_ID_MATCHES_FROZEN_HOST_UUID",
+  "on_mismatch": "REFUSE",
+  "rename_count": 9,
+  "renames_observed": {
+   "ReactTraining/react-router": "remix-run/react-router",
+   "bundler/bundler": "rubygems/bundler",
+   "erikhuda/thor": "rails/thor",
+   "facebook/create-react-app": "react/create-react-app",
+   "facebook/jest": "jestjs/jest",
+   "facebook/react": "react/react",
+   "mui-org/material-ui": "mui/material-ui",
+   "webpack-contrib/css-loader": "webpack/css-loader",
+   "yannickcr/eslint-plugin-react": "jsx-eslint/eslint-plugin-react"
+  },
+  "roots_attested": 47,
+  "roots_frozen": 50,
+  "why_a_rename_is_not_a_conflict": "identity is the host's numeric repository id, which a rename does not change. The address is where the question was asked, not what was asked about. A different id under the same address IS a conflict and refuses the root."
+ },
+ "payload_opened": false,
+ "per_root_candidates": {
+  "git:airbnb/javascript": 8,
+  "git:babel/babel-eslint": 1,
+  "git:babel/babel-loader": 5,
+  "git:chaijs/chai": 5,
+  "git:chalk/chalk": 2,
+  "git:erikhuda/thor": 3,
+  "git:facebook/create-react-app": 71,
+  "git:gulpjs/gulp": 61,
+  "git:guzzle/guzzle": 19,
+  "git:isaacs/rimraf": 2,
+  "git:istanbuljs/nyc": 7,
+  "git:jquery/jquery": 9,
+  "git:karma-runner/karma": 35,
+  "git:kentcdodds/cross-env": 7,
+  "git:mochajs/mocha": 40,
+  "git:moment/moment": 6,
+  "git:paulmillr/chokidar": 2,
+  "git:request/request": 6,
+  "git:sass/node-sass": 44,
+  "git:tj/commander.js": 12,
+  "git:twbs/bootstrap": 25,
+  "git:vuejs/vue": 10,
+  "git:webpack-contrib/css-loader": 2,
+  "git:yannickcr/eslint-plugin-react": 77
+ },
+ "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V7",
+ "schema": "tavonel.sfir7.capacity_outcome.v1",
+ "state": "CAPACITY_CRITERION_APPLIED_AND_FAILED",
+ "what_was_not_done_about_the_result": {
+  "n_changed": false,
+  "roots_added": 0,
+  "roster_edited": false,
+  "threshold_lowered": false,
+  "why": "SFIR7's charter and the standing instruction forbid all four by name. Adjusting any of them after seeing this number would convert an outcome-independent frame into an outcome-conditioned one, which is the single thing this protocol exists to prevent."
+ },
+ "why_a_shortfall_would_be_which_kind": {
+  "frame_cut_by_an_inherited_bound": {
+   "bound": 4800,
+   "means": "roots the request budget stopped before they were visited. Excluded roots can only lower C, never raise it, so a criterion MET despite them is sound and a shortfall is partly an accounting event.",
+   "registered_in_advance_as": "INC-V2-115",
+   "roots_excluded": 0
+  },
+  "frame_cut_by_the_hosts_rate_limit": {
+   "means": "roots GitHub declined to serve, having asked for a wait longer than SFIR4's frozen fail-safe permits. Distinct from our own cap firing: that is a budget we chose, this is one imposed on us, and SFIR7 measured that the host counts requests our counter does not, so ours cannot be relied on to fire first.",
+   "registered_in_advance_as": "INC-V2-119",
+   "roots_excluded": 4,
+   "the_fail_safe_was_not_widened": true
+  },
+  "frame_too_small": {
+   "candidates_from_complete_roots": 459,
+   "means": "roots were visited to exhaustion and produced this many revision pairs. This is a measurement of the frame.",
+   "roots_complete": 26
+  },
+  "roots_that_hit_the_per_root_cap": {
+   "cap": 80,
+   "count": 0,
+   "means": "a root at its cap produced at least this many documents and possibly more, so C is a floor for it rather than a measurement. SFIR6 recorded a highest per-root count of 73 against the same cap of 80, which is why that study's shortfall was not a cap artifact.",
+   "roots_at_the_cap": []
+  },
+  "the_instrument_could_not_finish_the_root": {
+   "inherited_per_root_bounds": {
+    "max_git_api_requests_per_root": 240,
+    "max_git_tree_objects_per_root": 158,
+    "max_git_tree_queue_entries": 256
+   },
+   "means": "the traversal stopped before the tree was exhausted. These bounds were frozen for SFIR4's twenty hand-picked repositories, and an externally chosen frame is under no obligation to pick repositories that fit them.",
+   "reasons": {
+    "EXTERNAL_RATE_LIMIT_EXHAUSTED": 4,
+    "TREE_BFS_BOUND_BEFORE_QUEUE_EXHAUSTION": 5,
+    "TREE_QUEUE_OR_PATH_MAP_BOUND_BEFORE_ENQUEUE": 15
+   },
+   "roots_truncated": 24
+  }
+ }
+}

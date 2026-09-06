@@ -1,0 +1,87 @@
+{
+  "schema": "tavonel.w6-v8-runtime-feasibility.v1",
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "generated_at": "2026-08-20T00:45:00+00:00",
+  "run_class": "PRE_FREEZE_FEASIBILITY",
+  "run_class_note": "measured against a live runtime before the config freeze and before any holdout title exists. It is not an endpoint and no arm was run. Its purpose was to find out, at development cost, what the frozen model does to the pipeline.",
+  "why_this_receipt_exists": "the pod it describes was deliberately deleted, so without this record its measurements would be gone. Two of them changed the freeze.",
+
+  "pod": {
+    "pod_id": "hncfgt48zxhob8",
+    "provider": "runpod",
+    "data_center": "EUR-IS-4",
+    "gpu": "NVIDIA H200 (141 GB)",
+    "gpu_count": 1,
+    "cost_per_hour_usd": 4.59,
+    "created_at_utc": "2026-08-20T00:21:53Z",
+    "deleted_at_utc": "2026-08-20T00:43:00Z",
+    "approximate_cost_usd": 1.6,
+    "image": "vllm/vllm-openai@sha256:0a51ea5b4ae2dc5d81890e5173f54203d2a3ae0cfffe51b8fd2afd4391bfd967",
+    "deleted_because": "the image's entrypoint is `vllm serve` and it carries no sshd, so no code could be run beside the server. The nine required attestation fields include a model-file digest manifest, which cannot be observed without reading the served files. A manifest observed on a different machine is not the identity that executed, so the runtime was rebuilt on an image that permits both."
+  },
+
+  "measured": {
+    "serving_runtime": "vllm",
+    "serving_runtime_version": "0.27.1",
+    "architecture_resolved": "Qwen3_5ForConditionalGeneration",
+    "launch_revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+    "launch_tokenizer_revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+    "max_model_len_accepted": 262144,
+    "model_loading_gib": 51.1,
+    "model_loading_seconds": 87.7,
+    "torch_compile_seconds": 65.3,
+    "container_start_to_healthy_seconds": 235,
+    "served_model_id": "Qwen/Qwen3.6-27B",
+    "tokenizer_probe": {
+      "text": "TAVONEL 1,450 test",
+      "count": 11,
+      "tokens": [51, 7839, 691, 2662, 220, 16, 11, 19, 20, 15, 1228]
+    },
+    "longest_development_document_pair": {
+      "characters": 521344,
+      "prompt_tokens": 170106,
+      "served_context_window": 262144,
+      "fits": true,
+      "wall_seconds": 24.8,
+      "note": "the largest before+after pair in corpus-v7. It is 65% of the served window, so RAW under RAW_GETS_WHOLE_DOCUMENT_BUDGET is not expected to overflow at development scale. Holdout documents are not known to be the same size and RAW_CONTEXT_OVERFLOW remains a recorded outcome rather than an assumed impossibility."
+    }
+  },
+
+  "findings": [
+    {
+      "id": "W6-V8-RUNTIME-01",
+      "title": "Qwen3.6 emits a reasoning preamble that consumes the frozen 256-token budget",
+      "class": "MEASURED",
+      "observation": "with default chat-template settings, the prompt \"Reply with exactly one word: attested.\" produced a numbered \"Thinking Process\" that had not reached an answer at the 256-token limit.",
+      "control": "the same runtime, same decoding, with chat_template_kwargs {\"enable_thinking\": false}, answered a one-fact excerpt with the bare value `1,450` in 6 completion tokens, and answered an excerpt lacking the fact with exactly `INSUFFICIENT_EVIDENCE` in 7.",
+      "consequence": "max_tokens = 256 is a founder decision and is not reinterpreted. Under that budget, leaving the preamble on would have made every arm run out of tokens mid-reasoning and score as an abstention, measuring the preamble rather than the four representations. The preamble is disabled identically for all four arms, so it changes the shared model contract and not the variable under test.",
+      "where_it_is_pinned": "vllm_model_v8.CHAT_TEMPLATE_KWARGS, and the decoding block of the v8 config freeze",
+      "boundary": "this is a fact about this checkpoint's default chat template under a 256-token budget. It is not a claim about the model's reasoning ability, and the result must not be described as measuring Qwen3.6 with reasoning enabled."
+    },
+    {
+      "id": "W6-V8-RUNTIME-02",
+      "title": "The Runpod edge rejects the default urllib user agent",
+      "class": "MEASURED",
+      "observation": "identical requests succeeded from curl and failed with HTTP 403 (Cloudflare 1010) from Python's urllib default agent.",
+      "consequence": "the client names itself. Recorded because a 403 that had been retried and then scored as an abstention would have reported an edge policy as a knowledge-representation finding; the client raises instead.",
+      "where_it_is_pinned": "vllm_model_v8.USER_AGENT"
+    },
+    {
+      "id": "W6-V8-RUNTIME-03",
+      "title": "The published vLLM image cannot produce the required attestation",
+      "class": "MEASURED",
+      "observation": "vllm/vllm-openai declares ENTRYPOINT [\"vllm\",\"serve\"] and ships no sshd; Runpod's PUBLIC_KEY convention is honoured only by images that install it. Both proxy and direct SSH were refused.",
+      "consequence": "the serving stack is installed into an image that permits a shell, and the attestation records the base image digest together with the full installed-package manifest rather than implying that one image digest pins the whole runtime.",
+      "boundary": "this is a packaging fact, not a defect in vLLM, and it is not evidence about the model."
+    }
+  ],
+
+  "not_measured": [
+    "any arm result",
+    "any holdout title, question or document",
+    "answer correctness of any representation"
+  ],
+  "holdout_status": "UNOPENED",
+  "network_access": true,
+  "external_gpu_cost_usd": 1.6
+}

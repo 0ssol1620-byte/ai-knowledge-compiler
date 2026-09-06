@@ -1,0 +1,11 @@
+{
+  "active_digest": "sha256:919c77d35035f43273cb41d7c67cfaa1e241fabaefa66db2be24122fa8e504a7",
+  "freeze_digest": "sha256:09306d2fff3b61f60d82105763efe7ba1a5ff3357997683832e03d950e1a20db",
+  "protocol_digest": "sha256:5d50cbd241767d00977d55fb2b1fca516f7ef4a9c453f47de101ca346791147c",
+  "roster_seal": "sha256:cd0da092e18b9f6c87adbc79e05caa8cffbeff73b9f4a20cfe4f76fe586601cd",
+  "schema": "tavonel.sfir10r1.active_segment.v1",
+  "segment_index": 1,
+  "state_digest_before_requests": "sha256:1272235468ce2d52a919f0f7064cc5015297e8fad9a0224d8f60f4b959b24cc3",
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R1",
+  "what_presence_means": "a segment may have issued cohort requests and has not yet completed the sealed accounting handoff"
+}

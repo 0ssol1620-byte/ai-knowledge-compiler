@@ -1,4 +1,8 @@
-import type { TavonelPage, TavonelSection } from "@/lib/tavonel-content";
+import {
+  PUBLIC_PAGES,
+  type TavonelPage,
+  type TavonelSection,
+} from "@/lib/tavonel-content";
 
 const page = (
   path: string,
@@ -125,7 +129,7 @@ export const PUBLIC_PAGES_KO: Record<string, TavonelPage> =
           },
         ],
         { label: "Proof 데모 살펴보기", href: "/demo/dart" },
-        { label: "평가 방법론 읽기", href: "/benchmarks" },
+        { label: "연구 노트 읽기", href: "/research" },
       ),
       page(
         "/product/knowledge",
@@ -386,7 +390,7 @@ export const PUBLIC_PAGES_KO: Record<string, TavonelPage> =
           label: "인터랙티브 Proof 열기",
           href: "/documents/sample-dart/processing",
         },
-        { label: "제한 사항 읽기", href: "/benchmarks" },
+        { label: "연구 노트 읽기", href: "/research" },
       ),
       page(
         "/demo/sec",
@@ -513,7 +517,7 @@ export const PUBLIC_PAGES_KO: Record<string, TavonelPage> =
             body: "블록에서 노트, 엔티티와 관계로 이어지는 이식 가능한 경로를 설명합니다.",
           },
         ],
-        { label: "벤치마크 살펴보기", href: "/benchmarks" },
+        { label: "공개 Proof 살펴보기", href: "/demo/dart" },
       ),
       page(
         "/security",
@@ -824,7 +828,10 @@ export const PUBLIC_PAGES_KO: Record<string, TavonelPage> =
             body: "이 문의 경로는 고객 문서를 요청하지 않습니다.",
           },
         ],
-        { label: "문의 양식 열기", href: "mailto:sales@example.invalid" },
+        {
+          label: "문의 양식 열기",
+          href: "/company/contact#contact-form",
+        },
       ),
       page(
         "/legal/privacy",
@@ -920,3 +927,47 @@ export const PUBLIC_PAGES_KO: Record<string, TavonelPage> =
       ),
     ].map((definition) => [definition.path, definition]),
   );
+
+const NEW_PAGE_COPY: Record<
+  string,
+  { label: string; title: string; intro: string; thesis: string }
+> = {
+  "/product/knowledge-compiler": { label: "제품", title: "Knowledge Compiler", intro: "문서와 연결 시스템을 근거가 추적되는 World로 전환합니다.", thesis: "읽기, 구조 복원, 의미 객체, 관계와 원본 근거가 하나의 컴파일 과정으로 이어집니다." },
+  "/product/document-understanding": { label: "제품", title: "문서 이해", intro: "복잡한 문서의 읽기 순서와 구조를 원본 위치와 함께 복원합니다.", thesis: "OCR 결과가 아니라 페이지·블록·bbox까지 확인 가능한 문서 모델을 만듭니다." },
+  "/product/compiled-world": { label: "제품", title: "컴파일된 World", intro: "검증된 객체와 관계를 버전이 있는 지식 자산으로 운영합니다.", thesis: "Graph, Directory, Ontology, Evidence, Versions, Files를 동일한 근거에서 봅니다." },
+  "/product/grounded-ai": { label: "제품", title: "근거 기반 AI", intro: "World를 Ask, API, MCP와 검색 투영에서 사용합니다.", thesis: "답을 찾지 못하면 추측하지 않고, 답한 내용은 실제 원문 근거로 돌아갑니다." },
+  "/solutions/ai-ready-knowledge": { label: "솔루션", title: "AI가 사용할 수 있는 지식", intro: "출처가 관리되는 자료를 재사용 가능한 AI 지식으로 바꿉니다.", thesis: "모델보다 오래 유지되는 이식 가능한 지식 계층을 구축합니다." },
+  "/solutions/document-intelligence": { label: "솔루션", title: "문서 인텔리전스", intro: "복잡한 문서를 페이지 단위 근거와 함께 복원합니다.", thesis: "읽기 품질, 불확실성, 검토와 결과 활용을 한 흐름으로 연결합니다." },
+  "/solutions/knowledge-graph": { label: "솔루션", title: "지식 그래프", intro: "문서 전반의 객체와 관계를 실제 근거로 연결합니다.", thesis: "그래프의 모든 활성 관계가 원본 블록과 버전에 닿도록 합니다." },
+  "/solutions/source-grounded-assistants": { label: "솔루션", title: "원본 근거 기반 어시스턴트", intro: "클릭 가능한 인용과 명시적 답변 보류가 있는 어시스턴트를 만듭니다.", thesis: "검색 결과가 아니라 활성 World의 근거 투영에서 답합니다." },
+  "/solutions/knowledge-operations": { label: "솔루션", title: "지식 운영", intro: "검토, 버전, 연결, 예산과 활동을 하나의 운영 체계로 관리합니다.", thesis: "기술 영수증은 보존하면서 기본 경험은 다음 행동에 집중합니다." },
+  "/integrations": { label: "연결", title: "실제 운영 상태를 숨기지 않는 연결", intro: "사용 가능, 설정 필요, 미지원 상태를 명확히 구분합니다.", thesis: "connector 로고를 설정된 운영 경로의 증거처럼 사용하지 않습니다." },
+  "/enterprise": { label: "엔터프라이즈", title: "원본에서 활성 지식까지 통제합니다", intro: "신원, 정책, 감사, 리전, 보존과 배포 범위를 환경별로 검증합니다.", thesis: "계약과 기술 검증을 통과한 통제만 제공 가능 기능으로 표시합니다." },
+};
+
+const SECTION_TITLES: Record<string, string> = {
+  Source: "원본",
+  Compile: "컴파일",
+  "Operational proof": "운영 근거",
+  "OAuth sources": "OAuth 원본",
+  "Local and API": "로컬 및 API",
+  Infrastructure: "인프라",
+};
+
+for (const [path, copy] of Object.entries(NEW_PAGE_COPY)) {
+  const english = PUBLIC_PAGES[path];
+  if (!english) continue;
+  PUBLIC_PAGES_KO[path] = {
+    ...english,
+    ...copy,
+    sections: english.sections.map((section) => ({
+      ...section,
+      title: SECTION_TITLES[section.title] ?? section.title,
+      body: `${copy.title}에서 ${section.title} 단계의 실제 상태와 근거 경계를 확인합니다.`,
+    })),
+    primaryAction: { ...english.primaryAction, label: "제품 근거 확인" },
+    secondaryAction: english.secondaryAction
+      ? { ...english.secondaryAction, label: "팀에 문의" }
+      : undefined,
+  };
+}

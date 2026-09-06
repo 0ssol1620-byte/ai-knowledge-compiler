@@ -1,0 +1,898 @@
+{
+  "blocked_policy_touched": false,
+  "cases": {
+    "contended_column": {
+      "I_CANDIDATE_ORDER": {
+        "baseline": [
+          {
+            "candidates": [
+              "u1"
+            ],
+            "logical_id": null,
+            "match": "ambiguous",
+            "relation": null,
+            "row": 0,
+            "score": 1.0
+          },
+          {
+            "candidates": [
+              "u2"
+            ],
+            "logical_id": null,
+            "match": "ambiguous",
+            "relation": null,
+            "row": 1,
+            "score": 0.657143
+          }
+        ],
+        "case": "contended_column",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "permutations_tried": 2
+      },
+      "I_CANDIDATE_ORDER_BY_FACET": {
+        "candidate_attribution": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "case": "contended_column",
+        "classification_and_identity": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "full_row_outcome": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "permutations_tried": 2
+      },
+      "I_DECOMPOSITION": {
+        "applicable": true,
+        "case": "contended_column",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "note": "decomposition splits ROWS while leaving every candidate on offer to both halves, so any divergence is caused by the global one-to-one constraint and the global runner-up, not by hiding candidates"
+      },
+      "I_DETERMINISM": {
+        "case": "contended_column",
+        "invariant_holds": true,
+        "repeats": 5
+      },
+      "I_ROW_ORDER": {
+        "case": "contended_column",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "permutations_tried": 2
+      },
+      "incoming": [
+        "n1",
+        "n2"
+      ],
+      "previous": [
+        "u1",
+        "u2"
+      ]
+    },
+    "equal_score_tie": {
+      "I_CANDIDATE_ORDER": {
+        "baseline": [
+          {
+            "candidates": [
+              "u1"
+            ],
+            "logical_id": null,
+            "match": "ambiguous",
+            "relation": null,
+            "row": 0,
+            "score": 1.0
+          }
+        ],
+        "case": "equal_score_tie",
+        "divergent_count": 1,
+        "examples": [
+          {
+            "outcome": [
+              {
+                "candidates": [
+                  "u2"
+                ],
+                "logical_id": null,
+                "match": "ambiguous",
+                "relation": null,
+                "row": 0,
+                "score": 1.0
+              }
+            ],
+            "permutation": [
+              1,
+              0
+            ]
+          }
+        ],
+        "invariant_holds": false,
+        "permutations_tried": 2
+      },
+      "I_CANDIDATE_ORDER_BY_FACET": {
+        "candidate_attribution": {
+          "divergent_count": 1,
+          "examples": [
+            {
+              "baseline": [
+                [
+                  "ambiguous",
+                  "None",
+                  "('u1',)"
+                ]
+              ],
+              "permutation": [
+                1,
+                0
+              ],
+              "permuted": [
+                [
+                  "ambiguous",
+                  "None",
+                  "('u2',)"
+                ]
+              ]
+            }
+          ],
+          "invariant_holds": false
+        },
+        "case": "equal_score_tie",
+        "classification_and_identity": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "full_row_outcome": {
+          "divergent_count": 1,
+          "examples": [
+            {
+              "baseline": [
+                [
+                  "('candidates', ['u1'])",
+                  "('logical_id', None)",
+                  "('match', 'ambiguous')",
+                  "('relation', None)",
+                  "('row', 0)",
+                  "('score', 1.0)"
+                ]
+              ],
+              "permutation": [
+                1,
+                0
+              ],
+              "permuted": [
+                [
+                  "('candidates', ['u2'])",
+                  "('logical_id', None)",
+                  "('match', 'ambiguous')",
+                  "('relation', None)",
+                  "('row', 0)",
+                  "('score', 1.0)"
+                ]
+              ]
+            }
+          ],
+          "invariant_holds": false
+        },
+        "permutations_tried": 2
+      },
+      "I_DECOMPOSITION": {
+        "applicable": false,
+        "case": "equal_score_tie",
+        "invariant_holds": null
+      },
+      "I_DETERMINISM": {
+        "case": "equal_score_tie",
+        "invariant_holds": true,
+        "repeats": 5
+      },
+      "I_ROW_ORDER": {
+        "case": "equal_score_tie",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "permutations_tried": 1
+      },
+      "incoming": [
+        "n1"
+      ],
+      "previous": [
+        "u1",
+        "u2"
+      ]
+    },
+    "identical_candidate_set": {
+      "I_CANDIDATE_ORDER": {
+        "baseline": [
+          {
+            "candidates": [
+              "u1"
+            ],
+            "logical_id": null,
+            "match": "ambiguous",
+            "relation": null,
+            "row": 0,
+            "score": 1.0
+          },
+          {
+            "candidates": [
+              "u2"
+            ],
+            "logical_id": null,
+            "match": "ambiguous",
+            "relation": null,
+            "row": 1,
+            "score": 1.0
+          }
+        ],
+        "case": "identical_candidate_set",
+        "divergent_count": 5,
+        "examples": [
+          {
+            "outcome": [
+              {
+                "candidates": [
+                  "u1"
+                ],
+                "logical_id": null,
+                "match": "ambiguous",
+                "relation": null,
+                "row": 0,
+                "score": 1.0
+              },
+              {
+                "candidates": [
+                  "u3"
+                ],
+                "logical_id": null,
+                "match": "ambiguous",
+                "relation": null,
+                "row": 1,
+                "score": 1.0
+              }
+            ],
+            "permutation": [
+              0,
+              2,
+              1
+            ]
+          },
+          {
+            "outcome": [
+              {
+                "candidates": [
+                  "u2"
+                ],
+                "logical_id": null,
+                "match": "ambiguous",
+                "relation": null,
+                "row": 0,
+                "score": 1.0
+              },
+              {
+                "candidates": [
+                  "u1"
+                ],
+                "logical_id": null,
+                "match": "ambiguous",
+                "relation": null,
+                "row": 1,
+                "score": 1.0
+              }
+            ],
+            "permutation": [
+              1,
+              0,
+              2
+            ]
+          }
+        ],
+        "invariant_holds": false,
+        "permutations_tried": 6
+      },
+      "I_CANDIDATE_ORDER_BY_FACET": {
+        "candidate_attribution": {
+          "divergent_count": 5,
+          "examples": [
+            {
+              "baseline": [
+                [
+                  "ambiguous",
+                  "None",
+                  "('u1',)"
+                ],
+                [
+                  "ambiguous",
+                  "None",
+                  "('u2',)"
+                ]
+              ],
+              "permutation": [
+                0,
+                2,
+                1
+              ],
+              "permuted": [
+                [
+                  "ambiguous",
+                  "None",
+                  "('u1',)"
+                ],
+                [
+                  "ambiguous",
+                  "None",
+                  "('u3',)"
+                ]
+              ]
+            },
+            {
+              "baseline": [
+                [
+                  "ambiguous",
+                  "None",
+                  "('u1',)"
+                ],
+                [
+                  "ambiguous",
+                  "None",
+                  "('u2',)"
+                ]
+              ],
+              "permutation": [
+                1,
+                0,
+                2
+              ],
+              "permuted": [
+                [
+                  "ambiguous",
+                  "None",
+                  "('u2',)"
+                ],
+                [
+                  "ambiguous",
+                  "None",
+                  "('u1',)"
+                ]
+              ]
+            }
+          ],
+          "invariant_holds": false
+        },
+        "case": "identical_candidate_set",
+        "classification_and_identity": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "full_row_outcome": {
+          "divergent_count": 5,
+          "examples": [
+            {
+              "baseline": [
+                [
+                  "('candidates', ['u1'])",
+                  "('logical_id', None)",
+                  "('match', 'ambiguous')",
+                  "('relation', None)",
+                  "('row', 0)",
+                  "('score', 1.0)"
+                ],
+                [
+                  "('candidates', ['u2'])",
+                  "('logical_id', None)",
+                  "('match', 'ambiguous')",
+                  "('relation', None)",
+                  "('row', 1)",
+                  "('score', 1.0)"
+                ]
+              ],
+              "permutation": [
+                0,
+                2,
+                1
+              ],
+              "permuted": [
+                [
+                  "('candidates', ['u1'])",
+                  "('logical_id', None)",
+                  "('match', 'ambiguous')",
+                  "('relation', None)",
+                  "('row', 0)",
+                  "('score', 1.0)"
+                ],
+                [
+                  "('candidates', ['u3'])",
+                  "('logical_id', None)",
+                  "('match', 'ambiguous')",
+                  "('relation', None)",
+                  "('row', 1)",
+                  "('score', 1.0)"
+                ]
+              ]
+            },
+            {
+              "baseline": [
+                [
+                  "('candidates', ['u1'])",
+                  "('logical_id', None)",
+                  "('match', 'ambiguous')",
+                  "('relation', None)",
+                  "('row', 0)",
+                  "('score', 1.0)"
+                ],
+                [
+                  "('candidates', ['u2'])",
+                  "('logical_id', None)",
+                  "('match', 'ambiguous')",
+                  "('relation', None)",
+                  "('row', 1)",
+                  "('score', 1.0)"
+                ]
+              ],
+              "permutation": [
+                1,
+                0,
+                2
+              ],
+              "permuted": [
+                [
+                  "('candidates', ['u2'])",
+                  "('logical_id', None)",
+                  "('match', 'ambiguous')",
+                  "('relation', None)",
+                  "('row', 0)",
+                  "('score', 1.0)"
+                ],
+                [
+                  "('candidates', ['u1'])",
+                  "('logical_id', None)",
+                  "('match', 'ambiguous')",
+                  "('relation', None)",
+                  "('row', 1)",
+                  "('score', 1.0)"
+                ]
+              ]
+            }
+          ],
+          "invariant_holds": false
+        },
+        "permutations_tried": 6
+      },
+      "I_DECOMPOSITION": {
+        "applicable": true,
+        "case": "identical_candidate_set",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "note": "decomposition splits ROWS while leaving every candidate on offer to both halves, so any divergence is caused by the global one-to-one constraint and the global runner-up, not by hiding candidates"
+      },
+      "I_DETERMINISM": {
+        "case": "identical_candidate_set",
+        "invariant_holds": true,
+        "repeats": 5
+      },
+      "I_ROW_ORDER": {
+        "case": "identical_candidate_set",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "permutations_tried": 2
+      },
+      "incoming": [
+        "n1",
+        "n2"
+      ],
+      "previous": [
+        "u1",
+        "u2",
+        "u3"
+      ]
+    },
+    "merge": {
+      "I_CANDIDATE_ORDER": {
+        "baseline": [
+          {
+            "candidates": [
+              "u1"
+            ],
+            "logical_id": null,
+            "match": "ambiguous",
+            "relation": null,
+            "row": 0,
+            "score": 0.828571
+          }
+        ],
+        "case": "merge",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "permutations_tried": 2
+      },
+      "I_CANDIDATE_ORDER_BY_FACET": {
+        "candidate_attribution": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "case": "merge",
+        "classification_and_identity": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "full_row_outcome": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "permutations_tried": 2
+      },
+      "I_DECOMPOSITION": {
+        "applicable": false,
+        "case": "merge",
+        "invariant_holds": null
+      },
+      "I_DETERMINISM": {
+        "case": "merge",
+        "invariant_holds": true,
+        "repeats": 5
+      },
+      "I_ROW_ORDER": {
+        "case": "merge",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "permutations_tried": 1
+      },
+      "incoming": [
+        "n1"
+      ],
+      "previous": [
+        "u1",
+        "u2"
+      ]
+    },
+    "ordinary_one_to_one": {
+      "I_CANDIDATE_ORDER": {
+        "baseline": [
+          {
+            "candidates": [
+              "u1"
+            ],
+            "logical_id": null,
+            "match": "ambiguous",
+            "relation": null,
+            "row": 0,
+            "score": 1.0
+          },
+          {
+            "candidates": [
+              "u2"
+            ],
+            "logical_id": null,
+            "match": "ambiguous",
+            "relation": null,
+            "row": 1,
+            "score": 1.0
+          }
+        ],
+        "case": "ordinary_one_to_one",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "permutations_tried": 2
+      },
+      "I_CANDIDATE_ORDER_BY_FACET": {
+        "candidate_attribution": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "case": "ordinary_one_to_one",
+        "classification_and_identity": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "full_row_outcome": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "permutations_tried": 2
+      },
+      "I_DECOMPOSITION": {
+        "applicable": true,
+        "case": "ordinary_one_to_one",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "note": "decomposition splits ROWS while leaving every candidate on offer to both halves, so any divergence is caused by the global one-to-one constraint and the global runner-up, not by hiding candidates"
+      },
+      "I_DETERMINISM": {
+        "case": "ordinary_one_to_one",
+        "invariant_holds": true,
+        "repeats": 5
+      },
+      "I_ROW_ORDER": {
+        "case": "ordinary_one_to_one",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "permutations_tried": 2
+      },
+      "incoming": [
+        "n1",
+        "n2"
+      ],
+      "previous": [
+        "u1",
+        "u2"
+      ]
+    },
+    "split": {
+      "I_CANDIDATE_ORDER": {
+        "baseline": [
+          {
+            "candidates": [
+              "u1"
+            ],
+            "logical_id": null,
+            "match": "ambiguous",
+            "relation": null,
+            "row": 0,
+            "score": 0.828571
+          },
+          {
+            "candidates": [],
+            "logical_id": "n2",
+            "match": "new",
+            "relation": null,
+            "row": 1,
+            "score": 0.0
+          }
+        ],
+        "case": "split",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "permutations_tried": 1
+      },
+      "I_CANDIDATE_ORDER_BY_FACET": {
+        "candidate_attribution": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "case": "split",
+        "classification_and_identity": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "full_row_outcome": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "permutations_tried": 1
+      },
+      "I_DECOMPOSITION": {
+        "applicable": true,
+        "case": "split",
+        "divergent_count": 1,
+        "examples": [
+          {
+            "decomposed": {
+              "candidates": [
+                "u1"
+              ],
+              "logical_id": null,
+              "match": "ambiguous",
+              "relation": null,
+              "row": 0,
+              "score": 0.742857
+            },
+            "row": 1,
+            "whole": {
+              "candidates": [],
+              "logical_id": "n2",
+              "match": "new",
+              "relation": null,
+              "row": 1,
+              "score": 0.0
+            }
+          }
+        ],
+        "invariant_holds": false,
+        "note": "decomposition splits ROWS while leaving every candidate on offer to both halves, so any divergence is caused by the global one-to-one constraint and the global runner-up, not by hiding candidates"
+      },
+      "I_DETERMINISM": {
+        "case": "split",
+        "invariant_holds": true,
+        "repeats": 5
+      },
+      "I_ROW_ORDER": {
+        "case": "split",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "permutations_tried": 2
+      },
+      "incoming": [
+        "n1",
+        "n2"
+      ],
+      "previous": [
+        "u1"
+      ]
+    },
+    "split_and_merge": {
+      "I_CANDIDATE_ORDER": {
+        "baseline": [
+          {
+            "candidates": [
+              "u1"
+            ],
+            "logical_id": null,
+            "match": "ambiguous",
+            "relation": null,
+            "row": 0,
+            "score": 0.785714
+          },
+          {
+            "candidates": [],
+            "logical_id": "n2",
+            "match": "new",
+            "relation": null,
+            "row": 1,
+            "score": 0.0
+          },
+          {
+            "candidates": [
+              "u2"
+            ],
+            "logical_id": null,
+            "match": "ambiguous",
+            "relation": null,
+            "row": 2,
+            "score": 0.785714
+          }
+        ],
+        "case": "split_and_merge",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "permutations_tried": 2
+      },
+      "I_CANDIDATE_ORDER_BY_FACET": {
+        "candidate_attribution": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "case": "split_and_merge",
+        "classification_and_identity": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "full_row_outcome": {
+          "divergent_count": 0,
+          "examples": [],
+          "invariant_holds": true
+        },
+        "permutations_tried": 2
+      },
+      "I_DECOMPOSITION": {
+        "applicable": true,
+        "case": "split_and_merge",
+        "divergent_count": 1,
+        "examples": [
+          {
+            "decomposed": {
+              "candidates": [
+                "u1"
+              ],
+              "logical_id": null,
+              "match": "ambiguous",
+              "relation": null,
+              "row": 0,
+              "score": 0.714286
+            },
+            "row": 1,
+            "whole": {
+              "candidates": [],
+              "logical_id": "n2",
+              "match": "new",
+              "relation": null,
+              "row": 1,
+              "score": 0.0
+            }
+          }
+        ],
+        "invariant_holds": false,
+        "note": "decomposition splits ROWS while leaving every candidate on offer to both halves, so any divergence is caused by the global one-to-one constraint and the global runner-up, not by hiding candidates"
+      },
+      "I_DETERMINISM": {
+        "case": "split_and_merge",
+        "invariant_holds": true,
+        "repeats": 5
+      },
+      "I_ROW_ORDER": {
+        "case": "split_and_merge",
+        "divergent_count": 0,
+        "examples": [],
+        "invariant_holds": true,
+        "permutations_tried": 6
+      },
+      "incoming": [
+        "n1",
+        "n2",
+        "n3"
+      ],
+      "previous": [
+        "u1",
+        "u2"
+      ]
+    }
+  },
+  "experiment": "H1-K-LEGACY-INVARIANT-EXTRACTION-01",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-19T03:36:43.046152+00:00",
+  "identity_module_sha256": "sha256:0b27e1b505d4684eaaf07aea0d6ffc1df3f30e4b8b1d95c5025f83572a05fafc",
+  "instrument_separation": {
+    "decomposition_separates": true,
+    "note": "I_DECOMPOSITION is the positive control: it is the obvious sparse strategy and the one H1-E2 vetoed. If it never diverges here the probe cannot detect the error class P2-13 must avoid, and every other null in this receipt is uncitable."
+  },
+  "network_access": false,
+  "policy_under_test": "LEGACY",
+  "purpose": "Establish which candidate invariants LEGACY actually satisfies, before any sparse replacement is designed against them.",
+  "receipt_sha256": "sha256:1a2c8cef7805b9cf3d81e36fd612433a5ded723268bc992ef966cdad9517a8f2",
+  "schema": "tavonel.legacy-invariant-probe.v1",
+  "summary": {
+    "I_CANDIDATE_ORDER": {
+      "all_cases_hold": false,
+      "cases_violating": [
+        "equal_score_tie",
+        "identical_candidate_set"
+      ]
+    },
+    "I_CANDIDATE_ORDER_candidate_attribution": {
+      "all_cases_hold": false,
+      "cases_violating": [
+        "equal_score_tie",
+        "identical_candidate_set"
+      ]
+    },
+    "I_CANDIDATE_ORDER_classification_and_identity": {
+      "all_cases_hold": true,
+      "cases_violating": []
+    },
+    "I_DECOMPOSITION": {
+      "all_cases_hold": false,
+      "cases_violating": [
+        "split",
+        "split_and_merge"
+      ]
+    },
+    "I_DETERMINISM": {
+      "all_cases_hold": true,
+      "cases_violating": []
+    },
+    "I_ROW_ORDER": {
+      "all_cases_hold": true,
+      "cases_violating": []
+    }
+  }
+}

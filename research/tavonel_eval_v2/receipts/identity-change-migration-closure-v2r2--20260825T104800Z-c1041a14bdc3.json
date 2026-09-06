@@ -1,0 +1,192 @@
+{
+  "INVARIANT_6_ambiguous_identity_stays_unresolved": {
+    "clause_a_b": {
+      "source": "V1 check_ambiguity, reused rather than reimplemented",
+      "violations": 0
+    },
+    "clause_c": {
+      "observations": 349,
+      "violations": 0
+    },
+    "clause_d": {
+      "observations": 4661,
+      "violations": 13
+    },
+    "clause_e": {
+      "declared_record": "identity_unresolved",
+      "observations": 349,
+      "unsettled_source": "the shared ResolverSurface's own AMBIGUOUS decisions and quarantine members, NOT the diff's records -- reading the unsettled set off the diff would compare the diff to itself and could not come back no",
+      "violations": 0
+    },
+    "met": false,
+    "observations": {
+      "a_b": 310,
+      "c": 349,
+      "d": 4661,
+      "e": 349
+    },
+    "violation_count": 13,
+    "violations": [
+      {
+        "clause": "d",
+        "disposition": "B_NEW",
+        "lineage_id": "ecfr:47:20:20.19",
+        "logical_id": "u:44dd83263953972267296f15",
+        "why": "the resolver settled this after-side unit as NEW and the diff says nothing. Silence is a violation here: a unit that genuinely begins must be visible as added"
+      },
+      {
+        "clause": "d",
+        "disposition": "B_NEW",
+        "lineage_id": "ecfr:47:20:20.19",
+        "logical_id": "u:7e4b003a028d84c605bce9c4",
+        "why": "the resolver settled this after-side unit as NEW and the diff says nothing. Silence is a violation here: a unit that genuinely begins must be visible as added"
+      },
+      {
+        "clause": "d",
+        "disposition": "B_NEW",
+        "lineage_id": "ecfr:47:20:20.19",
+        "logical_id": "u:938574c9cad637199264e073",
+        "why": "the resolver settled this after-side unit as NEW and the diff says nothing. Silence is a violation here: a unit that genuinely begins must be visible as added"
+      },
+      {
+        "clause": "d",
+        "disposition": "B_NEW",
+        "lineage_id": "ecfr:47:20:20.19",
+        "logical_id": "u:ccb3cce10d6b8ef6726871b0",
+        "why": "the resolver settled this after-side unit as NEW and the diff says nothing. Silence is a violation here: a unit that genuinely begins must be visible as added"
+      },
+      {
+        "clause": "d",
+        "disposition": "B_NEW",
+        "lineage_id": "ecfr:47:20:20.19",
+        "logical_id": "u:d37889deaa4caf9aa84d0194",
+        "why": "the resolver settled this after-side unit as NEW and the diff says nothing. Silence is a violation here: a unit that genuinely begins must be visible as added"
+      },
+      {
+        "clause": "d",
+        "disposition": "B_NEW",
+        "lineage_id": "ecfr:47:20:20.19",
+        "logical_id": "u:ec34f5e3ff14c48112e15f21",
+        "why": "the resolver settled this after-side unit as NEW and the diff says nothing. Silence is a violation here: a unit that genuinely begins must be visible as added"
+      },
+      {
+        "clause": "d",
+        "disposition": "B_NEW",
+        "lineage_id": "ecfr:47:20:20.19",
+        "logical_id": "u:f411a5a62ab012000af19d04",
+        "why": "the resolver settled this after-side unit as NEW and the diff says nothing. Silence is a violation here: a unit that genuinely begins must be visible as added"
+      },
+      {
+        "clause": "d",
+        "disposition": "B_NEW",
+        "lineage_id": "ecfr:47:20:20.19",
+        "logical_id": "u:ff7a5cb8d652c81f4f9a16cf",
+        "why": "the resolver settled this after-side unit as NEW and the diff says nothing. Silence is a violation here: a unit that genuinely begins must be visible as added"
+      },
+      {
+        "clause": "d",
+        "disposition": "B_NEW",
+        "lineage_id": "ecfr:7:3560:3560.102",
+        "logical_id": "u:6d1a25e5a2fb8c47463c17dc",
+        "why": "the resolver settled this after-side unit as NEW and the diff says nothing. Silence is a violation here: a unit that genuinely begins must be visible as added"
+      },
+      {
+        "clause": "d",
+        "disposition": "B_NEW",
+        "lineage_id": "ecfr:7:3560:3560.105",
+        "logical_id": "u:0f79d1706478678f6b1052a4",
+        "why": "the resolver settled this after-side unit as NEW and the diff says nothing. Silence is a violation here: a unit that genuinely begins must be visible as added"
+      },
+      {
+        "clause": "d",
+        "disposition": "B_NEW",
+        "lineage_id": "ecfr:7:3560:3560.105",
+        "logical_id": "u:149488a3598621cb96002c1d",
+        "why": "the resolver settled this after-side unit as NEW and the diff says nothing. Silence is a violation here: a unit that genuinely begins must be visible as added"
+      },
+      {
+        "clause": "d",
+        "disposition": "B_NEW",
+        "lineage_id": "ecfr:7:3560:3560.105",
+        "logical_id": "u:b44c4f5e39dd25169d04fb9f",
+        "why": "the resolver settled this after-side unit as NEW and the diff says nothing. Silence is a violation here: a unit that genuinely begins must be visible as added"
+      },
+      {
+        "clause": "d",
+        "disposition": "B_NEW",
+        "lineage_id": "ecfr:7:3560:3560.105",
+        "logical_id": "u:da5c1b9af9f165fc34916103",
+        "why": "the resolver settled this after-side unit as NEW and the diff says nothing. Silence is a violation here: a unit that genuinely begins must be visible as added"
+      }
+    ],
+    "zero_tolerance": true
+  },
+  "by_family": {
+    "git_docs": 126,
+    "regulation_ecfr": 77,
+    "sec_edgar": 67
+  },
+  "estimated_cost_usd": 0.0,
+  "gpu_seconds": 0,
+  "pair_count": 270,
+  "preconditions": {
+    "acceptance_semantics_sha256": "sha256:90e7d0f1934846ffb725ee93216f795ff6683a3ac9e506e64d79cc8e1a15230b",
+    "already_measured": [],
+    "chain": [
+      {
+        "name": "protocol",
+        "run_id": "20260825T102151Z-de4c44b1b9c8",
+        "rung": 1
+      },
+      {
+        "name": "universe",
+        "run_id": "20260825T104523Z-6a50832c28d1",
+        "rung": 2
+      },
+      {
+        "name": "scorer_acceptance",
+        "run_id": "20260825T104559Z-db606c6abc47",
+        "rung": 3
+      },
+      {
+        "name": "exclusions",
+        "run_id": "20260825T104603Z-df0b99bbab45",
+        "rung": 4
+      }
+    ],
+    "collision_groups": 0,
+    "exclusion_count": 0,
+    "exclusion_policy_sha256": "sha256:a1fc333922d02424c97955cf55882bb9de7e25317eae972e8a7ab4c011fbe7e8",
+    "measurement_stem": "identity-change-migration-closure-v2r2",
+    "pair_count": 270,
+    "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R2",
+    "protocol_sha256": "sha256:56bbe4c43f15d918483b3e7ff4941edc5a08246cec2a361e734c2f593793a48c",
+    "state": "READY",
+    "universe_sha256": "sha256:8450deb26a36e5f9cbe1c06ffe3ce4598bf85ee4727e744365aa5e40cf42d07b"
+  },
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R2",
+  "provenance": {
+    "generated_at": "2026-08-25T10:48:00.720703+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "identity-change-migration-closure-v2r2",
+    "run_id": "20260825T104800Z-c1041a14bdc3",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/identity_change_migration_closure_v2r2.py",
+    "tool_sha256": "sha256:02109961da2f7eb5a238efe147446a34eb2b3ff91470b5ef69bf7f98bba52912"
+  },
+  "receipt_sha256": "sha256:ff03ae3439093911bdd3bf20e5ba393a87c213d5066690a3c687075ec2354288",
+  "resolver_dispositions": {
+    "ambiguous": 297,
+    "matched": 2295,
+    "matched_with_differing_raw_ids": 34,
+    "new": 652,
+    "unmatched_before": 1417
+  },
+  "schema": "tavonel.v2.identity_change_migration_closure.v2r2_result.v1",
+  "universe_sha256": "sha256:8450deb26a36e5f9cbe1c06ffe3ce4598bf85ee4727e744365aa5e40cf42d07b",
+  "unsettled_identities_total": 349,
+  "wall_seconds": 72.59
+}

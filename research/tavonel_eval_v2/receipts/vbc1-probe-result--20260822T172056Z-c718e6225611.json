@@ -1,0 +1,58 @@
+{
+  "cohort": {
+    "by_family": {
+      "encyclopedia_wikipedia": 14,
+      "git_docs": 14,
+      "regulation_ecfr": 14,
+      "sec_edgar": 3
+    },
+    "documents": 45,
+    "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json"
+  },
+  "ended_at": "2026-08-22T17:20:56.747071+00:00",
+  "estimated_cost_usd": 0.0,
+  "excluded_by_reason": {
+    "NO_VALUE_FACT": 39,
+    "PROPERTY_NOT_STABLE": 20,
+    "VALUE_UNCHANGED": 154
+  },
+  "families_with_questions": [],
+  "gpu_seconds": 0,
+  "probe": {
+    "burned": true,
+    "not_the_confirmatory_cohort": true,
+    "why": "its eligibility outcome is now visible"
+  },
+  "protocol": "research/tavonel_eval_v2/protocols/VALUE_BEARING_COHORT_V1.yaml",
+  "protocol_sha256": "sha256:a4a2b568d3d04b475ea9edccf28f588c6d349852e960a55f608500c049d0e68e",
+  "provenance": {
+    "generated_at": "2026-08-22T17:20:56.748783+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/VALUE_BEARING_COHORT_V1.yaml",
+    "protocol_sha256": "sha256:a4a2b568d3d04b475ea9edccf28f588c6d349852e960a55f608500c049d0e68e",
+    "receipt_stem": "vbc1-probe-result",
+    "run_id": "20260822T172056Z-c718e6225611",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/run_vbc1_probe.py",
+    "tool_sha256": "sha256:33acd1285e860b891828eb1b9fad55d8ca2443bef6e7940bf1389e4fcb40caae"
+  },
+  "question_count": 0,
+  "question_id_injective": {
+    "duplicates": [],
+    "injective": true,
+    "rows": 0,
+    "unique": 0
+  },
+  "questions": [],
+  "questions_by_family": {},
+  "receipt_sha256": "sha256:70e14e091113149d578f63ab353bba657308b75070dc0816edb8777832957f44",
+  "schema": "tavonel.v2.vbc1_probe_result.v1",
+  "started_at": "2026-08-22T17:20:43.964182+00:00",
+  "value_facts_by_family": {},
+  "yield": {
+    "documents_needed_for_190": null,
+    "note": "a rate measured on a burned probe, reported so the confirmatory acquisition can be sized from a measurement rather than a guess. It is not an eligibility result and gates nothing.",
+    "questions_per_document": 0.0
+  }
+}

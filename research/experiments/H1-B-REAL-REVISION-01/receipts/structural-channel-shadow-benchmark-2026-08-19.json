@@ -1,0 +1,736 @@
+{
+  "acceptance": {
+    "C2_stale_left_behind_zero": true,
+    "C3_no_pair_broken": true,
+    "all_pairs_equivalent_after": true,
+    "pairs_broken": [],
+    "pairs_repaired": [
+      "Self-driving car"
+    ]
+  },
+  "claim_boundary": "Public Wikipedia revision pairs, replayed from frozen local text. This supports selective/full artifact equivalence on these pairs under this adapter, not universal domain or production performance.",
+  "corpora": {
+    "confirmatory-v1": {
+      "corpus_dir": "research/experiments/H1-B-REAL-REVISION-01/corpus-confirmatory-v1",
+      "legacy": {
+        "all_equivalent": false,
+        "changed_pairs": 11,
+        "mean_rebuild_fraction_over_changed_pairs": 0.05795726441046638,
+        "non_equivalent_titles": [
+          "Self-driving car"
+        ],
+        "pairs": 11,
+        "stale_left_behind_total": 2,
+        "total_artifacts": 334,
+        "total_rebuilt": 18
+      },
+      "pairs_broken": [],
+      "pairs_repaired": [
+        "Self-driving car"
+      ],
+      "pairs_whose_rebuild_set_widened": [
+        {
+          "artifact_count": 75,
+          "rebuild_count_after": 75,
+          "rebuild_count_before": 6,
+          "title": "Self-driving car"
+        }
+      ],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/wikipedia-real-revision-confirmatory-v1.json",
+      "records_legacy": [
+        {
+          "artifact_count": 31,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Artificial general intelligence"
+        },
+        {
+          "artifact_count": 3,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Generative artificial intelligence"
+        },
+        {
+          "artifact_count": 3,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Gemini (chatbot)"
+        },
+        {
+          "artifact_count": 12,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.25,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Meta AI"
+        },
+        {
+          "artifact_count": 29,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.10344827586206896,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Apple Intelligence"
+        },
+        {
+          "artifact_count": 21,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.14285714285714285,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Robotics"
+        },
+        {
+          "artifact_count": 75,
+          "change_kinds": [
+            "identity_unresolved",
+            "structure_changed"
+          ],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [
+            "artifact:section:wiki-unit:5a8b712ff07d910bc3d685ef",
+            "artifact:topic-bucket:b0c6b3d5400b62b3:1"
+          ],
+          "equivalent": false,
+          "rebuild_count": 6,
+          "rebuild_fraction": 0.08,
+          "stale_left_behind": 2,
+          "structural_change_present": true,
+          "title": "Self-driving car"
+        },
+        {
+          "artifact_count": 33,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Solar power"
+        },
+        {
+          "artifact_count": 41,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Nuclear power"
+        },
+        {
+          "artifact_count": 49,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.061224489795918366,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Space exploration"
+        },
+        {
+          "artifact_count": 37,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Mars"
+        }
+      ],
+      "records_structural_channel": [
+        {
+          "artifact_count": 31,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Artificial general intelligence"
+        },
+        {
+          "artifact_count": 3,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Generative artificial intelligence"
+        },
+        {
+          "artifact_count": 3,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Gemini (chatbot)"
+        },
+        {
+          "artifact_count": 12,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.25,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Meta AI"
+        },
+        {
+          "artifact_count": 29,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.10344827586206896,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Apple Intelligence"
+        },
+        {
+          "artifact_count": 21,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.14285714285714285,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Robotics"
+        },
+        {
+          "artifact_count": 75,
+          "change_kinds": [
+            "identity_unresolved",
+            "structure_changed"
+          ],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 75,
+          "rebuild_fraction": 1.0,
+          "stale_left_behind": 0,
+          "structural_change_present": true,
+          "title": "Self-driving car"
+        },
+        {
+          "artifact_count": 33,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Solar power"
+        },
+        {
+          "artifact_count": 41,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Nuclear power"
+        },
+        {
+          "artifact_count": 49,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.061224489795918366,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Space exploration"
+        },
+        {
+          "artifact_count": 37,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Mars"
+        }
+      ],
+      "structural_channel": {
+        "all_equivalent": true,
+        "changed_pairs": 11,
+        "mean_rebuild_fraction_over_changed_pairs": 0.14159362804683,
+        "non_equivalent_titles": [],
+        "pairs": 11,
+        "stale_left_behind_total": 0,
+        "total_artifacts": 334,
+        "total_rebuilt": 87
+      }
+    },
+    "holdout-v2": {
+      "corpus_dir": "research/experiments/H1-B-REAL-REVISION-01/corpus",
+      "legacy": {
+        "all_equivalent": true,
+        "changed_pairs": 12,
+        "mean_rebuild_fraction_over_changed_pairs": 0.028448184139594268,
+        "non_equivalent_titles": [],
+        "pairs": 12,
+        "stale_left_behind_total": 0,
+        "total_artifacts": 503,
+        "total_rebuilt": 17
+      },
+      "pairs_broken": [],
+      "pairs_repaired": [],
+      "pairs_whose_rebuild_set_widened": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/receipts/wikipedia-real-revision-holdout-v2.json",
+      "records_legacy": [
+        {
+          "artifact_count": 70,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.04285714285714286,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Artificial intelligence"
+        },
+        {
+          "artifact_count": 57,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.05263157894736842,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Machine learning"
+        },
+        {
+          "artifact_count": 56,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 2,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 5,
+          "rebuild_fraction": 0.08928571428571429,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Large language model"
+        },
+        {
+          "artifact_count": 42,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Quantum computing"
+        },
+        {
+          "artifact_count": 46,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Climate change"
+        },
+        {
+          "artifact_count": 27,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "CRISPR"
+        },
+        {
+          "artifact_count": 24,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Bitcoin"
+        },
+        {
+          "artifact_count": 45,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Kubernetes"
+        },
+        {
+          "artifact_count": 53,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.05660377358490566,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Rust (programming language)"
+        },
+        {
+          "artifact_count": 26,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "JSON"
+        },
+        {
+          "artifact_count": 30,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.1,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "World Wide Web"
+        },
+        {
+          "artifact_count": 27,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Cryptography"
+        }
+      ],
+      "records_structural_channel": [
+        {
+          "artifact_count": 70,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.04285714285714286,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Artificial intelligence"
+        },
+        {
+          "artifact_count": 57,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.05263157894736842,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Machine learning"
+        },
+        {
+          "artifact_count": 56,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 2,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 5,
+          "rebuild_fraction": 0.08928571428571429,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Large language model"
+        },
+        {
+          "artifact_count": 42,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Quantum computing"
+        },
+        {
+          "artifact_count": 46,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Climate change"
+        },
+        {
+          "artifact_count": 27,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "CRISPR"
+        },
+        {
+          "artifact_count": 24,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Bitcoin"
+        },
+        {
+          "artifact_count": 45,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Kubernetes"
+        },
+        {
+          "artifact_count": 53,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.05660377358490566,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Rust (programming language)"
+        },
+        {
+          "artifact_count": 26,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "JSON"
+        },
+        {
+          "artifact_count": 30,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.1,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "World Wide Web"
+        },
+        {
+          "artifact_count": 27,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Cryptography"
+        }
+      ],
+      "structural_channel": {
+        "all_equivalent": true,
+        "changed_pairs": 12,
+        "mean_rebuild_fraction_over_changed_pairs": 0.028448184139594268,
+        "non_equivalent_titles": [],
+        "pairs": 12,
+        "stale_left_behind_total": 0,
+        "total_artifacts": 503,
+        "total_rebuilt": 17
+      }
+    }
+  },
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T18:47:54.938296+00:00",
+  "receipt_sha256": "sha256:896bd6f50a731798c48fc5ac0818f22aa42be0e1b10d2cc7c1040b9e5e836d06",
+  "schema": "tavonel.structural-channel-shadow-benchmark.v1",
+  "the_cost": "structural seeding necessarily widens the dirty set. pairs_whose_rebuild_set_widened and the two mean rebuild fractions are the price, reported beside the correctness rather than after it.",
+  "what_changed": "plan_recompilation gained an opt-in structural traversal; a structural change now seeds it with the document's units on the STRUCTURAL dependency channel. Nothing else moved: no metric, no threshold, no identity rule, and the default remains the legacy path."
+}

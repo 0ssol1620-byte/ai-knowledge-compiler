@@ -1,0 +1,90 @@
+{
+  "experiment": "H1-I-GATE-ORDERING-01",
+  "external_gpu_cost_usd": 0.0,
+  "fidelity_gate": {
+    "all_agree": false,
+    "rows": [
+      {
+        "agrees": true,
+        "harness_canonical": {
+          "first_failing_step": null,
+          "promotable": true
+        },
+        "real_gate": {
+          "first_failing_step": null,
+          "promotable": true
+        },
+        "state": "S0"
+      },
+      {
+        "agrees": true,
+        "harness_canonical": {
+          "first_failing_step": "all_affected_dependencies_accounted_for",
+          "promotable": false
+        },
+        "real_gate": {
+          "first_failing_step": "all_affected_dependencies_accounted_for",
+          "promotable": false
+        },
+        "state": "S1"
+      },
+      {
+        "agrees": true,
+        "harness_canonical": {
+          "first_failing_step": "recompile_complete",
+          "promotable": false
+        },
+        "real_gate": {
+          "first_failing_step": "recompile_complete",
+          "promotable": false
+        },
+        "state": "S2"
+      },
+      {
+        "agrees": true,
+        "harness_canonical": {
+          "first_failing_step": "recompile_complete",
+          "promotable": false
+        },
+        "real_gate": {
+          "first_failing_step": "recompile_complete",
+          "promotable": false
+        },
+        "state": "S3"
+      },
+      {
+        "agrees": true,
+        "harness_canonical": {
+          "first_failing_step": "no_stale_current_artifacts",
+          "promotable": false
+        },
+        "real_gate": {
+          "first_failing_step": "no_stale_current_artifacts",
+          "promotable": false
+        },
+        "state": "S4"
+      },
+      {
+        "agrees": false,
+        "harness_canonical": {
+          "first_failing_step": null,
+          "promotable": true
+        },
+        "real_gate": {
+          "first_failing_step": "no_stale_current_artifacts",
+          "promotable": false
+        },
+        "state": "S5"
+      }
+    ]
+  },
+  "generated_at": "2026-08-19T02:27:59.489783+00:00",
+  "network_access": false,
+  "ordering_result_reported": false,
+  "promotion_gate_module_sha256": "sha256:905e6387e8f984a6778dc379b4313c92a9ee95f3dfc5a2b9ad373d9518fce99b",
+  "protocol_sha256": "sha256:dc41b927a47e3c7a0ca09e6f1c0fc4c565da2855b69de7fcfc6b331b4fa78956",
+  "receipt_sha256": "sha256:933de590179a3e515f9616c6e95b0eb6eccb34ee3d735a8eaa97c7940d23e8d2",
+  "result": "VOID_FIDELITY_GATE_FAILED",
+  "schema": "tavonel.gate-ordering-ablation.v1",
+  "why": "The harness did not reproduce the real gate in the canonical order. Per protocol section 6 the run is void and reports no ordering result."
+}

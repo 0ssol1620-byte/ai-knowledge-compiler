@@ -1,0 +1,10 @@
+{
+  "is_evidence": false,
+  "note": "NOT EVIDENCE. A mutable convenience pointer to the most recent immutable receipt for this stem. It carries no finding. Cite the file it names, never this one.",
+  "points_to": "research/tavonel_eval_v2/receipts/gpu-successor-launch--20260826T005726Z-e6f185ff8b08.json",
+  "points_to_file_sha256": "sha256:e2cd44a71a75b3854227f4af83666b8f22aa17fb971a462983de0cb03c25b602",
+  "run_id": "20260826T005726Z-e6f185ff8b08",
+  "schema": "tavonel.v2.receipt_pointer.v1",
+  "stem": "gpu-successor-launch",
+  "updated_at": "2026-08-26T00:57:26.313857+00:00"
+}

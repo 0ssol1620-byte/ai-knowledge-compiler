@@ -1,0 +1,1099 @@
+{
+  "cache_integrity": {
+    "collision_groups": [
+      {
+        "detector": "cache_slug",
+        "group": [
+          "git:grafana/grafana:docs/sources/alerting/alerting-rules/create-recording-rules/create-data-source-managed-recording-rules.md",
+          "git:grafana/grafana:docs/sources/alerting/alerting-rules/create-recording-rules/create-grafana-managed-recording-rules.md"
+        ],
+        "group_size": 2,
+        "key": "git-grafana-grafana-docs-sources-alerting-alerting-rules-create-recording-rules-"
+      },
+      {
+        "detector": "cache_slug",
+        "group": [
+          "git:kubernetes/website:content/en/docs/setup/production-environment/tools/kubeadm/control-plane-flags.md",
+          "git:kubernetes/website:content/en/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm.md"
+        ],
+        "group_size": 2,
+        "key": "git-kubernetes-website-content-en-docs-setup-production-environment-tools-kubead"
+      },
+      {
+        "detector": "cache_slug",
+        "group": [
+          "git:kubernetes/website:content/en/docs/tasks/access-application-cluster/access-cluster-services.md",
+          "git:kubernetes/website:content/en/docs/tasks/access-application-cluster/access-cluster.md"
+        ],
+        "group_size": 2,
+        "key": "git-kubernetes-website-content-en-docs-tasks-access-application-cluster-access-c"
+      },
+      {
+        "detector": "payload_path",
+        "group": [
+          "git:grafana/grafana:docs/sources/alerting/alerting-rules/create-recording-rules/create-data-source-managed-recording-rules.md",
+          "git:grafana/grafana:docs/sources/alerting/alerting-rules/create-recording-rules/create-grafana-managed-recording-rules.md"
+        ],
+        "group_size": 2,
+        "key": "research/tavonel_eval_v2/artifacts/development/raw_p4i/git-grafana-grafana-docs-sources-alerting-alerting-rules-create-recording-rules-/after.md"
+      },
+      {
+        "detector": "payload_path",
+        "group": [
+          "git:grafana/grafana:docs/sources/alerting/alerting-rules/create-recording-rules/create-data-source-managed-recording-rules.md",
+          "git:grafana/grafana:docs/sources/alerting/alerting-rules/create-recording-rules/create-grafana-managed-recording-rules.md"
+        ],
+        "group_size": 2,
+        "key": "research/tavonel_eval_v2/artifacts/development/raw_p4i/git-grafana-grafana-docs-sources-alerting-alerting-rules-create-recording-rules-/before.md"
+      },
+      {
+        "detector": "payload_path",
+        "group": [
+          "git:kubernetes/website:content/en/docs/setup/production-environment/tools/kubeadm/control-plane-flags.md",
+          "git:kubernetes/website:content/en/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm.md"
+        ],
+        "group_size": 2,
+        "key": "research/tavonel_eval_v2/artifacts/development/raw_p4i/git-kubernetes-website-content-en-docs-setup-production-environment-tools-kubead/after.md"
+      },
+      {
+        "detector": "payload_path",
+        "group": [
+          "git:kubernetes/website:content/en/docs/setup/production-environment/tools/kubeadm/control-plane-flags.md",
+          "git:kubernetes/website:content/en/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm.md"
+        ],
+        "group_size": 2,
+        "key": "research/tavonel_eval_v2/artifacts/development/raw_p4i/git-kubernetes-website-content-en-docs-setup-production-environment-tools-kubead/before.md"
+      },
+      {
+        "detector": "payload_path",
+        "group": [
+          "git:kubernetes/website:content/en/docs/tasks/access-application-cluster/access-cluster-services.md",
+          "git:kubernetes/website:content/en/docs/tasks/access-application-cluster/access-cluster.md"
+        ],
+        "group_size": 2,
+        "key": "research/tavonel_eval_v2/artifacts/development/raw_p4i/git-kubernetes-website-content-en-docs-tasks-access-application-cluster-access-c/after.md"
+      },
+      {
+        "detector": "payload_path",
+        "group": [
+          "git:kubernetes/website:content/en/docs/tasks/access-application-cluster/access-cluster-services.md",
+          "git:kubernetes/website:content/en/docs/tasks/access-application-cluster/access-cluster.md"
+        ],
+        "group_size": 2,
+        "key": "research/tavonel_eval_v2/artifacts/development/raw_p4i/git-kubernetes-website-content-en-docs-tasks-access-application-cluster-access-c/before.md"
+      }
+    ],
+    "collision_lineages": 6,
+    "historical_artifacts_rewritten": false,
+    "rule": "every raw and canonical digest is recomputed for every candidate side. A collision is detected structurally, by payload path and by cache slug, before any digest is checked, and the ENTIRE collision group is excluded -- never whichever member verifies (INC-V2-046)."
+  },
+  "candidate_manifests": [
+    {
+      "distinct_lineages": 511,
+      "excluded_by_category": {
+        "CACHE_KEY_COLLISION_GROUP": 6,
+        "V1_CLOSURE_LINEAGE": 505
+      },
+      "kept": 0,
+      "manifest": "research/tavonel_eval_v2/artifacts/development/p4i_cohort.json",
+      "manifest_sha256": "sha256:08a9682a9d8b20c6721f2469029b3c931efa0299104b0976a55f9b2b6832ecc4",
+      "rows": 511
+    },
+    {
+      "distinct_lineages": 321,
+      "excluded_by_category": {
+        "DUPLICATE_LINEAGE_OF_AN_EARLIER_MANIFEST": 321
+      },
+      "kept": 0,
+      "manifest": "research/tavonel_eval_v2/artifacts/development/p4g_cohort.json",
+      "manifest_sha256": "sha256:e285e32e08e1aa2c07955a662e7a5f65e71c2958a059a958e18fc6c8808cf263",
+      "rows": 321
+    },
+    {
+      "distinct_lineages": 300,
+      "excluded_by_category": {
+        "DUPLICATE_LINEAGE_OF_AN_EARLIER_MANIFEST": 300
+      },
+      "kept": 0,
+      "manifest": "research/tavonel_eval_v2/artifacts/development/p4g_cohort_pass1.json",
+      "manifest_sha256": "sha256:4f52fc2ea6207a010f38fb887b208e4c133451a41899aa3158442edd3326bbee",
+      "rows": 300
+    },
+    {
+      "distinct_lineages": 57,
+      "excluded_by_category": {
+        "DUPLICATE_LINEAGE_OF_AN_EARLIER_MANIFEST": 51,
+        "V1_CLOSURE_LINEAGE": 6
+      },
+      "kept": 0,
+      "manifest": "research/tavonel_eval_v2/artifacts/development/p4e_cohort.json",
+      "manifest_sha256": "sha256:dff5f069dd7864ca3448ff31c521c4c964166cbba1045d49d529b08828b5f511",
+      "rows": 57
+    },
+    {
+      "distinct_lineages": 48,
+      "excluded_by_category": {
+        "DUPLICATE_LINEAGE_OF_AN_EARLIER_MANIFEST": 47
+      },
+      "kept": 1,
+      "manifest": "research/tavonel_eval_v2/receipts/p4c-cohort-manifest--20260822T014940Z-d5b0e343ee50.json",
+      "manifest_sha256": "sha256:a40046e079cea4e9a767773a4c67b2751b1d13b55f66f10c3fdc888c3917bdff",
+      "rows": 48
+    },
+    {
+      "distinct_lineages": 3,
+      "excluded_by_category": {
+        "V1_CLOSURE_LINEAGE": 3
+      },
+      "kept": 0,
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc2_cohorts/vbc2_cohort.20260823T003428.543991+0000-191ef2a596ae.json",
+      "manifest_sha256": "sha256:e4458d5e075a021ead9bc0485e6cab8ba1621c5e6b7212be4480f79bf1222780",
+      "rows": 3
+    },
+    {
+      "distinct_lineages": 0,
+      "excluded_by_category": {},
+      "kept": 0,
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc2_cohorts/vbc2_cohort.partial.20260822T232725.690301+0000-8c6fb0244dc7.json",
+      "manifest_sha256": "sha256:8815c0e5c8a989fd1720e76ee353ecd2b179b66a459bfa3bd16d5123232abbdf",
+      "rows": 0
+    },
+    {
+      "distinct_lineages": 45,
+      "excluded_by_category": {
+        "RETROSPECTIVE_538_COHORT": 7,
+        "SFI3_DISJOINTNESS_UNPROVABLE_WITHOUT_EXPANSION": 14,
+        "SPENT_SFI1_SFI2_LINEAGE": 9
+      },
+      "kept": 15,
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "manifest_sha256": "sha256:3e023425b329840e81ffb92e9662e1b8df41cefe6ec30c04d41ebe3e8028de17",
+      "rows": 45
+    },
+    {
+      "distinct_lineages": 3,
+      "excluded_by_category": {
+        "DUPLICATE_LINEAGE_OF_AN_EARLIER_MANIFEST": 3
+      },
+      "kept": 0,
+      "manifest": "research/tavonel_eval_v2/artifacts/development/_dry_encyclopedia_wikipedia.json",
+      "manifest_sha256": "sha256:5fdf1ea41f91832ccda1d6894db973f8d15113456c6b50be34d2c0ef812ba0cb",
+      "rows": 3
+    },
+    {
+      "distinct_lineages": 15,
+      "excluded_by_category": {
+        "DUPLICATE_LINEAGE_OF_AN_EARLIER_MANIFEST": 25,
+        "IDENTITY_OUTCOME_ALREADY_MEASURED": 1,
+        "NOT_A_NATURAL_REVISION_PAIR": 17
+      },
+      "kept": 0,
+      "manifest": "research/tavonel_eval_v2/receipts/p0c-corpus-manifest--20260821T081657Z-bb8ae6f07495.json",
+      "manifest_sha256": "sha256:4f4d073d5d0f1e4e5024b4db1c18aa0cb893eed9d7f6e74e48a1dd16a032ceaa",
+      "rows": 43
+    },
+    {
+      "distinct_lineages": 12,
+      "excluded_by_category": {
+        "DUPLICATE_LINEAGE_OF_AN_EARLIER_MANIFEST": 26,
+        "NOT_A_NATURAL_REVISION_PAIR": 8
+      },
+      "kept": 0,
+      "manifest": "research/tavonel_eval_v2/receipts/p0b-corpus-manifest.json",
+      "manifest_sha256": "sha256:70b9c82b0729724405aa6d5e0b8ae1f2783cc89369679c9547887169e7f2a4e6",
+      "rows": 34
+    },
+    {
+      "distinct_lineages": 12,
+      "excluded_by_category": {
+        "DUPLICATE_LINEAGE_OF_AN_EARLIER_MANIFEST": 26,
+        "NOT_A_NATURAL_REVISION_PAIR": 4
+      },
+      "kept": 0,
+      "manifest": "research/tavonel_eval_v2/receipts/p0-canonicalisation-manifest.json",
+      "manifest_sha256": "sha256:b25bcb7b8d1fcbae512c545a09fc66cd39f733e397dfe2f652ac7897c7b9a00c",
+      "rows": 30
+    },
+    {
+      "distinct_lineages": 8,
+      "excluded_by_category": {
+        "DUPLICATE_LINEAGE_OF_AN_EARLIER_MANIFEST": 86
+      },
+      "kept": 0,
+      "manifest": "research/tavonel_eval_v2/receipts/p2-chain-manifest.json",
+      "manifest_sha256": "sha256:ad62ef0cc66a04d0b2c1213a8ecb239c92b663c076975935b14bb9b65a36e537",
+      "rows": 86
+    }
+  ],
+  "candidate_sources_in_declared_order": [
+    "artifacts/development/p4i_cohort.json",
+    "artifacts/development/p4g_cohort.json",
+    "artifacts/development/p4g_cohort_pass1.json",
+    "artifacts/development/p4e_cohort.json",
+    "receipts/p4c-cohort-manifest--*.json",
+    "artifacts/development/vbc2_cohorts/*.json",
+    "artifacts/development/vbc1_probe_cohort.json",
+    "artifacts/development/_dry_encyclopedia_wikipedia.json",
+    "receipts/p0c-corpus-manifest--*.json",
+    "receipts/p0b-corpus-manifest.json",
+    "receipts/p0-canonicalisation-manifest.json",
+    "receipts/p2-chain-manifest.json"
+  ],
+  "derived_from_protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V1.yaml",
+  "derived_from_protocol_sha256": "sha256:0b6c86574d861d7f04bfac08a713aadf42d896850237c823844366194d1e795f",
+  "disjointness": {
+    "all_hold": true,
+    "from_lineages_an_identity_measurement_already_read": {
+      "distinct_lineages": 1056,
+      "holds": true,
+      "overlap": [],
+      "sources": [
+        {
+          "distinct_lineages": 514,
+          "field": "pairs.lineage_id",
+          "source": "receipts/identity-change-migration-closure-universe--*.json"
+        },
+        {
+          "distinct_lineages": 538,
+          "field": "pairs.lineage_id",
+          "source": "artifacts/development/identity_change_benchmark/benchmark.json"
+        },
+        {
+          "distinct_lineages": 12,
+          "field": "pairs.source_id",
+          "source": "receipts/p0-canonicalisation-manifest.json"
+        },
+        {
+          "distinct_lineages": 12,
+          "field": "pairs.source_id",
+          "source": "receipts/p0b-corpus-manifest.json"
+        },
+        {
+          "distinct_lineages": 15,
+          "field": "pairs.source_id",
+          "source": "receipts/p0c-corpus-manifest--*.json"
+        },
+        {
+          "distinct_lineages": 8,
+          "field": "chains.source_id",
+          "source": "receipts/p2-lineage.json"
+        }
+      ]
+    },
+    "from_the_14_sfi2_forensic_cases": {
+      "confirmed_rows": 14,
+      "distinct_lineages": 14,
+      "holds": true,
+      "overlap": [],
+      "read_for": "disjointness proof only; never a numerator or a denominator",
+      "source_receipt": "research/tavonel_eval_v2/receipts/sfi2-native-provenance--20260823T085006Z-e53cc8aaeb7d.json",
+      "source_receipt_sha256": "sha256:3aacb083f48d1ab2a5282255e82c679d7c37d9e8ccc22c0e7fc3d4be82f9b310"
+    },
+    "from_the_514_v1_closure_lineages": {
+      "distinct_lineages": 514,
+      "holds": true,
+      "overlap": [],
+      "read_for": "lineage identity only; no closure outcome is opened",
+      "source_receipt": "research/tavonel_eval_v2/receipts/identity-change-migration-closure-universe--20260825T000853Z-b92bccc5bc13.json",
+      "source_receipt_sha256": "sha256:7ddb971caddfd45238f6da3e64936bb8f40a4a8174a69129590c397d97b9ab47"
+    },
+    "from_the_538_pair_retrospective_cohort": {
+      "distinct_lineages": 538,
+      "holds": true,
+      "overlap": [],
+      "sources": [
+        {
+          "admitted_pairs": 260,
+          "artifact": "research/tavonel_eval_v2/artifacts/development/sfi1/sfi1_acquisition.json",
+          "artifact_sha256": "sha256:3c902f61b7ddc756a1119d4e8f8af26b6fb637ccba21bdc41ce2f9f85e3f7144",
+          "distinct_lineages": 260
+        },
+        {
+          "admitted_pairs": 278,
+          "artifact": "research/tavonel_eval_v2/artifacts/development/sfi2/sfi2_acquisition.json",
+          "artifact_sha256": "sha256:f568e47fb8597882de077980fdec11eb409a8492c409e18cc597094fb027cf0a",
+          "distinct_lineages": 278
+        }
+      ]
+    },
+    "from_the_spent_sfi1_sfi2_lineages": {
+      "derived_by": "acquisition/sources_sfi3.spent_lineages()",
+      "distinct_lineages": 6127,
+      "holds": true,
+      "overlap": [],
+      "read_for": "lineage identity only",
+      "sources": [
+        "acquisition/sources_sfi2.py spent_lineages()  (SFH1, VBC2, the four SFI1 forensic cases, every candidate SFI1's frame listed, every lineage SFI1's executor evaluated — reused, not reimplemented)",
+        "artifacts/development/sfi2_lineages.json  (every candidate identity SFI2's frame listed)",
+        "artifacts/development/sfi2/sfi2_acquisition.json  (every lineage SFI2's executor admitted or rejected)",
+        "receipts/latest/sfi2-native-provenance.json rebuild.E5_confirmed_selective_stale_escape.confirmed  (the fourteen SFI2 E5/E6 forensic diagnostic cases)"
+      ]
+    }
+  },
+  "distinct_lineages": 16,
+  "estimated_cost_usd": 0.0,
+  "excluded_rows_live_in": "research/tavonel_eval_v2/artifacts/development/v2_universe/v2_universe_candidates.json",
+  "exclusion_categories": [
+    {
+      "category": "NOT_A_NATURAL_REVISION_PAIR",
+      "distinct_lineages": 8,
+      "lineages": [
+        "git:prometheus/prometheus:docs/configuration/configuration.md",
+        "git:prometheus/prometheus:docs/querying/functions.md",
+        "sec:0000021344:10-Q:2024-03-29",
+        "sec:0000021344:10-Q:2024-03-29#p0c-probe",
+        "sec:0001318605:10-K:2024-12-31",
+        "sec:0001318605:10-K:2024-12-31#p0c-probe",
+        "sec:0001318605:10-K:2025-12-31",
+        "sec:0001318605:10-K:2025-12-31#p0c-probe"
+      ],
+      "lineages_digest": "sha256:ac5279ac17345a52f4bd6f9778b39c4550b22164895b3d08e32043be0cb076f8",
+      "reason": "a constructed control or positive-control pair, not a real revision pair",
+      "rows": 29
+    },
+    {
+      "category": "DUPLICATE_LINEAGE_OF_AN_EARLIER_MANIFEST",
+      "distinct_lineages": 328,
+      "lineages": "328 lineages; every one is named in the manifest file",
+      "lineages_digest": "sha256:8f0e837006d886fa3d35c8ad9468835146f847ea8c9ac598ada6f932805c177d",
+      "reason": "this lineage was already decided on its first occurrence in the declared order",
+      "rows": 885
+    },
+    {
+      "category": "V1_CLOSURE_LINEAGE",
+      "distinct_lineages": 514,
+      "lineages": "514 lineages; every one is named in the manifest file",
+      "lineages_digest": "sha256:8065b75d596d62ae2291c2ae0c274d80b712d9fb7da8fc525dc00ce808e99068",
+      "reason": "one of the 514 lineages IDENTITY_CHANGE_MIGRATION_CLOSURE_V1 measured. Its closure outcome is visible and the founder's ruling forbids reuse",
+      "rows": 514
+    },
+    {
+      "category": "RETROSPECTIVE_538_COHORT",
+      "distinct_lineages": 7,
+      "lineages": [
+        "ecfr:13:121:121.1001",
+        "ecfr:13:121:121.1004",
+        "ecfr:13:121:121.1009",
+        "ecfr:13:121:121.1010",
+        "ecfr:13:121:121.103",
+        "ecfr:13:121:121.104",
+        "git:redis/redis-doc:docs/data-types/sets.md"
+      ],
+      "lineages_digest": "sha256:eb2839fac7febb0e168c2a103d824c5428f9dd7a0e54b75c4ef7b93d14481601",
+      "reason": "one of the 538 pairs of the retrospective migration safety regression",
+      "rows": 7
+    },
+    {
+      "category": "SFI2_FORENSIC_14",
+      "distinct_lineages": 0,
+      "lineages": [],
+      "lineages_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "reason": "one of the 14 SFI2 E5-confirmed forensic diagnostic cases. A case used to diagnose a defect cannot certify its repair",
+      "rows": 0
+    },
+    {
+      "category": "SPENT_SFI1_SFI2_LINEAGE",
+      "distinct_lineages": 9,
+      "lineages": [
+        "ecfr:13:121:121.102",
+        "ecfr:13:121:121.106",
+        "ecfr:20:404:404.1",
+        "git:redis/redis-doc:docs/about/license.md",
+        "git:redis/redis-doc:docs/data-types/bitmaps.md",
+        "git:redis/redis-doc:docs/data-types/geospatial.md",
+        "git:redis/redis-doc:docs/data-types/hashes.md",
+        "git:redis/redis-doc:docs/data-types/lists.md",
+        "git:redis/redis-doc:docs/data-types/sorted-sets.md"
+      ],
+      "lineages_digest": "sha256:d3717c2de49280da53116de63144db1ae71c3bdf50e6e921f657a1c592387d07",
+      "reason": "spent by a predecessor study -- SFH1, VBC2, SFI1's frame or executor, SFI2's frame or executor -- per sources_sfi3.spent_lineages()",
+      "rows": 9
+    },
+    {
+      "category": "IDENTITY_OUTCOME_ALREADY_MEASURED",
+      "distinct_lineages": 1,
+      "lineages": [
+        "git:grafana/loki:docs/sources/configure/_index.md"
+      ],
+      "lineages_digest": "sha256:3091c98e8011a7ec4554fa46dc0cfdc450a56ec9d9bbba5af7f7304d3cd162d9",
+      "reason": "an identity or recompilation measurement has already read this lineage's identity outcomes (P0 oracle independence, P0b mechanics, P0c coverage, P2 identity-policy arms, or the identity-change benchmark). The closure is an identity measurement, so reusing the lineage would make selection an outcome",
+      "rows": 1
+    },
+    {
+      "category": "SFI3_ROOT_CONTAINER",
+      "distinct_lineages": 0,
+      "lineages": [],
+      "lineages_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "reason": "this lineage's container is one of SFI3's declared fresh roots. Proven from sources_sfi3 root identity metadata; no SFI3 artifact is opened",
+      "rows": 0
+    },
+    {
+      "category": "SFI3_DISJOINTNESS_UNPROVABLE_WITHOUT_EXPANSION",
+      "distinct_lineages": 14,
+      "lineages": [
+        "wikipedia:en:Andorra la Vella",
+        "wikipedia:en:Bratislava",
+        "wikipedia:en:Ljubljana",
+        "wikipedia:en:Luxembourg City",
+        "wikipedia:en:Monaco-Ville",
+        "wikipedia:en:Nuuk",
+        "wikipedia:en:Podgorica",
+        "wikipedia:en:Reykjavík",
+        "wikipedia:en:Riga",
+        "wikipedia:en:San Marino",
+        "wikipedia:en:Tallinn",
+        "wikipedia:en:Tórshavn",
+        "wikipedia:en:Valletta",
+        "wikipedia:en:Vilnius"
+      ],
+      "lineages_digest": "sha256:6916ea20e546f5ca64a23d15b65d6daa3b2dca1488e7ad0ef907bf979f91b467",
+      "reason": "SFI3's roots for this family are Wikipedia CATEGORIES. Whether an article is inside one cannot be decided without expanding the category, and expansion is forbidden. An unprovable disjointness is not an assumed one",
+      "rows": 14
+    },
+    {
+      "category": "CACHE_KEY_COLLISION_GROUP",
+      "distinct_lineages": 6,
+      "lineages": [
+        "git:grafana/grafana:docs/sources/alerting/alerting-rules/create-recording-rules/create-data-source-managed-recording-rules.md",
+        "git:grafana/grafana:docs/sources/alerting/alerting-rules/create-recording-rules/create-grafana-managed-recording-rules.md",
+        "git:kubernetes/website:content/en/docs/setup/production-environment/tools/kubeadm/control-plane-flags.md",
+        "git:kubernetes/website:content/en/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm.md",
+        "git:kubernetes/website:content/en/docs/tasks/access-application-cluster/access-cluster-services.md",
+        "git:kubernetes/website:content/en/docs/tasks/access-application-cluster/access-cluster.md"
+      ],
+      "lineages_digest": "sha256:3a65677905aeba940dfd5dc3d25310e07ef8f924a2bbe47b1bf696fe15e1cbea",
+      "reason": "two or more distinct lineages write to the same cached payload path or share a truncated cache slug, so one overwrote the other. The ENTIRE group is excluded: nothing on disk says which member holds the right bytes, and keeping the one that still verifies is choosing the convenient reading of an ambiguity (INC-V2-046)",
+      "rows": 6
+    },
+    {
+      "category": "PAYLOAD_MISSING",
+      "distinct_lineages": 0,
+      "lineages": [],
+      "lineages_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "reason": "the cached raw payload named by the manifest is not on disk",
+      "rows": 0
+    },
+    {
+      "category": "CANONICAL_MISSING",
+      "distinct_lineages": 0,
+      "lineages": [],
+      "lineages_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "reason": "no canonical document is on disk for this pair, so it is not usably cached",
+      "rows": 0
+    },
+    {
+      "category": "PAYLOAD_DIGEST_MISMATCH",
+      "distinct_lineages": 0,
+      "lineages": [],
+      "lineages_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "reason": "the cached raw payload no longer matches the digest the manifest recorded",
+      "rows": 0
+    },
+    {
+      "category": "CANONICAL_DIGEST_MISMATCH",
+      "distinct_lineages": 0,
+      "lineages": [],
+      "lineages_digest": "sha256:4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "reason": "the canonical document matches neither the file digest nor the canonical-form digest the manifest recorded",
+      "rows": 0
+    }
+  ],
+  "families": {
+    "git_docs": 7,
+    "regulation_ecfr": 6,
+    "sec_edgar": 3
+  },
+  "findings": [
+    {
+      "affected_pairs": 16,
+      "code": "NO_NEVER_MEASURED_MATERIAL",
+      "detail": "every eligible lineage has already been read by some other study's measurement, none of them an identity measurement. Whether a burn taken for one question reaches a different question is a decision about what counts as evidence, which the constitution reserves to the founder. It is surfaced here rather than decided.",
+      "severity": "RULING_REQUIRED"
+    },
+    {
+      "code": "EMPIRICAL_POWER_NOTE",
+      "detail": "at the INVARIANT_6 violation rate INC-V2-047 published (8 violated lineages of 514), a cohort of 16 pairs has P(at least one violation observed) = 0.222. A PASS on it is weak evidence of repair, not strong evidence. This describes the cohort's power, is computed after selection was complete, and selected nothing.",
+      "eligible_pairs": 16,
+      "probability_of_observing_at_least_one": 0.221966,
+      "severity": "INFORMATIONAL",
+      "v1_lineages": 514,
+      "v1_violated_lineages": 8
+    }
+  ],
+  "git_head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "gpu_seconds": 0,
+  "is_evidence": false,
+  "is_frozen": false,
+  "manifest_path": "research/tavonel_eval_v2/artifacts/development/v2_universe/v2_universe_candidates.json",
+  "manifest_sha256": "sha256:617dcf5bc431016d5892b02007d730a4b8a62e7f2faaccd140158eb4f3640bc5",
+  "network": "none",
+  "outcome_visibility": {
+    "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT": 16
+  },
+  "outcome_visibility_sources": [
+    {
+      "distinct_lineages": 45,
+      "source": "artifacts/development/vbc1_probe_cohort.json",
+      "study": "VBC1_VALUE_BEARING_PROBE"
+    },
+    {
+      "distinct_lineages": 48,
+      "source": "receipts/p4c-cohort-manifest--*.json",
+      "study": "P4C_RETRIEVAL_VALIDITY"
+    }
+  ],
+  "pair_count": 16,
+  "pairs": [
+    {
+      "after": {
+        "canonical_digest_convention": "canonical_form",
+        "canonical_file_sha256": "sha256:8db3de903166972b08b43692b0b8d32758835ac82ff8cba205ab3b563cdfdcac",
+        "canonical_form_sha256": "sha256:81905d77d0d365907476d464f34a9ee167734c3b5fbb648762cf94529ab0e373",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-240-240-0-1/after.json",
+        "canonical_sha256_recorded": "sha256:81905d77d0d365907476d464f34a9ee167734c3b5fbb648762cf94529ab0e373",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-240-240-0-1/after.xml",
+        "raw_sha256": "sha256:ad414ede151e557d2543e2a74b92f360928dfdd62109656b1f044486ae9c2988",
+        "raw_sha256_recorded": "sha256:ad414ede151e557d2543e2a74b92f360928dfdd62109656b1f044486ae9c2988"
+      },
+      "after_version": "2022-06-10",
+      "before": {
+        "canonical_digest_convention": "canonical_form",
+        "canonical_file_sha256": "sha256:42752c4949bbb99ce9bf71397dea21334e61f53dbd32dd156aa0f083817eac40",
+        "canonical_form_sha256": "sha256:15e228703626ad1b6611030c451bfa36305cd03f864ce337264af0bf415b2bb1",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-240-240-0-1/before.json",
+        "canonical_sha256_recorded": "sha256:15e228703626ad1b6611030c451bfa36305cd03f864ce337264af0bf415b2bb1",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-240-240-0-1/before.xml",
+        "raw_sha256": "sha256:baebfe3310431d106632798af4176cdc67b4e75f32aee38c7d63ff87deb16c25",
+        "raw_sha256_recorded": "sha256:baebfe3310431d106632798af4176cdc67b4e75f32aee38c7d63ff87deb16c25"
+      },
+      "before_version": "2022-05-31",
+      "cache_slug": "ecfr-17-240-240-0-1",
+      "family": "regulation_ecfr",
+      "lineage_id": "ecfr:17:240:240.0-1",
+      "manifest": "research/tavonel_eval_v2/receipts/p4c-cohort-manifest--20260822T014940Z-d5b0e343ee50.json",
+      "measured_by": [
+        "P4C_RETRIEVAL_VALIDITY"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:dece02616ff86b98f908599bd8ff922a99ef6bd79d105f2ebd6e6f5f14ee2ccf",
+        "canonical_form_sha256": "sha256:604c8b0827fe025d76d97b01373bace071f0ca9c1893b533c276516c8f00bb20",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/ecfr-20-404-404-110/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/ecfr-20-404-404-110/after.xml",
+        "raw_sha256": "sha256:9cbefd04f51b0ad9f3325b6b75f0fdbcd97326a4fdc6f5d297993d51ed243a2b",
+        "raw_sha256_recorded": "sha256:9cbefd04f51b0ad9f3325b6b75f0fdbcd97326a4fdc6f5d297993d51ed243a2b"
+      },
+      "after_version": "2018-05-10",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:5cc9eb3c2ec58c3a6716e28dadfe391b27d6fd7cf59aa5ff4a9db86348886106",
+        "canonical_form_sha256": "sha256:ce355097ca5bac3138b87d3e7a82663c1d314068b3b270e2aa56e4997e7e5b65",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/ecfr-20-404-404-110/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/ecfr-20-404-404-110/before.xml",
+        "raw_sha256": "sha256:e961d605f7bfb2f337194cdf00223c32287fd1fbec1903018d76138ab7ff9d5b",
+        "raw_sha256_recorded": "sha256:e961d605f7bfb2f337194cdf00223c32287fd1fbec1903018d76138ab7ff9d5b"
+      },
+      "before_version": "2016-12-19",
+      "cache_slug": "ecfr-20-404-404-110",
+      "family": "regulation_ecfr",
+      "lineage_id": "ecfr:20:404:404.110",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:f4a248b7a3c8e6b9664bdb890e316cafc1696052cb9d3d95b678773f7c7007bc",
+        "canonical_form_sha256": "sha256:79d8cc2f744aef9c1ad11ac0d85ef970443f6a2fb742da1fbe1a8870f56b9b14",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/ecfr-20-404-404-1503/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/ecfr-20-404-404-1503/after.xml",
+        "raw_sha256": "sha256:eaf8bbd5040ef37d2ea791f7f283335a04e0ad25bdc02060eb6dcb4942de5b1c",
+        "raw_sha256_recorded": "sha256:eaf8bbd5040ef37d2ea791f7f283335a04e0ad25bdc02060eb6dcb4942de5b1c"
+      },
+      "after_version": "2017-03-27",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:1bb1d5e05ee9372253a5a1aa01f5bfee7513db7538fd2eece30a49585fa5427b",
+        "canonical_form_sha256": "sha256:4097b6f8af6e7a59fef875af308ddc26c10b84805371c06faa1bb0c74443d83e",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/ecfr-20-404-404-1503/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/ecfr-20-404-404-1503/before.xml",
+        "raw_sha256": "sha256:e3d910dca119ea4b97b114f100c95a9023f6aa5979dce3ad6acea42cb0ef3679",
+        "raw_sha256_recorded": "sha256:e3d910dca119ea4b97b114f100c95a9023f6aa5979dce3ad6acea42cb0ef3679"
+      },
+      "before_version": "2016-12-19",
+      "cache_slug": "ecfr-20-404-404-1503",
+      "family": "regulation_ecfr",
+      "lineage_id": "ecfr:20:404:404.1503",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:3a5ad7616c6f5c87d2ef91b42b4c9a59555e55afa2a1c8c3d9c4f6bffa3a7122",
+        "canonical_form_sha256": "sha256:67ac372e3026f28737a9897866aa8111645f72739a3ce911feb3e179c4d8df47",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/ecfr-20-404-404-2/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/ecfr-20-404-404-2/after.xml",
+        "raw_sha256": "sha256:5e82cf032216ecf1846642f0b0c0a7d5e976db1eb913df706525a1705d6ded7e",
+        "raw_sha256_recorded": "sha256:5e82cf032216ecf1846642f0b0c0a7d5e976db1eb913df706525a1705d6ded7e"
+      },
+      "after_version": "2020-12-16",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:d4ef159a805fedd08aeee9ba47c90779af226dc0f1caf4daadf439839efb7dc2",
+        "canonical_form_sha256": "sha256:0cc4b6880b3f0ef058963dd101d26ba30e29690d5e988cf7d7a83406a13697a1",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/ecfr-20-404-404-2/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/ecfr-20-404-404-2/before.xml",
+        "raw_sha256": "sha256:0c76c33f3328d36490fe81b0da43ac948344d59a5cc759478041f4e1e7f5a189",
+        "raw_sha256_recorded": "sha256:0c76c33f3328d36490fe81b0da43ac948344d59a5cc759478041f4e1e7f5a189"
+      },
+      "before_version": "2016-12-19",
+      "cache_slug": "ecfr-20-404-404-2",
+      "family": "regulation_ecfr",
+      "lineage_id": "ecfr:20:404:404.2",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:7270b81e48ff655ebaf3dc4c095f3e849a919df7d2a3f6936f0c19833a1b13dc",
+        "canonical_form_sha256": "sha256:b7deb0bee3944f7f09e5e3fb78dbb1fb1c3c409b36dbddc7d9ea762196010c49",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/ecfr-20-404-404-271/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/ecfr-20-404-404-271/after.xml",
+        "raw_sha256": "sha256:32f9866871a679be6434bc577d38f0d3550d5483f127925d14eaecaac30ed2c8",
+        "raw_sha256_recorded": "sha256:32f9866871a679be6434bc577d38f0d3550d5483f127925d14eaecaac30ed2c8"
+      },
+      "after_version": "2018-05-10",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:6775aea0f142d9224085eeb830c91d67bd6c7f359fe178afbed4c214eb04aa75",
+        "canonical_form_sha256": "sha256:317673421162ed348769a1f43eec33c9576f541208ea06edea1fef046b59b970",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/ecfr-20-404-404-271/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/ecfr-20-404-404-271/before.xml",
+        "raw_sha256": "sha256:48e9b5e04765ffda282115ef8361ba1b53ee4a5c71b38dd9e0eab536331d0f78",
+        "raw_sha256_recorded": "sha256:48e9b5e04765ffda282115ef8361ba1b53ee4a5c71b38dd9e0eab536331d0f78"
+      },
+      "before_version": "2016-12-19",
+      "cache_slug": "ecfr-20-404-404-271",
+      "family": "regulation_ecfr",
+      "lineage_id": "ecfr:20:404:404.271",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:e7ca6c1dee0154274c7f0d1a6a58d5ef46e6eab19645a7083b142ca21f023a68",
+        "canonical_form_sha256": "sha256:f4ceeaec5394d1df6439ca4edcba5c14ef4512bc6aa3ddda470f20f5d7674a74",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/ecfr-20-404-404-278/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/ecfr-20-404-404-278/after.xml",
+        "raw_sha256": "sha256:f10a41d32ac5a4b79d5e14357bc7450f252842038a12cbeeb61da96580186d0c",
+        "raw_sha256_recorded": "sha256:f10a41d32ac5a4b79d5e14357bc7450f252842038a12cbeeb61da96580186d0c"
+      },
+      "after_version": "2018-05-10",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:30f1f1e59527040da601cd9cdf5762073ed99741f78e70c1fd4d968ac24e9154",
+        "canonical_form_sha256": "sha256:9fab67cff51821180b30cb701eff33c2df37a11cb516a55e4ce391a7da08c2f9",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/ecfr-20-404-404-278/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/ecfr-20-404-404-278/before.xml",
+        "raw_sha256": "sha256:c95fa3b5a7e0aacafd97b18620c9391f8b59adb6fed95a48cacf98c57aaf692f",
+        "raw_sha256_recorded": "sha256:c95fa3b5a7e0aacafd97b18620c9391f8b59adb6fed95a48cacf98c57aaf692f"
+      },
+      "before_version": "2016-12-19",
+      "cache_slug": "ecfr-20-404-404-278",
+      "family": "regulation_ecfr",
+      "lineage_id": "ecfr:20:404:404.278",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:d97a60f41006df8a98b31929edc35aa2f5665277fb369cb059e71d128ef09455",
+        "canonical_form_sha256": "sha256:81b3a013a4c907a418345ccc598dfc3adcf43e2e1694db80a2e908cace197f43",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/git-elastic-logstash-docs-reference-advanced-pipeline-md/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/git-elastic-logstash-docs-reference-advanced-pipeline-md/after.md",
+        "raw_sha256": "sha256:dc7292f9b1d371191609b4e2975cbe6d602fb2eb58ccdd6ccb30a3bf1e755cad",
+        "raw_sha256_recorded": "sha256:dc7292f9b1d371191609b4e2975cbe6d602fb2eb58ccdd6ccb30a3bf1e755cad"
+      },
+      "after_version": "5aa258487209f70612c80bf4a5af4b8f29b5ac48",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:f2e97edf1032326a15af86c7b3e6223a55dbcc73e689a2245d92c6ed70b7faed",
+        "canonical_form_sha256": "sha256:cda7bee63a75eccfa3b85f0d323506e5d0a02861ed7e6ff6bfaba73d699a164b",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/git-elastic-logstash-docs-reference-advanced-pipeline-md/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/git-elastic-logstash-docs-reference-advanced-pipeline-md/before.md",
+        "raw_sha256": "sha256:6600d3517bb05c7cb2450ef2ba8a4891eff14e800bc655d30300ff598d85d985",
+        "raw_sha256_recorded": "sha256:6600d3517bb05c7cb2450ef2ba8a4891eff14e800bc655d30300ff598d85d985"
+      },
+      "before_version": "e76b7182cae2f4fc44abbee35c580acb12de1578",
+      "cache_slug": "git-elastic-logstash-docs-reference-advanced-pipeline-md",
+      "family": "git_docs",
+      "lineage_id": "git:elastic/logstash:docs/reference/advanced-pipeline.md",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:bf591fb3c827f12d36f388ac259ab1827732fb2271ec776b24e91591239a5f6d",
+        "canonical_form_sha256": "sha256:82b6f5d124d879ad542c3a0305fd3fe9723c14493a055fc8a6df35b02f66ec4d",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/git-elastic-logstash-docs-reference-config-examples-md/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/git-elastic-logstash-docs-reference-config-examples-md/after.md",
+        "raw_sha256": "sha256:e2b1e1d27fce15c094589a88844fa97aa8bc6b8c388ca30ee943f4c900cf5031",
+        "raw_sha256_recorded": "sha256:e2b1e1d27fce15c094589a88844fa97aa8bc6b8c388ca30ee943f4c900cf5031"
+      },
+      "after_version": "5aa258487209f70612c80bf4a5af4b8f29b5ac48",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:6f47447927023a5843e710b74bc0aba93dd8ea04ea0bec3034508a0736b05165",
+        "canonical_form_sha256": "sha256:0a4427a5d5c1b7f8c58e715ee5c25d5db196245e2755deb5472817d1fb263318",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/git-elastic-logstash-docs-reference-config-examples-md/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/git-elastic-logstash-docs-reference-config-examples-md/before.md",
+        "raw_sha256": "sha256:44fda27c49716ceb9990bda050bc5073305ff6db8c5aa8d2bab111eb75ab2cb1",
+        "raw_sha256_recorded": "sha256:44fda27c49716ceb9990bda050bc5073305ff6db8c5aa8d2bab111eb75ab2cb1"
+      },
+      "before_version": "3115c78bf84ae45b8eb8e13fc954f373c3d7dfc4",
+      "cache_slug": "git-elastic-logstash-docs-reference-config-examples-md",
+      "family": "git_docs",
+      "lineage_id": "git:elastic/logstash:docs/reference/config-examples.md",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:b4cdda3a7df98fa846bd198cbf11e612c7974589709522d5e4949ec90dece6a2",
+        "canonical_form_sha256": "sha256:e8589ff66cf07558f14a28013f6ba5e296888f2d839685fc17593ed15ebae693",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/git-elastic-logstash-docs-reference-config-setting-files-md/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/git-elastic-logstash-docs-reference-config-setting-files-md/after.md",
+        "raw_sha256": "sha256:fdd4f977967fd66a923c96f240524119ddb8829ecc5462c845f9584b30bc284f",
+        "raw_sha256_recorded": "sha256:fdd4f977967fd66a923c96f240524119ddb8829ecc5462c845f9584b30bc284f"
+      },
+      "after_version": "5aa258487209f70612c80bf4a5af4b8f29b5ac48",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:d45158a7a6f2517c9bfa670b715f51310b7c407a63ea20c3e3621e2153460df4",
+        "canonical_form_sha256": "sha256:3d82fe536a69c52c897da94d597962434cee66bf85657f377f8957b0569ebde7",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/git-elastic-logstash-docs-reference-config-setting-files-md/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/git-elastic-logstash-docs-reference-config-setting-files-md/before.md",
+        "raw_sha256": "sha256:2765ef9db32005553210ef5c113ab26aa61b3844c651ce62d23bc5b37a2c624e",
+        "raw_sha256_recorded": "sha256:2765ef9db32005553210ef5c113ab26aa61b3844c651ce62d23bc5b37a2c624e"
+      },
+      "before_version": "3115c78bf84ae45b8eb8e13fc954f373c3d7dfc4",
+      "cache_slug": "git-elastic-logstash-docs-reference-config-setting-files-md",
+      "family": "git_docs",
+      "lineage_id": "git:elastic/logstash:docs/reference/config-setting-files.md",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:a76e2efa2344032e8f56ea25e3704463cfc8301b47a28851ff55bdb4554a3521",
+        "canonical_form_sha256": "sha256:15b23d19781c6e9491a72e6564b09c8b85357610a129f419b4f38cd9cf44868a",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/git-elastic-logstash-docs-reference-configuration-file-structure-md/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/git-elastic-logstash-docs-reference-configuration-file-structure-md/after.md",
+        "raw_sha256": "sha256:8000720c7e3a3f8e5483b6e04ced017be67b52b23da7207dd6973b10e90676dc",
+        "raw_sha256_recorded": "sha256:8000720c7e3a3f8e5483b6e04ced017be67b52b23da7207dd6973b10e90676dc"
+      },
+      "after_version": "5aa258487209f70612c80bf4a5af4b8f29b5ac48",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:ceb24d5fdc11bff17c7785785d5f2b756de5cfc652e92eecce2bc21761f4581c",
+        "canonical_form_sha256": "sha256:6e96256bae3d483c555c8f491f96d4edba07f2ff073d299ff5c8f74fe0c7aa09",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/git-elastic-logstash-docs-reference-configuration-file-structure-md/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/git-elastic-logstash-docs-reference-configuration-file-structure-md/before.md",
+        "raw_sha256": "sha256:20c674c8d8b45f7f9e7c71926c567a4d7c5a1444bd4039076b869e53eb5cff19",
+        "raw_sha256_recorded": "sha256:20c674c8d8b45f7f9e7c71926c567a4d7c5a1444bd4039076b869e53eb5cff19"
+      },
+      "before_version": "e2c6254c8135ae525123ae83d4b00383b9c83911",
+      "cache_slug": "git-elastic-logstash-docs-reference-configuration-file-structure-md",
+      "family": "git_docs",
+      "lineage_id": "git:elastic/logstash:docs/reference/configuration-file-structure.md",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:9829c516453cb19973b7807aae6f09bf755fb7fb2c2ac8db9a099c7a5b323b62",
+        "canonical_form_sha256": "sha256:f6b814d5b569a58b6aa7668ab0223f44c532841bf2f18bdb3b1a5dacd9f855ac",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/git-elastic-logstash-docs-reference-configuring-centralized-pipelines-md/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/git-elastic-logstash-docs-reference-configuring-centralized-pipelines-md/after.md",
+        "raw_sha256": "sha256:4312b35923a0f7e2d92314706d0e38d44c85797158f7ee6c3af963f02771b455",
+        "raw_sha256_recorded": "sha256:4312b35923a0f7e2d92314706d0e38d44c85797158f7ee6c3af963f02771b455"
+      },
+      "after_version": "13067534f503cf546e38f2aadfb9596b2c5ddcc0",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:b53b7e05b4f82c5abfbbd150c8d1b57aab684fc76b3724ac67c2f8c90e48fef5",
+        "canonical_form_sha256": "sha256:e27b430af37b04b767e169c0a9cbb420a8332c6ba29da1487be09146730cd90d",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/git-elastic-logstash-docs-reference-configuring-centralized-pipelines-md/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/git-elastic-logstash-docs-reference-configuring-centralized-pipelines-md/before.md",
+        "raw_sha256": "sha256:d201ea96dfc93d6c87fcc6f108221a40d801cc3fe1d323ca0b81d4de26b4ad3b",
+        "raw_sha256_recorded": "sha256:d201ea96dfc93d6c87fcc6f108221a40d801cc3fe1d323ca0b81d4de26b4ad3b"
+      },
+      "before_version": "3115c78bf84ae45b8eb8e13fc954f373c3d7dfc4",
+      "cache_slug": "git-elastic-logstash-docs-reference-configuring-centralized-pipelines-md",
+      "family": "git_docs",
+      "lineage_id": "git:elastic/logstash:docs/reference/configuring-centralized-pipelines.md",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:6e506329886299323db5682bc052e8e6ebc35647dbd15837808a7be42d307e92",
+        "canonical_form_sha256": "sha256:bef20d34d896bfdf705166ec96aa21fa982d0b8d2c125a9551820c6cb2e03fdc",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/git-elastic-logstash-docs-reference-configuring-geoip-database-management-md/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/git-elastic-logstash-docs-reference-configuring-geoip-database-management-md/after.md",
+        "raw_sha256": "sha256:e75ae3ab87b0e6e3cd74797acb4e4dbfc7902453375952565fe81400ea0c54fb",
+        "raw_sha256_recorded": "sha256:e75ae3ab87b0e6e3cd74797acb4e4dbfc7902453375952565fe81400ea0c54fb"
+      },
+      "after_version": "13067534f503cf546e38f2aadfb9596b2c5ddcc0",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:a22d6c42a4a9a0472f474dfb36761bee1c006eef7b9a2f480cf47ef0cd01ec77",
+        "canonical_form_sha256": "sha256:c9a1cf5da5655afc5e0420d19c0d59665d34f0f74c800408f9205f36b62bc5e8",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/git-elastic-logstash-docs-reference-configuring-geoip-database-management-md/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/git-elastic-logstash-docs-reference-configuring-geoip-database-management-md/before.md",
+        "raw_sha256": "sha256:f03d36eb27828838c554ed447f1d515aad1b84934243ba6f24a40775e7797205",
+        "raw_sha256_recorded": "sha256:f03d36eb27828838c554ed447f1d515aad1b84934243ba6f24a40775e7797205"
+      },
+      "before_version": "e3055d14e8cadc868b129a94dc83330c18d9e37a",
+      "cache_slug": "git-elastic-logstash-docs-reference-configuring-geoip-database-management-md",
+      "family": "git_docs",
+      "lineage_id": "git:elastic/logstash:docs/reference/configuring-geoip-database-management.md",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:fe8ecfab03af5b87f1569cc5aa2c3bdeae88b8cf65645d0d7f73c0c812b81b8c",
+        "canonical_form_sha256": "sha256:c10e64ad0deacb109e3be944bb76d2072f5f94bd84a58cbda65eb75c5ca80457",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/git-elastic-logstash-docs-reference-connecting-to-cloud-md/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/git-elastic-logstash-docs-reference-connecting-to-cloud-md/after.md",
+        "raw_sha256": "sha256:2c5fc06410bc1112da36cec42224d71e096b14068ff3bb9f044dcb059c8fc604",
+        "raw_sha256_recorded": "sha256:2c5fc06410bc1112da36cec42224d71e096b14068ff3bb9f044dcb059c8fc604"
+      },
+      "after_version": "dcda062a725bdec0b23916a1967789253e247751",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:d57eedf11b2f6e2410861191199250f728fc770da795f0cac486abcb6b0c14db",
+        "canonical_form_sha256": "sha256:319492c36bb2f7732e0a00318972f7241eda00512458e7ca042c0ffaa67ee873",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/git-elastic-logstash-docs-reference-connecting-to-cloud-md/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/git-elastic-logstash-docs-reference-connecting-to-cloud-md/before.md",
+        "raw_sha256": "sha256:e8a5a353a4455b04592a7ce92abb04eecf5e7e4c74df4fe0f4222c39fe6543da",
+        "raw_sha256_recorded": "sha256:e8a5a353a4455b04592a7ce92abb04eecf5e7e4c74df4fe0f4222c39fe6543da"
+      },
+      "before_version": "809ed002995180bdbf3034cd15bdd229ddd05057",
+      "cache_slug": "git-elastic-logstash-docs-reference-connecting-to-cloud-md",
+      "family": "git_docs",
+      "lineage_id": "git:elastic/logstash:docs/reference/connecting-to-cloud.md",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:5a22933ae1198bb5db304af1727b86cdf4dc6047cb6395dc7450fb327746f7ce",
+        "canonical_form_sha256": "sha256:4748a2246c4088acde497e1ef4abb77dc06ff4bbd4b4074aa9d98e6a7903ff1d",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/sec-0000315189-10-k-2015-10-31/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/sec-0000315189-10-k-2015-10-31/after.html",
+        "raw_sha256": "sha256:afcb45489bad54cbd5cdc5e150cf1617e49fe66cdd85e7f202793d03ba482803",
+        "raw_sha256_recorded": "sha256:afcb45489bad54cbd5cdc5e150cf1617e49fe66cdd85e7f202793d03ba482803"
+      },
+      "after_version": "0001047469-16-009947",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:45914ee27a37b9487da329691b979063d98a1ebeffb62eb9814121d85f53d9fc",
+        "canonical_form_sha256": "sha256:d767c4ef7851fa20bca8f90b35f6eafd2cb46fe15b056eaa9379d22d7b479ba0",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/sec-0000315189-10-k-2015-10-31/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/sec-0000315189-10-k-2015-10-31/before.html",
+        "raw_sha256": "sha256:04c182959f73ffa7d1cdeca92229b9925842ec366def9263e72e24bc8cd73592",
+        "raw_sha256_recorded": "sha256:04c182959f73ffa7d1cdeca92229b9925842ec366def9263e72e24bc8cd73592"
+      },
+      "before_version": "0001047469-15-009300",
+      "cache_slug": "sec-0000315189-10-k-2015-10-31",
+      "family": "sec_edgar",
+      "lineage_id": "sec:0000315189:10-K:2015-10-31",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:3a96e4f8ca454e197f35b5fde7c0419b4b0ab67f88216c514e1d8696fbeaa36d",
+        "canonical_form_sha256": "sha256:c503b6a518f87f722f761fbf1799b9c6dae8f88e1b8cc8f7de2da2591204178e",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/sec-0000315189-10-q-2018-01-28/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/sec-0000315189-10-q-2018-01-28/after.html",
+        "raw_sha256": "sha256:d36e38147e002974fa33eea77de268bb6d81883d9c7a22132e607c2691ce70d8",
+        "raw_sha256_recorded": "sha256:d36e38147e002974fa33eea77de268bb6d81883d9c7a22132e607c2691ce70d8"
+      },
+      "after_version": "0001558370-18-001449",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:3e51032ba72836a0ce882124ddb514f24c13f1161c047675eb770de278c571bc",
+        "canonical_form_sha256": "sha256:64c4a528ac615c6b8df705eac1429be8f5d3aff107b3c6220f806a505e9c3671",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/sec-0000315189-10-q-2018-01-28/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/sec-0000315189-10-q-2018-01-28/before.html",
+        "raw_sha256": "sha256:172cf7e57a2c726f7c8d20e52bfec947577346be1418149fc15d1998d35cb85a",
+        "raw_sha256_recorded": "sha256:172cf7e57a2c726f7c8d20e52bfec947577346be1418149fc15d1998d35cb85a"
+      },
+      "before_version": "0001558370-18-001362",
+      "cache_slug": "sec-0000315189-10-q-2018-01-28",
+      "family": "sec_edgar",
+      "lineage_id": "sec:0000315189:10-Q:2018-01-28",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    },
+    {
+      "after": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:e9d8fd109da10bfd14a7764e95381e16f612c965add5e1d65a0a5d55bfd88a8c",
+        "canonical_form_sha256": "sha256:77b7a83589d2fd391105824e6f2385cec46868fcb974e2c0ae32031b0d1ba25c",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/sec-0001048911-10-k-2019-05-31/after.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/sec-0001048911-10-k-2019-05-31/after.html",
+        "raw_sha256": "sha256:f300a5e62e599c8f7571ade28b7a483c6172dbd7332ca12878c720e792ce363c",
+        "raw_sha256_recorded": "sha256:f300a5e62e599c8f7571ade28b7a483c6172dbd7332ca12878c720e792ce363c"
+      },
+      "after_version": "0001193125-19-222475",
+      "before": {
+        "canonical_digest_convention": null,
+        "canonical_file_sha256": "sha256:6ed454fa9c526168997c193966e0eff59244e242434f8194f6b2ffc351a8c03d",
+        "canonical_form_sha256": "sha256:d87d994daad4b8f7080beb008bda70fe766dda97c7c2c7e000b40d454004c650",
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_vbc1_probe/sec-0001048911-10-k-2019-05-31/before.json",
+        "canonical_sha256_recorded": null,
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_vbc1_probe/sec-0001048911-10-k-2019-05-31/before.html",
+        "raw_sha256": "sha256:fb911335b67f57260ec421cf910c921c0ddda5d151bebdff726d14322eef67b9",
+        "raw_sha256_recorded": "sha256:fb911335b67f57260ec421cf910c921c0ddda5d151bebdff726d14322eef67b9"
+      },
+      "before_version": "0001564590-19-025065",
+      "cache_slug": "sec-0001048911-10-k-2019-05-31",
+      "family": "sec_edgar",
+      "lineage_id": "sec:0001048911:10-K:2019-05-31",
+      "manifest": "research/tavonel_eval_v2/artifacts/development/vbc1_probe_cohort.json",
+      "measured_by": [
+        "VBC1_VALUE_BEARING_PROBE"
+      ],
+      "outcome_visibility": "OUTCOME_VISIBLE_IN_ANOTHER_MEASUREMENT"
+    }
+  ],
+  "provenance": {
+    "generated_at": "2026-08-25T01:47:50.498320+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "identity-change-migration-closure-v2-universe-enumeration",
+    "run_id": "20260825T014750Z-62ca59c4dbfa",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/enumerate_v2_universe.py",
+    "tool_sha256": "sha256:680e1c95ef367e8eefd75d8fdda7c73329487ab6e5f1025d3908311c74a6b10d"
+  },
+  "receipt_sha256": "sha256:06def754aa51590d6adef2c4dc61671781c52d49334729890cfda35f4e446466",
+  "schema": "tavonel.v2.identity_change_migration_closure.v2_universe_enumeration.v1",
+  "selection_declared_before_any_v2_result_existed": true,
+  "selection_rule": "every development revision pair whose before and after payloads are already cached on local disk and whose canonical document is already written beside them, taken in the fixed declared manifest order, deduplicated by lineage id keeping the first occurrence, then filtered by the exclusion table. This is IDENTITY_CHANGE_MIGRATION_CLOSURE_V1's selection rule unchanged, with a larger exclusion set. No pair is selected by any property of its content and no pair is selected by any closure outcome: the selection function never calls either change predicate and never reads a closure result.",
+  "sfi3": {
+    "acquisition_artifact_opened": false,
+    "expansion_opened": false,
+    "frame_exists": false,
+    "holds": true,
+    "overlap": [],
+    "payload_opened": false,
+    "roots": {
+      "ecfr_title_parts": 36,
+      "git_repositories": 32,
+      "read_for": "root identity metadata only; no root is expanded and no SFI3 artifact is opened",
+      "sec_note": "SFI3 declares no SEC roots, so every sec_edgar lineage is provably disjoint from SFI3 by the empty set.",
+      "sec_roots": 0,
+      "wikipedia_category_roots": 10,
+      "wikipedia_note": "Wikipedia roots are categories, so article membership is not decidable from metadata. The family is excluded rather than assumed disjoint."
+    }
+  },
+  "sufficiency": {
+    "verdict": "FOUNDER_RULING_REQUIRED",
+    "why": "no numerical sufficiency threshold was declared before this enumeration existed, so none is applied to it. A floor chosen now would be a floor chosen after the count was known, which is what the ruling on the 1.10% over-fire delta forbids. The counts and the power arithmetic are reported; the ruling is not an agent's call."
+  },
+  "universe_sha256": "sha256:79c1ba79c915d6abadcbed7d876358849a319b31cff81413245c1abde84c6cf0",
+  "what_this_is": "an enumeration of what is AVAILABLE for a V2 closure. It is not a freeze, it is not a protocol, and it grades nothing. The freeze is Lane D's machinery and reads this file."
+}

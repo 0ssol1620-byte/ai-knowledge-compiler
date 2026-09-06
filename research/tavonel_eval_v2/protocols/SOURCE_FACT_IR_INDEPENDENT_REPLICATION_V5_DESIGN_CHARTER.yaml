@@ -1,0 +1,80 @@
+protocol_id: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V5
+state: PROSPECTIVE_PRE_CENSUS
+result_blind_design: true
+purpose: >-
+  Independent replication after SFIR4's terminal operational stop. SFIR4's frozen
+  transport budget was incompatible with the observed Wikimedia rate behaviour;
+  its scientific question was never reached and is not restated here.
+succeeds: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4
+succeeds_because: TERMINAL_OPERATIONAL_STOP
+
+# Everything scientific comes from SFIR4's charter by exact digest. This file
+# declares none of it -- not the families, not the roots, not C_f, not Q_f, not
+# the caps, not the salt, not the identity rules. A copy could drift from the
+# thing it copied; a reference cannot, and `sfir5_charter.require_carried_forward`
+# refuses this document if it names any of those fields itself.
+carried_forward_by_reference:
+  charter: protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4_DESIGN_CHARTER.yaml
+  fields_owned_by_that_document:
+    - family_authorities
+    - capacity_rule
+    - git_tree_enumeration
+    - spent_policy
+    - payload_policy
+    - terminal_policy
+  redeclaring_any_of_them_here_is_a_refusal: true
+  the_probe_is_sfir4s_probe: true
+
+# The two things SFIR5 changes, and nothing else.
+transport_policy:
+  motivation: INC-V2-101
+  bounded_concurrency_per_host: 1
+  host_min_interval_seconds:
+    en.wikipedia.org: 7.0
+    api.github.com: 0.5
+    www.ecfr.gov: 0.5
+  default_min_interval_seconds: 1.0
+  unlisted_host_is_paced_by_default: true
+  interval_is_frozen_never_tuned_during_a_run: true
+  server_retry_after_takes_priority_over_local_pacing: true
+  retry_only_on: [429, 503]
+  max_total_wall_clock_seconds: 21600
+  max_total_requests: 12000
+  # Pacing sleep is NOT charged to SFIR4's rate-limit wait budget, because it is
+  # not waiting on a 429. Stated here rather than left to be discovered: it means
+  # a paced census can spend wall-clock the frozen fail-safe does not count,
+  # which is precisely why `max_total_wall_clock_seconds` above exists and is
+  # finite. A four-to-six hour Wikipedia lane is a normal outcome, not a fault.
+  pacing_seconds_are_not_rate_limit_wait_seconds: true
+  sfir4_retry_bounds_unmodified:
+    maximum_retries_per_request: 5
+    max_rate_limit_wait_seconds: 60
+    max_total_rate_limit_wait_seconds: 180
+
+evidence_policy:
+  motivation: INC-V2-102
+  every_family_records_to_the_response_ledger: true
+  failed_request_is_recorded_before_it_raises: true
+  family_coverage_compared_against_families_reporting_candidates: true
+  synthesised_observation_cannot_seal_a_live_receipt: true
+
+batching_policy:
+  # No new batching is introduced by SFIR5. The bound SFIR3 adapter already
+  # batches at the sizes below, and those sizes are SFIR4's frozen values, so
+  # the population, the ordering and the request-to-response mapping are the
+  # ones SFIR4 would have produced. Introducing a different batch size would
+  # change what a single response covers, which is a change to the instrument
+  # and not to its pacing.
+  new_batching_introduced_by_sfir5: false
+  inherited_from_bound_sfir3_adapter: true
+  category_page_size: 500
+  revision_batch_size: 50
+
+census_identity:
+  # SFIR4's probe writes `protocol_id: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4`
+  # into the census input, because it IS SFIR4's algorithm. The run that produced
+  # it is SFIR5's, and the seal says so. A census input must never be presented
+  # as an SFIR4 result on the strength of that field alone.
+  census_input_carries_sfir4_protocol_id: true
+  executed_under: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V5
+  seal_binds_census_input_by_exact_digest: true

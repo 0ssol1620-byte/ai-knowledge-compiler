@@ -1,0 +1,347 @@
+﻿# P0 — master protocol for the TAVONEL eval v2 research namespace.
+#
+# Frozen before any result is produced. Every threshold, rule and metric below
+# is declared in advance. After the freeze receipt is written, a change to this
+# file is an amendment with its own receipt, never an edit: the handoff's stop
+# condition 4 ("threshold change after freeze") and 8 ("wanting to change the
+# protocol after seeing results") both apply to this document.
+
+schema: tavonel.v2.protocol.P0.v1
+protocol_id: P0_master_protocol
+version: 1
+authored: 2026-08-21
+supersedes: null
+
+source_document:
+  path: D:/TAVONEL_PAPER_RESEARCH_EXECUTION_MASTER_HANDOFF_2026-08-21_KO.md
+  role: >-
+    Execution contract. This protocol implements sections 0, 8.4 and 18 of it.
+    Where the two disagree, the handoff governs.
+
+# ---------------------------------------------------------------------------
+# 1. Non-negotiable boundaries, restated so a reader of this file alone is bound
+# ---------------------------------------------------------------------------
+
+boundaries:
+  ip_gate:
+    state: CLOSED
+    basis: >-
+      No Korean Intellectual Property Office filing acknowledgement exists under
+      docs/ip/receipts/. The receipts present there are package-build and
+      self-test receipts for the submission bundle and are NOT a filing receipt.
+    forbidden_while_closed:
+      - paper publication
+      - arXiv upload
+      - public repository or benchmark or dataset release
+      - web demo disclosure of new technique
+    permitted_while_closed:
+      - private local research
+      - evidence generation inside this namespace
+
+  gpu:
+    approved: false
+    cumulative_spend_usd_ceiling_before_P4_pass: 0.0
+    rule: >-
+      No GPU and no paid API call until the P4 retrieval-validity gate is PASS
+      on real evidence and the founder has approved a named spend.
+
+  sealed_evidence:
+    rule: read-only
+    scope:
+      - docs/evidence/**
+      - docs/ip/**
+      - research/experiments/**
+    enforcement: >-
+      Nothing in this namespace opens a path under those roots for writing. The
+      P0 verifier is read-only and writes only into
+      research/tavonel_eval_v2/receipts/.
+
+  isolation:
+    rule: >-
+      Every artifact this programme produces lives under
+      research/tavonel_eval_v2/. No file outside that directory is created or
+      modified by any v2 tool.
+
+# ---------------------------------------------------------------------------
+# 2. Splits
+# ---------------------------------------------------------------------------
+
+splits:
+  unit_of_split: source document lineage
+  development:
+    purpose: adapter, parser, question-template and threshold development
+    open: true
+  sealed_validation:
+    purpose: threshold and positive-control validation
+    open: false
+  untouched_confirmatory:
+    purpose: single-opening confirmatory endpoint
+    open: false
+    opening_requires: founder approval, recorded as a receipt
+
+p0_smoke_split: development
+
+# ---------------------------------------------------------------------------
+# 3. Canonical document schema
+#
+# Acquisition and canonicalisation run ONCE and write these files to disk. Both
+# the selective compiler and the independent full-rebuild oracle read them as
+# input. The shared object is therefore a hashed data artifact, not shared
+# executable logic inside either build path.
+# ---------------------------------------------------------------------------
+
+canonical_document:
+  schema: tavonel.v2.canonical_document.v1
+  fields:
+    source_family: string, one of [sec_edgar, git_docs]
+    source_id: stable identity of the document across revisions
+    version_id: revision identity within that source
+    version_time: {valid_from: string|null, known_at: string}
+    source_digest: sha256 of the acquired raw bytes
+    license: SPDX identifier or a named public-domain basis
+    units: ordered list of unit records
+    structure: {order: list of explicit paths in reading order, block_count: int}
+  unit_record:
+    explicit_path: list of heading strings, root first, with an occurrence
+      suffix appended when a path repeats within one revision
+    heading: string
+    ordinal: integer position in reading order
+    text: normalised body text
+    text_sha256: sha256 of text
+  normalisation:
+    - collapse all whitespace runs to a single space
+    - strip leading and trailing whitespace
+    - unescape HTML entities once
+    - drop markup tags, comments and citation blocks
+    - keep case, digits and punctuation
+  unit_admission:
+    min_text_chars: 120
+    excluded_headings: [references, external links, see also, further reading, notes]
+
+logical_id_rule:
+  formula: 'u:' + sha256(source_id + "\n" + "/".join(explicit_path))[:24]
+  rationale: >-
+    Deterministic from the revision alone, so an independent full rebuild that
+    has never seen the prior revision derives the same identifiers. Identity is
+    therefore explicit-identifier-based in P0. Fuzzy cross-revision identity is
+    out of P0 scope and is P2's subject.
+
+# ---------------------------------------------------------------------------
+# 4. Artifact specification v1
+#
+# Implemented twice and independently: once in compiler/ (selective, on top of
+# akc_cir) and once in oracle/ (full rebuild, standard library only). Agreement
+# between two independent implementations of this spec is the measurement.
+# ---------------------------------------------------------------------------
+
+artifact_spec:
+  schema: tavonel.v2.artifact_spec.v1
+  digest: sha256 over the canonical JSON encoding of the payload, where
+    canonical JSON is json.dumps(sort_keys=True, separators=(",",":"),
+    ensure_ascii=False) encoded UTF-8
+  kinds:
+    - id: 'section:<logical_id>'
+      payload: {logical_id: string, semantic_text: string}
+      depends_on: [that unit]
+      order_sensitive: false
+    - id: 'document-index:<doc_key>'
+      payload: {doc_key: string, members: [logical_id in reading order]}
+      depends_on: [every unit, and the document reading order]
+      order_sensitive: true
+    - id: 'topic-bucket:<doc_key>:<b>'
+      payload: {doc_key: string, bucket: int, members: [logical_id sorted]}
+      bucket_rule: int(sha256(logical_id)[:8], 16) % 4
+      depends_on: [the units in that bucket]
+      order_sensitive: false
+    - id: 'structure-map:<doc_key>'
+      payload: {doc_key: string, paths: [explicit_path joined by "/" in reading order]}
+      depends_on: [the document reading order and heading tree only]
+      order_sensitive: true
+      note: >-
+        Carries no unit text. A revision that only permutes sections changes
+        this artifact and document-index and nothing else, which is exactly the
+        structure-only failure mode a content-only differ misses.
+  doc_key_rule: sha256(source_id)[:16]
+
+# ---------------------------------------------------------------------------
+# 5. Independence contract for the full-rebuild oracle
+# ---------------------------------------------------------------------------
+
+oracle_independence:
+  required:
+    separate_executable: >-
+      oracle/independent_full_build.py is a standalone script. It is never
+      imported by the selective path and never imports it.
+    separate_process: >-
+      Launched with subprocess as a fresh interpreter. The parent's imported
+      modules are not inherited. The observed pid is recorded.
+    import_isolation: >-
+      Runs with -I (isolated mode) and with a sys.meta_path finder installed
+      before user code that raises on any attempt to import akc_cir,
+      tavonel_eval_v2, or anything under compiler/ or tools/. The block list and
+      the fact that nothing triggered it are both recorded.
+    stdlib_only: >-
+      A static AST scan of the oracle source enumerates every import. Every
+      top-level module named must be in sys.stdlib_module_names. Recorded as a
+      list, not as a boolean.
+    no_selective_pythonpath: >-
+      packages/cir-python is absent from the child's sys.path. Recorded.
+    no_cache_reuse: >-
+      The oracle receives no dirty set, no recompilation plan, no prior artifact
+      state and no cache directory. Its only inputs are the canonical document
+      for the AFTER revision and the artifact spec above. Its argv is recorded.
+    separate_output_root: >-
+      artifacts/<split>/oracle/ versus artifacts/<split>/selective/. Asserted
+      disjoint.
+    independent_comparator: >-
+      comparator/compare_states.py imports neither side. A static AST scan
+      records its imports too.
+    forensic_on_failure: >-
+      A pair that does not compare equal has both state documents, both stdout
+      streams and the full per-artifact difference preserved under
+      artifacts/<split>/forensic/<pair_id>/.
+  evidence_receipt: receipts/p0-oracle-independence.json
+
+# ---------------------------------------------------------------------------
+# 6. P0 smoke corpus
+# ---------------------------------------------------------------------------
+
+corpus:
+  families:
+    sec_edgar:
+      basis: US federal government works, public domain; EDGAR full-text access
+      pairing_rule: >-
+        An amended filing (form ending in /A) is paired with the filing of the
+        same base form and the same reportDate by the same CIK. The pairing is
+        read from the issuer's own submissions index, never inferred from
+        content similarity.
+      fetch: data.sec.gov submissions index, then the primary document
+      user_agent_required: true
+      rate_limit_sleep_seconds: 0.4
+    git_docs:
+      basis: permissively licensed documentation repositories
+      pairing_rule: >-
+        Two consecutive commits touching the same documentation file. The
+        earlier commit is the before revision.
+      fetch: GitHub commits API for the path, then raw.githubusercontent per blob
+      redistribution: >-
+        Acquired bytes stay local. The IP gate forbids release, and these
+        licences are recorded per pair so a later release decision has the facts.
+  groups:
+    natural:
+      description: unmodified real revision pairs
+      minimum_pairs: 20
+    structural_positive_control:
+      description: >-
+        CONSTRUCTED, and labelled as such in every manifest and receipt. Derived
+        from a real revision by permuting section reading order while leaving
+        every section's text byte-identical. Never counted as a natural revision
+        pair and never used to support an empirical claim about real edits.
+      minimum_pairs: 4
+      construction: >-
+        Deterministic rotation of the unit order by floor(n/2), applied to the
+        AFTER revision of an already-admitted natural pair. The before revision
+        of the control is that same AFTER revision unpermuted, so the only
+        difference between the two sides is reading order.
+  eligibility:
+    include:
+      - the before/after relation is verifiable from a source identifier, not guessed
+      - both revisions parse to at least 3 admitted units
+      - the raw bytes of the two revisions differ
+    exclude_recorded_as:
+      INELIGIBLE_PARSE_FLOOR: fewer than 3 admitted units on either side
+      INELIGIBLE_IDENTICAL_BYTES: the two revisions have the same source digest
+      INELIGIBLE_FETCH: the source could not be retrieved
+      INELIGIBLE_RELATION: the before/after relation could not be verified
+    rule: >-
+      Exclusions are recorded before any equivalence result is computed. A pair
+      is never dropped after its result is seen.
+
+# ---------------------------------------------------------------------------
+# 7. Per-pair receipt fields — all required, none optional
+# ---------------------------------------------------------------------------
+
+pair_receipt_fields:
+  - pair_id
+  - group                      # natural | structural_positive_control
+  - source_family
+  - source_id
+  - before_version_id
+  - after_version_id
+  - before_source_digest
+  - after_source_digest
+  - before_canonical_digest    # parsed artifact digest
+  - after_canonical_digest
+  - detected_change_kinds
+  - identity_outcomes          # counts of CONTINUATION / NEW / UNRESOLVED
+  - unresolved_present
+  - affected_subgraph          # artifact ids reached by the traversal
+  - selective_rebuild_set
+  - carried_forward_set
+  - full_rebuild_artifact_set
+  - selective_final_state_hash
+  - full_rebuild_final_state_hash
+  - equivalence_verdict
+  - stale_left_behind
+  - diverged
+  - missing_from_selective
+  - work_avoided_fraction
+  - rebuilt_fraction
+  - selective_duration_ms
+  - oracle_duration_ms
+  - oracle_pid
+
+# ---------------------------------------------------------------------------
+# 8. Metrics and gates, declared before any run
+# ---------------------------------------------------------------------------
+
+metrics:
+  artifact_exact_match_rate: equal final state hashes / admitted pairs
+  stale_escape_count: >-
+    artifacts the selective path marked current whose bytes differ from the
+    oracle's for the same artifact id
+  missing_rebuild_count: artifact ids the oracle produced and the selective path did not
+  unnecessary_rebuild_fraction: >-
+    artifacts rebuilt whose bytes were unchanged, over artifacts rebuilt
+  rebuilt_fraction: artifacts rebuilt / artifacts in inventory
+
+gates:
+  G_P0_SEALED:
+    predicate: no sealed binding drifted without a superseding receipt, and every
+      declared receipt self-hash recomputes
+    on_fail: record BLOCKED, do not repair, do not re-seal, escalate to founder
+  G_P0_ISOLATION:
+    predicate: every requirement in oracle_independence is satisfied and evidenced
+    on_fail: STOP. handoff stop condition 3.
+  G_P0_SMOKE_SCALE:
+    predicate: at least 20 admitted natural pairs across at least 2 source families
+  G_P0_STRUCTURAL_COVERAGE:
+    predicate: at least 1 admitted pair whose only difference is reading order,
+      with every section text byte-identical
+    rationale: >-
+      A smoke corpus without this case cannot detect the structure-only failure
+      mode, which is the most consequential defect this project has found.
+  G_P0_EQUIVALENCE:
+    predicate: artifact_exact_match_rate == 1.0 and stale_escape_count == 0
+    on_fail: >-
+      Record the divergence with pair-level forensics and report it. Do not
+      adjust the artifact spec, the parser or this protocol to make it pass.
+      A divergence is a result.
+  G_P0_COST:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+# ---------------------------------------------------------------------------
+# 9. What P0 does NOT establish
+# ---------------------------------------------------------------------------
+
+claim_boundary:
+  permitted: >-
+    On the admitted P0 development pairs, a selective recompilation and an
+    independently implemented full rebuild produced the same active artifact
+    state under artifact_spec v1.
+  forbidden:
+    - any generalisation beyond the two families and the pairs actually run
+    - any statement about retrieval quality, answer correctness or staleness in QA
+    - any efficiency claim presented as a product speedup
+    - treating the constructed structural controls as natural revision evidence
+    - treating a development-split result as confirmatory

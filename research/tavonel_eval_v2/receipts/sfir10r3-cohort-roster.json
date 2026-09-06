@@ -1,0 +1,395 @@
+{
+  "accounting": {
+    "eligibility_dispositions": {
+      "ELIGIBLE": 65174,
+      "REJECTED_created_utc_on_or_before": 2225592,
+      "REJECTED_host_eq": 25576,
+      "REJECTED_last_activity_utc_on_or_after": 3038235,
+      "REJECTED_spdx_license_id_in": 31164781
+    },
+    "eligible_in_partition": 1011,
+    "rows_read": 37702060,
+    "unreadable": {
+      "NAME_WITH_OWNER_NOT_OWNER_SLASH_REPO": 39401,
+      "NO_LAST_ACTIVITY_TIMESTAMP": 1143301
+    }
+  },
+  "entries": [
+    {
+      "catalogue_address": "vuejs/vue-cli",
+      "host_uuid": "48626335",
+      "record_id": "4197934",
+      "selection_ordinal": 1,
+      "source_rank": 22
+    },
+    {
+      "catalogue_address": "ElemeFE/element",
+      "host_uuid": "67274736",
+      "record_id": "13141968",
+      "selection_ordinal": 2,
+      "source_rank": 21
+    },
+    {
+      "catalogue_address": "symfony/debug",
+      "host_uuid": "9281708",
+      "record_id": "78988",
+      "selection_ordinal": 3,
+      "source_rank": 20
+    },
+    {
+      "catalogue_address": "python-attrs/attrs",
+      "host_uuid": "29918975",
+      "record_id": "2963690",
+      "selection_ordinal": 4,
+      "source_rank": 19
+    },
+    {
+      "catalogue_address": "sindresorhus/normalize-url",
+      "host_uuid": "29094022",
+      "record_id": "3645",
+      "selection_ordinal": 5,
+      "source_rank": 19
+    },
+    {
+      "catalogue_address": "symfony/expression-language",
+      "host_uuid": "12970006",
+      "record_id": "78993",
+      "selection_ordinal": 6,
+      "source_rank": 19
+    },
+    {
+      "catalogue_address": "apollographql/react-apollo",
+      "host_uuid": "56192185",
+      "record_id": "8639951",
+      "selection_ordinal": 7,
+      "source_rank": 19
+    },
+    {
+      "catalogue_address": "OpenZeppelin/openzeppelin-contracts",
+      "host_uuid": "64700934",
+      "record_id": "12408334",
+      "selection_ordinal": 8,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "square/picasso",
+      "host_uuid": "10057936",
+      "record_id": "174187",
+      "selection_ordinal": 9,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "SortableJS/Sortable",
+      "host_uuid": "15308499",
+      "record_id": "37046",
+      "selection_ordinal": 10,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "pagekit/vue-resource",
+      "host_uuid": "16630332",
+      "record_id": "476281",
+      "selection_ordinal": 11,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "RobinHerbots/Inputmask",
+      "host_uuid": "926231",
+      "record_id": "10609",
+      "selection_ordinal": 12,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "simpleinjector/SimpleInjector",
+      "host_uuid": "33654550",
+      "record_id": "2362090",
+      "selection_ordinal": 13,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "pallets/markupsafe",
+      "host_uuid": "734244",
+      "record_id": "288111",
+      "selection_ordinal": 14,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "elastic/elasticsearch-net",
+      "host_uuid": "942613",
+      "record_id": "396042",
+      "selection_ordinal": 15,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "d3/d3-interpolate",
+      "host_uuid": "37173504",
+      "record_id": "810333",
+      "selection_ordinal": 16,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "r-lib/covr",
+      "host_uuid": "28287105",
+      "record_id": "858122",
+      "selection_ordinal": 17,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "jriecken/dependency-graph",
+      "host_uuid": "10144833",
+      "record_id": "95345",
+      "selection_ordinal": 18,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "ajafff/tslint-consistent-codestyle",
+      "host_uuid": "74691474",
+      "record_id": "16222653",
+      "selection_ordinal": 19,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "winstonjs/winston-daily-rotate-file",
+      "host_uuid": "42748812",
+      "record_id": "2961978",
+      "selection_ordinal": 20,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "illuminate/http",
+      "host_uuid": "5973470",
+      "record_id": "57825",
+      "selection_ordinal": 21,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "google/material-design-lite",
+      "host_uuid": "29268051",
+      "record_id": "904755",
+      "selection_ordinal": 22,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "negomi/react-burger-menu",
+      "host_uuid": "39150065",
+      "record_id": "922804",
+      "selection_ordinal": 23,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "libp2p/js-libp2p-crypto",
+      "host_uuid": "59225160",
+      "record_id": "10335841",
+      "selection_ordinal": 24,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "ben-eb/gulp-svgmin",
+      "host_uuid": "14993730",
+      "record_id": "105551",
+      "selection_ordinal": 25,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "browserify/console-browserify",
+      "host_uuid": "7848430",
+      "record_id": "127374",
+      "selection_ordinal": 26,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "pkgcloud/pkgcloud",
+      "host_uuid": "2898669",
+      "record_id": "143900",
+      "selection_ordinal": 27,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "MohammadYounes/rtlcss",
+      "host_uuid": "17406281",
+      "record_id": "148900",
+      "selection_ordinal": 28,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "kevva/url-regex",
+      "host_uuid": "23711524",
+      "record_id": "160171",
+      "selection_ordinal": 29,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "graphql-dotnet/graphql-dotnet",
+      "host_uuid": "38632468",
+      "record_id": "2367084",
+      "selection_ordinal": 30,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "lostisland/sawyer",
+      "host_uuid": "2544008",
+      "record_id": "327854",
+      "selection_ordinal": 31,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "r-dbi/RSQLite",
+      "host_uuid": "10302694",
+      "record_id": "339601",
+      "selection_ordinal": 32,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "tinymce/tinymce-dist",
+      "host_uuid": "19490997",
+      "record_id": "35142",
+      "selection_ordinal": 33,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "exceljs/exceljs",
+      "host_uuid": "27786663",
+      "record_id": "37726241",
+      "selection_ordinal": 34,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "Azure/azure-sdk-for-ruby",
+      "host_uuid": "4127095",
+      "record_id": "37885",
+      "selection_ordinal": 35,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "php-http/client-common",
+      "host_uuid": "48558536",
+      "record_id": "4169311",
+      "selection_ordinal": 36,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "ember-cli/ember-welcome-page",
+      "host_uuid": "52405618",
+      "record_id": "5350589",
+      "selection_ordinal": 37,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "etingof/pyasn1-modules",
+      "host_uuid": "52479110",
+      "record_id": "5367699",
+      "selection_ordinal": 38,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "googleapis/google-cloud-java",
+      "host_uuid": "26181278",
+      "record_id": "613823",
+      "selection_ordinal": 39,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "watson-developer-cloud/java-sdk",
+      "host_uuid": "34824538",
+      "record_id": "654649",
+      "selection_ordinal": 40,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "ocombe/ocLazyLoad",
+      "host_uuid": "15495333",
+      "record_id": "8944",
+      "selection_ordinal": 41,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "angular-ui/bootstrap",
+      "host_uuid": "6094683",
+      "record_id": "10001",
+      "selection_ordinal": 42,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "es-shims/is-nan",
+      "host_uuid": "16064377",
+      "record_id": "108869",
+      "selection_ordinal": 43,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "jaegertracing/jaeger-client-node",
+      "host_uuid": "56551035",
+      "record_id": "12294820",
+      "selection_ordinal": 44,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "bitovi/documentjs",
+      "host_uuid": "532252",
+      "record_id": "128725",
+      "selection_ordinal": 45,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "noble/noble",
+      "host_uuid": "7785673",
+      "record_id": "141102",
+      "selection_ordinal": 46,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "piotrwitek/utility-types",
+      "host_uuid": "76400842",
+      "record_id": "17068631",
+      "selection_ordinal": 47,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "php-enqueue/enqueue",
+      "host_uuid": "77605872",
+      "record_id": "17852601",
+      "selection_ordinal": 48,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "euvl/vue-js-modal",
+      "host_uuid": "73701576",
+      "record_id": "21737550",
+      "selection_ordinal": 49,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "posthtml/posthtml-parser",
+      "host_uuid": "44296596",
+      "record_id": "2677975",
+      "selection_ordinal": 50,
+      "source_rank": 14
+    }
+  ],
+  "entry_count": 50,
+  "freeze_digest": "sha256:54804a60a5aeffc490494e107c06254cf3304acb743db55ddebae421fb73ed98",
+  "input_binding_digest": "sha256:f73adac497ec67abd7fbb93b048accf4691b30df164c5de1739baad9fe5df864",
+  "n": 50,
+  "partition": {
+    "count": 64,
+    "index": 3,
+    "predecessor_index": 2,
+    "salt_digest": "sha256:32a46f72d8f2976b397efb2950aa03fd0e5ddbd0dde595b3192f15c936832da2"
+  },
+  "protocol_digest": "sha256:24dee5b0a8560f8c47674a56193256b830223c35246408bf7fc984545b8360a9",
+  "roster_seal": "sha256:a25ca13d8bdf41c259bdaaccc215f33ffb06bb70aef30be21ee75104c3f49c18",
+  "schema": "tavonel.sfir10r3.cohort_roster.v1",
+  "selection_digest": "sha256:6b6d2ba46611e6026ac1fb44396867faffc7d3f14d85a430d910b6729848bd44",
+  "spent_exclusion": {
+    "count": 2,
+    "host_uuids": [
+      "1283503",
+      "63537249"
+    ],
+    "reason": "SPENT_DEVELOPMENT_ROOT",
+    "why": "these identities have been looked at. That is a property of this study's history, not of the repository, and it is the only reason any identity is excluded."
+  },
+  "state": "SEALED",
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R3",
+  "what_this_does_not_establish": "capacity, C, Q, or any model/compiler endpoint"
+}

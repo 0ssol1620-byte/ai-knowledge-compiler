@@ -1,0 +1,81 @@
+{
+  "schema": "tavonel.arena.runtime.v1",
+  "model_key": "hpd_parsing",
+  "display_name": "HPD-Parsing - hierarchical parallel decoding, customized vLLM 0.17.1+hpdparsing",
+  "model_repo": "PaddlePaddle/HPD-Parsing",
+  "model_revision": "91de80054c23ab4238e3d7073fa2b83c2a7e301e",
+  "official_runtime": "vllm",
+  "runtime_version": "vllm 0.17.1+hpdparsing (official customized build; adds dynamic request forking and P-MTP speculative decoding)",
+  "base_image": "ccr-2vdh3abv-pub.cnc.bj.baidubce.com/paddlepaddle/hpd-parsing-vllm:latest-nvidia-gpu-offline@sha256:1493923dd6b7e368c56b5497f2c82ade2599be9c69aa7498a71417b5c6d9948a",
+  "gpu_min_vram_gb": 80,
+  "gpu_count_min": 1,
+  "gpu_pool_priority": [
+    "NVIDIA H100 PCIe",
+    "NVIDIA H100 80GB HBM3",
+    "NVIDIA A100 80GB PCIe",
+    "NVIDIA A100-SXM4-80GB"
+  ],
+  "max_concurrency_per_worker": 8,
+  "shard_size_hint": 400,
+  "per_page_timeout_seconds": 600,
+  "prompt_id": "hpd_parsing_document_parsing_with_fork_v1",
+  "prompt_kind": "text",
+  "min_cuda_version": "12.8",
+  "inference_config": {
+    "entrypoint": "OpenAI-compatible POST /v1/chat/completions against the official server",
+    "prompt_text": "document parsing with fork.",
+    "served_model_name": "HPD-Parsing",
+    "server_url": "http://127.0.0.1:8118/v1",
+    "port": 8118,
+    "max_tokens": 8000,
+    "temperature": 0,
+    "image_encoding": "data:image/png;base64 in an image_url content part",
+    "server": {
+      "command": "vllm serve",
+      "env": {
+        "MAX_PATCHES_WITH_RESIZE": "true"
+      },
+      "trust_remote_code": true,
+      "max_model_len": 16384,
+      "limit_mm_per_prompt": {
+        "image": 1
+      },
+      "gpu_memory_utilization": 0.9,
+      "attention_backend": "FLASHINFER",
+      "attention_config": {
+        "use_prefill_query_quantization": true
+      },
+      "enable_chunked_prefill": true,
+      "enable_prefix_caching": true,
+      "speculative_config": {
+        "method": "medusa",
+        "model": "<MODEL_PATH>/P-MTP",
+        "num_speculative_tokens": 6
+      },
+      "ready_timeout_seconds": 1800,
+      "ready_probe": "http://127.0.0.1:8118/v1/models",
+      "managed_by": "entrypoint"
+    }
+  },
+  "weights_strategy": "baked",
+  "runtime_mode_allowed": [
+    "baked",
+    "bootstrap"
+  ],
+  "official_source_urls": [
+    "https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/pipeline_usage/HPD-Parsing.en.md",
+    "https://huggingface.co/PaddlePaddle/HPD-Parsing"
+  ],
+  "license": {
+    "id": "Apache-2.0",
+    "url": "https://huggingface.co/PaddlePaddle/HPD-Parsing",
+    "status": "verified"
+  },
+  "weights": {
+    "repo": "PaddlePaddle/HPD-Parsing",
+    "revision": "91de80054c23ab4238e3d7073fa2b83c2a7e301e",
+    "largest_file": "model.safetensors",
+    "largest_file_sha256": "sha256:f82b9c83ca8a85931b51b717143c24858281aa8cd1f016dd5a7a1ec5d40a7d91"
+  },
+  "notes": "Masterplan section 15.1 names HPD-Parsing as the model that must use its official Docker image rather than a hand-built environment, because the engine is a customized vLLM 0.17.1 fork with dynamic request forking and P-MTP. The offline image is used so no weight download happens at pod boot. Output is NOT markdown: the model emits `<BLOCK><type> [x1,y1,x2,y2]<CHILD><text>` segments, which canonical.py converts using the block regex published in the official tutorial. The prompt is fixed at `document parsing with fork.` and load() refuses any other prompt text. base_image is digest-pinned to the manifest an anonymous Harbor token read returned on 2026-09-03 (the same digest lane F recorded in build/build_plan.json); the image config carries ENTRYPOINT [\"/bin/bash\", \"/home/hpd/entrypoint.sh\"], so bootstrap mode overrides it through RunPod REST v1 dockerEntrypoint per ARENA_CONTRACT D2 and runtime_mode_allowed keeps both modes. Resolution provenance and every open question live in provenance.json next to this file. D19/D34 (2026-09-03 second integration pass): the official image's own ENTRYPOINT (/bin/bash /home/hpd/entrypoint.sh) starts the customized vLLM server, and the arena entrypoint.sh now does the same thing rather than leaving it to the adapter: it renders the `vllm serve` argv and env from adapter.py --print-server-plan (one builder, so the two cannot drift), polls server.ready_probe for up to ready_timeout_seconds (1800 s, above the D19 20-minute floor), fails hard on timeout, then runs the worker as a child, waits on it, propagates its exit code and stops the server from a trap. The adapter attaches when ARENA_MODEL_SERVER_MANAGED_BY=entrypoint. prompt_kind is \"text\": adapter.OFFICIAL_PROMPT ('document parsing with fork.') is what is sent, load() refuses any other prompt_text and refuses an empty one, and prompt_registry/hpd_parsing_document_parsing_with_fork_v1.txt must hold exactly that text. There is no runtime_repository/runtime_revision because the engine is a customized vLLM fork that upstream publishes only as the Docker image; the image digest is the runtime pin and inventing a source repository would be fabricated data. model_repo @ model_revision was re-verified read-only against the Hugging Face revision API on 2026-09-03. Framework-floor audit (2026-09-03, after the GLM-OCR canary died on an unrecognised model_type): the required framework floor, what the pinned base image actually ships, the action taken and the evidence URLs are recorded in provenance.json under framework_floor_audit. bootstrap.sh asserts the pinned framework versions and that the framework recognises this checkpoint's architecture before anything starts."
+}

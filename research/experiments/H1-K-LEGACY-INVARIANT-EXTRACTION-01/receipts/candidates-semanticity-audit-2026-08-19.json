@@ -1,0 +1,108 @@
+{
+  "Q1_read_outside_identity_assignment": {
+    "answer": "yes",
+    "decision_candidates_read_sites": [
+      "packages/absorption/src/akc_absorption/harness.py:408:            unresolved.extend(decision.candidates)",
+      "packages/cir-python/src/akc_cir/semantic_diff.py:568:                        candidates=decision.candidates,",
+      "packages/cir-python/src/akc_cir/semantic_diff.py:571:                unsettled.update(decision.candidates)"
+    ],
+    "identity_decision_flows_into_semantic_change": [
+      "packages/cir-python/src/akc_cir/semantic_diff.py:568:                        candidates=decision.candidates,"
+    ]
+  },
+  "Q2_read_by_propagation_recompilation_promotion": {
+    "answer": "yes",
+    "change_candidates_read_sites": [
+      "packages/cir-python/src/akc_cir/recompilation.py:253:        unresolved_seeds.extend(change.candidates)"
+    ],
+    "note": "promotion_gate seeds its changes-accounted impact traversal from change.candidates, and recompilation seeds its unresolved traversal from the same field"
+  },
+  "Q3_reused_as_next_revision_input": {
+    "answer": "not directly; the next revision consumes logical ids. But an unresolved identity carries logical_id=None, so the fork it creates is mediated by classification rather than by this field"
+  },
+  "Q4_audit_ui_debug_only": {
+    "answer": "no"
+  },
+  "Q5_claimed_as_observable_behaviour": {
+    "answer": "not currently recited in any claim as candidate attribution"
+  },
+  "Q6_externally_observable_difference": {
+    "answer": "yes",
+    "diverging_permutations": [
+      "[1, 0]"
+    ],
+    "impacted_artifacts_differ": true,
+    "runs": {
+      "[0, 1]": {
+        "candidates": [
+          [
+            "u1"
+          ]
+        ],
+        "impacted_artifacts": [
+          "artifact:from_u1"
+        ],
+        "seeds": [
+          "u1"
+        ],
+        "serialized_records": [
+          {
+            "candidates": [
+              "u1"
+            ],
+            "channel": "unresolved",
+            "detail": "critical signal(s) source_continuity had no value; the remaining signals renormalised to 1.00 would be a confident score built on a thin one",
+            "kind": "identity_unresolved",
+            "logical_id": "n1"
+          }
+        ]
+      },
+      "[1, 0]": {
+        "candidates": [
+          [
+            "u2"
+          ]
+        ],
+        "impacted_artifacts": [
+          "artifact:from_u2"
+        ],
+        "seeds": [
+          "u2"
+        ],
+        "serialized_records": [
+          {
+            "candidates": [
+              "u2"
+            ],
+            "channel": "unresolved",
+            "detail": "critical signal(s) source_continuity had no value; the remaining signals renormalised to 1.00 would be a confident score built on a thin one",
+            "kind": "identity_unresolved",
+            "logical_id": "n1"
+          }
+        ]
+      }
+    }
+  },
+  "Q7_serialization_replay_equivalence": {
+    "answer": "yes",
+    "note": "SemanticChange.as_record emits `candidates`, so the attribution reaches any persisted diff record and any hash taken over it",
+    "serialized_by": [
+      "packages/cir-python/src/akc_cir/semantic_diff.py:255:            record[\"candidates\"] = list(self.candidates)"
+    ],
+    "serialized_records_differ": true
+  },
+  "amendment": "AMENDMENT_1_2026-08-19.md",
+  "endpoint_decision": "CASE B: candidate attribution is downstream-consumed and persisted, so it MUST be part of the exactness endpoint for any replacement matcher. The extraction document's proposal to treat it as secondary is withdrawn.",
+  "experiment": "H1-K-LEGACY-INVARIANT-EXTRACTION-01",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-19T03:55:07.410715+00:00",
+  "instrument_separation": {
+    "note": "u1 and u2 are given different dependents, so a different seed reaches a different artifact. Without that the probe could not have separated and its null would be uncitable.",
+    "separates": true
+  },
+  "network_access": false,
+  "question": "Is the LEGACY resolver's `candidates` / tie attribution diagnostic-only, or is it consumed downstream and persisted?",
+  "receipt_sha256": "sha256:4f792682f8a069d595e5e6bbb2e536c855238de18231577899c3b8d2e6a661e2",
+  "schema": "tavonel.candidates-semanticity-audit.v1",
+  "verdict": "CASE_B_SEMANTIC"
+}

@@ -18,6 +18,7 @@ import { VerificationPending } from "@/components/verification-pending";
 import { apiRequest, ApiError } from "@/lib/api-client";
 import { useAuthStore } from "@/lib/auth-store";
 import type { StructaraLocale } from "@/lib/locale";
+import { recordPublicProductEvent } from "@/lib/public-product-analytics";
 import { normalizeSessionResponse } from "@/lib/session";
 
 const AUTH_COPY = {
@@ -146,6 +147,7 @@ export function AuthPage({
           aria-busy={loading}
           onSubmit={(event) => {
             event.preventDefault();
+            if (registering) recordPublicProductEvent("signup_started");
             const form = new FormData(event.currentTarget);
             setLoading(true);
             setError(undefined);

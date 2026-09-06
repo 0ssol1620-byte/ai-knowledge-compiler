@@ -1,0 +1,85 @@
+# Declared standing bounds — findings that are permanently unrepairable, and
+# stay visible forever rather than being closed.
+#
+# The convergence stop rule treated every finding as blocking. That is right for
+# a defect and wrong for a limitation: pass J reports six claims whose amendment
+# history cannot be recovered because the claim set was git-ignored under a
+# founder instruction, and no amount of work will recover it. Under a
+# finding-blocks-everything rule, convergence becomes unreachable forever — which
+# is not what the stop rule was written to do.
+#
+# The separation is between "a defect someone can fix" and "a limitation we
+# publish". It is NOT a way to retire an inconvenient finding:
+#
+#   - the finding is never deleted, never downgraded, and never counted as fixed
+#   - it prints in every round, in its own section, with its count
+#   - a bound is admitted only on the six conditions below, all attested
+#   - anything not declared here is OPEN_ACTIONABLE by default, and a finding
+#     that stops matching its declaration reverts to OPEN_ACTIONABLE
+#
+# Admission conditions, all six required:
+#   1. historically_unrecoverable_mechanically_established
+#   2. limitation_publicly_recorded
+#   3. hash_chain_prevents_recurrence
+#   4. no_current_claim_or_evidence_contradiction
+#   5. remains_visible_every_round
+#   6. never_counted_as_fixed
+#
+# Frozen 2026-08-19, before the round that first applies it.
+
+standing_bounds:
+  - id: SB-CLAIM-AMENDMENT-HISTORY-UNRECOVERABLE
+    pass: J
+    matches_finding_kind: CLAIM_AMENDMENT_HISTORY_UNDETERMINED
+    receipt: docs/ip/receipts/amendment-coverage-2026-08-19.json
+    affected: [A1, A2, B2, B3, B4, B5]
+    statement: >-
+      Six of ten patent claims carry no registered amendment, and whether they
+      were never amended or amended without a record cannot be determined.
+    conditions:
+      historically_unrecoverable_mechanically_established:
+        attested_by: >-
+          docs/ip/.gitignore is a fail-closed allowlist ("*" plus four
+          negations) under a founder instruction of 2026-08-11.
+          `git check-ignore -v docs/ip/PATENT_CLAIM_SET_v1_2026-08-19.md`
+          resolves to that rule, so the file has no prior revision in this
+          repository and no diff can be taken against one. This is established
+          by running the command, not by recollection.
+        why_not_repairable: >-
+          Tracking the claim set would place privileged claim-level material
+          into version control against the founder instruction. That trade was
+          proposed once and withdrawn -- see P24 -- and is not available.
+      limitation_publicly_recorded:
+        attested_by: docs/audit/HOSTILE_REVIEW_2026-08-19.md, finding P24
+      hash_chain_prevents_recurrence:
+        attested_by: >-
+          docs/ip/CLAIM_AMENDMENTS.yaml pins claim_set_baseline.sha256 and
+          audit_amendment_coverage.py reports BROKEN when the file on disk
+          stops matching the last recorded digest. Its control runs the same
+          state function over a matching digest, a differing digest and no
+          baseline, requiring three distinct states.
+        scope: >-
+          Prospective only. It detects an unregistered edit from 2026-08-19
+          forward and reconstructs nothing before it, which is exactly why the
+          six remain a bound rather than becoming closable.
+      no_current_claim_or_evidence_contradiction:
+        attested_by: >-
+          No claim, receipt, figure or manuscript sentence asserts that the
+          amendment history of these six claims is known or complete. The
+          amendment audit reports coverage with its denominator, and this
+          package does not describe the amendment audit as complete across the
+          claims.
+      remains_visible_every_round:
+        attested_by: >-
+          run_convergence_round.py prints declared standing bounds with their
+          counts in every round and records them in the round receipt.
+      never_counted_as_fixed:
+        attested_by: >-
+          The findings stay in the pass-J receipt unchanged, are never
+          reclassified downward, and the round receipt records them under
+          standing_bounds rather than removing them.
+    what_would_end_this_bound: >-
+      Nothing available today. A recovered prior revision of the claim set from
+      outside this repository -- a counsel packet, an export, a filing draft --
+      would make the six determinable, and this entry would be withdrawn rather
+      than kept for convenience.

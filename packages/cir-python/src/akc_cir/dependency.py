@@ -31,6 +31,7 @@ from datetime import datetime
 from enum import StrEnum
 
 __all__ = [
+    "DependencyChannel",
     "DependencyEdge",
     "DependencyGraph",
     "EdgeType",
@@ -68,6 +69,20 @@ class EdgeType(StrEnum):
         return _PROPAGATION[self]
 
 
+class DependencyChannel(StrEnum):
+    """Change dimensions an edge is sensitive to."""
+
+    SEMANTIC = "semantic"
+    LOCATOR = "locator"
+    VISUAL = "visual"
+    TEMPORAL = "temporal"
+    STRUCTURAL = "structural"
+    METADATA = "metadata"
+
+
+ALL_DEPENDENCY_CHANNELS = frozenset(DependencyChannel)
+
+
 _PROPAGATION: dict[EdgeType, Propagation] = {
     # "this was made from that" — the source stops being current when the
     # target changes.
@@ -101,6 +116,7 @@ class DependencyEdge:
     edge_type: EdgeType
     valid_from: datetime | None = None
     valid_to: datetime | None = None
+    channels: frozenset[DependencyChannel] = ALL_DEPENDENCY_CHANNELS
 
     def __post_init__(self) -> None:
         if not self.source_id or not self.target_id:
@@ -113,6 +129,8 @@ class DependencyEdge:
             and self.valid_to < self.valid_from
         ):
             raise ValueError("edge valid_to precedes valid_from")
+        if not self.channels:
+            raise ValueError("a dependency edge must declare at least one change channel")
 
     def live_at(self, moment: datetime | None) -> bool:
         if moment is None:
@@ -199,15 +217,44 @@ class DependencyGraph:
     def nodes(self) -> frozenset[str]:
         return frozenset(self._nodes)
 
+    def declares_structural_dependency(self) -> bool:
+        """Does any edge in this graph travel the structural channel?
+
+        Used to decide whether structural propagation is warranted at all. Note
+        that `channels` defaults to every channel, so a graph whose adapter
+        declares nothing answers True -- correctly, since such an adapter has
+        asserted that everything depends on shape. Precision here is a property
+        of the declarations, not of this predicate.
+        """
+        return any(
+            DependencyChannel.STRUCTURAL in edge.channels for edge in self._edges
+        )
+
+    def edges_from(self, node_id: str) -> tuple[DependencyEdge, ...]:
+        """The outgoing edges of a node, in insertion order.
+
+        Read-only and additive: callers outside this module need to ask which
+        channels a node's dependencies travel, and reaching into the private
+        adjacency map to find out is worse than saying so here.
+        """
+        return tuple(self._out.get(node_id, ()))
+
     def _successors(
-        self, node_id: str, moment: datetime | None
+        self,
+        node_id: str,
+        moment: datetime | None,
+        channel: DependencyChannel | None = None,
     ) -> list[tuple[str, EdgeType]]:
         """Nodes that go stale when `node_id` changes, with the edge that says so."""
         found: list[tuple[str, EdgeType]] = []
         for edge in self._out.get(node_id, ()):
+            if channel is not None and channel not in edge.channels:
+                continue
             if edge.edge_type.propagation is Propagation.DOWNSTREAM and edge.live_at(moment):
                 found.append((edge.target_id, edge.edge_type))
         for edge in self._in.get(node_id, ()):
+            if channel is not None and channel not in edge.channels:
+                continue
             if edge.edge_type.propagation is Propagation.UPSTREAM and edge.live_at(moment):
                 found.append((edge.source_id, edge.edge_type))
         # Sorted so two runs over the same graph return the same order, which is
@@ -220,6 +267,7 @@ class DependencyGraph:
         *,
         max_depth: int | None = None,
         as_of: datetime | None = None,
+        channel: DependencyChannel | None = None,
     ) -> ImpactReport:
         """Everything that stops being current because `changed` changed.
 
@@ -242,10 +290,10 @@ class DependencyGraph:
         while queue:
             node, depth, via, lineage = queue.popleft()
             if max_depth is not None and depth >= max_depth:
-                if self._successors(node, as_of):
+                if self._successors(node, as_of, channel):
                     truncated = True
                 continue
-            for neighbour, edge_type in self._successors(node, as_of):
+            for neighbour, edge_type in self._successors(node, as_of, channel):
                 if neighbour in lineage:
                     # Walking it again would not terminate, and the cycle is
                     # worth surfacing: a knowledge graph with a dependence loop

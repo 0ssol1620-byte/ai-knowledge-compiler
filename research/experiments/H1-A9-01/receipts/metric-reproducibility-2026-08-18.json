@@ -1,0 +1,50 @@
+{
+  "aggregate": {
+    "mean_edit_delta": 0.0004559916661319857,
+    "run_a_mean_edit": 0.02852978568612384,
+    "run_a_severe": 58,
+    "run_b_mean_edit": 0.028073794019991855,
+    "run_b_severe": 58,
+    "severe_count_delta": 0
+  },
+  "byte_differing_pages": {
+    "max_absolute_score_delta": 0.2690063833414362,
+    "mean_absolute_score_delta": 0.010603035554634809,
+    "median_absolute_score_delta": 0.0,
+    "pages": 32,
+    "pages_with_any_score_change": 7,
+    "severe_label_flip_rate": 0.03125,
+    "severe_label_flips": 1
+  },
+  "byte_identical_pages": {
+    "max_absolute_score_delta": 0.22918240830990227,
+    "mean_absolute_score_delta": 0.0010539677455332066,
+    "median_absolute_score_delta": 0.0,
+    "pages": 717,
+    "pages_with_any_score_change": 15,
+    "severe_label_flip_rate": 0.00697350069735007,
+    "severe_label_flips": 5
+  },
+  "evaluator_harness_nondeterminism": {
+    "byte_identical_pages_whose_score_moved": 15,
+    "diagnosis": "the harness applies a wall-clock timeout to the official matcher and substitutes a chunked Hungarian fallback when it is exceeded. Which pages exceed it depends on machine load, so the same bytes can be scored by two different algorithms on two runs. This is nondeterminism in *our* stall-recovery wrapper, not evidence that the upstream evaluator's own matching is nondeterministic.",
+    "of_those_that_hit_a_fallback_in_at_least_one_run": 11,
+    "pages_that_fell_back_in_exactly_one_run": 12,
+    "severe_label_flips_on_byte_identical_pages": 5,
+    "timeout_fallback_pages_run_a": 34,
+    "timeout_fallback_pages_run_b": 28,
+    "why_it_does_not_overturn_the_primary_result": "the gate never reads the evaluator, so this noise is independent of the accepted/abstained split. Independent misclassification of the outcome attenuates a measured association toward the null rather than manufacturing one, so the confirmatory p-value is if anything conservative. What it does mean is that the severe-error label carries roughly 0.7% per-page noise, and that a single per-page label from a single scoring run should not be treated as exact."
+  },
+  "generated_at": "2026-08-18T11:04:41.216142+00:00",
+  "mechanism_check": {
+    "byte_differing_pages_whose_score_moved": 7,
+    "byte_identical_pages_whose_score_moved": 15,
+    "reading": "this was written expecting the first number to be 0, because a byte-identical page should not be able to change score. It is not 0, and `evaluator_harness_nondeterminism` explains why: the harness's wall-clock stall recovery can route identical bytes through two different matching algorithms. The second number is the share of byte instability that is more than cosmetic, and it must be read against that noise floor rather than as a clean measurement."
+  },
+  "pages_scored_in_both_runs": 749,
+  "receipt_sha256": "sha256:52836d90ee0d33e336596a6068151a9a2bb86c60776374c491c9ebeb18f887a4",
+  "schema": "tavonel.a9-metric-reproducibility.v1",
+  "severe_error_definition": "official text-block edit distance > 0.10",
+  "status": "SECONDARY, EXPLORATORY -- not a pre-registered endpoint",
+  "why_this_is_not_the_primary_test": "the confirmatory endpoint used run 1's scores only, as pre-registered, and was executed and written before this analysis existed. This measures whether the runtime's *metrics* reproduce, which is a property of the benchmark apparatus rather than of the gate."
+}

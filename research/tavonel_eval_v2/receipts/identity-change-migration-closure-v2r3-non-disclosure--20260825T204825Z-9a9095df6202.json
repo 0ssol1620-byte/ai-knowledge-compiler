@@ -1,0 +1,144 @@
+{
+  "carry_forward": "PERMITTED",
+  "event": {
+    "cause": "a stale test written while nothing was frozen called scorer.run() directly. It traversed the real cohort and died aggregating census keys the effective surface does not report.",
+    "classification": [
+      "PRE_RESULT_EXECUTION_ATTEMPT",
+      "INSTRUMENT_RUNTIME_CRASH",
+      "NO_SCORE"
+    ],
+    "crash": "KeyError: 'effective'",
+    "not_classified_as": [
+      "PASS",
+      "FAIL",
+      "CONTRACT_BROKEN",
+      "preview"
+    ],
+    "where": "tools/identity_change_migration_closure_v2r3.py, census aggregation"
+  },
+  "legs": {
+    "no_frame_inspection": {
+      "held": true,
+      "operator_declaration": {
+        "actions_taken_before_this_ruling": "the census key names were corrected against EffectiveSurface.as_dict() and a pre-aggregation guard was added. Neither change was informed by any pair, any violation or any verdict, because none was observed.",
+        "debugger_attached": false,
+        "declared_by": "implementation session, 2026-08-26",
+        "frames_inspected": [],
+        "how_the_crash_was_observed": "a pytest -q summary line and the default traceback. What was taken from it was the exception type, the missing key name 'effective', and the file and line of the aggregation. No cohort value was read.",
+        "re_run_decision_was_not_outcome_informed": true,
+        "what_was_learned_about_the_cohort": "nothing"
+      },
+      "outcome_bearing_frames": [
+        "pair_results",
+        "extra",
+        "invariant_6_violations",
+        "observations",
+        "census",
+        "c_violations",
+        "d_violations",
+        "e_violations",
+        "a_b_violations"
+      ],
+      "pytest_addopts": "-ra --strict-config --strict-markers",
+      "showlocals_flags_present": [],
+      "why_that_matters": "pytest renders local variables in a traceback only under --showlocals or -l. Without either, the KeyError frame showed the failing source line and the missing key name -- 'effective' -- and no value from `extra`, `pair_results` or any census."
+    },
+    "no_output_path_before_return": {
+      "held": true,
+      "how": "parsed from the scorer's own syntax tree. run(), measure_extra_clauses(), _require_census_keys() and _sum_maps() contain zero output calls; every print in main() that reads `body` or `six` is lexically after `body = run()`. The KeyError escaped run(), so the assignment never completed and the whole output block was unreachable.",
+      "non_outcome_print_lines": [
+        345
+      ],
+      "outcome_print_lines": [
+        352,
+        353,
+        354,
+        355,
+        357,
+        358
+      ],
+      "run_assigned_in_main_at_line": 343,
+      "scorer": "tools\\identity_change_migration_closure_v2r3.py",
+      "scorer_sha256": "sha256:f5b8de50019ef4efe6a83ddeb295178c35848f78c94daabef0669fe044eb1e0d",
+      "silent_functions": {
+        "_require_census_keys": {
+          "lines": [
+            308,
+            326
+          ],
+          "output_calls": 0
+        },
+        "_sum_maps": {
+          "lines": [
+            329,
+            334
+          ],
+          "output_calls": 0
+        },
+        "measure_extra_clauses": {
+          "lines": [
+            86,
+            131
+          ],
+          "output_calls": 0
+        },
+        "run": {
+          "lines": [
+            134,
+            305
+          ],
+          "output_calls": 0
+        }
+      },
+      "why_this_is_the_load_bearing_leg": "the other legs prove nothing durable exists. This one proves nothing transient could have been shown either."
+    },
+    "no_persisted_outcome": {
+      "directories": [
+        "receipts",
+        "artifacts",
+        "docs",
+        "protocols",
+        "tools",
+        "tests",
+        "acquisition"
+      ],
+      "files_scanned": 11726,
+      "held": true,
+      "hits": [],
+      "how": "two passes. Every json/jsonl/yaml/txt file was matched against the V2R3 result schema id, which exists nowhere else in the tree. Then every V2R3-attributable JSON body was walked for an outcome key in KEY position. A prose mention is deliberately not a hit, and a prior run's graded result is deliberately not attributed to V2R3.",
+      "outcome_keys": [
+        "INVARIANT_6_ambiguous_identity_stays_unresolved",
+        "effective_census",
+        "unsettled_identities_total",
+        "violation_count"
+      ],
+      "result_schema": "tavonel.v2.identity_change_migration_closure.v2r3_result.v1",
+      "v2r3_attributable_files": 654
+    },
+    "no_result_receipt": {
+      "chain_receipt_count": 0,
+      "chain_receipts": [],
+      "held": true,
+      "how": "every receipt matching the measurement glob was matched against the declared chain stems. A file the chain does not explain is a result.",
+      "measurement_stem": "identity-change-migration-closure-v2r3",
+      "result_receipts": []
+    }
+  },
+  "outcome_disclosure": "NONE_ESTABLISHED",
+  "parent_protocol": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3",
+  "provenance": {
+    "generated_at": "2026-08-25T20:48:25.681886+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "identity-change-migration-closure-v2r3-non-disclosure",
+    "run_id": "20260825T204825Z-9a9095df6202",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/v2r3_chain_disposition.py",
+    "tool_sha256": "sha256:3fd7f059fd6bc293352e7740b6eee45f69c8d9f1dbfd923a3729a1ecf0470b66"
+  },
+  "receipt_sha256": "sha256:ac677c67b9cd2a10fe21aa30c85939bd9886e52a980a6da8e3235fa36e99dd33",
+  "refusal_semantics": "any leg that cannot be established raises DisclosureFound and no attestation is written. Ambiguity is not resolved in favour of reuse.",
+  "schema": "tavonel.v2.identity_change_migration_closure.v2r3_non_disclosure.v1"
+}

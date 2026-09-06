@@ -1,0 +1,17 @@
+{
+  "schema": "tavonel.h1-a9-input-discovery.v1",
+  "experiment_id": "H1-A9-01",
+  "recorded_on": "2026-08-16",
+  "status": "PARTIAL_INPUTS_AVAILABLE_POLICY_COMPARISON_NOT_RUN",
+  "gpu_spend_usd": 0.0,
+  "observed": [
+    "The repository contains the new typed source-grounded gate and protected arbitration tests.",
+    "Tracked-source search found parser_self_confidence only in implementation/tests, not in frozen campaign result rows.",
+    "Tracked-source search found no persisted AgreementVector feature set matching text_similarity/block_sequence_similarity/bbox_alignment/table_grid_similarity/consensus_entropy in frozen empirical artifacts.",
+    "Hidden JSON/JSONL/CSV search for parser_self_confidence or the agreement feature keys returned no primary frozen data rows."
+  ],
+  "ruling": "Do not reconstruct self-confidence or agreement features from later outputs. The self-confidence/agreement arms remain unavailable until original frozen features are found or a new paired public-source campaign emits them prospectively.",
+  "source_grounded_native_arm": "IMPLEMENTED_AND_UNIT_VERIFIED_BUT_NOT_YET_EVALUATED_AGAINST_AN_INDEPENDENT_HELD_OUT_CORRECTNESS_OUTCOME",
+  "performance_conclusion_allowed": false,
+  "next_action": "Prefer a prospective small paired campaign that freezes candidate output, agreement features and genuine model self-confidence before independent local correctness scoring; reuse the same inference for all policies and keep GPU ground truth local-only."
+}

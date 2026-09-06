@@ -4,6 +4,8 @@ param(
     [string]$Role,
     [Parameter(Mandatory = $true)] [string]$RepositoryRoot,
     [Parameter(Mandatory = $true)] [string]$CredentialFile,
+    [ValidatePattern('^[A-Za-z][A-Za-z0-9_-]{1,63}$')]
+    [string]$CredentialLabel = 'Runpod',
     [Parameter(Mandatory = $true)] [string]$DeadlineUtc,
     [Parameter(Mandatory = $true)] [string]$StateSlug,
     [Parameter(Mandatory = $true)] [string]$Name,
@@ -72,7 +74,10 @@ if (Test-Path -LiteralPath $receiptPath) {
     Get-Content -Raw -LiteralPath $receiptPath
     exit 0
 }
-$line = Get-Content -LiteralPath $credential | Where-Object { $_ -match '^\s*Runpod\s*:' } | Select-Object -First 1
+$credentialPattern = '^\s*' + [regex]::Escape($CredentialLabel) + '\s*:'
+$line = Get-Content -LiteralPath $credential |
+    Where-Object { $_ -match $credentialPattern } |
+    Select-Object -First 1
 if (-not $line) { throw 'RunPod credential label not found' }
 $apiKey = ($line -split ':', 2)[1].Trim()
 if (-not $apiKey -or $apiKey -match '\s') { throw 'RunPod credential malformed' }

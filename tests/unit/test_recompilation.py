@@ -7,7 +7,7 @@ prove the equivalence; these tests are that proof plus the ways it fails.
 
 from __future__ import annotations
 
-from akc_cir.dependency import DependencyEdge, DependencyGraph, EdgeType
+from akc_cir.dependency import DependencyChannel, DependencyEdge, DependencyGraph, EdgeType
 from akc_cir.recompilation import (
     ArtifactState,
     content_hash,
@@ -131,6 +131,45 @@ def test_unchanged_content_rebuilds_nothing() -> None:
     assert plan.to_rebuild == ()
     assert plan.work_avoided == 4
     assert all(t.state is ArtifactState.CURRENT for t in plan.targets)
+
+
+def test_locator_only_move_keeps_semantic_artifacts_current() -> None:
+    """A page/anchor move is provenance work, not a semantic rebuild seed."""
+    plan = plan_recompilation(
+        diff=_diff(
+            [_unit("ku_warranty", TWO_YEARS, evidence_id="ev_one", page_number1=17)],
+            [_unit("ku_warranty", TWO_YEARS, evidence_id="ev_two", page_number1=18)],
+        ),
+        graph=_graph(),
+        artifacts=INVENTORY,
+    )
+
+    assert plan.to_rebuild == ()
+    assert plan.work_avoided_fraction == 1.0
+    assert all(target.state is ArtifactState.CURRENT for target in plan.targets)
+
+
+def test_semantic_recompilation_does_not_cross_locator_only_dependency_edge() -> None:
+    graph = DependencyGraph(
+        [
+            DependencyEdge(
+                "chunk_warranty",
+                "ku_warranty",
+                EdgeType.DEPENDS_ON,
+                channels=frozenset({DependencyChannel.LOCATOR}),
+            )
+        ]
+    )
+    plan = plan_recompilation(
+        diff=_diff(
+            [_unit("ku_warranty", TWO_YEARS)],
+            [_unit("ku_warranty", THREE_YEARS)],
+        ),
+        graph=graph,
+        artifacts=("chunk_warranty",),
+    )
+
+    assert plan.to_rebuild == ()
 
 
 # --------------------------------------------------------------------------

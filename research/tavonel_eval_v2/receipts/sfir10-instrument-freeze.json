@@ -1,0 +1,228 @@
+{
+  "authorises": "bind the external catalogue input, then generate exactly one SFIR10 roster under partition one; after that roster is sealed, execute only this frozen census runner",
+  "cohort_state_at_freeze": "NO_SFIR10_ROSTER_ARTIFACT_IN_WORKTREE_OR_HISTORY",
+  "components": [
+    {
+      "bytes": 8472,
+      "git_blob_id": "e134c8b18e502f82312b0f3223834c393e8d87c4",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10_protocol.py",
+      "sha256": "sha256:4c37d1c215d7dd74889393d5aad3b21f9b693920691ded0377bed3175b347d1c"
+    },
+    {
+      "bytes": 16859,
+      "git_blob_id": "90fa7784c936491a9f7e8a25f590ae76f3316a6b",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10_transport.py",
+      "sha256": "sha256:addf405b9e202212ffa9ed3ffce47e13d240cd2f08f60079e0c2401fff589927"
+    },
+    {
+      "bytes": 34088,
+      "git_blob_id": "7e3454f161fc997a00faebcd61d8c786f3652cae",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10_runner.py",
+      "sha256": "sha256:f236c95dc92bbf357b2409cd14d1181b612e5120612e86245e4ba9fbcc845ecf"
+    },
+    {
+      "bytes": 4440,
+      "git_blob_id": "7247cc067ce7d325f0e3645ff9de9a9af6f18cea",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10_bind_input.py",
+      "sha256": "sha256:132b1836c915b870b5c66f48c281e4378c497be16171904f4be1571f64ad7244"
+    },
+    {
+      "bytes": 9107,
+      "git_blob_id": "1e18a119a88199ec627cc252c78aafd83e5c5c34",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10_mutation.py",
+      "sha256": "sha256:c6f4880f4c844e1f6779caac765b05185dafad17735a54f77d64f38c18935418"
+    },
+    {
+      "bytes": 10733,
+      "git_blob_id": "c33151599861658271b351d1f0404b776ff2b74d",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir10_freeze.py",
+      "sha256": "sha256:28b0cfd198ad16a4740fd543022a28b772ba7141179fd9dc49eb801b9e64a2e5"
+    },
+    {
+      "bytes": 14100,
+      "git_blob_id": "bb989b16fc2866ed148aa6daafdd56096f35e6c2",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir8_frontier.py",
+      "sha256": "sha256:7482faa9109cf698591b309a4a4697924465e017b62c075daf31205c9f7b9991"
+    },
+    {
+      "bytes": 12177,
+      "git_blob_id": "c0fb583a3534c6c00900d9b905b6912c204b275f",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir9_selection.py",
+      "sha256": "sha256:4cb823d47a247001f1800ce92d81ae78802d8a9eeae1b203a4300d38277b76ab"
+    },
+    {
+      "bytes": 21122,
+      "git_blob_id": "c783e492f5dc2e73c0a8cdead9128a775d906abc",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir9_cohort_input.py",
+      "sha256": "sha256:0eae35d587e1172c8ec107bb1188a4b814d16ea3e66375347bae010576b7476d"
+    },
+    {
+      "bytes": 8088,
+      "git_blob_id": "248a761154fdfd73c33eb608526d643e4ba31e5a",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir9_protocol.py",
+      "sha256": "sha256:90df8e6c6079eff018b8ed3405fbb2c5252cd1283998634bb85b7bbf2511a056"
+    },
+    {
+      "bytes": 11818,
+      "git_blob_id": "1fd53029c4e04b0703f1bf375c1ef598ccccde12",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir7_catalog_parser.py",
+      "sha256": "sha256:b67f8271cc414fa248a953b60ca845f8f58b71c7e60dcbeaac679981df3975f8"
+    },
+    {
+      "bytes": 11233,
+      "git_blob_id": "3fcaa86e6f22cd3b910df06d1624543d259b18a2",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir7_projection.py",
+      "sha256": "sha256:7e6435633b7354742e43085ff02d505c3ad224f579571c9f83c2375e50b993ce"
+    },
+    {
+      "bytes": 34005,
+      "git_blob_id": "5f873d4514e53e1e3606740f015863b82a3be931",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir7_frame.py",
+      "sha256": "sha256:03b6f16e5b80528483bb96878b2c8eb7e814ffe95d82a4aa0a2aadf13b6cf37b"
+    },
+    {
+      "bytes": 6927,
+      "git_blob_id": "c166d1a5dd42049cb290e1bca360403cf560daeb",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir7_roots.py",
+      "sha256": "sha256:fd0d7ee7481e2df5ec5eec1ecc582f89c72e58faaa0f58d11d2d1b4f1c891bc6"
+    },
+    {
+      "bytes": 12678,
+      "git_blob_id": "df1896c1e3b43febdf6f516c0e829243ac11d298",
+      "relative_path": "research/tavonel_eval_v2/tools/sfir9_execution_authority_gap.py",
+      "sha256": "sha256:dd0bc7389c6e1676425672b1ae6d1818748a333eccb4e106c51fda1f532b9f88"
+    }
+  ],
+  "control_run": {
+    "command": [
+      "-m",
+      "pytest",
+      "research/tavonel_eval_v2/tests/test_sfir10_protocol.py",
+      "research/tavonel_eval_v2/tests/test_sfir10_transport.py",
+      "research/tavonel_eval_v2/tests/test_sfir10_runner.py",
+      "-q"
+    ],
+    "returncode": 0,
+    "summary_tail": [
+      "..................................                                       [100%]",
+      "34 passed in 0.84s"
+    ]
+  },
+  "controls": [
+    {
+      "bytes": 2372,
+      "git_blob_id": "23b4dad22a1e3ef00689de6ee229247315d2bea8",
+      "relative_path": "research/tavonel_eval_v2/tests/test_sfir10_protocol.py",
+      "sha256": "sha256:1411521bf32fd2f2ef115d2dfc5e637a4d2f68bde87c5b2209841b631033a65d"
+    },
+    {
+      "bytes": 7587,
+      "git_blob_id": "34e7a71a20b5120e5880a77db4c3cd5132315b29",
+      "relative_path": "research/tavonel_eval_v2/tests/test_sfir10_transport.py",
+      "sha256": "sha256:ea76a59eaa89a671646eaeab50a91a6293c2e89dee0d4c1b2fe3cc66049d0b17"
+    },
+    {
+      "bytes": 9004,
+      "git_blob_id": "3cce94d30e4b1cb35dbd95124b2e5fe312b07f68",
+      "relative_path": "research/tavonel_eval_v2/tests/test_sfir10_runner.py",
+      "sha256": "sha256:9ab54e61520abea6582f4d4c6f45c7f03359c0b9e3f95966b18e999e36f1b666"
+    }
+  ],
+  "freeze_digest": "sha256:9545e6ed32b962c6fe05cfcd2c85b797b91e502539f8449870739a77e14c47b2",
+  "instrument_commit": "4a47add77fd57bb24815bc984503589d7bfa6d26",
+  "mutation_baseline": {
+    "file_sha256": "sha256:ca63afeed07626b9dbda5aa24a2e5945c420bc2f5a609c2698963ee39a9d271e",
+    "mutation_digest": "sha256:1174580be21182a5cbdee9edd53936163de1bd0e8bf8ffcf358fa646b13ee0ed",
+    "mutations_declared": 13,
+    "mutations_killed": 13,
+    "relative_path": "research/tavonel_eval_v2/receipts/sfir10-mutation-baselines.json"
+  },
+  "predecessor": {
+    "sfir9_gap_proof_sha256": "sha256:dd0bc7389c6e1676425672b1ae6d1818748a333eccb4e106c51fda1f532b9f88",
+    "sfir9_roster_file_sha256": "sha256:ea58f1ce9fea08cb9293bb57149d97469f02159864d8f2ceccc8db1cbdc5ea8d",
+    "sfir9_roster_relative_path": "receipts/sfir9-cohort-roster.json",
+    "sfir9_roster_seal": "sha256:8d37501c22dca81019f3c36895cd5c24c22db9732b7f79dcf6f76e7eff58af31",
+    "sfir9_terminal_commit": "8001f322a72b11883a92ce0b76ee9581aab2a989",
+    "what_is_inherited": "criterion, envelope, salt, partition count, catalogue frame",
+    "what_is_not_reused": "SFIR9's visible fifty-root cohort as confirmatory evidence"
+  },
+  "protocol_digest": "sha256:d4903f7ffb110ff2d95d62754f39e3ab366b2a4d07aa7f90c67e53e0e162df10",
+  "protocol_terms": {
+    "criterion": {
+      "inherited_unchanged_from": "SFIR9",
+      "maximum_q": 1000,
+      "minimum_c": 750,
+      "minimum_q": 600,
+      "quota_fraction": [
+        8,
+        10
+      ]
+    },
+    "execution_envelope": {
+      "candidate_extensions": [
+        ".py",
+        ".md",
+        ".rst",
+        ".txt"
+      ],
+      "declared_working_storage_bytes_per_root": 2147483648,
+      "inherited_unchanged_from": "SFIR9",
+      "n": 50,
+      "n_formula": "(windows * usable_charges_per_window) // per_root_charge_allowance",
+      "per_root_cumulative_provider_charge_allowance": 540,
+      "permitted_rate_windows": 6,
+      "usable_provider_charges_per_window": 4500
+    },
+    "predecessor_terminal_study": "SOURCE_FACT_IR_FRESH_HELDOUT_V9",
+    "protocol_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10",
+    "rate_window_execution": {
+      "close_before_request_when_segment_reservation_would_exceed": 4500,
+      "mid_segment_window_reset_policy": "MEASUREMENT_UNPROVEN_STOP",
+      "observe_every_response": [
+        "x-ratelimit-remaining",
+        "x-ratelimit-reset",
+        "retry-after"
+      ],
+      "poll_during_segment": false,
+      "rate_limit_http_statuses": [
+        403,
+        429
+      ],
+      "request_reservation_provider_charges": 4,
+      "require_remaining_header": true,
+      "require_reset_header": true,
+      "segment_start_endpoint": "https://api.github.com/rate_limit",
+      "segment_start_observations": 1,
+      "segment_start_requires_remaining_at_least": 4500,
+      "stop_root_before_request_when_root_reservation_would_exceed": 540,
+      "unattributed_provider_delta_policy": "MEASUREMENT_UNPROVEN_STOP",
+      "wait_inside_segment": false,
+      "why_no_wait": "SFIR9 froze wait constants without freezing an observation schedule. SFIR10 removes that degree of freedom: exhaustion closes a segment and resume occurs only in a later provider window from durable state"
+    },
+    "result_visibility": {
+      "partial_c_forbidden": true,
+      "partial_q_forbidden": true,
+      "per_root_candidate_yield_progress_forbidden": true,
+      "score_only_after_census_seal": true
+    },
+    "schema": "tavonel.sfir10.protocol.v1",
+    "selection": {
+      "ordering": [
+        "source_rank descending",
+        "record_id ascending"
+      ],
+      "partition_count": 64,
+      "partition_index": 1,
+      "partition_key": "host_uuid",
+      "partition_rule": "(predecessor_partition_index + 1) mod partition_count",
+      "predecessor_partition_index": 0,
+      "salt_digest": "sha256:32a46f72d8f2976b397efb2950aa03fd0e5ddbd0dde595b3192f15c936832da2",
+      "why_no_new_salt": "choosing a new salt after seeing SFIR9 partition zero would add a post-outcome selection degree of freedom; the predecessor salt is inherited unchanged"
+    },
+    "study_kind": "FRESH_HELDOUT_CONFIRMATORY_SUCCESSOR"
+  },
+  "schema": "tavonel.sfir10.instrument_freeze.v1",
+  "state": "INSTRUMENT_FROZEN",
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10",
+  "why_this_is_not_an_sfir9_repair": "SFIR9 remains terminal non-sealable. SFIR10 uses a fresh, previously unopened partition and freezes the missing rate-window control flow before selecting it."
+}

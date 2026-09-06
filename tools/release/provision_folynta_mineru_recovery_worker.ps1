@@ -1,6 +1,8 @@
 param(
     [Parameter(Mandatory = $true)] [string]$RepositoryRoot,
     [Parameter(Mandatory = $true)] [string]$CredentialFile,
+    [ValidatePattern('^[A-Za-z][A-Za-z0-9_-]{1,63}$')]
+    [string]$CredentialLabel = 'Runpod',
     [Parameter(Mandatory = $true)] [string]$DeadlineUtc,
     [int]$WorkerIndex = 7,
     [string]$Name = 'folynta-mineru344-operational-recovery-r2',
@@ -64,8 +66,9 @@ if (Test-Path -LiteralPath $receiptPath) {
     exit 0
 }
 
+$credentialPattern = '^\s*' + [regex]::Escape($CredentialLabel) + '\s*:'
 $line = Get-Content -LiteralPath $credential |
-    Where-Object { $_ -match '^\s*Runpod\s*:' } |
+    Where-Object { $_ -match $credentialPattern } |
     Select-Object -First 1
 if (-not $line) { throw 'RunPod credential label not found' }
 $apiKey = ($line -split ':', 2)[1].Trim()
@@ -226,6 +229,7 @@ if (-not $priorWatchdog -or -not (
     $arguments = @(
         '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $watchdogScript,
         '-PodId', $podId, '-CredentialFile', $credential,
+        '-CredentialLabel', $CredentialLabel,
         '-DeadlineUtc', $deadline.ToString('o'), '-ReceiptOut', $watchdogReceipt,
         '-SshKey', $key, '-KnownHosts', $knownHosts
     )
@@ -373,15 +377,15 @@ Copy-ToRecovery $retryRunner '/workspace/folynta/runner/remote_run_operational_r
 Copy-ToRecovery $stallWatchdog '/workspace/folynta/runner/remote_stall_watchdog.sh'
 Copy-ToRecovery $smokeInput.FullName '/workspace/folynta/qualification-smoke/input.png'
 
-# BOOTSTRAP_COMPLETE lives on the persistent /workspace volume, but the packages
-# it attests to are installed on the container disk, which RunPod resets on every
-# stop/start. On a resumed Pod the receipt survives while mineru, torch and
-# transformers do not, so the receipt is only trusted together with a live probe
-# of the ephemeral runtime.
+# Model bytes, package caches and the MinerU virtualenv live on persistent
+# /workspace. The container disk still resets on stop/start, so cheap boot state
+# is recreated while this probe verifies the persisted expensive runtime before
+# trusting its receipt.
 $runtimeProbe = @'
 folynta_runtime_present() {
-  test -x /usr/local/bin/mineru &&
-    /usr/bin/python3.11 -c 'import mineru, torch, transformers' >/dev/null 2>&1
+  test -x /workspace/folynta/mineru-3.4.4-venv/bin/mineru &&
+    test -d /workspace/folynta/models/MinerU2.5-Pro-2605-1.2B &&
+    /workspace/folynta/mineru-3.4.4-venv/bin/python -c 'import mineru, torch, transformers' >/dev/null 2>&1
 }
 '@
 $launchBootstrap = @"
@@ -424,11 +428,12 @@ if ($state -ne 'complete') { throw 'Recovery MinerU bootstrap exceeded deadline'
 $identity = 'opendatalab/MinerU2.5-Pro-2605-1.2B@bff20d4ae2bf202df9f45284b4d43681555a97ed'
 $validate = @"
 set -euo pipefail
-/usr/bin/python3.11 /workspace/folynta/runner/artifact_manifest.py \
+/workspace/folynta/mineru-3.4.4-venv/bin/python /workspace/folynta/runner/artifact_manifest.py \
+  --root /workspace/folynta/models/MinerU2.5-Pro-2605-1.2B \
   --root /workspace/folynta/models/MinerU2.5-Pro-2605-1.2B \
   --output /workspace/folynta/receipts/model-artifact-primary.json \
   --identity '$identity' --exclude-prefix .cache >/dev/null
-/usr/bin/python3.11 - <<'PY'
+/workspace/folynta/mineru-3.4.4-venv/bin/python - <<'PY'
 import json
 from pathlib import Path
 value = json.loads(Path('/workspace/folynta/receipts/runtime-identity.json').read_text())
@@ -444,7 +449,7 @@ PY
 if ! test -f /workspace/folynta/receipts/SMOKE_COMPLETE; then
   rm -rf /workspace/folynta/qualification-smoke/output
   env MINERU_MODEL_SOURCE=local MINERU_TOOLS_CONFIG_JSON=/root/mineru.json \
-    timeout 900 /usr/local/bin/mineru \
+    timeout 900 /workspace/folynta/mineru-3.4.4-venv/bin/mineru \
     -p /workspace/folynta/qualification-smoke/input.png \
     -o /workspace/folynta/qualification-smoke/output -b vlm-engine -m ocr \
     >/workspace/folynta/receipts/smoke.stdout.log \

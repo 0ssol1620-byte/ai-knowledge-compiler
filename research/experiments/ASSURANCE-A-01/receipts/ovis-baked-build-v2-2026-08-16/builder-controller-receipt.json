@@ -1,0 +1,29 @@
+{
+  "completed_at_utc": "2026-08-15T19:18:00.343053+00:00",
+  "dockerfile_sha256": "sha256:cf3e66619340e5cc5b06e85c4e4e696b3c52d8444f3456e7aacde9345b3ebd50",
+  "failure_message": "RunPod GraphQL error: gpuTypeId is required",
+  "failure_type": "RuntimeError",
+  "guards": {
+    "stop_after": "2026-08-15T20:27:57.470038+00:00",
+    "terminate_after": "2026-08-15T20:37:57.470038+00:00",
+    "volume_in_gb": 0
+  },
+  "image_tag": "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/ovisocr2-m1:local-8d5c1cf980bcb8cc4135",
+  "model_artifact_sha256": "sha256:9270560288656ece5cb3a6989001afcf5af8d223bceed4a423c33a008861d009",
+  "model_revision": "65c619d374b55d4152e85150fc1b003700bc1f0c",
+  "passed": false,
+  "scanner_versions": {
+    "syft": "1.50.0",
+    "trivy": "0.72.0"
+  },
+  "schema": "tavonel.ovis-cpu-builder.v1",
+  "secret": {
+    "id": "bhbaft9pfb",
+    "name": "tavonel-ghcr-20260815191757",
+    "value_exposed": false
+  },
+  "secret_delete_acknowledged": false,
+  "source_commit": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "source_tree_sha256": "sha256:8d5c1cf980bcb8cc41351553adce7bc5ebc67744d1e55fcd29c4d8c6fe2059ed",
+  "started_at_utc": "2026-08-15T19:17:57.470038+00:00"
+}

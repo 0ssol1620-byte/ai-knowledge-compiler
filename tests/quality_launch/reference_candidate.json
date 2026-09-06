@@ -1,0 +1,36 @@
+{
+  "schema_version": "quality-candidate-1.0.0", "suite_id": "tavonel-mixed-local-v1", "candidate_id": "deterministic-reference-v1",
+  "dimensions": {
+    "ocr_text": {"documents": [
+      {"id": "html-ko", "text": "실험 보고서 원문 문단과 외부 링크입니다. 결과 첫 번째 근거 두 번째 근거 정확도 비교 기준 0.86 개선 0.94"},
+      {"id": "srt-ko", "text": "진행자: 첫 번째 문장입니다. 반복 문장 반복 문장 마지막 문장입니다."},
+      {"id": "vtt-ko", "text": "첫 번째 관찰입니다. 두 번째 관찰입니다."},
+      {"id": "report-md-en", "text": "Compiling Public Filings into Verifiable Knowledge Revenue by reportable segment Platform 12,345,678 Services 4,882,103 Total 17,227,781"}
+    ]},
+    "ocr_layout": {"blocks": [
+      {"id": "h1", "type": "heading", "order": 0, "bbox1000": [80, 60, 920, 130]}, {"id": "p1", "type": "paragraph", "order": 1, "bbox1000": [80, 150, 920, 240]},
+      {"id": "t1", "type": "table", "order": 2, "bbox1000": [80, 280, 920, 650]}, {"id": "f1", "type": "figure", "order": 3, "bbox1000": [80, 680, 920, 930]}
+    ]},
+    "citations": {"citations": [
+      {"id": "claim-score", "page_index0": 0, "bbox1000": [80, 280, 920, 650]}, {"id": "claim-revenue", "page_index0": 2, "bbox1000": [70, 190, 930, 610]}, {"id": "claim-coverage", "page_index0": 4, "bbox1000": [80, 200, 920, 420]}
+    ]},
+    "entity_resolution": {"clusters": [["platform-title", "platform-row"], ["services-row"], ["tavonel-schema", "canonical-schema"]]},
+    "claims": {"labels": {"c-score": "entailment", "c-public-filing": "contradiction", "c-unknown-owner": "unknown", "c-coverage": "entailment"}},
+    "temporal_authority": {"facts": [
+      {"id": "revenue-2025", "valid_from": "2025-01-01", "valid_to": "2026-01-01", "recorded_at": "2026-08-01T00:00:00Z", "superseded_at": null, "temporal_source": "explicit"},
+      {"id": "fixture-purpose", "valid_from": null, "valid_to": null, "recorded_at": "2026-08-01T00:00:00Z", "superseded_at": null, "temporal_source": "unknown"}
+    ], "as_of": [{"id": "at-2025", "fact_ids": ["revenue-2025"]}, {"id": "unknown-excluded", "fact_ids": []}]},
+    "ontology_graph": {"nodes": [{"id": "doc-report", "type": "document"}, {"id": "entity-platform", "type": "entity"}, {"id": "metric-revenue", "type": "metric"}], "edges": [
+      {"source": "doc-report", "relation": "contains", "target": "metric-revenue", "source_ref": "p3-table"}, {"source": "entity-platform", "relation": "reports", "target": "metric-revenue", "source_ref": "p3-table"}
+    ]},
+    "adaptive_chunking": {"chunks": [
+      {"id": "chunk-1", "token_count": 700, "source_units": ["p2-method", "p2-evaluation"], "citation_units": ["p2-method", "p2-evaluation"]},
+      {"id": "chunk-2", "token_count": 810, "source_units": ["p3-table", "p4-caption"], "citation_units": ["p3-table", "p4-caption"]},
+      {"id": "chunk-3", "token_count": 650, "source_units": ["p5-formula", "p6-references"], "citation_units": ["p5-formula", "p6-references"]}
+    ]},
+    "retrieval": {"queries": [{"id": "q-revenue", "retrieved": ["p3-table", "p2-evaluation"]}, {"id": "q-coverage", "retrieved": ["p5-formula", "p3-table"]}, {"id": "q-evidence", "retrieved": ["p2-evaluation", "p6-references", "p3-table"]}]},
+    "downstream_ai": {"raw": [{"id": "qa-score", "answer": "0.86"}, {"id": "qa-revenue", "answer": "unknown"}, {"id": "qa-coverage", "answer": "99.6%"}, {"id": "qa-public", "answer": "synthetic"}], "compiled": [
+      {"id": "qa-score", "answer": "0.94"}, {"id": "qa-revenue", "answer": "17,227,781"}, {"id": "qa-coverage", "answer": "99.6%"}, {"id": "qa-public", "answer": "synthetic"}
+    ]}
+  }
+}

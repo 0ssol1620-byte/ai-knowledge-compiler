@@ -1,0 +1,28 @@
+{
+  "by_family": {
+    "encyclopedia_wikipedia": 27,
+    "git_docs": 638,
+    "regulation_ecfr": 1033
+  },
+  "candidates": 1698,
+  "dropped_by_code": {},
+  "estimated_cost_usd": 0.0,
+  "frame": "research/tavonel_eval_v2/artifacts/development/sfi3_lineages.json",
+  "frame_sha256": "sha256:7c30657b7f0a356fcda7d597ab483985de628076e293535c12ba8beb3a278b26",
+  "gpu_seconds": 0,
+  "provenance": {
+    "generated_at": "2026-08-26T11:26:57.166286+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "sfi3-lineage-freeze",
+    "run_id": "20260826T112657Z-c40e5b5a48be",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_sfi3_lineages.py",
+    "tool_sha256": "sha256:5e2a444cf48d92be615d2347d152a73a861844bc9fd4aa0bd13337730108ff1d"
+  },
+  "receipt_sha256": "sha256:82b3265425ff8c740d293947752dd0e12718efdfd97b519651a4ee2ed1a6bdc7",
+  "schema": "tavonel.v2.sfi3_lineage_freeze.v1",
+  "spent_excluded": 6127
+}

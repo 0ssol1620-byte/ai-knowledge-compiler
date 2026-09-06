@@ -1,0 +1,303 @@
+{
+  "acceptance": {
+    "C2_stale_left_behind_zero": true,
+    "C3_no_pair_broken": true,
+    "all_pairs_equivalent_after": true,
+    "pairs_broken": [],
+    "pairs_repaired": []
+  },
+  "claim_boundary": "Public Wikipedia revision pairs, replayed from frozen local text. This supports selective/full artifact equivalence on these pairs under this adapter, not universal domain or production performance.",
+  "corpora": {
+    "extension-v1-UNTOUCHED": {
+      "arms": {
+        "both": {
+          "all_equivalent": true,
+          "artifacts_genuinely_changed": 9,
+          "changed_pairs": 5,
+          "false_invalidation_rate_over_rebuilt": 0.0,
+          "falsely_invalidated": 0,
+          "mean_rebuild_fraction_over_changed_pairs": 0.24714285714285716,
+          "necessarily_rebuilt": 9,
+          "non_equivalent_titles": [],
+          "pairs": 5,
+          "stale_escape_rate": 0.0,
+          "stale_left_behind_total": 0,
+          "total_artifacts": 140,
+          "total_rebuilt": 9
+        },
+        "legacy": {
+          "all_equivalent": true,
+          "artifacts_genuinely_changed": 9,
+          "changed_pairs": 5,
+          "false_invalidation_rate_over_rebuilt": 0.0,
+          "falsely_invalidated": 0,
+          "mean_rebuild_fraction_over_changed_pairs": 0.24714285714285716,
+          "necessarily_rebuilt": 9,
+          "non_equivalent_titles": [],
+          "pairs": 5,
+          "stale_escape_rate": 0.0,
+          "stale_left_behind_total": 0,
+          "total_artifacts": 140,
+          "total_rebuilt": 9
+        },
+        "structural_only": {
+          "all_equivalent": true,
+          "artifacts_genuinely_changed": 9,
+          "changed_pairs": 5,
+          "false_invalidation_rate_over_rebuilt": 0.0,
+          "falsely_invalidated": 0,
+          "mean_rebuild_fraction_over_changed_pairs": 0.24714285714285716,
+          "necessarily_rebuilt": 9,
+          "non_equivalent_titles": [],
+          "pairs": 5,
+          "stale_escape_rate": 0.0,
+          "stale_left_behind_total": 0,
+          "total_artifacts": 140,
+          "total_rebuilt": 9
+        },
+        "unresolved_incoming_only": {
+          "all_equivalent": true,
+          "artifacts_genuinely_changed": 9,
+          "changed_pairs": 5,
+          "false_invalidation_rate_over_rebuilt": 0.0,
+          "falsely_invalidated": 0,
+          "mean_rebuild_fraction_over_changed_pairs": 0.24714285714285716,
+          "necessarily_rebuilt": 9,
+          "non_equivalent_titles": [],
+          "pairs": 5,
+          "stale_escape_rate": 0.0,
+          "stale_left_behind_total": 0,
+          "total_artifacts": 140,
+          "total_rebuilt": 9
+        }
+      },
+      "corpus_dir": "research/experiments/H1-B-REAL-REVISION-01/corpus-extension-v1",
+      "legacy": {
+        "all_equivalent": true,
+        "artifacts_genuinely_changed": 9,
+        "changed_pairs": 5,
+        "false_invalidation_rate_over_rebuilt": 0.0,
+        "falsely_invalidated": 0,
+        "mean_rebuild_fraction_over_changed_pairs": 0.24714285714285716,
+        "necessarily_rebuilt": 9,
+        "non_equivalent_titles": [],
+        "pairs": 5,
+        "stale_escape_rate": 0.0,
+        "stale_left_behind_total": 0,
+        "total_artifacts": 140,
+        "total_rebuilt": 9
+      },
+      "pairs_broken": [],
+      "pairs_repaired": [],
+      "pairs_whose_rebuild_set_widened": [],
+      "receipt": "research/experiments/H1-B-REAL-REVISION-01/extension-protocol-v1.json",
+      "records_legacy": [
+        {
+          "artifact_count": 43,
+          "artifacts_genuinely_changed": 0,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "falsely_invalidated": 0,
+          "missed_genuinely_changed": 0,
+          "necessarily_rebuilt": 0,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "ChatGPT"
+        },
+        {
+          "artifact_count": 39,
+          "artifacts_genuinely_changed": 0,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "falsely_invalidated": 0,
+          "missed_genuinely_changed": 0,
+          "necessarily_rebuilt": 0,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Deep learning"
+        },
+        {
+          "artifact_count": 20,
+          "artifacts_genuinely_changed": 3,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "falsely_invalidated": 0,
+          "missed_genuinely_changed": 0,
+          "necessarily_rebuilt": 3,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.15,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "GPT-4"
+        },
+        {
+          "artifact_count": 35,
+          "artifacts_genuinely_changed": 3,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "falsely_invalidated": 0,
+          "missed_genuinely_changed": 0,
+          "necessarily_rebuilt": 3,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.08571428571428572,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "OpenAI"
+        },
+        {
+          "artifact_count": 3,
+          "artifacts_genuinely_changed": 3,
+          "change_kinds": [
+            "identity_unresolved"
+          ],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "falsely_invalidated": 0,
+          "missed_genuinely_changed": 0,
+          "necessarily_rebuilt": 3,
+          "rebuild_count": 3,
+          "rebuild_fraction": 1.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Transformer (deep learning architecture)"
+        }
+      ],
+      "records_structural_channel": [
+        {
+          "artifact_count": 43,
+          "artifacts_genuinely_changed": 0,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "falsely_invalidated": 0,
+          "missed_genuinely_changed": 0,
+          "necessarily_rebuilt": 0,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "ChatGPT"
+        },
+        {
+          "artifact_count": 39,
+          "artifacts_genuinely_changed": 0,
+          "change_kinds": [],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "falsely_invalidated": 0,
+          "missed_genuinely_changed": 0,
+          "necessarily_rebuilt": 0,
+          "rebuild_count": 0,
+          "rebuild_fraction": 0.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Deep learning"
+        },
+        {
+          "artifact_count": 20,
+          "artifacts_genuinely_changed": 3,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "falsely_invalidated": 0,
+          "missed_genuinely_changed": 0,
+          "necessarily_rebuilt": 3,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.15,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "GPT-4"
+        },
+        {
+          "artifact_count": 35,
+          "artifacts_genuinely_changed": 3,
+          "change_kinds": [
+            "modified_claim"
+          ],
+          "changed_logical_ids": 1,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "falsely_invalidated": 0,
+          "missed_genuinely_changed": 0,
+          "necessarily_rebuilt": 3,
+          "rebuild_count": 3,
+          "rebuild_fraction": 0.08571428571428572,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "OpenAI"
+        },
+        {
+          "artifact_count": 3,
+          "artifacts_genuinely_changed": 3,
+          "change_kinds": [
+            "identity_unresolved"
+          ],
+          "changed_logical_ids": 0,
+          "content_changed": true,
+          "diverged": [],
+          "equivalent": true,
+          "falsely_invalidated": 0,
+          "missed_genuinely_changed": 0,
+          "necessarily_rebuilt": 3,
+          "rebuild_count": 3,
+          "rebuild_fraction": 1.0,
+          "stale_left_behind": 0,
+          "structural_change_present": false,
+          "title": "Transformer (deep learning architecture)"
+        }
+      ],
+      "structural_channel": {
+        "all_equivalent": true,
+        "artifacts_genuinely_changed": 9,
+        "changed_pairs": 5,
+        "false_invalidation_rate_over_rebuilt": 0.0,
+        "falsely_invalidated": 0,
+        "mean_rebuild_fraction_over_changed_pairs": 0.24714285714285716,
+        "necessarily_rebuilt": 9,
+        "non_equivalent_titles": [],
+        "pairs": 5,
+        "stale_escape_rate": 0.0,
+        "stale_left_behind_total": 0,
+        "total_artifacts": 140,
+        "total_rebuilt": 9
+      }
+    }
+  },
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-18T19:18:54.329526+00:00",
+  "receipt_sha256": "sha256:4488372d7fa442fce2b2596663f3c2d2391923f3ea00697272591ba680e9ce5b",
+  "schema": "tavonel.structural-channel-shadow-benchmark.v1",
+  "the_cost": "structural seeding necessarily widens the dirty set. pairs_whose_rebuild_set_widened and the two mean rebuild fractions are the price, reported beside the correctness rather than after it.",
+  "what_changed": "plan_recompilation gained an opt-in structural traversal; a structural change now seeds it with the document's units on the STRUCTURAL dependency channel. Nothing else moved: no metric, no threshold, no identity rule, and the default remains the legacy path."
+}

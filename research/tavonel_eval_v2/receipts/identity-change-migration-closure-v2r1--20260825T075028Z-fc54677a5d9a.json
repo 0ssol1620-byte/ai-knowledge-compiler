@@ -1,0 +1,274 @@
+{
+  "INVARIANT_6_ambiguous_identity_stays_unresolved": {
+    "clause_a_b": {
+      "source": "V1 check_ambiguity, reused rather than reimplemented",
+      "violations": 0
+    },
+    "clause_c": {
+      "observations": 330,
+      "violations": 0
+    },
+    "clause_d": {
+      "observations": 4545,
+      "violations": 30
+    },
+    "clause_e": {
+      "declared_record": "identity_unresolved",
+      "observations": 330,
+      "unsettled_source": "the resolver's own AMBIGUOUS decisions, NOT the diff's records -- reading the unsettled set off the diff would compare the diff to itself and could not come back no",
+      "violations": 0
+    },
+    "met": false,
+    "observations": {
+      "a_b": 332,
+      "c": 330,
+      "d": 4545,
+      "e": 330
+    },
+    "violation_count": 30,
+    "violations": [
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:0d17d97f597eb950ab44a745",
+        "why": "a before-side unit left the diff with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:12058d1852d4251969289ceb",
+        "why": "a before-side unit left the diff with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:150e1dc1aed612b542361801",
+        "why": "a before-side unit left the diff with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:1633199080558f961d04b8f9",
+        "why": "a before-side unit left the diff with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:164f6ff03d4f021cf7d35a78",
+        "why": "a before-side unit left the diff with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:326d3c7b8c4915f9ee680fbd",
+        "why": "a before-side unit left the diff with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:6e1652de78731bc028ee661d",
+        "why": "a before-side unit left the diff with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:7a5bfb99a1565a609a17b0a0",
+        "why": "a before-side unit left the diff with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:c4ba6abb4810b716e7e3103f",
+        "why": "a before-side unit left the diff with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:c5ee0b235bb77ce864c9113e",
+        "why": "a before-side unit left the diff with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:eb9440776c535a880e57f0c7",
+        "why": "a before-side unit left the diff with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:ed5009c7958de6921e410720",
+        "why": "a before-side unit left the diff with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:f9fe84f54d15ba96e3af1002",
+        "why": "a before-side unit left the diff with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:00b2a287b0f2994c6b9922ef",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:0362cc0d75936617baabb4bc",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:081ad9c350f36053d2b96964",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:0a108976860b743075dea07b",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:1bf904ed70ed511e87350614",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:1ffe3aed405c57ebf9e76dfd",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:38bbba6df4edfc8dc471250f",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:3ccef54566664a3bf6201e6d",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:579d69cefbfb7d4a0ae9e19e",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:7e7e8cacf0426f75d512bdb9",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:a6e301e97da0e252716b7ebc",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:d4e6a51425eb19b2412b882e",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:f3453e3fa784629ba24872ee",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:40:273:273.3",
+        "logical_id": "u:fca7a6bd615013374527d215",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "ecfr:47:54:54.101",
+        "logical_id": "u:11ca96f93dc0c3c06bc08d84",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "git:qdrant/landing_page:qdrant-landing/content/documentation/capacity-planning.md",
+        "logical_id": "u:15191021dfd4b9102686cc41",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      },
+      {
+        "clause": "d",
+        "lineage_id": "git:qdrant/landing_page:qdrant-landing/content/documentation/capacity-planning.md",
+        "logical_id": "u:b7bdeb538df6cd8150191885",
+        "why": "an after-side unit appeared with no record of any kind: not matched, not definitely classified, not named as unresolved"
+      }
+    ],
+    "zero_tolerance": true
+  },
+  "by_family": {
+    "git_docs": 126,
+    "regulation_ecfr": 109,
+    "sec_edgar": 50
+  },
+  "estimated_cost_usd": 0.0,
+  "gpu_seconds": 0,
+  "pair_count": 285,
+  "preconditions": {
+    "acceptance_semantics_sha256": "sha256:11d759493e2f47a59770d401ab7186be3916fdfe3116d3da961213d939ff0838",
+    "already_measured": [],
+    "chain": [
+      {
+        "name": "protocol",
+        "run_id": "20260825T064808Z-0c5c4c915447",
+        "rung": 1
+      },
+      {
+        "name": "universe",
+        "run_id": "20260825T074754Z-26b160b1ac43",
+        "rung": 2
+      },
+      {
+        "name": "scorer_acceptance",
+        "run_id": "20260825T074849Z-a0f7180f6b9b",
+        "rung": 3
+      },
+      {
+        "name": "exclusions",
+        "run_id": "20260825T074849Z-2e1cc2009116",
+        "rung": 4
+      }
+    ],
+    "collision_groups": 0,
+    "exclusion_count": 0,
+    "exclusion_policy_sha256": "sha256:fd9ee9f2d4f27647f38b9ca903ba875924efc2cf9f97bd447e68b20c480a70d5",
+    "measurement_stem": "identity-change-migration-closure-v2r1",
+    "pair_count": 285,
+    "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1",
+    "protocol_sha256": "sha256:66cf1920b892bba32179d371b5ba5b8d944e4c532824a4b6603377f2e32f27ba",
+    "state": "READY",
+    "universe_sha256": "sha256:1fa0d8d9844f2ab778d871bf59a121559da6f4b95dfcdad6364b428cfe651a1f"
+  },
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1",
+  "provenance": {
+    "generated_at": "2026-08-25T07:50:28.269585+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "identity-change-migration-closure-v2r1",
+    "run_id": "20260825T075028Z-fc54677a5d9a",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/identity_change_migration_closure_v2.py",
+    "tool_sha256": "sha256:ee63d3b6103c8c35319cad4aa7f7ef9989af682a0bf8c3fcd8bd3cd720610952"
+  },
+  "receipt_sha256": "sha256:022191a65be6f5f87da97af2b85f9895abe2b82aa884171e4b10a1623eff9d58",
+  "schema": "tavonel.v2.identity_change_migration_closure.v2r1_result.v1",
+  "universe_sha256": "sha256:1fa0d8d9844f2ab778d871bf59a121559da6f4b95dfcdad6364b428cfe651a1f",
+  "unsettled_identities_total": 330,
+  "wall_seconds": 78.03
+}

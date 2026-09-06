@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 import httpx
+import pytest
 import pytest_asyncio
 from akc_api.main import create_app
 from akc_api.models import (
@@ -25,11 +26,49 @@ from akc_api.models import (
     ReviewItem,
     utcnow,
 )
+from akc_api.product_analytics import ProductAnalyticsEventCreate
 from akc_api.settings import Settings
+from pydantic import ValidationError
 from sqlalchemy import func, select
 
 _SUPPORT_KEY = "product-analytics-test-support-key"
 _PASSWORD = "correct horse battery staple"  # noqa: S105
+
+
+@pytest.mark.parametrize(
+    ("event_type", "target"),
+    [
+        ("landing_demo_started", {}),
+        ("landing_demo_completed", {}),
+        ("explore_object_opened", {}),
+        ("explore_citation_opened", {}),
+        ("pricing_viewed", {}),
+        ("signup_started", {}),
+        ("source_added", {}),
+        ("connector_started", {}),
+        ("compile_started", {}),
+        ("compile_completed", {}),
+        ("review_opened", {}),
+        ("review_completed", {}),
+        ("world_opened", {}),
+        ("evidence_opened", {}),
+        ("ask_started", {}),
+        ("ask_cited_answer", {}),
+        ("package_downloaded", {}),
+    ],
+)
+def test_masterplan_event_allowlist_has_strict_targets(
+    event_type: str,
+    target: dict[str, uuid.UUID],
+) -> None:
+    event = ProductAnalyticsEventCreate(event_type=event_type, **target)  # type: ignore[arg-type]
+    assert event.event_type == event_type
+    with pytest.raises(ValidationError):
+        ProductAnalyticsEventCreate(  # type: ignore[call-arg]
+            event_type=event_type,
+            **target,
+            document_content="must never enter analytics",
+        )
 
 
 @pytest_asyncio.fixture

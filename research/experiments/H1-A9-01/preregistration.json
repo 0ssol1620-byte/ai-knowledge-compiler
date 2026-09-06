@@ -1,0 +1,71 @@
+{
+  "schema": "tavonel.research.preregistration.v1",
+  "experiment_id": "H1-A9-01",
+  "title": "Source-grounded acceptance versus agreement and model self-confidence",
+  "status": "PREREGISTERED_PROTOCOL_NOT_RUN",
+  "prepared_on": "2026-08-16",
+  "patent_element": "Family A / A9",
+  "paper_track": "Beyond the Parser / source-grounded acceptance follow-on",
+  "research_question": "For frozen document-extraction candidates, does a source-grounded acceptance gate identify a higher-precision accepted subset than candidate agreement or model self-confidence at comparable accepted coverage?",
+  "anti_circularity_rule": "The source-grounded gate itself is never used as the correctness outcome. Correctness is scored by a separately frozen official or local evaluator/ground-truth contract after candidate outputs and policy features are frozen.",
+  "arms": [
+    "candidate agreement threshold policy",
+    "model self-confidence threshold policy when confidence is genuinely emitted by the frozen model/runtime",
+    "source-grounded acceptance receipt policy",
+    "abstain/review baseline"
+  ],
+  "phase_0": {
+    "name": "zero-GPU frozen-output feasibility",
+    "gpu_spend_usd": 0,
+    "eligible_cases": "existing frozen public-source candidate outputs for which independent correctness labels/evaluator outputs and source evidence are both already present",
+    "required_fields": [
+      "case_id",
+      "frozen candidate output hash",
+      "source revision hash and source locator",
+      "agreement features if the agreement arm is evaluated",
+      "self-confidence only if emitted by the original frozen runtime",
+      "source-grounded receipt inputs",
+      "independent correctness outcome"
+    ],
+    "missing_data_rule": "Never synthesize self-confidence, agreement, or evaluator labels after the fact. An arm with missing original features is reported unavailable rather than imputed.",
+    "performance_conclusion_allowed": false,
+    "go_to_phase_1_if": [
+      "a non-trivial frozen holdout has independent outcome labels",
+      "at least two acceptance policies can be evaluated on the same cases without reconstructing missing features",
+      "candidate outputs are immutable and policy thresholds are frozen before viewing holdout outcomes"
+    ]
+  },
+  "phase_1": {
+    "design": "paired same-candidate acceptance-policy comparison on a held-out public-source cohort",
+    "primary_endpoint": "precision of accepted outputs under the independent correctness outcome",
+    "secondary_endpoints": [
+      "accepted coverage",
+      "critical numeric precision and recall",
+      "table-cell correctness where applicable",
+      "reading-order correctness where applicable",
+      "abstention/review rate",
+      "false-accept count",
+      "cost per independently correct accepted output"
+    ],
+    "statistics": [
+      "same-case paired policy comparison",
+      "report every numerator and denominator",
+      "bootstrap confidence intervals for precision/coverage deltas where sample size permits",
+      "stratify by native-text, table, formula, low-quality-scan and other available document families",
+      "retain negative and null findings"
+    ],
+    "gpu_economy": [
+      "reuse frozen outputs whenever possible",
+      "if fresh inference is required, generate each candidate once and evaluate all acceptance policies offline",
+      "source and evaluator ground truth never mount on GPU workers",
+      "prefer 4-way independent sharding only after formal runtime READY"
+    ],
+    "nominal_gpu_spend_cap_usd": 3.0,
+    "hard_gpu_spend_cap_usd": 10.0
+  },
+  "claim_gate": {
+    "current": "A9 native-source gate implemented and unit-verified; empirical precision benefit WITHHELD",
+    "success": "Only a corpus-scoped statement with denominator, policy thresholds, evaluator revision, confidence interval and immutable receipt hashes may be considered; external publication remains blocked separately by IP/publication controls.",
+    "failure": "Retain null/negative result and do not tune the registered endpoint after observing holdout outcomes."
+  }
+}

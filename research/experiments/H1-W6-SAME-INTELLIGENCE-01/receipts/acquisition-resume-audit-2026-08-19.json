@@ -1,0 +1,77 @@
+{
+  "acquisition_script_sha256": "sha256:d46a577b9a14e335a9846fbc50d31ef4a4914406abfc738097417b199e26669e",
+  "checks": {
+    "atomic_temp_then_rename": {
+      "answer": "NO",
+      "evidence": "direct write_text to the final path; no tempfile, no os.replace/rename",
+      "grep_rename": false
+    },
+    "checkpointing": {
+      "answer": "NONE",
+      "evidence": "records[] is in-memory; the acquisition receipt is written only after the cohort loop finishes, so a kill loses all bookkeeping and writes no receipt. This matches the observed v5 death: 1 pair on disk, no completion sidecar."
+    },
+    "de_facto_completion_marker": {
+      "answer": "PARTIAL",
+      "evidence": "metadata.json is written AFTER both wikitext files, so its presence implies both were written. Nothing reads it as a marker, but it is the natural basis for a resume rule."
+    },
+    "deterministic_manifest_traversal": {
+      "answer": "YES",
+      "evidence": "title_rows sliced by fixed COHORT_SIZE/MAX_COHORTS in manifest order"
+    },
+    "deterministic_output_path": {
+      "answer": "YES",
+      "evidence": "page_dir(corpus, row['index'], title) is a pure function of the frozen manifest row"
+    },
+    "existing_pair_validation": {
+      "answer": "NO",
+      "evidence": "no re-read or hash check of a pre-existing pair"
+    },
+    "overwrites_existing_output": {
+      "answer": "YES",
+      "evidence": "before_path.write_text(...) / after_path.write_text(...) are unconditional; there is no exists() guard anywhere in acquire()",
+      "grep_exists_guard": false
+    },
+    "partial_write_detection": {
+      "answer": "NO",
+      "evidence": "no size, hash or sentinel check on an existing file before use"
+    },
+    "retry_changes_cohort_composition": {
+      "answer": "NO, given fixed cutoffs",
+      "caveat": "This holds only for a run that starts from an empty corpus. A partial-resume would need to reload metadata.json for skipped pages to evaluate the availability thresholds, which no code path does.",
+      "evidence": "BEFORE_CUTOFF/AFTER_CUTOFF pin which revision is fetched per title, and the stop rule depends only on accumulated counts over a deterministic traversal. A clean re-run reproduces the same composition."
+    },
+    "skip_semantics": {
+      "answer": "NONE",
+      "evidence": "every eligible title is fetched and rewritten every run"
+    },
+    "state_after_exception": {
+      "answer": "UNDEFINED",
+      "evidence": "no try/finally around the write pair; an exception between before_path and after_path leaves a directory with one file and no metadata.json"
+    }
+  },
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "forbidden": [
+    "copying the v5 pair into v6 to save one fetch - that would make the cohort depend on where the crash happened",
+    "modifying acquire_w6_v3.py, whose sha256 the frozen manifest pins",
+    "restarting into corpus-v5, where the first write would overwrite the existing pair non-atomically"
+  ],
+  "generated_at": "2026-08-19T04:33:00.787056+00:00",
+  "network_access": false,
+  "option_b_contract": [
+    "acquire into a NEW corpus-v6 directory, leaving corpus-v5 untouched",
+    "reuse the SAME frozen 6,987-title manifest and the same cutoffs, so cohort composition is unchanged",
+    "corpus-v5's single pair is retained as failed-run evidence and is NOT copied into v6",
+    "do not select or reorder titles based on what v5 happened to acquire"
+  ],
+  "purpose": "P2-13 sibling task W6 section 2A: can the v5 acquisition be resumed without endangering the one materialized pair? Static audit only; no network.",
+  "receipt_sha256": "sha256:edce0f8c6bb688cbcfaa8000e0f21c8079c5708dfb01d5e2e0d0a57a0f4f044c",
+  "recovery_option_selected": "B_FRESH_CORPUS_V6",
+  "schema": "tavonel.w6-acquisition-resume-audit.v1",
+  "still_required_before_any_network_run": [
+    "freeze a recovery protocol",
+    "tiny-fixture kill/restart harness proving: existing complete pairs preserved, partial pairs detected, missing-only recovery, manifest order preserved, completion sidecar correctness"
+  ],
+  "verdict": "RESUME_UNSAFE_AS_IMPLEMENTED",
+  "why": "Option A (verified resume) requires skip-on-exists, integrity validation of existing pairs, and atomic writes. None exist, and adding them changes the frozen acquisition script whose sha256 the title manifest pins - the script self-checks that hash and exits if it moved. So a safe resume cannot be built without breaking the freeze that makes the cohort trustworthy."
+}

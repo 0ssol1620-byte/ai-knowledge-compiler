@@ -1,0 +1,1308 @@
+{
+  "case_count": 48,
+  "case_recipes": [
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-012ccf95a6acc33dcdddbd8b",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-012ccf95a6acc33dcdddbd8b::region",
+      "planned_scope_level": "region",
+      "stratum": "R01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-03adcec7ec521f380241bc10",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-03adcec7ec521f380241bc10::region",
+      "planned_scope_level": "region",
+      "stratum": "R01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-07a9fb99630f249f88c5d1c1",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-07a9fb99630f249f88c5d1c1::region",
+      "planned_scope_level": "region",
+      "stratum": "R01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-0a37968cee55fb200241ca38",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-0a37968cee55fb200241ca38::region",
+      "planned_scope_level": "region",
+      "stratum": "R01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-0a59dffdde0b8f55d705837e",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-0a59dffdde0b8f55d705837e::region",
+      "planned_scope_level": "region",
+      "stratum": "R01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-0b0bcc850c86225bf8ec53ac",
+      "codes_excluded_non_recoverable": [
+        "H01"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "H01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-0b0bcc850c86225bf8ec53ac::region",
+      "planned_scope_level": "region",
+      "stratum": "R01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-0cafbda605ce9ffeb9df29d5",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-0cafbda605ce9ffeb9df29d5::region",
+      "planned_scope_level": "region",
+      "stratum": "R01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-0f130a1360871e46fd78e3b0",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-0f130a1360871e46fd78e3b0::region",
+      "planned_scope_level": "region",
+      "stratum": "R01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-08b85a6113d61af0ba297339",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "G01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "region_crop",
+      "planned_scope_id": "olmocr-bench-08b85a6113d61af0ba297339::region",
+      "planned_scope_level": "region",
+      "stratum": "B01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-0f59fa16316312f91a355eae",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-0f59fa16316312f91a355eae::region",
+      "planned_scope_level": "region",
+      "stratum": "B01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-12d429aea25595608c43c136",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-12d429aea25595608c43c136::region",
+      "planned_scope_level": "region",
+      "stratum": "B01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-1c78a45023f1c0873abe5f11",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-1c78a45023f1c0873abe5f11::region",
+      "planned_scope_level": "region",
+      "stratum": "B01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-258fc0e8e0828195e22b1b92",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-258fc0e8e0828195e22b1b92::region",
+      "planned_scope_level": "region",
+      "stratum": "B01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-266ade53d9884e53c28466c7",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-266ade53d9884e53c28466c7::region",
+      "planned_scope_level": "region",
+      "stratum": "B01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-271413e646ad0e6a04ed23ab",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-271413e646ad0e6a04ed23ab::region",
+      "planned_scope_level": "region",
+      "stratum": "B01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-277fd312ccc3b5fe7522e239",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-277fd312ccc3b5fe7522e239::region",
+      "planned_scope_level": "region",
+      "stratum": "B01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-0063dd238ddc94be64c20a61",
+      "codes_excluded_non_recoverable": [
+        "H01",
+        "H02"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "F01",
+        "G01",
+        "N01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "F01",
+        "G01",
+        "H01",
+        "H02",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "planned_same_family_variant": "formula_specialist",
+      "planned_scope_id": "parsebench-0063dd238ddc94be64c20a61::region",
+      "planned_scope_level": "region",
+      "stratum": "N01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-00f1def6e368fc3933defd61",
+      "codes_excluded_non_recoverable": [
+        "H01"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "N01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-00f1def6e368fc3933defd61::region",
+      "planned_scope_level": "region",
+      "stratum": "N01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-0353cf6e413929089df2e0a3",
+      "codes_excluded_non_recoverable": [
+        "H01",
+        "H02"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "N01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-0353cf6e413929089df2e0a3::region",
+      "planned_scope_level": "region",
+      "stratum": "N01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-041add7de36b73b6c8a003c7",
+      "codes_excluded_non_recoverable": [
+        "H01",
+        "H02"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "N01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-041add7de36b73b6c8a003c7::region",
+      "planned_scope_level": "region",
+      "stratum": "N01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-04910b3342b720bedbe546ac",
+      "codes_excluded_non_recoverable": [
+        "H01"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "N01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-04910b3342b720bedbe546ac::region",
+      "planned_scope_level": "region",
+      "stratum": "N01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-05f358501538bb3fa3fcf874",
+      "codes_excluded_non_recoverable": [
+        "H02"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "N01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H02",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-05f358501538bb3fa3fcf874::region",
+      "planned_scope_level": "region",
+      "stratum": "N01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-070891bb0e398032c5a476cb",
+      "codes_excluded_non_recoverable": [
+        "H02"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "N01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H02",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-070891bb0e398032c5a476cb::region",
+      "planned_scope_level": "region",
+      "stratum": "N01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-09895cf0faa8e5c7ce17f038",
+      "codes_excluded_non_recoverable": [
+        "H01"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "N01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "N01"
+      ],
+      "minimum_scope_level": "cell",
+      "planned_same_family_variant": "native_authority_reconstruction",
+      "planned_scope_id": "parsebench-09895cf0faa8e5c7ce17f038::region",
+      "planned_scope_level": "region",
+      "stratum": "N01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-00088c40c1011420badd651d",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "F01"
+      ],
+      "failure_codes": [
+        "B01",
+        "F01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "formula_specialist",
+      "planned_scope_id": "omnidocbench-00088c40c1011420badd651d::region",
+      "planned_scope_level": "region",
+      "stratum": "F01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-0041d0ac5710c0f46224fb6f",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "F01"
+      ],
+      "failure_codes": [
+        "B01",
+        "F01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "formula_specialist",
+      "planned_scope_id": "omnidocbench-0041d0ac5710c0f46224fb6f::region",
+      "planned_scope_level": "region",
+      "stratum": "F01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-00cfd9c5560678b2e843deab",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "F01"
+      ],
+      "failure_codes": [
+        "B01",
+        "F01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "formula_specialist",
+      "planned_scope_id": "omnidocbench-00cfd9c5560678b2e843deab::region",
+      "planned_scope_level": "region",
+      "stratum": "F01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-03c823830f650c644efe6ff4",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "F01"
+      ],
+      "failure_codes": [
+        "B01",
+        "F01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "formula_specialist",
+      "planned_scope_id": "omnidocbench-03c823830f650c644efe6ff4::region",
+      "planned_scope_level": "region",
+      "stratum": "F01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-046a4c3218f6d8300f6c9d8f",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "F01",
+        "R01",
+        "T05"
+      ],
+      "failure_codes": [
+        "B01",
+        "F01",
+        "R01",
+        "T05"
+      ],
+      "minimum_scope_level": "cell",
+      "planned_same_family_variant": "cell_geometry_specialist",
+      "planned_scope_id": "omnidocbench-046a4c3218f6d8300f6c9d8f::region",
+      "planned_scope_level": "region",
+      "stratum": "F01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-06b93bb7fc275f9ff96571b2",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "F01"
+      ],
+      "failure_codes": [
+        "B01",
+        "F01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "formula_specialist",
+      "planned_scope_id": "omnidocbench-06b93bb7fc275f9ff96571b2::region",
+      "planned_scope_level": "region",
+      "stratum": "F01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-07c864443ce5578c82536f8e",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "F01"
+      ],
+      "failure_codes": [
+        "B01",
+        "F01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "formula_specialist",
+      "planned_scope_id": "omnidocbench-07c864443ce5578c82536f8e::region",
+      "planned_scope_level": "region",
+      "stratum": "F01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-082e4890c2b0fe6ad2da1c70",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "F01"
+      ],
+      "failure_codes": [
+        "B01",
+        "F01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "formula_specialist",
+      "planned_scope_id": "omnidocbench-082e4890c2b0fe6ad2da1c70::region",
+      "planned_scope_level": "region",
+      "stratum": "F01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-2a727f20d289409fb8e65b8b",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-2a727f20d289409fb8e65b8b::region",
+      "planned_scope_level": "region",
+      "stratum": "G01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-303e01c46b0d952630c2752b",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-303e01c46b0d952630c2752b::region",
+      "planned_scope_level": "region",
+      "stratum": "G01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-be4f6ee1928ad682a0e93bc0",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-be4f6ee1928ad682a0e93bc0::region",
+      "planned_scope_level": "region",
+      "stratum": "G01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-de38f3ff5eb83193bc23f3a9",
+      "codes_excluded_non_recoverable": [],
+      "codes_used_for_variant": [
+        "B01",
+        "G01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "region_crop",
+      "planned_scope_id": "olmocr-bench-de38f3ff5eb83193bc23f3a9::region",
+      "planned_scope_level": "region",
+      "stratum": "G01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-00f2a54a3b493dee12869884",
+      "codes_excluded_non_recoverable": [
+        "H01",
+        "H02"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-00f2a54a3b493dee12869884::region",
+      "planned_scope_level": "region",
+      "stratum": "G01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-02ccc4b07129e17265c54674",
+      "codes_excluded_non_recoverable": [
+        "H01"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-02ccc4b07129e17265c54674::region",
+      "planned_scope_level": "region",
+      "stratum": "G01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-03e2a38c176b8e88a19073e0",
+      "codes_excluded_non_recoverable": [
+        "H01",
+        "H02"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-03e2a38c176b8e88a19073e0::region",
+      "planned_scope_level": "region",
+      "stratum": "G01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-044033f5bc986b9969905c50",
+      "codes_excluded_non_recoverable": [
+        "H01",
+        "H02"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-044033f5bc986b9969905c50::region",
+      "planned_scope_level": "region",
+      "stratum": "G01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-3f0b211335ab1311fc97da01",
+      "codes_excluded_non_recoverable": [
+        "H01"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "H01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "olmocr-bench-3f0b211335ab1311fc97da01::region",
+      "planned_scope_level": "region",
+      "stratum": "H01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-04c10b1481fe72fc9e4a90fb",
+      "codes_excluded_non_recoverable": [
+        "H01"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-04c10b1481fe72fc9e4a90fb::region",
+      "planned_scope_level": "region",
+      "stratum": "H01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-05396b9470901417a85e0aa4",
+      "codes_excluded_non_recoverable": [
+        "H01",
+        "H02"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-05396b9470901417a85e0aa4::region",
+      "planned_scope_level": "region",
+      "stratum": "H01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-06134ba884d7f0923b0a1790",
+      "codes_excluded_non_recoverable": [
+        "H01",
+        "H02"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-06134ba884d7f0923b0a1790::region",
+      "planned_scope_level": "region",
+      "stratum": "H01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-098da4dd636a556acf25448a",
+      "codes_excluded_non_recoverable": [
+        "H01"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "N01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-098da4dd636a556acf25448a::region",
+      "planned_scope_level": "region",
+      "stratum": "H01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-0a99dee3cd79655f19afc70d",
+      "codes_excluded_non_recoverable": [
+        "H01",
+        "H02"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-0a99dee3cd79655f19afc70d::region",
+      "planned_scope_level": "region",
+      "stratum": "H01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-0b059f85b6f7605aa628dcb7",
+      "codes_excluded_non_recoverable": [
+        "H01",
+        "H02"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-0b059f85b6f7605aa628dcb7::region",
+      "planned_scope_level": "region",
+      "stratum": "H01"
+    },
+    {
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-0c0a5dd339d29f7baad21873",
+      "codes_excluded_non_recoverable": [
+        "H01"
+      ],
+      "codes_used_for_variant": [
+        "B01",
+        "N01",
+        "R01"
+      ],
+      "failure_codes": [
+        "B01",
+        "H01",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "planned_same_family_variant": "layout_specialist",
+      "planned_scope_id": "parsebench-0c0a5dd339d29f7baad21873::region",
+      "planned_scope_level": "region",
+      "stratum": "H01"
+    }
+  ],
+  "claim_boundary": "This is a protocol freeze, not evidence. It authorizes no A12 benefit claim and does not by itself authorize GPU spend: the formal immutable runtime gate remains separate and is still open.",
+  "derivation": "Recipes are derived from akc_parallel_runtime.recovery_planner.plan_minimal_recovery over the cohort's own failure codes, and the L2_SAME_PARSER_VARIATION rungs already present in akc_cir.recovery_policy. No variant, scope, budget or threshold was authored for this experiment.",
+  "escalation_ladder": [
+    "cell",
+    "region",
+    "page",
+    "document"
+  ],
+  "experiment_id": "H1-A12-01",
+  "external_gpu_cost_usd": 0.0,
+  "freezes": "preregistration-v2 arm B: exactly one bounded same-family variation before independent-family escalation",
+  "frozen_before_any_outcome": true,
+  "generated_at": "2026-08-19T01:57:04.393606+00:00",
+  "l2_same_family_rungs_in_policy_registry": {
+    "F10_DUPLICATED_CONTENT": {
+      "action": "bbox_expansion_crop_retry",
+      "estimated_cost_units": 0.05,
+      "estimated_gpu_seconds": 4.0,
+      "estimated_wall_clock_seconds": 12.0,
+      "policy_id": "default_bbox_expansion_crop_retry_v1",
+      "signature": "F10_DUPLICATED_CONTENT/L2_SAME_PARSER_VARIATION/bbox_expansion_crop_retry"
+    },
+    "F11_GARBLED_TEXT": {
+      "action": "bbox_expansion_crop_retry",
+      "estimated_cost_units": 0.05,
+      "estimated_gpu_seconds": 4.0,
+      "estimated_wall_clock_seconds": 12.0,
+      "policy_id": "default_bbox_expansion_crop_retry_v1",
+      "signature": "F11_GARBLED_TEXT/L2_SAME_PARSER_VARIATION/bbox_expansion_crop_retry"
+    },
+    "F12_READING_ORDER": {
+      "action": "overlapping_tile_or_crop_retry",
+      "estimated_cost_units": 0.08,
+      "estimated_gpu_seconds": 6.0,
+      "estimated_wall_clock_seconds": 15.0,
+      "policy_id": "default_overlapping_tile_or_crop_retry_v1",
+      "signature": "F12_READING_ORDER/L2_SAME_PARSER_VARIATION/overlapping_tile_or_crop_retry"
+    },
+    "F13_TABLE_STRUCTURE": {
+      "action": "overlapping_tile_or_crop_retry",
+      "estimated_cost_units": 0.08,
+      "estimated_gpu_seconds": 6.0,
+      "estimated_wall_clock_seconds": 15.0,
+      "policy_id": "default_overlapping_tile_or_crop_retry_v1",
+      "signature": "F13_TABLE_STRUCTURE/L2_SAME_PARSER_VARIATION/overlapping_tile_or_crop_retry"
+    },
+    "F14_FORMULA": {
+      "action": "overlapping_tile_or_crop_retry",
+      "estimated_cost_units": 0.08,
+      "estimated_gpu_seconds": 6.0,
+      "estimated_wall_clock_seconds": 15.0,
+      "policy_id": "default_overlapping_tile_or_crop_retry_v1",
+      "signature": "F14_FORMULA/L2_SAME_PARSER_VARIATION/overlapping_tile_or_crop_retry"
+    },
+    "F15_FIGURE_CAPTION": {
+      "action": "overlapping_tile_or_crop_retry",
+      "estimated_cost_units": 0.08,
+      "estimated_gpu_seconds": 6.0,
+      "estimated_wall_clock_seconds": 15.0,
+      "policy_id": "default_overlapping_tile_or_crop_retry_v1",
+      "signature": "F15_FIGURE_CAPTION/L2_SAME_PARSER_VARIATION/overlapping_tile_or_crop_retry"
+    },
+    "F16_CROSS_PAGE": {
+      "action": "page_neighbor_context",
+      "estimated_cost_units": 0.05,
+      "estimated_gpu_seconds": 4.0,
+      "estimated_wall_clock_seconds": 12.0,
+      "policy_id": "default_page_neighbor_context_v1",
+      "signature": "F16_CROSS_PAGE/L2_SAME_PARSER_VARIATION/page_neighbor_context"
+    },
+    "F17_NATIVE_RENDER_DISAGREEMENT": {
+      "action": "bbox_expansion_crop_retry",
+      "estimated_cost_units": 0.05,
+      "estimated_gpu_seconds": 4.0,
+      "estimated_wall_clock_seconds": 12.0,
+      "policy_id": "default_bbox_expansion_crop_retry_v1",
+      "signature": "F17_NATIVE_RENDER_DISAGREEMENT/L2_SAME_PARSER_VARIATION/bbox_expansion_crop_retry"
+    },
+    "F31_SCHEMA_INCOMPATIBLE": {
+      "action": "schema_repair",
+      "estimated_cost_units": 0.0,
+      "estimated_gpu_seconds": 0.0,
+      "estimated_wall_clock_seconds": 5.0,
+      "policy_id": "default_schema_repair_v1",
+      "signature": "F31_SCHEMA_INCOMPATIBLE/L2_SAME_PARSER_VARIATION/schema_repair"
+    },
+    "F7_PARSER_EXCEPTION": {
+      "action": "bbox_expansion_crop_retry",
+      "estimated_cost_units": 0.05,
+      "estimated_gpu_seconds": 4.0,
+      "estimated_wall_clock_seconds": 12.0,
+      "policy_id": "default_bbox_expansion_crop_retry_v1",
+      "signature": "F7_PARSER_EXCEPTION/L2_SAME_PARSER_VARIATION/bbox_expansion_crop_retry"
+    },
+    "F8_EMPTY_OUTPUT": {
+      "action": "bbox_expansion_crop_retry",
+      "estimated_cost_units": 0.05,
+      "estimated_gpu_seconds": 4.0,
+      "estimated_wall_clock_seconds": 12.0,
+      "policy_id": "default_bbox_expansion_crop_retry_v1",
+      "signature": "F8_EMPTY_OUTPUT/L2_SAME_PARSER_VARIATION/bbox_expansion_crop_retry"
+    },
+    "F9_SUSPICIOUSLY_SHORT": {
+      "action": "bbox_expansion_crop_retry",
+      "estimated_cost_units": 0.05,
+      "estimated_gpu_seconds": 4.0,
+      "estimated_wall_clock_seconds": 12.0,
+      "policy_id": "default_bbox_expansion_crop_retry_v1",
+      "signature": "F9_SUSPICIOUSLY_SHORT/L2_SAME_PARSER_VARIATION/bbox_expansion_crop_retry"
+    }
+  },
+  "non_recoverable_codes": [
+    "H01",
+    "H02",
+    "T03"
+  ],
+  "non_recoverable_source": "benchmark/v6/public_failure_adapter.py",
+  "pinned_files": {
+    "packages/cir-python/src/akc_cir/cause_conditioned_recovery.py": "sha256:7e5f638474e91861698dd1af52ead5229dedc7429b142b308a8c9745ec0f5fff",
+    "packages/cir-python/src/akc_cir/recovery_policy.py": "sha256:7937e51f72a1f5f0c01d7a6774074fe06f3ad4500495c895d9ad37c76fe6cd33",
+    "packages/parallel-runtime/src/akc_parallel_runtime/recovery.py": "sha256:542f3f37f1fb39c988c912cdc01c1ebad18c4e8873defe84662f3d1b1e078a6d",
+    "packages/parallel-runtime/src/akc_parallel_runtime/recovery_planner.py": "sha256:44c9e5be14dc8b23af80f556fab6aa5e9d2ddb93bfcec91cb494dc195b109e31",
+    "research/experiments/H1-A12-01/cohorts/semantic-divergence-pilot-v1.json": "sha256:51cb7fafb74cb3fc6485a32198dac190665a5d23e7a9082cae417d4d47eaf0cc",
+    "research/experiments/H1-A12-01/preregistration-v2.json": "sha256:6d7a9dbe89c73f1178acca727786891766d85af23b4271e2e726e7e8894898ca",
+    "research/experiments/H1-A12-01/scripts/freeze_same_family_recipe.py": "sha256:3250b07e64a5f9a77a691c9c9b0ee8b5fb9a66b4c1782da17d46ba0c6c90784a"
+  },
+  "receipt_sha256": "sha256:ad17b2ccc6d74febde34f3572fe4702df894336c6374c34239003d4069e1d60d",
+  "recipe_count": 48,
+  "rules": [
+    "Arm B permits at most ONE same-family variation per case, then escalates to independent family.",
+    "Arm A permits ZERO same-family variations; it excludes the failed independent family and escalates directly.",
+    "The variant and scope for a case are those frozen below and may not be changed after any outcome is observed.",
+    "A case whose failure codes are all declared non-recoverable receives no same-family attempt in either arm.",
+    "Operational/transient retry is an implementation control and is excluded from the semantic primary endpoint.",
+    "If a frozen variant turns out to be unimplementable at execution time, the case is reported as NOT RUN. It is not silently re-planned."
+  ],
+  "schema": "tavonel.a12-same-family-recipe-freeze.v1",
+  "skipped_all_non_recoverable": [],
+  "variant_distribution": {
+    "cell_geometry_specialist": 1,
+    "formula_specialist": 8,
+    "layout_specialist": 36,
+    "native_authority_reconstruction": 1,
+    "region_crop": 2
+  },
+  "why_that_is_true": "No A12 arm has been executed. The runtime readiness audit records gpu_spend_authorized false and incremental_gpu_spend_usd 0.0, and the cohort manifest carries no ground truth. There is no outcome to have seen."
+}

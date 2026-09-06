@@ -1,0 +1,274 @@
+{
+  "authorised_by": "founder ruling, 2026-08-23",
+  "by_verdict": {
+    "CONFIRMED_SELECTIVE_STALE_ESCAPE": 4
+  },
+  "cases": [
+    {
+      "after_version": "1354150833",
+      "before_version": "1286337912",
+      "clean_full_rebuild": {
+        "artifacts_after": 4,
+        "artifacts_before": 4,
+        "artifacts_that_moved": [
+          "section:u:95960f721a832950b6fa7653"
+        ],
+        "artifacts_that_moved_count": 1
+      },
+      "confirmed_stale_artifacts": [
+        "section:u:95960f721a832950b6fa7653"
+      ],
+      "engine_change_signal": {
+        "detected_change_kinds": [],
+        "structural_change_present": false
+      },
+      "family": "encyclopedia_wikipedia",
+      "lineage_id": "wikipedia:en:Three Villages",
+      "oracle_change_type": "mixed",
+      "oracle_relative_escapes": [
+        "section:lead"
+      ],
+      "refetched": {
+        "after_sha256": "sha256:3cf4e1d3c6e3056be68bb27d475ca1735db7e88752b65d7b765a070f190a0ab9",
+        "before_sha256": "sha256:9f8cfc9fb94c7edf73e07d2feee977b1f5f6b0df8866b9f00ea9011c55218642",
+        "bytes_differ": true
+      },
+      "selective": {
+        "artifacts": 4,
+        "carried_forward": 4,
+        "detected_change_kinds": [],
+        "rebuilt": 0,
+        "state_hash": "sha256:b53bb6c6a832efec76a6938ac47cf2bbba43777aebc3e29699c65d43fec02222",
+        "structural_change_present": false
+      },
+      "selective_disagrees_with_clean_rebuild": [
+        "section:u:95960f721a832950b6fa7653"
+      ],
+      "verdict": "CONFIRMED_SELECTIVE_STALE_ESCAPE",
+      "why": "the clean full rebuild moved these artifacts and the selective execution carried the old value forward"
+    },
+    {
+      "after_version": "1289724072",
+      "before_version": "1259026565",
+      "clean_full_rebuild": {
+        "artifacts_after": 4,
+        "artifacts_before": 4,
+        "artifacts_that_moved": [
+          "section:u:0bf3fdf668eeabb24f6ea511"
+        ],
+        "artifacts_that_moved_count": 1
+      },
+      "confirmed_stale_artifacts": [
+        "section:u:0bf3fdf668eeabb24f6ea511"
+      ],
+      "engine_change_signal": {
+        "detected_change_kinds": [],
+        "structural_change_present": false
+      },
+      "family": "encyclopedia_wikipedia",
+      "lineage_id": "wikipedia:en:Monteceneri",
+      "oracle_change_type": "mixed",
+      "oracle_relative_escapes": [
+        "section:lead"
+      ],
+      "refetched": {
+        "after_sha256": "sha256:79cf7657a47f57a4a9ee923f163fb762d6e205702b1675a92fd5806de3de8781",
+        "before_sha256": "sha256:b45f213c67e80821814bd9f1e5b8620455c7a4cb0967c3269df5c10014eb4516",
+        "bytes_differ": true
+      },
+      "selective": {
+        "artifacts": 4,
+        "carried_forward": 4,
+        "detected_change_kinds": [],
+        "rebuilt": 0,
+        "state_hash": "sha256:647bc06ca5b17092ff56fc325452a7674d7ca1d9bafc0c1f4479fec8d04589b3",
+        "structural_change_present": false
+      },
+      "selective_disagrees_with_clean_rebuild": [
+        "section:u:0bf3fdf668eeabb24f6ea511"
+      ],
+      "verdict": "CONFIRMED_SELECTIVE_STALE_ESCAPE",
+      "why": "the clean full rebuild moved these artifacts and the selective execution carried the old value forward"
+    },
+    {
+      "after_version": "1360080269",
+      "before_version": "1360080177",
+      "clean_full_rebuild": {
+        "artifacts_after": 4,
+        "artifacts_before": 4,
+        "artifacts_that_moved": [
+          "section:u:55f9943b9e89e6b19ce0a64e"
+        ],
+        "artifacts_that_moved_count": 1
+      },
+      "confirmed_stale_artifacts": [
+        "section:u:55f9943b9e89e6b19ce0a64e"
+      ],
+      "engine_change_signal": {
+        "detected_change_kinds": [],
+        "structural_change_present": false
+      },
+      "family": "encyclopedia_wikipedia",
+      "lineage_id": "wikipedia:en:Locarno",
+      "oracle_change_type": "mixed",
+      "oracle_relative_escapes": [
+        "section:lead"
+      ],
+      "refetched": {
+        "after_sha256": "sha256:473431d5ddf8765663ea4336d837ade9b1d8666b64302c24f0f31bc420ee3f0c",
+        "before_sha256": "sha256:23725144b69de74ffb8c132b17f2f723022ebf2a5959d56148e92270e0f09207",
+        "bytes_differ": true
+      },
+      "selective": {
+        "artifacts": 4,
+        "carried_forward": 4,
+        "detected_change_kinds": [],
+        "rebuilt": 0,
+        "state_hash": "sha256:ab27324bef58afc92ab13d97fbf9bd0f7fe430d68ad01bf157616e6ad496865f",
+        "structural_change_present": false
+      },
+      "selective_disagrees_with_clean_rebuild": [
+        "section:u:55f9943b9e89e6b19ce0a64e"
+      ],
+      "verdict": "CONFIRMED_SELECTIVE_STALE_ESCAPE",
+      "why": "the clean full rebuild moved these artifacts and the selective execution carried the old value forward"
+    },
+    {
+      "after_version": "9c27c8b20c20337edcce2757f349b36fabe158d3",
+      "before_version": "17faaa6c831ee9dc5666eddfa9410589135c0857",
+      "clean_full_rebuild": {
+        "artifacts_after": 10,
+        "artifacts_before": 11,
+        "artifacts_that_moved": [
+          "document-index:e1f43638beb6bac5",
+          "section:u:465c5f9821a9d16e13d5cc76",
+          "section:u:c854da9ea40620c7752f9f42",
+          "structure-map:e1f43638beb6bac5",
+          "topic-bucket:e1f43638beb6bac5:0",
+          "topic-bucket:e1f43638beb6bac5:3"
+        ],
+        "artifacts_that_moved_count": 6
+      },
+      "confirmed_stale_artifacts": [
+        "topic-bucket:e1f43638beb6bac5:0"
+      ],
+      "engine_change_signal": {
+        "detected_change_kinds": [
+          "evidence_moved",
+          "structure_changed"
+        ],
+        "structural_change_present": true
+      },
+      "family": "git_docs",
+      "lineage_id": "git:pnpm/pnpm.io:docs/cli/change.md",
+      "oracle_change_type": "structural_only",
+      "oracle_relative_escapes": [
+        "topic-bucket:2"
+      ],
+      "refetched": {
+        "after_sha256": "sha256:9e78299c5d4f5e92d2d535b5c48c582ab2e2fc62d6b5cbeeb426388afa692457",
+        "before_sha256": "sha256:cc301ac878b1640a78ffffd1bb09da0a9cb6ef7565788f179aff8a13755f417e",
+        "bytes_differ": true
+      },
+      "selective": {
+        "artifacts": 10,
+        "carried_forward": 7,
+        "detected_change_kinds": [
+          "evidence_moved",
+          "structure_changed"
+        ],
+        "rebuilt": 2,
+        "state_hash": "sha256:1cde89c89d908ba9de014cc873e0a0262f15b08c7c12b97936240184783d960d",
+        "structural_change_present": true
+      },
+      "selective_disagrees_with_clean_rebuild": [
+        "section:u:c854da9ea40620c7752f9f42",
+        "topic-bucket:e1f43638beb6bac5:0"
+      ],
+      "verdict": "CONFIRMED_SELECTIVE_STALE_ESCAPE",
+      "why": "the clean full rebuild moved these artifacts and the selective execution carried the old value forward"
+    }
+  ],
+  "cases_examined": 4,
+  "confirmed_cases": [
+    {
+      "artifacts": [
+        "section:u:95960f721a832950b6fa7653"
+      ],
+      "lineage_id": "wikipedia:en:Three Villages"
+    },
+    {
+      "artifacts": [
+        "section:u:0bf3fdf668eeabb24f6ea511"
+      ],
+      "lineage_id": "wikipedia:en:Monteceneri"
+    },
+    {
+      "artifacts": [
+        "section:u:55f9943b9e89e6b19ce0a64e"
+      ],
+      "lineage_id": "wikipedia:en:Locarno"
+    },
+    {
+      "artifacts": [
+        "topic-bucket:e1f43638beb6bac5:0"
+      ],
+      "lineage_id": "git:pnpm/pnpm.io:docs/cli/change.md"
+    }
+  ],
+  "confirmed_selective_stale_escapes": 4,
+  "ended_at": "2026-08-23T04:01:42.440854+00:00",
+  "estimated_cost_usd": 0.0,
+  "gpu_seconds": 0,
+  "http": {
+    "api.github.com": {
+      "errors": 0,
+      "limit": 8,
+      "min_interval": 0.05,
+      "requests": 1,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "en.wikipedia.org": {
+      "errors": 0,
+      "limit": 6,
+      "min_interval": 0.05,
+      "requests": 9,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    },
+    "raw.githubusercontent.com": {
+      "errors": 0,
+      "limit": 12,
+      "min_interval": 0.05,
+      "requests": 2,
+      "retry_after_seconds": 0.0,
+      "throttles": 0
+    }
+  },
+  "provenance": {
+    "generated_at": "2026-08-23T04:01:42.441549+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "forensic-stale-escape",
+    "run_id": "20260823T040142Z-0c6f0f65db2e",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/forensic_stale_escape.py",
+    "tool_sha256": "sha256:ea1a9facf148419f372f7e5385ce8b6a7ed735a8e824fb9090605273978882b4"
+  },
+  "receipt_sha256": "sha256:0e0505453c58d08c40e486beca44b729c35aab4f46b1c94c0ba4f1d41674a7fa",
+  "result_digest": "sha256:9ace5f7e450276c73459f22947b1777c2cf6c68b936235849fba86600e00c456",
+  "schema": "tavonel.v2.forensic_stale_escape.v1",
+  "source_study": "research/tavonel_eval_v2/artifacts/development/oracle_v2/oracle_v2_pairs.json",
+  "source_study_sha256": "sha256:48f6c660acfea1fc33b40d9507eb1e51b08b3829368f27d5db9371c4464b217e",
+  "started_at": "2026-08-23T04:01:27.732576+00:00",
+  "wall_seconds": 14.7,
+  "what_this_is": "post-result forensic confirmation of four named cases, using the production clean full rebuild against the production selective execution on freshly fetched bytes",
+  "what_this_is_not": [
+    "a rate estimate. Four named cases are not a denominator.",
+    "a rescore of the differential study, whose receipt is untouched.",
+    "an oracle result. The independent implementation appears nowhere in this check; it only said where to look."
+  ]
+}

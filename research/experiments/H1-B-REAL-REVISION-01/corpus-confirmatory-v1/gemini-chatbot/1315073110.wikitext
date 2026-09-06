@@ -1,0 +1,7 @@
+#REDIRECT [[Google Gemini]]
+
+{{Redirect category shell|
+{{R with history}}
+{{R from other disambiguation}}
+{{R from move}}
+}}

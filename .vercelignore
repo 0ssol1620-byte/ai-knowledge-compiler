@@ -5,7 +5,7 @@
 
 # Python control plane, workers, and their tests
 services/
-workers/
+/workers/
 packages/cir-python/
 packages/domain-packs/
 packages/exporters/

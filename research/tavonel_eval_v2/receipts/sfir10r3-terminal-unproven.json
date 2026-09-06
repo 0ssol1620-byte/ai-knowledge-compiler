@@ -1,0 +1,11 @@
+{
+  "freeze_digest": "sha256:54804a60a5aeffc490494e107c06254cf3304acb743db55ddebae421fb73ed98",
+  "protocol_digest": "sha256:24dee5b0a8560f8c47674a56193256b830223c35246408bf7fc984545b8360a9",
+  "reason": "provider reset epoch changed mid-segment (1788048077 -> 1788051678)",
+  "roster_seal": "sha256:a25ca13d8bdf41c259bdaaccc215f33ffb06bb70aef30be21ee75104c3f49c18",
+  "schema": "tavonel.sfir10r3.terminal_unproven.v1",
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R3",
+  "terminal_digest": "sha256:a2c86bf29da78b1b5280d5ef9093d5a08798825d7d8cd8c56bb10778564ea201",
+  "what_this_means": "no PASS or FAIL may be sealed from this cohort",
+  "windows_used": 0
+}

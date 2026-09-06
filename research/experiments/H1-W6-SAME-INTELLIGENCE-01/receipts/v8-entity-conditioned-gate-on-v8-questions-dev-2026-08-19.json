@@ -1,0 +1,137 @@
+{
+  "bounds_declared_before_measurement": {
+    "before_after_separable_share": {
+      "amended_after_a_development_failure": true,
+      "amendment": "the first operationalization asked whether the new value's tokens appear ANYWHERE in the before revision, and measured 0.2302. That is a distractor property -- a new value can appear in the old article's prose, a list, or another infobox field while the attribute itself still differs -- and it is not what the criterion names. It is kept, renamed new_value_absent_from_before_revision_share, and REPORTED rather than gated. This change was made after seeing a failure and is flagged as such: it is a construct-validity correction on development data, which is what protocol section 7 exists for, and it is not a threshold relaxed to obtain a pass.",
+      "ceiling": null,
+      "floor": 0.8,
+      "operationalization": "the attribute's value differs between the before and after revision. Verified against the parsed infobox values rather than assumed from the question class.",
+      "why": "if the two revisions do not differ in the answer region the question is ill-posed, not hard. One-sided: fully separable is the ideal"
+    },
+    "exact_tie_rate": {
+      "ceiling": 0.1,
+      "floor": null,
+      "why": "v7 measured 0.1038; a tie is resolved by index order, so ties are ranking that did not happen. One-sided: fewer ties is never a defect"
+    },
+    "new_value_absent_from_before_revision_share": {
+      "ceiling": null,
+      "floor": null,
+      "why": "REPORTED, NOT GATED. How often the current value is nowhere in the superseded revision. Low values make the wrong-revision distractor harder, which is a property of the corpus, not a defect in the question set"
+    },
+    "normalized_candidate_entropy": {
+      "ceiling": 0.99,
+      "floor": 0.2,
+      "why": "a degenerate score distribution is not a retrieval task at one end, and an indistinguishable one is not a ranking at the other"
+    },
+    "stale_revision_retrieval_rate": {
+      "ceiling": 0.9,
+      "floor": 0.02,
+      "why": "at 0 the superseded revision never competes and there is no temporal challenge to measure; at 0.90 the baseline is broken rather than challenged"
+    },
+    "unit_recall_at_1": {
+      "ceiling": 0.95,
+      "floor": "random_selection_rate",
+      "why": "below the pool's random rate the retriever adds nothing; above 0.95 the question set is trivial and cannot separate arms"
+    },
+    "unit_recall_at_5": {
+      "ceiling": 0.99,
+      "floor": "random_selection_rate_at_5",
+      "why": "the same two-sided argument at the depth the arms actually receive"
+    }
+  },
+  "criteria": {
+    "before_after_separable_share": {
+      "ceiling": null,
+      "floor": 0.8,
+      "passes": true,
+      "value": 1.0,
+      "why": "if the two revisions do not differ in the answer region the question is ill-posed, not hard. One-sided: fully separable is the ideal"
+    },
+    "exact_tie_rate": {
+      "ceiling": 0.1,
+      "floor": null,
+      "passes": true,
+      "value": 0.0734,
+      "why": "v7 measured 0.1038; a tie is resolved by index order, so ties are ranking that did not happen. One-sided: fewer ties is never a defect"
+    },
+    "new_value_absent_from_before_revision_share": {
+      "ceiling": null,
+      "floor": null,
+      "passes": true,
+      "value": 0.339,
+      "why": "REPORTED, NOT GATED. How often the current value is nowhere in the superseded revision. Low values make the wrong-revision distractor harder, which is a property of the corpus, not a defect in the question set"
+    },
+    "normalized_candidate_entropy": {
+      "ceiling": 0.99,
+      "floor": 0.2,
+      "passes": true,
+      "value": 0.6693,
+      "why": "a degenerate score distribution is not a retrieval task at one end, and an indistinguishable one is not a ranking at the other"
+    },
+    "stale_revision_retrieval_rate": {
+      "ceiling": 0.9,
+      "floor": 0.02,
+      "passes": true,
+      "value": 0.4972,
+      "why": "at 0 the superseded revision never competes and there is no temporal challenge to measure; at 0.90 the baseline is broken rather than challenged"
+    },
+    "unit_recall_at_1": {
+      "ceiling": 0.95,
+      "floor": 0.1051,
+      "passes": true,
+      "value": 0.3672,
+      "why": "below the pool's random rate the retriever adds nothing; above 0.95 the question set is trivial and cannot separate arms"
+    },
+    "unit_recall_at_5": {
+      "ceiling": 0.99,
+      "floor": 0.445,
+      "passes": true,
+      "value": 0.9492,
+      "why": "the same two-sided argument at the depth the arms actually receive"
+    }
+  },
+  "development_question_set_sha256": "sha256:1d0f2a775ea244b1a03cb954b60c4dd3fc14ce432c3b8997f3f1072bea4fa09c",
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "gate_state": "PASS",
+  "generated_at": "2026-08-19T13:07:29.938054+00:00",
+  "network_access": false,
+  "oracle_minus_strongest_wrong_revision": {
+    "median": -0.0464,
+    "note": "the discrimination actually under test: how far the oracle unit sits above the best CORRECT SUBJECT + WRONG REVISION unit. A negative gap is a question where the superseded revision outranks the current one.",
+    "p10": -1.0505,
+    "share_negative": 0.6328
+  },
+  "protocol": "W6_V8_CONFIRMATORY_PROTOCOL_2026-08-19.md",
+  "protocol_sha256": "sha256:fe6c20a558720d92586c28ceedeb86ed125018894aba1c1ac31a66cacc1d495b",
+  "questions_evaluated": 177,
+  "questions_skipped_degenerate_value": 0,
+  "questions_skipped_no_locatable_oracle": 17,
+  "random_selection_rate_at_1": 0.1051,
+  "random_selection_rate_at_5": 0.445,
+  "receipt_sha256": "sha256:df7685d648608bae858bbb860cdf95d7f25511d0061d457b523a950de0e98483",
+  "retired_metric": {
+    "name": "same_document_top_1_share",
+    "reason": "under entity conditioning every candidate is from the subject's own document family, so the metric is ~1.0 by construction of the task rather than by weakness of the question set. It is not silently swapped: it remains reported in W6-O where it still measures difficulty.",
+    "state": "RETIRED_FROM_PRIMARY_GATE",
+    "v7_value_for_reference": 0.9585
+  },
+  "run_class": "DEVELOPMENT_ONLY",
+  "run_class_note": "the gate mechanism exercised on the sealed v7 development set. This is not the v8 pre-arm verdict and is not a paper endpoint. Protocol section 7 requires the harness to be proven here so that a defect does not spend holdout titles.",
+  "schema": "tavonel.w6-v8-entity-conditioned-baseline-gate.v1",
+  "stage_0": {
+    "candidate_pool": "units of the subject's before and after revisions, both indexed",
+    "description": "deterministic subject to document-namespace resolution, identical for RAW, BASIC RAG and TAVONEL",
+    "does_not_supply": [
+      "the value",
+      "the revision",
+      "the answer-bearing unit"
+    ],
+    "supplies": [
+      "which subject the question is about"
+    ]
+  },
+  "strong_distractor_definition": "CORRECT SUBJECT + WRONG REVISION, never a random unit",
+  "top_k": 5,
+  "value_matcher": "gate_question_set_v7.value_tokens -- keeps numerals and drops markup tokens. The retrieval tokenizer is not used for value identity: it requires a leading letter, so numeric values tokenize to the empty set and match everything."
+}

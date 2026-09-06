@@ -1,0 +1,2027 @@
+{
+  "all_baselines_green": true,
+  "baselines_digest": "sha256:f63415dc505660dc235cba4a8d1739c4575ff8d33e087af68590bbb5b24ba441",
+  "components_run": 14,
+  "components_with_no_survivor": 14,
+  "mutations_declared": 465,
+  "mutations_killed": 465,
+  "results": [
+    {
+      "baseline_tests_selected": 29,
+      "component": "protocol",
+      "mutations_declared": 26,
+      "mutations_killed": 26,
+      "outcomes": [
+        {
+          "mutation": "P1 the capacity floor is lowered to what SFIR7 reached",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P2 the quota floor is lowered",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P3 the quota fraction is widened",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P4 the quota cap is raised",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P5 the quota rounds instead of flooring",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P6 the criterion checks only the count",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P7 the criterion checks only the quota",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P8 the retry fail-safe is widened",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P9 the total fail-safe is widened",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P10 a population-calibrated frontier bound comes back",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P11 freezing changes what the protocol says",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P12 a draft is treated as frozen",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P13 freeze() reports frozen without recording it",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P14 freeze() is a no-op",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P15 the salt reaches the published receipt",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P16 the salt digest ignores the salt",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P17 the execution envelope escapes the digest",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P18 the selection terms escape the digest",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P19 the traversal terms escape the digest",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P20 the partition is keyed on the address, so a rename moves it",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P21 the partition collapses to a single bucket",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P22 the budget is denominated in logical requests again",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P23 a rate window ends the study rather than the segment",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P24 the study reuses a spent protocol id",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P25 the study declares itself exploratory",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "P26 the working storage budget silently shrinks",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_protocol.py"
+    },
+    {
+      "baseline_tests_selected": 101,
+      "component": "transport",
+      "mutations_declared": 52,
+      "mutations_killed": 52,
+      "outcomes": [
+        {
+          "mutation": "X1 the content hash is not compared",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X2 the git blob id is not compared",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X3 committed bytes are not compared with working bytes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X4 committed and working are compared by length instead of bytes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X5 a missing import origin is treated as passing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X6 the import origin directory is not checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X7 the origin check accepts any directory named tools",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X8 the manifest is narrowed by one module",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X9 the git blob id omits the object header",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X10 the git blob id omits the length",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X11 the scheme is not checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X12 the host is not checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X13 the host is matched by suffix, so a lookalike domain passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X14 the target is not checked before the request is issued",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X15 redirect hops are not re-checked against the surface",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X16 hops are not recorded individually",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X19 the surface claims automatic following is permitted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X20 the numeric id is not compared",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X21 the numeric id is compared loosely so any id passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X22 a non-200 metadata response is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X23 the canonical address is adopted before the identity is proved",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X24 an unverified identity still yields the canonical address",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X25 hops are counted as logical requests",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X26 logical requests are counted as hops",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X27 provider charges are inferred from hop count",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X28 a charge is dropped when it is recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X29 the provider delta is not computed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X30 a non-zero delta is reported as complete",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X31 the per-retry fail-safe is not enforced",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X32 the cumulative fail-safe is not enforced",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X33 the per-retry fail-safe is widened by a local literal",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X34 an unbounded window is waited on instead of closing the segment",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X35 Retry-After is ignored when the counter looks healthy",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X36 a closed segment keeps issuing requests",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X37 the closed-segment gate is not reached from get",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X39 the segment is not marked closed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X40 the wait is announced but never taken",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X41 cumulative waiting is not accumulated",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X42 observing the rate window sends a probe",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X43 a scientific quantity is filtered instead of refusing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X44 the forbidden set is narrowed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X45 the get path stops checking its context",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X46 the handoff path stops checking its extras",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X47 the handoff reports a roster it did not traverse",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X48 the handoff drops the selection digest",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X49 the handoff reports counters it did not observe",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X50 a closed segment is reported as open",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X51 response bodies reach the receipt",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X52 the surface stops binding the protocol digest",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X53 the surface stops declaring the rate window",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X54 the surface stops declaring the redirect policy",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "X55 the fail-safes are copied into the surface as literals",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_transport.py"
+    },
+    {
+      "baseline_tests_selected": 85,
+      "component": "identity",
+      "mutations_declared": 32,
+      "mutations_killed": 32,
+      "outcomes": [
+        {
+          "mutation": "I1 an address is accepted as an identity",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I3 the decimal form is not enforced",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I4 the id pattern accepts a numeric prefix",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I5 the id pattern accepts a leading zero",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I8 whitespace is not stripped, so an int and its string differ",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I9 attestation does not compare the ids",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I10 attestation compares addresses instead of ids",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I11 adopting a name changes the identity",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I12 an unusable canonical address is adopted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I13 a case-only difference counts as a rename",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I14 an unresolved root is reported as renamed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I15 sameness is decided by the address",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I16 the blob sha is not validated",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I17 a truncated blob sha is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I18 the blob sha is not lowercased, so one blob has two identities",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I19 the path is not validated",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I20 the candidate key drops the repository",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I21 the candidate key drops the content",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I22 the candidate key drops the path",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I23 a candidate may be identified by an address",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I24 the set digest stops ignoring order",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I25 the order digest starts ignoring order",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I26 an observation in an exclusion proof is filtered instead of refusing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I27 the forbidden exclusion set is narrowed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I28 the proof need not name the study",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I29 the spending studies are widened to include SFIR9 itself",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I30 an exclusion may be identified by an address",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I31 the exclusion reason is widened",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I32 the proof digest ignores which study spent the root",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I33 the proof digest depends on arrival order",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I34 an exclusion is marked value-bearing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "I35 the exclusion count is not reported",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_identity_logic.py"
+    },
+    {
+      "baseline_tests_selected": 51,
+      "component": "chain",
+      "mutations_declared": 36,
+      "mutations_killed": 36,
+      "outcomes": [
+        {
+          "mutation": "C1 a closed chain accepts more segments",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C2 a rate-window close is treated as the end of the census",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C3 the study is not checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C4 the protocol digest is not checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C5 the roster digest is not checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C6 the selection digest is not checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C7 the selection check is folded into the roster check",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C8 the disposition is not checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C9 the declared dispositions are widened",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C10 the rate-window disposition is spelled differently from transport",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C11 the index is not checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C12 the index only has to be greater, so a gap passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C13 the predecessor is not checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C14 the counters are not checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C15 only one counter is checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C16 a counter that stays still is refused",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C17 the counters are compared against the first segment, not the last",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C18 genesis is not a fixed value",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C19 the head does not move with an append",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C20 the next index does not advance",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C21 open_next lets the chain start from the wrong predecessor",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C22 the segment digest ignores the handoff",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C23 the segment digest ignores the predecessor",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C24 the segment digest ignores its index",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C25 a refused append still lands",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C26 an empty chain reports resumable state",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C27 the resume input points at the wrong predecessor",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C28 the resume input carries the first segment's state, not the last",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C29 the resume input drops the frontier",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C30 the resume input carries a scientific quantity",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C31 the verifier trusts the recorded head",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C32 the verifier does not check the indices",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C33 the verifier does not follow the links",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C34 the verifier reports intact whatever it found",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C35 the verifier recomputes from the stored digest instead of the bytes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "C36 the receipt drops the roster binding",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_checkpoint_chain.py"
+    },
+    {
+      "baseline_tests_selected": 54,
+      "component": "roster",
+      "mutations_declared": 33,
+      "mutations_killed": 33,
+      "outcomes": [
+        {
+          "mutation": "R1 a forbidden field is filtered instead of refusing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R2 the forbidden set drops the earlier study's output",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R3 the forbidden set drops the live-execution facts",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R4 the permitted field list is widened",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R5 an entry may be identified by an address",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R6 the partition digest ignores the identity",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R7 the partition digest ignores the bucket index",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R8 the partition digest ignores the bucket count",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R9 the partition digest ignores the salt",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R10 the salt itself is published instead of its digest",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R11 a spent root in the roster is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R12 the exclusion proof is not carried into the roster body",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R13 duplicate repositories are accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R14 duplicate catalogue records are accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R15 the ordinals are not checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R16 the ordinals start at zero",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R17 the well-formedness check is never invoked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R18 a draft protocol may generate a roster",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R19 the roster does not record its protocol",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R20 the roster does not record its selection",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R21 sealing twice is idempotent",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R22 sealing changes what the roster says",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R23 the seal is not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R24 an unsealed roster passes the seal requirement",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R25 the seal verifies against itself instead of a recomputation",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R26 the seal reports intact whatever it found",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R27 the roster digest ignores the entries",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R28 the roster digest ignores the entry order",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R29 execution evidence is merged into the roster body",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R30 execution evidence does not require a seal",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R31 execution evidence accepts a root outside the roster",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R32 execution evidence is not bound to the roster digest",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "R33 the live rename is dropped from execution evidence",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_cohort_roster.py"
+    },
+    {
+      "baseline_tests_selected": 47,
+      "component": "scorer",
+      "mutations_declared": 35,
+      "mutations_killed": 35,
+      "outcomes": [
+        {
+          "mutation": "S1 a stopped root is treated as measured",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S2 a stopped root is dropped from the denominator",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S3 a refused root enters the denominator",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S4 an incomplete census reports an exact count",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S5 completeness ignores the stopped roots",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S6 an empty census counts as complete",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S7 a stopped root's candidates are discarded rather than counted as a floor",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S8 a lower bound above the threshold does not settle the question",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S9 an incomplete census below the threshold is reported as a failure",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S10 the not-sealable verdict is collapsed into a pass",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S11 the not-sealable verdict is collapsed into a failure",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S12 a complete census below the threshold passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S13 the criterion is not applied",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S14 only the count half of the criterion is applied",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S15 the criterion is applied to a padded total",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S16 the reported minimum is not the protocol's",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S17 the quota is not derived from the lower bound",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S18 the redundancy note is dropped",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S19 every path counts, whatever its extension",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S20 the extension test matches anywhere in the path",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S21 the extension test is case sensitive",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S22 the pool definition is a local copy",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S23 ineligible paths are not reported",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S24 candidates are counted rather than deduplicated",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S25 deduplication ignores the repository",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S26 the pool digest depends on arrival order",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S26b the pool digest is not the one the score reports",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S27 an undeclared disposition is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S28 a repeated root is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S29 a root outside the roster is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S30 a refused root may carry candidates",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S31 a root may be identified by an address",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S32 the roster size is reported as the census size",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S33 the score does not name the roster it scored",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S34 the stopped count is understated",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_scorer.py"
+    },
+    {
+      "baseline_tests_selected": 46,
+      "component": "acceptance",
+      "mutations_declared": 33,
+      "mutations_killed": 33,
+      "outcomes": [
+        {
+          "mutation": "A1 an undeclared acceptance state is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A2 a pass needs no evidence",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A3 a missing artifact is recorded as a failure rather than unproven",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A4 a missing artifact is recorded as a pass",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A5 unproven criteria do not block acceptance",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A6 failed criteria do not block acceptance",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A7 a matrix short of its own list still seals",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A8 acceptance is not checked before sealing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A9 a not-sealable verdict is sealed anyway",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A10 the required criteria list is narrowed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A11 the criteria list drops the isolation check",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A12 the sealable verdicts are widened",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A13 a sealed fail is reported as a pass",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A14 the protocol freeze is not checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A15 the roster seal is not checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A16 the chain head is not part of the chain criterion",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A17 the chain links are not part of the chain criterion",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A18 an unattested counted root passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A19 the attestation check runs the wrong way round",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A20 the provider delta need not be recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A21 the provider criterion demands a zero delta",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A22 credential material in a receipt is tolerated",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A23 the isolation criterion accepts a dirty proof",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A24 the upstream binding criterion accepts an empty manifest",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A25 a fact with a missing link is complete",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A26 the required links are narrowed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A27 incomplete facts count toward the floor",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A28 the floor is lowered to the supply",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A29 a shortfall is reported as feasible",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A30 a surplus is reported as a negative shortfall",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A31 the matrix digest ignores the criteria",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A32 the sealed result does not name its acceptance",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "A33 the matrix does not report what it never evaluated",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_acceptance.py"
+    },
+    {
+      "baseline_tests_selected": 21,
+      "component": "closure",
+      "mutations_declared": 26,
+      "mutations_killed": 26,
+      "outcomes": [
+        {
+          "mutation": "E1 the component lists are not compared",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E2 the lists are compared by length only",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E3 the list check is never invoked by the closure",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E4 the component list is narrowed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E5 a component pointing at a missing file passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E6 committed bytes are not compared with working bytes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E7 committed and working are compared by length",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E8 a component that was never imported passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E9 the import origin is not compared with the verified file",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E10 the origin check accepts any file of the same name",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E13 the closure digest ignores the components",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E14 the closure digest ignores the upstream binding",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E15 the closure claims to certify its own bytes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E16 the manifest does not record the tool hash",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E17 the manifest does not record the tool blob id",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E18 the manifest does not record which closure it belongs to",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E19 the manifest is written against an uncommitted tool",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E20 the manifest asks the module instead of reading the file",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E21 verification does not re-read the tool",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E22 verification does not check the tool blob id",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E23 verification does not check the manifest's own digest",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E24 the manifest digest is computed over itself, so any edit still matches",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E25 an absent closure result is treated as a match",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E26 a mismatched closure result is not a problem",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E27 verification reports verified whatever it found",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "E28 verification hides the problems it found",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_execution_closure.py"
+    },
+    {
+      "baseline_tests_selected": 53,
+      "component": "gate",
+      "mutations_declared": 32,
+      "mutations_killed": 32,
+      "outcomes": [
+        {
+          "mutation": "G1 a drifted receipt as a scientific prerequisite is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G2 only the receipt name is checked, not the path",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G3 a historical expected digest may certify current source",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G4 a bare hex digest evades the historical-pin check",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G5 a continuity claim is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G6 a value-bearing historical input is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G7 any purpose is accepted for a historical input",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G8 an unexplained historical exemption is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G9 a historical input without a digest is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G10 the lookup scan findings are ignored",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G11 the lookup scan stops looking for globs",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G12 the lookup scan stops looking for latest pointers",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G13 the lookup scan stops looking for mtime ordering",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G14 a missing component is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G15 a component that is not a file is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G16 the required component list is narrowed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G17 the historical state is reported as PASS",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G18 the historical status stops saying it is preserved",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G19 the frozen drift count is not reported",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G20 the drift receipt digest is not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G21 the two states are quietly merged",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G22 the static-scan limitation is dropped from the proof",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G23 the proof claims historical dependencies it never checked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G24 advisory drift is not counted as affected",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G25 the refusal code is dropped from refusals",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G26 the allowed-purpose set is widened",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G27 the exclusion blanks the whole file",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G28 the exclusion applies to any assignment, not just the pattern one",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G29 the exclusion removes lines instead of blanking them",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G30 an unparseable file is treated as containing nothing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G31 the scan reads the raw source, so the gate refuses itself",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "G32 the excluded-statement note is dropped from the proof",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_isolation_gate.py"
+    },
+    {
+      "baseline_tests_selected": 40,
+      "component": "selection",
+      "mutations_declared": 24,
+      "mutations_killed": 24,
+      "outcomes": [
+        {
+          "mutation": "S1 an observed envelope term is accepted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S2 the envelope check is never invoked by select",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S3 a forbidden catalogue field is filtered instead of refusing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S4 the forbidden set is narrowed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S5 rename status becomes an allowed selection input",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S6 the partition is skipped -- the global top N is taken",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S7 the partition is unsalted, so it can be predicted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S8 the partition does not depend on the identity being partitioned",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S9 spent identities are not excluded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S10 the ordering ignores the external rank",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S11 the ordering reverses, taking the least-ranked",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S12 the tie-breaker is dropped",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S13 N is ignored and the whole partition is taken",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S14 N stops depending on the per-root allowance",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S15 N stops depending on the number of windows",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S16 a zero allowance divides instead of refusing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S17 a short roster is not reported as short",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S18 rows outside the partition are not counted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S19 the exclusion reason is widened",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S20 the salt is published rather than its digest",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S21 the roster fingerprint ignores order",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S22 the selection digest ignores the salt",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S23 the selection digest ignores the spent set",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "S24 the selection digest ignores the envelope",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_selection.py"
+    },
+    {
+      "baseline_tests_selected": 49,
+      "component": "audit",
+      "mutations_declared": 33,
+      "mutations_killed": 33,
+      "outcomes": [
+        {
+          "mutation": "H1 the audit passes regardless of the results",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H2 the audit passes if anything at all was refused",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H3 a control failure is counted as a refusal",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H4 a wrong-reason refusal is counted as a refusal",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H5 the exit code ignores the verdict",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H6 the control is never run",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H7 a failed control is reported as a refusal",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H8 a failed control no longer explains itself",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H9 the control failure count stops counting",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H10 the control runs in the attacked sandbox",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H11 any refusal counts, whatever its reason",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H12 only the message is checked, never the code attribute",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H13 only the code attribute is checked, never the message",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H14 an unexpected exception type is treated as a refusal",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H15 an attack that got through is reported as refused",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H16 every exception type is accepted as a refusal",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H17 the attack list is truncated",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H18 the closure-omission attack drops nothing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H19 the substituted component is written back identical",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H20 the blob attack changes the length, so a size check would catch it",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H21 the dirty-tree attack points at the honest origin",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H22 the upstream attack mutates nothing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H23 the spent-root attack excludes a root that was never selected",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H24 the draft-protocol attack uses a frozen protocol",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H25 the prerequisite attack names a receipt that never drifted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H26 the lookup attack plants deterministic code",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H27 the selection-digest attack reuses the roster's own digest",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H28 the other-roster attack reuses the same roster",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H29 the digest stops moving with the results",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H30 the results are dropped from the receipt",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H31 the mounted count is asserted rather than measured",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H32 the auditor starts carrying its own copy of a rule",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "H33 the refusal list gets a permissive default again",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_hostile_audit.py"
+    },
+    {
+      "baseline_tests_selected": 68,
+      "component": "taxonomy",
+      "mutations_declared": 29,
+      "mutations_killed": 29,
+      "outcomes": [
+        {
+          "mutation": "T1 an unrecognised failure defaults to a harmless category",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T2 an unrecognised failure is not value-bearing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T3 the freeze condition ignores D",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T4 the freeze condition tolerates a few Ds",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T5 a component in the traceback no longer forces D",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T6 the component check runs after signature matching, so a benign match wins",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T7 the watched component list is narrowed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T8 the component scan only looks at the exception, not the traceback",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T9 every category becomes non-value-bearing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T10 every category becomes value-bearing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T11 the dependency signature swallows every module error",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T12 the frame-absence signature drops its second half",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T13 the frozen-contract signature matches any assertion error",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T14 a signature is reclassified from B to A",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T15 a signature is reclassified from A to B",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T16 the signature list is truncated",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T17 signature matching becomes a full match rather than a search",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T18 the rows lose their per-failure signature text",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T19 the counts stop counting one category",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T20 the examined count is decoupled from the rows",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T21 the digest stops moving with the classification",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T22 the receipt stops declaring what unclassified means",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T23 the category definitions are dropped",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T24 the rows are dropped from the receipt",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T25 the collector records passes as failures too",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T26 the collector keeps no traceback, only the headline",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T27 a matched signature reports no reason",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T28 the component-forced D reports no components",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "T29 exit code ignores the freeze condition",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_legacy_taxonomy.py"
+    },
+    {
+      "baseline_tests_selected": 53,
+      "component": "freeze_gate",
+      "mutations_declared": 46,
+      "mutations_killed": 46,
+      "outcomes": [
+        {
+          "mutation": "F1 the gate opens regardless of the conditions",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F2 the gate opens if anything passed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F3 an unproven condition counts as a pass",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F4 a failed condition counts as a pass",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F5 the exit code ignores the verdict",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F6 the receipt digest is not recomputed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F7 the digest is recomputed over the whole file, including itself",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F8 a truthy verdict is accepted as a passing one",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F9 an absent receipt passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F10 an unreadable receipt passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F11 a receipt with no verdict at all passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F12 a receipt reporting failure passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F13 the cohort check never finds anything",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F14 the cohort check reports a pass when it finds one",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F15 the cohort patterns are narrowed to one",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F16 the cohort patterns match any receipt",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F17 the cohort question stops being asked last",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F18 a failing suite passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F18a a passing suite is reported as failing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F19 a suite that collected nothing passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F20 a suite that could not run passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F21 a refusing closure passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F22 a closure that could not be evaluated passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F23 a closure that could not be imported passes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F23b the closure is handed the namespace root again",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F23c the repository root is derived one level too shallow",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F23d the selection goes back to a -k filter over the whole tests tree",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F23e a suite that should exist but is absent is skipped rather than reported",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F23f the selection ignores the closure's component list",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F23g the support suites are dropped from the selection",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F23h the seam is dropped from the support suites",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F23i the freeze suite is dropped from the support suites",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F18b a failing suite reports only the count, not the tests",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F18d collection errors are not named",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F18e the overflow count is dropped",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F18f every failure is named, however many there are",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F24 the condition list is truncated",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F25 a condition stops saying what it establishes",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F26 read and re-derived stop being distinguished",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F27 a re-derived condition ignores what the re-run said",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F28 the gate digest stops moving with the verdict",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F29b the seam note is dropped, so the overlap goes unexplained",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F29 the gate stops saying what it does not establish",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F30 the gate stops explaining why unproven is not a pass",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F31 the passed count counts every row",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "F32 a slow condition loses its re-derivation script",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_freeze_gate.py"
+    },
+    {
+      "baseline_tests_selected": 24,
+      "component": "freeze",
+      "mutations_declared": 28,
+      "mutations_killed": 28,
+      "outcomes": [
+        {
+          "mutation": "Z1 a dirty namespace is frozen anyway",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z2 a closed gate does not stop the freeze",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z3 an unproven condition is treated as passing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z4 an opened cohort does not stop the freeze",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z5 a second freeze overwrites the first",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z6 a missing supporting receipt is skipped",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z7 a git failure is assumed away",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z8 the gate verdict is read from the receipt instead of re-derived",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z9 the freeze stops recording that it re-derived the gate",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z10 the supporting receipts are bound by nothing",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z11 the receipt file hash is not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z12 the receipt's own digest is not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z13 the bound receipt list is narrowed",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z14 the gate receipt is dropped from the bound list",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z15 the dirty-tree refusal stops naming what was uncommitted",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z16 the instrument commit is not recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z17 the protocol recorded is the draft one",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z18 the closure is not bound into the freeze",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z19 the freeze manifest is not bound",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z20 the upstream SFIR8 binding is not bound",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z21 the freeze digest is not recomputed on verify",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z22 a draft protocol verifies",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z23 any state verifies",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z24 verification passes with problems recorded",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z25 the digest covers itself",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z26 a refused freeze exits zero",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z27 the freeze stops saying what it does not establish",
+          "outcome": "KILLED"
+        },
+        {
+          "mutation": "Z28 the freeze stops saying what it authorises",
+          "outcome": "KILLED"
+        }
+      ],
+      "state": "RUN",
+      "survivors": [],
+      "target": "tools/sfir9_freeze.py"
+    }
+  ],
+  "schema": "tavonel.sfir9.mutation_baselines.v1",
+  "why_a_missing_anchor_is_a_survivor": "a table entry whose text is no longer in the file has stopped testing anything. Skipping it would let a component drift out from under its own mutations while the score stayed green.",
+  "why_a_red_baseline_is_refused": "against a failing suite every mutation looks killed, so the score would be a perfect 100% that measured nothing."
+}

@@ -1,0 +1,73 @@
+{
+  "batching": {
+    "category_page_size": 500,
+    "revision_batch_size": 50
+  },
+  "carried_forward_by_reference": {
+    "charter": "protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4_DESIGN_CHARTER.yaml",
+    "fields_carried": [
+      "family_authorities",
+      "capacity_rule",
+      "git_tree_enumeration",
+      "spent_policy",
+      "payload_policy",
+      "terminal_policy"
+    ],
+    "fields_redeclared": [],
+    "sha256": "sha256:c211535fae804cb216a869cfe417a2a1f2e06590d5ae96e3a95fca9734bf2174"
+  },
+  "census_identity": {
+    "census_input_carries_sfir4_protocol_id": true,
+    "executed_under": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V5",
+    "seal_binds_census_input_by_exact_digest": true
+  },
+  "charter": {
+    "path": "research/tavonel_eval_v2/protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V5_DESIGN_CHARTER.yaml",
+    "sha256": "sha256:5b01d889c4111a578c6a259e57b5ef9596e89107084f56c85c6d151ed34a61a4"
+  },
+  "content_sha256": "sha256:d00067174eafc3bf3c3b3ce0b472918105d1e38d9c1f7fc9a1d23e1542b21276",
+  "estimated_cost_usd": 0.0,
+  "generated_at": "2026-08-27T05:26:01.285782+00:00",
+  "gpu_seconds": 0,
+  "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V5",
+  "schema": "tavonel.sfir5.design_charter_freeze.v1",
+  "sfir4_retry_bounds_unmodified": {
+    "max_rate_limit_wait_seconds": 60,
+    "max_total_rate_limit_wait_seconds": 180,
+    "maximum_retries_per_request": 5
+  },
+  "state": "FROZEN_PRE_CENSUS",
+  "toolchain": {
+    "probe_sfir4_capacity": {
+      "path": "research/tavonel_eval_v2/tools/probe_sfir4_capacity.py",
+      "sha256": "sha256:e0d37ee501bd8d12b80e79b7fc73ba3ea422069c242cb41eb5ea636fa533ba8f"
+    },
+    "probe_sfir5_capacity": {
+      "path": "research/tavonel_eval_v2/tools/probe_sfir5_capacity.py",
+      "sha256": "sha256:1f0d8b50ce67d3ad8fd8b00ccfb4f8af27b506cb15c33251fbf4b997da90db7c"
+    },
+    "sfir5_charter": {
+      "path": "research/tavonel_eval_v2/tools/sfir5_charter.py",
+      "sha256": "sha256:b8a66fef7ff25f9c39b4fe35de17593bb32338ca5c4f4566fb5b744eccbe7d1d"
+    },
+    "sfir5_transport": {
+      "path": "research/tavonel_eval_v2/tools/sfir5_transport.py",
+      "sha256": "sha256:01983a92ccb60011d8a4c965cbb08210d04011e3717aceabfe0787ac18bbba46"
+    },
+    "sources_sfir4": {
+      "path": "research/tavonel_eval_v2/acquisition/sources_sfir4.py",
+      "sha256": "sha256:df50c865e17d09b4523c474fd315c8cac8e0e008ef5919048e17c5a804a31837"
+    }
+  },
+  "transport_bounds": {
+    "bounded_concurrency_per_host": 1,
+    "default_min_interval_seconds": 1.0,
+    "host_min_interval_seconds": {
+      "api.github.com": 0.5,
+      "en.wikipedia.org": 7.0,
+      "www.ecfr.gov": 0.5
+    },
+    "max_total_requests": 12000,
+    "max_total_wall_clock_seconds": 21600
+  }
+}

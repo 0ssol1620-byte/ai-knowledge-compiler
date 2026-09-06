@@ -1,0 +1,40 @@
+{
+  "model_key": "olmocr2",
+  "framework_floor_audit": {
+    "audited_at": "2026-09-03",
+    "checkpoint": {
+      "config_json": "https://huggingface.co/allenai/olmOCR-2-7B-1025-FP8/raw/40bd7202494b8264ee17ada08b401b5aab7a9ce1/config.json",
+      "model_type": "qwen2_5_vl",
+      "architectures": [
+        "Qwen2_5_VLForConditionalGeneration"
+      ],
+      "auto_map": false,
+      "declared_transformers_version": "4.53.2"
+    },
+    "required": "olmocr==0.4.27 [gpu] on vllm==0.11.2. vllm v0.11.2's registry.py carries \"Qwen2_5_VLForConditionalGeneration\": (\"qwen2_5_vl\", \"Qwen2_5_VLForConditionalGeneration\") and its requirements/common.txt bounds transformers >= 4.56.0, < 5.",
+    "image_ships": "vllm/vllm-openai:v0.11.2 - transformers version unknown from evidence (range, not a pin), which is why bootstrap.sh installs transformers==4.57.3 exactly; 4.57.3 satisfies both the checkpoint's 4.53.2 and vLLM's >= 4.56.0, < 5",
+    "action": "no pin change. bootstrap.sh gains an architecture preflight that checks the pinned versions, resolves the config through transformers' AutoConfig, and asks vLLM's registry for Qwen2_5_VLForConditionalGeneration before the server starts.",
+    "evidence": [
+      "https://huggingface.co/allenai/olmOCR-2-7B-1025-FP8/raw/40bd7202494b8264ee17ada08b401b5aab7a9ce1/config.json",
+      "https://github.com/allenai/olmocr/blob/v0.4.27/pyproject.toml",
+      "https://github.com/vllm-project/vllm/blob/v0.11.2/vllm/model_executor/models/registry.py",
+      "https://github.com/vllm-project/vllm/blob/v0.11.2/requirements/common.txt"
+    ]
+  },
+  "cuda_floor": {
+    "min_cuda_version": "12.9",
+    "source": "base image CUDA runtime",
+    "cuda_version_evidence": "image config",
+    "observed": {
+      "base_image": "vllm/vllm-openai:v0.11.2@sha256:2c908d5a84ed251b6a17d179f42d06df1aff353007779ac5eecd8a0ea3fe9331",
+      "image_config_digest": "sha256:190565f62089a42f23fd76632a0fb4874ec29f3196ddfb726604cad2a6ce2da4",
+      "CUDA_VERSION": "12.9.1",
+      "NVIDIA_REQUIRE_CUDA": "cuda>=12.9",
+      "note": "the same image digest monkeyocrv2_b pins, so the same config blob"
+    },
+    "vendor_documented_floor": "none published: the vendor documents no driver floor beyond the image's own CUDA runtime",
+    "url": "https://hub.docker.com/layers/vllm/vllm-openai/v0.11.2/images/sha256-2c908d5a84ed251b6a17d179f42d06df1aff353007779ac5eecd8a0ea3fe9331",
+    "read_at": "2026-09-04",
+    "rationale": "min_cuda_version is the lowest CUDA version a RunPod host may report for this runtime to start. It is sent as the create payload's allowedCudaVersions -- every version RunPod lists at or above it -- because pod 3xag0y00rgoj4n ran this campaign's CUDA 12.9 image on a host reporting cudaVersion 12.8 and died in torch._C._cuda_init with CUDA error 804 after the pod was already billing. Read anonymously from the pinned image's own OCI config blob at the digest runtime.json pins; nothing is inferred from the image name."
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "changes_the_p4b_verdict": false,
+  "cohort_shape": {
+    "distinct_source_documents": 12,
+    "natural_pairs": 26,
+    "pairs_sharing_a_source_document_with_another_pair": 21,
+    "source_documents_with_more_than_one_pair": {
+      "git:astral-sh/uv:docs/concepts/projects/dependencies.md": 3,
+      "git:kubernetes/website:content/en/docs/concepts/services-networking/service.md": 3,
+      "git:kubernetes/website:content/en/docs/concepts/workloads/controllers/deployment.md": 3,
+      "git:prometheus/prometheus:docs/configuration/configuration.md": 3,
+      "git:prometheus/prometheus:docs/querying/basics.md": 3,
+      "git:prometheus/prometheus:docs/querying/functions.md": 3,
+      "git:rust-lang/book:src/ch04-01-what-is-ownership.md": 3
+    }
+  },
+  "diagnostic_measures": {
+    "gate_as_frozen_lineage_at_1_over_pair_id": 0.14102564102564102,
+    "same_measure_over_source_document": 0.717948717948718,
+    "warning": "the second number is NOT the gate and does not replace it. It is reported so P4c knows whether the routing failure is in the method or in the cohort's granularity."
+  },
+  "estimated_cost_usd": 0.0,
+  "finding": "the gate is defined over pair_id, and 21 of 26 natural pairs share their source document with at least one other pair. Two revision pairs of the same document are identical in title, document type, heading path and heading, so no question drawing only on those fields can route between them. The gate was measuring a distinction the permitted question construction cannot express.",
+  "gpu_seconds": 0,
+  "is_a_gate_result": false,
+  "not_claimed": "that the method routes adequately. Routing was not demonstrated on this cohort, and this diagnostic does not demonstrate it either.",
+  "p4b_receipt": "research/tavonel_eval_v2/receipts/p4b-retrieval-validity--20260821T082931Z-465c768ca50c.json",
+  "p4b_receipt_file_sha256": "sha256:869fd462e1efb1bb528507f28a4baa93320c389ddbd60289cd3dfac0a209bfdf",
+  "p4b_verdict": "FAIL",
+  "provenance": {
+    "generated_at": "2026-08-21T08:31:06.009525+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "p4b-lineage-diagnostic",
+    "run_id": "20260821T083106Z-c81546b4d13d",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/p4b_lineage_diagnostic.py",
+    "tool_sha256": "sha256:c8d4534f55fab3dc9b7666b7d1f6cf4d982239cca87735a6ac0adab744537fb3"
+  },
+  "question": "could this cohort have satisfied G_P4B_B_LINEAGE under any question the protocol permits?",
+  "receipt_sha256": "sha256:7733e9deb7dc28ee4845e2f5be54b9fb64f975a8dc87d84bd02c071804f077ea",
+  "schema": "tavonel.v2.p4b_lineage_diagnostic.v1",
+  "what_p4c_needs": [
+    "a lineage granularity the permitted fields can address — one pair per source document, or a title field that carries the revision window",
+    "sec_edgar titles that distinguish two filings of the same form by the same issuer; ticker and CIK alone do not",
+    "a fresh cohort and a fresh protocol; this one is spent"
+  ]
+}

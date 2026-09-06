@@ -10,6 +10,7 @@ import {
 import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 
+import { useStructaraLocale } from "@/components/locale-provider";
 import {
   abbreviateDigest,
   formatBytes,
@@ -60,6 +61,8 @@ export function HeroDropzone({
   /** Lets the surrounding scene dim the sample spread while ③ is showing. */
   onStateChange?: (active: boolean) => void;
 }) {
+  const { locale } = useStructaraLocale();
+  const korean = locale === "ko";
   const inputId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -199,12 +202,18 @@ export function HeroDropzone({
       <label htmlFor={inputId} className="tv-dropzone-target">
         <FileArrowUp size={20} weight="regular" aria-hidden="true" />
         <strong>
-          {reading ? "Reading your document…" : "Try it with your own document"}
+          {reading
+            ? korean ? "문서를 읽는 중…" : "Reading your document…"
+            : korean ? "내 문서로 직접 사용해 보세요" : "Try it with your own document"}
         </strong>
         <span>
           {TRIAL_INGEST_ENABLED
-            ? "Drop a file here, or choose one. It is scanned, previewed, and deleted within the hour."
-            : "Drop a file here, or choose one. It stays in your browser — nothing is uploaded."}
+            ? korean
+              ? "파일을 놓거나 선택하세요. 보안 검사와 미리보기를 거친 뒤 1시간 안에 삭제됩니다."
+              : "Drop a file here, or choose one. It is scanned, previewed, and deleted within the hour."
+            : korean
+              ? "파일을 놓거나 선택하세요. 브라우저 안에서만 읽으며 업로드하지 않습니다."
+              : "Drop a file here, or choose one. It stays in your browser — nothing is uploaded."}
         </span>
       </label>
     </div>

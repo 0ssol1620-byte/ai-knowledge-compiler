@@ -1,0 +1,1292 @@
+{
+  "analyser_sha256": "sha256:3e0a2af6f0c7e04c4b0546ab17e5564c3a23c0fea35c5a7c7fd16d3f65c229ed",
+  "external_gpu_cost_usd": 0.0,
+  "generated_at": "2026-08-21T05:35:38.317838+00:00",
+  "gpu_seconds": 0,
+  "incident": "INC-V2-003",
+  "method": "Single-variable counterfactual. Artifact specification v1, the same dependency graph and channels, the same plan_recompilation call and structural policy, the same identity-normalised basis for deciding a unit moved. Only the matching rule differs. The full-rebuild side is the P0 v1 oracle output, which no identity rule can have influenced.",
+  "not_this": "Not a P0 v1 versus P0b comparison. P0b also changed the artifact specification and the invalidation model, so that difference is confounded.",
+  "p0_v1_modified": false,
+  "p0_v1_receipt": "research/tavonel_eval_v2/receipts/p0-oracle-independence.json",
+  "p0_v1_receipt_sha256": "sha256:e7d5d6bb7de780c43839ab237b9e0a39d208d16780b063b21d256ffc3fb80d61",
+  "question": "Which P0 v1 figures were changed by running production fuzzy global identity where the protocol specified deterministic explicit-path identity?",
+  "receipt_sha256": "sha256:e39b201fb77a2b064bf95d04b5500ada2710c10406b9f2204053aacc0379fd65",
+  "records": [
+    {
+      "counterfactual": {
+        "carried": 0,
+        "changed_logical_ids": 20,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 7,
+          "new": 0,
+          "retired": 13,
+          "unresolved": 0
+        },
+        "rebuilt": 13,
+        "rebuilt_fraction": 1.0,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "work_avoided_fraction": 0.0
+      },
+      "executed": {
+        "carried": 0,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 1,
+          "modified": 1,
+          "new": 1,
+          "removed": 14,
+          "unresolved": 5
+        },
+        "rebuilt": 13,
+        "rebuilt_fraction": 1.0,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "unresolved_present": true,
+        "work_avoided_fraction": 0.0
+      },
+      "group": "natural",
+      "pair_id": "sec-000-tsla-10-k",
+      "rebuild_set_identical": true,
+      "source_family": "sec_edgar",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 0,
+        "changed_logical_ids": 20,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 7,
+          "new": 0,
+          "retired": 13,
+          "unresolved": 0
+        },
+        "rebuilt": 13,
+        "rebuilt_fraction": 1.0,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "work_avoided_fraction": 0.0
+      },
+      "executed": {
+        "carried": 0,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 1,
+          "modified": 1,
+          "new": 1,
+          "removed": 14,
+          "unresolved": 5
+        },
+        "rebuilt": 13,
+        "rebuilt_fraction": 1.0,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "unresolved_present": true,
+        "work_avoided_fraction": 0.0
+      },
+      "group": "natural",
+      "pair_id": "sec-001-tsla-10-k",
+      "rebuild_set_identical": true,
+      "source_family": "sec_edgar",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 1,
+        "changed_logical_ids": 11,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 3,
+          "new": 0,
+          "retired": 9,
+          "unresolved": 0
+        },
+        "rebuilt": 6,
+        "rebuilt_fraction": 0.8571428571428571,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "work_avoided_fraction": 0.14285714285714285
+      },
+      "executed": {
+        "carried": 0,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 0,
+          "modified": 0,
+          "new": 0,
+          "removed": 9,
+          "unresolved": 3
+        },
+        "rebuilt": 7,
+        "rebuilt_fraction": 1.0,
+        "stale_left_behind": 0,
+        "unnecessary": 1,
+        "unresolved_present": true,
+        "work_avoided_fraction": 0.0
+      },
+      "group": "natural",
+      "pair_id": "sec-005-ko-10-q",
+      "rebuild_set_identical": false,
+      "source_family": "sec_edgar",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 0,
+        "changed_logical_ids": 7,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 1,
+          "new": 3,
+          "retired": 3,
+          "unresolved": 0
+        },
+        "rebuilt": 9,
+        "rebuilt_fraction": 1.0,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "work_avoided_fraction": 0.0
+      },
+      "executed": {
+        "carried": 0,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 1,
+          "modified": 1,
+          "new": 3,
+          "removed": 3,
+          "unresolved": 0
+        },
+        "rebuilt": 9,
+        "rebuilt_fraction": 1.0,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.0
+      },
+      "group": "natural",
+      "pair_id": "sec-006-msft-8-k",
+      "rebuild_set_identical": true,
+      "source_family": "sec_edgar",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 77,
+        "changed_logical_ids": 1,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 74,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.0375,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "work_avoided_fraction": 0.9625
+      },
+      "executed": {
+        "carried": 77,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 74,
+          "modified": 1,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.0375,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.9625
+      },
+      "group": "natural",
+      "pair_id": "git-000-prometheus-configuration",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 77,
+        "changed_logical_ids": 1,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 74,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.0375,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "work_avoided_fraction": 0.9625
+      },
+      "executed": {
+        "carried": 77,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 74,
+          "modified": 1,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.0375,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.9625
+      },
+      "group": "natural",
+      "pair_id": "git-001-prometheus-configuration",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 73,
+        "changed_logical_ids": 4,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 74,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 7,
+        "rebuilt_fraction": 0.0875,
+        "stale_left_behind": 0,
+        "unnecessary": 3,
+        "work_avoided_fraction": 0.9125
+      },
+      "executed": {
+        "carried": 73,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 74,
+          "modified": 4,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 7,
+        "rebuilt_fraction": 0.0875,
+        "stale_left_behind": 0,
+        "unnecessary": 3,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.9125
+      },
+      "group": "natural",
+      "pair_id": "git-002-prometheus-configuration",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 62,
+        "changed_logical_ids": 1,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 59,
+          "new": 1,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 4,
+        "rebuilt_fraction": 0.06060606060606061,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "work_avoided_fraction": 0.9393939393939394
+      },
+      "executed": {
+        "carried": 59,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 57,
+          "modified": 0,
+          "new": 1,
+          "removed": 0,
+          "unresolved": 2
+        },
+        "rebuilt": 7,
+        "rebuilt_fraction": 0.10606060606060606,
+        "stale_left_behind": 0,
+        "unnecessary": 3,
+        "unresolved_present": true,
+        "work_avoided_fraction": 0.8939393939393939
+      },
+      "group": "natural",
+      "pair_id": "git-003-prometheus-functions",
+      "rebuild_set_identical": false,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 62,
+        "changed_logical_ids": 1,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 59,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.046153846153846156,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "work_avoided_fraction": 0.9538461538461539
+      },
+      "executed": {
+        "carried": 62,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 59,
+          "modified": 1,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.046153846153846156,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.9538461538461539
+      },
+      "group": "natural",
+      "pair_id": "git-004-prometheus-functions",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 62,
+        "changed_logical_ids": 1,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 59,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.046153846153846156,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "work_avoided_fraction": 0.9538461538461539
+      },
+      "executed": {
+        "carried": 62,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 59,
+          "modified": 1,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.046153846153846156,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.9538461538461539
+      },
+      "group": "natural",
+      "pair_id": "git-005-prometheus-functions",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 19,
+        "changed_logical_ids": 1,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 16,
+          "new": 1,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 4,
+        "rebuilt_fraction": 0.17391304347826086,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "work_avoided_fraction": 0.8260869565217391
+      },
+      "executed": {
+        "carried": 16,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 14,
+          "modified": 0,
+          "new": 1,
+          "removed": 0,
+          "unresolved": 2
+        },
+        "rebuilt": 7,
+        "rebuilt_fraction": 0.30434782608695654,
+        "stale_left_behind": 0,
+        "unnecessary": 3,
+        "unresolved_present": true,
+        "work_avoided_fraction": 0.6956521739130435
+      },
+      "group": "natural",
+      "pair_id": "git-006-prometheus-basics",
+      "rebuild_set_identical": false,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 15,
+        "changed_logical_ids": 3,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 16,
+          "new": 0,
+          "retired": 1,
+          "unresolved": 0
+        },
+        "rebuilt": 7,
+        "rebuilt_fraction": 0.3181818181818182,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "work_avoided_fraction": 0.6818181818181818
+      },
+      "executed": {
+        "carried": 13,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 14,
+          "modified": 2,
+          "new": 0,
+          "removed": 1,
+          "unresolved": 2
+        },
+        "rebuilt": 9,
+        "rebuilt_fraction": 0.4090909090909091,
+        "stale_left_behind": 0,
+        "unnecessary": 4,
+        "unresolved_present": true,
+        "work_avoided_fraction": 0.5909090909090909
+      },
+      "group": "natural",
+      "pair_id": "git-007-prometheus-basics",
+      "rebuild_set_identical": false,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 15,
+        "changed_logical_ids": 3,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 16,
+          "new": 1,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 8,
+        "rebuilt_fraction": 0.34782608695652173,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "work_avoided_fraction": 0.6521739130434783
+      },
+      "executed": {
+        "carried": 13,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 14,
+          "modified": 2,
+          "new": 1,
+          "removed": 0,
+          "unresolved": 2
+        },
+        "rebuilt": 10,
+        "rebuilt_fraction": 0.43478260869565216,
+        "stale_left_behind": 0,
+        "unnecessary": 4,
+        "unresolved_present": true,
+        "work_avoided_fraction": 0.5652173913043478
+      },
+      "group": "natural",
+      "pair_id": "git-008-prometheus-basics",
+      "rebuild_set_identical": false,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 38,
+        "changed_logical_ids": 12,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 50,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 18,
+        "rebuilt_fraction": 0.32142857142857145,
+        "stale_left_behind": 0,
+        "unnecessary": 4,
+        "work_avoided_fraction": 0.6785714285714286
+      },
+      "executed": {
+        "carried": 37,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 45,
+          "modified": 8,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 5
+        },
+        "rebuilt": 19,
+        "rebuilt_fraction": 0.3392857142857143,
+        "stale_left_behind": 0,
+        "unnecessary": 5,
+        "unresolved_present": true,
+        "work_avoided_fraction": 0.6607142857142857
+      },
+      "group": "natural",
+      "pair_id": "git-011-loki--index",
+      "rebuild_set_identical": false,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 38,
+        "changed_logical_ids": 1,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 35,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.07317073170731707,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "work_avoided_fraction": 0.926829268292683
+      },
+      "executed": {
+        "carried": 38,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 35,
+          "modified": 1,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.07317073170731707,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.926829268292683
+      },
+      "group": "natural",
+      "pair_id": "git-012-website-deployment",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 41,
+        "changed_logical_ids": 0,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 35,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 0,
+        "rebuilt_fraction": 0.0,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "work_avoided_fraction": 1.0
+      },
+      "executed": {
+        "carried": 41,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 35,
+          "modified": 0,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 0,
+        "rebuilt_fraction": 0.0,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "unresolved_present": false,
+        "work_avoided_fraction": 1.0
+      },
+      "group": "natural",
+      "pair_id": "git-013-website-deployment",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 38,
+        "changed_logical_ids": 1,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 35,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.07317073170731707,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "work_avoided_fraction": 0.926829268292683
+      },
+      "executed": {
+        "carried": 38,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 35,
+          "modified": 1,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.07317073170731707,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.926829268292683
+      },
+      "group": "natural",
+      "pair_id": "git-014-website-deployment",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 43,
+        "changed_logical_ids": 1,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 40,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.06521739130434782,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "work_avoided_fraction": 0.9347826086956522
+      },
+      "executed": {
+        "carried": 43,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 40,
+          "modified": 1,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.06521739130434782,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.9347826086956522
+      },
+      "group": "natural",
+      "pair_id": "git-015-website-service",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 43,
+        "changed_logical_ids": 1,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 40,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.06521739130434782,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "work_avoided_fraction": 0.9347826086956522
+      },
+      "executed": {
+        "carried": 43,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 40,
+          "modified": 1,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.06521739130434782,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.9347826086956522
+      },
+      "group": "natural",
+      "pair_id": "git-016-website-service",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 43,
+        "changed_logical_ids": 1,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 40,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.06521739130434782,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "work_avoided_fraction": 0.9347826086956522
+      },
+      "executed": {
+        "carried": 43,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 40,
+          "modified": 1,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.06521739130434782,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.9347826086956522
+      },
+      "group": "natural",
+      "pair_id": "git-017-website-service",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 12,
+        "changed_logical_ids": 2,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 11,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 5,
+        "rebuilt_fraction": 0.29411764705882354,
+        "stale_left_behind": 0,
+        "unnecessary": 3,
+        "work_avoided_fraction": 0.7058823529411765
+      },
+      "executed": {
+        "carried": 12,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 11,
+          "modified": 2,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 5,
+        "rebuilt_fraction": 0.29411764705882354,
+        "stale_left_behind": 0,
+        "unnecessary": 3,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.7058823529411765
+      },
+      "group": "natural",
+      "pair_id": "git-018-book-ch04-01-what-is-ownership",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 17,
+        "changed_logical_ids": 0,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 11,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 0,
+        "rebuilt_fraction": 0.0,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "work_avoided_fraction": 1.0
+      },
+      "executed": {
+        "carried": 17,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 11,
+          "modified": 0,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 0,
+        "rebuilt_fraction": 0.0,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "unresolved_present": false,
+        "work_avoided_fraction": 1.0
+      },
+      "group": "natural",
+      "pair_id": "git-019-book-ch04-01-what-is-ownership",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 6,
+        "changed_logical_ids": 6,
+        "diverged": [
+          "section:u:139a7c0549681d70218e6101",
+          "section:u:30a46678d68d4d23cd0c71d8"
+        ],
+        "equivalence_verdict": "DIVERGED",
+        "identity_outcomes": {
+          "continuation": 11,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 11,
+        "rebuilt_fraction": 0.6470588235294118,
+        "stale_left_behind": 2,
+        "unnecessary": 5,
+        "work_avoided_fraction": 0.35294117647058826
+      },
+      "executed": {
+        "carried": 6,
+        "equivalence_verdict": "DIVERGED",
+        "identity_outcomes": {
+          "continuation": 11,
+          "modified": 6,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 11,
+        "rebuilt_fraction": 0.6470588235294118,
+        "stale_left_behind": 2,
+        "unnecessary": 5,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.35294117647058826
+      },
+      "group": "natural",
+      "pair_id": "git-020-book-ch04-01-what-is-ownership",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 30,
+        "changed_logical_ids": 1,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 27,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.09090909090909091,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "work_avoided_fraction": 0.9090909090909091
+      },
+      "executed": {
+        "carried": 30,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 27,
+          "modified": 1,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.09090909090909091,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.9090909090909091
+      },
+      "group": "natural",
+      "pair_id": "git-021-uv-dependencies",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 30,
+        "changed_logical_ids": 1,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 27,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.09090909090909091,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "work_avoided_fraction": 0.9090909090909091
+      },
+      "executed": {
+        "carried": 30,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 27,
+          "modified": 1,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 3,
+        "rebuilt_fraction": 0.09090909090909091,
+        "stale_left_behind": 0,
+        "unnecessary": 2,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.9090909090909091
+      },
+      "group": "natural",
+      "pair_id": "git-022-uv-dependencies",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 28,
+        "changed_logical_ids": 2,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 27,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 5,
+        "rebuilt_fraction": 0.15151515151515152,
+        "stale_left_behind": 0,
+        "unnecessary": 3,
+        "work_avoided_fraction": 0.8484848484848485
+      },
+      "executed": {
+        "carried": 28,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 27,
+          "modified": 2,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 5,
+        "rebuilt_fraction": 0.15151515151515152,
+        "stale_left_behind": 0,
+        "unnecessary": 3,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.8484848484848485
+      },
+      "group": "natural",
+      "pair_id": "git-023-uv-dependencies",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 78,
+        "changed_logical_ids": 0,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 74,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 2,
+        "rebuilt_fraction": 0.025,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "work_avoided_fraction": 0.975
+      },
+      "executed": {
+        "carried": 78,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 74,
+          "modified": 0,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 2,
+        "rebuilt_fraction": 0.025,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.975
+      },
+      "group": "structural_positive_control",
+      "pair_id": "ctl-git-000-prometheus-configuration",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 78,
+        "changed_logical_ids": 0,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 74,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 2,
+        "rebuilt_fraction": 0.025,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "work_avoided_fraction": 0.975
+      },
+      "executed": {
+        "carried": 78,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 74,
+          "modified": 0,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 2,
+        "rebuilt_fraction": 0.025,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.975
+      },
+      "group": "structural_positive_control",
+      "pair_id": "ctl-git-001-prometheus-configuration",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 78,
+        "changed_logical_ids": 0,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 74,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 2,
+        "rebuilt_fraction": 0.025,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "work_avoided_fraction": 0.975
+      },
+      "executed": {
+        "carried": 78,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 74,
+          "modified": 0,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 2,
+        "rebuilt_fraction": 0.025,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.975
+      },
+      "group": "structural_positive_control",
+      "pair_id": "ctl-git-002-prometheus-configuration",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    },
+    {
+      "counterfactual": {
+        "carried": 64,
+        "changed_logical_ids": 0,
+        "diverged": [],
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 60,
+          "new": 0,
+          "retired": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 2,
+        "rebuilt_fraction": 0.030303030303030304,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "work_avoided_fraction": 0.9696969696969697
+      },
+      "executed": {
+        "carried": 64,
+        "equivalence_verdict": "EQUIVALENT",
+        "identity_outcomes": {
+          "continuation": 60,
+          "modified": 0,
+          "new": 0,
+          "removed": 0,
+          "unresolved": 0
+        },
+        "rebuilt": 2,
+        "rebuilt_fraction": 0.030303030303030304,
+        "stale_left_behind": 0,
+        "unnecessary": 0,
+        "unresolved_present": false,
+        "work_avoided_fraction": 0.9696969696969697
+      },
+      "group": "structural_positive_control",
+      "pair_id": "ctl-git-003-prometheus-functions",
+      "rebuild_set_identical": true,
+      "source_family": "git_docs",
+      "verdict_identical": true
+    }
+  ],
+  "records_sha256": "sha256:32aa6694a1efc3d4d95eac24c0757f866257f24a4639953a7ac4ca2695a01764",
+  "schema": "tavonel.v2.inc_v2_003_impact.v1",
+  "summary": {
+    "identity_outcome_totals": {
+      "counterfactual": {
+        "continuation": 1136,
+        "new": 6,
+        "retired": 39,
+        "unresolved": 0
+      },
+      "executed": {
+        "continuation": 1108,
+        "modified": 40,
+        "new": 8,
+        "removed": 41,
+        "unresolved": 26
+      }
+    },
+    "mean_rebuilt_fraction_natural": {
+      "counterfactual": 0.26732344505196265,
+      "executed": 0.2871107229914145
+    },
+    "mean_work_avoided_natural": {
+      "counterfactual": 0.7326765549480374,
+      "executed": 0.7128892770085855
+    },
+    "natural_pairs": 26,
+    "pairs_analysed": 30,
+    "rebuild_set_differs_pairs": 6,
+    "rebuild_set_identical_pairs": 24,
+    "stale_escapes_total": {
+      "counterfactual": 2,
+      "executed": 2
+    },
+    "unnecessary_rebuilds_total": {
+      "counterfactual": 44,
+      "executed": 56
+    },
+    "unresolved_pairs_counterfactual": 0,
+    "unresolved_pairs_executed": 8,
+    "verdict_differs_pairs": 0,
+    "verdict_identical_pairs": 30
+  }
+}

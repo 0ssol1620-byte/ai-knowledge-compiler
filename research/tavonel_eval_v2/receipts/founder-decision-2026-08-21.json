@@ -1,0 +1,113 @@
+{
+  "decisions": [
+    {
+      "basis": "none of the drifted artifacts was an input to those steps",
+      "explicitly_not_approved": [
+        "resolving the drift",
+        "re-sealing any artifact",
+        "writing a superseding receipt for any drifted artifact",
+        "restoring any artifact to its pinned bytes",
+        "promoting any quarantined evidence back into use"
+      ],
+      "gate_state_after_this_decision": {
+        "G_P0_SEALED": "FAIL / BLOCKED"
+      },
+      "id": "FD-2026-08-21-01",
+      "ruling": "APPROVED_RETROSPECTIVELY",
+      "scope": "handoff sections 18-2 through 18-5 only, on the development split",
+      "subject": "continuation of isolated development execution past a failed sealed-evidence gate"
+    },
+    {
+      "forbids": [
+        "re-sealing current bytes",
+        "generating a superseding receipt without evidence",
+        "citing quarantined evidence in support of any strong claim"
+      ],
+      "id": "FD-2026-08-21-02",
+      "receipt": "research/tavonel_eval_v2/receipts/inc-v2-001-provenance-forensic.json",
+      "requires": [
+        "locate the pinned bytes in archives, git objects, prior worktrees, submission packages, experiment exports and local backups",
+        "classify each drift as intentional amendment (documented or undocumented), accidental modification, or unrecoverable",
+        "hold unrecoverable artifacts in evidence quarantine"
+      ],
+      "ruling": "READ_ONLY_PROVENANCE_FORENSIC_FIRST",
+      "subject": "INC-V2-001 handling"
+    },
+    {
+      "design": "research/tavonel_eval_v2/design/CHANGE_FACETS_AND_ARTIFACT_SENSITIVITY_v1.md",
+      "id": "FD-2026-08-21-03",
+      "rejected": [
+        "global artifact payload normalisation",
+        "global raw-byte invalidation"
+      ],
+      "requires": [
+        "a LEXICAL or REPRESENTATION change dimension beside SEMANTIC and STRUCTURAL",
+        "artifact-declared sensitivity and an input fingerprint",
+        "artifacts needing raw, case or punctuation fidelity depend on that dimension; semantic-only artifacts need not",
+        "validation in a new protocol version only; P0 v1 protocol and implementation are not amended"
+      ],
+      "ruling": "SEPARATE_IDENTITY_NORMALISATION_FROM_INVALIDATION_FIDELITY",
+      "subject": "INC-V2-002 design direction",
+      "validated_in": "research/tavonel_eval_v2/protocols/P0b_recompilation_mechanics.yaml"
+    },
+    {
+      "basis": "the prior code computes both sides in one process with one artifact_hashes() implementation",
+      "consequence": "truly independent equivalence evidence is drawn only from v2 and later runs",
+      "forbidden_phrase": "independent full rebuild oracle",
+      "id": "FD-2026-08-21-04",
+      "required_phrase": "same-implementation full recomputation equivalence",
+      "retained": "the result is not discarded",
+      "ruling": "RENAME_NOT_RETRACT",
+      "subject": "terminology for the pre-existing 28-pair Wikipedia result"
+    },
+    {
+      "forbids": [
+        "retroactive correction",
+        "reinterpretation as PASS",
+        "re-running under a changed protocol and reporting it as P0 v1"
+      ],
+      "id": "FD-2026-08-21-05",
+      "preserved_verbatim": {
+        "G_P0_EQUIVALENCE": "FAIL",
+        "G_P0_SEALED": "FAIL / BLOCKED",
+        "artifact_exact_match": "29/30",
+        "stale_escapes": 2
+      },
+      "ruling": "SEAL_AS_PARTIAL_FAILED_DEVELOPMENT_EVIDENCE",
+      "subject": "P0 v1 disposition"
+    },
+    {
+      "gpu_approved": false,
+      "id": "FD-2026-08-21-06",
+      "ip_gate": "CLOSED until the founder supplies an actual KIPO filing receipt",
+      "paid_inference_approved": false,
+      "private_research": "permitted and expected to continue while the gate is closed",
+      "ruling": "UNCHANGED",
+      "subject": "cost and disclosure"
+    },
+    {
+      "id": "FD-2026-08-21-07",
+      "ruling": "INC-V2-001 -> INC-V2-003 -> P0b -> P2 -> P3 -> P4, CPU only",
+      "stop_only_at": [
+        "spend",
+        "external disclosure",
+        "opening the untouched confirmatory split",
+        "an irrecoverable evidence problem"
+      ],
+      "subject": "order of work"
+    }
+  ],
+  "external_gpu_cost_usd": 0.0,
+  "gpu_seconds": 0,
+  "receipt_sha256": "sha256:6df86176e6a85545139851874e679efb25a03806c536e55ff953dc45c2e92e6e",
+  "recorded_at": "2026-08-21T05:36:22.118245+00:00",
+  "recorded_by": "research programme, transcribing a decision it did not make",
+  "schema": "tavonel.v2.founder_decision.v1",
+  "source": "founder ruling following an independent review of the P0 v1 result, 2026-08-21",
+  "this_receipt_is_not": [
+    "an approval to resolve INC-V2-001",
+    "an approval to re-promote quarantined evidence",
+    "a reinterpretation of any P0 v1 gate",
+    "a patent filing decision"
+  ]
+}

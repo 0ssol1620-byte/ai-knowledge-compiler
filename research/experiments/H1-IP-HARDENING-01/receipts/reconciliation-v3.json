@@ -1,0 +1,193 @@
+{
+  "artifacts": [
+    {
+      "bytes": 8407,
+      "path": "packages/cir-python/src/akc_cir/source_grounded_acceptance.py",
+      "sha256": "397fb40dae8d013faab59b16c1e374f5643686966017a6d82629434c0bfb1f0b"
+    },
+    {
+      "bytes": 6477,
+      "path": "packages/cir-python/src/akc_cir/cause_conditioned_recovery.py",
+      "sha256": "7e5f638474e91861698dd1af52ead5229dedc7429b142b308a8c9745ec0f5fff"
+    },
+    {
+      "bytes": 10830,
+      "path": "packages/cir-python/src/akc_cir/revision_resolution.py",
+      "sha256": "1e9b5074a2056672e2d76e1398b7d48656f186dacf3866da013023358a48295f"
+    },
+    {
+      "bytes": 5026,
+      "path": "packages/cir-python/src/akc_cir/consumption_lineage.py",
+      "sha256": "9308299e8de0812fcbfdb6da874c96102d4c83ae7af1fce0ebc3588c415f7b30"
+    },
+    {
+      "bytes": 5443,
+      "path": "tests/unit/test_source_grounded_acceptance.py",
+      "sha256": "d1bfd018959deafdf0aea04e47c1e7ad2259df019e9ad43c83c2ff4e35204388"
+    },
+    {
+      "bytes": 5308,
+      "path": "tests/unit/test_cause_conditioned_recovery.py",
+      "sha256": "15bce3d44a93f451e6a7e1b4febe5f980e22e6b7d1f5da23eb7205f0eefae886"
+    },
+    {
+      "bytes": 5974,
+      "path": "tests/unit/test_revision_resolution.py",
+      "sha256": "9df39345c28dcdadcf47d9dcb4fb897a6e99dafe4fc32d1cb106e27d89b836f0"
+    },
+    {
+      "bytes": 5197,
+      "path": "tests/unit/test_consumption_lineage.py",
+      "sha256": "3af13aebed7e748e4c1b203d258a48f7f01722b278bb5cde3b743a16d2d9dd76"
+    },
+    {
+      "bytes": 4104,
+      "path": "tests/integration/test_governed_revision_consumption.py",
+      "sha256": "f170ec9559564c7f4547f5be1c1583be0799450c99509a3895de3e0758f4bc14"
+    },
+    {
+      "bytes": 4100,
+      "path": "research/experiments/H1-A9-01/preregistration.json",
+      "sha256": "c015d584bbe6e0dcaa5c953f0266892f58a2e512567e9d0e5e94a62f8ecd4eb3"
+    },
+    {
+      "bytes": 1497,
+      "path": "research/experiments/H1-A9-01/receipts/phase0-input-discovery.json",
+      "sha256": "644dd18a527742ef493c44ffff53d8872f59436d06d7f4eb2c0201b6a82650e8"
+    },
+    {
+      "bytes": 6721,
+      "path": "research/experiments/H1-A12-01/preregistration-v2.json",
+      "sha256": "6d7a9dbe89c73f1178acca727786891766d85af23b4271e2e726e7e8894898ca"
+    },
+    {
+      "bytes": 2272,
+      "path": "research/experiments/H1-A12-01/receipts/production-path-reconciliation.json",
+      "sha256": "d57803abd50dfce4c22242b8ddf89ff96f4a1e4b1fa90deb8d3dc168867e3017"
+    },
+    {
+      "bytes": 80725,
+      "path": "research/experiments/H1-A12-01/cohorts/semantic-divergence-pilot-v1.json",
+      "sha256": "51cb7fafb74cb3fc6485a32198dac190665a5d23e7a9082cae417d4d47eaf0cc"
+    },
+    {
+      "bytes": 3656,
+      "path": "research/experiments/H1-A9-A12-SHARED-01/BUDGET_AND_REUSE_PLAN.json",
+      "sha256": "79d924e21a8546ff60bbd84714632d7d5f9f26fbe64dc1df9820ddc42f6f47b1"
+    },
+    {
+      "bytes": 8265,
+      "path": "research/experiments/H1-IP-HARDENING-01/PATENT_PAPER_DELTA_2026-08-16.md",
+      "sha256": "d2f4a8d801d4ab5ce50dcdc2706eb7a5c5bb4b5c7d633ebe0f7d81f0f5361747"
+    }
+  ],
+  "combined_regression": {
+    "note": "Combined new A9/A12/B14/B15 modules plus protected recovery/inspection/critical-token/authority/temporal/dependency/world tests and A12 phase-0 harness.",
+    "pytest": "231/231 PASS",
+    "ruff": "PASS"
+  },
+  "corrections": {
+    "A12": {
+      "correction": "The original claim-chart/planned wording was stale. v6 scheduler already distinguishes semantic RECOVERY from infrastructure RETRY and excludes the failed independent model family during semantic recovery.",
+      "empirical_benefit": "WITHHELD",
+      "h1_addition": "CIR FailureClass/RecoveryOperatorKind adapter makes the cause-conditioned contract explicit and directly ablatable without duplicating protected budget/circuit/repeat guards.",
+      "h1_targeted_regression": "101/101 PASS",
+      "implementation_ruling": "MULTI_LAYER_IMPLEMENTED_EMPIRICAL_BENEFIT_WITHHELD",
+      "pre_existing_targeted_regression": "3/3 PASS"
+    },
+    "A9": {
+      "empirical_benefit": "WITHHELD",
+      "h1_addition": "Typed source-revision-hash-bound native correspondence receipt plus critical-token source check and explicit UNAVAILABLE fail-closed state.",
+      "h1_targeted_regression": "52/52 PASS",
+      "implementation_ruling": "MULTI_LAYER_IMPLEMENTED_NATIVE_SOURCE_WORKED_EMBODIMENT_VISUAL_AND_LIVE_INTEGRATION_PENDING",
+      "pre_existing_parallel_runtime": "RecoveryCoordinator.accept already requires passing validation, zero hard failures, source evidence, independent model family, changed prediction and diff evidence.",
+      "pre_existing_targeted_regression": "5/5 PASS"
+    },
+    "B14": {
+      "behavior": "typed impact -> explicit CONSUMED_BY edge -> exact prior consumption stale-risk with source/candidate world and reason path",
+      "implementation_ruling": "DOMAIN_VERTICAL_SLICE_IMPLEMENTED_LIVE_CONSUMPTION_PERSISTENCE_PENDING",
+      "integrated_b15_b14": "1/1 PASS",
+      "targeted_regression": "36/36 PASS"
+    },
+    "B15": {
+      "behavior": "source revision -> governed authority/applicability/valid-time recompute -> channel-specific dirty plan -> candidate world only",
+      "implementation_ruling": "DOMAIN_VERTICAL_SLICE_IMPLEMENTED_LIVE_PERSISTENCE_PENDING",
+      "targeted_regression": "111/111 PASS"
+    }
+  },
+  "generated_at": "2026-08-16T09:37:08.214617+00:00",
+  "goal_loop_id": "goal-1786868445527-d1a17d1f",
+  "gpu_budget": {
+    "ground_truth_on_gpu": false,
+    "hard_cap_usd": 10.0,
+    "historical_demo_raw_estimate_three_arm_48_cases_usd": {
+      "mineru_pipeline_same_family": 0.530736,
+      "mineru_vlm_c1_same_family": 0.786
+    },
+    "incremental_spend_usd": 0.0,
+    "nominal_cap_usd": 3.0,
+    "preferred_parallelism": 4,
+    "spend_allowed_now": false,
+    "three_x_planning_reserve_usd": {
+      "mineru_pipeline_same_family": 1.592208,
+      "mineru_vlm_c1_same_family": 2.358
+    }
+  },
+  "prospective_research": {
+    "a12_cohort": {
+      "candidate_models_all_cases": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "cases": 48,
+      "executed": false,
+      "ground_truth_included": false,
+      "strata": {
+        "B01": 8,
+        "F01": 8,
+        "G01": 8,
+        "H01": 8,
+        "N01": 8,
+        "R01": 8
+      }
+    },
+    "a12_protocol": "H1-A12-01 preregistration-v2: existing independent-family semantic recovery versus same-family-permitted ablation",
+    "a9_protocol": "H1-A9-01: independent correctness outcome; never use the source gate as its own outcome label; self-confidence/agreement arms unavailable unless genuinely frozen/prospectively emitted.",
+    "shared_inference": "Paddle + DeepSeek outputs are shared between A12 family-choice and A9 acceptance-policy analysis; original failed base output is reused; same-family ablation only adds the one required recovery output."
+  },
+  "result": "PASS_RECONCILIATION_IMPLEMENTATION_EVIDENCE_ONLY",
+  "runtime_gate_snapshot": {
+    "formal_build_receipt_nonzero": false,
+    "ghcr_publication_receipt_nonzero": false,
+    "sbom_trivy_nonzero": false,
+    "security_receipt_nonzero": false,
+    "trivy_critical_nonzero": false
+  },
+  "safety": {
+    "canary_b": false,
+    "commit": false,
+    "customer_data": false,
+    "merge": false,
+    "nobypassrls_disarm": false,
+    "paper_submission_or_publication": false,
+    "patent_filing": false,
+    "production_migration": false,
+    "push": false
+  },
+  "schema": "tavonel.h1-ip-paper-reconciliation.v3",
+  "selective_recompile": {
+    "cases": 330,
+    "documents": 30,
+    "equivalent": 330,
+    "mean_rebuild_fraction": 0.12626262626262624,
+    "next": "independent preregistered real revision-family holdout",
+    "stale_left_behind": 0,
+    "status": "ENGINEERING_EVIDENCE_PASS_EXTERNAL_GENERALIZATION_WITHHELD"
+  },
+  "worktree": {
+    "branch": "agent/folynta-trust-integration-v1",
+    "dirty": true,
+    "head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+    "path": "D:\\CodexProjects\\ai-knowledge-compiler"
+  }
+}

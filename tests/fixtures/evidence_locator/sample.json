@@ -1,0 +1,17 @@
+{
+  "report": {
+    "title": "Q3 revenue",
+    "rows": [
+      {
+        "region": "APAC",
+        "revenue": 1000000
+      },
+      {
+        "region": "EMEA",
+        "revenue": 250000
+      }
+    ]
+  },
+  "a/b": "slash key",
+  "m~n": "tilde key"
+}

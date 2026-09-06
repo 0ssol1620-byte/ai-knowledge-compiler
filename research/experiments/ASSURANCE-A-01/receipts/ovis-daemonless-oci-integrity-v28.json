@@ -1,0 +1,20 @@
+{
+  "all_referenced_blob_hashes_verified": true,
+  "directly_verified_new_blobs": {
+    "config": "sha256:e832c1aeeedbece60b0e85cd98697087e9bbf8c53b8f93811abf80ab61e708f8",
+    "manifest": "sha256:e155f9b0c1fad09d9d87691113bb644a569e0607d26238c2483b30fae23bd800",
+    "new_layer": "sha256:0e8950c768b1f0876fcd80ec4ace4b4b55118f7e7415b9312717b538ea8ad786"
+  },
+  "generated_at": "2026-08-16T15:40:53.982934+00:00",
+  "inherited_all_referenced_blob_hashes_verified": true,
+  "inherited_integrity_receipt_sha256": "sha256:98bf79dd58feba01eb312cf7fc5c0a5b144f822caad029592628f32ba6989431",
+  "inherited_layer_chain_exactly_preserved": true,
+  "inherited_layer_count": 32,
+  "inherited_manifest_digest": "sha256:a26d09cd1132d4b69b4870189c9348dea6bc7a20e46bda228d32740e6b9cafda",
+  "output_layer_count": 33,
+  "output_manifest_digest": "sha256:e155f9b0c1fad09d9d87691113bb644a569e0607d26238c2483b30fae23bd800",
+  "public_benchmark_inference_allowed": false,
+  "receipt_sha256": "sha256:3a0c3bf3be24b4abb95a52bd2087fd9a5c9d390e39993f8313de312b186b1a86",
+  "schema": "tavonel.daemonless-oci-composed-integrity.v1",
+  "verification_method": "transitive-full-v27-plus-direct-v28-manifest-config-layer-sha256"
+}

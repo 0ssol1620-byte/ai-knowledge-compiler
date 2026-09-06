@@ -1,0 +1,10 @@
+{
+  "is_evidence": false,
+  "note": "NOT EVIDENCE. A mutable convenience pointer to the most recent immutable receipt for this stem. It carries no finding. Cite the file it names, never this one.",
+  "points_to": "research/tavonel_eval_v2/receipts/p4g-cohort-manifest--20260822T110653Z-5e463998ab10.json",
+  "points_to_file_sha256": "sha256:61b2ab4c14ec2ff90a735d4ec0ef3bd25990147ad1a1994fec3335ba69a18de3",
+  "run_id": "20260822T110653Z-5e463998ab10",
+  "schema": "tavonel.v2.receipt_pointer.v1",
+  "stem": "p4g-cohort-manifest",
+  "updated_at": "2026-08-22T11:06:53.978181+00:00"
+}

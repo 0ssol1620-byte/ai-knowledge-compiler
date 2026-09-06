@@ -1,5 +1,9 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+
+import { ActivityLive } from "@/components/activity-live";
+
+export const metadata: Metadata = { title: "Activity" };
 
 export default function ActivityPage() {
-  redirect("/app/jobs");
+  return <ActivityLive />;
 }

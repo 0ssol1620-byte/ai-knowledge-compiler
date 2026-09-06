@@ -1,0 +1,1675 @@
+{
+  "deletion_injection_validation": {
+    "delete_10_percent": {
+      "detection_rate": 1.0,
+      "pages_tested": 192,
+      "ratio_increased": 192
+    },
+    "delete_25_percent": {
+      "detection_rate": 1.0,
+      "pages_tested": 192,
+      "ratio_increased": 192
+    },
+    "delete_50_percent": {
+      "detection_rate": 1.0,
+      "pages_tested": 192,
+      "ratio_increased": 192
+    },
+    "delete_5_percent": {
+      "detection_rate": 1.0,
+      "pages_tested": 192,
+      "ratio_increased": 192
+    }
+  },
+  "injection_validation_is_weak_and_here_is_why": "deleting output raises ink-per-character by construction, so a detection rate of 1.00 on the deletion injections is close to a tautology and is not evidence that the instrument works on natural variation. It shows only that the arithmetic points the right way. The separation block is the real test, and on this corpus it fails.",
+  "known_confound_figure_pages": {
+    "median_ratio_with_figures": 0.2635469906452772,
+    "median_ratio_without_figures": 0.19794187601024488,
+    "pages_with_a_figure": 148,
+    "pages_without_a_figure": 52,
+    "reading": "a higher median on figure-bearing pages is the predicted confound, not a model defect: ink from a photograph has no characters to divide by"
+  },
+  "method": {
+    "analysis_width_px": 1000,
+    "border_trim_fraction": 0.02,
+    "threshold": "Otsu on the greyscale histogram",
+    "uses_ground_truth": false,
+    "uses_ocr": false
+  },
+  "pages": [
+    {
+      "figure_regions": 0,
+      "image_path": "PPT_EnglishtoAmericanTransition_page_003.png",
+      "ink_per_10k_characters": 2.761679292929293,
+      "ink_share": 0.07594618055555556,
+      "official_text_edit": 0.0,
+      "predicted_characters": 275
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "PPT_EnglishtoAmericanTransition_page_005.png",
+      "ink_per_10k_characters": 3.040486844679186,
+      "ink_share": 0.08634982638888888,
+      "official_text_edit": 0.0,
+      "predicted_characters": 284
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "PPT_EnglishtoAmericanTransition_page_016.png",
+      "ink_per_10k_characters": 1.8381311521846895,
+      "ink_share": 0.09613425925925925,
+      "official_text_edit": 0.0,
+      "predicted_characters": 523
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "PPT_EnglishtoAmericanTransition_page_017.png",
+      "ink_per_10k_characters": 1.3362873653400997,
+      "ink_share": 0.11117910879629629,
+      "official_text_edit": 0.0,
+      "predicted_characters": 832
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "color_textbook_zhonggaokao_小学_13.人教新起点英语（4-5年级）_人教新起点四年级英语下册_课本_人教新起点英语4B电子课本_page_016.png",
+      "ink_per_10k_characters": 145.57705740580775,
+      "ink_share": 0.33482723203335785,
+      "official_text_edit": 0.0,
+      "predicted_characters": 23
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "color_textbook_zhonggaokao_小学_13.人教新起点英语（4-5年级）_人教新起点四年级英语下册_课本_人教新起点英语4B电子课本_page_017.png",
+      "ink_per_10k_characters": 149.89028171975193,
+      "ink_share": 0.5246159860191317,
+      "official_text_edit": 0.0,
+      "predicted_characters": 35
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "color_textbook_zhonggaokao_小学_13.人教新起点英语（4-5年级）_人教新起点四年级英语下册_课本_人教新起点英语4B电子课本_page_043.png",
+      "ink_per_10k_characters": 150.22534952170713,
+      "ink_share": 0.31547323399558497,
+      "official_text_edit": 0.0,
+      "predicted_characters": 21
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "docstructbench_dianzishu_zhongwenzaixian-o.O-61510863.pdf_73.jpg",
+      "ink_per_10k_characters": 10.020245664281196,
+      "ink_share": 0.39479767917267916,
+      "official_text_edit": 0.0,
+      "predicted_characters": 394
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "docstructbench_dianzishu_zhongwenzaixian-o.O-61513005.pdf_179.jpg",
+      "ink_per_10k_characters": 12.949490895765871,
+      "ink_share": 0.44546248681434597,
+      "official_text_edit": null,
+      "predicted_characters": 344
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "docstructbench_llm-raw-scihub-o.O-chem.200701981.pdf_9.jpg",
+      "ink_per_10k_characters": 0.11326143738939655,
+      "ink_share": 0.1149037282315428,
+      "official_text_edit": 0.20651629072681704,
+      "predicted_characters": 10145
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "docstructbench_llm-raw-the-eye-o.O-Dragon%20Magazine%20-%20030.pdf_5.jpg",
+      "ink_per_10k_characters": 1.7452911471811094,
+      "ink_share": 0.40979436135812447,
+      "official_text_edit": 0.002230897936419409,
+      "predicted_characters": 2348
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "jiaocaineedrop_5f9c4ab08cac7457e9111a30e4664920607ea2c115a1433d7be98e97e64244ca.pdf_2.jpg",
+      "ink_per_10k_characters": 0.9393281473611873,
+      "ink_share": 0.25089454816017315,
+      "official_text_edit": 0.0,
+      "predicted_characters": 2671
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "jiaocaineedrop_7bc671081823aec9e2a6ef2a011c3fbb.pdf_20.jpg",
+      "ink_per_10k_characters": 5.958827515432582,
+      "ink_share": 0.5601297864506627,
+      "official_text_edit": 0.009478672985781991,
+      "predicted_characters": 940
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "jiaocaineedrop_Chap11.pdf_10.jpg",
+      "ink_per_10k_characters": 1.666639714629632,
+      "ink_share": 0.4043267947691487,
+      "official_text_edit": 0.0,
+      "predicted_characters": 2426
+    },
+    {
+      "figure_regions": 10,
+      "image_path": "jiaocaineedrop_bde81e42743067b574946698491d7f19.pdf_14.jpg",
+      "ink_per_10k_characters": 1.3479196692594397,
+      "ink_share": 0.19787460744728577,
+      "official_text_edit": 0.11436413540713632,
+      "predicted_characters": 1468
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "jiaocaineedrop_unit2t03.pdf_63.jpg",
+      "ink_per_10k_characters": 0.45254665198388305,
+      "ink_share": 0.14725868055555555,
+      "official_text_edit": 0.016738030362008563,
+      "predicted_characters": 3254
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "magazine_TheEconomist.2023.11.18_page_030.png",
+      "ink_per_10k_characters": 1.1586385771641605,
+      "ink_share": 0.4280010904044409,
+      "official_text_edit": 0.0567133583874274,
+      "predicted_characters": 3694
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "magazine_TheEconomist.2023.11.18_page_068.png",
+      "ink_per_10k_characters": 0.20117883992354776,
+      "ink_share": 0.13006212001057363,
+      "official_text_edit": 0.0,
+      "predicted_characters": 6465
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "magazine_TheEconomist.2023.11.18_page_071.png",
+      "ink_per_10k_characters": 0.31693804847480617,
+      "ink_share": 0.19840321834522864,
+      "official_text_edit": 0.02452642073778664,
+      "predicted_characters": 6260
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "magazine_TheEconomist.2023.11.18_page_082.png",
+      "ink_per_10k_characters": 0.40248898894862317,
+      "ink_share": 0.23191415543219668,
+      "official_text_edit": 0.008467023172905526,
+      "predicted_characters": 5762
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "magazine_TheEconomist.2023.11.25_page_068.png",
+      "ink_per_10k_characters": 0.3724391703258173,
+      "ink_share": 0.23065157818277865,
+      "official_text_edit": 0.0,
+      "predicted_characters": 6193
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "magazine_TheEconomist.2023.11.25_page_069.png",
+      "ink_per_10k_characters": 0.9536852626851998,
+      "ink_share": 0.33712774035921816,
+      "official_text_edit": 0.13941789435860583,
+      "predicted_characters": 3535
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "magazine_TheEconomist.2023.12.02_page_023.png",
+      "ink_per_10k_characters": 0.410713643731249,
+      "ink_share": 0.23283356463124505,
+      "official_text_edit": 0.0008812513769552765,
+      "predicted_characters": 5669
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "magazine_TheEconomist.2023.12.02_page_031.png",
+      "ink_per_10k_characters": 0.45041500045389504,
+      "ink_share": 0.26205144726407614,
+      "official_text_edit": 0.1333956969130028,
+      "predicted_characters": 5818
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "magazine_TheEconomist.2023.12.02_page_056.png",
+      "ink_per_10k_characters": 0.31058948770140643,
+      "ink_share": 0.19427372455722972,
+      "official_text_edit": 0.06232956758862485,
+      "predicted_characters": 6255
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "magazine_TheEconomist.2023.12.02_page_062.png",
+      "ink_per_10k_characters": 0.32977274380970634,
+      "ink_share": 0.2082185104414486,
+      "official_text_edit": 0.014240837696335079,
+      "predicted_characters": 6314
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "magazine_TheEconomist.2023.12.09_page_045.png",
+      "ink_per_10k_characters": 0.2579056111959836,
+      "ink_share": 0.1682576207442597,
+      "official_text_edit": 0.001723807699674392,
+      "predicted_characters": 6524
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "magazine_TheEconomist.2023.12.09_page_082.png",
+      "ink_per_10k_characters": 0.3587872681673256,
+      "ink_share": 0.23238651359197676,
+      "official_text_edit": 0.0011895321173671688,
+      "predicted_characters": 6477
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "magazine_TheEconomist.2023.12.16_page_019.png",
+      "ink_per_10k_characters": 1.2737696973785955,
+      "ink_share": 0.4218725237717908,
+      "official_text_edit": 0.04929051530993279,
+      "predicted_characters": 3312
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "magazine_TheEconomist.2023.12.16_page_026.png",
+      "ink_per_10k_characters": 0.2759429021622311,
+      "ink_share": 0.17605157157950344,
+      "official_text_edit": 0.0006042296072507553,
+      "predicted_characters": 6380
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "magazine_TheEconomist.2023.12.16_page_037.png",
+      "ink_per_10k_characters": 1.1556427017286675,
+      "ink_share": 0.41152436608557846,
+      "official_text_edit": 0.04891110317743663,
+      "predicted_characters": 3561
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "magazine_TheEconomist.2023.12.23_page_024.png",
+      "ink_per_10k_characters": 1.1989466842443484,
+      "ink_share": 0.3943335644479662,
+      "official_text_edit": 0.0005473453749315818,
+      "predicted_characters": 3289
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "magazine_TheEconomist.2023.12.23_page_060.png",
+      "ink_per_10k_characters": 0.20069599746938674,
+      "ink_share": 0.1513247820919176,
+      "official_text_edit": 0.11779324055666004,
+      "predicted_characters": 7540
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "magazine_TheEconomist.2024.02.24_page_007.png",
+      "ink_per_10k_characters": 0.2844688107274607,
+      "ink_share": 0.1839375330163761,
+      "official_text_edit": 0.00019327406262079628,
+      "predicted_characters": 6466
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "magazine_TheEconomist.2024.02.24_page_008.png",
+      "ink_per_10k_characters": 0.34639704048690156,
+      "ink_share": 0.1674483293713682,
+      "official_text_edit": 0.000541858574911948,
+      "predicted_characters": 4834
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "magazine_TheEconomist.2024.02.24_page_033.png",
+      "ink_per_10k_characters": 0.41563411359113767,
+      "ink_share": 0.22543994321183308,
+      "official_text_edit": 0.0,
+      "predicted_characters": 5424
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "magazine_TheEconomist.2024.02.24_page_068.png",
+      "ink_per_10k_characters": 0.28557195565089993,
+      "ink_share": 0.19864385235076598,
+      "official_text_edit": 0.001250446588067167,
+      "predicted_characters": 6956
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "magazine_TheEconomist.2024.03.02_page_025.png",
+      "ink_per_10k_characters": 0.4585674593919888,
+      "ink_share": 0.27702060221870045,
+      "official_text_edit": 0.0006190672719768881,
+      "predicted_characters": 6041
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "magazine_TheEconomist.2024.03.02_page_028.png",
+      "ink_per_10k_characters": 0.21079341846809596,
+      "ink_share": 0.1515393885367142,
+      "official_text_edit": 0.0007012622720897616,
+      "predicted_characters": 7189
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "magazine_TheEconomist.2024.03.02_page_031.png",
+      "ink_per_10k_characters": 0.4522597486428135,
+      "ink_share": 0.18605966059165346,
+      "official_text_edit": 0.020186335403726708,
+      "predicted_characters": 4114
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "magazine_TheEconomist.2024.03.02_page_075.png",
+      "ink_per_10k_characters": 0.3954216266859801,
+      "ink_share": 0.210601558372953,
+      "official_text_edit": 0.0023685457129322598,
+      "predicted_characters": 5326
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "magazine_TheEconomist.2024.03.09_page_029.png",
+      "ink_per_10k_characters": 0.23979492655052848,
+      "ink_share": 0.1512866191607284,
+      "official_text_edit": 0.0018359853121175031,
+      "predicted_characters": 6309
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "magazine_TheEconomist.2024.03.09_page_079.png",
+      "ink_per_10k_characters": 0.4525969564110344,
+      "ink_share": 0.25684877276326207,
+      "official_text_edit": 0.005575379125780553,
+      "predicted_characters": 5675
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_019d4d5296ba8f1c21277d72fb0cf0db_1.jpg",
+      "ink_per_10k_characters": 0.18826388143475592,
+      "ink_share": 0.1639025351770985,
+      "official_text_edit": 0.03501945525291829,
+      "predicted_characters": 8706
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_01f020903d7bc4b3fc69f500f41eb77e_1.jpg",
+      "ink_per_10k_characters": 0.22311911570500587,
+      "ink_share": 0.1674285844250364,
+      "official_text_edit": 0.014429683921209345,
+      "predicted_characters": 7504
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_028a1dd5500fbd774e4d85df3c460c4d_1.jpg",
+      "ink_per_10k_characters": 0.15176882440102044,
+      "ink_share": 0.11554160601649685,
+      "official_text_edit": 0.014631915866483767,
+      "predicted_characters": 7613
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_02912feb79994ae24665509d964ad9ce_1.jpg",
+      "ink_per_10k_characters": 0.17379013368561894,
+      "ink_share": 0.21826302889576885,
+      "official_text_edit": 0.018543768748295608,
+      "predicted_characters": 12559
+    },
+    {
+      "figure_regions": 6,
+      "image_path": "newspaper_06b975dbc47dc2dc2a3a1468293f6a2c_1.jpg",
+      "ink_per_10k_characters": 0.24688145994932806,
+      "ink_share": 0.1727923338185347,
+      "official_text_edit": 0.021871984560952074,
+      "predicted_characters": 6999
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_0b86dae4d8f328a0e79d9ac394000dec_1.jpg",
+      "ink_per_10k_characters": 0.16746752740884085,
+      "ink_share": 0.1064926006792819,
+      "official_text_edit": 0.00221606648199446,
+      "predicted_characters": 6359
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_0ce88e1e131aef7a59d0533be36870de_1.jpg",
+      "ink_per_10k_characters": 0.24814761394771542,
+      "ink_share": 0.1634052037845706,
+      "official_text_edit": 0.013115343154868847,
+      "predicted_characters": 6585
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_0cfb8a42b5d4194d8c73dba0cdf6256c_1.jpg",
+      "ink_per_10k_characters": 0.20438460708514186,
+      "ink_share": 0.1716013161086851,
+      "official_text_edit": 0.029978296256104178,
+      "predicted_characters": 8396
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_14b9d21f7fed39fb42849e9cde233930_1.jpg",
+      "ink_per_10k_characters": 0.24473107733486674,
+      "ink_share": 0.17383248423095585,
+      "official_text_edit": 0.01669941060903733,
+      "predicted_characters": 7103
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_17f81b80831d8d58564b9c8e3cf79261_1.jpg",
+      "ink_per_10k_characters": 0.34369490094484334,
+      "ink_share": 0.1719849284327996,
+      "official_text_edit": 0.018717244821562267,
+      "predicted_characters": 5004
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_1cddf9d22ca549f3a86cf1512a3110cc_1.jpg",
+      "ink_per_10k_characters": 0.12429442840884691,
+      "ink_share": 0.11380397865114023,
+      "official_text_edit": 0.030220844633862844,
+      "predicted_characters": 9156
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "newspaper_2140e879cd0d3c1b5ba2ea1e3a75aab6_1.jpg",
+      "ink_per_10k_characters": 0.236613531946184,
+      "ink_share": 0.14651109898107714,
+      "official_text_edit": 0.002991623454327882,
+      "predicted_characters": 6192
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_26f4ed67a5e8922e7d42b35d317ebf4b_1.jpg",
+      "ink_per_10k_characters": 0.24475493938636755,
+      "ink_share": 0.15926203905870936,
+      "official_text_edit": 0.04312267657992565,
+      "predicted_characters": 6507
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_2a645bfcbcd473423581cd9f1ceb778e_1.jpg",
+      "ink_per_10k_characters": 0.21064264284589918,
+      "ink_share": 0.19705619238233868,
+      "official_text_edit": 0.018675298804780877,
+      "predicted_characters": 9355
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_10.jpg",
+      "ink_per_10k_characters": 0.18445871193425917,
+      "ink_share": 0.1377168743301179,
+      "official_text_edit": 0.0010001666944490749,
+      "predicted_characters": 7466
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_11.jpg",
+      "ink_per_10k_characters": 0.1837824004565043,
+      "ink_share": 0.13756112674169346,
+      "official_text_edit": 0.000980872976949485,
+      "predicted_characters": 7485
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_12.jpg",
+      "ink_per_10k_characters": 0.18467126185895474,
+      "ink_share": 0.14179059485530546,
+      "official_text_edit": 0.0019172391755871545,
+      "predicted_characters": 7678
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_13.jpg",
+      "ink_per_10k_characters": 0.18477038870388146,
+      "ink_share": 0.13881799303322614,
+      "official_text_edit": 0.003947368421052632,
+      "predicted_characters": 7513
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_14.jpg",
+      "ink_per_10k_characters": 0.1853861598129045,
+      "ink_share": 0.13801999598070738,
+      "official_text_edit": 0.0031561461794019936,
+      "predicted_characters": 7445
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_15.jpg",
+      "ink_per_10k_characters": 0.186512859016001,
+      "ink_share": 0.14329782958199358,
+      "official_text_edit": 0.003767069533825145,
+      "predicted_characters": 7683
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_16.jpg",
+      "ink_per_10k_characters": 0.18479698338228867,
+      "ink_share": 0.13887493301178994,
+      "official_text_edit": 0.0028020438437448493,
+      "predicted_characters": 7515
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_17.jpg",
+      "ink_per_10k_characters": 0.18319450699897544,
+      "ink_share": 0.1371943662915327,
+      "official_text_edit": 0.0008238589553468446,
+      "predicted_characters": 7489
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_3.jpg",
+      "ink_per_10k_characters": 0.18644951527083123,
+      "ink_share": 0.13493351420150054,
+      "official_text_edit": 0.004446724816145032,
+      "predicted_characters": 7237
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_4.jpg",
+      "ink_per_10k_characters": 0.18613113133938644,
+      "ink_share": 0.13520565380493033,
+      "official_text_edit": 0.0020498804236419544,
+      "predicted_characters": 7264
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_5.jpg",
+      "ink_per_10k_characters": 0.18546174132461998,
+      "ink_share": 0.1374271503215434,
+      "official_text_edit": 0.0011840324763193505,
+      "predicted_characters": 7410
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_6.jpg",
+      "ink_per_10k_characters": 0.18480278140066211,
+      "ink_share": 0.13618116961414792,
+      "official_text_edit": 0.005319148936170213,
+      "predicted_characters": 7369
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_7.jpg",
+      "ink_per_10k_characters": 0.18387966747754486,
+      "ink_share": 0.1389762526795284,
+      "official_text_edit": 0.00097815454841865,
+      "predicted_characters": 7558
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_8.jpg",
+      "ink_per_10k_characters": 0.18484646877754002,
+      "ink_share": 0.13684184083601286,
+      "official_text_edit": 0.005785264590777607,
+      "predicted_characters": 7403
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_2a6b4fa088699701a6fa9ccecfb5c25d_9.jpg",
+      "ink_per_10k_characters": 0.18521191266677042,
+      "ink_share": 0.13663082797427653,
+      "official_text_edit": 0.0017001020061203672,
+      "predicted_characters": 7377
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_2c69e142b52dbb30cac2cb11d3eb25e5_1.jpg",
+      "ink_per_10k_characters": 0.22437351706120182,
+      "ink_share": 0.16951419213973798,
+      "official_text_edit": 0.004975874547647768,
+      "predicted_characters": 7555
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_2de954934f60ac538c5bd5dc40833a61_1.jpg",
+      "ink_per_10k_characters": 0.186607062784136,
+      "ink_share": 0.11812227074235808,
+      "official_text_edit": 0.013330757341576507,
+      "predicted_characters": 6330
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "newspaper_35352f94db65d19e097395380498ec15_1.jpg",
+      "ink_per_10k_characters": 0.23714625678261853,
+      "ink_share": 0.205582090004852,
+      "official_text_edit": 0.009620670698185816,
+      "predicted_characters": 8669
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_354720d92a632709eb8e61795b191390_1.jpg",
+      "ink_per_10k_characters": 0.1418582182513624,
+      "ink_share": 0.0959387130033964,
+      "official_text_edit": 0.004910557699052964,
+      "predicted_characters": 6763
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_35bdaa11dec104ccbdc9e19ac8527d21_1.jpg",
+      "ink_per_10k_characters": 0.28863897679774775,
+      "ink_share": 0.21180328117418729,
+      "official_text_edit": 0.007503192848020434,
+      "predicted_characters": 7338
+    },
+    {
+      "figure_regions": 6,
+      "image_path": "newspaper_401c73055b88a62c479edd3d490cea8a_1.jpg",
+      "ink_per_10k_characters": 0.14006252335981348,
+      "ink_share": 0.09256732168850072,
+      "official_text_edit": 0.008719346049046322,
+      "predicted_characters": 6609
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_41a09cb64841567c220d8cac3c1cc193_1.jpg",
+      "ink_per_10k_characters": 0.14505356255878374,
+      "ink_share": 0.128444929645803,
+      "official_text_edit": 0.0025401069518716578,
+      "predicted_characters": 8855
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_4790b51e8fa793743699647c09a93ccb_1.jpg",
+      "ink_per_10k_characters": 0.13079243275704527,
+      "ink_share": 0.11032341703056768,
+      "official_text_edit": 0.023315710993628846,
+      "predicted_characters": 8435
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "newspaper_4b4ad1f6cba28a4844d7ffa9306223a4_1.jpg",
+      "ink_per_10k_characters": 0.4409259283829527,
+      "ink_share": 0.23219159388646288,
+      "official_text_edit": 0.004526024641689716,
+      "predicted_characters": 5266
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_4cec63ef5a813c5a49dd8e577f3180e7_1.jpg",
+      "ink_per_10k_characters": 0.24304610169215426,
+      "ink_share": 0.16216035904900533,
+      "official_text_edit": 0.00516700498246909,
+      "predicted_characters": 6672
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_571a946262006cd89199b67353c408b8_1.jpg",
+      "ink_per_10k_characters": 0.26463378381800734,
+      "ink_share": 0.17897182799611838,
+      "official_text_edit": 0.022530329289428077,
+      "predicted_characters": 6763
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_5a8b7563a3262beecbecd7ddd3ef8827_1.jpg",
+      "ink_per_10k_characters": 0.1934643286177574,
+      "ink_share": 0.1860352983988355,
+      "official_text_edit": 0.002459419576979833,
+      "predicted_characters": 9616
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_5aedf678eff04d8ebac3692d54103e19_1.jpg",
+      "ink_per_10k_characters": 0.28327138293412846,
+      "ink_share": 0.18948022804463852,
+      "official_text_edit": 0.05349439171699741,
+      "predicted_characters": 6689
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_5bba361b0a5ca11745edbef140e2a431_1.jpg",
+      "ink_per_10k_characters": 0.24907296112267596,
+      "ink_share": 0.16839822901504123,
+      "official_text_edit": 0.005868139454608215,
+      "predicted_characters": 6761
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "newspaper_5c4e17f22cdc19d414a3c521f631c899_1.jpg",
+      "ink_per_10k_characters": 0.21814272698899087,
+      "ink_share": 0.1668137433284813,
+      "official_text_edit": 0.015932521087160263,
+      "predicted_characters": 7647
+    },
+    {
+      "figure_regions": 10,
+      "image_path": "newspaper_5d4b8e73eacbc6ecac0d7b1396fd01d7_1.jpg",
+      "ink_per_10k_characters": 0.33895713442102493,
+      "ink_share": 0.19330725376031052,
+      "official_text_edit": 0.09650793650793651,
+      "predicted_characters": 5703
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_5e266dfd9c498cab274e12a7b4a75755_2.jpg",
+      "ink_per_10k_characters": 0.1879102650010721,
+      "ink_share": 0.13741877679528403,
+      "official_text_edit": 0.0006785411365564037,
+      "predicted_characters": 7313
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_5e266dfd9c498cab274e12a7b4a75755_3.jpg",
+      "ink_per_10k_characters": 0.18257689333440094,
+      "ink_share": 0.1393061696141479,
+      "official_text_edit": 0.0,
+      "predicted_characters": 7630
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_5e266dfd9c498cab274e12a7b4a75755_4.jpg",
+      "ink_per_10k_characters": 0.19148834046279284,
+      "ink_share": 0.12868016479099678,
+      "official_text_edit": 0.02129249159506911,
+      "predicted_characters": 6720
+    },
+    {
+      "figure_regions": 6,
+      "image_path": "newspaper_5e8bcc55b922fd521a667c6ef01027d5_1.jpg",
+      "ink_per_10k_characters": 0.23036652485459577,
+      "ink_share": 0.1449235807860262,
+      "official_text_edit": 0.004250600628349658,
+      "predicted_characters": 6291
+    },
+    {
+      "figure_regions": 6,
+      "image_path": "newspaper_635e4e6a64cf2ccfb2560f9b6dfe24b5_1.jpg",
+      "ink_per_10k_characters": 0.17656500336830372,
+      "ink_share": 0.1365553736050461,
+      "official_text_edit": 0.0035048590090807712,
+      "predicted_characters": 7734
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "newspaper_6d2b5f833fe20785bc395f757524cb05_1.jpg",
+      "ink_per_10k_characters": 0.5771255077376016,
+      "ink_share": 0.26559315866084426,
+      "official_text_edit": 0.0033192516596258297,
+      "predicted_characters": 4602
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_6fa919bfb48695bc785d9f326e3cdd36_1.jpg",
+      "ink_per_10k_characters": 0.25758944806854167,
+      "ink_share": 0.12361717612809316,
+      "official_text_edit": 0.039908779931584946,
+      "predicted_characters": 4799
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_73fc8720a9b2798307ba43a8b8e47b5e_1.jpg",
+      "ink_per_10k_characters": 0.17407871147209386,
+      "ink_share": 0.13400579209121785,
+      "official_text_edit": 0.007043331802174246,
+      "predicted_characters": 7698
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_74fc3b01b2cc4a7e6ca0f1af2b998187_1.jpg",
+      "ink_per_10k_characters": 0.2793822568429068,
+      "ink_share": 0.1928296336729743,
+      "official_text_edit": 0.01372581445344799,
+      "predicted_characters": 6902
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_75bb60c3be9959e1be400d6b8281fea1_1.jpg",
+      "ink_per_10k_characters": 0.2485709425339913,
+      "ink_share": 0.19371133551673944,
+      "official_text_edit": 0.03200849514563107,
+      "predicted_characters": 7793
+    },
+    {
+      "figure_regions": 8,
+      "image_path": "newspaper_7746db2ad2ea24c827eac60244375bbf_1.jpg",
+      "ink_per_10k_characters": 0.21032260328428126,
+      "ink_share": 0.15136917758369722,
+      "official_text_edit": 0.013007284079084287,
+      "predicted_characters": 7197
+    },
+    {
+      "figure_regions": 27,
+      "image_path": "newspaper_8076765115f6c402e81c6bfb48139bc2_1.jpg",
+      "ink_per_10k_characters": 1.1378040912535872,
+      "ink_share": 0.23484276443474042,
+      "official_text_edit": 0.0,
+      "predicted_characters": 2064
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_87769622e073730af94822416c60c710_1.jpg",
+      "ink_per_10k_characters": 0.2078887555910748,
+      "ink_share": 0.15028278141678797,
+      "official_text_edit": 0.02562302562302562,
+      "predicted_characters": 7229
+    },
+    {
+      "figure_regions": 6,
+      "image_path": "newspaper_95f2062735b213b3d7d471a48d5ec71b_1.jpg",
+      "ink_per_10k_characters": 0.210903378351977,
+      "ink_share": 0.16184725254730714,
+      "official_text_edit": 0.025282238829702656,
+      "predicted_characters": 7674
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_9729b78cbf9f2820b9f257fff7e3171b_1.jpg",
+      "ink_per_10k_characters": 0.2367678192549438,
+      "ink_share": 0.16128623847646772,
+      "official_text_edit": 0.004095563139931741,
+      "predicted_characters": 6812
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_9bb9e05d38b370251a4b0a8d070d1d55_1.jpg",
+      "ink_per_10k_characters": 0.2837782404044396,
+      "ink_share": 0.1780992236778263,
+      "official_text_edit": 0.0035687453042824945,
+      "predicted_characters": 6276
+    },
+    {
+      "figure_regions": 6,
+      "image_path": "newspaper_9eafddb83b0f7f99c42ff364b080e2c1_1.jpg",
+      "ink_per_10k_characters": 0.16926845484357803,
+      "ink_share": 0.14594326176613295,
+      "official_text_edit": 0.011503811503811504,
+      "predicted_characters": 8622
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_Chicago Tribune_0801@magazinesclubnew_page_015.png",
+      "ink_per_10k_characters": 0.1290030616263954,
+      "ink_share": 0.4145513385364216,
+      "official_text_edit": 0.011704433497536946,
+      "predicted_characters": 32135
+    },
+    {
+      "figure_regions": 19,
+      "image_path": "newspaper_Chicago Tribune_0801@magazinesclubnew_page_019.png",
+      "ink_per_10k_characters": 0.07806087039686486,
+      "ink_share": 0.2162832536085935,
+      "official_text_edit": 0.022423827456350565,
+      "predicted_characters": 27707
+    },
+    {
+      "figure_regions": 8,
+      "image_path": "newspaper_Chicago Tribune_0801@magazinesclubnew_page_032.png",
+      "ink_per_10k_characters": 0.3492793606432858,
+      "ink_share": 0.3611897868412219,
+      "official_text_edit": 0.0031356509884117247,
+      "predicted_characters": 10341
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_Daily Mail_2022-08-01@magazinesclubnew_page_009.png",
+      "ink_per_10k_characters": 0.263207467550258,
+      "ink_share": 0.2554691680042804,
+      "official_text_edit": 0.003966679888932963,
+      "predicted_characters": 9706
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_Daily Mail_2022-08-01@magazinesclubnew_page_068.png",
+      "ink_per_10k_characters": 1.040173576532903,
+      "ink_share": 0.4850329387372927,
+      "official_text_edit": 0.018976897689768978,
+      "predicted_characters": 4663
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_Daily Mirror 2025-1-8@magazinesclubnew_page_029.png",
+      "ink_per_10k_characters": 1.3275862332953612,
+      "ink_share": 0.4612034574468085,
+      "official_text_edit": 0.008104978772674644,
+      "predicted_characters": 3474
+    },
+    {
+      "figure_regions": 7,
+      "image_path": "newspaper_Daily Mirror 2025-1-8@magazinesclubnew_page_058.png",
+      "ink_per_10k_characters": 1.225152906698022,
+      "ink_share": 0.5112563079650846,
+      "official_text_edit": 0.06089221751872354,
+      "predicted_characters": 4173
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "newspaper_NY Daily News_August 1@magazinesclubnew_page_007.png",
+      "ink_per_10k_characters": 0.8356203568772463,
+      "ink_share": 0.4017662675865801,
+      "official_text_edit": 0.0,
+      "predicted_characters": 4808
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_NY Daily News_August 1@magazinesclubnew_page_020.png",
+      "ink_per_10k_characters": 0.6074736884221142,
+      "ink_share": 0.34054974972943725,
+      "official_text_edit": 0.000957166786312515,
+      "predicted_characters": 5606
+    },
+    {
+      "figure_regions": 10,
+      "image_path": "newspaper_The Globe and Mail - 2025-1-8@magazinesclubnew_page_014.png",
+      "ink_per_10k_characters": 0.10282447303229485,
+      "ink_share": 0.15137818919814447,
+      "official_text_edit": 0.0,
+      "predicted_characters": 14722
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_The Globe and Mail - 2025-1-8@magazinesclubnew_page_018.png",
+      "ink_per_10k_characters": 0.12997236686351996,
+      "ink_share": 0.19043551192842942,
+      "official_text_edit": 0.01287666433076384,
+      "predicted_characters": 14652
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_The Globe and Mail - 2025-1-8@magazinesclubnew_page_027.png",
+      "ink_per_10k_characters": 0.3817028108901966,
+      "ink_share": 0.23837340540092777,
+      "official_text_edit": 0.0043535045711798,
+      "predicted_characters": 6245
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "newspaper_The Guardian UK_0801@magazinesclubnew_page_048.png",
+      "ink_per_10k_characters": 0.6933375195221304,
+      "ink_share": 0.32136194029850745,
+      "official_text_edit": 0.02201524132091448,
+      "predicted_characters": 4635
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "newspaper_The Guardian UK_0801@magazinesclubnew_page_051.png",
+      "ink_per_10k_characters": 0.2613915615070507,
+      "ink_share": 0.24322484798231067,
+      "official_text_edit": 0.0162839248434238,
+      "predicted_characters": 9305
+    },
+    {
+      "figure_regions": 6,
+      "image_path": "newspaper_The Guardian UK_0801@magazinesclubnew_page_061.png",
+      "ink_per_10k_characters": 0.27571019678046166,
+      "ink_share": 0.27405593559977887,
+      "official_text_edit": 0.010613512813875226,
+      "predicted_characters": 9940
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_The Times UK_0801@magazinesclubnew_page_001.png",
+      "ink_per_10k_characters": 0.45479026928535515,
+      "ink_share": 0.28538089397656036,
+      "official_text_edit": 0.0,
+      "predicted_characters": 6275
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_The Times UK_0801@magazinesclubnew_page_020.png",
+      "ink_per_10k_characters": 0.14029399371896809,
+      "ink_share": 0.17386634641591714,
+      "official_text_edit": 0.0,
+      "predicted_characters": 12393
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_The Times UK_0801@magazinesclubnew_page_031.png",
+      "ink_per_10k_characters": 0.20588401020569969,
+      "ink_share": 0.26495213273371493,
+      "official_text_edit": 0.00010447137484329294,
+      "predicted_characters": 12869
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "newspaper_The Times UK_0801@magazinesclubnew_page_083.png",
+      "ink_per_10k_characters": 1.041621723346989,
+      "ink_share": 0.4856040474243663,
+      "official_text_edit": 0.0392019600980049,
+      "predicted_characters": 4662
+    },
+    {
+      "figure_regions": 9,
+      "image_path": "newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_004.png",
+      "ink_per_10k_characters": 0.1471129612152698,
+      "ink_share": 0.2371460934790149,
+      "official_text_edit": 0.019296254256526674,
+      "predicted_characters": 16120
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_009.png",
+      "ink_per_10k_characters": 0.21280980088598997,
+      "ink_share": 0.24964717741935483,
+      "official_text_edit": 0.0003287310979618672,
+      "predicted_characters": 11731
+    },
+    {
+      "figure_regions": 8,
+      "image_path": "newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_018.png",
+      "ink_per_10k_characters": 0.17762101144485612,
+      "ink_share": 0.28547248959417276,
+      "official_text_edit": 0.14777896061163262,
+      "predicted_characters": 16072
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_The Wall Street Journal - 2025-01-08@magazinesclubnew_page_021.png",
+      "ink_per_10k_characters": 0.1566138045113361,
+      "ink_share": 0.12970755289628857,
+      "official_text_edit": 0.011208724628900333,
+      "predicted_characters": 8282
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_003.png",
+      "ink_per_10k_characters": 0.2934386405980249,
+      "ink_share": 0.37404623517030233,
+      "official_text_edit": 9.996001599360256e-05,
+      "predicted_characters": 12747
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_011.png",
+      "ink_per_10k_characters": 0.31567495484740854,
+      "ink_share": 0.30639411117489473,
+      "official_text_edit": 0.008221721257127702,
+      "predicted_characters": 9706
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_025.png",
+      "ink_per_10k_characters": 0.06298971202134447,
+      "ink_share": 0.23006362418675852,
+      "official_text_edit": 0.13438221709006928,
+      "predicted_characters": 36524
+    },
+    {
+      "figure_regions": 6,
+      "image_path": "newspaper_TheBostonGlobe-2025-1-8@magazinesclubnew_page_033.png",
+      "ink_per_10k_characters": 0.25680895016053373,
+      "ink_share": 0.35637378013777266,
+      "official_text_edit": 0.0076242469879518075,
+      "predicted_characters": 13877
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_015.png",
+      "ink_per_10k_characters": 0.25863894990842845,
+      "ink_share": 0.22949034025374856,
+      "official_text_edit": 0.0008804108584005869,
+      "predicted_characters": 8873
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_029.png",
+      "ink_per_10k_characters": 0.15308815212078225,
+      "ink_share": 0.17938869665513263,
+      "official_text_edit": 0.008213096559378468,
+      "predicted_characters": 11718
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_033.png",
+      "ink_per_10k_characters": 0.15786047127708255,
+      "ink_share": 0.2097649942329873,
+      "official_text_edit": 0.00010011012113324657,
+      "predicted_characters": 13288
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_TheGuardianUS-2025-1-8@magazinesclubnew_page_041.png",
+      "ink_per_10k_characters": 0.18947309166780943,
+      "ink_share": 0.18071943483275663,
+      "official_text_edit": 0.0,
+      "predicted_characters": 9538
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_TheWashingtonPost-2025-01-08@magazinesclubnew_page_042.png",
+      "ink_per_10k_characters": 0.06035523937164942,
+      "ink_share": 0.23833076923076923,
+      "official_text_edit": 0.12728042840286813,
+      "predicted_characters": 39488
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_USAToday-2025-01-08@magazinesclubnew_page_012.png",
+      "ink_per_10k_characters": 0.13824846297781343,
+      "ink_share": 0.19914691091954023,
+      "official_text_edit": 0.000691085003455425,
+      "predicted_characters": 14405
+    },
+    {
+      "figure_regions": 10,
+      "image_path": "newspaper_USAToday-2025-01-08@magazinesclubnew_page_021.png",
+      "ink_per_10k_characters": 0.45658814827798666,
+      "ink_share": 0.32111844468390804,
+      "official_text_edit": 0.021711899791231733,
+      "predicted_characters": 7033
+    },
+    {
+      "figure_regions": 6,
+      "image_path": "newspaper_USAToday-2025-01-08@magazinesclubnew_page_024.png",
+      "ink_per_10k_characters": 0.32054882876542357,
+      "ink_share": 0.2887824398347701,
+      "official_text_edit": 0.000145623998835008,
+      "predicted_characters": 9009
+    },
+    {
+      "figure_regions": 19,
+      "image_path": "newspaper_a105e3b0ddb10be6a596f76407c79180_1.jpg",
+      "ink_per_10k_characters": 0.085916849978633,
+      "ink_share": 0.12376322239422084,
+      "official_text_edit": 0.04734106357457017,
+      "predicted_characters": 14405
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_a15057349a86850e55b084c235fa2f22_1.jpg",
+      "ink_per_10k_characters": 0.18883110370938502,
+      "ink_share": 0.15997771106259098,
+      "official_text_edit": 0.005822012752980316,
+      "predicted_characters": 8472
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_a7666484ee01a811247e52f784164cbb_1.jpg",
+      "ink_per_10k_characters": 0.09702214730054942,
+      "ink_share": 0.09496527777777777,
+      "official_text_edit": 0.012147195426938193,
+      "predicted_characters": 9788
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "newspaper_a9c9e3816aa5cb6866d02c10273dc665_1.jpg",
+      "ink_per_10k_characters": 0.2801266500558987,
+      "ink_share": 0.14460137675885493,
+      "official_text_edit": 0.05680990531682447,
+      "predicted_characters": 5162
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_b615618f3cdb0f2c13ffb5865dea799c_1.jpg",
+      "ink_per_10k_characters": 0.02881750945992432,
+      "ink_share": 0.0540328302373581,
+      "official_text_edit": 0.1153219920273988,
+      "predicted_characters": 18750
+    },
+    {
+      "figure_regions": 9,
+      "image_path": "newspaper_bd75af5f4791aa56ef05ce2443e8a7e0_1.jpg",
+      "ink_per_10k_characters": 0.22821932657003446,
+      "ink_share": 0.15304388039786512,
+      "official_text_edit": 0.02754275427542754,
+      "predicted_characters": 6706
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "newspaper_c0794b9574ba55a589418fa1ae160b9a_1.jpg",
+      "ink_per_10k_characters": 0.19189154592930815,
+      "ink_share": 0.12114113294517224,
+      "official_text_edit": 0.0038910505836575876,
+      "predicted_characters": 6313
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_c3c88b76543e2caf044c9f7689f23ec9_1.jpg",
+      "ink_per_10k_characters": 0.09537728318542518,
+      "ink_share": 0.08544850800582242,
+      "official_text_edit": 0.06565064478311841,
+      "predicted_characters": 8959
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_c79c0c10a5df54b21bccad8f64063ffa_1.jpg",
+      "ink_per_10k_characters": 0.3344982332832293,
+      "ink_share": 0.17624711911693353,
+      "official_text_edit": 0.010775357226516749,
+      "predicted_characters": 5269
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "newspaper_c8e8e00e1b1a70aa44afd1fbdaf59430_1.jpg",
+      "ink_per_10k_characters": 0.3426529394950821,
+      "ink_share": 0.21014904779233382,
+      "official_text_edit": 0.011050758569020417,
+      "predicted_characters": 6133
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "newspaper_c9e9b3e7b8a5f5a5b59304a9924c41b9_1.jpg",
+      "ink_per_10k_characters": 0.13947142944695573,
+      "ink_share": 0.12620769650655023,
+      "official_text_edit": 0.04766118836915297,
+      "predicted_characters": 9049
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_d1716a12000a38e1e4c0bf66309558db_1.jpg",
+      "ink_per_10k_characters": 0.218713882111211,
+      "ink_share": 0.1703125,
+      "official_text_edit": 0.012556732223903177,
+      "predicted_characters": 7787
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_d4ed0f39df940849b16439f49873ff5c_1.jpg",
+      "ink_per_10k_characters": 0.195187754551103,
+      "ink_share": 0.1277113478027867,
+      "official_text_edit": 0.023972602739726026,
+      "predicted_characters": 6543
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "newspaper_d6cd76e5afe881630173bd4921531a4b_1.jpg",
+      "ink_per_10k_characters": 0.28763867606374605,
+      "ink_share": 0.17459667637069384,
+      "official_text_edit": 0.010377170225503891,
+      "predicted_characters": 6070
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "newspaper_d84e38031cf03d3fd4649910cf0ecce1_1.jpg",
+      "ink_per_10k_characters": 0.2775257636134666,
+      "ink_share": 0.16754230349344978,
+      "official_text_edit": 0.018578352180936994,
+      "predicted_characters": 6037
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_dd99f17cad0992a54fdf424b1c5e86ee_1.jpg",
+      "ink_per_10k_characters": 0.24906842943558888,
+      "ink_share": 0.1619442928190199,
+      "official_text_edit": 0.024897008776643383,
+      "predicted_characters": 6502
+    },
+    {
+      "figure_regions": 5,
+      "image_path": "newspaper_e3842a5681ef54c62a58804adec06c3f_1.jpg",
+      "ink_per_10k_characters": 0.22194301457123794,
+      "ink_share": 0.16510340853954392,
+      "official_text_edit": 0.03619197482297404,
+      "predicted_characters": 7439
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_e567840b2e327602422573ccdc1c4275_1.jpg",
+      "ink_per_10k_characters": 0.2772054565718923,
+      "ink_share": 0.1768293607472101,
+      "official_text_edit": 0.0020359059781602813,
+      "predicted_characters": 6379
+    },
+    {
+      "figure_regions": 4,
+      "image_path": "newspaper_e6083de4647ef28434cb6a598b073ae4_1.jpg",
+      "ink_per_10k_characters": 0.23267432758643505,
+      "ink_share": 0.14246649078117418,
+      "official_text_edit": 0.0024985585239285027,
+      "predicted_characters": 6123
+    },
+    {
+      "figure_regions": 9,
+      "image_path": "newspaper_e62730aaeb9b509119e0c3699ac18201_1.jpg",
+      "ink_per_10k_characters": 0.1167133739960206,
+      "ink_share": 0.1014472646773411,
+      "official_text_edit": 0.01510113604876697,
+      "predicted_characters": 8692
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_e6cb1ce916e0b7e120c84db53541a3d3_1.jpg",
+      "ink_per_10k_characters": 0.19274118957453332,
+      "ink_share": 0.12904022642015006,
+      "official_text_edit": 0.066268433824902,
+      "predicted_characters": 6695
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_e6ddb0246224fb8bd8788e6cc7839021_1.jpg",
+      "ink_per_10k_characters": 0.22131001178194318,
+      "ink_share": 0.24246724890829693,
+      "official_text_edit": 0.024335812964930925,
+      "predicted_characters": 10956
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_e7246d706077d2064a6e667dfc73925e_1.jpg",
+      "ink_per_10k_characters": 0.2638865137402964,
+      "ink_share": 0.1812636462882096,
+      "official_text_edit": 0.0076735263341471925,
+      "predicted_characters": 6869
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_e81b9b3561d4d4e865ff6713782fd432_1.jpg",
+      "ink_per_10k_characters": 0.17557614462902565,
+      "ink_share": 0.10653960456089277,
+      "official_text_edit": 0.06143740340030912,
+      "predicted_characters": 6068
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "newspaper_eb569707cf5621d4c71d5898216cdb17_1.jpg",
+      "ink_per_10k_characters": 0.20600659210622768,
+      "ink_share": 0.14317458151382823,
+      "official_text_edit": 0.011804384485666104,
+      "predicted_characters": 6950
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_ef5c785d9cc21ccf6b73d143f231b5c5_1.jpg",
+      "ink_per_10k_characters": 0.2029441647269387,
+      "ink_share": 0.22390829694323144,
+      "official_text_edit": 0.02897196261682243,
+      "predicted_characters": 11033
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "newspaper_f1de032fb6a25cf85c85c15cb2d2a63a_1.jpg",
+      "ink_per_10k_characters": 0.14270212938270324,
+      "ink_share": 0.14405779961183893,
+      "official_text_edit": 0.05179101072324892,
+      "predicted_characters": 10095
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_f36d00fe3544ae72725aac9dc7f19aa8_1.jpg",
+      "ink_per_10k_characters": 0.19701161811204332,
+      "ink_share": 0.16491842552159147,
+      "official_text_edit": 0.00514317486794551,
+      "predicted_characters": 8371
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "newspaper_fe2c8b45b2a086cd75984640bb3080e1_1.jpg",
+      "ink_per_10k_characters": 0.2740794359006814,
+      "ink_share": 0.16516026807375062,
+      "official_text_edit": 0.015679087762166564,
+      "predicted_characters": 6026
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_fe5ed29024932fad071afc53807b16ba_1.jpg",
+      "ink_per_10k_characters": 0.19377615399203674,
+      "ink_share": 0.13076014871382638,
+      "official_text_edit": 0.008392390898918314,
+      "predicted_characters": 6748
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_fe5ed29024932fad071afc53807b16ba_2.jpg",
+      "ink_per_10k_characters": 0.17800913379070668,
+      "ink_share": 0.13252780010718113,
+      "official_text_edit": 0.0005869692819409117,
+      "predicted_characters": 7445
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_fe5ed29024932fad071afc53807b16ba_3.jpg",
+      "ink_per_10k_characters": 0.18259752484029013,
+      "ink_share": 0.14100180868167203,
+      "official_text_edit": 0.0020984665052461663,
+      "predicted_characters": 7722
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "newspaper_fe5ed29024932fad071afc53807b16ba_5.jpg",
+      "ink_per_10k_characters": 0.19120571493828079,
+      "ink_share": 0.1308229501607717,
+      "official_text_edit": 0.006006552602839462,
+      "predicted_characters": 6842
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "notes_9e951846094758afac08c620144e3a76_12.jpg",
+      "ink_per_10k_characters": 1.2648192636070232,
+      "ink_share": 0.15569925135002455,
+      "official_text_edit": 0.12861736334405144,
+      "predicted_characters": 1231
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "notes_9e951846094758afac08c620144e3a76_14.jpg",
+      "ink_per_10k_characters": 1.9530211026353024,
+      "ink_share": 0.12616516323024055,
+      "official_text_edit": 0.11875,
+      "predicted_characters": 646
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "notes_9e951846094758afac08c620144e3a76_16.jpg",
+      "ink_per_10k_characters": 1.6367503851699534,
+      "ink_share": 0.1301216556210113,
+      "official_text_edit": 0.16666666666666666,
+      "predicted_characters": 795
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "page-00b6ac57-4466-4eb0-937d-bb29a44fa0d3.png",
+      "ink_per_10k_characters": 0.7998580012204854,
+      "ink_share": 0.21036265432098766,
+      "official_text_edit": 0.004213483146067416,
+      "predicted_characters": 2630
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "page-6e75aef4-33d0-478a-a3a3-489c782bfa39.png",
+      "ink_per_10k_characters": 3.4527899762274763,
+      "ink_share": 0.3867124773374773,
+      "official_text_edit": 0.0,
+      "predicted_characters": 1120
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "page-d127acc0-f8c9-4f01-8e87-b4c19be7cbb0.png",
+      "ink_per_10k_characters": 2.361571066145967,
+      "ink_share": 0.5993667365878464,
+      "official_text_edit": 0.0,
+      "predicted_characters": 2538
+    },
+    {
+      "figure_regions": 2,
+      "image_path": "yanbaopptmerge_m3_Unit_1_Where_did_you_go.pdf_5.jpg",
+      "ink_per_10k_characters": 106.3491184003152,
+      "ink_share": 0.49984085648148147,
+      "official_text_edit": 0.0,
+      "predicted_characters": 47
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaopptmerge_yanbaoPPT_1020.jpg",
+      "ink_per_10k_characters": 0.8133427946796002,
+      "ink_share": 0.10931327160493827,
+      "official_text_edit": null,
+      "predicted_characters": 1344
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaopptmerge_yanbaoPPT_1745.jpg",
+      "ink_per_10k_characters": 18.48098466981132,
+      "ink_share": 0.1958984375,
+      "official_text_edit": 0.0,
+      "predicted_characters": 106
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaopptmerge_yanbaoPPT_1835.jpg",
+      "ink_per_10k_characters": 65.38442460317461,
+      "ink_share": 0.4576909722222222,
+      "official_text_edit": 0.0,
+      "predicted_characters": 70
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaopptmerge_yanbaoPPT_3215.jpg",
+      "ink_per_10k_characters": 42.155003561253565,
+      "ink_share": 0.5480150462962963,
+      "official_text_edit": 0.0,
+      "predicted_characters": 130
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "yanbaopptmerge_yanbaoPPT_3290.jpg",
+      "ink_per_10k_characters": 21.88891957772166,
+      "ink_share": 0.2889337384259259,
+      "official_text_edit": 0.0,
+      "predicted_characters": 132
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaopptmerge_yanbaoPPT_4020.jpg",
+      "ink_per_10k_characters": 35.93154275599129,
+      "ink_share": 0.30541811342592595,
+      "official_text_edit": 0.0,
+      "predicted_characters": 85
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaopptmerge_yanbaoPPT_4050.jpg",
+      "ink_per_10k_characters": 5.243260633280014,
+      "ink_share": 0.1578221450617284,
+      "official_text_edit": 0.00796812749003984,
+      "predicted_characters": 301
+    },
+    {
+      "figure_regions": 3,
+      "image_path": "yanbaopptmerge_yanbaoPPT_4125.jpg",
+      "ink_per_10k_characters": 2.639110250961344,
+      "ink_share": 0.1287885802469136,
+      "official_text_edit": 0.0311284046692607,
+      "predicted_characters": 488
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaopptmerge_yanbaoPPT_4330.jpg",
+      "ink_per_10k_characters": 331.2800120048019,
+      "ink_share": 0.23189600840336133,
+      "official_text_edit": 0.0,
+      "predicted_characters": 7
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaopptmerge_yanbaoPPT_4380.jpg",
+      "ink_per_10k_characters": 10.14560372079115,
+      "ink_share": 0.2932079475308642,
+      "official_text_edit": 0.0,
+      "predicted_characters": 289
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaopptmerge_yanbaoPPT_4635.jpg",
+      "ink_per_10k_characters": 92.73765953453453,
+      "ink_share": 0.34312934027777775,
+      "official_text_edit": 0.0,
+      "predicted_characters": 37
+    },
+    {
+      "figure_regions": 1,
+      "image_path": "yanbaopptmerge_yanbaoPPT_495.jpg",
+      "ink_per_10k_characters": 3.300248951781971,
+      "ink_share": 0.13993055555555556,
+      "official_text_edit": 0.0,
+      "predicted_characters": 424
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaopptmerge_yanbaoPPT_5070.jpg",
+      "ink_per_10k_characters": 159.52563316993465,
+      "ink_share": 0.2711935763888889,
+      "official_text_edit": 0.0,
+      "predicted_characters": 17
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaopptmerge_yanbaoPPT_5980.jpg",
+      "ink_per_10k_characters": 36.17284782088122,
+      "ink_share": 0.4196050347222222,
+      "official_text_edit": 0.020202020202020204,
+      "predicted_characters": 116
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaopptmerge_yanbaoPPT_935.jpg",
+      "ink_per_10k_characters": 55.70176592312009,
+      "ink_share": 0.7352633101851852,
+      "official_text_edit": 0.0,
+      "predicted_characters": 132
+    },
+    {
+      "figure_regions": 9,
+      "image_path": "yanbaor2_1cb2b2a2c6e3a1157a6f2876205bbeaa4d3958d0482e9cdc88dd2c002ed1ffc1.pdf_61.jpg",
+      "ink_per_10k_characters": 5.674612472292885,
+      "ink_share": 0.31834575969563084,
+      "official_text_edit": 0.00228310502283105,
+      "predicted_characters": 561
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaor2_bc193526614fd5857f7b5254e67bced76222cf3396b01e516303b92609a20075.pdf_14.jpg",
+      "ink_per_10k_characters": 21.806369262914057,
+      "ink_share": 0.7283327333813295,
+      "official_text_edit": 0.0,
+      "predicted_characters": 334
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaor2_d599e33e54376640020110ac1733ccdde8c6323d5d5f0c3ca8cb395dc6e46cf5.pdf_7.jpg",
+      "ink_per_10k_characters": 7.038833373860833,
+      "ink_share": 0.22594655130093275,
+      "official_text_edit": 0.0,
+      "predicted_characters": 321
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaor2_ec10ef335b55af1612e6ab51b5ebdff506d496da9eb8c17c74fe2751661c22f7.pdf_1.jpg",
+      "ink_per_10k_characters": 27.837032859768566,
+      "ink_share": 0.6513865689185845,
+      "official_text_edit": 0.0,
+      "predicted_characters": 234
+    },
+    {
+      "figure_regions": 0,
+      "image_path": "yanbaor2_ey-digital-state-tax-article.pdf_0.jpg",
+      "ink_per_10k_characters": 1.6681754192124671,
+      "ink_share": 0.37934309032891506,
+      "official_text_edit": 0.0,
+      "predicted_characters": 2274
+    }
+  ],
+  "schema": "tavonel.a9-ink-coverage-verifier.v1",
+  "seed": 20260818,
+  "separation_against_official_severe_error": {
+    "above_median": {
+      "cut": 0.25758944806854167,
+      "fisher_exact_p": 0.9999999999999484,
+      "flagged": 100,
+      "flagged_severe_rate": 0.06,
+      "rest_severe_rate": 0.061224489795918366
+    },
+    "top_decile": {
+      "cut": 5.674612472292885,
+      "fisher_exact_p": 0.620619315075086,
+      "flagged": 21,
+      "flagged_severe_rate": 0.0,
+      "rest_severe_rate": 0.06779661016949153
+    },
+    "top_quartile": {
+      "cut": 0.6933375195221304,
+      "fisher_exact_p": 0.1918588438998274,
+      "flagged": 51,
+      "flagged_severe_rate": 0.09803921568627451,
+      "rest_severe_rate": 0.047619047619047616
+    }
+  },
+  "status": "INSTRUMENT BUILT; NEGATIVE RESULT ON THIS CORPUS",
+  "summary": {
+    "ink_per_character_p10": 0.14505356255878374,
+    "ink_per_character_p90": 7.038833373860833,
+    "median_ink_per_10k_characters": 0.258272280552206,
+    "median_ink_share": 0.1774642922125182,
+    "pages": 200
+  },
+  "verdict": "This design does not separate severe error on the 198-page discovery corpus. The highest-ink-per-character decile contains no severe errors at all. Published as not supported, in the same way the campaign published blind quality detection as not supported."
+}

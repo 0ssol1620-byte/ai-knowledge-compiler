@@ -1,0 +1,647 @@
+{
+  "frame_declaration": {
+    "burn_scope_read_and_found_none": {
+      "p4c": "acquisition/sources_p4c.py contains no burn, spent or confirmatory-reuse declaration of any kind; its frozen SELECTION_RULE speaks only to cohort construction. Declared burn scope: NONE_DECLARED. Reported exactly and generalised into nothing. Its individual disposition is moot regardless -- one lineage cannot constitute a confirmatory cohort."
+    },
+    "cache_identity": {
+      "historical_p4i_artifacts": "UNTOUCHED. Not rewritten, not re-keyed, not migrated.",
+      "key": "sha256 over the full, untruncated lineage/source identity tuple, plus the revision's raw content digest. No truncation anywhere in the path.",
+      "readable_slug_is": "a LABEL only, never a key, never compared for identity",
+      "scheme": "content_addressed",
+      "still_required": "structural collision detection, raw digest verification, canonical digest verification, and whole-collision-group exclusion. A better key reduces collisions; it does not license skipping the check that finds them.",
+      "truncation": "FORBIDDEN in any identity-bearing position"
+    },
+    "excluded_families": {
+      "encyclopedia_wikipedia": "SFI3 root family. Metadata-only disjointness from SFI3 roots is not reliably provable for it, and expanding an SFI3 category to make it provable is forbidden -- that would spend the prospective confirmatory material of another study to buy a disjointness argument here."
+    },
+    "excluded_sets": [
+      {
+        "id": "sfi1_spent",
+        "why": "spent by SOURCE_FACT_IR_HELDOUT_V1's own frame and executor"
+      },
+      {
+        "id": "sfi2_spent",
+        "why": "spent by SOURCE_FACT_IR_HELDOUT_V2's own frame and executor"
+      },
+      {
+        "id": "retrospective_538",
+        "why": "the retrospective migration-safety regression cohort, reclassified by founder ruling as retrospective rather than prospective qualification"
+      },
+      {
+        "id": "sfi2_forensic_14",
+        "why": "the fourteen cases that DIAGNOSED the INC-V2-037 defect. A case used to find a defect cannot certify its repair."
+      },
+      {
+        "id": "v1_closure_514",
+        "why": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V1's universe. V1 is a permanent FAIL and its universe may never become a positive migration-closure denominator after repair."
+      },
+      {
+        "id": "vbc1_probe",
+        "why": "sources_vbc1_probe.py declares BEFORE use that every lineage listed there is spent the moment the probe reports, and that it is not the confirmatory cohort and must never become it, with burned_after_use=True and not_the_confirmatory_cohort=True. That burn is GLOBAL for confirmatory reuse. Reinterpreting it now as spent-only-for-the-value-bearing-question would narrow a predeclared burn after observing the material."
+      },
+      {
+        "id": "earlier_identity_measurements",
+        "why": "any lineage an earlier identity closure or identity regression already measured; burned for THIS question specifically"
+      },
+      {
+        "id": "sfi3_all",
+        "why": "SFI3 roots and every SFI3 lineage, payload and expansion. SFI3 is the next study's prospective confirmatory material and opening any of it here would spend it."
+      },
+      {
+        "id": "contract_declared_spent",
+        "why": "any source whose OWN predeclared contract says it is spent for confirmatory reuse. Read that contract; do not assume, and do not generalise from another corpus's contract."
+      }
+    ],
+    "families": [
+      "git_docs",
+      "regulation_ecfr",
+      "sec_edgar"
+    ],
+    "families_required": 3,
+    "family_floor": {
+      "git_docs": 40,
+      "regulation_ecfr": 40,
+      "sec_edgar": 25
+    },
+    "family_quota": {
+      "git_docs": 190,
+      "regulation_ecfr": 160,
+      "sec_edgar": 110
+    },
+    "family_share": {
+      "git_docs": 0.41,
+      "regulation_ecfr": 0.35,
+      "sec_edgar": 0.24
+    },
+    "floor": 200,
+    "forbidden_in_selection": [
+      "inspecting revision content in order to choose a candidate",
+      "inspecting any identity outcome",
+      "probing for ambiguity",
+      "probing for changed facets",
+      "acquiring until a quarantine case appears",
+      "removing a pair after seeing its outcome",
+      "adding a pair after seeing any outcome",
+      "replacing a family after seeing its yield",
+      "adjusting a quota, the floor or a threshold after acquisition",
+      "adding an ignore entry"
+    ],
+    "integrity_rejection": {
+      "canonical_digest": "recomputed for every revision side; a mismatch rejects the pair",
+      "collision_groups": "collisions are detected STRUCTURALLY. If a cache-key or slug collision makes provenance ambiguous, the ENTIRE collision group is excluded -- never whichever member is convenient. Every exclusion is named and counted.",
+      "identical_sides": "a pair whose two sides carry the same raw digest is rejected as not a revision pair. This is a metadata-level identity check, not a content judgement about whether anything meaningful changed.",
+      "parse": "both sides must parse and yield at least 3 canonical units",
+      "raw_digest": "recomputed for every revision side; a mismatch rejects the pair"
+    },
+    "order_salt": ":icmc-v2r1",
+    "primary_target": 460,
+    "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1",
+    "quota_basis": {
+      "basis": "grammar breadth and source supply, carried forward from SFI1 through SFI3",
+      "explicitly_not_basis": "violation rate, pass yield, closure outcome or any V1/V2 observation",
+      "floor_prior": "FLOOR=200 sized from V1's published 8/514 as a SAMPLE-SIZE PLANNING PRIOR only: 191 pairs reaches about 95.0% and 200 reaches about 95.66% chance of observing at least one old-rate violation. The ratio sizes the experiment and never scores it.",
+      "frozen_before": "any V2R1 fetch, any V2R1 diff, any V2R1 score",
+      "redistribution": "forbidden; an under-delivering family is reported short"
+    },
+    "source_roots": {
+      "availability_probed_before_declaration": true,
+      "container_level_disjointness": "no declared repository appears among the 176 named by any earlier sources module, and no declared CFR part appears among the ~185 already consumed. SEC disjointness is proven per-lineage at enumeration, since its issuer set is a rule rather than a fixed list.",
+      "git_docs": {
+        "container_cap": 5,
+        "container_count": 38,
+        "containers": [
+          {
+            "default_branch": "main",
+            "licence": "Apache-2.0",
+            "owner": "apache",
+            "prefix": "docs",
+            "repo": "answer"
+          },
+          {
+            "default_branch": "master",
+            "licence": "Apache-2.0",
+            "owner": "authelia",
+            "prefix": "docs/content",
+            "repo": "authelia"
+          },
+          {
+            "default_branch": "main",
+            "licence": "NOASSERTION",
+            "owner": "celery",
+            "prefix": "docs",
+            "repo": "celery"
+          },
+          {
+            "default_branch": "master",
+            "licence": "Apache-2.0",
+            "owner": "cue-lang",
+            "prefix": "doc/tutorial",
+            "repo": "cue"
+          },
+          {
+            "default_branch": "main",
+            "licence": "NOASSERTION",
+            "owner": "directus",
+            "prefix": "content",
+            "repo": "docs"
+          },
+          {
+            "default_branch": "main",
+            "licence": "MIT",
+            "owner": "dotnet",
+            "prefix": "docs",
+            "repo": "aspnetcore"
+          },
+          {
+            "default_branch": "develop",
+            "licence": "AGPL-3.0",
+            "owner": "element-hq",
+            "prefix": "docs",
+            "repo": "synapse"
+          },
+          {
+            "default_branch": "master",
+            "licence": "CC-BY-4.0",
+            "owner": "falcosecurity",
+            "prefix": "content/en/docs",
+            "repo": "falco-website"
+          },
+          {
+            "default_branch": "master",
+            "licence": "NOASSERTION",
+            "owner": "godotengine",
+            "prefix": "tutorials",
+            "repo": "godot-docs"
+          },
+          {
+            "default_branch": "master",
+            "licence": "Apache-2.0",
+            "owner": "JetBrains",
+            "prefix": "docs/topics",
+            "repo": "kotlin-web-site"
+          },
+          {
+            "default_branch": "main",
+            "licence": "Apache-2.0",
+            "owner": "keycloak",
+            "prefix": "docs/documentation",
+            "repo": "keycloak"
+          },
+          {
+            "default_branch": "main",
+            "licence": "Apache-2.0",
+            "owner": "ktorio",
+            "prefix": "topics",
+            "repo": "ktor-documentation"
+          },
+          {
+            "default_branch": "master",
+            "licence": "CC-BY-4.0",
+            "owner": "kubeflow",
+            "prefix": "content/en/docs",
+            "repo": "website"
+          },
+          {
+            "default_branch": "master",
+            "licence": "Apache-2.0",
+            "owner": "longhorn",
+            "prefix": "content/docs",
+            "repo": "website"
+          },
+          {
+            "default_branch": "main",
+            "licence": "Apache-2.0",
+            "owner": "matrix-org",
+            "prefix": "content",
+            "repo": "matrix-spec"
+          },
+          {
+            "default_branch": "develop",
+            "licence": "NOASSERTION",
+            "owner": "medusajs",
+            "prefix": "www/apps/book/app",
+            "repo": "medusa"
+          },
+          {
+            "default_branch": "v3.0.x",
+            "licence": "Apache-2.0",
+            "owner": "milvus-io",
+            "prefix": "site/en",
+            "repo": "milvus-docs"
+          },
+          {
+            "default_branch": "master",
+            "licence": "AGPL-3.0",
+            "owner": "minio",
+            "prefix": "docs",
+            "repo": "minio"
+          },
+          {
+            "default_branch": "master",
+            "licence": "Apache-2.0",
+            "owner": "mlflow",
+            "prefix": "docs/docs",
+            "repo": "mlflow"
+          },
+          {
+            "default_branch": "main",
+            "licence": "NOASSERTION",
+            "owner": "n8n-io",
+            "prefix": "docs",
+            "repo": "n8n-docs"
+          },
+          {
+            "default_branch": "master",
+            "licence": "GPL-3.0",
+            "owner": "netdata",
+            "prefix": "docs",
+            "repo": "netdata"
+          },
+          {
+            "default_branch": "main",
+            "licence": "BSD-2-Clause",
+            "owner": "nginx",
+            "prefix": "content",
+            "repo": "documentation"
+          },
+          {
+            "default_branch": "master",
+            "licence": "Apache-2.0",
+            "owner": "ory",
+            "prefix": "docs",
+            "repo": "docs"
+          },
+          {
+            "default_branch": "main",
+            "licence": "NOASSERTION",
+            "owner": "outline",
+            "prefix": "docs",
+            "repo": "outline"
+          },
+          {
+            "default_branch": "main",
+            "licence": "Apache-2.0",
+            "owner": "psf",
+            "prefix": "docs",
+            "repo": "requests"
+          },
+          {
+            "default_branch": "master",
+            "licence": "NOASSERTION",
+            "owner": "qdrant",
+            "prefix": "qdrant-landing/content/documentation",
+            "repo": "landing_page"
+          },
+          {
+            "default_branch": "master",
+            "licence": "Apache-2.0",
+            "owner": "ray-project",
+            "prefix": "doc/source",
+            "repo": "ray"
+          },
+          {
+            "default_branch": "master",
+            "licence": "Apache-2.0",
+            "owner": "rook",
+            "prefix": "Documentation",
+            "repo": "rook"
+          },
+          {
+            "default_branch": "main",
+            "licence": "NOASSERTION",
+            "owner": "saleor",
+            "prefix": "docs",
+            "repo": "saleor-docs"
+          },
+          {
+            "default_branch": "main",
+            "licence": "NOASSERTION",
+            "owner": "SigNoz",
+            "prefix": "frontend/src",
+            "repo": "signoz"
+          },
+          {
+            "default_branch": "main",
+            "licence": "MIT",
+            "owner": "sigstore",
+            "prefix": "content/en/about",
+            "repo": "docs"
+          },
+          {
+            "default_branch": "main",
+            "licence": "MIT",
+            "owner": "sqlalchemy",
+            "prefix": "doc/build",
+            "repo": "sqlalchemy"
+          },
+          {
+            "default_branch": "main",
+            "licence": "NOASSERTION",
+            "owner": "strapi",
+            "prefix": "docusaurus/docs",
+            "repo": "documentation"
+          },
+          {
+            "default_branch": "master",
+            "licence": "MIT",
+            "owner": "tokio-rs",
+            "prefix": "content",
+            "repo": "website"
+          },
+          {
+            "default_branch": "main",
+            "licence": "NOASSERTION",
+            "owner": "wazuh",
+            "prefix": "source",
+            "repo": "wazuh-documentation"
+          },
+          {
+            "default_branch": "main",
+            "licence": "NOASSERTION",
+            "owner": "weaviate",
+            "prefix": "docs",
+            "repo": "docs"
+          },
+          {
+            "default_branch": "main",
+            "licence": "Apache-2.0",
+            "owner": "woodpecker-ci",
+            "prefix": "docs/docs",
+            "repo": "woodpecker"
+          },
+          {
+            "default_branch": "main",
+            "licence": "Apache-2.0",
+            "owner": "zulip",
+            "prefix": "docs",
+            "repo": "zulip"
+          }
+        ],
+        "max_candidates": 190
+      },
+      "probe_asked_only": "existence, prefix contents, revision counts and amendment-pair presence -- all metadata. No revision content was read and no identity outcome was inspected.",
+      "regulation_ecfr": {
+        "container_cap": 4,
+        "container_count": 40,
+        "containers": [
+          {
+            "name": "Emergency livestock assistance",
+            "part": "760",
+            "title": "7"
+          },
+          {
+            "name": "HACCP systems",
+            "part": "417",
+            "title": "9"
+          },
+          {
+            "name": "Physical protection of plants and materials",
+            "part": "73",
+            "title": "10"
+          },
+          {
+            "name": "Debt collection practices",
+            "part": "1006",
+            "title": "12"
+          },
+          {
+            "name": "Maintenance, rebuilding and alteration",
+            "part": "43",
+            "title": "14"
+          },
+          {
+            "name": "Small unmanned aircraft systems",
+            "part": "107",
+            "title": "14"
+          },
+          {
+            "name": "National marine sanctuary program",
+            "part": "922",
+            "title": "15"
+          },
+          {
+            "name": "Electronic filing rules",
+            "part": "232",
+            "title": "17"
+          },
+          {
+            "name": "Customs financial and accounting procedure",
+            "part": "24",
+            "title": "19"
+          },
+          {
+            "name": "Temporary employment of foreign workers",
+            "part": "655",
+            "title": "20"
+          },
+          {
+            "name": "Investigational new drug application",
+            "part": "312",
+            "title": "21"
+          },
+          {
+            "name": "Establishment registration and device listing",
+            "part": "807",
+            "title": "21"
+          },
+          {
+            "name": "Visas: documentation of nonimmigrants",
+            "part": "41",
+            "title": "22"
+          },
+          {
+            "name": "Community development block grants",
+            "part": "570",
+            "title": "24"
+          },
+          {
+            "name": "Estate tax",
+            "part": "20",
+            "title": "26"
+          },
+          {
+            "name": "Distilled spirits plants",
+            "part": "19",
+            "title": "27"
+          },
+          {
+            "name": "Nondiscrimination on the basis of disability",
+            "part": "36",
+            "title": "28"
+          },
+          {
+            "name": "Regulations to implement the ADA",
+            "part": "1630",
+            "title": "29"
+          },
+          {
+            "name": "Renewable energy on the outer continental shelf",
+            "part": "285",
+            "title": "30"
+          },
+          {
+            "name": "Foreign investment regulations",
+            "part": "800",
+            "title": "31"
+          },
+          {
+            "name": "Oil or hazardous material pollution prevention",
+            "part": "155",
+            "title": "33"
+          },
+          {
+            "name": "Nondiscrimination on the basis of sex",
+            "part": "106",
+            "title": "34"
+          },
+          {
+            "name": "Rules of practice in patent cases",
+            "part": "1",
+            "title": "37"
+          },
+          {
+            "name": "Medical benefits",
+            "part": "17",
+            "title": "38"
+          },
+          {
+            "name": "Protection of stratospheric ozone",
+            "part": "82",
+            "title": "40"
+          },
+          {
+            "name": "EPA administered permit programs",
+            "part": "122",
+            "title": "40"
+          },
+          {
+            "name": "Standards for universal waste management",
+            "part": "273",
+            "title": "40"
+          },
+          {
+            "name": "Conditions for Medicare payment",
+            "part": "424",
+            "title": "42"
+          },
+          {
+            "name": "Managed care",
+            "part": "438",
+            "title": "42"
+          },
+          {
+            "name": "Rights-of-way under FLPMA",
+            "part": "2800",
+            "title": "43"
+          },
+          {
+            "name": "Health insurance issuer standards",
+            "part": "156",
+            "title": "45"
+          },
+          {
+            "name": "Lifesaving systems",
+            "part": "199",
+            "title": "46"
+          },
+          {
+            "name": "Universal service",
+            "part": "54",
+            "title": "47"
+          },
+          {
+            "name": "Amateur radio service",
+            "part": "97",
+            "title": "47"
+          },
+          {
+            "name": "Types of contracts",
+            "part": "16",
+            "title": "48"
+          },
+          {
+            "name": "Drug and alcohol testing programs",
+            "part": "40",
+            "title": "49"
+          },
+          {
+            "name": "Hazardous materials tables",
+            "part": "172",
+            "title": "49"
+          },
+          {
+            "name": "Rules for railroad signal systems",
+            "part": "236",
+            "title": "49"
+          },
+          {
+            "name": "Taking marine mammals incidental",
+            "part": "216",
+            "title": "50"
+          },
+          {
+            "name": "Fisheries off west coast states",
+            "part": "660",
+            "title": "50"
+          }
+        ],
+        "max_candidates": 160
+      },
+      "sec_edgar": {
+        "container_cap": 4,
+        "rule": {
+          "availability_probe": "20 of the first 25 issuers by CIK carry at least one amendment pair, so the quota is reachable well inside the ordered universe",
+          "forms": [
+            "10-K",
+            "10-Q",
+            "20-F",
+            "8-K"
+          ],
+          "order": "ascending by CIK, which is stable and not chosen by us",
+          "pair_construction": "a source document is (CIK, base form, period of report). An amendment pair exists where the same (CIK, base form, period) carries both an original filing and its /A amendment. Both sides are named by accession number from the submissions API -- metadata only.",
+          "stopping": "walk in CIK order until the family quota is met or the universe ends",
+          "submissions_api": "https://data.sec.gov/submissions/CIK##########.json",
+          "universe": "https://www.sec.gov/files/company_tickers.json",
+          "universe_size_at_declaration": 10403
+        }
+      }
+    },
+    "traversal": {
+      "attrition": "a candidate lost to fetch failure, parse failure or integrity rejection is RECORDED with its reason and never silently replaced. The realised count is whatever survives; the gate is FLOOR.",
+      "container_cap": "at most 4 source documents per container -- repository, CFR part, issuer -- so no single container dominates the cohort",
+      "duplicate_rule": "deduplicate by lineage id, keeping the first occurrence in traversal order. A lineage reachable from two containers is admitted once.",
+      "order": "families in the order FAMILIES declares; within a family, containers sorted lexicographically by container id; within a container, source documents sorted lexicographically by source id. Deterministic, and reproducible from this file without a fetch.",
+      "oversampling": "construct up to PRIMARY_TARGET candidates in this order, then filter. Over-selection precedes every outcome. Padding after measurement is forbidden without exception.",
+      "pair_construction": "one revision pair per source document: the two most recent DISTINCT revisions by the source's own revision metadata, before-side older. Ties broken by the lexicographically smallest revision identifier. Chosen without reading either revision's content.",
+      "stopping_rule": "stop when PRIMARY_TARGET candidates are constructed or the declared sources are exhausted, whichever comes first. NEVER 'keep acquiring until a quarantine case appears' -- a stopping rule that reads the outcome makes selection a function of the result."
+    }
+  },
+  "frame_declaration_digest": "sha256:feb278a5e005a7bbea9f825fd2924055395e761174216b673a90d0e2af981af6",
+  "frame_module": "research/tavonel_eval_v2/acquisition/sources_v2r1.py",
+  "frame_module_sha256": "sha256:c4b504100aa04106a8c6a9a2ef30c037aa3ea0c6f9b0f21e65796ae252fcede5",
+  "permitted_because": "no V2R1 acquisition artifact existed and no rung after the protocol had frozen, both checked mechanically rather than asserted",
+  "protocol_id": "IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1",
+  "provenance": {
+    "generated_at": "2026-08-25T06:37:36.081626+00:00",
+    "immutable": true,
+    "protocol": "research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R1.yaml",
+    "protocol_sha256": "sha256:6dd0e03316f0c15f814a1750645cb052356c0b537b1be6df471e5ba16ae229ad",
+    "receipt_stem": "identity-change-migration-closure-v2r1-acquisition-frame-freeze",
+    "run_id": "20260825T063736Z-eb47b3b794f4",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_migration_closure_v2r1.py",
+    "tool_sha256": "sha256:6b8d3a4de372d89b3f11740e1592fe5164bf7eda5b73ba47b3e2e2395ed4a492"
+  },
+  "receipt_sha256": "sha256:5146a8f65947bfda983b3d2aa0e9380fac6caea1fe3d62279dfa626083da854f",
+  "rung": 0,
+  "rung_name": "acquisition_frame",
+  "sealed_before_acquisition": true,
+  "supersedes": {
+    "frame_module_sha256": "sha256:00afcea4f6184acc10527094fc0ba69f256643619f46e8a4ddaaf9b51a18bb61",
+    "preserved": true,
+    "receipt": "D:/CodexProjects/ai-knowledge-compiler/research/tavonel_eval_v2/receipts/identity-change-migration-closure-v2r1-acquisition-frame-freeze--20260825T062839Z-c428ff194d7a.json",
+    "run_id": null,
+    "voided_before_any_acquisition": true,
+    "why": "the superseded frame declared families, quotas and traversal rules but no source repositories, CFR parts or issuer sets. Founder ruling section 7 requires those predeclared; without them the traversal was underdetermined and acquisition could still have reached for convenient material."
+  }
+}

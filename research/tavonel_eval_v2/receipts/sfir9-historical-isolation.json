@@ -1,0 +1,60 @@
+{
+  "HISTORICAL_INSTRUMENT_INTEGRITY": {
+    "historical_advisory_drift_count": 126,
+    "historical_frozen_drift_count": 59,
+    "historical_integrity_receipt": "D:/CodexProjects/ai-knowledge-compiler/research/tavonel_eval_v2/receipts/frozen-instrument-integrity.json",
+    "historical_integrity_receipt_sha256": "sha256:ec9123ee065c717ca2dc4bcde9bc0f734389d56ebe382a51f598eea149267093",
+    "historical_status": "PRESERVED_FAIL",
+    "preserved": true,
+    "state": "FAIL",
+    "this_gate_never_writes_to_it": "the drift receipt is read for failure taxonomy and exclusion only. Repairing it would destroy the record of the reproducibility failure it exists to document."
+  },
+  "SFIR9_PROSPECTIVE_INTEGRITY": {
+    "components": {
+      "acceptance": "research/tavonel_eval_v2/tools/sfir9_acceptance.py",
+      "checkpoint_chain": "research/tavonel_eval_v2/tools/sfir9_checkpoint_chain.py",
+      "cohort_roster": "research/tavonel_eval_v2/tools/sfir9_cohort_roster.py",
+      "execution_closure": "research/tavonel_eval_v2/tools/sfir9_execution_closure.py",
+      "historical_isolation_gate": "research/tavonel_eval_v2/tools/sfir9_isolation_gate.py",
+      "identity_logic": "research/tavonel_eval_v2/tools/sfir9_identity_logic.py",
+      "protocol": "research/tavonel_eval_v2/tools/sfir9_protocol.py",
+      "scorer": "research/tavonel_eval_v2/tools/sfir9_scorer.py",
+      "selection_rule": "research/tavonel_eval_v2/tools/sfir9_selection.py",
+      "transport": "research/tavonel_eval_v2/tools/sfir9_transport.py"
+    },
+    "historical_inputs": [
+      {
+        "path": "research/tavonel_eval_v2/receipts/frozen-instrument-integrity.json",
+        "purpose": "failure_taxonomy",
+        "sha256": "sha256:ec9123ee065c717ca2dc4bcde9bc0f734389d56ebe382a51f598eea149267093",
+        "value_bearing": false,
+        "why_not_scientific_authority": "read for what it records about a failed reproducibility chain: which paths drifted from their frozen pins, and which receipts are therefore unusable as certification. No SFIR9 gate passes because of anything in this file, no threshold is derived from it, and no SFIR9 result is compared against one of its numbers. It is opened read-only and is never rewritten -- repairing it would destroy the record of the failure it exists to document."
+      }
+    ],
+    "sfir9_historical_authority_dependencies": [],
+    "sfir9_source_hashes": {
+      "research/tavonel_eval_v2/tools/sfir9_acceptance.py": "sha256:188a3515298622f3cde70be6b96e2e20ab260fb20ec7faa1bc531952e4eb3cf0",
+      "research/tavonel_eval_v2/tools/sfir9_checkpoint_chain.py": "sha256:1a83adb54897f50535724f76a2382685e17a885473cc2215300ee65fb7b5e12f",
+      "research/tavonel_eval_v2/tools/sfir9_cohort_roster.py": "sha256:eed5c88f2f55396185e76b5739aa577fa56f328bb25e04899f0856cd386b3e25",
+      "research/tavonel_eval_v2/tools/sfir9_execution_closure.py": "sha256:906919d610e06c495c55c72fe2b65efdb80a9c8c6b6ed6179c248f46f327ca64",
+      "research/tavonel_eval_v2/tools/sfir9_identity_logic.py": "sha256:f28ee5939f2ee55ff3fef75328a80989adfa816dea08d4633e2e45d79d601def",
+      "research/tavonel_eval_v2/tools/sfir9_isolation_gate.py": "sha256:5bd9122d72b0ee351e4136670605cd1a2de185059dfef8716a6d845b85cd0efc",
+      "research/tavonel_eval_v2/tools/sfir9_protocol.py": "sha256:90df8e6c6079eff018b8ed3405fbb2c5252cd1283998634bb85b7bbf2511a056",
+      "research/tavonel_eval_v2/tools/sfir9_scorer.py": "sha256:1b2c5e72a8907a93a98c5a43ed56f6048e10f81e72aab41227cf3516465bd5e4",
+      "research/tavonel_eval_v2/tools/sfir9_selection.py": "sha256:4cb823d47a247001f1800ce92d81ae78802d8a9eeae1b203a4300d38277b76ab",
+      "research/tavonel_eval_v2/tools/sfir9_transport.py": "sha256:dfb1483f824fe7bb4d884a852487934f57bb265aeca077fe558f2e2484eef02e"
+    },
+    "state": "INDEPENDENTLY_EVALUATED"
+  },
+  "produced_by": {
+    "is_a_closure_component": false,
+    "path": "research/tavonel_eval_v2/tools/sfir9_declare_isolation.py",
+    "sha256": "sha256:8dc6f5d836a28dec362232b9196afcc3e85bc10e227629cf17651c8acc3d63d9",
+    "why_not": "this assembles a declaration; the gate evaluates it. The gate is one of the ten and is covered by the execution closure, so a swapped producer cannot change what the gate concluded."
+  },
+  "protocol_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V9",
+  "schema": "tavonel.sfir9.historical_isolation.v1",
+  "the_one_statement_the_scan_excludes": "the assignment that declares the patterns themselves. This gate is one of the ten components it scans, and without that exclusion it would refuse itself for naming the shapes it looks for. The exclusion is located by parsing for that single module-level assignment, not by a marker comment -- a comment-based exemption would be a mechanism anyone could put on a real offending line.",
+  "the_two_states_are_not_merged": "historical integrity is FAIL and preserved; SFIR9 integrity is evaluated on its own evidence. A historical FAIL does not block an SFIR9 freeze, and an SFIR9 PASS does not repair the historical V2R4/SFIR1/2/3/SFI chain. Reporting one number for both would hide whichever is worse.",
+  "what_this_gate_does_not_establish": "the lookup scan is static: it reads source text for the shapes that have caused this failure before and cannot prove that no component selects an authority by recency at runtime. It is a control, not a proof."
+}

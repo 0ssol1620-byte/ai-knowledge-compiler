@@ -1,0 +1,105 @@
+schema: tavonel.sfir1.pre_census_design_charter.v1
+protocol_id: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V1
+status: DRAFT_PRE_CENSUS
+study_role: prospective independent replication of SOURCE_FACT_IR_HELDOUT_V3
+result_blind: true
+gpu_authorized: false
+
+family_authorities:
+  git_docs: GITHUB_REPOSITORY_METADATA_API_V1
+  regulation_ecfr: ECFR_VERSIONER_METADATA_API_V1
+  encyclopedia_wikipedia: MEDIAWIKI_PAGE_REVISION_METADATA_API_V1
+
+capacity_rule:
+  formula: Q_f=min(1000,floor(0.8*C_f))
+  minimum_q_per_family: 600
+  census_scope: identity and revision-availability metadata only
+  forbidden_during_census:
+    - payload bytes or text
+    - revision diffs
+    - parsed units
+    - SourceFacts
+    - endpoint outcomes
+
+source_selection:
+  selection_salt: sfir1-capacity-v1:2026-08-26:independent-replication
+  source_pools:
+    git_docs:
+      repositories: [elastic/docs-content, vitejs/vitepress, python/peps, django/djangoproject.com, pallets/flask, uvicorn/uvicorn, encode/starlette, aio-libs/aiohttp, python-trio/trio, scrapy/scrapy, django/channels, python-poetry/poetry, Textualize/rich, Textualize/textual, prompt-toolkit/python-prompt-toolkit, jupyterlab/jupyterlab, squidfunk/mkdocs-material, getsentry/sentry, Homebrew/brew, ziglang/zig]
+      extensions: [.md, .mdx, .rst]
+      max_tree_pages_per_repository: 100
+      tree_page_size: 100
+      max_candidates_per_repository: 80
+      max_total_candidates: 3000
+    regulation_ecfr:
+      titles: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
+      max_version_pages_per_title: 250
+      version_page_size: 100
+      max_candidates_per_title: 30
+      max_total_candidates: 3000
+    encyclopedia_wikipedia:
+      api_project: en.wikipedia.org
+      namespace: 0
+      category_roots: [Software documentation, Free software, Open-source software, Programming languages, Computer programming, Databases, Database management systems, Operating systems, Cloud computing, Distributed computing, Computer security, Algorithms, Internet protocols, Web development, Machine learning, Artificial intelligence, Data management, Information retrieval, Natural language processing, Software engineering]
+      max_category_pages_per_root: 100
+      category_page_size: 500
+      max_candidates_per_category: 150
+      revision_batch_size: 50
+      max_total_candidates: 3000
+  pagination_contract:
+    maximum_retries_per_request: 5
+    retryable_http_statuses: [429, 500, 502, 503, 504]
+    require_complete_pagination: true
+    refuse_on_cap_before_exhaustion: true
+
+roster_rule:
+  root_container_namespace:
+    git_docs: git:<casefolded owner/repository>
+    regulation_ecfr: ecfr:<integer title>:<part>
+    encyclopedia_wikipedia: wikipedia:en:category:<casefolded underscore-normalized frozen category>
+  order: sha256(protocol_id + NUL + family + NUL + lineage_id), ascending
+  take: exactly Q_f candidates per family
+  required_candidate_fields:
+    - root_container_id
+    - lineage_id
+    - family
+    - container_id
+    - alias_ids
+    - payload_ref
+    - revision_id
+    - revision_timestamp
+    - capability_exercise
+  capability_exercise_fields: [E5, E6, E9]
+  capability_flags_are: predeclared metadata strata, never observed outcomes
+  require_fresh_containers: true
+  require_disjoint_lineages: true
+  duplicate_lineage_policy: REFUSE
+
+endpoint_rule:
+  primary_exercised_and_met: [E1, E2, E3, E4, E5, E6, E7, E9]
+  veto_only: E8
+  veto_rule: E8 violations must equal zero and contribute no positive credit
+  no_skip: [E5, E6, E9]
+
+analysis_floor:
+  total_pairs: 300
+  families: 3
+  per_family_pairs: 60
+  capability_exercising_pairs:
+    E5: 29
+    E6: 29
+    E9: 29
+
+authority_chain:
+  schemas:
+    - tavonel.sfir1.design_charter_freeze.v1
+    - tavonel.sfir1.capacity_census_authority.v1
+    - tavonel.sfir1.lineage_freeze.v1
+    - tavonel.sfir1.protocol_freeze.v1
+  resolution: exact repository-relative path and sha256 only; no globs or newest-wins
+
+stopping_rules:
+  - capacity shortfall refuses roster freeze
+  - any spent root, document container, lineage, or alias collision refuses roster freeze
+  - any payload, diff, parsed unit, SourceFact, or outcome observation before protocol freeze refuses the study
+  - no threshold, family, endpoint, authority, roster, or ordering change after charter freeze

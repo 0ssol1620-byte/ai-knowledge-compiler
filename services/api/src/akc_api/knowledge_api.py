@@ -106,6 +106,7 @@ class ProvenanceResponse(WireModel):
     project_id: uuid.UUID
     cir_schema_version: str
     active_version: int
+    active_version_id: uuid.UUID | None
     version_policy: str | None
     model_revision: str | None
     prompt_revision: str | None
@@ -510,6 +511,7 @@ async def document_provenance(
         project_id=document.project_id,
         cir_schema_version=document.cir_schema_version,
         active_version=document.active_version,
+        active_version_id=version.id if version is not None else None,
         version_policy=version.policy_version if version is not None else None,
         model_revision=version.model_revision if version is not None else None,
         prompt_revision=version.prompt_revision if version is not None else None,

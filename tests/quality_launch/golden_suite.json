@@ -1,0 +1,73 @@
+{
+  "schema_version": "quality-golden-suite-1.0.0",
+  "suite_id": "tavonel-mixed-local-v1",
+  "evidence_boundary": {
+    "grade": "fixture",
+    "limitations": [
+      "Local synthetic and parser fixtures are not a representative customer corpus.",
+      "Downstream task answers are deterministic fixture labels, not a blinded human study.",
+      "This suite does not execute OCR providers, language models, or RunPod."
+    ]
+  },
+  "sources": [
+    {"id": "html-ko", "media_type": "text/html", "path": "tests/fixtures/nonpdf/sample.html", "sha256": "sha256:e63db31fa85d660616aa84714b7da437dc43c7f79ba8b461b721f95fa11add69"},
+    {"id": "srt-ko", "media_type": "application/x-subrip", "path": "tests/fixtures/nonpdf/sample.srt", "sha256": "sha256:3b1e9f246e08a2042a0543eb7ce0cdb7fba0c59a2225efaec437043871986dc9"},
+    {"id": "vtt-ko", "media_type": "text/vtt", "path": "tests/fixtures/nonpdf/sample.vtt", "sha256": "sha256:c902a2ca867f0fa56640042670d5b37dfe15d8536aa0e353b0d4bc24e768f492"},
+    {"id": "report-md-en", "media_type": "text/markdown", "path": "assets/product/fixtures/tavonel-synthetic-document.md", "sha256": "sha256:9a295827c85c4a570ac491deed971b10a490bb6500bc1f93e3d00beb9009b337"}
+  ],
+  "gold": {
+    "ocr_text": {"documents": [
+      {"id": "html-ko", "text": "실험 보고서 원문 문단과 외부 링크입니다. 결과 첫 번째 근거 두 번째 근거 정확도 비교 기준 0.86 개선 0.94"},
+      {"id": "srt-ko", "text": "진행자: 첫 번째 문장입니다. 반복 문장 반복 문장 마지막 문장입니다."},
+      {"id": "vtt-ko", "text": "첫 번째 관찰입니다. 두 번째 관찰입니다."},
+      {"id": "report-md-en", "text": "Compiling Public Filings into Verifiable Knowledge Revenue by reportable segment Platform 12,345,678 Services 4,882,103 Total 17,227,781"}
+    ]},
+    "ocr_layout": {"blocks": [
+      {"id": "h1", "type": "heading", "order": 0, "bbox1000": [80, 60, 920, 130]},
+      {"id": "p1", "type": "paragraph", "order": 1, "bbox1000": [80, 150, 920, 240]},
+      {"id": "t1", "type": "table", "order": 2, "bbox1000": [80, 280, 920, 650]},
+      {"id": "f1", "type": "figure", "order": 3, "bbox1000": [80, 680, 920, 930]}
+    ]},
+    "citations": {"region_iou_threshold": 0.8, "citations": [
+      {"id": "claim-score", "page_index0": 0, "bbox1000": [80, 280, 920, 650]},
+      {"id": "claim-revenue", "page_index0": 2, "bbox1000": [70, 190, 930, 610]},
+      {"id": "claim-coverage", "page_index0": 4, "bbox1000": [80, 200, 920, 420]}
+    ]},
+    "entity_resolution": {"clusters": [["platform-title", "platform-row"], ["services-row"], ["tavonel-schema", "canonical-schema"]]},
+    "claims": {"labels": {"c-score": "entailment", "c-public-filing": "contradiction", "c-unknown-owner": "unknown", "c-coverage": "entailment"}},
+    "temporal_authority": {"facts": [
+      {"id": "revenue-2025", "valid_from": "2025-01-01", "valid_to": "2026-01-01", "recorded_at": "2026-08-01T00:00:00Z", "superseded_at": null, "temporal_source": "explicit"},
+      {"id": "fixture-purpose", "valid_from": null, "valid_to": null, "recorded_at": "2026-08-01T00:00:00Z", "superseded_at": null, "temporal_source": "unknown"}
+    ], "as_of": [
+      {"id": "at-2025", "fact_ids": ["revenue-2025"]},
+      {"id": "unknown-excluded", "fact_ids": []}
+    ]},
+    "ontology_graph": {
+      "allowed_node_types": ["document", "entity", "metric"], "allowed_relations": ["contains", "reports"],
+      "nodes": [{"id": "doc-report", "type": "document"}, {"id": "entity-platform", "type": "entity"}, {"id": "metric-revenue", "type": "metric"}],
+      "edges": [{"source": "doc-report", "relation": "contains", "target": "metric-revenue"}, {"source": "entity-platform", "relation": "reports", "target": "metric-revenue"}]
+    },
+    "adaptive_chunking": {"max_tokens": 1200, "source_units": ["p2-method", "p2-evaluation", "p3-table", "p4-caption", "p5-formula", "p6-references"]},
+    "retrieval": {"k": 3, "queries": [
+      {"id": "q-revenue", "relevant": ["p3-table"]},
+      {"id": "q-coverage", "relevant": ["p5-formula"]},
+      {"id": "q-evidence", "relevant": ["p2-evaluation", "p6-references"]}
+    ]},
+    "downstream_ai": {"tasks": [
+      {"id": "qa-score", "answer": "0.94"}, {"id": "qa-revenue", "answer": "17,227,781"},
+      {"id": "qa-coverage", "answer": "99.6%"}, {"id": "qa-public", "answer": "synthetic"}
+    ]}
+  },
+  "acceptance": {
+    "ocr_text": [{"metric": "character_accuracy", "minimum": 0.98}, {"metric": "word_accuracy", "minimum": 0.97}],
+    "ocr_layout": [{"metric": "type_f1", "minimum": 0.95}, {"metric": "reading_order_accuracy", "minimum": 0.95}, {"metric": "mean_bbox_iou", "minimum": 0.85}],
+    "citations": [{"metric": "page_accuracy", "minimum": 0.99}, {"metric": "region_accuracy", "minimum": 0.95}],
+    "entity_resolution": [{"metric": "precision", "minimum": 0.98}, {"metric": "recall", "minimum": 0.95}],
+    "claims": [{"metric": "accuracy", "minimum": 0.95}, {"metric": "macro_f1", "minimum": 0.90}],
+    "temporal_authority": [{"metric": "field_accuracy", "minimum": 0.99}, {"metric": "as_of_accuracy", "minimum": 0.99}],
+    "ontology_graph": [{"metric": "node.f1", "minimum": 0.98}, {"metric": "edge.f1", "minimum": 0.98}, {"metric": "valid", "value": true}],
+    "adaptive_chunking": [{"metric": "source_coverage", "minimum": 0.99}, {"metric": "citation_coverage", "minimum": 0.99}, {"metric": "token_limit_rate", "minimum": 1.0}, {"metric": "boundary_preservation_rate", "minimum": 1.0}],
+    "retrieval": [{"metric": "mrr", "minimum": 0.90}, {"metric": "recall_at_k", "minimum": 0.90}, {"metric": "ndcg_at_k", "minimum": 0.90}],
+    "downstream_ai": [{"metric": "compiled_exact_accuracy", "minimum": 0.95}, {"metric": "absolute_improvement", "minimum": 0.20}, {"metric": "non_regression_rate", "minimum": 1.0}]
+  }
+}

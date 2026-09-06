@@ -1,0 +1,57 @@
+schema: tavonel.v2.protocol.gpu_successor_runtime.v2
+protocol_id: GPU_SUCCESSOR_RUNTIME_V2
+study_id: SOURCE_FACT_PROPAGATION_MODEL_V2
+status: FROZEN
+freeze_semantics: prospective and result-blind; FROZEN does not imply execution authority
+supersedes: null
+preserves:
+  - GPU_SUCCESSOR_RUNTIME_V1
+  - GPU_SUCCESSOR_STUDY_V1
+authority:
+  rule: >-
+    This is a separate SFIR4-bound runtime. It cannot accept an SFI3 receipt,
+    an SFI3 successor universe, or a V1 four-link acceptance.
+hardware:
+  gpu_type:
+    value: NVIDIA H200
+    kind: declared_assumption
+  gpu_count:
+    value: 1
+    kind: declared_assumption
+spend:
+  founder_ceilings:
+    gpu_hours: 6.0
+    usd: 40.0
+  operational_caps:
+    gpu_hours: 5.75
+    gpu_seconds: 20700
+    usd: 38.0
+  boundary_rule: >-
+    Provisioning is refused unless a live provider rate projects the complete
+    run inside both operational caps. Runtime deletion begins at either inner
+    boundary. Completion requires provider-derived final usage through deletion
+    and three positive read-after-delete absence observations. A dedicated
+    authoritative usage poll immediately before delete is required; an earlier
+    worker-status polling snapshot is not billing evidence. HTTP 204 delete is valid.
+resource_lifecycle:
+  create_intent_before_request: true
+  ambiguous_create_reconciliation: exact deterministic run name
+  platform_terminate_after_seconds: 20700
+  process_watchdog_seconds: 20700
+  live_poll_seconds_maximum: 5
+  deletion:
+    required_on_all_terminal_and_exception_paths: true
+    positive_absence_proof_required: true
+scientific_runtime:
+  launcher: exact content-addressed launch_gpu_successor_v2.py required
+  backend: V2-only RunPod plus bounded presigned R2 transport required
+  inference_server: pinned vLLM is started on loopback by the verified V2 worker
+  worker_bundle: exact content-addressed V2 manifest required
+  scorer: exact content-addressed deterministic V2 scorer required
+  tokenizer: exact local artifact manifest and behavioral parity receipt required
+  terminal_status: Ed25519 authenticated terminal envelope
+  raw_output: content-addressed immutable object required
+secrets:
+  serialized_in_receipts: false
+  storage_credentials_enter_worker: false
+  worker_transport: bounded presigned grants only

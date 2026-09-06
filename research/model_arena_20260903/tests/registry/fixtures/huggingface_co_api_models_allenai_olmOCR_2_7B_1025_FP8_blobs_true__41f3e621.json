@@ -1,0 +1,395 @@
+{
+  "_id": "68e43cc4a98fb480f4d9d5b0",
+  "author": "allenai",
+  "cardData": {
+    "base_model": [
+      "Qwen/Qwen2.5-VL-7B-Instruct"
+    ],
+    "language": [
+      "en"
+    ],
+    "library_name": "transformers",
+    "license": "apache-2.0"
+  },
+  "config": {
+    "architectures": [
+      "Qwen2_5_VLForConditionalGeneration"
+    ],
+    "chat_template_jinja": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}",
+    "model_type": "qwen2_5_vl",
+    "processor_config": {
+      "chat_template": "{% set image_count = namespace(value=0) %}{% set video_count = namespace(value=0) %}{% for message in messages %}{% if loop.first and message['role'] != 'system' %}<|im_start|>system\nYou are a helpful assistant.<|im_end|>\n{% endif %}<|im_start|>{{ message['role'] }}\n{% if message['content'] is string %}{{ message['content'] }}<|im_end|>\n{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' or 'image' in content or 'image_url' in content %}{% set image_count.value = image_count.value + 1 %}{% if add_vision_id %}Picture {{ image_count.value }}: {% endif %}<|vision_start|><|image_pad|><|vision_end|>{% elif content['type'] == 'video' or 'video' in content %}{% set video_count.value = video_count.value + 1 %}{% if add_vision_id %}Video {{ video_count.value }}: {% endif %}<|vision_start|><|video_pad|><|vision_end|>{% elif 'text' in content %}{{ content['text'] }}{% endif %}{% endfor %}<|im_end|>\n{% endif %}{% endfor %}{% if add_generation_prompt %}<|im_start|>assistant\n{% endif %}"
+    },
+    "quantization_config": {
+      "config_groups": {
+        "group_0": {
+          "targets": [
+            "Linear"
+          ],
+          "weights": {
+            "num_bits": 8
+          }
+        }
+      },
+      "format": "float-quantized",
+      "ignore": [
+        "model.visual.blocks.0.attn.qkv",
+        "model.visual.blocks.0.attn.proj",
+        "model.visual.blocks.0.mlp.gate_proj",
+        "model.visual.blocks.0.mlp.up_proj",
+        "model.visual.blocks.0.mlp.down_proj",
+        "model.visual.blocks.1.attn.qkv",
+        "model.visual.blocks.1.attn.proj",
+        "model.visual.blocks.1.mlp.gate_proj",
+        "model.visual.blocks.1.mlp.up_proj",
+        "model.visual.blocks.1.mlp.down_proj",
+        "model.visual.blocks.2.attn.qkv",
+        "model.visual.blocks.2.attn.proj",
+        "model.visual.blocks.2.mlp.gate_proj",
+        "model.visual.blocks.2.mlp.up_proj",
+        "model.visual.blocks.2.mlp.down_proj",
+        "model.visual.blocks.3.attn.qkv",
+        "model.visual.blocks.3.attn.proj",
+        "model.visual.blocks.3.mlp.gate_proj",
+        "model.visual.blocks.3.mlp.up_proj",
+        "model.visual.blocks.3.mlp.down_proj",
+        "model.visual.blocks.4.attn.qkv",
+        "model.visual.blocks.4.attn.proj",
+        "model.visual.blocks.4.mlp.gate_proj",
+        "model.visual.blocks.4.mlp.up_proj",
+        "model.visual.blocks.4.mlp.down_proj",
+        "model.visual.blocks.5.attn.qkv",
+        "model.visual.blocks.5.attn.proj",
+        "model.visual.blocks.5.mlp.gate_proj",
+        "model.visual.blocks.5.mlp.up_proj",
+        "model.visual.blocks.5.mlp.down_proj",
+        "model.visual.blocks.6.attn.qkv",
+        "model.visual.blocks.6.attn.proj",
+        "model.visual.blocks.6.mlp.gate_proj",
+        "model.visual.blocks.6.mlp.up_proj",
+        "model.visual.blocks.6.mlp.down_proj",
+        "model.visual.blocks.7.attn.qkv",
+        "model.visual.blocks.7.attn.proj",
+        "model.visual.blocks.7.mlp.gate_proj",
+        "model.visual.blocks.7.mlp.up_proj",
+        "model.visual.blocks.7.mlp.down_proj",
+        "model.visual.blocks.8.attn.qkv",
+        "model.visual.blocks.8.attn.proj",
+        "model.visual.blocks.8.mlp.gate_proj",
+        "model.visual.blocks.8.mlp.up_proj",
+        "model.visual.blocks.8.mlp.down_proj",
+        "model.visual.blocks.9.attn.qkv",
+        "model.visual.blocks.9.attn.proj",
+        "model.visual.blocks.9.mlp.gate_proj",
+        "model.visual.blocks.9.mlp.up_proj",
+        "model.visual.blocks.9.mlp.down_proj",
+        "model.visual.blocks.10.attn.qkv",
+        "model.visual.blocks.10.attn.proj",
+        "model.visual.blocks.10.mlp.gate_proj",
+        "model.visual.blocks.10.mlp.up_proj",
+        "model.visual.blocks.10.mlp.down_proj",
+        "model.visual.blocks.11.attn.qkv",
+        "model.visual.blocks.11.attn.proj",
+        "model.visual.blocks.11.mlp.gate_proj",
+        "model.visual.blocks.11.mlp.up_proj",
+        "model.visual.blocks.11.mlp.down_proj",
+        "model.visual.blocks.12.attn.qkv",
+        "model.visual.blocks.12.attn.proj",
+        "model.visual.blocks.12.mlp.gate_proj",
+        "model.visual.blocks.12.mlp.up_proj",
+        "model.visual.blocks.12.mlp.down_proj",
+        "model.visual.blocks.13.attn.qkv",
+        "model.visual.blocks.13.attn.proj",
+        "model.visual.blocks.13.mlp.gate_proj",
+        "model.visual.blocks.13.mlp.up_proj",
+        "model.visual.blocks.13.mlp.down_proj",
+        "model.visual.blocks.14.attn.qkv",
+        "model.visual.blocks.14.attn.proj",
+        "model.visual.blocks.14.mlp.gate_proj",
+        "model.visual.blocks.14.mlp.up_proj",
+        "model.visual.blocks.14.mlp.down_proj",
+        "model.visual.blocks.15.attn.qkv",
+        "model.visual.blocks.15.attn.proj",
+        "model.visual.blocks.15.mlp.gate_proj",
+        "model.visual.blocks.15.mlp.up_proj",
+        "model.visual.blocks.15.mlp.down_proj",
+        "model.visual.blocks.16.attn.qkv",
+        "model.visual.blocks.16.attn.proj",
+        "model.visual.blocks.16.mlp.gate_proj",
+        "model.visual.blocks.16.mlp.up_proj",
+        "model.visual.blocks.16.mlp.down_proj",
+        "model.visual.blocks.17.attn.qkv",
+        "model.visual.blocks.17.attn.proj",
+        "model.visual.blocks.17.mlp.gate_proj",
+        "model.visual.blocks.17.mlp.up_proj",
+        "model.visual.blocks.17.mlp.down_proj",
+        "model.visual.blocks.18.attn.qkv",
+        "model.visual.blocks.18.attn.proj",
+        "model.visual.blocks.18.mlp.gate_proj",
+        "model.visual.blocks.18.mlp.up_proj",
+        "model.visual.blocks.18.mlp.down_proj",
+        "model.visual.blocks.19.attn.qkv",
+        "model.visual.blocks.19.attn.proj",
+        "model.visual.blocks.19.mlp.gate_proj",
+        "model.visual.blocks.19.mlp.up_proj",
+        "model.visual.blocks.19.mlp.down_proj",
+        "model.visual.blocks.20.attn.qkv",
+        "model.visual.blocks.20.attn.proj",
+        "model.visual.blocks.20.mlp.gate_proj",
+        "model.visual.blocks.20.mlp.up_proj",
+        "model.visual.blocks.20.mlp.down_proj",
+        "model.visual.blocks.21.attn.qkv",
+        "model.visual.blocks.21.attn.proj",
+        "model.visual.blocks.21.mlp.gate_proj",
+        "model.visual.blocks.21.mlp.up_proj",
+        "model.visual.blocks.21.mlp.down_proj",
+        "model.visual.blocks.22.attn.qkv",
+        "model.visual.blocks.22.attn.proj",
+        "model.visual.blocks.22.mlp.gate_proj",
+        "model.visual.blocks.22.mlp.up_proj",
+        "model.visual.blocks.22.mlp.down_proj",
+        "model.visual.blocks.23.attn.qkv",
+        "model.visual.blocks.23.attn.proj",
+        "model.visual.blocks.23.mlp.gate_proj",
+        "model.visual.blocks.23.mlp.up_proj",
+        "model.visual.blocks.23.mlp.down_proj",
+        "model.visual.blocks.24.attn.qkv",
+        "model.visual.blocks.24.attn.proj",
+        "model.visual.blocks.24.mlp.gate_proj",
+        "model.visual.blocks.24.mlp.up_proj",
+        "model.visual.blocks.24.mlp.down_proj",
+        "model.visual.blocks.25.attn.qkv",
+        "model.visual.blocks.25.attn.proj",
+        "model.visual.blocks.25.mlp.gate_proj",
+        "model.visual.blocks.25.mlp.up_proj",
+        "model.visual.blocks.25.mlp.down_proj",
+        "model.visual.blocks.26.attn.qkv",
+        "model.visual.blocks.26.attn.proj",
+        "model.visual.blocks.26.mlp.gate_proj",
+        "model.visual.blocks.26.mlp.up_proj",
+        "model.visual.blocks.26.mlp.down_proj",
+        "model.visual.blocks.27.attn.qkv",
+        "model.visual.blocks.27.attn.proj",
+        "model.visual.blocks.27.mlp.gate_proj",
+        "model.visual.blocks.27.mlp.up_proj",
+        "model.visual.blocks.27.mlp.down_proj",
+        "model.visual.blocks.28.attn.qkv",
+        "model.visual.blocks.28.attn.proj",
+        "model.visual.blocks.28.mlp.gate_proj",
+        "model.visual.blocks.28.mlp.up_proj",
+        "model.visual.blocks.28.mlp.down_proj",
+        "model.visual.blocks.29.attn.qkv",
+        "model.visual.blocks.29.attn.proj",
+        "model.visual.blocks.29.mlp.gate_proj",
+        "model.visual.blocks.29.mlp.up_proj",
+        "model.visual.blocks.29.mlp.down_proj",
+        "model.visual.blocks.30.attn.qkv",
+        "model.visual.blocks.30.attn.proj",
+        "model.visual.blocks.30.mlp.gate_proj",
+        "model.visual.blocks.30.mlp.up_proj",
+        "model.visual.blocks.30.mlp.down_proj",
+        "model.visual.blocks.31.attn.qkv",
+        "model.visual.blocks.31.attn.proj",
+        "model.visual.blocks.31.mlp.gate_proj",
+        "model.visual.blocks.31.mlp.up_proj",
+        "model.visual.blocks.31.mlp.down_proj",
+        "model.visual.merger.mlp.0",
+        "model.visual.merger.mlp.2",
+        "lm_head"
+      ],
+      "quant_method": "compressed-tensors"
+    },
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "createdAt": "2025-10-06T22:03:48.000Z",
+  "disabled": false,
+  "downloads": 247071,
+  "gated": false,
+  "id": "allenai/olmOCR-2-7B-1025-FP8",
+  "lastModified": "2026-02-19T17:30:13.000Z",
+  "library_name": "transformers",
+  "likes": 254,
+  "model-index": null,
+  "modelId": "allenai/olmOCR-2-7B-1025-FP8",
+  "pipeline_tag": "image-text-to-text",
+  "private": false,
+  "safetensors": {
+    "parameters": {
+      "BF16": 1768268800,
+      "F8_E4M3": 6525288448
+    },
+    "total": 8293557248
+  },
+  "sha": "40bd7202494b8264ee17ada08b401b5aab7a9ce1",
+  "siblings": [
+    {
+      "blobId": "fc7b9b5d23cfd00b3116ac6b5a4861fd3693c4db",
+      "rfilename": ".eval_results/olmocrbench.yaml",
+      "size": 1921
+    },
+    {
+      "blobId": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+      "rfilename": ".gitattributes",
+      "size": 1570
+    },
+    {
+      "blobId": "cfeddf8b6ad5e1a4514dc1fc91f1a5bb74ef4e35",
+      "rfilename": "README.md",
+      "size": 6068
+    },
+    {
+      "blobId": "482ced4679301bf287ebb310bdd1790eb4514232",
+      "rfilename": "added_tokens.json",
+      "size": 605
+    },
+    {
+      "blobId": "6c226632394ae7474b0d4b13e15793eac2e21ee9",
+      "rfilename": "chat_template.jinja",
+      "size": 1017
+    },
+    {
+      "blobId": "732bd68bc5427d1fb6c06a59b3bf2456b2155d24",
+      "rfilename": "chat_template.json",
+      "size": 1050
+    },
+    {
+      "blobId": "fd2fc8aa72340934f5c73b83d652dc23eb01ad90",
+      "rfilename": "config.json",
+      "size": 11307
+    },
+    {
+      "blobId": "7054f215f0cfb9ef1238f4256f7d1d37fe679c4d",
+      "rfilename": "generation_config.json",
+      "size": 260
+    },
+    {
+      "blobId": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7",
+      "rfilename": "merges.txt",
+      "size": 1671853
+    },
+    {
+      "blobId": "c059120a1b19a6b5a4308ee275b895b8751a3e02",
+      "lfs": {
+        "pointerSize": 135,
+        "sha256": "5d5550dbb21e309786fde9a151442181562cf9dc23141116a4e46e3e815b0d02",
+        "size": 4940102568
+      },
+      "rfilename": "model-00001-of-00003.safetensors",
+      "size": 4940102568
+    },
+    {
+      "blobId": "6eef6cfd0abc0e808db800aea8c98ef56aac18f8",
+      "lfs": {
+        "pointerSize": 135,
+        "sha256": "65cb798f6478260b7eba5120cba2041ca252d3f94c9a2e32cc7fba16231f0c4a",
+        "size": 4031832312
+      },
+      "rfilename": "model-00002-of-00003.safetensors",
+      "size": 4031832312
+    },
+    {
+      "blobId": "a932c64b9f460de0e4bb5af5a98c413944a35a46",
+      "lfs": {
+        "pointerSize": 135,
+        "sha256": "4a185c74b8147aff33829d1d7384e2781c8dd09461d50499afbd1d80a13e7e1a",
+        "size": 1089994880
+      },
+      "rfilename": "model-00003-of-00003.safetensors",
+      "size": 1089994880
+    },
+    {
+      "blobId": "dcb66224c9baa0c6b6b00c3c11864523e10334a7",
+      "rfilename": "model.safetensors.index.json",
+      "size": 74721
+    },
+    {
+      "blobId": "7f3b746825e5eef53ed8ed57a91df9e86ee62c0a",
+      "rfilename": "preprocessor_config.json",
+      "size": 350
+    },
+    {
+      "blobId": "3f1fc6e1a897f810660467748d2724177aacd001",
+      "rfilename": "recipe.yaml",
+      "size": 164
+    },
+    {
+      "blobId": "ac23c0aaa2434523c494330aeb79c58395378103",
+      "rfilename": "special_tokens_map.json",
+      "size": 613
+    },
+    {
+      "blobId": "51ebb3ba93988c73bbd83a3c163a14343fbc5b06",
+      "lfs": {
+        "pointerSize": 133,
+        "sha256": "9c5ae00e602b8860cbd784ba82a8aa14e8feecec692e7076590d014d7b7fdafa",
+        "size": 11421896
+      },
+      "rfilename": "tokenizer.json",
+      "size": 11421896
+    },
+    {
+      "blobId": "eaed590d62aaf0ba31e284b66ddcb18222f066c2",
+      "rfilename": "tokenizer_config.json",
+      "size": 4686
+    },
+    {
+      "blobId": "4783fe10ac3adce15ac8f358ef5462739852c569",
+      "rfilename": "vocab.json",
+      "size": 2776833
+    },
+    {
+      "blobId": "5995d6e6f04e43b989587aa9022a3aef0c66d694",
+      "rfilename": "zero_to_fp32.py",
+      "size": 33270
+    }
+  ],
+  "spaces": [
+    "finebooks/bhl-ocr-leaderboard",
+    "Unique00225/img",
+    "Tharjama/olmocr-demo",
+    "snake11235/words2csv",
+    "cronos3k/document-integrity-verifier"
+  ],
+  "tags": [
+    "transformers",
+    "safetensors",
+    "qwen2_5_vl",
+    "image-text-to-text",
+    "conversational",
+    "en",
+    "base_model:Qwen/Qwen2.5-VL-7B-Instruct",
+    "base_model:quantized:Qwen/Qwen2.5-VL-7B-Instruct",
+    "license:apache-2.0",
+    "eval-results",
+    "text-generation-inference",
+    "endpoints_compatible",
+    "compressed-tensors",
+    "deploy:azure",
+    "region:us"
+  ],
+  "transformersInfo": {
+    "auto_model": "AutoModelForMultimodalLM",
+    "pipeline_tag": "image-text-to-text",
+    "processor": "AutoProcessor"
+  },
+  "usedStorage": 10073351656,
+  "widgetData": [
+    {
+      "text": "Hi, what can you help me with?"
+    },
+    {
+      "text": "What is 84 * 3 / 2?"
+    },
+    {
+      "text": "Tell me an interesting fact about the universe!"
+    },
+    {
+      "text": "Explain quantum computing in simple terms."
+    }
+  ]
+}

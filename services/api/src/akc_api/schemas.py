@@ -385,6 +385,11 @@ class EstimateResponse(WireModel):
     figures: int = Field(ge=0)
     credit_min: Decimal = Field(ge=0)
     credit_max: Decimal = Field(ge=0)
+    customer_charge_min_usd: Decimal = Field(ge=0)
+    customer_charge_estimate_usd: Decimal = Field(ge=0)
+    customer_charge_max_usd: Decimal = Field(ge=0)
+    standard_page_rate_usd: Decimal = Field(ge=0)
+    routed_page_rate_usd: Decimal = Field(ge=0)
     third_party_model_api: bool
     expected_duration_min: int = Field(ge=0)
     expected_duration_max: int = Field(ge=0)
@@ -403,6 +408,9 @@ class CompileRequest(WireModel):
         "parse_long_v1",
     ] = "parse_balanced_v1"
     max_credits: Decimal | None = Field(default=None, gt=0)
+    customer_max_charge_usd: Decimal | None = Field(
+        default=None, gt=0, max_digits=18, decimal_places=2
+    )
     external_processing_consent: bool = False
     output_profiles: list[ExportProfileName] = Field(default_factory=_default_output_profiles)
 

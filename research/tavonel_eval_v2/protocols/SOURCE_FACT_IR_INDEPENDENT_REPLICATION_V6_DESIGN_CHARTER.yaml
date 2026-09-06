@@ -1,0 +1,138 @@
+protocol_id: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V6
+state: PROSPECTIVE_PRE_CENSUS
+result_blind_design: true
+purpose: >-
+  Confirmatory instrument repair after SFIR5 applied the capacity criterion and
+  failed. SFIR5's result is preserved unchanged and is not rescored. SFIR6 repairs
+  two unconditional instrument defects and re-measures all three families
+  prospectively.
+succeeds: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V5
+succeeds_because: UNCONDITIONAL_INSTRUMENT_DEFECTS_IN_A_COMPLETED_STUDY
+
+# SFIR5's outcome, restated so it cannot be quietly superseded. SFIR6 does not
+# edit, rescore or replace any of it.
+predecessor_result_preserved:
+  regulation_ecfr: VALID_CAPACITY_MEASUREMENT_PASS
+  git_docs: VALID_CAPACITY_MEASUREMENT_FAIL
+  encyclopedia_wikipedia: NOT_MEASURED_INSTRUMENT_DEFECT
+  receipt: receipts/sfir5-capacity-outcome.json
+  sfir5_is_not_rescored: true
+  sfir5_numbers_are_not_copied_into_sfir6: true
+
+carried_forward_by_reference:
+  charter: protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4_DESIGN_CHARTER.yaml
+  fields_owned_by_that_document:
+    - family_authorities
+    - capacity_rule
+    - git_tree_enumeration
+    - spent_policy
+    - payload_policy
+    - terminal_policy
+  redeclaring_any_of_them_here_is_a_refusal: true
+  the_probe_is_sfir4s_probe: true
+
+# The complete list of what SFIR6 changes. Two entries, both unconditional
+# defects: each is wrong for every possible input, so neither is a value chosen
+# by looking at SFIR5's outcome.
+repairs:
+  - id: INC-V2-106
+    what: wikipedia_adapter_sent_multiple_pageids_with_rvlimit
+    why_unconditional: >-
+      MediaWiki answers invalidparammix to that combination for every input. The
+      request was invalid on every run of every study, whatever the data.
+    replaced_by: two_pass_officially_supported_batching
+    verified_before_implementation: receipts/sfir6-adapter-canary.json
+  - id: INC-V2-107
+    what: capacity_pagination_field_set_compared_by_strict_set_equality
+    why_unconditional: >-
+      the seal refused every census, for every family, whatever the data. Proven
+      not to change SFIR5's outcome by correcting it in memory and re-running.
+    replaced_by: successor_side_corrected_contract_without_editing_the_frozen_module
+
+# Explicitly unchanged. Any of these moving would make SFIR6 an
+# outcome-conditioned redesign rather than a confirmatory repair.
+unchanged_from_sfir5:
+  git_roots: 20
+  ecfr_roots: 50
+  wikipedia_roots: 30
+  minimum_c_per_family: 750
+  minimum_q_per_family: 600
+  quota_formula: Q_f=min(1000,floor(0.8*C_f))
+  per_root_caps: unchanged
+  selection_salt: unchanged
+  selection_ordering: unchanged
+  inclusion_exclusion_rules: unchanged
+  identity_semantics: unchanged
+  scorer: unchanged
+  acceptance_logic: unchanged
+  scientific_endpoints: unchanged
+  no_git_root_is_added_after_seeing_293: true
+
+# The gate SFIR5 did not have. Kept as its own section because the lesson is
+# structural, not Wikipedia-specific.
+adapter_gate_separation:
+  transport_success_is_not_protocol_success: true
+  protocol_success_is_not_semantic_completeness: true
+  http_200_is_not_evidence_of_either: true
+  mediawiki_protocol_failures_that_arrive_as_http_200:
+    - error
+    - warnings
+    - missing
+    - invalid
+    - badrevids
+    - absent_batchcomplete
+  predecessor_equivalence_may_not_be_used_as_a_correctness_argument: true
+  independent_oracle: >-
+    controls run against envelopes captured from the live endpoint before the
+    adapter was written, not against the adapter's own model of the API.
+
+transport_policy:
+  inherits: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V5
+  bounded_concurrency_per_host: 1
+  host_min_interval_seconds:
+    en.wikipedia.org: 7.0
+    api.github.com: 0.5
+    www.ecfr.gov: 0.5
+  default_min_interval_seconds: 1.0
+  max_total_wall_clock_seconds: 21600
+  max_total_requests: 12000
+  server_retry_after_takes_priority_over_local_pacing: true
+  pacing_seconds_are_not_rate_limit_wait_seconds: true
+  sfir4_retry_bounds_unmodified:
+    maximum_retries_per_request: 5
+    max_rate_limit_wait_seconds: 60
+    max_total_rate_limit_wait_seconds: 180
+
+evidence_policy:
+  every_family_records_to_the_response_ledger: true
+  failed_request_is_recorded_before_it_raises: true
+  family_coverage_compared_against_families_reporting_candidates: true
+  synthesised_observation_cannot_seal_a_live_receipt: true
+  truncated_enumeration_is_excluded_not_zero_candidate: true
+
+batching_policy:
+  new_batching_introduced_by_sfir6: true
+  why: >-
+    the inherited batching was invalid on every request (INC-V2-106), so
+    inheriting it unchanged was the defect. Equivalence to the predecessor is
+    explicitly NOT the correctness argument here.
+  form: officially_supported_two_pass
+  pass_1: pageids<=50 + prop=revisions + rvprop=ids|timestamp, no rvlimit
+  pass_2: revids<=50 + prop=revisions + rvprop=ids|timestamp
+  rvlimit_is_never_sent_with_more_than_one_page: true
+  population_unchanged: true
+  ordering_unchanged: true
+
+census_identity:
+  census_input_carries_sfir4_protocol_id: true
+  executed_under: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V6
+  seal_binds_census_input_by_exact_digest: true
+
+verdict_policy:
+  all_three_families_remeasured: true
+  no_family_result_is_reused_from_sfir5: true
+  verdict_taken_from_sfir6_whatever_it_says: true
+  if_git_fails_again_the_criterion_fails: true
+  lowering_a_threshold_or_adding_a_root_on_failure_is_forbidden: true
+  successor_on_failure: SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V7
+  successor_is_a_new_frame_question_not_a_repair: true

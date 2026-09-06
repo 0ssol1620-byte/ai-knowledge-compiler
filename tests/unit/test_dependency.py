@@ -11,6 +11,7 @@ from datetime import UTC, datetime
 
 import pytest
 from akc_cir.dependency import (
+    DependencyChannel,
     DependencyEdge,
     DependencyGraph,
     EdgeType,
@@ -37,6 +38,26 @@ def test_a_chunk_that_depends_on_a_clause_goes_stale_when_the_clause_changes() -
     report = graph.impact_of(["ku_warranty"])
 
     assert report.affected_ids == ("chunk_88",)
+
+
+def test_typed_dependency_filters_only_when_a_change_channel_is_explicit() -> None:
+    graph = _graph(
+        DependencyEdge(
+            "chunk_88",
+            "ku_warranty",
+            EdgeType.DEPENDS_ON,
+            channels=frozenset({DependencyChannel.SEMANTIC}),
+        )
+    )
+
+    # Backward-compatible untyped traversal still sees the dependency.
+    assert graph.impact_of(["ku_warranty"]).affected_ids == ("chunk_88",)
+    assert graph.impact_of(
+        ["ku_warranty"], channel=DependencyChannel.SEMANTIC
+    ).affected_ids == ("chunk_88",)
+    assert graph.impact_of(
+        ["ku_warranty"], channel=DependencyChannel.LOCATOR
+    ).affected_ids == ()
 
 
 def test_the_clause_does_not_go_stale_when_the_chunk_changes() -> None:

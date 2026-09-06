@@ -1,0 +1,23 @@
+{
+  "cases": 60,
+  "decision_rule": "PROMOTION_VETO_PATH_DEPENDENT if controls are valid and at least one row-attached future decision differs",
+  "frozen_at": "2026-08-19T01:10:28.700670+00:00",
+  "h1e_script_sha256": "sha256:af9445446ff0b18217d1a6077f6efe7e382e3f980be3742d2600fccb6c4921c4",
+  "identity_module_sha256": "sha256:0b27e1b505d4684eaaf07aea0d6ffc1df3f30e4b8b1d95c5025f83572a05fafc",
+  "protocol_path": "research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/PROTOCOL_2026-08-19.md",
+  "protocol_sha256": "sha256:253008614814b4891c6cd3aed410a0a11317f6bb3cc96200a47a53926413e9b4",
+  "schema": "tavonel.identity-tie-path-dependence-seal.v1",
+  "script_path": "research/experiments/H1-E2-TIE-PATH-DEPENDENCE-01/scripts/tie_path_dependence.py",
+  "script_sha256": "sha256:d097b76eb5c8ed2a9a5a060bd3d5c7e1d4eac9b66aab4a7a337da1df40fea903",
+  "seal_sha256": "sha256:7efb95eb7619f9bd28714966efea25c0e77c1bdd857b2f75d28c67020af471a0",
+  "seed": 20260819,
+  "source_receipt_file_sha256": "sha256:dc686db1054713225d650d956709ea2f4dcf50acae0f0fd0c17e1b5bdb44ed63",
+  "source_receipt_path": "research/experiments/H1-E-IDENTITY-SCALABILITY-01/receipts/shadow-equivalence-rerun-pinned-2026-08-19.json",
+  "source_receipt_self_sha256": "sha256:9e0799692fb1c6fd375527732402fd04af302ea33b433682eb5e00e852044cc9",
+  "source_totals": {
+    "FAIL_CLOSED": 0,
+    "FAIL_OPEN": 0,
+    "OTHER": 8
+  },
+  "units_per_case": 80
+}

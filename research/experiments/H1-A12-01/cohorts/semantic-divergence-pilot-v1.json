@@ -1,0 +1,1553 @@
+{
+  "case_count": 48,
+  "cases": [
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-012ccf95a6acc33dcdddbd8b",
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-012ccf95a6acc33dcdddbd8b:34_124975",
+        "olmocr-bench-012ccf95a6acc33dcdddbd8b:34_59405",
+        "olmocr-bench-012ccf95a6acc33dcdddbd8b:34_802495"
+      ],
+      "stratum": "R01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-03adcec7ec521f380241bc10",
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-03adcec7ec521f380241bc10:85_204851",
+        "olmocr-bench-03adcec7ec521f380241bc10:85_633939",
+        "olmocr-bench-03adcec7ec521f380241bc10:85_718011",
+        "olmocr-bench-03adcec7ec521f380241bc10:85_81262",
+        "olmocr-bench-03adcec7ec521f380241bc10:85_81849",
+        "olmocr-bench-03adcec7ec521f380241bc10:85_913682"
+      ],
+      "stratum": "R01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-07a9fb99630f249f88c5d1c1",
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-07a9fb99630f249f88c5d1c1:60_269947",
+        "olmocr-bench-07a9fb99630f249f88c5d1c1:60_469381"
+      ],
+      "stratum": "R01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-0a37968cee55fb200241ca38",
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-0a37968cee55fb200241ca38:32_428801",
+        "olmocr-bench-0a37968cee55fb200241ca38:32_459245",
+        "olmocr-bench-0a37968cee55fb200241ca38:32_621878",
+        "olmocr-bench-0a37968cee55fb200241ca38:32_622982",
+        "olmocr-bench-0a37968cee55fb200241ca38:32_951435"
+      ],
+      "stratum": "R01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-0a59dffdde0b8f55d705837e",
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-0a59dffdde0b8f55d705837e:29_231231",
+        "olmocr-bench-0a59dffdde0b8f55d705837e:29_762787",
+        "olmocr-bench-0a59dffdde0b8f55d705837e:29_928938",
+        "olmocr-bench-0a59dffdde0b8f55d705837e:29_967492"
+      ],
+      "stratum": "R01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-0b0bcc850c86225bf8ec53ac",
+      "failure_codes": [
+        "B01",
+        "H01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-0b0bcc850c86225bf8ec53ac:1_126739",
+        "olmocr-bench-0b0bcc850c86225bf8ec53ac:1_298389",
+        "olmocr-bench-0b0bcc850c86225bf8ec53ac:1_36225",
+        "olmocr-bench-0b0bcc850c86225bf8ec53ac:1_680487",
+        "olmocr-bench-0b0bcc850c86225bf8ec53ac:1_787572"
+      ],
+      "stratum": "R01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-0cafbda605ce9ffeb9df29d5",
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-0cafbda605ce9ffeb9df29d5:20_180555",
+        "olmocr-bench-0cafbda605ce9ffeb9df29d5:20_392554",
+        "olmocr-bench-0cafbda605ce9ffeb9df29d5:20_485435",
+        "olmocr-bench-0cafbda605ce9ffeb9df29d5:20_676563"
+      ],
+      "stratum": "R01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-0f130a1360871e46fd78e3b0",
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-0f130a1360871e46fd78e3b0:30_232955",
+        "olmocr-bench-0f130a1360871e46fd78e3b0:30_339963",
+        "olmocr-bench-0f130a1360871e46fd78e3b0:30_424850",
+        "olmocr-bench-0f130a1360871e46fd78e3b0:30_533481",
+        "olmocr-bench-0f130a1360871e46fd78e3b0:30_684079",
+        "olmocr-bench-0f130a1360871e46fd78e3b0:30_697277",
+        "olmocr-bench-0f130a1360871e46fd78e3b0:30_937657",
+        "olmocr-bench-0f130a1360871e46fd78e3b0:30_968972"
+      ],
+      "stratum": "R01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-08b85a6113d61af0ba297339",
+      "failure_codes": [
+        "B01",
+        "G01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-08b85a6113d61af0ba297339:87_131035",
+        "olmocr-bench-08b85a6113d61af0ba297339:old_scans/87.pdf_baseline"
+      ],
+      "stratum": "B01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-0f59fa16316312f91a355eae",
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-0f59fa16316312f91a355eae:14_140889",
+        "olmocr-bench-0f59fa16316312f91a355eae:14_588856",
+        "olmocr-bench-0f59fa16316312f91a355eae:14_92627",
+        "olmocr-bench-0f59fa16316312f91a355eae:14_977096"
+      ],
+      "stratum": "B01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-12d429aea25595608c43c136",
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-12d429aea25595608c43c136:49_261083",
+        "olmocr-bench-12d429aea25595608c43c136:49_332451",
+        "olmocr-bench-12d429aea25595608c43c136:49_70738",
+        "olmocr-bench-12d429aea25595608c43c136:49_931406"
+      ],
+      "stratum": "B01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-1c78a45023f1c0873abe5f11",
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-1c78a45023f1c0873abe5f11:97_114837",
+        "olmocr-bench-1c78a45023f1c0873abe5f11:97_19767",
+        "olmocr-bench-1c78a45023f1c0873abe5f11:97_490547",
+        "olmocr-bench-1c78a45023f1c0873abe5f11:97_600341",
+        "olmocr-bench-1c78a45023f1c0873abe5f11:97_661332",
+        "olmocr-bench-1c78a45023f1c0873abe5f11:97_86066",
+        "olmocr-bench-1c78a45023f1c0873abe5f11:97_86819"
+      ],
+      "stratum": "B01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-258fc0e8e0828195e22b1b92",
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-258fc0e8e0828195e22b1b92:33_105325",
+        "olmocr-bench-258fc0e8e0828195e22b1b92:33_155051",
+        "olmocr-bench-258fc0e8e0828195e22b1b92:33_239974",
+        "olmocr-bench-258fc0e8e0828195e22b1b92:33_389580",
+        "olmocr-bench-258fc0e8e0828195e22b1b92:33_527488",
+        "olmocr-bench-258fc0e8e0828195e22b1b92:33_544277"
+      ],
+      "stratum": "B01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-266ade53d9884e53c28466c7",
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-266ade53d9884e53c28466c7:81_172316",
+        "olmocr-bench-266ade53d9884e53c28466c7:81_209122",
+        "olmocr-bench-266ade53d9884e53c28466c7:81_238275",
+        "olmocr-bench-266ade53d9884e53c28466c7:81_321120",
+        "olmocr-bench-266ade53d9884e53c28466c7:81_520311",
+        "olmocr-bench-266ade53d9884e53c28466c7:81_71324"
+      ],
+      "stratum": "B01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-271413e646ad0e6a04ed23ab",
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-271413e646ad0e6a04ed23ab:23_189451",
+        "olmocr-bench-271413e646ad0e6a04ed23ab:23_675822",
+        "olmocr-bench-271413e646ad0e6a04ed23ab:23_774544"
+      ],
+      "stratum": "B01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-277fd312ccc3b5fe7522e239",
+      "failure_codes": [
+        "B01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-277fd312ccc3b5fe7522e239:46_170263",
+        "olmocr-bench-277fd312ccc3b5fe7522e239:46_179396",
+        "olmocr-bench-277fd312ccc3b5fe7522e239:46_218573",
+        "olmocr-bench-277fd312ccc3b5fe7522e239:46_575579",
+        "olmocr-bench-277fd312ccc3b5fe7522e239:46_809550",
+        "olmocr-bench-277fd312ccc3b5fe7522e239:46_826449",
+        "olmocr-bench-277fd312ccc3b5fe7522e239:46_977242"
+      ],
+      "stratum": "B01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-0063dd238ddc94be64c20a61",
+      "failure_codes": [
+        "B01",
+        "F01",
+        "G01",
+        "H01",
+        "H02",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "scope_ids": [
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_bag_of_digit_percent_6",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_is_header_366",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_is_italic_4",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_is_italic_5",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_is_italic_6",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_is_italic_7",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_is_latex_0",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_missing_sentence_percent_0",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_missing_specific_sentence_316",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_missing_specific_sentence_318",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_missing_specific_sentence_322",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_missing_specific_sentence_326",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_missing_specific_sentence_334",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_missing_specific_sentence_342",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_missing_specific_word_16",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_missing_specific_word_190",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_missing_specific_word_248",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_missing_specific_word_260",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_missing_specific_word_54",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_missing_word_percent_5",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_order_343",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_order_356",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_order_357",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_too_many_word_occurence_percent_4",
+        "parsebench-0063dd238ddc94be64c20a61:text_multicolumns__anual_2col_unexpected_sentence_percent_1"
+      ],
+      "stratum": "N01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-00f1def6e368fc3933defd61",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "scope_ids": [
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_bag_of_digit_percent_6",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_is_bold_2",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_is_footer_315",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_is_italic_3",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_is_sup_10",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_is_sup_11",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_is_sup_12",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_is_sup_13",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_is_sup_5",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_is_sup_6",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_is_sup_7",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_is_sup_8",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_is_sup_9",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_is_title_0",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_is_underline_4",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_missing_sentence_percent_0",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_missing_specific_sentence_279",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_missing_specific_sentence_280",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_missing_specific_sentence_296",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_missing_specific_word_8",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_missing_word_percent_5",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_title_hierarchy_percent_1",
+        "parsebench-00f1def6e368fc3933defd61:text_simple__res_unexpected_sentence_percent_1"
+      ],
+      "stratum": "N01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-0353cf6e413929089df2e0a3",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "scope_ids": [
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_bag_of_digit_percent_6",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_is_footer_428",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_is_header_427",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_is_sup_10",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_missing_sentence_percent_0",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_missing_specific_sentence_330",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_missing_specific_sentence_339",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_missing_specific_word_170",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_missing_specific_word_265",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_missing_specific_word_28",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_missing_specific_word_307",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_missing_specific_word_7",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_missing_specific_word_8",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_missing_specific_word_9",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_missing_word_percent_5",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_order_382",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_order_426",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_too_many_sentence_occurence_percent_2",
+        "parsebench-0353cf6e413929089df2e0a3:text_multicolumns__coorp_unexpected_sentence_percent_1"
+      ],
+      "stratum": "N01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-041add7de36b73b6c8a003c7",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "scope_ids": [
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_bag_of_digit_percent_6",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_bold_11",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_bold_7",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_footer_300",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_header_299",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_italic_10",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_italic_16",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_italic_17",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_italic_18",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_italic_8",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_title_0",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_title_1",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_title_3",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_title_4",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_title_5",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_is_underline_19",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_sentence_percent_0",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_223",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_225",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_227",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_228",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_229",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_233",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_234",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_235",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_237",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_239",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_243",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_244",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_247",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_256",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_257",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_258",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_259",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_260",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_261",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_262",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_sentence_263",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_10",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_101",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_11",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_110",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_113",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_114",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_116",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_117",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_12",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_122",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_123",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_125",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_135",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_14",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_148",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_15",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_151",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_152",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_155",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_156",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_16",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_17",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_172",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_18",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_184",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_185",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_186",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_187",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_188",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_189",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_19",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_190",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_191",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_192",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_193",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_194",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_195",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_196",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_197",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_198",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_199",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_20",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_200",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_201",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_202",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_203",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_204",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_205",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_206",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_207",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_208",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_209",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_21",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_210",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_211",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_212",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_213",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_214",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_215",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_216",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_217",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_218",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_219",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_220",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_221",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_222",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_42",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_46",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_47",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_49",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_50",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_52",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_63",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_67",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_7",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_8",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_9",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_96",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_97",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_specific_word_98",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_missing_word_percent_5",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_264",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_265",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_266",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_267",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_277",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_278",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_290",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_291",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_292",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_293",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_294",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_295",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_296",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_297",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_order_298",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_title_hierarchy_percent_6",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_too_many_sentence_occurence_percent_2",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_unexpected_sentence_percent_1",
+        "parsebench-041add7de36b73b6c8a003c7:text_ocr__phd_unexpected_word_percent_3"
+      ],
+      "stratum": "N01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-04910b3342b720bedbe546ac",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "scope_ids": [
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_bag_of_digit_percent_6",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_is_header_236",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_sentence_percent_0",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_specific_sentence_206",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_specific_sentence_211",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_specific_word_12",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_specific_word_124",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_specific_word_132",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_specific_word_140",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_specific_word_141",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_specific_word_143",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_specific_word_167",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_specific_word_185",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_specific_word_37",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_specific_word_45",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_specific_word_85",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_specific_word_9",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_missing_word_percent_5",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_order_222",
+        "parsebench-04910b3342b720bedbe546ac:text_multicolumns__esg_whitespace_unexpected_sentence_percent_1"
+      ],
+      "stratum": "N01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-05f358501538bb3fa3fcf874",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H02",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "scope_ids": [
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_bag_of_digit_percent_6",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_is_footer_191",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_is_header_190",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_sentence_percent_0",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_sentence_165",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_sentence_177",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_sentence_178",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_sentence_179",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_sentence_180",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_word_11",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_word_111",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_word_12",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_word_129",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_word_13",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_word_14",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_word_16",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_word_34",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_word_7",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_word_8",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_specific_word_9",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_missing_word_percent_5",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_order_181",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_order_182",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_order_183",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_order_184",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_order_187",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_order_188",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_order_189",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_too_many_sentence_occurence_percent_2",
+        "parsebench-05f358501538bb3fa3fcf874:text_ocr__santacruz_too_many_word_occurence_percent_4"
+      ],
+      "stratum": "N01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-070891bb0e398032c5a476cb",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H02",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "scope_ids": [
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_bag_of_digit_percent_6",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_is_bold_4",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_is_header_195",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_is_title_0",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_missing_sentence_percent_0",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_missing_specific_sentence_170",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_missing_specific_sentence_177",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_missing_specific_word_10",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_missing_specific_word_12",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_missing_specific_word_147",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_missing_specific_word_30",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_missing_specific_word_64",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_missing_word_percent_5",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_order_184",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_title_hierarchy_percent_3",
+        "parsebench-070891bb0e398032c5a476cb:text_ocr__article1col_too_many_sentence_occurence_percent_2"
+      ],
+      "stratum": "N01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-09895cf0faa8e5c7ce17f038",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "N01"
+      ],
+      "minimum_scope_level": "cell",
+      "scope_ids": [
+        "parsebench-09895cf0faa8e5c7ce17f038:text_simple__1colmit_bag_of_digit_percent_6",
+        "parsebench-09895cf0faa8e5c7ce17f038:text_simple__1colmit_is_footer_308",
+        "parsebench-09895cf0faa8e5c7ce17f038:text_simple__1colmit_is_italic_4",
+        "parsebench-09895cf0faa8e5c7ce17f038:text_simple__1colmit_missing_sentence_percent_0",
+        "parsebench-09895cf0faa8e5c7ce17f038:text_simple__1colmit_missing_specific_sentence_265",
+        "parsebench-09895cf0faa8e5c7ce17f038:text_simple__1colmit_missing_specific_sentence_270",
+        "parsebench-09895cf0faa8e5c7ce17f038:text_simple__1colmit_missing_specific_word_174",
+        "parsebench-09895cf0faa8e5c7ce17f038:text_simple__1colmit_missing_word_percent_5",
+        "parsebench-09895cf0faa8e5c7ce17f038:text_simple__1colmit_unexpected_sentence_percent_1"
+      ],
+      "stratum": "N01"
+    },
+    {
+      "benchmark_id": "omnidocbench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-00088c40c1011420badd651d",
+      "failure_codes": [
+        "B01",
+        "F01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "omnidocbench-00088c40c1011420badd651d:edit_distance:page-27a46d41-49b5-4562-a546-6cbbafd23a81.png"
+      ],
+      "stratum": "F01"
+    },
+    {
+      "benchmark_id": "omnidocbench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-0041d0ac5710c0f46224fb6f",
+      "failure_codes": [
+        "B01",
+        "F01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "omnidocbench-0041d0ac5710c0f46224fb6f:edit_distance:exam_paper_en-file-putnam-archive_1996_Solutions_1996s_page_002.png"
+      ],
+      "stratum": "F01"
+    },
+    {
+      "benchmark_id": "omnidocbench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-00cfd9c5560678b2e843deab",
+      "failure_codes": [
+        "B01",
+        "F01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "omnidocbench-00cfd9c5560678b2e843deab:edit_distance:page-1853e666-6f83-432c-afc8-923ce8cf0fea.png"
+      ],
+      "stratum": "F01"
+    },
+    {
+      "benchmark_id": "omnidocbench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-03c823830f650c644efe6ff4",
+      "failure_codes": [
+        "B01",
+        "F01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "omnidocbench-03c823830f650c644efe6ff4:edit_distance:page-d5c82c0e-2a7d-4573-9dce-bff939504367.png"
+      ],
+      "stratum": "F01"
+    },
+    {
+      "benchmark_id": "omnidocbench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-046a4c3218f6d8300f6c9d8f",
+      "failure_codes": [
+        "B01",
+        "F01",
+        "R01",
+        "T05"
+      ],
+      "minimum_scope_level": "cell",
+      "scope_ids": [
+        "omnidocbench-046a4c3218f6d8300f6c9d8f:edit_distance:book_zh_HGT51022016_extracted_page_12.png",
+        "omnidocbench-046a4c3218f6d8300f6c9d8f:teds:book_zh_HGT51022016_extracted_page_12.png_-0-7b97117d18fac4cd"
+      ],
+      "stratum": "F01"
+    },
+    {
+      "benchmark_id": "omnidocbench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-06b93bb7fc275f9ff96571b2",
+      "failure_codes": [
+        "B01",
+        "F01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "omnidocbench-06b93bb7fc275f9ff96571b2:edit_distance:page-44a14308-9d3e-4044-9508-5c3e30141a19.png"
+      ],
+      "stratum": "F01"
+    },
+    {
+      "benchmark_id": "omnidocbench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-07c864443ce5578c82536f8e",
+      "failure_codes": [
+        "B01",
+        "F01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "omnidocbench-07c864443ce5578c82536f8e:edit_distance:page-d43b98f8-6a96-44f8-a3cf-65de9397f582.png"
+      ],
+      "stratum": "F01"
+    },
+    {
+      "benchmark_id": "omnidocbench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "omnidocbench-082e4890c2b0fe6ad2da1c70",
+      "failure_codes": [
+        "B01",
+        "F01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "omnidocbench-082e4890c2b0fe6ad2da1c70:edit_distance:page-a6d06208-475c-4c6e-9d84-858f7e2ecf72.png"
+      ],
+      "stratum": "F01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-2a727f20d289409fb8e65b8b",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-2a727f20d289409fb8e65b8b:72_202401",
+        "olmocr-bench-2a727f20d289409fb8e65b8b:72_271941",
+        "olmocr-bench-2a727f20d289409fb8e65b8b:72_302075",
+        "olmocr-bench-2a727f20d289409fb8e65b8b:old_scans/72.pdf_baseline"
+      ],
+      "stratum": "G01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-303e01c46b0d952630c2752b",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-303e01c46b0d952630c2752b:48_127301",
+        "olmocr-bench-303e01c46b0d952630c2752b:48_390612",
+        "olmocr-bench-303e01c46b0d952630c2752b:48_984230",
+        "olmocr-bench-303e01c46b0d952630c2752b:old_scans/48.pdf_baseline"
+      ],
+      "stratum": "G01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-be4f6ee1928ad682a0e93bc0",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-be4f6ee1928ad682a0e93bc0:99_564634",
+        "olmocr-bench-be4f6ee1928ad682a0e93bc0:99_651390",
+        "olmocr-bench-be4f6ee1928ad682a0e93bc0:99_695743",
+        "olmocr-bench-be4f6ee1928ad682a0e93bc0:99_856305",
+        "olmocr-bench-be4f6ee1928ad682a0e93bc0:old_scans/99.pdf_baseline"
+      ],
+      "stratum": "G01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-de38f3ff5eb83193bc23f3a9",
+      "failure_codes": [
+        "B01",
+        "G01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-de38f3ff5eb83193bc23f3a9:20_pg39_pg1_text_06",
+        "olmocr-bench-de38f3ff5eb83193bc23f3a9:long_tiny_text/20_pg39_pg1.pdf_baseline"
+      ],
+      "stratum": "G01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-00f2a54a3b493dee12869884",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_bold_12",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_bold_13",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_bold_14",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_bold_15",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_bold_16",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_bold_17",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_bold_18",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_footer_256",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_header_255",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_title_10",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_title_2",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_title_3",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_title_4",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_title_6",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_title_7",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_is_title_8",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_sentence_percent_0",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_sentence_198",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_sentence_199",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_sentence_200",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_sentence_201",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_sentence_202",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_sentence_203",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_sentence_204",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_sentence_214",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_sentence_228",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_sentence_229",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_114",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_115",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_124",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_141",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_194",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_30",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_32",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_50",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_57",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_62",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_64",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_7",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_77",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_80",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_specific_word_86",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_missing_word_percent_5",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_order_245",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_order_254",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_title_hierarchy_percent_11",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_too_many_word_occurence_percent_4",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_unexpected_sentence_percent_1",
+        "parsebench-00f2a54a3b493dee12869884:text_misc__stepbystep_unexpected_word_percent_3"
+      ],
+      "stratum": "G01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-02ccc4b07129e17265c54674",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_is_italic_4",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_is_italic_5",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_is_italic_6",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_missing_sentence_percent_0",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_missing_specific_sentence_106",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_missing_specific_sentence_116",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_missing_specific_sentence_122",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_missing_specific_word_34",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_missing_specific_word_43",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_missing_specific_word_57",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_missing_specific_word_58",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_missing_specific_word_83",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_missing_specific_word_87",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_missing_specific_word_90",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_missing_word_percent_5",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_order_127",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_order_128",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_title_hierarchy_percent_3",
+        "parsebench-02ccc4b07129e17265c54674:text_simple__program_unexpected_sentence_percent_1"
+      ],
+      "stratum": "G01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-03e2a38c176b8e88a19073e0",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_is_bold_10",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_is_bold_13",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_is_bold_8",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_is_bold_9",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_is_footer_115",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_is_mark_18",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_is_mark_19",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_is_mark_20",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_is_title_1",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_is_title_2",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_is_title_3",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_is_title_4",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_is_title_6",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_sentence_percent_0",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_sentence_105",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_sentence_71",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_sentence_73",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_sentence_76",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_sentence_78",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_sentence_81",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_sentence_82",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_sentence_84",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_sentence_85",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_sentence_88",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_sentence_93",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_sentence_95",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_sentence_96",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_sentence_99",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_word_12",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_word_18",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_word_42",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_word_51",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_word_8",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_specific_word_9",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_missing_word_percent_5",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_order_110",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_order_111",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_order_114",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_title_hierarchy_percent_7",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_too_many_word_occurence_percent_4",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_unexpected_sentence_percent_1",
+        "parsebench-03e2a38c176b8e88a19073e0:text_multilang__japanese_unexpected_word_percent_3"
+      ],
+      "stratum": "G01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-044033f5bc986b9969905c50",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_is_sup_10",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_is_title_6",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_is_title_7",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_missing_sentence_percent_0",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_missing_specific_sentence_215",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_missing_specific_sentence_240",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_missing_specific_word_10",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_missing_specific_word_104",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_missing_specific_word_158",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_missing_specific_word_190",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_missing_specific_word_9",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_missing_word_percent_5",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_title_hierarchy_percent_9",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_too_many_sentence_occurence_percent_2",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_too_many_word_occurence_percent_4",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_unexpected_sentence_percent_1",
+        "parsebench-044033f5bc986b9969905c50:text_multicolumns__long2cols_unexpected_word_percent_3"
+      ],
+      "stratum": "G01"
+    },
+    {
+      "benchmark_id": "olmocr-bench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "olmocr-bench-3f0b211335ab1311fc97da01",
+      "failure_codes": [
+        "B01",
+        "H01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "olmocr-bench-3f0b211335ab1311fc97da01:89_268175",
+        "olmocr-bench-3f0b211335ab1311fc97da01:89_449589",
+        "olmocr-bench-3f0b211335ab1311fc97da01:89_617040",
+        "olmocr-bench-3f0b211335ab1311fc97da01:89_633398",
+        "olmocr-bench-3f0b211335ab1311fc97da01:89_659468",
+        "olmocr-bench-3f0b211335ab1311fc97da01:89_95965"
+      ],
+      "stratum": "H01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-04c10b1481fe72fc9e4a90fb",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_is_bold_2",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_is_header_20",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_missing_sentence_percent_0",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_missing_specific_sentence_14",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_missing_specific_sentence_15",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_missing_specific_sentence_16",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_missing_specific_word_10",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_missing_specific_word_11",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_missing_specific_word_6",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_missing_specific_word_7",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_missing_specific_word_8",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_missing_specific_word_9",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_missing_word_percent_5",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_order_19",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_unexpected_sentence_percent_1",
+        "parsebench-04c10b1481fe72fc9e4a90fb:text_sparse__cover2_unexpected_word_percent_3"
+      ],
+      "stratum": "H01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-05396b9470901417a85e0aa4",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "parsebench-05396b9470901417a85e0aa4:text_simple__checkbox_is_title_0",
+        "parsebench-05396b9470901417a85e0aa4:text_simple__checkbox_missing_sentence_percent_0",
+        "parsebench-05396b9470901417a85e0aa4:text_simple__checkbox_missing_specific_sentence_194",
+        "parsebench-05396b9470901417a85e0aa4:text_simple__checkbox_missing_specific_sentence_196",
+        "parsebench-05396b9470901417a85e0aa4:text_simple__checkbox_missing_specific_sentence_198",
+        "parsebench-05396b9470901417a85e0aa4:text_simple__checkbox_missing_word_percent_5",
+        "parsebench-05396b9470901417a85e0aa4:text_simple__checkbox_order_207",
+        "parsebench-05396b9470901417a85e0aa4:text_simple__checkbox_order_208",
+        "parsebench-05396b9470901417a85e0aa4:text_simple__checkbox_title_hierarchy_percent_3",
+        "parsebench-05396b9470901417a85e0aa4:text_simple__checkbox_too_many_word_occurence_percent_4",
+        "parsebench-05396b9470901417a85e0aa4:text_simple__checkbox_unexpected_sentence_percent_1"
+      ],
+      "stratum": "H01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-06134ba884d7f0923b0a1790",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_is_footer_440",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_is_header_439",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_is_title_2",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_sentence_percent_0",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_sentence_357",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_sentence_359",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_sentence_368",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_sentence_374",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_sentence_388",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_sentence_397",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_sentence_398",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_sentence_399",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_119",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_12",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_14",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_166",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_168",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_235",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_263",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_273",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_288",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_289",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_326",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_351",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_7",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_8",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_specific_word_9",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_missing_word_percent_5",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_order_401",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_order_434",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_order_435",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_order_438",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_title_hierarchy_percent_3",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_too_many_word_occurence_percent_4",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_unexpected_sentence_percent_1",
+        "parsebench-06134ba884d7f0923b0a1790:text_multicolumns__3colpres_unexpected_word_percent_3"
+      ],
+      "stratum": "H01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-098da4dd636a556acf25448a",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "scope_ids": [
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_bag_of_digit_percent_6",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_is_footer_205",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_is_title_2",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_missing_sentence_percent_0",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_missing_specific_sentence_164",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_missing_specific_sentence_169",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_missing_specific_sentence_175",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_missing_specific_sentence_183",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_missing_specific_sentence_184",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_missing_specific_sentence_185",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_missing_specific_word_141",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_missing_specific_word_150",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_missing_specific_word_59",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_missing_specific_word_7",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_missing_word_percent_5",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_order_204",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_title_hierarchy_percent_10",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_unexpected_sentence_percent_1",
+        "parsebench-098da4dd636a556acf25448a:text_simple__statment_unexpected_word_percent_3"
+      ],
+      "stratum": "H01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-0a99dee3cd79655f19afc70d",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_is_header_127-79b5b0aad8cfe7c6",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_is_sup_3-9ca93d99f2e986cc",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_is_underline_2-4d14dff4461c7d85",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_sentence_percent_0-a4008bda77ef0140",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_sentence_101-d98a9c1e0d7cb243",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_sentence_103-7c012b2bee1ccf61",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_sentence_105-ef3081504a8f47af",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_sentence_106-31fcd81a447cd25b",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_sentence_107-79a25ba2e83ad2a2",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_sentence_108-0dfd66323909ff43",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_sentence_109-11b8e767a13c3065",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_sentence_112-11d770fa380a6f05",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_sentence_113-802474bc5c6dd9ff",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_sentence_115-8bc48fcb0cab2860",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_sentence_116-5b92d3228308bb32",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_sentence_117-deeba9672ff9c2cc",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_sentence_99-f6663ace0d51c396",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_15-9fde4ff92996e148",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_20-76fd4ec136415ce3",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_21-e8dcb22ca4e7fcda",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_24-edd5bab664da48d2",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_29-c6d3e20b3d1ba9e3",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_31-dc101886357abe45",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_41-bbe3a5ecc431e5c9",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_43-6812f07845e75d86",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_45-c6a8e427dae3ce5d",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_48-14a63452f52df2b7",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_50-6336d152c71edaec",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_54-e27c75d47159b56f",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_55-fdeff67a6b2a4975",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_59-49be12c73097a0fc",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_60-7bc68cb0d6d12d04",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_61-e33037c4a7cac110",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_70-5f6ab49056916de2",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_74-ee2a0702e1b43134",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_77-f7a4ea3203df0435",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_78-245714f4e1e17a1d",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_81-2fea08b32d1879f7",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_83-7709caeabf588c20",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_86-1bb4a53aae40ed5a",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_93-f4e201656d6c15af",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_96-9d07add871922ee0",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_specific_word_98-dad1e8322f851e06",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_missing_word_percent_5-f24d149d20b16b3d",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_order_118-c06ff398b4ab75e9",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_order_119-e6fb495fa540b576",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_order_120-91debec18e97ad57",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_order_121-0db51fb3c2ac79e3",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_order_122-0d5f2bfdbe145b20",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_order_124-c57f56c7c606cb00",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_order_125-d96d43f6668699b1",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_order_126-fdfe5db3a1df10c9",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_too_many_sentence_occurence_percent_2-aa14ba1ebd11bc3b",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_unexpected_sentence_percent_1-478384f74af021f3",
+        "parsebench-0a99dee3cd79655f19afc70d:text_ocr__1182_Xerox-Scan003_unexpected_word_percent_3-42caf423a3ac1e7c"
+      ],
+      "stratum": "H01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-0b059f85b6f7605aa628dcb7",
+      "failure_codes": [
+        "B01",
+        "G01",
+        "H01",
+        "H02",
+        "R01"
+      ],
+      "minimum_scope_level": "region",
+      "scope_ids": [
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_is_footer_312",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_is_header_311",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_is_italic_10",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_is_italic_13",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_is_italic_14",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_is_italic_15",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_is_title_7",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_missing_sentence_percent_0",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_missing_specific_sentence_243",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_missing_specific_sentence_244",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_missing_specific_sentence_276",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_missing_specific_word_8",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_missing_word_percent_5",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_order_278",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_title_hierarchy_percent_8",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_too_many_sentence_occurence_percent_2",
+        "parsebench-0b059f85b6f7605aa628dcb7:text_multilang__german_unexpected_word_percent_3"
+      ],
+      "stratum": "H01"
+    },
+    {
+      "benchmark_id": "parsebench",
+      "candidate_models": [
+        "deepseek-ocr-2",
+        "paddleocr-vl-1.6"
+      ],
+      "case_id": "parsebench-0c0a5dd339d29f7baad21873",
+      "failure_codes": [
+        "B01",
+        "H01",
+        "N01",
+        "R01"
+      ],
+      "minimum_scope_level": "cell",
+      "scope_ids": [
+        "parsebench-0c0a5dd339d29f7baad21873:text_simple__oxygen_bag_of_digit_percent_6",
+        "parsebench-0c0a5dd339d29f7baad21873:text_simple__oxygen_missing_sentence_percent_0",
+        "parsebench-0c0a5dd339d29f7baad21873:text_simple__oxygen_missing_specific_sentence_313",
+        "parsebench-0c0a5dd339d29f7baad21873:text_simple__oxygen_missing_specific_sentence_318",
+        "parsebench-0c0a5dd339d29f7baad21873:text_simple__oxygen_missing_specific_sentence_322",
+        "parsebench-0c0a5dd339d29f7baad21873:text_simple__oxygen_missing_specific_sentence_346",
+        "parsebench-0c0a5dd339d29f7baad21873:text_simple__oxygen_missing_specific_sentence_348",
+        "parsebench-0c0a5dd339d29f7baad21873:text_simple__oxygen_missing_specific_word_8",
+        "parsebench-0c0a5dd339d29f7baad21873:text_simple__oxygen_missing_specific_word_9",
+        "parsebench-0c0a5dd339d29f7baad21873:text_simple__oxygen_missing_word_percent_5",
+        "parsebench-0c0a5dd339d29f7baad21873:text_simple__oxygen_title_hierarchy_percent_2",
+        "parsebench-0c0a5dd339d29f7baad21873:text_simple__oxygen_unexpected_sentence_percent_1"
+      ],
+      "stratum": "H01"
+    }
+  ],
+  "claim_boundary": "Cohort selection only; no recovery arm has been executed and no quality/cost conclusion is allowed.",
+  "counts_by_stratum": {
+    "B01": 8,
+    "F01": 8,
+    "G01": 8,
+    "H01": 8,
+    "N01": 8,
+    "R01": 8
+  },
+  "eligible_counts_before_selection": {
+    "B01": 1065,
+    "F01": 215,
+    "G01": 466,
+    "H01": 390,
+    "N01": 299,
+    "R01": 898
+  },
+  "experiment_id": "H1-A12-01",
+  "schema": "tavonel.h1-a12-semantic-pilot-cohort.v1",
+  "selection": {
+    "ground_truth_included": false,
+    "per_stratum": 8,
+    "requires_at_least_two_candidate_models": true,
+    "requires_request_recovery": true,
+    "stable_order": "benchmark_id,case_id",
+    "strata": [
+      "R01",
+      "B01",
+      "N01",
+      "F01",
+      "G01",
+      "H01"
+    ]
+  },
+  "source_failure_record_bytes": 79891116,
+  "source_failure_record_sha256": "14f0b792bd4f68a1d0336a691ef5b744340b1a7c86cc2ec2ccf5319a7c3223e6",
+  "status": "FROZEN_SELECTION_NOT_EXECUTED"
+}

@@ -1,0 +1,551 @@
+schema: tavonel.sfir4.claim_chain.v1
+version: 1
+authored: 2026-08-27
+authorised_by: LANE E, machine-readable claim-chain construction pass, unauthorised until a
+  founder ruling accepts it
+visibility: INTERNAL_ONLY
+release:
+  ip_gate: CLOSED
+  public_arxiv: FORBIDDEN
+  public_github: FORBIDDEN
+  dataset_release: FORBIDDEN
+  demo_release: FORBIDDEN
+  docs_ip: not modified
+baseline:
+  protected_core_commit: 4823d5d12451b11ab7f77fbb863793802622cb90
+  research_tree_commit: ad99d18590fbc5a23c1ffd67a25f624eb7ec5114
+  execution_environment: isolated_git_checkout
+
+purpose: |
+  A machine-readable binding of the nine links the paper's narrow combination
+  claim depends on, to (a) the code that implements each link, (b) the tests
+  that constrain it, (c) the experiment that would produce evidence for it, and
+  (d) the current evidence state. This is downstream of CLAIM_MATRIX.yaml, not a
+  replacement for it: CLAIM_MATRIX binds worded claims (C-01..C-35) to protocols
+  and receipts; this file binds architectural LINKS (L1..L9) to the modules and
+  tests that make each link true or false right now, independent of whether any
+  protocol has scored it yet. Status vocabulary is reused from CLAIM_MATRIX.yaml
+  verbatim where a link has a scored receipt behind it; IMPLEMENTED_NOT_PROVEN is
+  added for links this repository's own CLAUDE.md already names as the default
+  state of "almost everything in this repository" and CLAIM_MATRIX's own
+  IMPLEMENTED status does not distinguish from PROVEN as sharply as this file
+  needs to.
+
+status_vocabulary_note: |
+  IMPLEMENTED, PROVEN_ON_DEVELOPMENT_DATA, PROVEN_ON_HELD_OUT_DATA,
+  ESTABLISHED_POSITIVE, ESTABLISHED_NEGATIVE and NOT_YET_ESTABLISHED are
+  CLAIM_MATRIX.yaml's own vocabulary, reused unchanged. IMPLEMENTED_NOT_PROVEN is
+  the one addition this file makes: it names a link whose code exists, is
+  unit-tested, and has no protocol result of any split behind it at all -- a
+  narrower statement than CLAIM_MATRIX's bare IMPLEMENTED, which in a few rows
+  (C-21, C-23) already carries a development-diagnostic receipt. Do not read
+  IMPLEMENTED_NOT_PROVEN as a synonym for IMPLEMENTED; it is the state one rung
+  below it.
+
+corrections:
+# Recorded rather than silently edited. This file was authored earlier on
+# 2026-08-27 against a working tree in which the Protected Core repairs for
+# INC-V2-037 and INC-V2-038 existed only as uncommitted lines and the ledger's
+# dispositions still read REPAIR NOT YET DESIGNED. The repairs landed the same
+# day. Correcting the fields silently would have destroyed the record of what
+# was believed when.
+- id: C-01
+  corrects: links L2 and L5 -- pending_because, narrowing_if_unsupported, cannot_claim
+  was: the INC-V2-037 and INC-V2-038 defects were described as ESTABLISHED, MEASURED and
+    UNREPAIRED Protected Core defects with no repair designed.
+  now: both repairs LANDED in commit 4823d5d. INC-V2-037's gate moved off the identity fold onto
+    content_facet_verdict; INC-V2-038's typed changes now seed their own channel traversals under
+    FacetPolicy.DECLARED and resolve to FacetVerdict.UNRESOLVED where no edge declared the facet,
+    so a change that reaches nothing leaves a trace instead of a freshness claim.
+  what_did_not_change: neither repair is MEASURED. The cohorts that exhibited both defects belong
+    to SFI2 and SFI3, both spent, so neither can be scored against the data that revealed it.
+    The evidence_state stays IMPLEMENTED_NOT_PROVEN for exactly that reason, and the distinction
+    a reader must keep is between "no repair exists" (was true, is not now) and "no held-out
+    measurement exists" (was true, is still true).
+  why_this_matters_for_the_paper: it is the difference between a limitation and a defect. A
+    reviewer told the code is broken will ask why it shipped; a reviewer told the repair is
+    unmeasured because the exhibiting corpus was consumed will ask what the next prospective
+    study measures. The second question is the one SFIR4 answers.
+- id: C-02
+  corrects: links L7 and L9 -- a nearby passing study was not mentioned at all
+  was: both links said no experiment produces evidence for them beyond unit tests, which is true
+    of `akc_cir.world_state` and left a reader to discover P3b unaided.
+  now: each link carries `adjacent_evidence_that_must_not_be_cited`, naming P3b, stating that it
+    PASSED, and stating precisely why it is still not evidence for this link -- it measures a
+    minimal model written for P3, not the Protected Core module the claim names.
+  why_this_matters_for_the_paper: a reviewer will find P3b. If the paper is silent about it, the
+    reviewer either assumes it was overlooked or assumes it was quietly relied on. Naming it and
+    refusing it is the only reading that survives contact with someone who checks.
+
+links:
+- id: L1
+  claim: A unit's logical identity (source id + explicit structural path, and secondarily a
+    scored structural/lexical match) is computed and carried separately from the physical
+    evidence -- byte offsets, revision, page -- that any one occurrence of that unit was
+    observed at.
+  implemented_by:
+  - akc_cir.identity::logical_id_seed
+  - akc_cir.identity::LogicalUnitFingerprint
+  - akc_cir.identity::generate_candidates
+  - akc_cir.identity::LogicalIdentityResolver
+  - akc_cir.semantic_diff::UnitSnapshot
+  constrained_by:
+  - tests/unit/test_identity.py::test_the_same_source_resolves_to_the_same_id
+  - tests/unit/test_identity.py::test_a_renamed_file_keeps_its_source_identity
+  - tests/unit/test_semantic_diff.py::test_recasing_does_not_disturb_unit_identity
+  evidence_source: SFIR4 (research/tavonel_eval_v2/protocols/SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V4.yaml),
+    endpoint E7_unresolved_fails_closed and the identity-side half of E5/E6, scored once
+    against a fresh, disjoint, three-family cohort per the frozen capacity/analysis floor.
+    IDENTITY_CHANGE_MIGRATION_CLOSURE_V2's INVARIANT_1 (identity decisions unchanged across the
+    two predicates) is the nearer, already-run precedent.
+  evidence_state: IMPLEMENTED_NOT_PROVEN
+  measured: PENDING
+  pending_because: SFIR4 is frozen (protocol + design charter + execution-closure receipt exist)
+    but has not been scored -- no sfir4-score or sfir4-acceptance receipt exists under
+    research/tavonel_eval_v2/receipts/ as of this file's authoring. The nearest run precedent,
+    IDENTITY_CHANGE_MIGRATION_CLOSURE_V1 (receipts/identity-change-migration-closure--20260825T001037Z-bee4064eae33.json,
+    per incident_ledger.md INC-V2-047), measured INVARIANT_1 as MET with zero violations over
+    514 development pairs, but that is a development-split migration-equivalence result, not
+    an independent-replication result, and it is cited here as context, not as L1's evidence.
+  narrowing_if_unsupported: identity separation holds under IDENTITY_CHANGE_MIGRATION_CLOSURE_V1's
+    development-split migration comparison, not under any held-out or independently replicated
+    cohort.
+  cannot_claim:
+  - identity resolution is correct
+  - identity is independently verified
+  - the 0.92 merge threshold (or the 0.75 review-band floor) is calibrated -- CalibrationTable.calibrated
+    is False and no corpus has been named
+
+- id: L2
+  claim: Whether a unit's identity survived and whether its content changed are decided by two
+    separate, typed comparators, so that a change to punctuation, case or a symbol never by
+    itself alters identity, and identity survival never by itself decides whether content is
+    reported changed.
+  implemented_by:
+  - akc_cir.semantic_diff::ChangeChannel
+  - akc_cir.semantic_diff::content_facet_verdict
+  - akc_cir.semantic_diff::diff_documents
+  - akc_cir.identity::normalize_text_for_identity
+  constrained_by:
+  - tests/unit/test_semantic_diff.py::test_a_pure_unicode_encoding_difference_is_not_a_claim_change
+  - tests/unit/test_semantic_diff.py::test_recasing_and_respacing_is_a_claim_change_after_inc_v2_037
+  - tests/unit/test_semantic_diff.py::test_two_years_becoming_three_is_one_modified_claim
+  evidence_source: SFIR4 endpoints E1_no_unclassified_changed_regions and
+    E9_every_detected_typed_change_creates_a_rebuild_request, plus a direct replay of the
+    INC-V2-037 fourteen-lineage cohort once a repair lands.
+  evidence_state: IMPLEMENTED_NOT_PROVEN
+  measured: 'INC-V2-037 (incident_ledger.md line 3904): 14 of 14 confirmed selective stale
+    escapes in SFI2''s held-out study (C-29 in CLAIM_MATRIX.yaml) trace to ONE root cause --
+    diff_documents tests counterpart.identity_text != incoming.identity_text, reusing
+    identity.normalize_text_for_identity (built to answer "is this the same unit", which folds
+    trademark symbols, case and whitespace by design) to answer the separate question "did this
+    unit''s content change" (for which that same fold is wrong). single_root_cause: true,
+    distribution {"typed_delta": 14}, 0 unresolved, per receipt
+    sfi2-execution-forensic--20260823T095408Z-2dcd1681a54c cited in the ledger entry.'
+  pending_because: 'CORRECTED 2026-08-27 -- see corrections.C-01. The repair LANDED in commit
+    4823d5d: the MODIFIED_CLAIM gate no longer consults normalize_text_for_identity at all, and
+    is decided by content_facet_verdict on the CONTENT facet derived from raw text under NFC
+    alone. What is still pending is not the repair but its MEASUREMENT: the fourteen lineages
+    that exhibited the defect are SFI2''s, and SFI2''s corpus is spent, so the repair cannot be
+    scored against the cohort that revealed it. Confirming it requires a new prospective study on
+    a fresh cohort, which is what SFIR4 is for. Unit controls constrain the repair; no
+    held-out measurement does.'
+  narrowing_if_unsupported: 'CORRECTED 2026-08-27 -- see corrections.C-01. The coupling is
+    removed in code: content_facet_verdict reads neither identity_text nor the resolver''s
+    decision, which is what keeps its agreement with identity evidence rather than a tautology.
+    The narrowing that remains is about EVIDENCE, not design: the claim narrows from "decided
+    independently, and that independence is confirmed on held-out data" to "decided
+    independently by construction, with the fourteen-lineage confirmation unavailable because
+    that corpus is spent." If SFIR4 does not reach payload, the honest sentence keeps the
+    architectural claim and drops the empirical one.'
+  cannot_claim:
+  - the independence was CONFIRMED on held-out data -- the repair is unit-tested, and the cohort
+    that would confirm it is spent
+  - the typed delta names every artifact that needed rebuilding (CLAIM_MATRIX.yaml already
+    retracts this exact sentence from paper section 9.5.1)
+  - the fourteen INC-V2-037 escapes are closed, because closing them would have to be measured
+    on SFI2's corpus and that corpus is spent
+
+- id: L3
+  claim: A unit whose identity resolution the resolver could not settle (AMBIGUOUS or
+    UNRESOLVED) is quarantined -- withheld from any concrete identity-sensitive outcome
+    (UNIT_ADDED, UNIT_REMOVED, MODIFIED_CLAIM) -- rather than silently defaulting to a
+    definite one, and the quarantine is visible rather than a disappearance.
+  implemented_by:
+  - akc_cir.semantic_diff::QUARANTINE_UNSETTLED_IDENTITY_DEFAULT
+  - akc_cir.identity_quarantine::build_quarantine
+  - akc_cir.identity_quarantine::DECLARED_CANDIDATE
+  constrained_by:
+  - tests/unit/test_semantic_diff.py::test_an_unsettled_identity_is_not_reported_as_a_modification
+  - tests/unit/test_semantic_diff.py::test_an_unsettled_identity_never_reaches_the_dependency_traversal
+  - research/tavonel_eval_v2/tests/test_identity_quarantine.py::test_control_1_ambiguous_same_logical_id_counterpart_is_never_removed
+  - research/tavonel_eval_v2/tests/test_identity_quarantine.py::test_control_8_the_nine_v1_failures_replay_and_close
+  evidence_source: SFIR4 endpoint E7_unresolved_fails_closed, scored on the fresh independent-
+    replication cohort. IDENTITY_CHANGE_MIGRATION_CLOSURE_V1/V2's INVARIANT_6 is the nearer,
+    already-run precedent for the specific failure mode this link's own repair (INC-V2-047) was
+    written to close.
+  evidence_state: IMPLEMENTED_NOT_PROVEN
+  measured: 'Two distinct, already-measured gaps against this exact claim. (1) INC-V2-047
+    (incident_ledger.md line 4495, receipt identity-change-migration-closure--20260825T001037Z-bee4064eae33):
+    IDENTITY_CHANGE_MIGRATION_CLOSURE_V1 graded FAIL on 514 development pairs because
+    INVARIANT_6 (ambiguous identity remains unresolved rather than forced into continuity) is
+    VIOLATED on 9 distinct (lineage, logical id) cases across 8 of 514 lineages -- an unsettled
+    incoming unit''s before-side logical-id counterpart is reported UNIT_REMOVED because it is
+    not among decision.candidates, the only set diff_documents currently protects. (2)
+    INC-V2-052 (incident_ledger.md line 4797, receipts identity-quarantine-differential--20260825T022223Z-aeb7bfe3bbf9
+    and identity-quarantine-canary--20260825T022426Z-0308c9c0ab39): of the quarantine module''s
+    four declared clauses, membership over the same 514-pair universe was
+    declared_candidate=725, logical_id_counterpart=38, selected_candidate=0,
+    matched_to_a_quarantined_unit=0 -- clause (2) is unreachable as diff_documents wires it (every
+    AMBIGUOUS decision sets logical_id=None before the selected slot is filled), and clause (4)
+    is reachable only by a same-fold-different-path coincidence no pair in this universe
+    exhibits.'
+  pending_because: the two measured gaps above are development-split, not held-out or
+    independently replicated, and clause (2) in particular is ESTABLISHED as unreachable rather
+    than merely unexercised -- no future corpus can give it evidence under the current wiring.
+  narrowing_if_unsupported: quarantine covers the candidate set a decision explicitly names
+    (clause 1, 725 members observed) and, since the INC-V2-047 repair, the unsettled unit's
+    exact logical-id counterpart (clause 3, 38 members observed) -- but not a decision's
+    selected candidate (clause 2, structurally unreachable from this caller) or transitive
+    matches through an already-quarantined unit (clause 4, unreached on any corpus measured).
+    "The quarantine is complete" narrows to "two of its four declared clauses have observed
+    coverage."
+  cannot_claim:
+  - the quarantine contract's four clauses are all covered
+  - clause 2 is merely rare rather than structurally unreachable
+  - INC-V2-047 is repaired -- it is ESTABLISHED and NOT REPAIRED per the ledger's own disposition
+
+- id: L4
+  claim: A SourceFact is bound to a Witness recording the exact byte span (and, where
+    applicable, construct and unit path) it was read from at the revision it was read from, so
+    that the fact's identity is a function of witness and kind alone -- never of the
+    representation's value -- and every non-declined loss produces a visible fail-closed record
+    rather than silence.
+  implemented_by:
+  - source_fact_ir.ir::Witness
+  - source_fact_ir.ir::SourceFact
+  - source_fact_ir.ir::chain
+  - source_fact_ir.ir::chain_complete
+  - source_fact_ir.ir::assert_source_faithful
+  constrained_by:
+  - research/tavonel_eval_v2/tests/test_sfi_core.py::test_identity_is_witness_derived_not_value_derived
+  - research/tavonel_eval_v2/tests/test_sfi_core.py::test_every_core_witness_verifies_against_the_raw_bytes
+  - research/tavonel_eval_v2/tests/test_sfi_core.py::test_witness_paths_are_document_qualified
+  - research/tavonel_eval_v2/tests/test_sfi_core.py::test_the_full_chain_passes
+  - research/tavonel_eval_v2/tests/test_sfi_core.py::test_a_fail_closed_fact_blocks_the_source_faithful_assertion
+  evidence_source: SFIR4 endpoint E2_no_recognized_but_unrepresented, scored on the fresh
+    independent-replication cohort. SOURCE_FACT_IR_HELDOUT_V1 (C-22 in CLAIM_MATRIX.yaml) and
+    SOURCE_FACT_IR_HELDOUT_V2 (C-29) are the already-run precedents for this exact endpoint on
+    different corpora.
+  evidence_state: ESTABLISHED_NEGATIVE
+  measured: 'Per CLAIM_MATRIX.yaml C-22 (receipts/sfi1-source-fact-ir--20260823T061908Z-f13fdaf22618.json):
+    SFI1''s held-out study found 1,284 RECOGNIZED_BUT_UNREPRESENTED PROVENANCE_SPAN facts over
+    260 pairs / 128,715 source facts -- witness text that could not be located in the raw
+    source. Per C-29 (receipts/sfi2-native-provenance--20260823T085006Z-e53cc8aaeb7d.json), the
+    span-map-based witness construction in this file reduced that count from 1,284 to ZERO on a
+    disjoint 278-pair / 92,957-fact held-out cohort, but the same study returned FAIL overall on
+    three other endpoints, including 14 confirmed selective stale escapes on 14 distinct
+    lineages -- the same 14 lineages INC-V2-037 (L2) root-caused.'
+  pending_because: not pending -- this is the one link in this chain with a scored, held-out,
+    negative result already on file. It is not PROVEN because the overall study verdict is FAIL;
+    the witness-completeness sub-claim (zero unrepresented spans) is the part that held.
+  narrowing_if_unsupported: n/a -- already scored. The witness-binding half of L4 is supported
+    on 278 held-out pairs; L4 does not by itself establish that every downstream artifact built
+    from a well-witnessed fact avoids a stale escape (that is L6/L8's job, and it is the part
+    that failed in the same study).
+  cannot_claim:
+  - source-faithful end-to-end (CLAIM_MATRIX.yaml forbidden claim F-01, and this file's own
+    receipt is one of the reasons why -- SFI2 FAILED overall)
+  - the repair passed
+  - SFI1 was repaired (CLAIM_MATRIX.yaml explicitly forbids this exact phrase on C-24)
+
+- id: L5
+  claim: Dependency propagation between units is typed -- an edge belongs to a named channel
+    (SEMANTIC, STRUCTURAL, REFERENTIAL/LOCATOR, TEMPORAL, DESCRIPTIVE/METADATA), the channel set
+    is closed and enumerable, and a traversal is sensitive only to the channels it is told to
+    follow.
+  implemented_by:
+  - akc_cir.dependency::DependencyChannel
+  - akc_cir.dependency::ALL_DEPENDENCY_CHANNELS
+  - akc_cir.dependency::DependencyGraph
+  constrained_by:
+  - tests/unit/test_dependency.py::test_typed_dependency_filters_only_when_a_change_channel_is_explicit
+  - tests/unit/test_dependency.py::test_every_edge_type_declares_its_direction
+  - tests/unit/test_dependency.py::test_a_mere_reference_does_not_propagate
+  evidence_source: SFIR4 endpoint E9_every_detected_typed_change_creates_a_rebuild_request --
+    added to the protocol specifically because of the gap measured below.
+  evidence_state: IMPLEMENTED_NOT_PROVEN
+  measured: 'INC-V2-038 (incident_ledger.md line 4005): an adversarial synthetic case was built
+    per production channel and run through the real functions. Of five declared channels, only
+    two (SEMANTIC, STRUCTURAL) build an edge in selective_build.graph_for and seed
+    changed_logical_ids; REFERENTIAL/LOCATOR, TEMPORAL and DESCRIPTIVE/METADATA build NO edge and
+    seed NO rebuild, even though semantic_diff correctly detects and types each of those changes
+    (EVIDENCE_MOVED, TEMPORAL_CHANGED, METADATA_CHANGED are all emitted). SFI2''s E4 endpoint
+    (no reference-or-locator-only clean miss) scored MET, 0 over 39 exercising pairs, because E4
+    only asks whether the change was DETECTED, not whether it was ACTED on -- the two are
+    conflated by no test that existed before this incident.'
+  pending_because: 'CORRECTED 2026-08-27 -- see corrections.C-01. The gap is closed in code by
+    commit 4823d5d: each of LOCATOR, TEMPORAL and METADATA now seeds its own traversal from
+    changed_logical_ids_for(channel) on the matching DependencyChannel, under
+    FacetPolicy.DECLARED. What remains pending is measurement. E9 has still been scored on no
+    cohort, and the corpus that exhibited the gap is spent.
+
+    One property of the repair belongs in the claim and not only in the code: where NO edge
+    narrowed its channel set to declare a facet, the change is NOT propagated. It resolves to
+    FacetVerdict.UNRESOLVED and is recorded on the plan. That is deliberate --
+    DependencyEdge.channels defaults to every channel, so seeding these facets across
+    undeclared edges would invalidate through edges that declared nothing, which is the blunt
+    failure StructuralPolicy.ALWAYS was measured at (80.5% false invalidation). So the honest
+    statement is not "all five channels now propagate" but "all five are typed, and each
+    propagates exactly where an edge declared it and is recorded as unresolved where none did."'
+  narrowing_if_unsupported: 'CORRECTED 2026-08-27 -- see corrections.C-01. Propagation is now
+    implemented for all five channels, so the old narrowing (detection five, propagation two) no
+    longer describes the code. The narrowing that replaces it is about declaration quality
+    rather than implementation: propagation reaches only edges whose adapter narrowed its
+    channel set, so against an adapter that declares nothing, three of the five channels resolve
+    UNRESOLVED and reach no artifact. "Dependency propagation is typed" narrows to "dependency
+    propagation is typed and complete over DECLARED edges, and reports UNRESOLVED rather than
+    propagating where nothing was declared" -- a statement about the corpus''s adapters as much
+    as about the compiler, and one the paper must make in those words.'
+  cannot_claim:
+  - a typed change in any declared channel causes a rebuild
+  - E4's clean MET result says anything about whether a detected reference/locator/temporal/metadata
+    change was acted on (it was measured before this gap was known, and it is a detection
+    endpoint, not an action endpoint)
+  - three of five channel rows have power at the observe_no_unexecuted_carry_forward step; the
+    ledger records them UNPROVEN pending that function landing
+
+- id: L6
+  claim: Recompilation is planned selectively from a typed seed set (the changed logical ids a
+    diff produces), not by rebuilding everything, and a selective plan's output is checked
+    against a full rebuild for equivalence.
+  implemented_by:
+  - akc_cir.recompilation::plan_recompilation
+  - akc_cir.recompilation::FacetVerdict
+  - akc_cir.recompilation::StructuralPolicy
+  - akc_cir.recompilation::verify_equivalence
+  constrained_by:
+  - tests/unit/test_recompilation.py::test_only_what_the_change_reached_is_rebuilt
+  - tests/unit/test_recompilation.py::test_a_correct_selective_run_equals_a_full_rebuild
+  - tests/unit/test_recompilation.py::test_a_missed_dependency_shows_up_as_a_divergence
+  evidence_source: SFIR4 endpoints E5_no_confirmed_selective_stale_escape and
+    E6_exact_selective_vs_clean_equivalence, scored on the fresh independent-replication cohort.
+    P0b_recompilation_mechanics (C-01) and SOURCE_FACT_IR_HELDOUT_V2 (C-29) are the already-run
+    precedents.
+  evidence_state: IMPLEMENTED_NOT_PROVEN
+  measured: 'Two directions of evidence already exist and disagree in scope. Positive
+    (development split, C-01, receipts/p0b-mechanics.json): on 34 revision pairs from two source
+    families, selective recompilation and full rebuild produced identical active state with zero
+    stale carries. Negative (held-out, C-29, receipts/sfi2-native-provenance--20260823T085006Z-e53cc8aaeb7d.json):
+    on a disjoint 278-pair / three-family cohort, the SAME mechanism produced 14 confirmed
+    selective stale escapes over 158 exercising pairs and 14 divergences from clean full rebuild
+    over 190 judged-supported pairs, on the same 14 lineages across 14 distinct source
+    documents, root-caused to L2''s INC-V2-037 and compounded by L5''s INC-V2-038.'
+  pending_because: the mechanism has both a positive development-split result and a negative
+    held-out result; SFIR4 (the independent-replication study) has not been scored, and no
+    repair for either root cause it depends on (L2, L5) exists yet.
+  narrowing_if_unsupported: selective recompilation agreed with full recomputation on the 34
+    development pairs it was checked against, and diverged on 14 of 278 held-out pairs from a
+    later, larger, disjoint study whose divergences trace to two specific, named, unrepaired
+    defects upstream of this link.
+  cannot_claim:
+  - the selective compiler is correct (CLAIM_MATRIX.yaml forbidden phrase, C-01)
+  - stale escapes are eliminated (CLAIM_MATRIX.yaml forbidden phrase, C-23)
+  - selective recompilation is now correct (CLAIM_MATRIX.yaml forbidden phrase, C-27)
+
+- id: L7
+  claim: A recompiled candidate world state is generated alongside the currently published one,
+    never in place of it, so that verification runs against the candidate while nothing is
+    reading it and a reader never observes a partially rebuilt state.
+  implemented_by:
+  - akc_cir.world_state::WorldStateRegistry.stage
+  - akc_cir.world_state::WorldStateStatus
+  - akc_cir.world_state::WorldState
+  constrained_by:
+  - tests/unit/test_world_state.py::test_a_candidate_is_not_what_readers_see
+  - tests/unit/test_world_state.py::test_a_candidate_records_what_it_was_built_from
+  - tests/unit/test_world_state.py::test_the_superseded_state_is_marked_not_deleted
+  evidence_source: no SFIR4 endpoint or any other frozen protocol exercises world_state directly
+    -- SFIR4's analysis floor (E1-E9) is scoped to diff/dependency/recompilation, not to
+    publication. This link currently has no experiment that would produce evidence for it
+    beyond its own unit tests.
+  evidence_state: IMPLEMENTED_NOT_PROVEN
+  measured: PENDING
+  pending_because: no protocol in this research tree (SFI1, SFI2, SFI3, SFIR1-4) reads or writes
+    a WorldStateRegistry; every scored study to date compares recompilation PLANS and artifact
+    digests directly, not a staged-and-published world state. There is no designed experiment
+    for this link.
+  adjacent_evidence_that_must_not_be_cited:
+    what_exists: 'P3b (`receipts/latest/p3b-refusal-legibility.json` -> the immutable receipt it
+      names, digest verified) is a SCORED, PASSING study of a publication boundary with exactly
+      the properties this link claims: a single visible pointer, a verification conjunction that
+      fails closed, and an activation atomic from a reader''s point of view. Its gates all
+      passed -- 19 of 19 declared constructs executed, decision invariance held over 120
+      permutations for each of 11 candidates, and the positive control behaved correctly (the
+      healthy candidate admitted, the deliberately broken one refused). It ran over 154
+      development artifacts at 0 GPU seconds and $0.'
+    why_it_is_not_evidence_for_this_link: 'It measures `activation/knowledge_store_p3b.py`, a
+      minimal model written for P3 and documented as such -- "small on purpose ... anything else
+      in here would be surface a failure could hide behind". It is NOT `akc_cir.world_state`,
+      which is the module this link names. Citing it here would be the delegation defect this
+      study has already paid for twice: a TRUE statement about a narrower question, presented
+      under a claim about a wider one. CLAIM_MATRIX.yaml F-04 already forbids the production
+      reading of P3b in as many words.'
+    what_it_would_take: 'a prospective protocol that stages, verifies and publishes through
+      `akc_cir.world_state` itself over a declared corpus, with the pointer swap observed from a
+      concurrent reader. None exists. Designing one is real work and is not done by asserting
+      that P3b covers it.'
+  narrowing_if_unsupported: candidate isolation is implemented and unit-tested against the
+    in-memory reference semantics described in world_state.py's own docstring (masterplan
+    section N22.2/N22.3); nothing establishes that the production Postgres implementation this
+    module is a model of preserves the same isolation under concurrent load.
+  cannot_claim:
+  - candidate isolation holds in production
+  - any measurement of candidate-generation isolation exists outside unit tests
+
+- id: L8
+  claim: The combination of provenance continuity (a compiled fact's witness survives to the
+    published artifact), quarantine release (an unsettled identity's eventual resolution is
+    correctly reflected once settled) and from-scratch equivalence (a selectively rebuilt world
+    matches one built from nothing) holds together, not merely each in isolation.
+  implemented_by:
+  - source_fact_ir.ir::chain_complete
+  - akc_cir.identity_quarantine::build_quarantine
+  - akc_cir.recompilation::verify_equivalence
+  constrained_by:
+  - research/tavonel_eval_v2/tests/test_four_link_gate.py
+  - research/tavonel_eval_v2/tests/test_four_link_validator.py
+  - research/tavonel_eval_v2/tests/test_four_link_acceptance.py
+  evidence_source: SFIR4 endpoints E2 (provenance continuity), E5/E6 (from-scratch equivalence)
+    and E7 (quarantine fail-closed / release) scored TOGETHER on one fresh cohort -- this is the
+    combination endpoint SFI1/SFI2 approximated separately and SFIR4 is the first design that
+    scores all of E2, E5, E6, E7, E9 against one prospectively frozen, independently replicated
+    frame.
+  evidence_state: NOT_YET_ESTABLISHED
+  measured: PENDING
+  pending_because: 'SFIR4 has not been scored (no sfir4-score or sfir4-acceptance receipt
+    exists). Its two nearest components have already failed together on held-out data in the
+    same study (C-29): E2 (provenance) passed at zero unrepresented spans while E5/E6 (from-
+    scratch equivalence) failed at 14 confirmed escapes on the same cohort -- i.e. the parts of
+    L8 do NOT currently hold together on the one held-out study that exercised more than one of
+    them at once.'
+  narrowing_if_unsupported: this is the link most exposed to L2's and L5's unrepaired defects --
+    if SFIR4 scores, its E5/E6 result inherits whatever INC-V2-037 and INC-V2-038 still cause,
+    since neither has a landed repair as of this file. A PASS on E2/E7 alongside a FAIL on
+    E5/E6 would repeat C-29's exact shape and would not establish L8; L8 narrows to "provenance
+    continuity and quarantine release are each separately supported; from-scratch equivalence
+    is the recurring failure mode and the combination has not held together on any cohort that
+    tested more than one part at once."
+  cannot_claim:
+  - the nine-link combination is proven, or even scored, as one result
+  - any SFIR study passed a compiler endpoint (CLAIM_MATRIX.yaml C-35 forbidden phrase --
+    written about SFIR1-3, and it stays true of SFIR4 until a score exists)
+
+- id: L9
+  claim: A newly compiled world state is published atomically -- verification (equivalence
+    check, validation, checksums) runs to completion against the candidate before the single
+    pointer swap that makes it current, and a failed or partial verification leaves the prior
+    state serving with no observer ever seeing an intermediate state.
+  implemented_by:
+  - akc_cir.world_state::WorldStateRegistry.publish
+  - akc_cir.world_state::ValidationReceipt
+  - akc_cir.world_state::PublishRefused
+  - akc_cir.world_state::PublicationManifest
+  constrained_by:
+  - tests/unit/test_world_state.py::test_only_one_world_state_is_ever_active
+  - tests/unit/test_world_state.py::test_a_checksum_mismatch_blocks_the_publish
+  - tests/unit/test_world_state.py::test_a_blocked_publish_leaves_the_old_state_serving
+  - tests/unit/test_world_state.py::test_a_selective_build_without_an_equivalence_check_is_refused
+  - tests/unit/test_world_state.py::test_a_successful_publish_emits_exactly_one_event
+  evidence_source: no SFIR4 endpoint or any other frozen protocol exercises world_state.publish
+    -- same gap as L7. No experiment currently produces evidence for atomic activation beyond
+    its own unit tests.
+  evidence_state: IMPLEMENTED_NOT_PROVEN
+  measured: PENDING
+  pending_because: identical to L7 -- publication/activation sits downstream of everything SFIR4
+    measures, and nothing in this research tree scores it. The module's own docstring is
+    explicit that it models Postgres's serializable-transaction-plus-unique-partial-index
+    semantics rather than exercising the production database.
+  adjacent_evidence_that_must_not_be_cited:
+    what_exists: 'P3b (`receipts/latest/p3b-refusal-legibility.json` -> the immutable receipt it
+      names, digest verified) is a SCORED, PASSING study of a publication boundary with exactly
+      the properties this link claims: a single visible pointer, a verification conjunction that
+      fails closed, and an activation atomic from a reader''s point of view. Its gates all
+      passed -- 19 of 19 declared constructs executed, decision invariance held over 120
+      permutations for each of 11 candidates, and the positive control behaved correctly (the
+      healthy candidate admitted, the deliberately broken one refused). It ran over 154
+      development artifacts at 0 GPU seconds and $0.'
+    why_it_is_not_evidence_for_this_link: 'It measures `activation/knowledge_store_p3b.py`, a
+      minimal model written for P3 and documented as such -- "small on purpose ... anything else
+      in here would be surface a failure could hide behind". It is NOT `akc_cir.world_state`,
+      which is the module this link names. Citing it here would be the delegation defect this
+      study has already paid for twice: a TRUE statement about a narrower question, presented
+      under a claim about a wider one. CLAIM_MATRIX.yaml F-04 already forbids the production
+      reading of P3b in as many words.'
+    what_it_would_take: 'a prospective protocol that stages, verifies and publishes through
+      `akc_cir.world_state` itself over a declared corpus, with the pointer swap observed from a
+      concurrent reader. None exists. Designing one is real work and is not done by asserting
+      that P3b covers it.'
+  narrowing_if_unsupported: atomic activation is implemented and unit-tested against an in-
+    memory model of the production invariant (masterplan invariant 13); nothing measures the
+    production Postgres path this module stands in for.
+  cannot_claim:
+  - atomic publish holds in production under concurrent writers
+  - any measurement of publish atomicity exists outside unit tests
+
+chain_integrity:
+  unit_tests_only:
+  - L7 -- candidate generation isolation (world_state.stage) has no protocol coverage; its
+    only evidence is tests/unit/test_world_state.py.
+  - L9 -- atomic verified activation (world_state.publish) has no protocol coverage; its only
+    evidence is tests/unit/test_world_state.py.
+  - L4's witness-binding mechanics beyond the completeness count (Witness.verify's byte-span
+    check, fact_id's witness-not-value derivation) are exercised by
+    research/tavonel_eval_v2/tests/test_sfi_core.py only; the completeness COUNT itself (the
+    part that matters for the paper) does have held-out coverage (C-22, C-29) and is not in
+    this category.
+
+  no_experiment_designed_yet:
+  - L7 -- no protocol in this research tree (SFI1 through SFIR4) reads or writes a
+    WorldStateRegistry. SFIR4's analysis floor is E1-E9, all scoped to diff/dependency/
+    recompilation output, not to publication.
+  - L9 -- same absence, same reason, for the publish half.
+  - L8 as a genuinely joint measurement -- SFIR4 is the first design that would score all four
+    relevant endpoints (E2, E5, E6, E7) against one cohort, but it has not been scored, so even
+    once L8 has a designed experiment it has not yet produced a result.
+
+  if_evidence_never_arrives:
+  - 'L2 and L5 (INC-V2-037, INC-V2-038) are the two links this chain most needs and least has:
+    both are ESTABLISHED, MEASURED, UNREPAIRED defects in Protected Core, not merely unproven
+    claims. If no repair lands, the paper''s headline combination claim contracts from "identity
+    and change are decided independently, and dependency propagation is typed across five
+    channels" to "identity and change are named separately but share one coupling that produced
+    14 confirmed held-out stale escapes, and dependency propagation is typed-and-detected across
+    five channels but typed-and-ACTED-on across two."'
+  - L3's clause (2) unreachability (INC-V2-052) is not a "no evidence yet" gap, it is a
+    structural fact about how diff_documents calls build_quarantine. If it is never rewired,
+    the quarantine claim permanently narrows to "two of four declared clauses have observed
+    coverage" -- no amount of additional corpus changes that, because clause (2) cannot acquire
+    a member from this caller regardless of corpus.
+  - L6 and L8 both inherit L2's and L5's defects directly (the same 14 lineages). If L2/L5 are
+    never repaired, L6 contracts to "selective recompilation agreed with full rebuild on 34
+    development pairs and diverged on 14 of 278 held-out pairs from two named, unrepaired root
+    causes," and L8 -- the joint claim -- cannot be established at all, because its
+    from-scratch-equivalence component (E5/E6) is the one SFIR4 endpoint most likely to inherit
+    the same failure SFI2 already recorded on a different held-out cohort.
+  - L7 and L9, if no protocol is ever designed to exercise world_state, remain permanently at
+    IMPLEMENTED_NOT_PROVEN by construction -- not because an experiment failed, but because none
+    exists. The paper cannot present publication atomicity as measured; it can only present it
+    as designed and unit-tested against a documented production invariant (masterplan
+    invariant 13, N22.2/N22.3).
+
+  evidence_infrastructure_caveat: |
+    INC-V2-051 (incident_ledger.md line 4741) found that evidence.new_run_id collides within one
+    wall-clock second across the four receipts a single multi-rung protocol run writes, which
+    would make a chain-of-reference check compare a value to itself without raising. It was
+    worked around in the V2 closure ladder (a receipt-stem plus canonical-digest seed), not
+    repaired in the shared evidence module. This does not invalidate any receipt already cited
+    in this file -- none of them are multi-rung-per-process runs from evidence.py's affected
+    path -- but any future receipt this claim chain comes to cite from a similar multi-receipt-
+    per-run tool should be checked against this incident before being treated as an
+    independently-timestamped chain link.

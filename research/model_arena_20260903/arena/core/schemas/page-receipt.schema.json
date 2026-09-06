@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tavonel:arena:page-receipt:v1",
+  "title": "TAVONEL arena per-page receipt",
+  "description": "Masterplan section 11 plus the ARENA_CONTRACT section 3.1 additions. A metric that was not measured is null, never 0. Extension-open per ARENA_CONTRACT 11.1 D4: a lane may add columns (the Opus subscription lane does), and no consumer may require a non-core key.",
+  "type": "object",
+  "additionalProperties": true,
+  "$defs": {
+    "ts": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$"
+    },
+    "ts_or_null": {
+      "type": ["string", "null"],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$"
+    },
+    "sha256_ref": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "sha256_ref_or_null": {
+      "type": ["string", "null"],
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "ms_or_null": { "type": ["integer", "null"], "minimum": 0 },
+    "count_or_null": { "type": ["integer", "null"], "minimum": 0 }
+  },
+  "properties": {
+    "schema": { "const": "tavonel.arena.page-receipt.v1" },
+    "campaign_id": { "type": "string", "minLength": 1 },
+    "inference_job_id": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "benchmark": { "enum": ["parsebench", "omnidoc", "olmocr"] },
+    "sample_id": { "type": "string", "minLength": 1 },
+    "case_key": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,119}$" },
+    "source_sha256": { "$ref": "#/$defs/sha256_ref" },
+
+    "model_key": {
+      "enum": [
+        "paddleocr_vl_1_6", "mineru_pipeline", "mineru_vlm", "deepseek_ocr2",
+        "ovisocr2", "unlimited_ocr", "infinity_parser2_pro",
+        "infinity_parser2_flash", "monkeyocrv2_b",
+        "olmocr2", "hpd_parsing", "glm_ocr", "opus5_subscription"
+      ]
+    },
+    "model_revision": { "type": "string", "minLength": 1 },
+    "runtime_image_digest": { "type": "string", "minLength": 1 },
+    "runtime_mode": { "enum": ["baked", "bootstrap", "subscription"] },
+    "job_kind": { "enum": ["inference", "canary", "recovery"] },
+    "gpu_type": { "type": ["string", "null"] },
+    "gpu_id": { "type": ["string", "null"] },
+    "pod_id": { "type": ["string", "null"] },
+    "worker_id": { "type": ["string", "null"] },
+    "shard_id": { "type": ["string", "null"] },
+
+    "prompt_id": { "type": "string", "minLength": 1 },
+    "prompt_sha256": { "$ref": "#/$defs/sha256_ref" },
+    "inference_config_sha256": { "$ref": "#/$defs/sha256_ref" },
+    "image_width": { "type": ["integer", "null"], "minimum": 1 },
+    "image_height": { "type": ["integer", "null"], "minimum": 1 },
+
+    "queued_at": { "$ref": "#/$defs/ts" },
+    "worker_ready_at": { "$ref": "#/$defs/ts_or_null" },
+    "started_at": { "$ref": "#/$defs/ts" },
+    "first_token_at": { "$ref": "#/$defs/ts_or_null" },
+    "finished_at": { "$ref": "#/$defs/ts" },
+
+    "queue_ms": { "$ref": "#/$defs/ms_or_null" },
+    "load_ms": { "$ref": "#/$defs/ms_or_null" },
+    "preprocess_ms": { "$ref": "#/$defs/ms_or_null" },
+    "inference_ms": { "$ref": "#/$defs/ms_or_null" },
+    "postprocess_ms": { "$ref": "#/$defs/ms_or_null" },
+    "total_ms": { "type": "integer", "minimum": 0 },
+
+    "peak_vram_mb": { "$ref": "#/$defs/count_or_null" },
+    "baseline_vram_mb": {
+      "description": "Whole-GPU memory.used (MiB) the worker read at READY, after warm-up. Optional, not required: a runtime without nvidia-smi has no number and null is the honest value.",
+      "$ref": "#/$defs/count_or_null"
+    },
+    "vram_total_mb": {
+      "description": "Whole-GPU memory.total (MiB). The section 17 headroom is measured against this when present, and against the runtime's declared gpu_min_vram_gb when it is not.",
+      "$ref": "#/$defs/count_or_null"
+    },
+    "vram_measurement_source": {
+      "description": "How peak_vram_mb was obtained. 'nvidia-smi' is the whole device, not this process; 'adapter' is the adapter's own figure. Never compare the two as if they measured the same thing.",
+      "type": ["string", "null"],
+      "enum": ["nvidia-smi", "adapter", null]
+    },
+    "input_bytes": { "type": "integer", "minimum": 0 },
+    "output_bytes": { "type": "integer", "minimum": 0 },
+    "output_chars": { "type": "integer", "minimum": 0 },
+    "input_tokens": { "$ref": "#/$defs/count_or_null" },
+    "output_tokens": { "$ref": "#/$defs/count_or_null" },
+
+    "attempt": { "type": "integer", "minimum": 1 },
+    "retry_count": { "type": "integer", "minimum": 0 },
+    "retry_reason": { "type": ["string", "null"] },
+    "status": { "enum": ["SUCCESS", "FAILED", "QUARANTINED", "PAUSED"] },
+    "error_class": {
+      "type": ["string", "null"],
+      "enum": [
+        "INFRA_CAPACITY", "INFRA_NETWORK", "IMAGE_PULL", "MODEL_DOWNLOAD",
+        "DEPENDENCY", "MODEL_LOAD", "CUDA_INIT", "CUDA_OOM", "GPU_KERNEL",
+        "TENSOR_SHAPE", "INPUT_DECODE", "PREPROCESS", "INFERENCE_TIMEOUT",
+        "INFERENCE_STALL", "OUTPUT_EMPTY", "OUTPUT_TRUNCATED",
+        "OUTPUT_MALFORMED", "OUTPUT_REPETITION", "POSTPROCESS", "UPLOAD",
+        "CHECKSUM", "RATE_LIMIT", "AUTH", "SUBSCRIPTION_LIMIT", "EVALUATOR",
+        "UNKNOWN", null
+      ]
+    },
+    "semantic_error_class": {
+      "description": "ARENA_CONTRACT 11.1 D3: the model was wrong, not the run. Independent of status; an empty output is SUCCESS + OUTPUT_EMPTY.",
+      "type": ["string", "null"],
+      "enum": ["OUTPUT_EMPTY", "OUTPUT_TRUNCATED", "OUTPUT_REPETITION", "OUTPUT_MALFORMED", null]
+    },
+    "error_message": { "type": ["string", "null"], "minLength": 1, "maxLength": 2000 },
+    "wasted_gpu_seconds": { "type": "number", "minimum": 0 },
+    "recovery_job_id": { "type": ["string", "null"] },
+
+    "raw_output_path": { "type": ["string", "null"] },
+    "raw_output_sha256": { "$ref": "#/$defs/sha256_ref_or_null" },
+    "canonical_output_path": { "type": ["string", "null"] },
+    "canonical_output_sha256": { "$ref": "#/$defs/sha256_ref_or_null" }
+  },
+  "required": [
+    "attempt", "benchmark", "campaign_id", "case_key", "finished_at",
+    "image_height", "image_width", "inference_config_sha256",
+    "inference_job_id", "input_bytes", "job_kind", "model_key",
+    "model_revision", "output_bytes", "output_chars", "prompt_id",
+    "prompt_sha256", "queued_at", "retry_count", "runtime_image_digest",
+    "runtime_mode", "sample_id", "schema", "source_sha256", "started_at",
+    "status", "total_ms", "wasted_gpu_seconds"
+  ],
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "SUCCESS" } }, "required": ["status"] },
+      "then": {
+        "required": [
+          "raw_output_sha256", "canonical_output_sha256",
+          "image_width", "image_height"
+        ],
+        "properties": {
+          "raw_output_sha256": { "type": "string" },
+          "canonical_output_sha256": { "type": "string" },
+          "error_class": { "type": "null" },
+          "image_width": { "type": "integer", "minimum": 1 },
+          "image_height": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": { "status": { "enum": ["FAILED", "QUARANTINED", "PAUSED"] } },
+        "required": ["status"]
+      },
+      "then": { "required": ["error_class"], "properties": { "error_class": { "type": "string" } } }
+    },
+    {
+      "if": {
+        "properties": { "runtime_mode": { "enum": ["baked", "bootstrap"] } },
+        "required": ["runtime_mode"]
+      },
+      "then": {
+        "required": ["pod_id", "gpu_type"],
+        "properties": { "pod_id": { "type": "string" }, "gpu_type": { "type": "string" } }
+      }
+    }
+  ]
+}

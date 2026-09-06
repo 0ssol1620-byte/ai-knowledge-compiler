@@ -1,0 +1,1208 @@
+{
+ "declarable": [
+  {
+   "branch": "master",
+   "container": "kubernetes-sigs/kustomize",
+   "declarable": true,
+   "documents": 71,
+   "license_metadata": "Apache-2.0",
+   "prefix": "site/content",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "kubernetes/ingress-nginx",
+   "declarable": true,
+   "documents": 49,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "projectcontour/contour",
+   "declarable": true,
+   "documents": 1191,
+   "license_metadata": "Apache-2.0",
+   "prefix": "site/content/docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "open-policy-agent/gatekeeper",
+   "declarable": true,
+   "documents": 32,
+   "license_metadata": "Apache-2.0",
+   "prefix": "website/docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "siderolabs/talos",
+   "declarable": true,
+   "documents": 43,
+   "license_metadata": "MPL-2.0",
+   "prefix": "website/content",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "k0sproject/k0s",
+   "declarable": true,
+   "documents": 60,
+   "license_metadata": "NOASSERTION",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "kata-containers/kata-containers",
+   "declarable": true,
+   "documents": 91,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "containers/buildah",
+   "declarable": true,
+   "documents": 35,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "firecracker-microvm/firecracker",
+   "declarable": true,
+   "documents": 42,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "openbao/openbao",
+   "declarable": true,
+   "documents": 386,
+   "license_metadata": "MPL-2.0",
+   "prefix": "website/content",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "ClickHouse/ClickHouse",
+   "declarable": true,
+   "documents": 18962,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": true
+  },
+  {
+   "branch": "master",
+   "container": "cockroachdb/cockroach",
+   "declarable": true,
+   "documents": 234,
+   "license_metadata": "NOASSERTION",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "latest",
+   "container": "tarantool/doc",
+   "declarable": true,
+   "documents": 364,
+   "license_metadata": "NOASSERTION",
+   "prefix": "doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "JuliaLang/julia",
+   "declarable": true,
+   "documents": 108,
+   "license_metadata": "MIT",
+   "prefix": "doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "rust-lang/edition-guide",
+   "declarable": true,
+   "documents": 33,
+   "license_metadata": "Apache-2.0",
+   "prefix": "src",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "crystal-lang/crystal-book",
+   "declarable": true,
+   "documents": 82,
+   "license_metadata": "NOASSERTION",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "ruby/ruby",
+   "declarable": true,
+   "documents": 36,
+   "license_metadata": "NOASSERTION",
+   "prefix": "doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "ocaml/ocaml.org",
+   "declarable": true,
+   "documents": 1485,
+   "license_metadata": "NOASSERTION",
+   "prefix": "data",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "withastro/docs",
+   "declarable": true,
+   "documents": 1331,
+   "license_metadata": "MIT",
+   "prefix": "src/content/docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "mui/material-ui",
+   "declarable": true,
+   "documents": 136,
+   "license_metadata": "MIT",
+   "prefix": "docs/data",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "ant-design/ant-design",
+   "declarable": true,
+   "documents": 196,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "next",
+   "container": "storybookjs/storybook",
+   "declarable": true,
+   "documents": 483,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "vitest-dev/vitest",
+   "declarable": true,
+   "documents": 131,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "babel/website",
+   "declarable": true,
+   "documents": 89,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "jestjs/jest",
+   "declarable": true,
+   "documents": 30,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "vuejs/router",
+   "declarable": true,
+   "documents": 81,
+   "license_metadata": "MIT",
+   "prefix": "packages/docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "chakra-ui/chakra-ui",
+   "declarable": true,
+   "documents": 141,
+   "license_metadata": "MIT",
+   "prefix": "apps/www/content",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "onnx/onnx",
+   "declarable": true,
+   "documents": 47,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "apache/tvm",
+   "declarable": true,
+   "documents": 75,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "Lightning-AI/pytorch-lightning",
+   "declarable": true,
+   "documents": 136,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "huggingface/diffusers",
+   "declarable": true,
+   "documents": 353,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "huggingface/datasets",
+   "declarable": true,
+   "documents": 57,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "huggingface/accelerate",
+   "declarable": true,
+   "documents": 45,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "run-llama/llama_index",
+   "declarable": true,
+   "documents": 131,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "dask/dask",
+   "declarable": true,
+   "documents": 86,
+   "license_metadata": "BSD-3-Clause",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "pydata/xarray",
+   "declarable": true,
+   "documents": 44,
+   "license_metadata": "Apache-2.0",
+   "prefix": "doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "scipy/scipy",
+   "declarable": true,
+   "documents": 179,
+   "license_metadata": "BSD-3-Clause",
+   "prefix": "doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "sympy/sympy",
+   "declarable": true,
+   "documents": 134,
+   "license_metadata": "NOASSERTION",
+   "prefix": "doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "networkx/networkx",
+   "declarable": true,
+   "documents": 63,
+   "license_metadata": "NOASSERTION",
+   "prefix": "doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "statsmodels/statsmodels",
+   "declarable": true,
+   "documents": 61,
+   "license_metadata": "BSD-3-Clause",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "gradio-app/gradio",
+   "declarable": true,
+   "documents": 133,
+   "license_metadata": "Apache-2.0",
+   "prefix": "guides",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "OWASP/CheatSheetSeries",
+   "declarable": true,
+   "documents": 116,
+   "license_metadata": "CC-BY-SA-4.0",
+   "prefix": "cheatsheets",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "oauth2-proxy/oauth2-proxy",
+   "declarable": true,
+   "documents": 233,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "grafana/pyroscope",
+   "declarable": true,
+   "documents": 105,
+   "license_metadata": "AGPL-3.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "open-telemetry/opentelemetry-specification",
+   "declarable": true,
+   "documents": 68,
+   "license_metadata": "Apache-2.0",
+   "prefix": "specification",
+   "reachable": true,
+   "truncated": false
+  }
+ ],
+ "declarable_count": 45,
+ "probed": [
+  {
+   "branch": "main",
+   "container": "kubernetes-sigs/gateway-api",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "Apache-2.0",
+   "prefix": "site-src",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "kubernetes-sigs/kustomize",
+   "declarable": true,
+   "documents": 71,
+   "license_metadata": "Apache-2.0",
+   "prefix": "site/content",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "kubernetes-sigs/descheduler",
+   "declarable": false,
+   "documents": 4,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "kubernetes/ingress-nginx",
+   "declarable": true,
+   "documents": 49,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "projectcontour/contour",
+   "declarable": true,
+   "documents": 1191,
+   "license_metadata": "Apache-2.0",
+   "prefix": "site/content/docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "emissary-ingress/emissary",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "kyverno/website",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "Apache-2.0",
+   "prefix": "content",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "open-policy-agent/gatekeeper",
+   "declarable": true,
+   "documents": 32,
+   "license_metadata": "Apache-2.0",
+   "prefix": "website/docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "siderolabs/talos",
+   "declarable": true,
+   "documents": 43,
+   "license_metadata": "MPL-2.0",
+   "prefix": "website/content",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "k0sproject/k0s",
+   "declarable": true,
+   "documents": 60,
+   "license_metadata": "NOASSERTION",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "kata-containers/kata-containers",
+   "declarable": true,
+   "documents": 91,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "cri-o/cri-o",
+   "declarable": false,
+   "documents": 8,
+   "license_metadata": "Apache-2.0",
+   "prefix": "tutorials",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "containers/buildah",
+   "declarable": true,
+   "documents": 35,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "containers/skopeo",
+   "declarable": false,
+   "documents": 8,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "firecracker-microvm/firecracker",
+   "declarable": true,
+   "documents": 42,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "fluent/fluentd-docs-gitbook",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "hashicorp/boundary",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "NOASSERTION",
+   "prefix": "website/content",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "openbao/openbao",
+   "declarable": true,
+   "documents": 386,
+   "license_metadata": "MPL-2.0",
+   "prefix": "website/content",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "helmfile/helmfile",
+   "declarable": false,
+   "documents": 16,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "goreleaser/goreleaser",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "MIT",
+   "prefix": "www/docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "ClickHouse/ClickHouse",
+   "declarable": true,
+   "documents": 18962,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": true
+  },
+  {
+   "container": "redpanda-data/docs",
+   "reachable": false,
+   "why": "HTTP 404"
+  },
+  {
+   "branch": "master",
+   "container": "cockroachdb/cockroach",
+   "declarable": true,
+   "documents": 234,
+   "license_metadata": "NOASSERTION",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "apache/couchdb-documentation",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "Apache-2.0",
+   "prefix": "src",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "dgraph-io/dgraph",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "Apache-2.0",
+   "prefix": "wiki",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "latest",
+   "container": "tarantool/doc",
+   "declarable": true,
+   "documents": 364,
+   "license_metadata": "NOASSERTION",
+   "prefix": "doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "citusdata/citus",
+   "declarable": false,
+   "documents": 5,
+   "license_metadata": "AGPL-3.0",
+   "prefix": "src/backend",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "questdb/questdb",
+   "declarable": false,
+   "documents": 7,
+   "license_metadata": "Apache-2.0",
+   "prefix": "core/src",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "container": "emqx/emqx-docs",
+   "reachable": false,
+   "why": "tree: HTTP Error 404: Not Found"
+  },
+  {
+   "branch": "main",
+   "container": "arangodb/docs",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "Apache-2.0",
+   "prefix": "site/content",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "JuliaLang/julia",
+   "declarable": true,
+   "documents": 108,
+   "license_metadata": "MIT",
+   "prefix": "doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "container": "rust-lang/rustc-dev-guide",
+   "reachable": false,
+   "why": "tree: HTTP Error 404: Not Found"
+  },
+  {
+   "branch": "master",
+   "container": "rust-lang/cargo",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "Apache-2.0",
+   "prefix": "src/doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "rust-lang/edition-guide",
+   "declarable": true,
+   "documents": 33,
+   "license_metadata": "Apache-2.0",
+   "prefix": "src",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "elixir-lang/elixir-lang.github.com",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "NOASSERTION",
+   "prefix": "getting-started",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "crystal-lang/crystal-book",
+   "declarable": true,
+   "documents": 82,
+   "license_metadata": "NOASSERTION",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "php/doc-en",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "NOASSERTION",
+   "prefix": "reference",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "ruby/ruby",
+   "declarable": true,
+   "documents": 36,
+   "license_metadata": "NOASSERTION",
+   "prefix": "doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "ocaml/ocaml.org",
+   "declarable": true,
+   "documents": 1485,
+   "license_metadata": "NOASSERTION",
+   "prefix": "data",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "dlang/dlang.org",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "BSL-1.0",
+   "prefix": "spec",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "withastro/docs",
+   "declarable": true,
+   "documents": 1331,
+   "license_metadata": "MIT",
+   "prefix": "src/content/docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "mui/material-ui",
+   "declarable": true,
+   "documents": 136,
+   "license_metadata": "MIT",
+   "prefix": "docs/data",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "ant-design/ant-design",
+   "declarable": true,
+   "documents": 196,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "next",
+   "container": "storybookjs/storybook",
+   "declarable": true,
+   "documents": 483,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "vitest-dev/vitest",
+   "declarable": true,
+   "documents": 131,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "evanw/esbuild",
+   "declarable": false,
+   "documents": 1,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "babel/website",
+   "declarable": true,
+   "documents": 89,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "jestjs/jest",
+   "declarable": true,
+   "documents": 30,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "vuejs/router",
+   "declarable": true,
+   "documents": 81,
+   "license_metadata": "MIT",
+   "prefix": "packages/docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "chakra-ui/chakra-ui",
+   "declarable": true,
+   "documents": 141,
+   "license_metadata": "MIT",
+   "prefix": "apps/www/content",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "onnx/onnx",
+   "declarable": true,
+   "documents": 47,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "apache/tvm",
+   "declarable": true,
+   "documents": 75,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "Lightning-AI/pytorch-lightning",
+   "declarable": true,
+   "documents": 136,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "huggingface/diffusers",
+   "declarable": true,
+   "documents": 353,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "huggingface/datasets",
+   "declarable": true,
+   "documents": 57,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "huggingface/accelerate",
+   "declarable": true,
+   "documents": 45,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "langchain-ai/langchain",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "run-llama/llama_index",
+   "declarable": true,
+   "documents": 131,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "optuna/optuna",
+   "declarable": false,
+   "documents": 4,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "dask/dask",
+   "declarable": true,
+   "documents": 86,
+   "license_metadata": "BSD-3-Clause",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "pydata/xarray",
+   "declarable": true,
+   "documents": 44,
+   "license_metadata": "Apache-2.0",
+   "prefix": "doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "scipy/scipy",
+   "declarable": true,
+   "documents": 179,
+   "license_metadata": "BSD-3-Clause",
+   "prefix": "doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "sympy/sympy",
+   "declarable": true,
+   "documents": 134,
+   "license_metadata": "NOASSERTION",
+   "prefix": "doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "networkx/networkx",
+   "declarable": true,
+   "documents": 63,
+   "license_metadata": "NOASSERTION",
+   "prefix": "doc",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "container": "plotly/plotly.py",
+   "reachable": false,
+   "why": "tree: HTTP Error 404: Not Found"
+  },
+  {
+   "container": "bokeh/bokeh",
+   "reachable": false,
+   "why": "tree: HTTP Error 404: Not Found"
+  },
+  {
+   "branch": "main",
+   "container": "statsmodels/statsmodels",
+   "declarable": true,
+   "documents": 61,
+   "license_metadata": "BSD-3-Clause",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "gradio-app/gradio",
+   "declarable": true,
+   "documents": 133,
+   "license_metadata": "Apache-2.0",
+   "prefix": "guides",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "OWASP/CheatSheetSeries",
+   "declarable": true,
+   "documents": 116,
+   "license_metadata": "CC-BY-SA-4.0",
+   "prefix": "cheatsheets",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "oauth2-proxy/oauth2-proxy",
+   "declarable": true,
+   "documents": 233,
+   "license_metadata": "MIT",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "dexidp/dex",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "Apache-2.0",
+   "prefix": "Documentation",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "zeromq/zeromq.org",
+   "declarable": false,
+   "documents": 12,
+   "license_metadata": "Apache-2.0",
+   "prefix": "content",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "grafana/pyroscope",
+   "declarable": true,
+   "documents": 105,
+   "license_metadata": "AGPL-3.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "open-telemetry/opentelemetry-specification",
+   "declarable": true,
+   "documents": 68,
+   "license_metadata": "Apache-2.0",
+   "prefix": "specification",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "master",
+   "container": "apache/rocketmq-site",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "Apache-2.0",
+   "prefix": "docs",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "container": "openbao/openbao.org",
+   "reachable": false,
+   "why": "HTTP 404"
+  },
+  {
+   "branch": "main",
+   "container": "smallstep/docs",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "NOASSERTION",
+   "prefix": "src",
+   "reachable": true,
+   "truncated": false
+  },
+  {
+   "branch": "main",
+   "container": "anchore/grype",
+   "declarable": false,
+   "documents": 0,
+   "license_metadata": "Apache-2.0",
+   "prefix": "README.md",
+   "reachable": true,
+   "truncated": false
+  }
+ ],
+ "screened_out": []
+}

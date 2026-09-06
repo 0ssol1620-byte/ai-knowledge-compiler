@@ -1,0 +1,888 @@
+{
+  "catalogue_accounting": {
+    "eligibility_dispositions": {
+      "ELIGIBLE": 65174,
+      "REJECTED_created_utc_on_or_before": 2225592,
+      "REJECTED_host_eq": 25576,
+      "REJECTED_last_activity_utc_on_or_after": 3038235,
+      "REJECTED_spdx_license_id_in": 31164781
+    },
+    "eligible": 65174,
+    "rows_read": 37702060,
+    "unreadable_rows": {
+      "NAME_WITH_OWNER_NOT_OWNER_SLASH_REPO": 39401,
+      "NO_LAST_ACTIVITY_TIMESTAMP": 1143301
+    },
+    "unreadable_total": 1182702,
+    "why_three_layers": "what the parser could not read, what the predicates rejected and why, and what the selection excluded as spent are different facts. One 'rows dropped' total would hide a header change behind a licence filter."
+  },
+  "cohort_input_binding": "sha256:6f88ffa431d6bba14047d97bb09e1e094b0101c58aab46017498ada9d4c65d58",
+  "generation_digest": "sha256:ba0cd1caa71dd3832e3fe1cd8602716121021ab6f24b67688e68e0e477082f99",
+  "instrument_commit": "f2912afb6acbf257258cd26f3783df3075df5839",
+  "instrument_freeze": "sha256:687e7a8cc49cb3ccd2c320a94580d2cb19260ae3cdeeca9c3817e9abf23f1cac",
+  "roster": {
+    "entries": [
+      {
+        "catalogue_address": "rbuckton/reflect-metadata",
+        "host_uuid": "32035790",
+        "partition_digest": "sha256:9064e7fc10906f9e086535cfb67dd871f6fec775f6051b96444d595ef05f079b",
+        "record_id": "383674",
+        "selection_ordinal": 1,
+        "source_rank": 21
+      },
+      {
+        "catalogue_address": "boto/boto3",
+        "host_uuid": "24774658",
+        "partition_digest": "sha256:180d175455e2e50ac6e5bb437bef94cd36c8e24afc6cd8c67c6691d0476cb3f9",
+        "record_id": "181081",
+        "selection_ordinal": 2,
+        "source_rank": 20
+      },
+      {
+        "catalogue_address": "lautis/uglifier",
+        "host_uuid": "1049182",
+        "partition_digest": "sha256:1ea9d660c4e0cb3ab1907a3249f478d5c686e9f79a3dde3ae0d60aec830ae86f",
+        "record_id": "47525",
+        "selection_ordinal": 3,
+        "source_rank": 20
+      },
+      {
+        "catalogue_address": "thlorenz/proxyquire",
+        "host_uuid": "4878628",
+        "partition_digest": "sha256:c957fb3858bed804b641d4a04c35fa27f5defd62bd5995623a43883370c75cc8",
+        "record_id": "144442",
+        "selection_ordinal": 4,
+        "source_rank": 19
+      },
+      {
+        "catalogue_address": "chalk/strip-ansi",
+        "host_uuid": "15014856",
+        "partition_digest": "sha256:a1dc8ae15e6bbc43fd5801683d8c274ab0a7f5bad33b782993fbd9f24cfc7cff",
+        "record_id": "34316",
+        "selection_ordinal": 5,
+        "source_rank": 19
+      },
+      {
+        "catalogue_address": "vuejs/vue-style-loader",
+        "host_uuid": "49083565",
+        "partition_digest": "sha256:199cc67d999c02000b7bd6c3319f2ee9757a35bfa24e747456165704e4ec5dc4",
+        "record_id": "4369236",
+        "selection_ordinal": 6,
+        "source_rank": 19
+      },
+      {
+        "catalogue_address": "sindresorhus/log-symbols",
+        "host_uuid": "21673868",
+        "partition_digest": "sha256:d648ecf824bcf0cafa46eb7aea6f295bc34ed75a8590f7f3149bf6b8be46236f",
+        "record_id": "1505",
+        "selection_ordinal": 7,
+        "source_rank": 18
+      },
+      {
+        "catalogue_address": "quilljs/quill",
+        "host_uuid": "5239185",
+        "partition_digest": "sha256:74092dc992cd85fbd64e7cdb4932115544945cddc0f729ce333c9e47537c49e3",
+        "record_id": "1916",
+        "selection_ordinal": 8,
+        "source_rank": 18
+      },
+      {
+        "catalogue_address": "reactjs/react-docgen",
+        "host_uuid": "31441137",
+        "partition_digest": "sha256:999f5678edce87eec5dfbf956d892f23e43058913de3cd6e5486902e7b7ae952",
+        "record_id": "352678",
+        "selection_ordinal": 9,
+        "source_rank": 18
+      },
+      {
+        "catalogue_address": "symfony/twig-bundle",
+        "host_uuid": "2641410",
+        "partition_digest": "sha256:20f739e33b6425f8cc8bc189b04b651824b170cdef25bac43b1db91fc3392ceb",
+        "record_id": "79032",
+        "selection_ordinal": 10,
+        "source_rank": 18
+      },
+      {
+        "catalogue_address": "timarney/react-app-rewired",
+        "host_uuid": "65231883",
+        "partition_digest": "sha256:3324ec87f635d9affa2ec6ccb17ccfd32e566ec0315e9fa0032e46c50a920b92",
+        "record_id": "12408981",
+        "selection_ordinal": 11,
+        "source_rank": 17
+      },
+      {
+        "catalogue_address": "naugtur/xhr",
+        "host_uuid": "4010687",
+        "partition_digest": "sha256:1d5bc57a01b1c69a21e6edfe0cf5fb95449162c920b35b7ff90330339d6d7eac",
+        "record_id": "163342",
+        "selection_ordinal": 12,
+        "source_rank": 17
+      },
+      {
+        "catalogue_address": "dotansimha/graphql-code-generator",
+        "host_uuid": "75657790",
+        "partition_digest": "sha256:de05a4338619ae17c924b14e2d56bc493f1bd2da0575c7c1495d2e72e532e3d1",
+        "record_id": "17013652",
+        "selection_ordinal": 13,
+        "source_rank": 17
+      },
+      {
+        "catalogue_address": "square/okio",
+        "host_uuid": "17812502",
+        "partition_digest": "sha256:ef57bb0e6a3a975aff91011b2aee0cff608cdb33e492432750dec82b9aa538f3",
+        "record_id": "173159",
+        "selection_ordinal": 14,
+        "source_rank": 17
+      },
+      {
+        "catalogue_address": "symfony/polyfill-php56",
+        "host_uuid": "44745081",
+        "partition_digest": "sha256:9c22b58ff03165d48b489ee891f8c6405c58fbb07a0d10b9098a7ac5e09148a4",
+        "record_id": "2789131",
+        "selection_ordinal": 15,
+        "source_rank": 17
+      },
+      {
+        "catalogue_address": "jekyll/jekyll-sitemap",
+        "host_uuid": "17327535",
+        "partition_digest": "sha256:c8abd78fc07321e186e6bb2431cc7d2d93f8e608cc00a3cc0c7de95a4829b11f",
+        "record_id": "312824",
+        "selection_ordinal": 16,
+        "source_rank": 17
+      },
+      {
+        "catalogue_address": "fgnass/spin.js",
+        "host_uuid": "2214953",
+        "partition_digest": "sha256:4be023d8a5091d1f403eac57a93052e9a58789eccc33d2e227f761987d1cbc0e",
+        "record_id": "34039",
+        "selection_ordinal": 17,
+        "source_rank": 17
+      },
+      {
+        "catalogue_address": "sindresorhus/path-exists",
+        "host_uuid": "34965664",
+        "partition_digest": "sha256:73ca0bf50011d1a478d5d1c8e7f5bc39b5448a46575d4ebc1a0eb461a5bbb529",
+        "record_id": "395337",
+        "selection_ordinal": 18,
+        "source_rank": 17
+      },
+      {
+        "catalogue_address": "php-http/message",
+        "host_uuid": "48317882",
+        "partition_digest": "sha256:48371f73ff4911e10908408faa7609b98d343959b6df1b33f5d0ab83924aeb71",
+        "record_id": "4084742",
+        "selection_ordinal": 19,
+        "source_rank": 17
+      },
+      {
+        "catalogue_address": "symfony/polyfill-apcu",
+        "host_uuid": "49630239",
+        "partition_digest": "sha256:e9cf4550ce4b30055bcc4e6153be080a9ac1069e499605ce4e7ed0c5f0dcf93d",
+        "record_id": "4516110",
+        "selection_ordinal": 20,
+        "source_rank": 17
+      },
+      {
+        "catalogue_address": "symfony/web-profiler-bundle",
+        "host_uuid": "2641412",
+        "partition_digest": "sha256:dfe152c6f0ef88ac15daf5f7e9b2b25359503202b77f1134d5b242ebce00a6f5",
+        "record_id": "79036",
+        "selection_ordinal": 21,
+        "source_rank": 17
+      },
+      {
+        "catalogue_address": "TryGhost/Ghost",
+        "host_uuid": "9852918",
+        "partition_digest": "sha256:5c5f1d6972b7fcb0c4cc592ab2c9fa855d907f63a17bd392f82fd0e76e92f0ba",
+        "record_id": "132257",
+        "selection_ordinal": 22,
+        "source_rank": 16
+      },
+      {
+        "catalogue_address": "mysticatea/eslint-plugin-eslint-comments",
+        "host_uuid": "70421055",
+        "partition_digest": "sha256:0ec7174733743bfcc0b7296c3d8961e89c4a8b718861974dd512c3d208df6462",
+        "record_id": "14271547",
+        "selection_ordinal": 23,
+        "source_rank": 16
+      },
+      {
+        "catalogue_address": "fraserxu/react-chartist",
+        "host_uuid": "25910615",
+        "partition_digest": "sha256:c6cf7e844394580871ceca6340bc1a3808a7ec20b4b330bf842cb26cff31024c",
+        "record_id": "145951",
+        "selection_ordinal": 24,
+        "source_rank": 16
+      },
+      {
+        "catalogue_address": "sindresorhus/ip-regex",
+        "host_uuid": "23733314",
+        "partition_digest": "sha256:774224d05c30798964eb495a14a1a96ef401e81e6b0d29efb9ae6da3441f7338",
+        "record_id": "20754",
+        "selection_ordinal": 25,
+        "source_rank": 16
+      },
+      {
+        "catalogue_address": "sweetalert2/sweetalert2",
+        "host_uuid": "28748255",
+        "partition_digest": "sha256:852fcc86eac74755e04c9066fa6b885cbeaa45f48518cff855096b7a84ced70b",
+        "record_id": "34634",
+        "selection_ordinal": 26,
+        "source_rank": 16
+      },
+      {
+        "catalogue_address": "estools/esutils",
+        "host_uuid": "14677293",
+        "partition_digest": "sha256:8eb7d34b258e9fb3555aff353d9f54064a146537c2322a112d390919bfcc745e",
+        "record_id": "48738",
+        "selection_ordinal": 27,
+        "source_rank": 16
+      },
+      {
+        "catalogue_address": "wix/react-native-navigation",
+        "host_uuid": "53662249",
+        "partition_digest": "sha256:f2148b7c231af6af9df1e15b76f3cc1f82606b219d1390136ae4506cf0da9abc",
+        "record_id": "6952780",
+        "selection_ordinal": 28,
+        "source_rank": 16
+      },
+      {
+        "catalogue_address": "ember-cli/ember-cli-eslint",
+        "host_uuid": "30788414",
+        "partition_digest": "sha256:d3e3958bc81d1d007166cce94c2bb220253d95c89e1b095ece1295e0d255360a",
+        "record_id": "800873",
+        "selection_ordinal": 29,
+        "source_rank": 16
+      },
+      {
+        "catalogue_address": "imagemin/gifsicle-bin",
+        "host_uuid": "11746030",
+        "partition_digest": "sha256:0009d20f1b3b6e595e909255d0ae21365807b62d59aaf6bed81c01cc07530c39",
+        "record_id": "102519",
+        "selection_ordinal": 30,
+        "source_rank": 15
+      },
+      {
+        "catalogue_address": "lovell/limax",
+        "host_uuid": "15267409",
+        "partition_digest": "sha256:110ea5fbce045953dd75183bdbf6e8a9f72d1cb3a9becf20680513bb0cf2754e",
+        "record_id": "112587",
+        "selection_ordinal": 31,
+        "source_rank": 15
+      },
+      {
+        "catalogue_address": "sindresorhus/write-pkg",
+        "host_uuid": "41790634",
+        "partition_digest": "sha256:bc58d4e99f8e564d82b901f6c155324aa9df56a05abd440bdda8fde21b3f606f",
+        "record_id": "1149327",
+        "selection_ordinal": 32,
+        "source_rank": 15
+      },
+      {
+        "catalogue_address": "scijs/ndarray",
+        "host_uuid": "8414118",
+        "partition_digest": "sha256:6b83b2c700224a33d148c5e20aefb29d21ac2d97b92c5b8cafd6a11cd7f33987",
+        "record_id": "116910",
+        "selection_ordinal": 33,
+        "source_rank": 15
+      },
+      {
+        "catalogue_address": "botman/botman",
+        "host_uuid": "65017574",
+        "partition_digest": "sha256:8cced2231ba8712a6f96c03cb9605c78ce062a48561fa1d1ad55bc9ed014725d",
+        "record_id": "12439057",
+        "selection_ordinal": 34,
+        "source_rank": 15
+      },
+      {
+        "catalogue_address": "JS-DevTools/readdir-enhanced",
+        "host_uuid": "65965397",
+        "partition_digest": "sha256:b0baca199e25be84a4716889db3088c7f1d292e70a2cb4cbbb01e91508461253",
+        "record_id": "12801646",
+        "selection_ordinal": 35,
+        "source_rank": 15
+      },
+      {
+        "catalogue_address": "sindresorhus/public-ip",
+        "host_uuid": "24034567",
+        "partition_digest": "sha256:703a666b944a77387766b36665870b85c29a4d72aa5f9ecc67fd66e37b3cc596",
+        "record_id": "144550",
+        "selection_ordinal": 36,
+        "source_rank": 15
+      },
+      {
+        "catalogue_address": "andreaferretti/paths-js",
+        "host_uuid": "14907562",
+        "partition_digest": "sha256:c76adf518a9f08464513fcf36f9833a26be6a8642c96aafafcca12318339ef3f",
+        "record_id": "31117",
+        "selection_ordinal": 37,
+        "source_rank": 15
+      },
+      {
+        "catalogue_address": "ekalinin/sitemap.js",
+        "host_uuid": "1972908",
+        "partition_digest": "sha256:7e14d95aabbc6857f3f8ced249db924f9422efd599d40209bb66545218277570",
+        "record_id": "33575",
+        "selection_ordinal": 38,
+        "source_rank": 15
+      },
+      {
+        "catalogue_address": "dyve/django-bootstrap3",
+        "host_uuid": "12082924",
+        "partition_digest": "sha256:2d8c4fe2bdfb210316dc55cd712f0be6797d85835e98a40a785032e0c598f29e",
+        "record_id": "369980",
+        "selection_ordinal": 39,
+        "source_rank": 15
+      },
+      {
+        "catalogue_address": "laravel/lumen",
+        "host_uuid": "33904351",
+        "partition_digest": "sha256:7f192a6605ced2033d1b30adf363913ddab3dccf8eb3f7af67f4344ae8622b50",
+        "record_id": "384061",
+        "selection_ordinal": 40,
+        "source_rank": 15
+      },
+      {
+        "catalogue_address": "dingo/api",
+        "host_uuid": "18673522",
+        "partition_digest": "sha256:5ee15e6bc32b7f80173871065b6b827e41ab69c347d73f6dbcc5a6e03a09c81c",
+        "record_id": "50722",
+        "selection_ordinal": 41,
+        "source_rank": 15
+      },
+      {
+        "catalogue_address": "openssl/openssl",
+        "host_uuid": "7634677",
+        "partition_digest": "sha256:b817d7d6189f241bc640d6b7dd5ac9f055e2ed9213109e41eedd13b779df17c7",
+        "record_id": "851256",
+        "selection_ordinal": 42,
+        "source_rank": 15
+      },
+      {
+        "catalogue_address": "es-shims/String.prototype.padEnd",
+        "host_uuid": "39936179",
+        "partition_digest": "sha256:ee54d6807db52dedf964f331d53bb36d843b089e8dc943e421a6afc94b67fab6",
+        "record_id": "944159",
+        "selection_ordinal": 43,
+        "source_rank": 15
+      },
+      {
+        "catalogue_address": "m4b/goblin",
+        "host_uuid": "58722558",
+        "partition_digest": "sha256:d8422e75e4cbd6052c43f8f7176bd19292095cc4273ebbda5cf1d99ffe63a7f6",
+        "record_id": "10137945",
+        "selection_ordinal": 44,
+        "source_rank": 14
+      },
+      {
+        "catalogue_address": "AfterShip/phone",
+        "host_uuid": "11491572",
+        "partition_digest": "sha256:749afff363448284731f78a7f513da64c53a13bf7b6f3ed10816c548aa9fd77c",
+        "record_id": "121796",
+        "selection_ordinal": 45,
+        "source_rank": 14
+      },
+      {
+        "catalogue_address": "ctavan/node-getenv",
+        "host_uuid": "4056781",
+        "partition_digest": "sha256:924e0c4c24ff3a279bf242fd8ee7860383e584bbe20636d3b11b779cbeb65aae",
+        "record_id": "132223",
+        "selection_ordinal": 46,
+        "source_rank": 14
+      },
+      {
+        "catalogue_address": "glejeune/node-graphviz",
+        "host_uuid": "886087",
+        "partition_digest": "sha256:facaaf46fbc7da437896428ccc2a256bc319448ea51644536aed3d54fc06ec74",
+        "record_id": "132646",
+        "selection_ordinal": 47,
+        "source_rank": 14
+      },
+      {
+        "catalogue_address": "venables/koa-helmet",
+        "host_uuid": "18251855",
+        "partition_digest": "sha256:f37141a985c6c7cc36f6f9fda68c65c3a02507dde51589e0179c58358c60e537",
+        "record_id": "138405",
+        "selection_ordinal": 48,
+        "source_rank": 14
+      },
+      {
+        "catalogue_address": "shellscape/koa-webpack",
+        "host_uuid": "71396770",
+        "partition_digest": "sha256:344d3debf885a7cec2c00fa4a34b3a39b32d029978a20d4318fc2cd868d0e2c3",
+        "record_id": "14889568",
+        "selection_ordinal": 49,
+        "source_rank": 14
+      },
+      {
+        "catalogue_address": "przemyslawpluta/node-youtube-dl",
+        "host_uuid": "2135514",
+        "partition_digest": "sha256:2c31a8a332415ddca94b817658d730b5977da829162db081529432373bd7111b",
+        "record_id": "164107",
+        "selection_ordinal": 50,
+        "source_rank": 14
+      }
+    ],
+    "entry_count": 50,
+    "exclusion_proof": {
+      "count": 0,
+      "host_uuids": [],
+      "reason": "SPENT_DEVELOPMENT_ROOT",
+      "why": "these identities have been looked at. That is a property of this study's history, not of the repository, and it is the only reason any identity is excluded."
+    },
+    "forbidden_roster_fields": [
+      "candidate_count",
+      "canonical_address",
+      "completion_status",
+      "framework",
+      "language",
+      "network_hops",
+      "provider_charge",
+      "rename_status",
+      "renamed",
+      "traversal_difficulty",
+      "tree_size"
+    ],
+    "n": 50,
+    "permitted_entry_fields": [
+      "record_id",
+      "host_uuid",
+      "catalogue_address",
+      "source_rank",
+      "partition_digest",
+      "selection_ordinal"
+    ],
+    "protocol_digest": "sha256:38d9f8f4d8131aea38488160d3ca846b60fd4cbb5810fe501bb38dba7cf7cea9",
+    "roster_digest": "sha256:8d37501c22dca81019f3c36895cd5c24c22db9732b7f79dcf6f76e7eff58af31",
+    "roster_is_short": false,
+    "schema": "tavonel.sfir9.cohort_roster.v1",
+    "sealed": true,
+    "selection_digest": "sha256:405922cedd05163358474c73e8200ed83668a41f045868f8aa3a27356d9e4838",
+    "why_no_live_address_here": "a root may have been renamed since the catalogue froze, and the study learns that during acquisition. That is execution evidence and is recorded against this roster by digest rather than merged into it: a cohort that changes while the study runs is not a cohort."
+  },
+  "roster_fingerprint": "sha256:0a92e417ac83a2216ecbc12a0956231feeebbb275c44a8e0aff31737f36ddc1f",
+  "roster_seal": "sha256:8d37501c22dca81019f3c36895cd5c24c22db9732b7f79dcf6f76e7eff58af31",
+  "schema": "tavonel.sfir9.cohort_roster_generation.v1",
+  "selection": {
+    "eligible_in_partition": 1059,
+    "exclusions": {
+      "count": 0,
+      "host_uuids": [],
+      "reason": "SPENT_DEVELOPMENT_ROOT",
+      "why": "these identities have been looked at. That is a property of this study's history, not of the repository, and it is the only reason any identity is excluded."
+    },
+    "forbidden_selection_inputs": [
+      "candidate_count",
+      "completion_status",
+      "framework",
+      "language",
+      "network_hops",
+      "provider_charge",
+      "rename_status",
+      "traversal_difficulty",
+      "tree_size"
+    ],
+    "n": 50,
+    "n_derivation": {
+      "formula": "N = (permitted_rate_windows * usable_charge_per_window) // per_root_charge_allowance",
+      "global_charge_budget": 27000,
+      "n": 50,
+      "no_term_reads_a_capacity_count": true,
+      "terms": [
+        {
+          "name": "permitted_rate_windows",
+          "rationale": "declared in the frozen protocol before any repository was chosen",
+          "source": "external_execution_envelope",
+          "value": 6
+        },
+        {
+          "name": "usable_charge_per_window",
+          "rationale": "the provider's published per-window allowance, less the headroom the protocol reserves for retries",
+          "source": "external_execution_envelope",
+          "value": 4500
+        },
+        {
+          "name": "per_root_charge_allowance",
+          "rationale": "inherited from SFIR7's per-root bound, in provider-charged requests",
+          "source": "external_execution_envelope",
+          "value": 540
+        }
+      ],
+      "why_charges_and_not_logical_requests": "only the provider's charge is comparable with the provider's limit. SFIR7 bounded logical requests and was billed for network hops, and the two differed by 790 on renamed addresses alone."
+    },
+    "nothing_observed_participated": "candidate yield, tree size, framework, language, rename status, traversal difficulty and completion status are all facts SFIR7 or SFIR8 produced. None is a parameter of this function, and a row carrying one refuses the selection outright.",
+    "ordering": {
+      "primary": "source_rank descending",
+      "secondary": "record_id ascending",
+      "source": "frozen Libraries.io catalogue metadata only"
+    },
+    "partition": {
+      "keyed_on": "host_uuid",
+      "partition_count": 64,
+      "partition_index": 0,
+      "rows_outside_partition": 64115,
+      "salt_digest": "sha256:32a46f72d8f2976b397efb2950aa03fd0e5ddbd0dde595b3192f15c936832da2",
+      "why_partition_before_ordering": "ranking the whole catalogue and taking the top N invites the objection that popular repositories are well-maintained and well-maintained repositories are easy to traverse. A salted hash bucket is not predictable from any property of a repository, so the external ordering runs inside a population nobody could have chosen."
+    },
+    "protocol_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V9",
+    "roster": [
+      {
+        "host_uuid": "32035790",
+        "name_with_owner": "rbuckton/reflect-metadata",
+        "rank": 1,
+        "record_id": "383674",
+        "source_rank": 21
+      },
+      {
+        "host_uuid": "24774658",
+        "name_with_owner": "boto/boto3",
+        "rank": 2,
+        "record_id": "181081",
+        "source_rank": 20
+      },
+      {
+        "host_uuid": "1049182",
+        "name_with_owner": "lautis/uglifier",
+        "rank": 3,
+        "record_id": "47525",
+        "source_rank": 20
+      },
+      {
+        "host_uuid": "4878628",
+        "name_with_owner": "thlorenz/proxyquire",
+        "rank": 4,
+        "record_id": "144442",
+        "source_rank": 19
+      },
+      {
+        "host_uuid": "15014856",
+        "name_with_owner": "chalk/strip-ansi",
+        "rank": 5,
+        "record_id": "34316",
+        "source_rank": 19
+      },
+      {
+        "host_uuid": "49083565",
+        "name_with_owner": "vuejs/vue-style-loader",
+        "rank": 6,
+        "record_id": "4369236",
+        "source_rank": 19
+      },
+      {
+        "host_uuid": "21673868",
+        "name_with_owner": "sindresorhus/log-symbols",
+        "rank": 7,
+        "record_id": "1505",
+        "source_rank": 18
+      },
+      {
+        "host_uuid": "5239185",
+        "name_with_owner": "quilljs/quill",
+        "rank": 8,
+        "record_id": "1916",
+        "source_rank": 18
+      },
+      {
+        "host_uuid": "31441137",
+        "name_with_owner": "reactjs/react-docgen",
+        "rank": 9,
+        "record_id": "352678",
+        "source_rank": 18
+      },
+      {
+        "host_uuid": "2641410",
+        "name_with_owner": "symfony/twig-bundle",
+        "rank": 10,
+        "record_id": "79032",
+        "source_rank": 18
+      },
+      {
+        "host_uuid": "65231883",
+        "name_with_owner": "timarney/react-app-rewired",
+        "rank": 11,
+        "record_id": "12408981",
+        "source_rank": 17
+      },
+      {
+        "host_uuid": "4010687",
+        "name_with_owner": "naugtur/xhr",
+        "rank": 12,
+        "record_id": "163342",
+        "source_rank": 17
+      },
+      {
+        "host_uuid": "75657790",
+        "name_with_owner": "dotansimha/graphql-code-generator",
+        "rank": 13,
+        "record_id": "17013652",
+        "source_rank": 17
+      },
+      {
+        "host_uuid": "17812502",
+        "name_with_owner": "square/okio",
+        "rank": 14,
+        "record_id": "173159",
+        "source_rank": 17
+      },
+      {
+        "host_uuid": "44745081",
+        "name_with_owner": "symfony/polyfill-php56",
+        "rank": 15,
+        "record_id": "2789131",
+        "source_rank": 17
+      },
+      {
+        "host_uuid": "17327535",
+        "name_with_owner": "jekyll/jekyll-sitemap",
+        "rank": 16,
+        "record_id": "312824",
+        "source_rank": 17
+      },
+      {
+        "host_uuid": "2214953",
+        "name_with_owner": "fgnass/spin.js",
+        "rank": 17,
+        "record_id": "34039",
+        "source_rank": 17
+      },
+      {
+        "host_uuid": "34965664",
+        "name_with_owner": "sindresorhus/path-exists",
+        "rank": 18,
+        "record_id": "395337",
+        "source_rank": 17
+      },
+      {
+        "host_uuid": "48317882",
+        "name_with_owner": "php-http/message",
+        "rank": 19,
+        "record_id": "4084742",
+        "source_rank": 17
+      },
+      {
+        "host_uuid": "49630239",
+        "name_with_owner": "symfony/polyfill-apcu",
+        "rank": 20,
+        "record_id": "4516110",
+        "source_rank": 17
+      },
+      {
+        "host_uuid": "2641412",
+        "name_with_owner": "symfony/web-profiler-bundle",
+        "rank": 21,
+        "record_id": "79036",
+        "source_rank": 17
+      },
+      {
+        "host_uuid": "9852918",
+        "name_with_owner": "TryGhost/Ghost",
+        "rank": 22,
+        "record_id": "132257",
+        "source_rank": 16
+      },
+      {
+        "host_uuid": "70421055",
+        "name_with_owner": "mysticatea/eslint-plugin-eslint-comments",
+        "rank": 23,
+        "record_id": "14271547",
+        "source_rank": 16
+      },
+      {
+        "host_uuid": "25910615",
+        "name_with_owner": "fraserxu/react-chartist",
+        "rank": 24,
+        "record_id": "145951",
+        "source_rank": 16
+      },
+      {
+        "host_uuid": "23733314",
+        "name_with_owner": "sindresorhus/ip-regex",
+        "rank": 25,
+        "record_id": "20754",
+        "source_rank": 16
+      },
+      {
+        "host_uuid": "28748255",
+        "name_with_owner": "sweetalert2/sweetalert2",
+        "rank": 26,
+        "record_id": "34634",
+        "source_rank": 16
+      },
+      {
+        "host_uuid": "14677293",
+        "name_with_owner": "estools/esutils",
+        "rank": 27,
+        "record_id": "48738",
+        "source_rank": 16
+      },
+      {
+        "host_uuid": "53662249",
+        "name_with_owner": "wix/react-native-navigation",
+        "rank": 28,
+        "record_id": "6952780",
+        "source_rank": 16
+      },
+      {
+        "host_uuid": "30788414",
+        "name_with_owner": "ember-cli/ember-cli-eslint",
+        "rank": 29,
+        "record_id": "800873",
+        "source_rank": 16
+      },
+      {
+        "host_uuid": "11746030",
+        "name_with_owner": "imagemin/gifsicle-bin",
+        "rank": 30,
+        "record_id": "102519",
+        "source_rank": 15
+      },
+      {
+        "host_uuid": "15267409",
+        "name_with_owner": "lovell/limax",
+        "rank": 31,
+        "record_id": "112587",
+        "source_rank": 15
+      },
+      {
+        "host_uuid": "41790634",
+        "name_with_owner": "sindresorhus/write-pkg",
+        "rank": 32,
+        "record_id": "1149327",
+        "source_rank": 15
+      },
+      {
+        "host_uuid": "8414118",
+        "name_with_owner": "scijs/ndarray",
+        "rank": 33,
+        "record_id": "116910",
+        "source_rank": 15
+      },
+      {
+        "host_uuid": "65017574",
+        "name_with_owner": "botman/botman",
+        "rank": 34,
+        "record_id": "12439057",
+        "source_rank": 15
+      },
+      {
+        "host_uuid": "65965397",
+        "name_with_owner": "JS-DevTools/readdir-enhanced",
+        "rank": 35,
+        "record_id": "12801646",
+        "source_rank": 15
+      },
+      {
+        "host_uuid": "24034567",
+        "name_with_owner": "sindresorhus/public-ip",
+        "rank": 36,
+        "record_id": "144550",
+        "source_rank": 15
+      },
+      {
+        "host_uuid": "14907562",
+        "name_with_owner": "andreaferretti/paths-js",
+        "rank": 37,
+        "record_id": "31117",
+        "source_rank": 15
+      },
+      {
+        "host_uuid": "1972908",
+        "name_with_owner": "ekalinin/sitemap.js",
+        "rank": 38,
+        "record_id": "33575",
+        "source_rank": 15
+      },
+      {
+        "host_uuid": "12082924",
+        "name_with_owner": "dyve/django-bootstrap3",
+        "rank": 39,
+        "record_id": "369980",
+        "source_rank": 15
+      },
+      {
+        "host_uuid": "33904351",
+        "name_with_owner": "laravel/lumen",
+        "rank": 40,
+        "record_id": "384061",
+        "source_rank": 15
+      },
+      {
+        "host_uuid": "18673522",
+        "name_with_owner": "dingo/api",
+        "rank": 41,
+        "record_id": "50722",
+        "source_rank": 15
+      },
+      {
+        "host_uuid": "7634677",
+        "name_with_owner": "openssl/openssl",
+        "rank": 42,
+        "record_id": "851256",
+        "source_rank": 15
+      },
+      {
+        "host_uuid": "39936179",
+        "name_with_owner": "es-shims/String.prototype.padEnd",
+        "rank": 43,
+        "record_id": "944159",
+        "source_rank": 15
+      },
+      {
+        "host_uuid": "58722558",
+        "name_with_owner": "m4b/goblin",
+        "rank": 44,
+        "record_id": "10137945",
+        "source_rank": 14
+      },
+      {
+        "host_uuid": "11491572",
+        "name_with_owner": "AfterShip/phone",
+        "rank": 45,
+        "record_id": "121796",
+        "source_rank": 14
+      },
+      {
+        "host_uuid": "4056781",
+        "name_with_owner": "ctavan/node-getenv",
+        "rank": 46,
+        "record_id": "132223",
+        "source_rank": 14
+      },
+      {
+        "host_uuid": "886087",
+        "name_with_owner": "glejeune/node-graphviz",
+        "rank": 47,
+        "record_id": "132646",
+        "source_rank": 14
+      },
+      {
+        "host_uuid": "18251855",
+        "name_with_owner": "venables/koa-helmet",
+        "rank": 48,
+        "record_id": "138405",
+        "source_rank": 14
+      },
+      {
+        "host_uuid": "71396770",
+        "name_with_owner": "shellscape/koa-webpack",
+        "rank": 49,
+        "record_id": "14889568",
+        "source_rank": 14
+      },
+      {
+        "host_uuid": "2135514",
+        "name_with_owner": "przemyslawpluta/node-youtube-dl",
+        "rank": 50,
+        "record_id": "164107",
+        "source_rank": 14
+      }
+    ],
+    "roster_is_short": false,
+    "schema": "tavonel.sfir9.roster_selection.v1",
+    "selection_digest": "sha256:405922cedd05163358474c73e8200ed83668a41f045868f8aa3a27356d9e4838"
+  },
+  "spent_identities_excluded": 50,
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V9",
+  "what_this_does_not_establish": "anything about capacity. No repository here has been contacted. C and Q do not exist yet, and the criterion has not been applied.",
+  "what_this_is": "the cohort. It was chosen by the frozen selection rule from the bound catalogue under SFIR7's inherited predicates, and sealed before any census ran against it."
+}

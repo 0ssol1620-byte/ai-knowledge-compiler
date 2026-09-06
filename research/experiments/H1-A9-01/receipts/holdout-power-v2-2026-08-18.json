@@ -1,0 +1,361 @@
+{
+  "alpha": 0.05,
+  "discovery_set_page_count": 198,
+  "scenarios": {
+    "evidence_validity_gate::halved_effect": {
+      "abstained_error_rate": 0.19270833333333334,
+      "abstention_rate": 0.030303030303030304,
+      "accepted_error_rate": 0.052083333333333336,
+      "power_at_the_discovery_set_size": 0.21605,
+      "power_curve": [
+        {
+          "n": 100,
+          "power": 0.1071
+        },
+        {
+          "n": 150,
+          "power": 0.1626
+        },
+        {
+          "n": 200,
+          "power": 0.21845
+        },
+        {
+          "n": 300,
+          "power": 0.299
+        },
+        {
+          "n": 400,
+          "power": 0.3812
+        },
+        {
+          "n": 600,
+          "power": 0.5213
+        },
+        {
+          "n": 800,
+          "power": 0.6394
+        },
+        {
+          "n": 1200,
+          "power": 0.79875
+        },
+        {
+          "n": 1600,
+          "power": 0.89215
+        },
+        {
+          "n": 2400,
+          "power": 0.96445
+        },
+        {
+          "n": 3200,
+          "power": 0.99065
+        },
+        {
+          "n": 4800,
+          "power": 0.9992
+        }
+      ],
+      "risk_ratio": 3.7,
+      "smallest_n_reaching_80_percent_power": 1600
+    },
+    "evidence_validity_gate::observed_effect": {
+      "abstained_error_rate": 0.3333333333333333,
+      "abstention_rate": 0.030303030303030304,
+      "accepted_error_rate": 0.052083333333333336,
+      "power_at_the_discovery_set_size": 0.4877,
+      "power_curve": [
+        {
+          "n": 100,
+          "power": 0.25185
+        },
+        {
+          "n": 150,
+          "power": 0.3874
+        },
+        {
+          "n": 200,
+          "power": 0.49755
+        },
+        {
+          "n": 300,
+          "power": 0.65265
+        },
+        {
+          "n": 400,
+          "power": 0.76985
+        },
+        {
+          "n": 600,
+          "power": 0.9027
+        },
+        {
+          "n": 800,
+          "power": 0.96175
+        },
+        {
+          "n": 1200,
+          "power": 0.99475
+        },
+        {
+          "n": 1600,
+          "power": 0.99925
+        },
+        {
+          "n": 2400,
+          "power": 1.0
+        },
+        {
+          "n": 3200,
+          "power": 1.0
+        },
+        {
+          "n": 4800,
+          "power": 1.0
+        }
+      ],
+      "risk_ratio": 6.3999999999999995,
+      "smallest_n_reaching_80_percent_power": 600
+    },
+    "stability_and_agreement::halved_effect": {
+      "abstained_error_rate": 0.10909090909090909,
+      "abstention_rate": 0.16666666666666666,
+      "accepted_error_rate": 0.03636363636363636,
+      "power_at_the_discovery_set_size": 0.35505,
+      "power_curve": [
+        {
+          "n": 100,
+          "power": 0.1857
+        },
+        {
+          "n": 150,
+          "power": 0.28435
+        },
+        {
+          "n": 200,
+          "power": 0.35865
+        },
+        {
+          "n": 300,
+          "power": 0.494
+        },
+        {
+          "n": 400,
+          "power": 0.5971
+        },
+        {
+          "n": 600,
+          "power": 0.76245
+        },
+        {
+          "n": 800,
+          "power": 0.867
+        },
+        {
+          "n": 1200,
+          "power": 0.9639
+        },
+        {
+          "n": 1600,
+          "power": 0.9908
+        },
+        {
+          "n": 2400,
+          "power": 0.99955
+        },
+        {
+          "n": 3200,
+          "power": 1.0
+        },
+        {
+          "n": 4800,
+          "power": 1.0
+        }
+      ],
+      "risk_ratio": 3.0,
+      "smallest_n_reaching_80_percent_power": 800
+    },
+    "stability_and_agreement::observed_effect": {
+      "abstained_error_rate": 0.18181818181818182,
+      "abstention_rate": 0.16666666666666666,
+      "accepted_error_rate": 0.03636363636363636,
+      "power_at_the_discovery_set_size": 0.76105,
+      "power_curve": [
+        {
+          "n": 100,
+          "power": 0.46595
+        },
+        {
+          "n": 150,
+          "power": 0.6379
+        },
+        {
+          "n": 200,
+          "power": 0.7647
+        },
+        {
+          "n": 300,
+          "power": 0.9013
+        },
+        {
+          "n": 400,
+          "power": 0.9591
+        },
+        {
+          "n": 600,
+          "power": 0.9944
+        },
+        {
+          "n": 800,
+          "power": 0.9995
+        },
+        {
+          "n": 1200,
+          "power": 1.0
+        },
+        {
+          "n": 1600,
+          "power": 1.0
+        },
+        {
+          "n": 2400,
+          "power": 1.0
+        },
+        {
+          "n": 3200,
+          "power": 1.0
+        },
+        {
+          "n": 4800,
+          "power": 1.0
+        }
+      ],
+      "risk_ratio": 5.0,
+      "smallest_n_reaching_80_percent_power": 300
+    },
+    "stability_gate::halved_effect": {
+      "abstained_error_rate": 0.13333333333333333,
+      "abstention_rate": 0.09090909090909091,
+      "accepted_error_rate": 0.044444444444444446,
+      "power_at_the_discovery_set_size": 0.2836,
+      "power_curve": [
+        {
+          "n": 100,
+          "power": 0.15985
+        },
+        {
+          "n": 150,
+          "power": 0.2256
+        },
+        {
+          "n": 200,
+          "power": 0.29145
+        },
+        {
+          "n": 300,
+          "power": 0.40895
+        },
+        {
+          "n": 400,
+          "power": 0.5105
+        },
+        {
+          "n": 600,
+          "power": 0.671
+        },
+        {
+          "n": 800,
+          "power": 0.7705
+        },
+        {
+          "n": 1200,
+          "power": 0.90415
+        },
+        {
+          "n": 1600,
+          "power": 0.96155
+        },
+        {
+          "n": 2400,
+          "power": 0.99365
+        },
+        {
+          "n": 3200,
+          "power": 0.99965
+        },
+        {
+          "n": 4800,
+          "power": 1.0
+        }
+      ],
+      "risk_ratio": 3.0,
+      "smallest_n_reaching_80_percent_power": 1200
+    },
+    "stability_gate::observed_effect": {
+      "abstained_error_rate": 0.2222222222222222,
+      "abstention_rate": 0.09090909090909091,
+      "accepted_error_rate": 0.044444444444444446,
+      "power_at_the_discovery_set_size": 0.64665,
+      "power_curve": [
+        {
+          "n": 100,
+          "power": 0.38555
+        },
+        {
+          "n": 150,
+          "power": 0.52925
+        },
+        {
+          "n": 200,
+          "power": 0.65275
+        },
+        {
+          "n": 300,
+          "power": 0.81815
+        },
+        {
+          "n": 400,
+          "power": 0.9041
+        },
+        {
+          "n": 600,
+          "power": 0.9761
+        },
+        {
+          "n": 800,
+          "power": 0.99365
+        },
+        {
+          "n": 1200,
+          "power": 0.99965
+        },
+        {
+          "n": 1600,
+          "power": 1.0
+        },
+        {
+          "n": 2400,
+          "power": 1.0
+        },
+        {
+          "n": 3200,
+          "power": 1.0
+        },
+        {
+          "n": 4800,
+          "power": 1.0
+        }
+      ],
+      "risk_ratio": 4.999999999999999,
+      "smallest_n_reaching_80_percent_power": 300
+    }
+  },
+  "schema": "tavonel.a9-holdout-power.v1",
+  "seed": 20260818,
+  "target_power": 0.8,
+  "test": "Fisher exact, two-sided, accepted versus abstained",
+  "trials_per_point": 20000,
+  "why_simulated": "the abstained arm holds roughly 9 percent of the corpus, so cell counts are far too small for a normal approximation to be trusted; the simulation runs the same exact test the protocol will run",
+  "winners_curse_note": "The observed-effect row is optimistic: the operating point was chosen on the same data that produced the estimate. The halved-effect row is the number to size on."
+}

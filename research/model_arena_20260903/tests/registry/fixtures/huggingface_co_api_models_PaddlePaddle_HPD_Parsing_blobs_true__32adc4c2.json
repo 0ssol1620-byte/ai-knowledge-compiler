@@ -1,0 +1,256 @@
+{
+  "_id": "6a5f645480e53be4d464ab08",
+  "author": "PaddlePaddle",
+  "cardData": {
+    "base_model": "OpenGVLab/InternVL3_5-1B",
+    "language": [
+      "en",
+      "zh"
+    ],
+    "library_name": "transformers",
+    "license": "apache-2.0",
+    "pipeline_tag": "image-text-to-text",
+    "tags": [
+      "image-text-to-text",
+      "transformers",
+      "safetensors",
+      "visual-language",
+      "paddleocr",
+      "document-parse",
+      "HPD-Parsing",
+      "speculative-decoding",
+      "P-MTP",
+      "eval results"
+    ]
+  },
+  "config": {
+    "architectures": [
+      "InternVLChatModel"
+    ],
+    "auto_map": {
+      "AutoConfig": "configuration_internvl_chat.InternVLChatConfig",
+      "AutoModel": "modeling_internvl_chat.InternVLChatModel",
+      "AutoModelForCausalLM": "modeling_internvl_chat.InternVLChatModel"
+    },
+    "chat_template_jinja": "{% for message in messages %}{{'<|im_start|>' + message['role'] + '\n'}}{% if message['content'] is string %}{{ message['content'] }}{% else %}{% for content in message['content'] %}{% if content['type'] == 'image' %}{{ '<image>\n' }}{% elif content['type'] == 'video' %}{{ '<video>\n' }}{% elif content['type'] == 'text' %}{{ content['text'] }}{% endif %}{% endfor %}{% endif %}{{'<|im_end|>\n'}}{% endfor %}{% if add_generation_prompt %}{{'<|im_start|>assistant\n' }}{% endif %}",
+    "model_type": "internvl_chat",
+    "tokenizer_config": {
+      "bos_token": null,
+      "eos_token": "<|im_end|>",
+      "pad_token": "<|endoftext|>",
+      "unk_token": null
+    }
+  },
+  "createdAt": "2026-07-21T12:21:40.000Z",
+  "disabled": false,
+  "downloads": 2830,
+  "gated": false,
+  "id": "PaddlePaddle/HPD-Parsing",
+  "lastModified": "2026-07-22T11:43:09.000Z",
+  "library_name": "transformers",
+  "likes": 99,
+  "model-index": null,
+  "modelId": "PaddlePaddle/HPD-Parsing",
+  "pipeline_tag": "image-text-to-text",
+  "private": false,
+  "safetensors": {
+    "parameters": {
+      "BF16": 1071912960
+    },
+    "total": 1071912960
+  },
+  "sha": "91de80054c23ab4238e3d7073fa2b83c2a7e301e",
+  "siblings": [
+    {
+      "blobId": "924fd39a121b463f9f48e5770718b61275fadd92",
+      "rfilename": ".gitattributes",
+      "size": 1622
+    },
+    {
+      "blobId": "ad98fa19acce28b42ef1172dcc54230085f79851",
+      "lfs": {
+        "pointerSize": 133,
+        "sha256": "5ab70bc3e7a8a494dbf18e1b6e43e8c5efc2716d968c939351aa0538b914e2ea",
+        "size": 10594788
+      },
+      "rfilename": "HPD_Parsing.pdf",
+      "size": 10594788
+    },
+    {
+      "blobId": "765e6e22203663dd33ebdd260a160919c6f4b91e",
+      "rfilename": "P-MTP/config.json",
+      "size": 73
+    },
+    {
+      "blobId": "8bc4519d99fa8651d1cf9879a54ef5c289a63c63",
+      "lfs": {
+        "pointerSize": 134,
+        "sha256": "a84e697098ce5242a5a10cb95ae05a8cc579134ae01d615ed7bd64f97cddec3a",
+        "size": 644361256
+      },
+      "rfilename": "P-MTP/model.safetensors",
+      "size": 644361256
+    },
+    {
+      "blobId": "c8df443a0549f2cc2131f5443c1c2402bc129f49",
+      "rfilename": "README.md",
+      "size": 13630
+    },
+    {
+      "blobId": "3becd6521f87f2bbb80262eb0ac9332491754ae1",
+      "rfilename": "added_tokens.json",
+      "size": 954
+    },
+    {
+      "blobId": "2e5dcf6ad9edfd8c89a52da19c23bd8a8d87a7f2",
+      "rfilename": "chat_template.jinja",
+      "size": 475
+    },
+    {
+      "blobId": "391d3ac18e66c16a0cd0925d01ed53fab7afa7be",
+      "rfilename": "config.json",
+      "size": 3412
+    },
+    {
+      "blobId": "32f469c4bbfee021fe19e622245d16fd9ba0aae6",
+      "rfilename": "configuration_intern_vit.py",
+      "size": 5546
+    },
+    {
+      "blobId": "a3105708ef1462b3a467ed24b10afe2c5d08fd2c",
+      "rfilename": "configuration_internvl_chat.py",
+      "size": 4700
+    },
+    {
+      "blobId": "5a771766f21ce3aeeb99b286fb8d188b0038a547",
+      "rfilename": "conversation.py",
+      "size": 15309
+    },
+    {
+      "blobId": "e09b9000720c4dc8d6b746d1782e990fdce03eae",
+      "rfilename": "eval/README.md",
+      "size": 3406
+    },
+    {
+      "blobId": "e9f7e14e8a6c3f0cc4d5f2fd25700607601f63cf",
+      "rfilename": "eval/benchmark_tps.py",
+      "size": 5360
+    },
+    {
+      "blobId": "b32b4d215acbfd2640394734aad8f36292d798c2",
+      "rfilename": "eval/hpd_to_markdown.py",
+      "size": 8368
+    },
+    {
+      "blobId": "f8f6c05e7a881d174ef729b971c23f4b151734f5",
+      "rfilename": "generation_config.json",
+      "size": 95
+    },
+    {
+      "blobId": "6d54d2f9e5d7bd1f607020c6bc9c2b2f3af8843a",
+      "rfilename": "image_preprocess.py",
+      "size": 3214
+    },
+    {
+      "blobId": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7",
+      "rfilename": "merges.txt",
+      "size": 1671853
+    },
+    {
+      "blobId": "2601bba53505afced345624e91da6efa9475ffd1",
+      "lfs": {
+        "pointerSize": 135,
+        "sha256": "f82b9c83ca8a85931b51b717143c24858281aa8cd1f016dd5a7a1ec5d40a7d91",
+        "size": 2143907448
+      },
+      "rfilename": "model.safetensors",
+      "size": 2143907448
+    },
+    {
+      "blobId": "6d72917a7806261841f603e8ef48ff782d39f2d2",
+      "rfilename": "modeling_intern_vit.py",
+      "size": 18151
+    },
+    {
+      "blobId": "78e4c8962694b3afd47820c120fcbcad7461ae77",
+      "rfilename": "modeling_internvl_chat.py",
+      "size": 35417
+    },
+    {
+      "blobId": "a7b376e0a83f26eaa784db792ef61be7aac5494f",
+      "rfilename": "preprocessor_config.json",
+      "size": 666
+    },
+    {
+      "blobId": "74ea6ef5bd52e11d45791fbab7cca3dc984942fa",
+      "rfilename": "special_tokens_map.json",
+      "size": 744
+    },
+    {
+      "blobId": "288488768425124ca4d8371a7e03c31a7151319c",
+      "lfs": {
+        "pointerSize": 133,
+        "sha256": "2e9a5bd06115c607d2bda92cdefb7b21e915832ea58afd1688796a4db56e6d67",
+        "size": 11424851
+      },
+      "rfilename": "tokenizer.json",
+      "size": 11424851
+    },
+    {
+      "blobId": "550577229e8b04719e8805da798625547ca71197",
+      "rfilename": "tokenizer_config.json",
+      "size": 7685
+    },
+    {
+      "blobId": "4783fe10ac3adce15ac8f358ef5462739852c569",
+      "rfilename": "vocab.json",
+      "size": 2776833
+    }
+  ],
+  "spaces": [
+    "PaddlePaddle/hpd-parsing"
+  ],
+  "tags": [
+    "transformers",
+    "safetensors",
+    "internvl_chat",
+    "feature-extraction",
+    "image-text-to-text",
+    "visual-language",
+    "paddleocr",
+    "document-parse",
+    "HPD-Parsing",
+    "speculative-decoding",
+    "P-MTP",
+    "eval results",
+    "conversational",
+    "custom_code",
+    "en",
+    "zh",
+    "arxiv:2607.18839",
+    "base_model:OpenGVLab/InternVL3_5-1B",
+    "base_model:finetune:OpenGVLab/InternVL3_5-1B",
+    "license:apache-2.0",
+    "region:us"
+  ],
+  "transformersInfo": {
+    "auto_model": "AutoModel",
+    "custom_class": "modeling_internvl_chat.InternVLChatModel",
+    "pipeline_tag": "feature-extraction"
+  },
+  "usedStorage": 2810288343,
+  "widgetData": [
+    {
+      "text": "Hi, what can you help me with?"
+    },
+    {
+      "text": "What is 84 * 3 / 2?"
+    },
+    {
+      "text": "Tell me an interesting fact about the universe!"
+    },
+    {
+      "text": "Explain quantum computing in simple terms."
+    }
+  ]
+}

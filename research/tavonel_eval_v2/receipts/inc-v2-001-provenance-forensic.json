@@ -1,0 +1,201 @@
+{
+  "distinct_digests_indexed": {
+    "archive": 687,
+    "git_object_database": 4224,
+    "worktree": 56605
+  },
+  "drift_count": 4,
+  "external_gpu_cost_usd": 0.0,
+  "findings": [
+    {
+      "action_taken": "NONE — read-only forensic",
+      "amendment_evidence": {
+        "amendment_named_sibling": [],
+        "git_log_tail": [],
+        "sibling_files": [],
+        "tracked_in_git": false
+      },
+      "classification": "EVIDENCE_QUARANTINE",
+      "current_sha256": "sha256:c25ecbb4857c90f59412d820054f3ad3fb8d5fc44029c091bca7e55910a8e537",
+      "looks_generated": false,
+      "path": "docs/audit/HOSTILE_REVIEW_2026-08-19.md",
+      "pinned_by": "docs/ip/receipts/submission-package-index-2026-08-19.json",
+      "pinned_sha256": "sha256:93420f8b05de5d7c4f64ddd1f0015fdf748b9934ae75c7edcd39117af18c4071",
+      "reason": "the pinned bytes were not found in the object database, in any archive, in any backup directory, or anywhere in the working tree. The binding cannot be re-established from what this machine holds.",
+      "recovered": false,
+      "recovered_bytes_available": false,
+      "recovered_from": []
+    },
+    {
+      "action_taken": "NONE — read-only forensic",
+      "amendment_evidence": {
+        "amendment_named_sibling": [],
+        "git_log_tail": [],
+        "sibling_files": [],
+        "tracked_in_git": false
+      },
+      "classification": "EVIDENCE_QUARANTINE",
+      "current_sha256": "sha256:4f354e3e5597b4a4b48cbd6acc8caa9d3e35ac33619dd4387a3d6d5e51f89711",
+      "looks_generated": true,
+      "path": "docs/repro/TEST_SCOPE_STATUS.json",
+      "pinned_by": "docs/ip/receipts/submission-package-index-2026-08-19.json",
+      "pinned_sha256": "sha256:0c12365dcf854a239a655cba995d04e33ae1009a8b8d1a2a04b936b6270a39ed",
+      "reason": "the pinned bytes were not found in the object database, in any archive, in any backup directory, or anywhere in the working tree. The binding cannot be re-established from what this machine holds.",
+      "recovered": false,
+      "recovered_bytes_available": false,
+      "recovered_from": []
+    },
+    {
+      "action_taken": "NONE — read-only forensic",
+      "amendment_evidence": {
+        "amendment_named_sibling": [],
+        "git_log_tail": [
+          "d4287dc evidence(research): clean-checkout attestations for all three experiments at e804a47",
+          "24b53e7 evidence(research): refresh the attestation, and name the one-step lag as inherent",
+          "82ca6c4 evidence(research): attest EXP-0101's receipts 25/25 GREEN from a clean checkout"
+        ],
+        "sibling_files": [],
+        "tracked_in_git": true
+      },
+      "classification": "ACCIDENTAL_MODIFICATION",
+      "current_sha256": "sha256:f4831788c84141e4ff236793beff287b4e8860a4d78b526f4528a78b37747018",
+      "looks_generated": false,
+      "path": "research/experiments/EXP-0101/receipts/committed-bytes-verification.json",
+      "pinned_by": "research/experiments/EXP-0101/receipts/receipts.json",
+      "pinned_sha256": "sha256:287003fa2da00f1d81970b5c7b4c8a286a84a00e281957dc7f3dfe19c67bb28f",
+      "reason": "the pinned bytes exist and nothing in the repository records a reason for the change.",
+      "recovered": true,
+      "recovered_bytes_available": true,
+      "recovered_from": [
+        "git_object_database:e305521066691b34219297c96d9968c7d51c73cf"
+      ]
+    },
+    {
+      "action_taken": "NONE — read-only forensic",
+      "amendment_evidence": {
+        "amendment_named_sibling": [
+          "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v2-2026-08-19.json"
+        ],
+        "git_log_tail": [],
+        "sibling_files": [
+          "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v1-invalidation-2026-08-19.json",
+          "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v2-2026-08-19.json",
+          "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v7-2026-08-19.json",
+          "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v8-holdout.json",
+          "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-entity-conditioned-gate-on-v8-questions-dev-2026-08-19.json",
+          "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-holdout-question-set-binding.json"
+        ],
+        "tracked_in_git": false
+      },
+      "classification": "EVIDENCE_QUARANTINE",
+      "current_sha256": "sha256:c23c3b4ba1f50eafb9e29d1792ce0fd0568ca7f74b55b376a8e550304f1ebf17",
+      "looks_generated": true,
+      "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v8-dev-2026-08-19.json",
+      "pinned_by": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/v8-development-arm-run-2026-08-19.json",
+      "pinned_sha256": "sha256:1d0f2a775ea244b1a03cb954b60c4dd3fc14ce432c3b8997f3f1072bea4fa09c",
+      "reason": "the pinned bytes were not found in the object database, in any archive, in any backup directory, or anywhere in the working tree. The binding cannot be re-established from what this machine holds.",
+      "recovered": false,
+      "recovered_bytes_available": false,
+      "recovered_from": []
+    }
+  ],
+  "findings_sha256": "sha256:ed02e18ef3e0955927af2691678ae1d4cbd9b8474d017822d348effb76c37ae4",
+  "generated_at": "2026-08-21T06:51:01.042581+00:00",
+  "git_head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "gpu_seconds": 0,
+  "incident": "INC-V2-001",
+  "input_receipt": "research/tavonel_eval_v2/receipts/p0-sealed-evidence-verification.json",
+  "input_receipt_sha256": "sha256:ef9c8e417265cf53dce6bf28d134c06554cb303bff5ec2a98c9a5578dc93bf91",
+  "no_superseding_receipt_written": true,
+  "nothing_re_sealed": true,
+  "nothing_restored": true,
+  "quarantine": [
+    "docs/audit/HOSTILE_REVIEW_2026-08-19.md",
+    "docs/repro/TEST_SCOPE_STATUS.json",
+    "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v8-dev-2026-08-19.json"
+  ],
+  "quarantined_count": 3,
+  "read_only": true,
+  "receipt_sha256": "sha256:fda4a76f52bdb8af3cfb7e05c9702cf19476d51b1548b7f519c680c42e5fae3f",
+  "recovered_count": 1,
+  "schema": "tavonel.v2.inc_v2_001_provenance_forensic.v1",
+  "self_hash_findings": [
+    {
+      "a_version_whose_bytes_equal_the_declared_digest_exists": false,
+      "current_file_sha256": "sha256:c23c3b4ba1f50eafb9e29d1792ce0fd0568ca7f74b55b376a8e550304f1ebf17",
+      "declared_receipt_sha256": "sha256:1d0f2a775ea244b1a03cb954b60c4dd3fc14ce432c3b8997f3f1072bea4fa09c",
+      "found_at": [],
+      "note": "The declared value is a canonical digest over the document, not over the file bytes, so a byte match is not expected. Its absence is reported rather than treated as proof either way; what is established is only that the declared digest does not recompute over the document now on disk.",
+      "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v8-dev-2026-08-19.json",
+      "state": "UNRESOLVED_ENCODING_OR_DRIFT"
+    },
+    {
+      "a_version_whose_bytes_equal_the_declared_digest_exists": false,
+      "current_file_sha256": "sha256:915f29f5439dce46a0c82fea8fc72f42e479ba1100366f12b8cba67d58b446ee",
+      "declared_receipt_sha256": "sha256:2f20b9a5c3648aec0df2709e18b69beeacfe0ae83326fdd29252a67c438ab48f",
+      "found_at": [],
+      "note": "The declared value is a canonical digest over the document, not over the file bytes, so a byte match is not expected. Its absence is reported rather than treated as proof either way; what is established is only that the declared digest does not recompute over the document now on disk.",
+      "path": "research/experiments/H1-W6-SAME-INTELLIGENCE-01/receipts/question-set-v8-holdout.json",
+      "state": "UNRESOLVED_ENCODING_OR_DRIFT"
+    }
+  ],
+  "sources_searched": {
+    "archive": "every .zip in the working tree",
+    "git_object_database": "every blob reachable or not, via git cat-file --batch-all-objects",
+    "worktree": "every file in the working tree outside .git, .mypy_cache, .next, .venv, __pycache__, node_modules"
+  },
+  "worktree_files_too_large_to_hash": [
+    ".chatgpt2codex/a9-holdout-800-v1/holdout-800-source-only.tar",
+    ".chatgpt2codex/formal-runtime-v27/tmp/trivy-2146441528/cached-file-1244089438",
+    ".chatgpt2codex/formal-runtime-v27/tmp/trivy-2146441528/cached-file-2211439106",
+    ".chatgpt2codex/formal-runtime-v27/tmp/trivy-2146441528/cached-file-3888844771",
+    ".chatgpt2codex/formal-runtime-v27/trivy-cache-windows/db/trivy.db",
+    ".chatgpt2codex/formal-runtime-v28/stage1-hard-200-source-only-v2.tar",
+    ".chatgpt2codex/formal-runtime-v28/stage1-hard-200-source-only.tar",
+    ".chatgpt2codex/formal-runtime-v28/trivy-cache-sbom/db/trivy.db",
+    ".chatgpt2codex/oci-ovis-baked-v27-scan/blobs/sha256/342612b61609b6a70f0cbadbfd2c52e976892178281c8ec788def2bc4b34af07",
+    ".chatgpt2codex/oci-ovis-baked-v27-scan/blobs/sha256/5a2c60f80b56e4fdeec3c39a4339c256f2aa9c111980180532831e64e1d5a403",
+    ".chatgpt2codex/oci-ovis-baked-v27-scan/blobs/sha256/814aea19c027dd304e227b19afcd7c40af0f40bb3dba26432a90998c9f1bc1e2",
+    ".chatgpt2codex/oci-ovis-baked-v27-scan/blobs/sha256/98b1b2095f421c82cab354ee1bda2d33c7439ab0d7f71c96985c861404ebb0db",
+    ".chatgpt2codex/oci-ovis-baked-v27-scan/blobs/sha256/9b82fd68cbf56b10752a299a2810aad3e7454523ad406ad978e09351a6b460de",
+    ".chatgpt2codex/oci-ovis-baked-v27-scan/blobs/sha256/9bc334d30e8e6d71760ba7111d1991bf9a5b297a3fc18ff64f55fceb1c73173c",
+    ".chatgpt2codex/oci-ovis-baked-v27-scan/blobs/sha256/a99959ea94760497fb41e839cf3398cfa6c0c9101a8bf77b60776d581890315e",
+    ".chatgpt2codex/oci-ovis-baked-v27/blobs/sha256/342612b61609b6a70f0cbadbfd2c52e976892178281c8ec788def2bc4b34af07",
+    ".chatgpt2codex/oci-ovis-baked-v27/blobs/sha256/5a2c60f80b56e4fdeec3c39a4339c256f2aa9c111980180532831e64e1d5a403",
+    ".chatgpt2codex/oci-ovis-baked-v27/blobs/sha256/814aea19c027dd304e227b19afcd7c40af0f40bb3dba26432a90998c9f1bc1e2",
+    ".chatgpt2codex/oci-ovis-baked-v27/blobs/sha256/98b1b2095f421c82cab354ee1bda2d33c7439ab0d7f71c96985c861404ebb0db",
+    ".chatgpt2codex/oci-ovis-baked-v27/blobs/sha256/9b82fd68cbf56b10752a299a2810aad3e7454523ad406ad978e09351a6b460de",
+    ".chatgpt2codex/oci-ovis-baked-v27/blobs/sha256/9bc334d30e8e6d71760ba7111d1991bf9a5b297a3fc18ff64f55fceb1c73173c",
+    ".chatgpt2codex/oci-ovis-baked-v27/blobs/sha256/a99959ea94760497fb41e839cf3398cfa6c0c9101a8bf77b60776d581890315e",
+    ".chatgpt2codex/oci-ovis-baked-v28/blobs/sha256/342612b61609b6a70f0cbadbfd2c52e976892178281c8ec788def2bc4b34af07",
+    ".chatgpt2codex/oci-ovis-baked-v28/blobs/sha256/5a2c60f80b56e4fdeec3c39a4339c256f2aa9c111980180532831e64e1d5a403",
+    ".chatgpt2codex/oci-ovis-baked-v28/blobs/sha256/814aea19c027dd304e227b19afcd7c40af0f40bb3dba26432a90998c9f1bc1e2",
+    ".chatgpt2codex/oci-ovis-baked-v28/blobs/sha256/98b1b2095f421c82cab354ee1bda2d33c7439ab0d7f71c96985c861404ebb0db",
+    ".chatgpt2codex/oci-ovis-baked-v28/blobs/sha256/9b82fd68cbf56b10752a299a2810aad3e7454523ad406ad978e09351a6b460de",
+    ".chatgpt2codex/oci-ovis-baked-v28/blobs/sha256/9bc334d30e8e6d71760ba7111d1991bf9a5b297a3fc18ff64f55fceb1c73173c",
+    ".chatgpt2codex/oci-ovis-baked-v28/blobs/sha256/a99959ea94760497fb41e839cf3398cfa6c0c9101a8bf77b60776d581890315e",
+    ".chatgpt2codex/oci-vllm-base-v18/blobs/sha256/342612b61609b6a70f0cbadbfd2c52e976892178281c8ec788def2bc4b34af07",
+    ".chatgpt2codex/oci-vllm-base-v18/blobs/sha256/5a2c60f80b56e4fdeec3c39a4339c256f2aa9c111980180532831e64e1d5a403",
+    ".chatgpt2codex/oci-vllm-base-v18/blobs/sha256/814aea19c027dd304e227b19afcd7c40af0f40bb3dba26432a90998c9f1bc1e2",
+    ".chatgpt2codex/oci-vllm-base-v18/blobs/sha256/98b1b2095f421c82cab354ee1bda2d33c7439ab0d7f71c96985c861404ebb0db",
+    ".chatgpt2codex/oci-vllm-base-v18/blobs/sha256/9bc334d30e8e6d71760ba7111d1991bf9a5b297a3fc18ff64f55fceb1c73173c",
+    ".chatgpt2codex/oci-vllm-base-v18/blobs/sha256/a99959ea94760497fb41e839cf3398cfa6c0c9101a8bf77b60776d581890315e",
+    ".chatgpt2codex/ovis-model-v26/model.safetensors",
+    "benchmark/datasets/private/mineru-public-core-worker-00-2026-08-04.tar",
+    "benchmark/datasets/private/mineru-public-core-worker-01-2026-08-04.tar",
+    "benchmark/datasets/private/mineru-public-core-worker-02-2026-08-04.tar",
+    "benchmark/datasets/private/mineru-public-core-worker-03-2026-08-04.tar",
+    "benchmark/datasets/private/mineru-public-core-worker-03-2026-08-05.tar",
+    "benchmark/datasets/private/runpod-2026-08-04/failover-packages/worker-03-public-core-inputs-r3.tar",
+    "benchmark/datasets/private/runpod-2026-08-04/mineru-qretry2-packages/worker-04-mineru-3.4.4-vlm-quality-retry-inputs.tar.gz",
+    "benchmark/datasets/private/runpod-2026-08-04/mineru-qretry2-packages/worker-06-mineru-3.4.4-vlm-quality-retry-inputs.tar.gz",
+    "benchmark/datasets/private/runpod-2026-08-04/operational-retry-prefetch-packages.failed-invalid-shard-index/worker-04-operational-retry-inputs.tar.gz",
+    "benchmark/datasets/private/runpod-2026-08-04/operational-retry-prefetch-packages.failed-invalid-shard-index/worker-05-operational-retry-inputs.tar.gz",
+    "benchmark/datasets/private/runpod-2026-08-04/operational-retry-prefetch-packages.failed-invalid-shard-index/worker-06-operational-retry-inputs.tar.gz",
+    "benchmark/datasets/private/runpod-2026-08-04/operational-retry-prefetch-packages/worker-04-operational-retry-inputs.tar.gz",
+    "benchmark/datasets/private/runpod-2026-08-04/operational-retry-prefetch-packages/worker-05-operational-retry-inputs.tar.gz",
+    "benchmark/datasets/private/runpod-2026-08-04/operational-retry-prefetch-packages/worker-06-operational-retry-inputs.tar.gz",
+    "work/security-tools/trivy-0.70/cache/db/trivy.db",
+    "work/security-tools/trivy-ba84cee5fad24ec1a029e47a69e8001b/cache/db/trivy.db"
+  ]
+}

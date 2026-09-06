@@ -1,0 +1,25 @@
+{
+  "amendment_of": null,
+  "estimated_cost_usd": 0.0,
+  "frozen_before_any_result": true,
+  "git_head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "gpu_seconds": 0,
+  "protocol_path": "research/tavonel_eval_v2/protocols/ORACLE_INDEPENDENCE_V2.yaml",
+  "protocol_sha256": "sha256:c2126d67ab8fc6ae79b59b1cfac33ca65ce52ded81751885e8d4dca39800757f",
+  "provenance": {
+    "generated_at": "2026-08-23T02:22:52.201626+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/ORACLE_INDEPENDENCE_V2.yaml",
+    "protocol_sha256": "sha256:c2126d67ab8fc6ae79b59b1cfac33ca65ce52ded81751885e8d4dca39800757f",
+    "receipt_stem": "oracle-v2-protocol-freeze",
+    "run_id": "20260823T022252Z-2c122136037f",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_protocol_immutable.py",
+    "tool_sha256": "sha256:2d353f9fe4475f136eb848768adb0dfe3f34f44ab53cdafa8f5652aa3b31554b"
+  },
+  "receipt_sha256": "sha256:ef6e31e6f2cf0030980c717ef864705843c9aa49f15133043add55b62648c2ac",
+  "schema": "tavonel.v2.protocol_freeze.v2",
+  "supersedes_receipts": [],
+  "worktree_dirty_path_count": 182
+}

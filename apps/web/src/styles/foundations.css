@@ -21,7 +21,7 @@
     --fs-lead: calc(20px * var(--fs-scale));
     --fs-body: calc(17px * var(--fs-scale));
     --fs-small: calc(15px * var(--fs-scale));
-    --fs-label: calc(12px * var(--fs-scale));
+    --fs-label: 12px;
 
     /* §7.3 [확정] body and UI never go below 12px. */
     --fs-min: 12px;

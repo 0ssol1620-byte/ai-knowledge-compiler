@@ -1,0 +1,73 @@
+{
+  "actions_not_taken_that_would_have_caused_real_loss": [
+    "The active-segment marker was not deleted -- deleting it would have been tampering, and it turned out the runner still needed it.",
+    "The runner was not killed to force the state to match the report. Killing it during its sealing phase would have manufactured exactly the MEASUREMENT_UNPROVEN outcome that was being reported as inevitable.",
+    "No terminal receipt was sealed on the mistaken premise."
+  ],
+  "authoritative_state_after_correction": {
+    "census_sealed": false,
+    "current_ordinal": 51,
+    "minimum_attributable_charges_total": 3638,
+    "root_states": {
+      "FRONTIER_EXHAUSTED": 46,
+      "STOPPED_BEFORE_EXHAUSTION": 4
+    },
+    "roots_needing_replay": [
+      33,
+      37,
+      45,
+      47
+    ],
+    "segment_01_digest": "sha256:6710af561c5548dfc6f266930da0fb05438958d1a2ac4c3fa053cbddea2657e8",
+    "segment_02_digest": "sha256:14ce28d9fb1c99118ca516285eab3e5f84c59cba9043be3d3daa2e4c3e257639",
+    "segment_chain_head": "sha256:14ce28d9fb1c99118ca516285eab3e5f84c59cba9043be3d3daa2e4c3e257639",
+    "segments_sealed": 2,
+    "terminal_unproven_sealed": false,
+    "windows_permitted": 6,
+    "windows_used": 2
+  },
+  "correction_class": "AGENT_OBSERVATION_ERROR_NOT_INSTRUMENT_FAILURE",
+  "correction_digest": "sha256:6a0dc595cc58890816a103927d3dfbf8f2ee2099cf656f7ac7d08f3bba94ce31",
+  "current_disposition": "FROZEN_OPERATIONAL_HOLD",
+  "current_disposition_detail": "Four roster roots (33, 37, 45, 47) are STOPPED_BEFORE_EXHAUSTION and would be replayed by a third segment, with four of six permitted windows unused. This session sends no further cohort requests and leaves that decision to the study owner.",
+  "how_the_error_was_made": "A harness task-status notification was treated as evidence about the operating system process. It is not. Process liveness was only checked afterwards, and the first check did read the runner as alive without that being recognised.",
+  "number_reconciliation": {
+    "authoritative_segment_01": {
+      "frontier_exhausted_at_seal": 32,
+      "minimum_attributable_charges": 1973,
+      "source": "receipts/sfir10r4-segments/segment-01.json (digest recomputes)"
+    },
+    "authoritative_segment_02": {
+      "frontier_exhausted_at_seal": 46,
+      "minimum_attributable_charges": 1665,
+      "source": "receipts/sfir10r4-segments/segment-02.json (digest recomputes)"
+    },
+    "cumulative_minimum_attributable_charges": 3638,
+    "figures_that_were_never_results": {
+      "32_roots_1973_charges_as_a_running_total": "correct for segment 1 alone at its seal, not a cumulative total",
+      "35_roots_2307_charges": "a live runtime/state.json sample taken while segment 2 was mid-flight"
+    },
+    "why_this_section_exists": "Two different figures for segment 1 were reported from console samples. Only the sealed receipt is authoritative; a mid-flight read of runtime state is not a result and must never reach a paper."
+  },
+  "operational_correction_that_still_stands": "A frozen segment must run as a detached process with its own PID file, log and heartbeat, independent of any agent session. Not because the runner failed -- it did not -- but because the supervising agent could not tell whether it had, and acted on that uncertainty. Recoverability must be defined before the run, not inferred after it.",
+  "publishability_from_the_sealed_receipts": {
+    "capacity_evidence_publishable": true,
+    "exact_provider_cost_attribution": false,
+    "provider_cost_claim_publishable": false,
+    "scientific_counts_disclosed": false,
+    "why": "Both segments record unattributed extra provider charges (103 and 23). Capacity evidence survives that; an exact cost claim does not, and the instrument says so itself rather than leaving it to be inferred."
+  },
+  "recorded_at_utc": "2026-09-03T06:10:00Z",
+  "schema": "tavonel.sfir10r4.incident_correction.v1",
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R3",
+  "supersedes": "receipts/sfir10r4-incident-harness-teardown.json",
+  "supersedes_digest": "sha256:89ecb962e3be6f7ba3537db58f3f41c7cf3c7d87f33d558a324e22a35ef22290",
+  "supersedes_is_retained": true,
+  "what_actually_happened": "The harness lost track of the background task and reported it stopped. The runner process itself was never killed. It kept running for roughly forty minutes after that notice, completed the segment, sealed segment-02.json, unlinked its own active-segment marker and exited cleanly. No crash condition exists and no terminal receipt is warranted.",
+  "what_the_superseded_receipt_claimed": "That the agent harness terminated the segment-2 runner mid-flight, leaving an active-segment marker with no sealed receipt, which the frozen instrument treats as terminal MEASUREMENT_UNPROVEN.",
+  "what_would_be_wrong_now": [
+    "Sealing MEASUREMENT_UNPROVEN. There is no crash to record, and the instrument will not produce one on this state; forcing that label would manufacture a failure the study did not have.",
+    "Reading the two sealed segments as PASS or FAIL. No census, score or acceptance receipt exists and no scientific count has been disclosed."
+  ],
+  "why_a_correction_and_not_an_edit": "The superseded receipt is wrong on its central claim and is kept exactly as written. An incident record that is quietly rewritten once the facts improve is not evidence."
+}

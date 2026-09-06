@@ -1,0 +1,14 @@
+{
+  "cases_where_match_kind_multiset_differs": 0,
+  "divergent_decisions_total": 8,
+  "explained_as_tied_candidate_permutation": 8,
+  "external_gpu_cost_usd": 0.0,
+  "finding": "Every observed divergence is a permutation: the two policies produce the identical multiset of outcomes over the divergent rows, and the match-kind multiset over every whole document is identical. What differs is only which of two exactly-tied split halves receives AMBIGUOUS and which receives NEW. Neither policy merges, so no history is rewritten either way.",
+  "generated_at": "2026-08-19T00:47:38.324574+00:00",
+  "question": "what are the OTHER-class divergences between LEGACY and BLOCKED",
+  "receipt_sha256": "sha256:a89aa85150f81ba1b897c8ade33336cbc6f29133e2352566232e3782bcdd8a44",
+  "residual": "The arbitrary tie-break between exactly-equal candidates is a pre-existing property of the Hungarian assignment and is present in LEGACY too. It is a reproducibility caveat for split halves, not a defect introduced by BLOCKED.",
+  "schema": "tavonel.identity-blocked-divergence-attribution.v1",
+  "unexplained_divergences": 0,
+  "unexplained_examples": []
+}

@@ -1,0 +1,16 @@
+You are performing a document transcription benchmark.
+
+Read the supplied page image and return a faithful Markdown transcription.
+
+Requirements:
+1. Preserve all visually supported text.
+2. Preserve natural human reading order.
+3. Preserve headings, lists, captions, footnotes, and references.
+4. Preserve tables structurally.
+5. Preserve mathematical expressions in LaTeX where visually supported.
+6. Do not summarize.
+7. Do not explain.
+8. Do not silently correct apparent source errors.
+9. Do not infer missing or obscured content.
+10. Do not add facts that are not visually supported.
+11. Return only the transcription.

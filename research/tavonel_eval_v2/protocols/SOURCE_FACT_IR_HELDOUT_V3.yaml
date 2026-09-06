@@ -1,0 +1,488 @@
+# SOURCE_FACT_IR_HELDOUT_V3 (SFI3) — execution correctness, scored once.
+#
+# DRAFT. NOT FROZEN. Frozen after lanes A-D integrate deterministically and
+# BEFORE any fresh lineage is read. Until the freeze receipt exists this file
+# binds nothing.
+#
+# SFI2 is not superseded, corrected or rescored. It returned FAIL on held-out
+# data and stands exactly as executed, permanently, together with the correction
+# receipt that fixed its E5 line without moving its verdict. Its corpus is spent
+# and is development material from here on.
+
+schema: tavonel.v2.protocol.source_fact_ir_heldout.v3
+protocol_id: SOURCE_FACT_IR_HELDOUT_V3
+status: DRAFT_NOT_FROZEN
+split: held_out
+authorised_by: "founder ruling, 2026-08-23 (P0 selective execution, P1 dynamic include targets)"
+
+# Administrative predecessor/successor bridge ordered by the 2026-08-26
+# founder ruling. This receipt does not alter or supersede the historical V2R4
+# attestation. It binds the exact pre-result reservation and frozen V2R4
+# container identities by path and file digest, with scientific_scope=NONE.
+predecessor_handoff:
+  schema: V2R4_SFI3_RESERVATION_HANDOFF_V1
+  receipt: research/tavonel_eval_v2/receipts/v2r4-sfi3-reservation-handoff--20260826T100643Z-2e671a93537e.json
+  sha256: sha256:157c5b5b47d1d4a9b39ec943e049d3226d15fedd66597f0314969d940599f5b1
+
+# Completed outside the freeze gate, one fresh process per test file. The gate
+# consumes this exact immutable receipt and never starts pytest itself.
+suite_evidence:
+  schema: tavonel.v2.sfi3_suite_evidence.v1
+  receipt: research/tavonel_eval_v2/receipts/sfi3-suite-evidence--20260826T111605Z-4f1a1e6ee0d9.json
+  sha256: sha256:d6ed39fb0426e4cea8af37b2d4b78bda9a97bb21dea41f65f4584473da6f1035
+
+# ---------------------------------------------------------------------------
+# what SFI2 established
+
+predecessor:
+  study: SOURCE_FACT_IR_HELDOUT_V2
+  verdict: FAIL
+  standing: "frozen, never rescored; corpus now development material only"
+  cohort: "278 pairs, 3 families, frame exhausted (1,859 of 1,859 considered)"
+  what_it_closed: >-
+    native provenance. V1 failed E2 with 1,284 RECOGNIZED_BUT_UNREPRESENTED
+    facts, every one a PROVENANCE_SPAN. In V2 that count is ZERO. The witness
+    problem is not smaller; it is absent, and the endpoint it failed on is a
+    different one that only became visible once the first was gone.
+  what_it_opened:
+    - >-
+      E5 - 14 confirmed selective stale escapes over 158 pairs with gate power.
+      The first held-out evidence that stale artifacts escape at all. V1 did not
+      find escapes and V1 did not look; V2 looked and found them.
+    - >-
+      E6 - 14 divergences from clean full rebuild over 190 judged supported
+      pairs. THE SAME 14 PAIRS as E5, across 14 distinct lineages, in both eCFR
+      and git.
+    - >-
+      E2 - 14 RECOGNIZED_BUT_UNREPRESENTED facts, every one an INCLUDE_TARGET
+      whose target is a computed expression rather than a single string literal.
+  the_finding_that_directs_this_study: >-
+    the typed cross-check was clean ONLY over its own downstream denominator.
+    191 of 191 pairs that had already entered the cross-check named every
+    artifact that check could see, zero under-invalidated there, zero silent
+    facts there. That measurement is real and stands unrevised. It does NOT
+    mean the typed delta named every artifact that actually moved -- the
+    cross-check's denominator sits downstream of change detection, so a
+    defect upstream of it, in the change detector or the seeding stage, is
+    invisible to a check whose own denominator is downstream of the defect.
+    See INC-V2-037 (correcting INC-V2-036's earlier inference): the actual
+    root cause is identity equivalence reused as change equivalence.
+    akc_cir.semantic_diff's MODIFIED_CLAIM condition is
+    `counterpart.identity_text != incoming.identity_text`, and identity_text
+    comes from akc_cir.identity.normalize_text_for_identity -- whose own
+    source comments already declare it a lossy normalization for identity
+    that must not be used for content comparison. Apache -> Apache(R),
+    Github -> GitHub, spacing/punctuation changes and hyphen -> em dash are
+    correctly the SAME unit under identity continuity, but must not vanish
+    from compiled-relevant change detection, and in the 14 SFI2 cases they
+    did: the change never reached the typed delta because it never reached
+    change detection, upstream of both the typed delta and the executor. No
+    amount of further work on the executor would have found it.
+  correction_on_file: >-
+    the scored receipt first reported E5 as SKIPPED_NEVER_EXERCISED because the
+    scorer read the rebuild summary under the endpoint's protocol name rather
+    than the executor's block name. Corrected by a separate receipt, in the
+    unfavourable direction, with the verdict unmoved. See INC-V2-035.
+
+# ---------------------------------------------------------------------------
+# what is under test
+
+repairs_under_test:
+  P0_selective_execution_correctness:
+    lane_A: >-
+      forensic trace of the 14 cases through typed delta, dependency expansion,
+      rebuild request, scheduler, rebuild execution, carry-forward, candidate
+      verification and activation, identifying the FIRST point at which a
+      rebuild-required artifact becomes carried-forward. Root cause is not
+      inferred from the final stale artifact.
+    lane_B: >-
+      a fail-stop executor invariant, required_to_rebuild intersect
+      carried_forward_without_execution == empty, checked after execution AND
+      again at candidate activation, so one scheduler defect cannot silently
+      reach ACTIVE state.
+    lane_C: >-
+      differential and adversarial cases for every production dependency
+      channel, including multi-hop propagation, each proving a rebuild request
+      was created, the rebuild was executed, the stale artifact cannot be
+      carried, and the run refuses when execution evidence is missing.
+  P1_dynamic_include_targets:
+    lane_D: >-
+      a frozen taxonomy - static resolvable target becomes a represented typed
+      dependency; dynamic or computed target and malformed or ambiguous
+      expression both fail closed. No single target is inferred from an
+      expression that does not statically name one, and the grammar is not
+      widened against the 14 observed cases.
+
+# ---------------------------------------------------------------------------
+# endpoints
+#
+# E1-E7 carried forward from V2 unchanged. E8 and E9 are new. E8 comes
+# directly from the founder's PASS list and is a veto (founder_owed.E8_power,
+# option (b)); E9 comes from INC-V2-038. No threshold moves after a result
+# exists.
+
+endpoints:
+  E1_no_unclassified_changed_regions:
+    requirement: "zero changed regions with no state"
+    must_be_exercised: true
+  E2_no_recognized_but_unrepresented:
+    requirement: "zero, unless covered by a predeclared ignore policy"
+    must_be_exercised: true
+    note: >-
+      V2's 14 were all INCLUDE_TARGET. Under lane D's taxonomy a computed target
+      is UNRESOLVED and fail-closed rather than unrepresented, which is a
+      different state and a different endpoint. This endpoint is not made easier
+      by that - E7 gains the cases E2 loses.
+  E3_no_silent_loss_in_a_complete_scope:
+    requirement: >-
+      zero source facts lost inside a scope declared locally complete, within
+      the declared measurable scope
+    must_be_exercised: true
+    declared_blind_spot: >-
+      carried forward from V2 unchanged and still true. Loss occurring inside
+      the reader, before any fact exists, is outside this endpoint. Malformed
+      markup of the shape <b class="term"30 days</a> is absorbed whole by both
+      the markdown strip and the HTML parser; the enclosed text never reaches
+      canonical text and the surviving unit reports fully_sourced true with zero
+      provenance anomalies.
+    consequence_for_reading_this_endpoint: >-
+      MET means no silent loss was found among the constructs this instrument
+      can see. It does not mean none occurred. That sentence belongs beside any
+      E3 number this study produces.
+    owed_to_the_successor: >-
+      byte accounting. The span map measures output coverage and nothing
+      measures input coverage, so source bytes consumed inside a unit's span and
+      represented by nothing remain uncountable.
+  E4_no_reference_or_locator_only_clean_miss:
+    requirement: >-
+      zero pairs where only a reference target or canonical locator changed and
+      the system reported no change
+    must_be_exercised: true
+  E5_no_confirmed_selective_stale_escape:
+    requirement: "zero confirmed selective stale escapes among judged cases"
+    must_be_exercised: true
+    may_be_skipped: false
+    v2_result: "FAILED - 14 over 158 exercising"
+  E6_exact_selective_vs_clean_equivalence:
+    requirement: >-
+      selective execution equals clean full rebuild on every judged supported
+      pair
+    must_be_exercised: true
+    may_be_skipped: false
+    v2_result: "FAILED - 14 over 190 exercising"
+  E7_unresolved_fails_closed:
+    requirement: >-
+      unresolved and unsupported cases fail closed rather than counting as
+      passes
+    must_be_exercised: true
+  E8_no_rebuild_required_artifact_carried_without_execution:
+    requirement: >-
+      zero artifacts that were required to rebuild and were reused without their
+      declared rebuild having been executed and its output proven equivalent
+    must_be_exercised: true
+    may_be_skipped: false
+    new_in_v3: true
+    classification: MANDATORY_FAIL_STOP_SAFETY_INVARIANT_VETO
+    ruling_applied: >-
+      founder_owed.E8_power, option (b), founder ruling 2026-08-23. See that
+      entry above for the ruling in full.
+    contributes_to_pass_arithmetic: false
+    why: >-
+      E5 and E6 detect the CONSEQUENCE - a stale artifact in the final state.
+      This detects the ACT, at the moment it happens, at two stages. A study
+      that only measures consequences cannot distinguish an executor that is
+      correct from one that was lucky, and SFI2 could not tell which it had.
+    measured_from: >-
+      the executor invariant's own observations, not from a post-hoc comparison
+      of final states. An endpoint answered by comparing outcomes would be E6
+      wearing a second name.
+    seam: >-
+      NOT where the SFI2 failures occurred. The forensic resolved all 14 cases
+      to a seeding gate above the planner, and established that the scheduler
+      cannot drop a member of to_rebuild and that the classification loop
+      structurally guarantees planned intersect carried is empty. This endpoint
+      therefore guards a seam that is currently CLOSED.
+    natural_gate_power_expected: none
+    consequence: >-
+      on the natural cohort this endpoint is expected to report zero
+      violations and zero power. Under option (b) that is not SKIPPED and
+      does not fail the study on its own: E8 is not a positive-evidence
+      endpoint, so a zero-power natural-cohort observation is an accurate
+      report of a closed seam, not a defect to paper over. E8's zero natural
+      gate power is never hidden and never called positive evidence.
+    power_by_fault_injection: >-
+      the invariant does fire. Lane C injected the defect at three sites -
+      semantic, structural and a three-hop chain - and InvariantViolation was
+      raised every time. That is DEVELOPMENT evidence, proving the
+      instrumentation before the freeze on fixtures, not held-out cohort
+      power. It is never added to a held-out denominator and is reported
+      separately from any cohort number.
+    held_out_semantics: >-
+      on the held-out cohort, E8 violation count > 0 is an overall SFI3 FAIL,
+      unconditionally, regardless of E5/E6/E9. E8 violation count == 0 does
+      not create positive statistical power and is not by itself a pass
+      condition for anything - it is necessary, never sufficient. The
+      held-out report states E8's observation count and its zero-power status
+      together, every time it is reported. Repeating that zero-violation
+      observation across many held-out pairs still does not exercise the
+      seam; only fault injection does that, and it stays a separate,
+      pre-freeze, development-only proof (see INC-V2-039).
+    tautological_proof_forbidden: >-
+      an equivalence check comparing a value against the assignment that just
+      produced it is identically true and carries no power. The pre-activation
+      stage is currently of that shape and reports as carrying no power rather
+      than as passing.
+
+  E9_every_detected_typed_change_creates_a_rebuild_request:
+    requirement: >-
+      zero cases where the diff detected and correctly typed a change in a
+      supported production dependency channel and no rebuild request was created
+    must_be_exercised: true
+    may_be_skipped: false
+    new_in_v3: true
+    why: >-
+      the system's ability to SEE a change and its willingness to ACT on one are
+      separate mechanisms, and only the first has ever been measured. SFI2 scored
+      E4 - no reference-or-locator-only clean miss - MET over 39 exercising
+      pairs, and that reading is correct: the diff reported every one. Nothing
+      asked whether the reported change caused a rebuild. It did not, for any of
+      them.
+    current_state_before_the_freeze: >-
+      three of five channels fail this immediately. graph_for builds edges for
+      SEMANTIC and STRUCTURAL only, and semantic_diff's recompilation channel
+      allow-list is {SEMANTIC, GRAPH}, so LOCATOR, TEMPORAL and METADATA changes
+      never enter changed_logical_ids even when detected as EVIDENCE_MOVED,
+      TEMPORAL_CHANGED and METADATA_CHANGED. Every one returns the planner's
+      sentence: no change reached it.
+    why_e6_cannot_cover_this: >-
+      E6 compares selective execution against a clean full rebuild, so it sees a
+      channel only if that channel's facet is represented in the artifact digest.
+      Where the digest is built from text alone, a locator or temporal change
+      produces identical bytes on both sides and E6 reports agreement. A missing
+      edge and a facet absent from the artifact spec are two layers, and the
+      second hides the first. E9 is measured from the request, not the output.
+    not_written_from_the_spent_cases: >-
+      the channel cases are synthesised from the channel definitions. The 14
+      SFI2 cases were not reused, and the grammar is not widened against them.
+
+pass_rule:
+  ruling_applied: >-
+    founder ruling, 2026-08-23. Replaces the earlier option-(a) framing, under
+    which E8 was PASS-contributing and unexercisable. That framing no longer
+    applies anywhere in this file.
+  requires_all_of:
+    - "E1, E2, E3, E4, E5, E6, E7 and E9 all exercised AND MET"
+    - "E8 held-out violations == 0 (necessary; contributes no positive power)"
+    - >-
+      E8 fault-injection instrumentation power (E8_INSTRUMENTATION_POWER)
+      proven pre-freeze - development evidence, never in the held-out
+      denominator
+    - "pairs >= cohort_floor_pairs (200)"
+    - "families >= families_required (3)"
+  no_skip:
+    - "E5 cannot be skipped"
+    - "E6 cannot be skipped"
+    - "E9 cannot be skipped"
+  no_skipped_endpoint_may_contribute_to_pass: true
+  every_primary_endpoint_needs_gate_power: >-
+    applies to E1-E7 and E9. E8 is exempt from this requirement by
+    founder_owed.E8_power (option (b)): it is a veto, not a positive-evidence
+    endpoint, and its instrumentation is proven by fault injection rather than
+    by natural-cohort gate power.
+  power_demonstrated_before_freeze: >-
+    every PASS-contributing endpoint (E1-E7, E9) must have a fixture that
+    violates it and is caught, landed before the freeze. An endpoint whose
+    violation nothing has ever triggered is unproven as an instrument,
+    whatever it reports on the cohort. E8's power is demonstrated the same
+    way, by fault injection, but as development evidence excluded from the
+    held-out denominator per founder_owed.E8_power.
+  cohort_floor_pairs: 200
+  families_required: 3
+  why: >-
+    an endpoint nothing could have violated has not been met, it has been
+    avoided. SFI1 was failed by two such endpoints; SFI2 nearly reported a
+    third as unexercised when it had in fact failed, because a scorer read
+    the wrong key. Gate power is required per PASS-contributing endpoint and
+    is reported per endpoint. E8 is reported with the same rigor but does not
+    carry gate power into the PASS arithmetic - see founder_owed.E8_power.
+
+# ---------------------------------------------------------------------------
+# cohort
+
+cohort:
+  frame: acquisition/sources_sfi3.py
+  disjointness:
+    from_SFH1_and_VBC2: required
+    from_the_four_forensic_cases: required
+    from_SFI1: "required - frame and executor evaluations both"
+    from_SFI2: >-
+      required - frame and executor evaluations both. A lineage SFI2's executor
+      rejected was still examined and is spent.
+    from_the_14_SFI2_forensic_cases: >-
+      required. They are development fixtures for lanes A and D, and a case used
+      to diagnose a defect cannot certify its repair.
+  anti_fitting:
+    - "no threshold, bound, quota or floor is moved after any outcome exists"
+    - >-
+      SFI2's quotas are carried forward unchanged. An outcome-independent reason
+      may change one, declared before acquisition; observed yield is never such
+      a reason
+    - >-
+      the 14 execution cases and the 14 include-target cases are development
+      fixtures. Neither the invariant nor the taxonomy is tuned against them,
+      and neither is widened to make them pass
+    - >-
+      a quota shortfall is reported as a shortfall, never absorbed by moving a
+      quota and never redistributed to another family
+
+# ---------------------------------------------------------------------------
+# execution
+
+execution:
+  shape: "parallel implementation / deterministic integration / freeze / one scoring"
+  single_writer: "integration, freeze and the final evidence commit only"
+  smoke_tests: "FIXTURES ONLY. Never a real lineage, never before the freeze."
+  freeze_before_first_real_lineage: true
+  scored_once: true
+  gpu_seconds: 0
+  cost_usd: 0
+
+# ---------------------------------------------------------------------------
+# what a verdict authorises
+
+on_pass:
+  authorises: >-
+    launching the already-prepared GPU successor immediately, with no further
+    founder check-in, under a hard cap of 6 GPU hours and $40.
+  forbids:
+    - "reviving the VBC exact-value experiments, closed by STOP-V2-005"
+    - >-
+      reading a PASS as a general correctness result. It is a result on this
+      cohort, this grammar subset and these nine endpoints (E1-E9), one of
+      which (E8) is a veto rather than positive evidence.
+
+on_fail:
+  consequence: >-
+    a negative held-out closure result, reported as one, with the corpus spent.
+    Not a reason to widen the grammar, lower a gate, drop a construct or
+    re-score.
+  gpu: "remains 0. The successor stays blocked."
+
+release:
+  ip_gate: CLOSED
+  docs_ip: untouched
+  public_release: forbidden
+
+# ---------------------------------------------------------------------------
+# pre-freeze conditions (full founder list, 2026-08-23 ruling)
+#
+# All of the following must hold before this protocol may be frozen. This
+# list does not replace founder_owed below -- INC-V2-034 and E8_power are
+# individually tracked there because each needed (or needs) an explicit
+# founder decision; this list is the complete condition set the founder gave
+# once those decisions were in hand. Order is as given, not priority.
+
+pre_freeze_conditions:
+  - "Windows stale-lock resolved"
+  - "suite stable"
+  - "causal wording corrected"
+  - "incident cross-refs coherent"
+  - "identity/change separation complete"
+  - "five-channel contract complete"
+  - "E9 independent oracle and gate-power tests complete"
+  - "E8 option (b) applied"
+  - "E8 fault-injection power proven"
+  - "dynamic include-target fail-closed complete"
+  - "artifact facet/fingerprint propagation verified"
+  - "claim pins byte-match"
+  - "scorer/executor seam tests green"
+  - "spent-set streaming preserved"
+  - "78-root availability-only preflight complete"
+  - "fresh frame disjointness complete"
+  - "SFI2 14 forensic cases excluded"
+  - "no fresh SFI3 payload read"
+  - >-
+    INC-V2-034 four-link gate implemented and tested, or sealed as a separate
+    hard blocker
+  # Condition 20, added on the founder's INC-V2-043 ruling. The nineteen above
+  # ask whether the SCIENCE is ready; not one asked whether the machinery that
+  # would carry it out exists. The gate reported may_freeze with all nineteen
+  # green while the worker was absent and the summariser emitted no E8 or E9
+  # block -- a defect that would have surfaced at the scorer, after acquisition
+  # had already spent the corpus. "A freeze gate must not pass merely because
+  # files exist": this condition turns on a rehearsal receipt carrying a
+  # development cohort end to end WITH negative controls proving the path comes
+  # back red when an E8/E9 violation or a schema defect is injected.
+  - >-
+    execution readiness rehearsed end to end on development fixtures, with
+    negative controls, and no fresh SFI3 payload opened
+  # Condition 21, added with SFI3_ROOT_RESERVATION_V1. V2R4's INVARIANT_8 briefly
+  # required disjointness from "every lineage id in SFI3's frozen acquisition" --
+  # an artifact that cannot exist when V2R4 needs it, because the order is V2R4
+  # PASS -> SFI3 acquisition -> SFI3 PASS -> four-link -> GPU. That was a circular
+  # gate. The repair reserves SFI3's source CONTAINERS in advance, from root
+  # identity metadata alone, and has V2R4 choose outside them.
+  #
+  # This condition is the OTHER half. A reservation that bound only V2R4 would
+  # leave SFI3 free to draw from a container nobody had told V2R4 to avoid, which
+  # is the same overlap approached from the opposite side. Both studies bind the
+  # SAME reservation receipt, by path and sha256, and this checks that SFI3's own
+  # frozen roots are inside it and disjoint from V2R4's frozen containers.
+  #
+  # V2R4's observed OUTCOMES are never an input here. What is read is container
+  # identity: the reservation, and the container identities V2R4's frame
+  # attestation sealed. Reading V2R4's results to choose SFI3's cohort would make
+  # the held-out study a function of its predecessor's findings.
+  - >-
+    SFI3 roots inside SFI3_ROOT_RESERVATION_V1 and disjoint from V2R4's frozen
+    containers
+
+# ---------------------------------------------------------------------------
+# owed to the founder before the freeze
+#
+# INC-V2-034 is still open and is not an agent's call. E8_power was the same
+# shape and has now been ruled on (see below); it is kept in this list,
+# marked RECORDED_RULING, so the ruling travels with the question it answers
+# rather than living only in a commit message.
+
+founder_owed:
+  - id: INC-V2-034
+    question: >-
+      GPU_SUCCESSOR_STUDY_V1's four-chain-link clause has no gate. Unresolved
+      since it was raised; that protocol cannot be frozen until it is answered.
+  - id: E8_power
+    status: RECORDED_RULING
+    ruled_by: "founder ruling, 2026-08-23"
+    ruling: >-
+      option (b). E8 is reclassified as a mandatory fail-stop safety invariant
+      / veto. It does NOT contribute to positive PASS arithmetic, and its zero
+      natural gate power is never hidden and never called positive evidence.
+      E5, E6 and E9 carry the held-out statistical criterion. Pre-freeze,
+      E8_INSTRUMENTATION_POWER must be proven by fault injection: injecting a
+      real violation must raise InvariantViolation. That is development
+      evidence and is never mixed into a held-out denominator. Held-out
+      semantics: E8 violation > 0 on the held-out cohort is an overall SFI3
+      FAIL, unconditionally; E8 violation == 0 does NOT create positive
+      statistical power. The held-out report states E8's observation count
+      and its zero-power status together, every time it is reported.
+    superseded_question_kept_for_history: >-
+      E8 encodes the P0 ruling's invariant literally, and the forensic then
+      established that the seam it guards is structurally closed - so it can
+      report zero violations and zero power on any cohort. Under this
+      protocol's own rule that was SKIPPED and would have failed the study.
+      Three readings were available and the choice was not an agent's: (a) E8
+      stays a PASS-contributing endpoint and SFI3 cannot pass until the seam
+      can be exercised; (b) E8 is reclassified as a safety invariant validated
+      by fault injection, reported with its zero-power cohort observation and
+      excluded from the PASS arithmetic, with E5, E6 and E9 carrying the
+      criterion; (c) the founder's criterion is read as already satisfied by
+      E5 and E6 and E8 is dropped. This protocol was drafted under (a), the
+      strictest reading, pending an explicit ruling. That ruling is now
+      recorded above as option (b), and (a)'s framing no longer applies
+      anywhere in this file.
+    why_not_decided_by_this_protocol: >-
+      it changes what a PASS means, and a study whose pass arithmetic was
+      adjusted by the party running it is not held out from that party. That
+      is why this was a founder decision rather than an agent inference, and
+      why the ruling is recorded here verbatim rather than merely applied
+      silently downstream.

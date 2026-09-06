@@ -1,0 +1,25 @@
+{
+  "amendment_of": null,
+  "estimated_cost_usd": 0.0,
+  "frozen_before_any_result": true,
+  "git_head": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "gpu_seconds": 0,
+  "protocol_path": "research/tavonel_eval_v2/protocols/P4h_cohort_expansion.yaml",
+  "protocol_sha256": "sha256:03fcaae58ee63f9af906db40bd3fb51e255956cac423c69f4afee7140c774035",
+  "provenance": {
+    "generated_at": "2026-08-22T11:32:49.309529+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": "research/tavonel_eval_v2/protocols/P4h_cohort_expansion.yaml",
+    "protocol_sha256": "sha256:03fcaae58ee63f9af906db40bd3fb51e255956cac423c69f4afee7140c774035",
+    "receipt_stem": "p4h-cohort-expansion",
+    "run_id": "20260822T113249Z-1d8270a1506f",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/freeze_protocol_immutable.py",
+    "tool_sha256": "sha256:2d353f9fe4475f136eb848768adb0dfe3f34f44ab53cdafa8f5652aa3b31554b"
+  },
+  "receipt_sha256": "sha256:443958e6285023130229501259ad340b7bbd481b0586defc4849f06dbeb29877",
+  "schema": "tavonel.v2.protocol_freeze.v2",
+  "supersedes_receipts": [],
+  "worktree_dirty_path_count": 182
+}

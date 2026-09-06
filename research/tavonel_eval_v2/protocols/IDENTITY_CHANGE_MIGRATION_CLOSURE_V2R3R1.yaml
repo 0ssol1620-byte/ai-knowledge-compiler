@@ -1,0 +1,2143 @@
+# IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3 (ICMC2-R3) — the prospective closure of
+# the INC-V2-037 predicate migration, run ONCE, on a NEW universe disjoint from
+# every cohort any earlier closure or regression already measured, including
+# V2R1's and V2R2's.
+#
+# DRAFT UNTIL ITS FREEZE RECEIPTS EXIST. This file binds nothing until
+# `tools/freeze_migration_closure_v2r3.py protocol` has written an immutable
+# receipt pinning this file's sha256, and the runner refuses to execute until
+# every rung — acquisition frame, protocol, universe, scorer/acceptance,
+# exclusions — has a receipt and every pinned digest still matches disk.
+#
+# WHY THERE IS AN R3. V2R2 executed exactly once and returned FAIL. The founder
+# adjudicated that run INVALID_INSTRUMENT_CONTRACT — not a production failure,
+# and not merely a rule that was a little too strict. For a unit the resolver
+# called NEW while the identity-uncertainty quarantine held it, the frozen
+# instrument simultaneously REQUIRED `unit_added` (clause (d), disposition B)
+# and FORBADE it (clause (e), via the quarantine compatibility contract). No
+# production behaviour could have satisfied both. An UNSATISFIABLE INSTRUMENT
+# CONTRACT establishes nothing about the system it was pointed at.
+#
+# THE DEFECT IS ONE LAYER DEEPER THAN R2 THOUGHT, and it is the same family of
+# error as R1's:
+#
+#     V2R1  read a raw snapshot id as a resolved identity
+#     V2R2  read a resolver-local decision as a final identity disposition
+#
+# Production keeps three layers and only the third may be asserted:
+#
+#     1  ResolverDecisionSurface             MATCHED / NEW / AMBIGUOUS
+#     2  IndependentQuarantineSurface        which ids are under uncertainty
+#     3  EffectiveIdentityDispositionSurface what production may ASSERT
+#
+# A resolver-local NEW is NOT necessarily the final identity disposition.
+# Quarantine OVERRIDES a locally definite identity assertion: it does not
+# rewrite the resolver's answer historically, it changes what may be claimed
+# from that answer. `effective_identity_disposition` below freezes that state
+# machine BEFORE any V2R3 outcome exists, and `contract_consistency_gate`
+# refuses the freeze unless an executable model checker has proved every
+# reachable state carries exactly one disposition and no contradictory
+# obligations.
+#
+# WHAT THIS FILE IS NOT.
+#
+#   * It is not a repair of V2R2 and it does not rescore it. That run stands,
+#     its receipt is untouched, its corpus is SPENT, and its 270 lineages are
+#     excluded here by name. There is no "corrected V2R2 verdict" anywhere in
+#     this programme; the spent shapes are DEVELOPMENT regressions only.
+#   * It is not a repair of V2R1 or of V1 either. V1 returned `overall: FAIL`
+#     permanently. Their universes are read here for ONE purpose: lineage ids,
+#     to subtract them.
+#   * IT IS NOT A REPAIR OF PRODUCTION. An invalid instrument establishes no
+#     production defect to repair. No guard was moved below NEW, no quarantine
+#     was weakened, no transitive clause was removed, no identity normalisation
+#     and no facet predicate was changed. `akc_cir.semantic_diff`,
+#     `akc_cir.identity_quarantine` and `akc_cir.identity` are byte-identical to
+#     their pre-V2R2 state and this protocol forbids changing them to make a
+#     measurement pass.
+#   * It is not narrower than V1, V2R1 or V2R2 anywhere. The eight invariants,
+#     the zero-tolerance INVARIANT_6, the >=200 pairs and the >=3 families are
+#     carried forward unchanged — this file is DERIVED from V2R2's by targeted
+#     replacement rather than retyped, so seven invariants are byte-identical.
+#     ONE clause moved — INVARIANT_6(d)/(e) — from two surfaces that could
+#     disagree to one that cannot, BEFORE any V2R3 material existed.
+#   * It does not contain a number chosen from an observed result. Neither
+#     V2R1's nor V2R2's realised admission yield is a basis for any quota here,
+#     and the thirteen units that produced V2R2's violations may never certify
+#     this closure.
+#
+# THE COHORT IS NOT SELECTED FOR THE SHAPE THAT BROKE V2R2. Acquiring until a
+# quarantine case appears, or over-weighting containers likely to produce one,
+# would make the next result a statement about the selection. The frame forbids
+# probing for it.
+#
+# V1's, V2R1's, V2R2's and V2R3's protocol files and every receipt of theirs are
+# IMMUTABLE and are not opened for writing by this protocol or by any tool it
+# names.
+#
+# ---------------------------------------------------------------------------
+# WHY THERE IS AN R1, AND WHY IT IS NOT A V2R4
+#
+# V2R3's chain froze completely and its execution gate reported READY. Then a
+# STALE TEST -- written while nothing was frozen, and by then no longer a
+# refusal test -- called the scorer directly. It traversed the real 300-pair
+# cohort and died in census aggregation with `KeyError: 'effective'` BEFORE
+# `run()` returned. No result receipt was written. No clause result, violation
+# count, census figure or verdict was printed or read.
+#
+# V2R3 had predeclared, before execution, that "a run that raises before grading
+# -- a missing file, a crash, a refused precondition -- is not a score, produces
+# no receipt, and is repaired and re-run". It had ALSO predeclared that after
+# rung 4 no scorer module may change, with no amend path and no force flag. The
+# repair was inside a rung-4-pinned module, so the two clauses pointed opposite
+# ways: repaired-and-re-run was unreachable without breaking the freeze.
+#
+# The founder ruling of 2026-08-26 reconciled them the only way that honours
+# both: the parent chain is ABANDONED, not resealed, and the successor is a NEW
+# protocol id with a NEW freeze chain over the EXACT SAME unscored material.
+#
+#   * The parent's rung 4 is NOT resealed. `supersede-scorer` was not used --
+#     its own contract states the scorer CODE is unchanged and only the rung-3
+#     link moves, and here the code did change.
+#   * The parent's receipts are preserved immutably and its disposition is
+#     APPENDED beside them, never applied to them.
+#   * This is R1 of V2R3, not V2R4, because V2R3 never produced a scientific
+#     result. The substantive closure question is unchanged; only the instrument
+#     was repaired.
+#
+# THE COHORT IS CARRIED FORWARD EXACTLY OR NOT AT ALL. The 300 pairs remain
+# eligible only because no outcome was observed and there is therefore ZERO
+# selection freedom. Removing one troublesome pair, replacing an unreadable row,
+# rebalancing families, adding a pair, changing traversal or changing exclusions
+# all destroy the basis. There is no partial salvage: if any of that becomes
+# necessary, this protocol is abandoned and a fresh cohort is acquired.
+#
+# THE PERMITTED REPAIR IS RUNTIME-ONLY, and it is named so that it cannot later
+# be widened by memory: align the census aggregation keys with
+# `EffectiveSurface.as_dict()`, refuse on schema disagreement BEFORE aggregating,
+# and make it structurally impossible for a test to execute the real-cohort
+# closure. It does not authorise changing how any pair is graded.
+
+schema: tavonel.v2.protocol.identity_change_migration_closure.v2r3r1
+protocol_id: IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3R1
+
+# ---------------------------------------------------------------------------
+# the chain this one replaces, and the material it inherits
+
+parent_protocol:
+  protocol_id: IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3
+  file: research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3.yaml
+  reason: PRE_RESULT_INSTRUMENT_RUNTIME_REPAIR
+  chain_status: ABORTED_PRE_RESULT_INSTRUMENT_CRASH
+  raw_scientific_verdict: NONE
+  production_verdict: NONE
+  result_receipt_exists: false
+  crash: "KeyError: 'effective'"
+  outcome_disclosure: NONE_ESTABLISHED
+  scorer_changed_after_rung4: true
+  old_chain_reexecution_permitted: false
+  corpus_status: ACQUIRED_AND_FROZEN_BUT_UNSCORED
+  disposition_receipt_stem: identity-change-migration-closure-v2r3-chain-disposition
+  non_disclosure_receipt_stem: identity-change-migration-closure-v2r3-non-disclosure
+  old_frozen_scorer_sha256: sha256:2b392c8fd63439493f620e1314ab7fc140ceda866d7c417b917bd50bb7fe138d
+  repaired_scorer_sha256_is_pinned_by: rung 4 of THIS chain, never by the parent's
+  the_parent_is_not_edited: >-
+    the parent protocol file and all eight of its freeze and attestation
+    receipts keep their bytes. This chain references them as provenance; its
+    active predecessor links point only at its own rungs.
+
+# ---------------------------------------------------------------------------
+# how the cohort arrives, and the only form that is permitted
+
+carry_forward:
+  mode: EXACT_SET
+  from_receipt_stem: identity-change-migration-closure-v2r3-universe
+  pair_count: 300
+  by_family:
+    git_docs: 133
+    regulation_ecfr: 104
+    sec_edgar: 63
+  network: FORBIDDEN
+  reacquisition: FORBIDDEN
+  what_must_be_identical:
+    - pair count
+    - ordered lineage ids
+    - family for every row
+    - before source identity
+    - after source identity
+    - revision and version identifiers
+    - raw and canonical paths
+    - raw sha256
+    - canonical sha256
+    - source digest
+    - by-family counts
+    - realised exclusion membership
+  what_must_be_zero:
+    - added_pairs
+    - removed_pairs
+    - replaced_pairs
+    - reordered_pairs
+    - changed_raw_digests
+    - changed_canonical_digests
+    - changed_family_labels
+    - changed_revision_ids
+  no_selection_function: >-
+    the successor performs NO candidate search, NO oversampling and NO subset
+    choice. The parent's frozen universe IS the complete candidate universe, and
+    the successor's only legal candidate set is exactly its 300 rows.
+  why_no_refetch: >-
+    re-fetching could return changed source bytes, which would no longer be
+    exact carry-forward. The already-frozen raw and canonical bytes on disk are
+    the material, and their digests are recomputed locally and must match.
+  all_or_nothing: >-
+    the pairs remain eligible only because no outcome was observed and there is
+    zero selection freedom. Any repair to an individual row, any rebalancing and
+    any change to exclusions invalidates the basis. There is no partial salvage:
+    abandon carry-forward and acquire a fresh cohort instead.
+  not_one_pair_is_smoke_tested: >-
+    NOT ONE of the 300 carried-forward pairs is scored as a smoke test at any
+    point. Scoring even one would create exactly the preview this chain exists to
+    preserve against, and the cohort's eligibility rests entirely on no outcome
+    having been observed. `execution.smoke_tests` and `execution.no_preview` are
+    carried forward from the parent unchanged and already bind this; the sentence
+    is restated here because carry-forward is where the temptation lives.
+  conditional_on:
+    - the parent's PRE_RESULT_CRASH_NON_DISCLOSURE attestation
+    - the exact-set carry-forward attestation
+    - the V2R3 -> V2R3R1 semantic-equivalence attestation
+
+# ---------------------------------------------------------------------------
+# where this came from, and why it is a new id rather than an edit
+
+predecessor:
+  protocol_id: IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R2
+  file: research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R2.yaml
+  digest: sha256:56bbe4c43f15d918483b3e7ff4941edc5a08246cec2a361e734c2f593793a48c
+  raw_execution_verdict: FAIL
+  scientific_adjudication: INVALID_INSTRUMENT_CONTRACT
+  production_correctness_verdict: NOT_ESTABLISHED
+  production_failure_established: false
+  corpus_status: SPENT
+  rescore_permitted: false
+  adjudication_receipt_stem: identity-change-migration-closure-v2r3-adjudication
+  why_invalid: >-
+    the frozen instrument carried CONTRADICTORY OBLIGATIONS. For the reachable
+    state `resolver NEW INTERSECT quarantined`, clause (d) disposition B
+    REQUIRED a `unit_added` record while the quarantine compatibility contract
+    that clause (e) enforces FORBADE exactly that record and required a visible
+    `identity_unresolved` instead. Required and forbidden intersected. All
+    thirteen clause-(d) violations were in that one state, and every one of them
+    was already correctly stated by production as `identity_unresolved`.
+  this_is_not_merely_too_strict: >-
+    a rule that is too strict can be satisfied by better behaviour. An
+    unsatisfiable contract cannot be satisfied by any behaviour, so its FAIL
+    carries no information about the system. That distinction is the reason R3
+    exists rather than a relaxed R2.
+  the_layer_that_was_collapsed: >-
+    a resolver-local NEW decision is NOT necessarily the final identity
+    disposition. Clause (d) read layer 1 and clause (e) read layer 2, and the
+    two disagreed about the same unit because nothing composed them.
+  the_thirteen_are: >-
+    DEVELOPMENT / FORENSIC regression cases only. They demonstrate the repaired
+    instrument is clean on the shape that broke V2R2 and they may NEVER certify
+    this closure. There is no corrected V2R2 verdict.
+  no_production_repair_is_authorised_by_this: >-
+    FORBIDDEN by founder ruling: moving the quarantine guard below the NEW
+    branch, emitting `unit_added` alongside `identity_unresolved`, weakening the
+    quarantine, removing the transitive quarantine clause, changing identity
+    normalisation, changing the facet predicate. Production code is untouched
+    and stays untouched unless a future VALID instrument demonstrates an actual
+    production defect.
+  production_is_not_altered_to_make_a_spent_receipt_green: true
+  what_is_preserved_not_mutated:
+    - the V2R1 and V2R2 protocol files and their digests
+    - the V2R1 and V2R2 measurement receipts, unedited and unrescored
+    - every V2R1 and V2R2 freeze receipt
+    - the V2R1 and V2R2 adjudication receipts
+    - INC-V2-057 through INC-V2-064
+  the_270_v2r2_lineages_are: >-
+    SPENT. They were measured and their outcomes were read, so they can never be
+    a prospective confirmatory denominator, and adjudicating the instrument
+    invalid does not un-spend them. All 270 are excluded from this universe by
+    name, and V2R1's 285 and V1's 514 remain excluded as before.
+  this_is_not_a_failed_repair: >-
+    the INC-V2-047 repair ladder is PROVEN at development/canary level and the
+    production switch is ON. What V2R1 and V2R2 each failed to deliver was a
+    VALID INSTRUMENT, which is a property of the scorer contract rather than of
+    the repair.
+
+cohort_sufficiency:
+  minimum_admitted_pairs: 200
+  minimum_families: 3
+  target_families:
+    - git_docs
+    - regulation_ecfr
+    - sec_edgar
+  wikipedia: >-
+    avoided for this closure. It is an SFI3 root family, and proving disjointness
+    from metadata alone is not reliably possible here. Expanding an SFI3 category
+    merely to prove disjointness is forbidden outright — that would spend the
+    prospective SFI3 material to buy a disjointness argument.
+  this_is_a_gate_not_a_threshold: >-
+    200 is a PRE-MEASUREMENT COHORT SUFFICIENCY GATE. It is checked before any
+    outcome is read and it decides only whether measuring is worth doing at all.
+    It is NOT an acceptance threshold, it is not compared against any observed
+    count, and it never enters a numerator or a denominator.
+  how_200_was_chosen:
+    prior: >-
+      V1's published 8/514 violated-lineage rate, used ONLY as a sample-size
+      planning prior, in the same way a power calculation uses a prior: to size
+      the experiment before it runs.
+    arithmetic:
+      - "191 pairs ≈ 95.0% chance of observing ≥1 old-rate violation"
+      - "200 pairs ≈ 95.66%"
+    forbidden_uses:
+      - the V2R3 numerator
+      - the V2R3 denominator
+      - the V2R3 scorer, in any form
+      - any acceptance comparison
+    why_it_is_stated_here_anyway: >-
+      a gate whose derivation is unwritten is a number someone can later claim
+      was chosen to fit. Writing the prior down BEFORE acquisition is what makes
+      it a planning constant rather than a fitted one.
+  acceptance_is_unchanged: >-
+    violations == 0 AND all eight invariants MET AND no invariant UNPROVEN. The
+    cohort size never softens any of that.
+  if_fewer_than_200_are_admitted:
+    state: INSUFFICIENT_COHORT
+    is_a_pre_measurement_stop: true
+    do_not: >-
+      execute the scorer, report a scientific FAIL, pad the cohort after seeing
+      outcomes, replace a family, or lower the gate. An INSUFFICIENT_COHORT stop
+      is an honest statement about material, not a result about the repair.
+status: DRAFT_NOT_FROZEN
+split: development
+supersedes_nothing: >-
+  V2 does not supersede V1. V1 is a completed measurement with a permanent FAIL.
+  V2 is a second, separate measurement of the same eight properties, on a new
+  universe, after a repair. Neither result overwrites the other and neither is
+  subtracted from the other.
+
+authorised_by: >-
+  founder ruling recorded against INC-V2-047 on 2026-08-25, as amended by the
+  ruling of the same date opening IDENTITY_CHANGE_MIGRATION_CLOSURE_V2R3. V1's
+  FAIL stands permanently and is never repaired, rescored, threshold-changed,
+  scope-narrowed or reused as a positive closure denominator. V2R1's and V2R2's
+  runs stand as INVALID_INSTRUMENT_CONTRACT results with their corpora SPENT
+  and no rescore permitted; neither is repaired, and no corrected verdict is
+  written for either. NO PRODUCTION REPAIR IS AUTHORISED BY EITHER RESULT. A
+  closure runs ONCE, on a NEW disjoint universe of at least 200 admitted pairs
+  across at least 3 families, and the floor is not lowered. INVARIANT_6 remains
+  zero tolerance and retains its total-accounting clause (d), redesigned around
+  the EFFECTIVE identity disposition and frozen, with its state machine, BEFORE
+  any V2R3 outcome data is opened. The reading of INVARIANT_4's cohort
+  population is ACCEPTED as V1 wrote it and carries forward unchanged.
+
+# ---------------------------------------------------------------------------
+# the four freezes, and the order that is enforced as a refusal
+#
+# V1 froze two things: the protocol and the universe. Two of its later problems
+# were not reachable by those two freezes. INC-V2-046: the exclusion behaviour
+# that decided which pairs left the universe was settled inside the freeze code
+# while the freeze was running, so "what was excluded and why" was not a thing
+# anybody had committed to in advance. INC-V2-048: a condition read the more
+# comfortable of two available measurements, and nothing had pinned which
+# measurement the acceptance semantics were entitled to read.
+#
+# So V2 freezes four things, in order, and the runner refuses rather than warns.
+
+freeze:
+  order:
+    - "0. acquisition_frame   — sources, traversal, pair construction, quotas, stopping rule"
+    - "1. protocol            — this file, by sha256"
+    - "2. fresh acquisition + deterministic reduction (NOT a freeze; the act the frame authorises)"
+    - "3. universe            — the complete realised candidate universe, by content digest"
+    - "4. scorer_acceptance   — the scorer modules and the acceptance semantics"
+    - "5. exclusions          — the exclusion policy AND the realised exclusion set"
+    - "6. execute exactly once"
+    - "7. immutable result"
+  rung_0_is_the_whole_point: >-
+    V2's chain began at the protocol because its universe was already on disk.
+    V2R3 ACQUIRED its material, so the frame that decided WHAT to acquire had to
+    be pinned before any content existed — otherwise selection could be steered,
+    consciously or not, by what the fetches started returning. Rung 0 is
+    therefore not a renumbering of V2's rung 1; it is an obligation that V2 never
+    had to carry.
+  rung_0_under_exact_carry_forward: >-
+    this chain acquires nothing, so its rung 0 pins a DIFFERENT decision: that
+    the only legal candidate set is exactly the parent's frozen 300 rows. The
+    selection freedom rung 0 exists to remove is here removed to zero by
+    construction — there is no traversal, no quota and no stopping rule to
+    steer. What rung 0 still has to seal is that nobody widened, narrowed or
+    reordered the inherited set, and the exact-set attestation is what proves it.
+  stems:
+    acquisition_frame: identity-change-migration-closure-v2r3r1-acquisition-frame-freeze
+    protocol: identity-change-migration-closure-v2r3r1-protocol-freeze
+    universe: identity-change-migration-closure-v2r3r1-universe
+    scorer_acceptance: identity-change-migration-closure-v2r3r1-scorer-freeze
+    exclusions: identity-change-migration-closure-v2r3r1-exclusion-freeze
+    measurement: identity-change-migration-closure-v2r3r1
+    frame_attestation: identity-change-migration-closure-v2r3r1-frame-attestation
+    protocol_attestation: identity-change-migration-closure-v2r3r1-protocol-attestation
+    universe_attestation: identity-change-migration-closure-v2r3r1-universe-attestation
+    carry_forward_attestation: identity-change-migration-closure-v2r3r1-carry-forward-attestation
+  tool: research/tavonel_eval_v2/tools/freeze_migration_closure_v2r3r1.py
+  no_old_rung_is_an_active_rung: >-
+    every rung of this chain is a NEW receipt. The parent's receipts may be
+    referenced as provenance, but no rung of this chain links to one of them as
+    its active predecessor, and the parent's rung 4 is never resealed.
+  enforced_by: >-
+    each rung refuses (exit 4) unless every rung before it has a receipt whose
+    pinned digest still matches what is on disk, and each rung records the RUN ID
+    of the rung before it, so the ordering is a chain of references rather than a
+    comparison of two wall-clock stamps a reader is trusted to check. The
+    execution gate — `require_execution_preconditions` — re-verifies all four
+    links and every pinned digest, and exits non-zero on any absence, any digest
+    mismatch, and any break in the chain.
+  ordering_is_not_a_timestamp: >-
+    a timestamp proves what a receipt claims about itself. A refusal proves what
+    the next step was able to do. V1's ordering discipline was already of the
+    second kind for protocol and universe and it was observed firing; rungs 3
+    and 4 are new and are built the same way.
+  no_post_freeze_change:
+    rule: >-
+      after rung 4 nothing in this file, in the scorer modules, in the acceptance
+      semantics or in the exclusion policy may change. There is no amend path and
+      no force flag. A change that is genuinely necessary is a NEW protocol with
+      a new id, a new freeze chain and a new universe — not an edit to a frozen
+      one.
+    enforced_by: >-
+      every rung pins a digest and the gate recomputes it. Editing this file
+      breaks rung 1; editing a scorer module breaks rung 3; editing the exclusion
+      policy breaks both rung 1 and rung 4, and rung 4 names it as an exclusion
+      change specifically so the reason cannot be mistaken for an unrelated edit.
+
+# ---------------------------------------------------------------------------
+# COMPANION ATTESTATIONS — because a console line is not a frozen proof
+#
+# V2R3 adds three proofs the shared base freezer knows nothing about: root
+# disjointness, contract satisfiability with prose/code agreement, and
+# disjointness from both spent universes. The base writes its immutable receipt
+# INSIDE its return path, so a wrapper that computes a proof and then decorates
+# the returned dictionary produces a proof that exists only in memory and in
+# console output. That is a FALSE-PROVENANCE SEAM: the run looks proved and the
+# receipt records nothing.
+#
+# The repair is not to edit the base. V2R1's and V2R2's freeze machinery is
+# spent-run evidence and adding a hook to it would change the tooling a
+# preserved receipt was produced by. Instead each V2R3 rung writes a SECOND
+# immutable receipt that BINDS the base receipt it attests and carries the proof
+# in its own frozen body.
+
+companion_attestations:
+  why: >-
+    the base freezer writes its receipt before returning, so a V2R3-only field
+    appended to the returned dictionary is never part of any immutable body. A
+    proof that lives only in console output is not a frozen proof.
+  the_base_is_not_edited: >-
+    V2R1's and V2R2's freeze machinery is SPENT-RUN EVIDENCE. Adding a hook to it
+    would change the tooling that produced receipts the founder ordered
+    preserved, and their digests are bound inside the adjudication receipts.
+  rungs:
+    frame_attestation:
+      binds:
+        - the base acquisition-frame receipt by path, run id and file digest
+        - acquisition/sources_v2r3r1.py by sha256
+        - tools/v2r3r1_carry_forward.py by sha256
+        - the parent's frozen universe receipt by path, run id and file digest
+      records: [carried pair count, by-family counts, added, removed, replaced, reordered]
+      refuses_unless: "every carry-forward delta is 0 AND the pair count is 300"
+    protocol_attestation:
+      binds:
+        - the base protocol freeze receipt by path, run id and file digest
+        - the protocol yaml by sha256
+        - tools/v2r3_state_table.py by sha256
+        - tools/v2r3r1_semantics.py by sha256
+        - tests/test_v2r3_contract_consistency.py by sha256
+        - the pre-existing INC-V2-047 compatibility contract by sha256
+        - the PARENT protocol yaml by sha256
+      records:
+        - SATISFIABLE
+        - reachable row count
+        - "required INTERSECT forbidden == empty, per reachable row"
+        - protocol prose and executable rows in exact agreement
+        - "the V2R3 -> V2R3R1 scientific projection is IDENTICAL"
+      refuses_unless: >-
+        the state table is satisfiable AND the consistency suite passes AND the
+        scientific projection of this protocol equals the parent's exactly"
+    universe_attestation:
+      binds:
+        - the base universe freeze receipt by path, run id and file digest
+        - V2R1's frozen universe receipt by sha256
+        - V2R2's frozen universe receipt by sha256
+        - the PARENT V2R3 frozen universe receipt by sha256
+      records:
+        - "V2R3R1 INTERSECT V2R1 == 0"
+        - "V2R3R1 INTERSECT V2R2 == 0"
+        - "V2R3R1 == V2R3, exactly and in order"
+        - recomputed independently
+      refuses_unless: >-
+        both spent intersections are empty AND the inherited set is exactly the
+        parent's, row for row and digest for digest"
+      the_enumerator_is_not_its_own_proof: >-
+        the enumerator subtracts the spent sets and this recomputes the
+        intersection from the frozen receipts. A filter and a proof written as
+        one piece of code agree by construction and prove nothing.
+  the_gate_must_consume_them: >-
+    `require_v2r3r1_execution_preconditions` runs the base gate AND requires
+    every attestation, re-verifies each against the base receipt it claims to
+    attest, recomputes every pinned digest, and re-runs each proof from scratch.
+    An attestation no gate reads is decorative, and this study has already
+    recorded what a guard that cannot fire is worth (INC-V2-036).
+  the_scorer_may_not_call_the_base_gate: >-
+    the V2R3R1 scorer calls `require_v2r3r1_execution_preconditions` and never
+    `base.require_execution_preconditions`, and never the parent chain's gate
+    either. The base gate verifies the standard protocol -> universe -> scorer ->
+    exclusions chain and knows nothing about these proofs, so calling it directly
+    would report READY on a chain that never bound them.
+  a_v2r3r1_measurement_that_already_exists_refuses: >-
+    the base gate REPORTS prior measurements; this gate REFUSES on them. A
+    closure runs exactly once and a report is not a refusal.
+  the_parents_attestations_are_not_inherited: >-
+    this chain writes its own. Verifying the parent's would prove something about
+    a chain that is permanently non-executable, and the parent's receipts bind
+    the parent's scorer digest -- the one this chain exists because it could not
+    keep.
+
+# ---------------------------------------------------------------------------
+# what happened
+
+background:
+  defect: >-
+    INC-V2-037. `akc_cir.semantic_diff.diff_documents` decided MODIFIED_CLAIM
+    from `counterpart.identity_text != incoming.identity_text`, where
+    `identity_text` is `akc_cir.identity.normalize_text_for_identity` — an
+    NFKC + casefold + punctuation-to-space + whitespace-collapse fold whose
+    insensitivity is the feature for identity continuity and the defect for
+    change detection.
+  production_state: >-
+    the switch has landed. MODIFIED_CLAIM is decided by
+    `semantic_diff.content_facet_verdict`, an NFC-only CONTENT projection, and
+    an UNRESOLVED content facet fails closed as a modification rather than
+    passing as unchanged.
+  preserved_reference_path: >-
+    `diff_documents(legacy_identity_change_predicate=True)` is the pinned
+    pre-INC-V2-037 path. It is PRESERVED, not removed, and this protocol forbids
+    removing it. It is a reference instrument only; it is never a ground-truth
+    oracle here.
+  the_defect_v2_runs_after: >-
+    INC-V2-047. A unit whose identity the resolver explicitly declined to settle
+    was ALSO reported `unit_removed`, because `diff_documents` protects only the
+    NAMED CANDIDATES of an unsettled decision from removal, and a before-side
+    unit that shares a logical id with the unsettled incoming unit is not among
+    those candidates. The diff then carried two contradictory statements about
+    one key. The defect predates the INC-V2-037 migration — it is identical
+    under both predicates — and it is repaired by another lane through the
+    Protected Core ladder before this closure runs.
+  what_the_repair_introduces: >-
+    an identity-uncertainty quarantine. An identity the resolver has not settled
+    is held in an explicit unresolved state instead of being forced into either
+    continuity or deletion. That is a NEW production concept, and it is the
+    reason INVARIANT_6 gains a clause below.
+
+v1_standing:
+  result: FAIL
+  permanent: true
+  never_repaired: true
+  never_rescored: true
+  never_reused_as_a_positive_closure_denominator: true
+  files_that_are_immutable_here:
+    - research/tavonel_eval_v2/protocols/IDENTITY_CHANGE_MIGRATION_CLOSURE_V1.yaml
+    - receipts/identity-change-migration-closure--*.json
+    - receipts/identity-change-migration-closure-protocol-freeze--*.json
+    - receipts/identity-change-migration-closure-universe--*.json
+    - receipts/identity-change-ladder-reclassification--*.json
+    - receipts/identity-change-benchmark--*.json
+    - receipts/identity-change-canary--*.json
+  the_only_thing_v1_is_read_for: >-
+    the lineage id list in V1's frozen universe receipt, subtracted from V2's
+    candidate universe so that V2 measures new material. No V1 verdict, count,
+    invariant result or violated case is read by any V2 tool, and none appears in
+    any V2 numerator or denominator.
+  the_nine_violating_cases: >-
+    NOT enumerated in this file, NOT excluded, NOT ignored. Excluding the cases
+    on which the previous run failed is the purest form of fitting a criterion to
+    an outcome. If the repair works, V2's universe will contain the same SHAPE
+    and INVARIANT_6 will observe it holding; if it does not, V2 fails again and
+    that is the result.
+
+retrospective_evidence:
+  standing: RETROSPECTIVE_MIGRATION_SAFETY_REGRESSION
+  not: PROSPECTIVE_LADDER_QUALIFICATION
+  receipts:
+    - receipts/identity-change-benchmark--20260824T092056Z-eb6269afcbd0.json
+    - receipts/identity-change-canary--20260824T092141Z-36fa48664af6.json
+  immutable: true
+  never_edited: true
+  never_deleted: true
+  read_for_grading: false
+
+legacy_is_not_ground_truth:
+  rule: >-
+    legacy disagreement is NEVER ground truth in this closure. The legacy
+    predicate is the defect under repair. A unit the legacy predicate called
+    unchanged and the production predicate calls changed is an
+    OVER_FIRE_RELATIVE_TO_LEGACY and nothing more; it is not a false positive
+    and this protocol forbids that word for it.
+  descriptive_only: >-
+    the 1.10% over-fire figure in the retrospective benchmark is descriptive. It
+    is not an acceptance criterion, not a bound, not a budget, not a threshold,
+    and no criterion below is derived from it.
+  no_independent_oracle_exists: >-
+    calling an over-fire a false positive would require an oracle independent of
+    both predicates that says the unit's compiled-relevant state did not move.
+    None exists. Where this closure needs an expectation it takes it from the
+    declared facet contract, which is derived from the unit's own fields and
+    imports neither predicate.
+
+# ---------------------------------------------------------------------------
+# outcome independence
+
+anti_fitting:
+  threshold_free: >-
+    every acceptance criterion below is a zero-tolerance structural predicate
+    over declared populations. No criterion carries a rate, a bound, a quota, a
+    ratio or a tolerance. There is nothing here that could be tuned to an
+    observed number, because there is no number to tune.
+  outcome_independent: >-
+    no criterion was chosen after seeing a closure result — V1's or any other. A
+    threshold may be used in this study only if it was demonstrably declared
+    BEFORE the results it grades existed. None was declared for the migration, so
+    none is used.
+  every_delta_is_a_strengthening: >-
+    `protocol_delta` below records three changes from V1. Each of them makes a
+    criterion see MORE, never less. Nothing in V1 was relaxed, widened, scoped
+    down or removed, and in particular nothing was changed because V1 failed on
+    it. The freeze tool refuses to seal this file if the invariant set differs
+    from V1's eight without a recorded delta.
+  a_violation_is_reported_as_a_violation: >-
+    a FAIL is a result. It is never absorbed by widening a facet, adding an
+    ignore, dropping a pair from a denominator or re-running until green. The
+    closure runs ONCE against the frozen universe.
+  what_may_never_be_changed_to_make_this_pass:
+    - >-
+      `akc_cir.identity.normalize_text_for_identity` must NEVER be made
+      content-sensitive. INVARIANT_2 exists to catch it.
+    - >-
+      `unknown` and `unresolved` must NEVER be mapped to `unchanged`.
+      INVARIANT_5 exists to catch it.
+    - >-
+      an unsettled identity must NEVER be repaired by making the contradictory
+      record disappear into silence. INVARIANT_6(d) exists to catch it.
+    - "`legacy_identity_change_predicate` must NEVER be removed."
+    - "V1's protocol and receipts must never be edited or deleted."
+
+# ---------------------------------------------------------------------------
+# the delta from V1, written before execution
+#
+# Three changes. Each names what changed and the repair-semantics reason, and
+# none of them is justified by anything V1 observed. The freeze tool compares
+# this file's invariant bodies against V1's, canonically, and refuses to seal a
+# body that differs and is not declared here.
+
+protocol_delta:
+  written_before_execution: true
+  justified_independently_of_the_v1_outcome: true
+  invariant_set_matches_v1: true
+  changed_invariants:
+    INVARIANT_6_ambiguous_identity_stays_unresolved:
+      change: >-
+        two clauses ADDED relative to V1 and retained here. (d) TOTAL ACCOUNTING
+        OVER THE EFFECTIVE IDENTITY DISPOSITION: every unit carries the
+        obligation its EFFECTIVE disposition implies, and no other. (e)
+        QUARANTINE CHANNEL: every effectively unresolved logical id must be named
+        by the production record kind `quarantine_channel` declares.
+      repair_semantics_reason: >-
+        the repair introduces an identity-uncertainty quarantine, which is a
+        production concept that did not exist when V1 was written. V1's
+        INVARIANT_6 could only check the ABSENCE of a contradictory record. After
+        the repair that absence is reachable two ways: by holding the unit in a
+        visible quarantine, which is the repair, or by deleting the offending
+        record and emitting nothing at all, which is not. An absence-only
+        criterion cannot tell those apart. This reason holds whatever V1
+        returned.
+      direction: STRENGTHENING. Nothing in V1's (a), (b) or (c) is relaxed or removed.
+      what_moved_from_v2r2: >-
+        the LAYER (d) and (e) read, and nothing else. V2R2's (d) read the
+        resolver's local decision and its (e) read the quarantine, as two
+        separately computed surfaces. For `NEW INTERSECT QUARANTINED` they
+        disagreed, and the instrument required and forbade `unit_added` at once.
+        V2R3 composes them ONCE into an effective disposition that every clause
+        reads, so a disagreement between clauses is no longer expressible rather
+        than merely unlikely.
+      this_is_not_a_weakening: >-
+        the obligations are strictly more specific, not fewer. A genuine addition
+        with no uncertainty still REQUIRES `unit_added`; a genuine removal still
+        REQUIRES `unit_removed`; an effectively unresolved unit REQUIRES a
+        VISIBLE unresolved record rather than merely being spared a definite one.
+        Over-quarantine is a defect too and two declared controls hold that line.
+        What changed is that the required record for a quarantined NEW unit is
+        now the one production actually emits and the contract actually permits.
+      obligations_are_side_scoped_and_composed: >-
+        a logical id is unique PER SIDE, not across sides, so one id can carry an
+        unmatched before-side unit that ended and an unmatched after-side unit
+        that began at the same path. Production correctly emits `unit_added` and
+        `unit_removed` for that id. Obligations are therefore scoped to the side
+        that holds them and COMPOSED per id -- required by union, forbidden by
+        UNANIMOUS intersection minus required -- which makes the composition
+        satisfiable by construction rather than by inspection. Contributions from
+        the SAME unit are unioned before different units compose: one unit
+        speaking twice is one obligation, two units sharing an id are two
+        obligations that must agree before either binds.
+      moved_before_any_v2r3_material_existed: true
+      proved_satisfiable_before_the_freeze: >-
+        see `contract_consistency_gate`. The obligations are not asserted
+        consistent in prose; an executable model checker enumerates every
+        reachable state and the freeze refuses if any carries contradictory
+        obligations.
+    INVARIANT_8_sfi2_cases_cannot_certify:
+      change: >-
+        the required disjointness is extended from {the 538-pair retrospective
+        cohort, the 14 confirmed SFI2 lineages} to additionally include {every
+        lineage id in V1's frozen universe}.
+      repair_semantics_reason: >-
+        the ruling that authorises this work requires V2 to run on a NEW
+        universe. A pair V1 already measured is not new material, and reusing it
+        would let a V2 result be read as a second opinion on the same evidence
+        rather than as a fresh measurement. This is a property of what "a new
+        universe" means, not of what V1 returned; it would be required
+        identically if V1 had passed.
+      direction: STRENGTHENING. The V1 disjointness requirements are kept whole.
+  unchanged_invariants:
+    - INVARIANT_1_identity_decisions_unchanged
+    - INVARIANT_2_identity_fold_remains_identity_only
+    - INVARIANT_3_expectation_is_independent
+    - INVARIANT_4_changed_facet_resolves_typed_or_failclosed
+    - INVARIANT_5_never_silently_unchanged
+    - INVARIANT_7_only_predeclared_ignores
+  invariant_4_is_carried_unchanged_by_ruling: >-
+    the founder ACCEPTED INVARIANT_4 as V1 read it: its cohort population is
+    facets whose independent oracle verdict is CHANGED. UNRESOLVED is the
+    fail-closed alternative and does not by itself require a production change
+    record unless that facet has a separately declared production fail-closed
+    representation. Broadening it to "every unresolved facet must emit a
+    production record" would test a different property, and it is forbidden here.
+    Unresolved-without-a-production-representation stays COUNTED and VISIBLE
+    under `unresolved_without_a_production_fail_closed_behaviour`; it is never
+    called unchanged and never counted as positive channel evidence.
+  process_changes_that_are_not_invariant_changes:
+    - >-
+      two freeze rungs added (scorer/acceptance, exclusions). See `freeze`.
+    - >-
+      the exclusion policy is declared in this file BEFORE the universe freeze
+      rather than settled inside the freeze code while it runs. See
+      `exclusion_policy`.
+    - >-
+      the candidate universe is enumerated by a separate tool owned by another
+      lane and consumed here as a manifest. See `manifest_contract`.
+
+# ---------------------------------------------------------------------------
+# Deliverable 2 — the exclusion policy, declared BEFORE the universe freeze
+#
+# INC-V2-046: three P4i cache slugs collide at 80 characters and one payload
+# overwrote another. V1 found that at freeze time and decided what to do about
+# it at freeze time. The decision it reached was the right one — exclude both
+# members of every collision group — and the fact that it was reached after the
+# freeze had started is the part this section fixes. An exclusion rule settled
+# while looking at the data is indistinguishable, from the outside, from an
+# exclusion rule settled because of what the data said.
+
+exclusion_policy:
+
+  v2r2_spent_universe:
+    what: >-
+      all 270 lineage ids in V2R2's frozen universe receipt are subtracted from
+      this study's candidate universe.
+    applied_where: >-
+      in the ENUMERATOR, as one of its declared excluded sets, so the rows never
+      reach the universe builder at all and appear in the manifest's `excluded`
+      block with their own reason and count.
+    proved_independently_where: >-
+      in the universe freeze, which re-reads V2R2's receipt and asserts the
+      frozen pair set is disjoint from it, refusing if it is not. The filter and
+      the proof are separate implementations on purpose: a filter that silently
+      failed and a proof that agreed with it would be the same code twice.
+    the_three_violating_lineages: >-
+      ecfr:47:20:20.19, ecfr:7:3560:3560.105 and ecfr:7:3560:3560.102 are
+      DEVELOPMENT / FORENSIC regression cases only. They run in the power battery
+      to demonstrate the repaired instrument classifies their thirteen units as
+      EFFECTIVE_UNRESOLVED and that production's `identity_unresolved` records
+      discharge that obligation, and they may NEVER certify this closure. There
+      is no corrected V2R2 verdict.
+
+  v2r1_spent_universe:
+    what: >-
+      all 285 lineage ids in V2R1's frozen universe receipt are subtracted from
+      this study's candidate universe.
+    applied_where: >-
+      in the ENUMERATOR, as one of its declared excluded sets, so the rows never
+      reach the universe builder at all and appear in the manifest's `excluded`
+      block with their own reason and count.
+    proved_independently_where: >-
+      in the universe freeze, which re-reads V2R1's receipt and asserts the
+      frozen pair set is disjoint from it, refusing if it is not. The filter and
+      the proof are separate implementations on purpose: a filter that silently
+      failed and a proof that agreed with it would be the same code twice.
+    also_container_disjoint: >-
+      the acquisition frame draws from 40 repositories and 44 CFR parts none of
+      which appears among the 875 canonical root identities any earlier sources
+      module declares, and from SEC issuers strictly above the highest CIK V2R2
+      admitted -- which is itself above the highest V2R1 admitted. Container-level disjointness is stronger than the
+      lineage-level disjointness required, and it does not license skipping the
+      lineage-level check.
+    the_three_violating_lineages: >-
+      ecfr:40:273:273.3, the Qdrant capacity-planning document and
+      ecfr:47:54:54.101 are DEVELOPMENT / FORENSIC regression cases only. They
+      run in the mutation battery to demonstrate the redesigned clause is clean
+      on the shapes that broke V2R1, and they may NEVER certify this closure.
+  declared_before_the_universe_freeze: true
+  frozen_at_rung_4: true
+  amendable_after_rung_4: false
+
+  recompute_every_digest:
+    rule: >-
+      every candidate side's RAW payload and CANONICAL document are re-hashed
+      from the bytes on disk and compared against the digests the manifest
+      records for them. Both, every run, never one of the two.
+    a_missing_recorded_raw_digest_is_not_a_pass: >-
+      a side whose manifest carries no RECORDED raw digest is UNVERIFIABLE and is
+      excluded and named. An absent digest is not treated as agreement; that
+      mapping is the defect class this whole study keeps finding.
+    the_recorded_digest_key_is_not_aliased: >-
+      the recorded raw digest is read from `raw_sha256_recorded` and from no
+      other key. `raw_sha256` means "the digest acquisition wrote down" in the
+      historical cohort manifests and "the digest the enumerator just
+      recomputed" in the V2 enumeration, and comparing a recomputation against
+      itself is a tautology that would report every side verified. One key, one
+      meaning, or the side is excluded.
+
+  canonical_digest_availability:
+    the_gap_declared_before_the_freeze: >-
+      the historical acquisition manifests never recorded a canonical-document
+      digest. There is therefore NOTHING to compare a recomputed canonical
+      digest against for most candidates, and no amount of care at freeze time
+      creates one. This is stated here, before the universe is frozen, because
+      discovering it during the freeze and deciding what to do about it then is
+      precisely the INC-V2-046 shape.
+    what_is_still_done: >-
+      the canonical document is re-hashed for EVERY surviving side and the digest
+      is PINNED in the universe freeze receipt. That gives the property the
+      closure actually needs: the bytes measured are the bytes frozen, and a
+      canonical document that moves between the freeze and the measurement is a
+      refusal at the gate.
+    what_is_not_claimed: >-
+      a side with no recorded canonical digest is NOT verified against
+      acquisition, and is never reported as if it were. It is counted under
+      `canonical_verified_against_acquisition: false` and the count appears in
+      the universe freeze receipt beside the count that was verified.
+    when_a_recorded_canonical_digest_does_exist: >-
+      it must match. The enumerator reports which digest convention it matched
+      via `canonical_digest_convention`; a recorded digest that matched no
+      convention leaves that field null, and such a side is excluded under
+      PAYLOAD_DIGEST_MISMATCH. A recorded digest that cannot be reconciled is a
+      louder signal than no recorded digest at all, not a quieter one.
+
+  upstream_exclusions_are_carried_not_re_decided:
+    rule: >-
+      the enumerating lane applies its own eligibility rules and leaves the rows
+      it dropped in the manifest's `excluded` block with its own category
+      counts. Those are NOT re-decided here and NOT re-litigated; they are cited
+      in the universe freeze receipt by manifest digest together with the
+      enumerator's category counts, so the total accounting from raw candidates
+      to frozen universe is readable end to end.
+    and_re_derived_independently: >-
+      the exclusion policy above is nonetheless applied again to every row the
+      manifest offers as eligible. If the enumerator already removed a colliding
+      or non-disjoint row, this pass finds nothing more to do and says so; if it
+      did not, this pass removes it. Two independent passes over the same rule is
+      the cheap half of defence in depth, and the expensive half — trusting one
+      of them — is what this study keeps paying for.
+
+  collision_detection:
+    structural_not_symptomatic: >-
+      collisions are detected by CACHE KEY, not by a failing digest. A collision
+      whose two members happen to verify is still ambiguous provenance: the
+      manifest records one document's digest beside a cache slot two documents
+      wrote to, and nothing on disk says which write survived. Detecting only via
+      a digest mismatch would silently admit exactly the collisions that
+      overwrote a payload with byte-identical content, or that overwrote it in an
+      order that left the recorded digest intact.
+    collision_keys:
+      - cache_slug
+      - document_slug
+      - before.raw_path
+      - after.raw_path
+      - before.canonical_path
+      - after.canonical_path
+    definition: >-
+      a COLLISION GROUP is the set of all candidate rows that share any one
+      collision key value while carrying different lineage ids. Groups that
+      overlap through a shared row are merged, so a row cannot be excluded under
+      one key and kept under another.
+    the_whole_group_leaves: >-
+      when a collision makes provenance ambiguous, the ENTIRE collision group is
+      excluded — never whichever member is convenient, never only the member
+      whose digest fails, never the member with fewer downstream citations. One
+      member holds the wrong bytes and the other may hold the right ones, and
+      nothing on disk says which is which. Keeping the verifying member is
+      choosing the convenient reading of an ambiguity.
+    enforced_by: >-
+      the universe builder excludes whole groups; the exclusion freeze re-derives
+      the groups from the frozen universe receipt and refuses if any group is
+      partially excluded; and the execution gate re-checks it a third time, so a
+      hand-edited universe receipt is caught before a measurement reads it.
+
+  every_exclusion_is_named_and_counted:
+    rule: >-
+      each excluded lineage id appears in the universe freeze receipt with its
+      reason and its collision-group id where it has one, and the receipt carries
+      per-reason counts and a total. An exclusion that is not named did not
+      happen legitimately.
+    reasons_are_a_closed_set:
+      - NOT_DISJOINT_FROM_THE_538_PAIR_RETROSPECTIVE_COHORT
+      - NOT_DISJOINT_FROM_THE_14_CONFIRMED_SFI2_LINEAGES
+      - NOT_DISJOINT_FROM_THE_V1_FROZEN_UNIVERSE
+      - DUPLICATE_LINEAGE_ALREADY_TAKEN_FROM_AN_EARLIER_MANIFEST
+      - CACHE_KEY_COLLISION_GROUP
+      - PAYLOAD_MISSING
+      - PAYLOAD_DIGEST_MISMATCH
+      - RECORDED_DIGEST_ABSENT
+      - MANIFEST_ROW_MALFORMED
+    applied_in_this_declared_order: >-
+      DUPLICATE_LINEAGE_ALREADY_TAKEN_FROM_AN_EARLIER_MANIFEST, then
+      CACHE_KEY_COLLISION_GROUP, then the three disjointness reasons, then
+      MANIFEST_ROW_MALFORMED, then RECORDED_DIGEST_ABSENT, then PAYLOAD_MISSING,
+      then PAYLOAD_DIGEST_MISMATCH. The order is declared here so that the reason
+      attached to a row is a function of the declaration and not of the order the
+      code happens to test things in. Collision is placed above disjointness on
+      purpose: every member of a collision group is then labelled with the
+      collision, which is what makes "the whole group left" checkable by reading
+      one reason rather than by reasoning across several.
+    digests_are_recomputed_for_rows_that_reach_that_stage: >-
+      a row already excluded above is not hashed. Recomputation is a property of
+      every row that could still enter the universe, which is the population the
+      rule is about.
+    an_unlisted_reason_refuses: >-
+      the builder may not invent an exclusion reason at run time. A row it cannot
+      classify under one of the reasons above refuses the whole freeze rather
+      than being dropped under a new label, because a new label written during a
+      freeze is the thing this section exists to prevent.
+
+  no_post_freeze_exclusion_policy_change:
+    rule: >-
+      after rung 4 the exclusion policy and the realised exclusion set are both
+      pinned. Neither may change.
+    why_this_clause_exists: >-
+      V1 changed its verification behaviour after its freeze — it moved from
+      refusing the whole freeze to excluding individual pairs — and recorded it
+      honestly. Predeclaring is what makes that impossible to do silently rather
+      than merely regrettable to do openly.
+    enforced_by: >-
+      rung 4 pins the canonical digest of THIS block and the sorted realised
+      exclusion set. The gate recomputes both. A policy edit and a set edit fail
+      separately and are named separately, so neither can be explained away as
+      the other.
+
+  p4i_slug_note_for_successors:
+    finding: >-
+      truncating a human-readable slug at a fixed width and using it as cache
+      identity is not collision-resistant, and INC-V2-046 is what that costs.
+    recommendation: >-
+      future acquisition paths should address cached payloads by a
+      collision-resistant or content-addressed identity — the full source id
+      digest, or the payload's own hash — with the readable slug kept as a label
+      beside it rather than as the key.
+    not_a_licence_to_rewrite_history: >-
+      P4i's historical artifacts are NOT re-slugged, re-acquired or rewritten.
+      They are spent evidence and other studies cite them. The collision is
+      handled by exclusion here and by a different identity scheme in whatever is
+      acquired next.
+
+# ---------------------------------------------------------------------------
+# Deliverable 3's input — the candidate universe manifest
+#
+# Enumeration is owned by another lane (`tools/enumerate_v2_universe.py`). This
+# protocol declares the SHAPE it will consume and the machinery refuses loudly on
+# anything else, because guessing at a manifest's meaning is how a closure ends
+# up measuring something other than what was enumerated.
+
+manifest_contract:
+  # V2R2's OWN artifact. The derived draft still pointed at the abandoned V2
+  # enumeration, which would have had this study either read another study's
+  # manifest or WRITE INTO PRESERVED EVIDENCE. Both are forbidden; the second is
+  # worse, because the V2 enumeration is exactly the artifact founder ruling
+  # section 3 requires kept intact.
+  path: research/tavonel_eval_v2/artifacts/development/v2r3r1_universe/v2r3r1_universe_candidates.json
+  owner_tool: research/tavonel_eval_v2/tools/enumerate_v2r3r1_universe.py
+  acquisition_manifest: research/tavonel_eval_v2/artifacts/development/v2r3_corpus/manifest.json
+  acquisition_manifest_is_inherited: >-
+    the payload bytes are the parent's and are READ ONLY. This chain acquires
+    nothing and writes nothing into the parent's corpus directory. The manifest
+    it reads is therefore the parent's, and every digest in it is recomputed
+    from the files on disk rather than trusted.
+  not_written_by_this_lane: false
+  enumeration_schema: tavonel.v2.identity_change_migration_closure.v2r3r1_universe_enumeration.v1
+  rows_key: pairs
+  accepted_row_key_aliases:
+    - documents
+    - pairs
+    - candidates
+  upstream_excluded_key: excluded
+  upstream_exclusion_summary_key: exclusion_categories
+  required_row_fields:
+    - lineage_id
+    - family
+    - before_version
+    - after_version
+    - before
+    - after
+  accepted_lineage_id_aliases:
+    - lineage_id
+    - document_id
+  optional_row_fields:
+    - cache_slug
+    - document_slug
+  required_side_fields:
+    - raw_path
+    - canonical_path
+  recorded_raw_digest_key: raw_sha256_recorded
+  recorded_canonical_digest_key: canonical_sha256_recorded
+  canonical_digest_convention_key: canonical_digest_convention
+  why_the_recorded_digest_keys_are_named_here_and_not_in_required_side_fields: >-
+    so that the rule has exactly one enforcement site. Listing
+    `raw_sha256_recorded` among the required fields as well would put the check
+    behind a second, earlier guard, and a guard that only ever fires because
+    another guard fires first cannot be shown to work — that is INC-V2-036, a
+    guard sitting where its failure is structurally unreachable. The recorded
+    digest is required, its absence is RECORDED_DIGEST_ABSENT, and one piece of
+    code says so.
+  paths_are_relative_to: the repository root
+  the_manifest_is_not_a_freeze: >-
+    the enumeration declares `is_frozen: false` and `is_evidence: false` about
+    itself. Rung 2 is what turns it into a frozen universe, and rung 2 re-applies
+    the exclusion policy to every row the manifest offers rather than inheriting
+    the enumerator's eligibility decision on trust.
+  a_shape_mismatch_refuses: >-
+    the universe freeze refuses (exit 4) and prints the expected shape beside
+    what it found. It never coerces and never guesses a key. A row whose lineage
+    id cannot be resolved refuses the whole freeze, because a row that cannot be
+    named cannot be excluded by name; a row that has a lineage id but is
+    otherwise unreadable is excluded under MANIFEST_ROW_MALFORMED and named. No
+    row is ever dropped silently — a silently dropped row is an undeclared
+    exclusion.
+  absent_manifest_refuses: >-
+    if the manifest is not on disk the universe freeze refuses. It does not fall
+    back to enumerating candidates itself; enumeration belongs to the lane that
+    owns it and a fallback would put two enumerations in the tree.
+
+# ---------------------------------------------------------------------------
+# Deliverable 3's rung 3 — the scorer and the acceptance semantics
+
+scorer_acceptance:
+  what_rung_3_pins:
+    - the sha256 of every module named in `scorer.modules`
+    - >-
+      the canonical digest of the ACCEPTANCE SEMANTICS — this file's
+      `invariants`, `pass_rule`, `vacuity_rule`, `facet_channels`,
+      `unresolved_fail_closed` and `predeclared_ignored_facets` blocks, taken
+      together as one canonicalised value
+  why_separately_from_rung_1: >-
+    rung 1 pins the whole file, so any edit breaks it. Rung 3 exists because the
+    scorer is CODE and lives outside this file: INC-V2-048 was a condition whose
+    behaviour drifted from the declaration it was supposed to implement, and a
+    protocol digest cannot see that. Pinning the modules makes the drift a
+    refusal. Pinning the acceptance block separately means a change to the
+    grading rule is reported as a change to the grading rule, and not merely as
+    "the protocol moved".
+  scorer:
+    modules:
+      - research/tavonel_eval_v2/tools/identity_change_migration_closure_v2r3r1.py
+      - research/tavonel_eval_v2/tools/v2r3_effective_identity.py
+      - research/tavonel_eval_v2/tools/v2r3_state_table.py
+      - research/tavonel_eval_v2/tools/v2r3_quarantine_oracle.py
+      - research/tavonel_eval_v2/tools/v2r3_invariant6.py
+      - research/tavonel_eval_v2/tools/root_identity.py
+      - research/tavonel_eval_v2/tools/v2r3r1_attestation.py
+      - research/tavonel_eval_v2/tools/v2r3r1_carry_forward.py
+      - research/tavonel_eval_v2/tools/v2r3r1_semantics.py
+      - research/tavonel_eval_v2/tools/freeze_migration_closure_v2r3r1.py
+      - research/tavonel_eval_v2/source_fact_ir/expected_change_status.py
+      - research/tavonel_eval_v2/source_fact_ir/change_facets.py
+    why_each_is_pinned_separately: >-
+      one module per question, so an edit is reported as an edit to the thing it
+      actually changed. `v2r3_quarantine_oracle.py` decides which identities are
+      UNDER UNCERTAINTY, independently of production's implementation of the same
+      contract. `v2r3_effective_identity.py` composes that with the resolver's
+      decisions into the ONE effective disposition every clause reads.
+      `v2r3_state_table.py` owns the obligations and proves they are satisfiable.
+      `v2r3_invariant6.py` grades. `root_identity.py` owns root disjointness.
+      `v2r3_attestation.py` writes and re-verifies the three companion
+      attestations, and `freeze_migration_closure_v2r3.py` owns the V2R3
+      execution gate that consumes them -- both pinned here because a chain
+      whose gate could be edited after the scorer froze would be a chain whose
+      READY means whatever the last edit decided.
+      V2R1 pinned a single module in which several of these were entangled, and
+      the answer to one silently determined the answer to the next; V2R2 pinned
+      two but let its quarantine reading and its accounting reading diverge.
+    the_oracle_may_not_import_production: >-
+      `v2r3_quarantine_oracle.py` imports `akc_cir.identity` and nothing else
+      from production. Importing `akc_cir.identity_quarantine` or
+      `akc_cir.semantic_diff` would make the expected side a copy of the thing
+      being measured, and a comparison that can only agree is not a measurement
+      (INC-V2-044). `tests/test_v2r3_instrument.py` walks the module's entire AST
+      -- not merely its top level, since a function-local import would be exactly
+      as much of a tautology -- and the guard is itself mutation-controlled.
+      Obtaining decisions from `assign_one_to_one` IS permitted: the property
+      under test is their integration with the quarantine and the diff, not a
+      second proof of the resolver algorithm.
+    parity_with_production_is_development_only: >-
+      the oracle and production's `build_quarantine` are compared on SPENT
+      material as a development contract check. That comparison is never the
+      expected side of the measurement and it certifies nothing.
+    a_named_module_that_is_absent_refuses: true
+    note: >-
+      the runner module is named here as the scorer of record. It does not exist
+      while this protocol is a draft, and rung 3 refuses until it does — which is
+      the correct order: the acceptance semantics cannot be frozen around a
+      scorer that has not been written.
+
+# ---------------------------------------------------------------------------
+# the expectation oracle — carried from V1 unchanged
+
+expectation_oracle:
+  module: research/tavonel_eval_v2/source_fact_ir/expected_change_status.py
+  derives_from: research/tavonel_eval_v2/source_fact_ir/change_facets.py
+  facet_contract_schema: tavonel.v2.source_fact_ir.change_facets.v1
+  verdict_vocabulary:
+    - changed
+    - unchanged
+    - ignored_by_predeclared_policy
+    - unresolved
+  forbidden_imports:
+    - akc_cir.semantic_diff
+    - akc_cir.identity
+    - akc_cir
+    - identity_change_benchmark
+    - canary_identity_change
+  forbidden_attribute_reads:
+    - identity_text
+    - normalize_text_for_identity
+    - MODIFIED_CLAIM
+    - content_facet_verdict
+    - legacy_identity_change_predicate
+  enforced_by: >-
+    an AST walk of the oracle module's own source, run as part of INVARIANT_3 at
+    closure time and again in the test battery. A textual grep would pass on a
+    module that imported the symbol under an alias; the AST walk resolves
+    `import x as y` and attribute access.
+  why: >-
+    the oracle reads a matched unit pair's own fields and resolves the nine
+    declared facets. It never reads either predicate's answer. That is what makes
+    an agreement between oracle and production evidence rather than a
+    restatement.
+
+# ---------------------------------------------------------------------------
+# the facet partition — carried from V1 unchanged
+
+facet_channels:
+  CONTENT:
+    scope: unit
+    production_record: modified_claim
+    unresolved_production_record: modified_claim
+    has_production_channel: true
+  STRUCTURAL:
+    scope: document
+    production_record: structure_changed
+    unresolved_production_record: null
+    has_production_channel: true
+  REFERENCE_LOCATOR:
+    scope: unit
+    production_record: evidence_moved
+    unresolved_production_record: null
+    has_production_channel: true
+  TEMPORAL:
+    scope: unit
+    production_record: temporal_changed
+    unresolved_production_record: null
+    has_production_channel: true
+  METADATA:
+    scope: unit
+    production_record: metadata_changed
+    unresolved_production_record: null
+    has_production_channel: true
+  VISUAL:
+    scope: unit
+    production_record: visual_changed
+    unresolved_production_record: null
+    has_production_channel: true
+  AUTHORITY_APPLICABILITY:
+    scope: unit
+    production_record: authority_changed
+    unresolved_production_record: null
+    has_production_channel: true
+  ACCESSIBILITY:
+    scope: unit
+    production_record: null
+    unresolved_production_record: null
+    has_production_channel: false
+    permanently_unresolved: true
+    why: >-
+      `UnitSnapshot` carries no accessibility field anywhere in this codebase.
+      The facet stays declared so that the absence is countable rather than
+      invisible, and every comparison reports it UNRESOLVED. That is a limitation
+      of the unit representation, not a policy, so it is never reported as
+      ignored_by_predeclared_policy.
+  EXTERNAL_DEPENDENCY_EXECUTION:
+    scope: unit
+    production_record: null
+    unresolved_production_record: null
+    has_production_channel: false
+    permanently_unresolved: true
+    why: same as ACCESSIBILITY.
+
+unresolved_fail_closed:
+  declared_before_execution: true
+  facets_with_a_declared_fail_closed_record: [CONTENT]
+  facets_without_one:
+    - STRUCTURAL
+    - REFERENCE_LOCATOR
+    - TEMPORAL
+    - METADATA
+    - VISUAL
+    - AUTHORITY_APPLICABILITY
+  reported_as: unresolved_without_a_production_fail_closed_behaviour
+  never_reported_as: unchanged
+  never_counted_as: positive channel evidence
+  carried_from_v1_by_ruling: >-
+    INVARIANT_4's cohort population is facets whose oracle verdict is CHANGED.
+    An UNRESOLVED verdict IS the fail-closed alternative and demands no
+    production record on its own unless that facet has a separately declared
+    production fail-closed representation. This is the founder's accepted reading
+    and it is not broadened here.
+  owed_to_a_successor: >-
+    whether production SHOULD distinguish an absent fingerprint from two equal
+    ones is a real question and it is not this closure's.
+
+# ---------------------------------------------------------------------------
+# the identity-uncertainty quarantine channel
+#
+# The repair introduces it. This protocol cannot name its record kind while the
+# repair is still landing, and it refuses to GUESS one — a guessed record name
+# that production never emits would make INVARIANT_6(e) vacuous, which is this
+# study's most-repeated defect. So the field carries a sentinel, and the freeze
+# tool refuses to seal this file while the sentinel is present. The hole is loud
+# and it cannot be frozen past.
+
+quarantine_channel:
+  # RESOLVED. The repair has landed and the production default is ON, so the
+  # hole this sentinel held open is closed with a value READ FROM PRODUCTION
+  # rather than transcribed from any instruction. `ChangeKind` is a `StrEnum`,
+  # so the serialised literal is the member's value verbatim.
+  production_record: identity_unresolved
+  resolved_from:
+    symbol: akc_cir.semantic_diff.ChangeKind.IDENTITY_UNRESOLVED
+    serialised_literal: identity_unresolved
+    enum_is_a_strenum: true
+    emitted_at:
+      - "the AMBIGUOUS branch, as it always was"
+      - "a definite outcome withheld by the identity quarantine (INC-V2-047)"
+  verified_by: >-
+    the freeze tool imports `ChangeKind`, requires this literal to be a real
+    member value, and requires the repaired production path to actually emit it.
+    A name that production never emits would make INVARIANT_6(e) vacuous, which
+    is this study's most-repeated defect, so the check is an execution and not a
+    string comparison against this file.
+  none_declared_is_not_available_here: >-
+    NONE_DECLARED_BY_PRODUCTION is wrong for V2R3 and the freezer rejects it.
+    Production DOES have a typed, visible unresolved record; declaring otherwise
+    would understate the channel and hand (e) a weaker obligation than the
+    system can actually bear.
+  sentinel_blocks_the_freeze: true
+  d_is_independent_of_this_field: >-
+    INVARIANT_6(d) is written over surfaces that already exist, so it keeps its
+    full power regardless of what this field says. That independence is why (d)
+    is the load-bearing clause: it cannot be weakened by any choice the repair
+    made about typed records.
+  never: >-
+    this field is never resolved to a record kind that production does not
+    actually emit. The freeze tool checks the named kind exists in
+    `akc_cir.semantic_diff.ChangeKind` and refuses otherwise.
+
+diff_level: L4
+why_L4: >-
+  L4 (GRAPH) is the only level at which every declared production channel is
+  reachable in one call. Running below L4 would leave a channel unreachable and
+  let INVARIANT_4 report a clean result on a channel it never asked about.
+
+predeclared_ignored_facets:
+  rule: >-
+    an ignore is a declaration made in advance, by name, in this file, for a
+    stated reason. It is NEVER inferred from the data: an inferred ignore is
+    indistinguishable from a bug that happens to produce matching empty values.
+  by_family:
+    git_docs: []
+    regulation_ecfr: []
+    encyclopedia_wikipedia: []
+    sec_edgar: []
+  consequence: >-
+    the declaration is empty for every family in this cohort. INVARIANT_7 is
+    therefore the tightest form it can take: zero facets may be treated as
+    change-equivalent, and any facet the closure treats as change-equivalent is a
+    violation.
+
+# ---------------------------------------------------------------------------
+# acceptance criteria — the same eight invariants
+#
+# INVARIANT_1, 2, 3, 4, 5 and 7 are carried from V1 verbatim. INVARIANT_6 and
+# INVARIANT_8 are changed, and both changes are declared in `protocol_delta`
+# above with their repair-semantics reasons.
+
+# ---------------------------------------------------------------------------
+# THE EFFECTIVE IDENTITY STATE MACHINE — frozen before any V2R3 outcome exists
+#
+# Founder ruling section 5. V2R2's contradiction was not a typo in one clause;
+# it was the absence of any single place where "what production may assert" was
+# decided. This block is that place, and it is frozen BEFORE acquisition so no
+# row can be adjusted to suit a result.
+
+effective_identity_disposition:
+  layers:
+    - "1 ResolverDecisionSurface       MATCHED / NEW / AMBIGUOUS per after-side unit"
+    - "2 IndependentQuarantineSurface  which logical ids are under identity uncertainty"
+    - "3 EffectiveIdentityDispositionSurface  layer 1 composed with layer 2"
+  layer_1_is_not_the_disposition: >-
+    a resolver-local decision is a LOCAL result, not the final identity
+    disposition. Calling it one is what invalidated V2R2. Layer 1 is retained on
+    the surface beside layer 3 so a reader can always see which resolver decision
+    produced an effective disposition, but no clause grades it directly.
+  quarantine_overrides_definiteness: >-
+    quarantine OVERRIDES a locally definite identity assertion. It does NOT
+    change the resolver result historically -- the resolver said NEW and still
+    says NEW -- it changes what production is ALLOWED TO ASSERT from that result.
+  rows:
+    A:
+      side: after
+      resolver_state: AMBIGUOUS
+      quarantined: any
+      effective: EFFECTIVE_UNRESOLVED
+      requires: [identity_unresolved]
+      forbids: [unit_added]
+    B:
+      side: after
+      resolver_state: NEW
+      quarantined: true
+      effective: EFFECTIVE_UNRESOLVED
+      requires: [identity_unresolved]
+      forbids: [unit_added]
+      note: >-
+        THE ROW V2R2 DIED OF. Its instrument required `unit_added` here and the
+        quarantine contract forbade it. One obligation now, not two contradictory
+        ones, and the required record is the one production actually emits.
+    C:
+      side: after
+      resolver_state: NEW
+      quarantined: false
+      effective: EFFECTIVE_NEW
+      requires: [unit_added]
+      forbids: [identity_unresolved]
+      note: >-
+        over-quarantine is a defect too. A genuine addition with nothing held
+        against it still owes a definite record.
+    D:
+      side: after
+      resolver_state: MATCHED
+      quarantined: true
+      effective: EFFECTIVE_UNRESOLVED
+      requires: [identity_unresolved]
+      forbids: [unit_added]
+    E:
+      side: after
+      resolver_state: MATCHED
+      quarantined: false
+      effective: EFFECTIVE_MATCHED
+      requires: []
+      forbids: [unit_added, identity_unresolved]
+      note: >-
+        silence is LEGITIMATE here and here only among the after-side rows,
+        because production publishes no matched surface.
+    F:
+      side: before_unconsumed
+      quarantined: true
+      effective: EFFECTIVE_UNRESOLVED
+      requires: [identity_unresolved]
+      forbids: [unit_removed, modified_claim]
+    G:
+      side: before_unconsumed
+      quarantined: false
+      effective: EFFECTIVE_REMOVED
+      requires: [unit_removed]
+      forbids: [modified_claim, identity_unresolved]
+  obligations_are_side_scoped: >-
+    `unit_added` describes the AFTER-side unit carrying a logical id;
+    `unit_removed` and `modified_claim` describe the BEFORE-side one. A logical
+    id is unique PER SIDE and not across sides, so one id can legitimately owe
+    BOTH records -- an unmatched before-side unit that ended and an unmatched
+    after-side unit that began at the same path. Production reports both
+    correctly, and an accounting that indexed by id alone would read each as a
+    violation of the other. Found on the spent V2R2 corpus by writing exactly
+    that accounting.
+  composition_rule: >-
+    per logical id, REQUIRED is the union of its holders' required sets and
+    FORBIDDEN is the UNANIMOUS intersection of their forbidden sets minus
+    anything required. Contributions from the SAME unit are unioned BEFORE
+    different units compose: one unit speaking twice is one obligation, two units
+    sharing an id are two obligations that must agree before either binds. A
+    matched correspondence whose before and after ids are equal contributes twice
+    from one unit, and intersecting those two contributions would cancel both
+    prohibitions and let a matched unit be reported added.
+  totality: >-
+    `verify_total()` raises `StateNotTotal` if any reachable combination of side,
+    resolver state and quarantine membership yields no disposition or more than
+    one. A partial state machine is a state machine with an undeclared default.
+  silence: >-
+    LEGITIMATE under EFFECTIVE_MATCHED. A VIOLATION under EFFECTIVE_NEW,
+    EFFECTIVE_REMOVED and EFFECTIVE_UNRESOLVED. Silence is interpreted by the
+    disposition, never by its own absence.
+  frozen_before_any_v2r3_outcome_is_opened: true
+  owner_module: research/tavonel_eval_v2/tools/v2r3_effective_identity.py
+
+# ---------------------------------------------------------------------------
+# THE CONTRACT CONSISTENCY GATE — proved executably, not asserted in prose
+#
+# Founder ruling sections 7 and 10. A contract that says it is consistent is a
+# claim; a model checker that enumerates every reachable state and refuses is a
+# control. V2R2's contract read as perfectly reasonable prose.
+
+contract_consistency_gate:
+  mandatory_before: acquisition, freeze and execution alike
+  checker: research/tavonel_eval_v2/tools/v2r3_state_table.py
+  what_it_enumerates: >-
+    every reachable combination of (side, resolver state, quarantine
+    membership). Dispositions are obtained by CALLING the classifier, never by
+    consulting a second table written beside it -- a parallel table would prove
+    the two tables agree, which is not the property in question.
+  assertions:
+    - "every reachable state yields exactly one effective disposition"
+    - "for every reachable state, required INTERSECT forbidden == the empty set"
+    - "row B does NOT require unit_added and DOES require a visible identity_unresolved"
+    - "row C DOES require unit_added, so the repair is not a blanket surrender"
+    - "composition of any two contributions never produces a contradiction"
+  contract_broken: >-
+    a reachable state with contradictory obligations raises `ContractBroken` and
+    BLOCKS the protocol freeze. It is not a warning, it is not a note in a
+    receipt, and there is no flag that proceeds anyway. That state is what V2R2
+    executed on.
+  the_gate_is_mutation_controlled: >-
+    reinstating V2R2's obligations makes the gate raise. A satisfiability check
+    that has only ever returned SATISFIABLE is indistinguishable from one that
+    always will (INC-V2-044), so the test battery drives it red on purpose.
+  prose_and_code_must_agree: >-
+    the executable semantics are checked against the PRE-EXISTING INC-V2-047
+    compatibility contract at
+    `research/tavonel_eval_v2/docs/COMPAT_IDENTITY_UNCERTAINTY_QUARANTINE.md`, sha256
+    655fd3d85eebec5209a2489290b34a8ca9d6c4cff8f1ac39e8504e4447f1b101, whose
+    clause 2 states that no quarantined member receives a concrete
+    identity-sensitive outcome -- not `unit_added`, not `unit_removed`, not
+    `modified_claim` -- and whose clause 3 states that withholding is not
+    enough and the uncertainty must be STATED. Rows A, B, D and F implement
+    exactly that pair of obligations. IF PROSE AND CODE DISAGREE, THE FREEZE
+    REFUSES.
+  why_the_contract_digest_is_pinned_here: >-
+    the contract predates V2R2's failure. Pinning its digest is what proves the
+    adjudication was not an outcome-conditioned relaxation written after a
+    result nobody liked: the rule V2R2 violated was already on disk, in those
+    words, before V2R2 ran.
+  realised_state_at_declaration:
+    state: SATISFIABLE
+    reachable_rows: 8
+
+# ---------------------------------------------------------------------------
+# ROOT NORMALISATION — one reader, and UNVERIFIABLE blocks
+#
+# Founder ruling section 11. V2R2 declared 7 CFR 273 as a fresh eCFR root. It
+# was neither fresh nor unused: SFI1 had spent its sections and VBC1 named it as
+# a declared root. The pre-declaration scan missed it because every sources
+# module encodes roots in its own shape and the scan matched one of them.
+
+root_normalisation:
+  reader: research/tavonel_eval_v2/tools/root_identity.py
+  canonical_forms:
+    ecfr: '("ecfr", title, part) with title and part as strings, leading zeros stripped'
+    git: '("git", owner, repo, prefix) with the prefix right-stripped of slashes'
+    wikipedia: '("wikipedia", category_or_article)'
+    sec: 'a canonical fingerprint of the issuer RULE, not an expansion of 7,998 CIKs'
+  shapes_read: >-
+    seventeen historical attribute names across four families -- GIT_ROOTS,
+    GIT_REPOSITORIES and its RESERVE/ALL variants, ECFR_ROOTS, ECFR_PARTS and
+    variants, WIKIPEDIA_CATEGORY_ROOTS, WIKIPEDIA_ARTICLES and variants,
+    SEC_ROOTS and SEC_ISSUER_RULE -- in dict, five-tuple, three-tuple, bare
+    string and mapping forms.
+  unverifiable_is_never_disjoint: >-
+    a root whose shape the reader cannot interpret is returned as UNVERIFIABLE
+    and BLOCKS. It is excluded or it stops the frame; it is NEVER assumed
+    disjoint. Treating an unreadable declaration as probably fine is the exact
+    mechanism by which 7 CFR 273 entered the V2R2 frame.
+  the_enumerator_must_subtract_not_merely_report: >-
+    reporting an overlap leaves the row in the universe. The enumerator REMOVES
+    or named-excludes every overlapping row before universe admission, recording
+    EVERY set that claimed it rather than only the first, and then RE-PROVES
+    disjointness over the survivors. V2R1 never exercised this path because it
+    had zero overlaps, which is how the reporting-only version survived to V2R2.
+  realised_at_declaration:
+    prior_modules_read: 12
+    prior_identities: 875
+    by_family: {ecfr: 265, git: 268, sec: 18, wikipedia: 324}
+    unverifiable: 0
+    v2r3_roots_declared: 85
+    clashes_with_prior: 0
+
+invariants:
+
+  INVARIANT_1_identity_decisions_unchanged:
+    statement: >-
+      logical identity and identity-resolver decisions are unchanged by the
+      migration.
+    executable_meaning: >-
+      for every frozen pair, `diff_documents` is called twice on byte-identical
+      inputs, once with legacy_identity_change_predicate=True and once with
+      False. (a) the ordered list of identity-sensitive change records —
+      unit_added, unit_removed, identity_unresolved, evidence_moved, each as its
+      full `as_record()` including candidates — must be identical between the two
+      calls; (b) the `unresolved` tuple each call returns must be identical;
+      (c) the set of counterpart logical ids named by modified_claim under
+      EITHER predicate must be a subset of the matched-counterpart set obtained
+      by running `assign_one_to_one` independently on the same fingerprints,
+      with AMBIGUOUS and NEW decisions excluded — so neither predicate can
+      create a match that the resolver did not make.
+    population: every resolved pair in the frozen universe.
+    violation: any pair where (a), (b) or (c) fails.
+    met_when: violations == 0 AND exercising_pairs > 0.
+    why_not_the_internal_decision_list: >-
+      `diff_documents` does not return the resolver's decisions, so comparing
+      them "between the two calls" is not executable from outside. (a) and (b)
+      are the observable projection of those decisions and (c) closes the one
+      direction the projection could miss. Specifying the unobservable version
+      would have been INC-V2-036 again — a guard on a seam nothing can reach.
+    can_come_back_red_because: >-
+      the test battery feeds the closure a legacy-side diff whose
+      identity_unresolved candidates differ by one element and asserts it FAILS,
+      and a diff whose modified_claim names a logical id the resolver left
+      AMBIGUOUS and asserts it FAILS.
+
+  INVARIANT_2_identity_fold_remains_identity_only:
+    statement: >-
+      `normalize_text_for_identity` remains an identity-only lossy
+      normalization and has NOT become content-sensitive.
+    executable_meaning: >-
+      over a declared closed set of fold classes — nfkc_compatibility,
+      case_only, punctuation_to_space, whitespace_collapse — and over BOTH
+      synthetic fixtures and real unit texts drawn from the frozen cohort and
+      perturbed by each class, assert
+      `normalize_text_for_identity(a) == normalize_text_for_identity(b)` for
+      every (a, b) the class relates. Additionally assert the fold is genuinely
+      lossy on the real cohort: at least one real perturbed pair must have
+      unequal raw text and equal folds, so the check cannot pass by the fold
+      having become an identity function on trivial inputs.
+    population: >-
+      the declared fold classes crossed with the frozen cohort's real unit
+      texts, plus the synthetic fixture battery.
+    violation: >-
+      any class instance where the two folds differ, or a lossiness witness
+      count of zero.
+    met_when: violations == 0 AND lossiness_witnesses > 0.
+    can_come_back_red_because: >-
+      making the fold content-sensitive — dropping the casefold, dropping the
+      punctuation fold, or returning the raw text — breaks the equalities for
+      that class. The test battery monkeypatches the fold to a
+      content-sensitive one and asserts the closure FAILS.
+    the_repair_this_forbids: >-
+      "compare raw text instead" applied to `normalize_text_for_identity`. It
+      would fix change detection by destroying unit identity across revisions,
+      which is the thing the normalization exists to protect.
+
+  INVARIANT_3_expectation_is_independent:
+    statement: >-
+      expected change status comes from the independent SourceFact/facet
+      contract, never from legacy output and never from new production output.
+    executable_meaning: >-
+      (a) an AST walk of `expected_change_status.py` and of every module it
+      imports from within `source_fact_ir/` finds none of
+      `expectation_oracle.forbidden_imports` and none of
+      `expectation_oracle.forbidden_attribute_reads`, resolving `import x as y`
+      and attribute access rather than matching text; (b) `inspect.signature` of
+      the oracle entry point declares exactly the parameters
+      (before, after, channels, ignored) — there is no parameter through which a
+      diff, a change record or a predicate flag could enter, and an added one is
+      a violation; (c) the loaded oracle module's `__dict__` contains no module
+      object whose name resolves under `akc_cir`, so the ban cannot be evaded by
+      an import performed at call time.
+    population: the oracle module set, and every resolved pair.
+    violation: any forbidden import, forbidden attribute read, signature leak, or
+      runtime-bound forbidden module.
+    met_when: violations == 0 AND exercising_pairs > 0.
+    can_come_back_red_because: >-
+      the test battery points the AST check at a variant oracle module that
+      imports `akc_cir.semantic_diff` and asserts the closure FAILS, and at a
+      second variant that reads `identity_text` under an alias.
+
+  INVARIANT_4_changed_facet_resolves_typed_or_failclosed:
+    statement: >-
+      a changed, non-ignored, compiled-relevant facet resolves to a typed
+      change OR to UNRESOLVED / fail-closed.
+    executable_meaning: >-
+      for every resolved pair and every facet the oracle reports `changed`:
+      if `facet_channels[facet].has_production_channel` is true, the production
+      diff must carry that facet's `production_record` at the declared scope
+      (unit scope: keyed on the counterpart logical id; document scope: present
+      anywhere in the diff); if it is false, the closure records the facet as
+      UNRESOLVED_NO_PRODUCTION_CHANNEL. Neither outcome may be `unchanged`.
+    population: >-
+      every (resolved pair, facet) whose oracle verdict is `changed` and whose
+      facet is not in `predeclared_ignored_facets` for that pair's family.
+    violation: >-
+      a changed facet with a production channel and no matching record, or a
+      changed facet recorded as unchanged.
+    met_when: violations == 0 AND exercising_facet_observations > 0.
+    can_come_back_red_because: >-
+      the test battery builds a pair whose CONTENT facet changed and feeds a
+      diff with the MODIFIED_CLAIM record removed, and asserts the closure
+      FAILS; and repeats it for the locator channel.
+
+  INVARIANT_5_never_silently_unchanged:
+    statement: it may not silently become `unchanged`.
+    executable_meaning: >-
+      four checks, three of them on the oracle and one on production.
+      (a) EXHAUSTIVE MAPPING PROPERTY — every one of the nine declared facets is
+      crossed with every one of the four declared verdicts and with both channel
+      states, all 72 combinations evaluated, and the closure asserts that no
+      combination whose verdict is `changed` or `unresolved` returns an
+      obligation that silence would discharge. With a production channel the
+      obligation must be `require_typed_change` or `require_fail_closed`;
+      without one it must be exactly `unresolved_no_production_channel`, never
+      `no_obligation`. This is a property of the oracle, evaluated over its whole
+      input domain, not a restatement of what it happens to return on the cohort.
+      (b) VOCABULARY CLOSURE — an unknown facet name and an unknown verdict must
+      each raise `ContractBroken`; the closure calls both and records a violation
+      if either returns a value instead.
+      (c) PERMISSIVE SET CLOSURE — `require_typed_change` and
+      `require_fail_closed` must not be members of
+      `OBLIGATIONS_SATISFIED_BY_SILENCE`.
+      (d) PRODUCTION FAIL-CLOSED — at unit scope, a CONTENT facet of `changed`
+      or `unresolved` requires a modified_claim record on that matched pair, and
+      its absence is a violation.
+    population: >-
+      the oracle's full 72-combination input domain, plus every
+      (resolved pair, facet) for (d).
+    violation: any of (a) through (d).
+    met_when: >-
+      violations == 0 AND mapping_combinations_evaluated == 72 AND
+      unresolved_observations > 0.
+    note_on_power: >-
+      `unresolved_observations > 0` is not decoration. ACCESSIBILITY and
+      EXTERNAL_DEPENDENCY_EXECUTION are permanently unresolved on this unit
+      representation, so the population is non-empty by construction — but the
+      closure counts it rather than assuming it, because an assumption is what
+      INC-V2-036 was.
+    can_come_back_red_because: >-
+      the test battery replaces `obligation_for` with one that maps `unresolved`
+      to `no_obligation` and asserts the closure FAILS on (a); with one that
+      returns a value for an unknown verdict instead of raising and asserts it
+      FAILS on (b); it adds `require_fail_closed` to the permissive set and
+      asserts it FAILS on (c); and it removes a modified_claim from a pair whose
+      CONTENT facet changed and asserts it FAILS on (d).
+
+  INVARIANT_6_ambiguous_identity_stays_unresolved:
+    statement: >-
+      ambiguous or otherwise unsettled identity remains unresolved rather than
+      being forced into continuity, and the unresolved state remains VISIBLE on
+      the diff and evidence surface rather than being discharged by silence.
+    the_three_layers: >-
+      production keeps three surfaces and only the third may be asserted.
+      LAYER 1, the RESOLVER DECISION: MATCHED / NEW / AMBIGUOUS per after-side
+      unit, from `assign_one_to_one` with `LogicalIdentityResolver`, invoked
+      independently of the diff exactly once per pair.
+      LAYER 2, the INDEPENDENT QUARANTINE: which logical ids are under identity
+      uncertainty, computed by `v2r3_quarantine_oracle.py` from the INC-V2-047
+      compatibility contract WITHOUT importing production's implementation of it.
+      LAYER 3, the EFFECTIVE DISPOSITION: layer 1 composed with layer 2.
+      QUARANTINE OVERRIDES A LOCALLY DEFINITE IDENTITY ASSERTION. It does not
+      change the resolver's answer historically -- the resolver said NEW and
+      still says NEW -- it changes what production is ALLOWED TO ASSERT from that
+      answer. A resolver-local NEW decision is NOT necessarily the final identity
+      disposition, and calling layer 1 the disposition is what invalidated V2R2.
+    the_single_decision_surface: >-
+      clauses (c), (d) and (e) all read ONE `EffectiveSurface`, built by running
+      the three layers in order exactly once per pair, and every obligation comes
+      from `v2r3_state_table.OBLIGATIONS` keyed by the EFFECTIVE disposition.
+      None of the three clauses decides anything: the surface decides and they
+      read. The surface refuses to be built unless the partition is mechanically
+      exhaustive, and it retains layer 1 alongside layer 3 so a reader can always
+      see which resolver decision an effective disposition came from.
+    executable_meaning: >-
+      for every production `identity_unresolved` record, (a) the incoming logical
+      id it names appears in no `modified_claim`, no `unit_added` and no
+      `unit_removed` record in the same diff; (b) none of the record's named
+      candidates appears as `unit_removed` -- that spelling would assert a
+      deletion the resolver explicitly declined to make; (c) the closure's own
+      matched-pair reproduction excludes every EFFECTIVELY UNRESOLVED unit, so an
+      unsettled unit never reaches the facet oracle as a matched pair at all;
+      (d) TOTAL ACCOUNTING OVER THE EFFECTIVE DISPOSITION -- every unit carries
+      the obligation its EFFECTIVE disposition implies, and no other, with
+      obligations SIDE-SCOPED and COMPOSED per logical id.
+      (A) EFFECTIVE_MATCHED -- the before and after ids MAY DIFFER and a
+      difference is NOT a finding. SILENCE IS LEGITIMATE, because a matched
+      unchanged unit emits no record at all. What is forbidden is CONTRADICTION:
+      a `unit_added` naming either id, a `unit_removed` naming the before id, or
+      an `identity_unresolved` naming a correspondence that was in fact settled.
+      Facet events on the correspondence -- `evidence_moved`, `modified_claim`,
+      `temporal_changed`, `metadata_changed` -- are legitimate and are scored by
+      their own invariants, never by this one.
+      (B) EFFECTIVE_NEW -- a `unit_added` is REQUIRED and `identity_unresolved`
+      is forbidden. Silence is a violation: a unit that genuinely begins must be
+      visible as added.
+      (C) EFFECTIVE_REMOVED -- a `unit_removed` is REQUIRED; `modified_claim` and
+      `identity_unresolved` are forbidden. Silence is a violation.
+      (D) EFFECTIVE_UNRESOLVED -- a VISIBLE `identity_unresolved` naming it is
+      REQUIRED and every definite identity outcome is forbidden. This is the
+      state a quarantined NEW unit lands in, and it REQUIRES exactly one record
+      rather than requiring and forbidding the same one.
+      Plus ONE-TO-ONE CONSERVATION, proved rather than assumed: the before-side
+      population equals MATCHED plus unmatched-before; the after-side population
+      equals MATCHED plus NEW plus AMBIGUOUS at layer 1; no before-side unit is
+      consumed by more than one correspondence; no after-side unit holds more
+      than one; and no id is both named unresolved and definitely classified.
+      NAMED means a non-empty logical id string: an empty candidate entry names
+      nothing, and a criterion that accepted one could be satisfied by a record
+      that says a unit is implicated by something it declines to identify.
+      MATCHED COMES FROM THE RESOLVER, NEVER FROM DIFF SILENCE, and the EFFECTIVE
+      disposition comes from the composition, never from either layer alone.
+      Both shortcuts have now been tried: the first invalidated V2R1, the second
+      invalidated V2R2.
+      (e) QUARANTINE CHANNEL -- every EFFECTIVELY UNRESOLVED logical id on the
+      shared surface must be named by a production record of kind
+      `identity_unresolved`, the value `quarantine_channel.production_record`
+      carries, as subject or as a non-empty candidate. Its absence is a
+      VIOLATION. The NONE_DECLARED_BY_PRODUCTION branch the abandoned V2 draft
+      carried is GONE and the freezer rejects that value. A SILENT SUPPRESSION IS
+      A VIOLATION -- withholding a definite outcome without stating the
+      uncertainty replaces a false statement with no statement, and a fail-closed
+      endpoint cannot score an absence.
+      (e) READS THE SAME SURFACE (d) READS. In V2R2 they were computed separately
+      and disagreed; here the population is shared by construction.
+    a_facet_event_is_never_an_identity_disposition: >-
+      `evidence_moved`, `modified_claim`, `temporal_changed` and
+      `metadata_changed` are emitted only after a correspondence has been
+      established. None of them may discharge an accounting obligation and none
+      appears in the definite-outcome set this clause reads. The repair of adding
+      `evidence_moved` to that set is FORBIDDEN by founder ruling, and the
+      mutation battery asserts a MATCHED unit carrying `evidence_moved` PASSES.
+    population: >-
+      every identity_unresolved record in the frozen universe, plus every unit on
+      the effective surface of both sides of every resolved pair for (d), plus
+      the declared fixture battery.
+    violation: any of (a), (b), (c), (d), (e).
+    met_when: >-
+      violations == 0 AND (cohort observations > 0 OR fixture observations > 0),
+      with the two counts reported separately and never summed into one
+      denominator, AND accounted_unit_observations > 0 for (d).
+    zero_tolerance: >-
+      unchanged from V1, V2R1 and V2R2, and unchangeable here. One violating
+      (lineage, logical_id) case is a VIOLATED verdict and a FAIL. There is no
+      rate, no budget and no allowance, and none may be added.
+    silence_is_not_a_repair: >-
+      the failure mode (d) exists for: an unsettled identity whose contradictory
+      `unit_removed` is deleted and replaced with nothing. Clauses (a) and (b) go
+      green on that, because they only look for contradictions and the
+      contradiction is gone. (d) fails on it, because the unit is then consumed
+      by nothing, removed by nothing and named by nothing.
+    silence_means_what_the_effective_disposition_says_it_means: >-
+      the same absence of a record is LEGITIMATE under EFFECTIVE_MATCHED and a
+      VIOLATION under EFFECTIVE_NEW, EFFECTIVE_REMOVED and EFFECTIVE_UNRESOLVED.
+      Silence is interpreted by the disposition, never by its own absence.
+    over_quarantine_is_also_a_defect: >-
+      the repair is not a blanket surrender. A unit with no uncertainty against
+      it still owes a definite record, and two declared controls assert that a
+      genuine addition and a genuine removal each REMAIN required. An instrument
+      that answered EFFECTIVE_UNRESOLVED everywhere would satisfy nothing and
+      measure nothing.
+    can_come_back_red_because: >-
+      the power battery proves the clause moves independently for eighteen
+      declared shapes, each with a stated RED MUTATION DIRECTION: a MATCHED pair
+      with differing raw ids PASSES; deleting that correspondence FAILS; an
+      unquarantined resolver-NEW unit whose `unit_added` is removed FAILS; a
+      genuine before-side removal whose `unit_removed` is removed FAILS; an
+      AMBIGUOUS unit whose `identity_unresolved` is removed FAILS; a QUARANTINED
+      NEW unit whose `identity_unresolved` is removed FAILS; a QUARANTINED NEW
+      unit reported `unit_added` FAILS; a QUARANTINED NEW unit stated only as
+      `identity_unresolved` PASSES -- the exact state V2R2 could not express; an
+      AMBIGUOUS candidate also reported `unit_removed` FAILS; a MATCHED unit
+      spuriously reported added FAILS; a MATCHED before unit spuriously reported
+      removed FAILS; a MATCHED correspondence whose two ids are EQUAL still
+      forbids both spellings; a duplicated MATCHED consumption FAILS; an empty
+      unresolved candidate does not count as NAMED; an ordinary unchanged
+      same-raw-id match PASSES; MATCHED plus `evidence_moved` PASSES; MATCHED
+      plus `modified_claim` PASSES identity accounting while content checks
+      remain independent; and one logical id carrying an unmatched unit on EACH
+      side legitimately owes BOTH `unit_added` and `unit_removed`. The three
+      spent V2R1 shapes and the three spent V2R2 shapes run as DEVELOPMENT
+      regressions and must come back clean over non-empty populations; their
+      results certify nothing about this closure.
+
+  INVARIANT_7_only_predeclared_ignores:
+    statement: >-
+      predeclared ignored differences are the ONLY permitted change-equivalent
+      differences.
+    executable_meaning: >-
+      (a) the ignore declaration is read from THIS file, at the digest the
+      freeze receipt pins, never from a default in code; (b) every facet the
+      closure reports `ignored_by_predeclared_policy` must be named in the
+      declaration for that pair's family; (c) every (pair, facet) the closure
+      treats as change-equivalent — a `changed` facet for which no production
+      record is required — must be named in the declaration. With the
+      declaration empty for every family in this cohort, (c) reduces to: the
+      count of change-equivalent facet observations must be zero.
+    population: every (resolved pair, facet).
+    violation: any ignore not named in the frozen declaration.
+    met_when: violations == 0 AND exercising_facet_observations > 0.
+    can_come_back_red_because: >-
+      the test battery runs the closure with a facet marked ignored that the
+      frozen declaration does not name, and asserts it FAILS; and with an
+      ignore inferred from empty data on both sides, and asserts it FAILS.
+
+  INVARIANT_8_sfi2_cases_cannot_certify:
+    statement: >-
+      the 14 SFI2 cases remain development regressions only and cannot certify
+      this closure, and no pair any earlier closure already measured enters this
+      one.
+    executable_meaning: >-
+      (a) the frozen universe's lineage id set is disjoint from the union of
+      `sfi1_acquisition.admitted` and `sfi2_acquisition.admitted` — the 538-pair
+      retrospective cohort — and therefore from the 14 confirmed lineages inside
+      it; (b) the 14 confirmed lineage ids are read from the frozen SFI2 receipt
+      for the disjointness proof ONLY, and appear in no invariant's numerator or
+      denominator; (c) the frozen universe's lineage id set is ALSO disjoint from
+      the lineage id set of V1's frozen universe receipt, which is read for its
+      lineage ids only and for no verdict, count or violated case; (d) the
+      closure reports `sfi2_pairs_in_any_denominator: 0`,
+      `v1_pairs_in_any_denominator: 0` and
+      `retrospective_receipts_read_for_grading: []`; (e) the frozen universe's
+      lineage id set is ALSO disjoint from the 285 lineage ids of V2R1's frozen
+      universe, and (f) from the 270 lineage ids of V2R2's frozen universe.
+      Both are SPENT: the run executed once and its outcomes were
+      read, and adjudicating the instrument invalid does not un-spend the
+      material. Each receipt is read for lineage ids only — no verdict, no
+      count, no violated case — and neither is ever a denominator here.
+    population: the frozen universe.
+    violation: >-
+      any intersection with the 538, with the 14, with V1's universe, with V2R1's
+      frozen universe or with V2R2's frozen universe, or any SFI2-derived,
+      V1-derived, V2R1-derived or V2R2-derived pair in any denominator.
+    met_when: violations == 0 AND cohort_pairs > 0.
+    can_come_back_red_because: >-
+      the test battery inserts one confirmed-defect lineage id into a stand-in
+      frozen universe and asserts the closure FAILS, and inserts one lineage id
+      drawn from V1's frozen universe and asserts the closure FAILS.
+    v1_is_read_for_ids_only: >-
+      subtracting V1's lineages is the only use V2 makes of V1. No V1 verdict is
+      read, V1's FAIL is not reinterpreted, and V1 is never a denominator here —
+      neither a positive one nor a negative one.
+
+vacuity_rule:
+  statement: a closure over zero pairs FAILS as vacuous. It never PASSES.
+  executable_meaning: >-
+    `pairs_resolved == 0` yields overall VACUOUS_FAIL before any invariant is
+    graded. Per invariant, an exercising count of zero yields UNPROVEN, and an
+    UNPROVEN invariant can never contribute to a PASS.
+  why: >-
+    this study's recurring defect is a check that reports a clean result because
+    it is watching nothing. Zero observations is the purest form of it.
+
+pass_rule:
+  requires_all_of:
+    - "pairs_resolved > 0"
+    - "all eight invariants MET"
+    - "no invariant UNPROVEN"
+    - "the protocol freeze receipt exists and pins this file's sha256"
+    - "the universe freeze receipt exists and names the protocol freeze run id"
+    - >-
+      the scorer/acceptance freeze receipt exists, names the universe freeze run
+      id, and every pinned module digest still matches disk
+    - >-
+      the exclusion freeze receipt exists, names the scorer freeze run id, and
+      both the exclusion policy digest and the realised exclusion set still match
+    - "every collision group is wholly excluded"
+  no_threshold: >-
+    there is no rate, bound, quota or tolerance anywhere in this rule. A PASS is
+    zero violations on eight structural predicates over a non-empty population.
+  what_a_pass_authorises: >-
+    recording that the INC-V2-037 migration and the INC-V2-047 repair have a
+    prospectively frozen closure on a universe disjoint from the retrospective
+    538, from the 14 confirmed SFI2 lineages and from V1's universe. Nothing
+    more. It does not make the retrospective receipts prospective, does not
+    qualify the ladder retroactively, does not overturn V1's FAIL, does not
+    certify SFI3, and does not authorise GPU spend.
+  what_a_fail_means: >-
+    a negative closure result, reported as one. Not a reason to widen a facet,
+    add an ignore, move a scope, drop a pair or re-run. V2 runs once.
+  a_pass_does_not_retire_v1s_fail: >-
+    V1 measured a universe, on a protocol frozen before it, and failed. That
+    remains true afterwards. A V2 PASS says the repaired system holds on NEW
+    material; it does not say V1's material would now hold, because V1's material
+    is not re-measured and V1's result is not re-opened.
+
+# ---------------------------------------------------------------------------
+# cohort
+
+cohort:
+  path_taken: EXACT_CARRY_FORWARD_OF_AN_UNSCORED_FROZEN_UNIVERSE
+  declared_before_execution: true
+  frame: research/tavonel_eval_v2/acquisition/sources_v2r3r1.py
+  frame_is_freeze_rung_0: >-
+    the frame is pinned before the universe is sealed. This chain fetches
+    nothing, so what its frame declares is not a traversal but a PROHIBITION:
+    the only legal candidate set is exactly the parent's frozen 300 rows, and no
+    property of any pair's content may add, drop, replace or reorder one of
+    them. The parent's own rung 0 already sealed the rules that decided what to
+    acquire, before any content existed; see `carry_forward`.
+  acquired_by: >-
+    NOTHING. This chain performs no acquisition. The material was acquired once,
+    under the parent's frozen rung 0, by acquisition/fetch_v2r3_corpus.py, and it
+    is inherited rather than re-fetched.
+  enumerated_by: research/tavonel_eval_v2/tools/enumerate_v2r3r1_universe.py
+  consumed_as: see `manifest_contract`
+  selection_rule: >-
+    the complete candidate universe as the enumerating lane leaves it, taken in
+    the order the manifest declares, deduplicated by lineage id keeping the first
+    occurrence, then filtered by the declared exclusion policy alone. No pair is
+    selected or dropped by any property of its content, and no pair is selected
+    or dropped by any closure outcome — V1's, V2's or any other. The selection
+    function never calls either change predicate.
+  document_construction: >-
+    the canonical documents already written to disk beside each candidate, read
+    as JSON and passed to `compiler/selective_build.snapshots`. Nothing is
+    re-canonicalised and nothing is re-fetched.
+  network: FORBIDDEN. The closure makes no outbound request of any kind.
+  disjointness:
+    # Nine required sets. Each is REQUIRED by lineage id and proven in the
+    # universe freeze receipt. Burn scope is owned by each corpus's OWN
+    # predeclared contract -- there is no universal doctrine that any read burns
+    # a lineage for every future question, and this list is not "every study
+    # that exists".
+    from_sfi1_spent: REQUIRED
+    from_sfi2_spent: REQUIRED
+    from_the_538_pair_retrospective_cohort: REQUIRED
+    from_the_14_SFI2_forensic_cases: REQUIRED, proven explicitly and separately
+    from_the_V1_frozen_universe_514: REQUIRED
+    from_the_V2R1_frozen_universe_285: >-
+      REQUIRED. Spent: the run executed once and its outcomes were read.
+    from_the_V2R2_frozen_universe_270: >-
+      REQUIRED. Spent for the same reason. Adjudicating either instrument
+      invalid does not un-spend the material it was pointed at.
+    from_vbc1_probe_lineages: >-
+      REQUIRED. sources_vbc1_probe.py declares before use that every lineage
+      listed there is spent the moment the probe reports and that it is not the
+      confirmatory cohort and must never become it, with burned_after_use=True
+      and not_the_confirmatory_cohort=True. That burn is GLOBAL for confirmatory
+      reuse.
+    from_earlier_identity_measurements: REQUIRED
+    from_all_sfi3_material: REQUIRED, absolute
+    from_any_contract_declared_spent_source: >-
+      REQUIRED. Read that corpus's own predeclared contract; do not assume, and
+      do not generalise from another corpus's contract.
+  burn_scope_read_and_found_none:
+    p4c: >-
+      acquisition/sources_p4c.py contains no burn, spent or confirmatory-reuse
+      declaration of any kind. Declared burn scope NONE_DECLARED, reported
+      exactly and generalised into nothing. Moot regardless: one lineage cannot
+      constitute a confirmatory cohort.
+  sfi3_prohibition:
+    absolute: true
+    forbidden:
+      - artifacts/development/sfi3_lineages.json
+      - any SFI3 acquisition artifact
+      - any SFI3 payload, cached or fresh
+      - any SFI3 revision payload or expansion
+      - any network fetch for SFI3
+    fresh_sfi3_is: >-
+      the prospective confirmatory evidence, owned by another lane, and it is not
+      consumed here.
+
+# ---------------------------------------------------------------------------
+# the fixture battery — carried from V1, plus the one clause (d) needs
+#
+# Frozen with this file BEFORE execution, DEVELOPMENT evidence only, counts
+# reported separately and never added to a cohort denominator. Every declared id
+# must have a registered builder and every registered builder must be declared;
+# the runner refuses on either mismatch.
+
+fixture_battery:
+  standing: DEVELOPMENT_GATE_POWER_ONLY
+  never_summed_into_a_cohort_denominator: true
+  classes:
+    fold_nfkc_compatibility:
+      invariant: INVARIANT_2
+      exercises: the identity fold must fold an NFKC compatibility difference
+    fold_case_only:
+      invariant: INVARIANT_2
+      exercises: the identity fold must fold a case-only difference
+    fold_punctuation_to_space:
+      invariant: INVARIANT_2
+      exercises: the identity fold must fold punctuation to space
+    fold_whitespace_collapse:
+      invariant: INVARIANT_2
+      exercises: the identity fold must collapse whitespace
+    facet_temporal_changed:
+      invariant: INVARIANT_4
+      exercises: a changed TEMPORAL facet must produce temporal_changed
+    facet_metadata_changed:
+      invariant: INVARIANT_4
+      exercises: a changed METADATA facet must produce metadata_changed
+    facet_visual_changed:
+      invariant: INVARIANT_4
+      exercises: a changed VISUAL facet must produce visual_changed
+    facet_authority_changed:
+      invariant: INVARIANT_4
+      exercises: a changed AUTHORITY_APPLICABILITY facet must produce authority_changed
+    facet_locator_changed:
+      invariant: INVARIANT_4
+      exercises: a changed REFERENCE_LOCATOR facet must produce evidence_moved
+    content_unresolved_projection_fails_closed:
+      invariant: INVARIANT_5
+      exercises: >-
+        production's own `semantic_diff.content_facet_verdict` must return
+        `unresolved` — never `unchanged` — for a pair whose text is not
+        comparable, and the independent facet contract must agree.
+    ambiguous_identity_stays_unresolved:
+      invariant: INVARIANT_6
+      exercises: >-
+        a physically reordered document drives the resolver to AMBIGUOUS; the
+        incoming unit must appear in no modified_claim, no unit_added and no
+        unit_removed, and its candidates must not be reported removed
+    unsettled_identity_is_not_discharged_by_silence:
+      invariant: INVARIANT_6
+      exercises: >-
+        a before-side unit that shares a logical id with an unsettled incoming
+        unit must be ACCOUNTED FOR — matched, removed, or named in the
+        identity_unresolved record. Emitting nothing about it must FAIL clause
+        (d). This is the fixture that distinguishes a quarantine from a
+        suppression, and it is the reason (d) exists.
+
+# ---------------------------------------------------------------------------
+# execution
+
+execution:
+  order:
+    - "0. freeze the exact-carry-forward frame (immutable receipt)"
+    - "0a. write and verify the frame / carry-forward companion attestation"
+    - "1. freeze this protocol (immutable receipt)"
+    - "1a. write and verify the protocol + semantic-equivalence companion attestation"
+    - "2. carry the parent's frozen universe forward EXACTLY (no network, no re-fetch)"
+    - "3. freeze the complete candidate universe (immutable receipt)"
+    - "3a. write and verify the independent exact-set universe attestation"
+    - "4. freeze the repaired scorer and the acceptance semantics (immutable receipt)"
+    - "5. freeze the exclusion policy and the realised exclusion set (immutable receipt)"
+    - "6. run the closure exactly once, through the declared one-shot entry point"
+    - "7. write the measurement receipt (immutable)"
+  runs_after: the INC-V2-047 repair has landed through the Protected Core ladder
+  preconditions_that_must_all_be_PROVEN_before_the_single_run:
+    - "contract consistency gate PASS (prose and executable semantics agree)"
+    - "state machine satisfiability PASS, every reachable row exercised"
+    - "each declared row controlled by a RED MUTATION DIRECTION that actually fires"
+    - "the AST independence guard on the quarantine oracle PASS"
+    - "V2R1 spent-shape regressions PASS over non-empty populations"
+    - "V2R2 spent-shape regressions PASS, the thirteen units EFFECTIVE_UNRESOLVED"
+    - "root normalisation and disjointness PASS, zero UNVERIFIABLE, zero clashes"
+    - "the full research/tavonel_eval_v2 suite green, repeatedly"
+    - "the freeze chain intact: frame, protocol, universe, scorer, exclusions"
+    - "the parent's PRE_RESULT_CRASH_NON_DISCLOSURE attestation PASS"
+    - "exact-set carry-forward equality PASS, every declared delta 0, pair count 300"
+    - "V2R3 -> V2R3R1 scientific-projection equality PASS"
+    - "the census schema guard refuses BEFORE real-cohort iteration"
+    - "an unauthorised run() refuses BEFORE the universe is loaded, proven by a negative control"
+    - "no test in the suite executes the real-cohort closure, proven by AST scan"
+  one_shot_authorisation:
+    rule: >-
+      the real-cohort closure refuses unless it is invoked through the declared
+      one-shot measurement entry point after this chain's gate reports READY. A
+      unit test may call pure helpers, synthetic fixtures and spent regression
+      material; it may not reach the real-cohort measurement path.
+    enforced_by: >-
+      `run()` takes an authorisation object that only the CLI entry point can
+      mint, and the mint refuses while a test runner is loaded in the process.
+      The check is the FIRST thing `run()` does, before the workspace, the
+      protocol or the universe is touched, so an accidental `scorer.run()` from
+      pytest refuses without reading a single pair.
+    no_bypass: >-
+      there is no token file, no environment variable and no force flag. The
+      authorisation exists only inside the process that minted it and is
+      re-verified against the live chain at use. A bypass that could be set from
+      outside would be the force flag this protocol says does not exist.
+    binds: >-
+      the authorisation carries this chain's rung digests and run ids, and the
+      measurement receipt records them, so the run is attributable to the chain
+      that authorised it and to no other.
+  no_preview: >-
+    the closure is executed EXACTLY ONCE and there is no preview, no dry score,
+    no partial read of the cohort's outcomes and no rehearsal against real pairs.
+    A preview is a first execution whose result is then used to decide whether to
+    execute -- which is the definition of selecting on the outcome.
+  on_fail: >-
+    the corpus is SPENT, no rescore is permitted, SFI3 remains unopened, and GPU
+    spend stays at zero. A FAIL is reported as a FAIL.
+  on_contract_broken: >-
+    STOP and report for founder ruling. CONTRACT_BROKEN is not a result about
+    production; it means the instrument was invalid again and the study does not
+    proceed on it.
+  on_pass: >-
+    do NOT add another migration study. Proceed directly to SFI3.
+  scored_once: true
+  what_counts_as_a_score: >-
+    a run that produces a graded result. A run that raises before grading — a
+    missing file, a crash, a refused precondition — is not a score, produces no
+    receipt, and is repaired and re-run. Declared here BEFORE execution so that
+    the distinction cannot be invented afterwards to justify a second attempt at
+    a result somebody did not like. A run that grades is the run, whichever way
+    it comes out, and it is reported.
+  smoke_tests: >-
+    FIXTURES ONLY, and only before the freeze. No candidate pair is read before
+    the protocol freeze receipt exists.
+  single_writer: true
+  gpu_seconds: 0
+  cost_usd: 0
+  network: forbidden
+
+release:
+  ip_gate: CLOSED
+  docs_ip: untouched
+  public_release: forbidden
+
+# ---------------------------------------------------------------------------
+# what this closure cannot establish, stated before it runs
+
+declared_blind_spots:
+  - >-
+    five of nine facets are permanently UNRESOLVED on this unit representation,
+    so INVARIANT_4's cohort evidence covers CONTENT, STRUCTURAL and
+    REFERENCE_LOCATOR only. The rest rests on the fixture battery, which is
+    development evidence.
+  - >-
+    this closure measures the change PREDICATE and the identity-uncertainty
+    surface. It does not measure whether a detected change creates a rebuild
+    request — that is SFI3's E9 and belongs to another lane.
+  - >-
+    no threshold anywhere in this repository is calibrated, including the 0.92
+    identity merge bar the resolver uses. INVARIANT_6 measures that ambiguity
+    fails closed and stays visible, not that the bar is in the right place.
+  - >-
+    the universe is development material. A closure on development data is a
+    closure on development data.
+  - >-
+    INVARIANT_6(d) proves that no unit left the diff without a statement about
+    it. It does not prove the statement is the RIGHT one — that an unsettled
+    identity ought to have been settled, or ought not to have been. That needs an
+    identity oracle independent of the resolver, and none exists.

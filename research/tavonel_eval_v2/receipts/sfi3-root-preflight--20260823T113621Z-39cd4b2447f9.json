@@ -1,0 +1,1493 @@
+{
+  "by_family_state": {
+    "encyclopedia_wikipedia": {
+      "INVALID_IDENTIFIER": 0,
+      "NOT_FOUND": 1,
+      "REDIRECTED": 0,
+      "UNEXPECTED_HOST": 0,
+      "UNREACHABLE": 0,
+      "VALID": 9
+    },
+    "git_docs": {
+      "INVALID_IDENTIFIER": 0,
+      "NOT_FOUND": 11,
+      "REDIRECTED": 0,
+      "UNEXPECTED_HOST": 0,
+      "UNREACHABLE": 1,
+      "VALID": 20
+    },
+    "regulation_ecfr": {
+      "INVALID_IDENTIFIER": 0,
+      "NOT_FOUND": 1,
+      "REDIRECTED": 0,
+      "UNEXPECTED_HOST": 0,
+      "UNREACHABLE": 0,
+      "VALID": 35
+    }
+  },
+  "declared_totals": {
+    "encyclopedia_wikipedia": 10,
+    "git_docs": 32,
+    "regulation_ecfr": 36
+  },
+  "ended_at": "2026-08-23T11:36:21.045035+00:00",
+  "family_quota": {
+    "encyclopedia_wikipedia": 70,
+    "git_docs": 120,
+    "regulation_ecfr": 100
+  },
+  "floor": 200,
+  "invalid_roots_by_family": {
+    "encyclopedia_wikipedia": [
+      {
+        "reason": "category page missing or not in the Category namespace",
+        "root_id": "Category:Cities and towns in Hyogo Prefecture",
+        "state": "NOT_FOUND"
+      }
+    ],
+    "git_docs": [
+      {
+        "reason": "HTTPError: HTTP Error 404: Not Found",
+        "root_id": "gitlab-org/gitlab",
+        "state": "NOT_FOUND"
+      },
+      {
+        "reason": "repository exists but declared prefix 'website/content/docs/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+        "root_id": "hashicorp/boundary",
+        "state": "NOT_FOUND"
+      },
+      {
+        "reason": "repository exists but declared prefix 'docs/content/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+        "root_id": "open-policy-agent/opa",
+        "state": "NOT_FOUND"
+      },
+      {
+        "reason": "repository exists but declared prefix 'docs/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+        "root_id": "apache/pinot",
+        "state": "NOT_FOUND"
+      },
+      {
+        "reason": "URLError: <urlopen error _ssl.c:1003: The handshake operation timed out>",
+        "root_id": "trinodb/trino",
+        "state": "UNREACHABLE"
+      },
+      {
+        "reason": "repository exists but declared prefix 'documentation/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+        "root_id": "questdb/questdb",
+        "state": "NOT_FOUND"
+      },
+      {
+        "reason": "repository exists but declared prefix 'site/content/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+        "root_id": "arangodb/docs",
+        "state": "NOT_FOUND"
+      },
+      {
+        "reason": "HTTPError: HTTP Error 404: Not Found",
+        "root_id": "emberjs/guides-source",
+        "state": "NOT_FOUND"
+      },
+      {
+        "reason": "repository exists but declared prefix 'src/pages/docs/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+        "root_id": "tailwindlabs/tailwindcss.com",
+        "state": "NOT_FOUND"
+      },
+      {
+        "reason": "repository exists but declared prefix 'site/content/docs/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+        "root_id": "twbs/bootstrap",
+        "state": "NOT_FOUND"
+      },
+      {
+        "reason": "repository exists but declared prefix 'src/main/docs/guide/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+        "root_id": "micronaut-projects/micronaut-docs",
+        "state": "NOT_FOUND"
+      },
+      {
+        "reason": "repository exists but declared prefix 'docs/graphql/core/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+        "root_id": "hasura/graphql-engine",
+        "state": "NOT_FOUND"
+      }
+    ],
+    "regulation_ecfr": [
+      {
+        "reason": "title/part resolved but carries no recorded content_versions",
+        "root_id": "title-41-part-301",
+        "state": "NOT_FOUND"
+      }
+    ]
+  },
+  "provenance": {
+    "generated_at": "2026-08-23T11:36:21.045961+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "sfi3-root-preflight",
+    "run_id": "20260823T113621Z-39cd4b2447f9",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/tools/preflight_sfi3_roots.py",
+    "tool_sha256": "sha256:2904c0bb67f79a9136d7c68613abb027b9dec2d18347100a7e58ff8414423a97"
+  },
+  "receipt_sha256": "sha256:9566911edebe7ff01e271442bc85db9ab910464291ca64d1fe6fcb1d064a138f",
+  "records": [
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/github/docs",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "github/docs",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "github/docs",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/github/docs"
+    },
+    {
+      "confirmed_to_exist": false,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/gitlab-org/gitlab",
+      "http_status": 404,
+      "identity": {},
+      "reason": "HTTPError: HTTP Error 404: Not Found",
+      "redirected": false,
+      "root_id": "gitlab-org/gitlab",
+      "state": "NOT_FOUND",
+      "url_checked": "https://api.github.com/repos/gitlab-org/gitlab"
+    },
+    {
+      "confirmed_to_exist": false,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/hashicorp/boundary",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "hashicorp/boundary",
+        "prefix_http_status": 404,
+        "prefix_reachable": false,
+        "private": false
+      },
+      "reason": "repository exists but declared prefix 'website/content/docs/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+      "redirected": false,
+      "root_id": "hashicorp/boundary",
+      "state": "NOT_FOUND",
+      "url_checked": "https://api.github.com/repos/hashicorp/boundary"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/hashicorp/waypoint",
+      "http_status": 200,
+      "identity": {
+        "archived": true,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "hashicorp/waypoint",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "hashicorp/waypoint",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/hashicorp/waypoint"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/pulumi/docs",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "master",
+        "disabled": false,
+        "full_name": "pulumi/docs",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "pulumi/docs",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/pulumi/docs"
+    },
+    {
+      "confirmed_to_exist": false,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/open-policy-agent/opa",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "open-policy-agent/opa",
+        "prefix_http_status": 404,
+        "prefix_reachable": false,
+        "private": false
+      },
+      "reason": "repository exists but declared prefix 'docs/content/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+      "redirected": false,
+      "root_id": "open-policy-agent/opa",
+      "state": "NOT_FOUND",
+      "url_checked": "https://api.github.com/repos/open-policy-agent/opa"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/argoproj/argo-workflows",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "argoproj/argo-workflows",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "argoproj/argo-workflows",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/argoproj/argo-workflows"
+    },
+    {
+      "confirmed_to_exist": false,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/apache/pinot",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "master",
+        "disabled": false,
+        "full_name": "apache/pinot",
+        "prefix_http_status": 404,
+        "prefix_reachable": false,
+        "private": false
+      },
+      "reason": "repository exists but declared prefix 'docs/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+      "redirected": false,
+      "root_id": "apache/pinot",
+      "state": "NOT_FOUND",
+      "url_checked": "https://api.github.com/repos/apache/pinot"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/apache/kudu",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "master",
+        "disabled": false,
+        "full_name": "apache/kudu",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "apache/kudu",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/apache/kudu"
+    },
+    {
+      "confirmed_to_exist": false,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/trinodb/trino",
+      "http_status": 0,
+      "identity": {},
+      "reason": "URLError: <urlopen error _ssl.c:1003: The handshake operation timed out>",
+      "redirected": false,
+      "root_id": "trinodb/trino",
+      "state": "UNREACHABLE",
+      "url_checked": "https://api.github.com/repos/trinodb/trino"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/yugabyte/yugabyte-db",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "master",
+        "disabled": false,
+        "full_name": "yugabyte/yugabyte-db",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "yugabyte/yugabyte-db",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/yugabyte/yugabyte-db"
+    },
+    {
+      "confirmed_to_exist": false,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/questdb/questdb",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "master",
+        "disabled": false,
+        "full_name": "questdb/questdb",
+        "prefix_http_status": 404,
+        "prefix_reachable": false,
+        "private": false
+      },
+      "reason": "repository exists but declared prefix 'documentation/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+      "redirected": false,
+      "root_id": "questdb/questdb",
+      "state": "NOT_FOUND",
+      "url_checked": "https://api.github.com/repos/questdb/questdb"
+    },
+    {
+      "confirmed_to_exist": false,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/arangodb/docs",
+      "http_status": 200,
+      "identity": {
+        "archived": true,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "arangodb/docs",
+        "prefix_http_status": 404,
+        "prefix_reachable": false,
+        "private": false
+      },
+      "reason": "repository exists but declared prefix 'site/content/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+      "redirected": false,
+      "root_id": "arangodb/docs",
+      "state": "NOT_FOUND",
+      "url_checked": "https://api.github.com/repos/arangodb/docs"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/caddyserver/website",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "master",
+        "disabled": false,
+        "full_name": "caddyserver/website",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "caddyserver/website",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/caddyserver/website"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/gatsbyjs/gatsby",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "master",
+        "disabled": false,
+        "full_name": "gatsbyjs/gatsby",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "gatsbyjs/gatsby",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/gatsbyjs/gatsby"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/solidjs/solid-docs",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "solidjs/solid-docs",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "solidjs/solid-docs",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/solidjs/solid-docs"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/preactjs/preact-www",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "master",
+        "disabled": false,
+        "full_name": "preactjs/preact-www",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "preactjs/preact-www",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/preactjs/preact-www"
+    },
+    {
+      "confirmed_to_exist": false,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/emberjs/guides-source",
+      "http_status": 404,
+      "identity": {},
+      "reason": "HTTPError: HTTP Error 404: Not Found",
+      "redirected": false,
+      "root_id": "emberjs/guides-source",
+      "state": "NOT_FOUND",
+      "url_checked": "https://api.github.com/repos/emberjs/guides-source"
+    },
+    {
+      "confirmed_to_exist": false,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/tailwindlabs/tailwindcss.com",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "tailwindlabs/tailwindcss.com",
+        "prefix_http_status": 404,
+        "prefix_reachable": false,
+        "private": false
+      },
+      "reason": "repository exists but declared prefix 'src/pages/docs/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+      "redirected": false,
+      "root_id": "tailwindlabs/tailwindcss.com",
+      "state": "NOT_FOUND",
+      "url_checked": "https://api.github.com/repos/tailwindlabs/tailwindcss.com"
+    },
+    {
+      "confirmed_to_exist": false,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/twbs/bootstrap",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "twbs/bootstrap",
+        "prefix_http_status": 404,
+        "prefix_reachable": false,
+        "private": false
+      },
+      "reason": "repository exists but declared prefix 'site/content/docs/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+      "redirected": false,
+      "root_id": "twbs/bootstrap",
+      "state": "NOT_FOUND",
+      "url_checked": "https://api.github.com/repos/twbs/bootstrap"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/rollup/rollup",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "master",
+        "disabled": false,
+        "full_name": "rollup/rollup",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "rollup/rollup",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/rollup/rollup"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/prettier/prettier",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "prettier/prettier",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "prettier/prettier",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/prettier/prettier"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/typescript-eslint/typescript-eslint",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "typescript-eslint/typescript-eslint",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "typescript-eslint/typescript-eslint",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/typescript-eslint/typescript-eslint"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/phoenixframework/phoenix",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "phoenixframework/phoenix",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "phoenixframework/phoenix",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/phoenixframework/phoenix"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/spring-projects/spring-framework",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "spring-projects/spring-framework",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "spring-projects/spring-framework",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/spring-projects/spring-framework"
+    },
+    {
+      "confirmed_to_exist": false,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/micronaut-projects/micronaut-docs",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "master",
+        "disabled": false,
+        "full_name": "micronaut-projects/micronaut-docs",
+        "prefix_http_status": 404,
+        "prefix_reachable": false,
+        "private": false
+      },
+      "reason": "repository exists but declared prefix 'src/main/docs/guide/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+      "redirected": false,
+      "root_id": "micronaut-projects/micronaut-docs",
+      "state": "NOT_FOUND",
+      "url_checked": "https://api.github.com/repos/micronaut-projects/micronaut-docs"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/quarkusio/quarkus",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "quarkusio/quarkus",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "quarkusio/quarkus",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/quarkusio/quarkus"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/bazelbuild/bazel",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "master",
+        "disabled": false,
+        "full_name": "bazelbuild/bazel",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "bazelbuild/bazel",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/bazelbuild/bazel"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/gradle/gradle",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "master",
+        "disabled": false,
+        "full_name": "gradle/gradle",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "gradle/gradle",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/gradle/gradle"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/scala/docs.scala-lang",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "main",
+        "disabled": false,
+        "full_name": "scala/docs.scala-lang",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "scala/docs.scala-lang",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/scala/docs.scala-lang"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/odoo/documentation",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "19.0",
+        "disabled": false,
+        "full_name": "odoo/documentation",
+        "prefix_http_status": 200,
+        "prefix_reachable": true,
+        "private": false
+      },
+      "reason": "repository and declared prefix both resolved",
+      "redirected": false,
+      "root_id": "odoo/documentation",
+      "state": "VALID",
+      "url_checked": "https://api.github.com/repos/odoo/documentation"
+    },
+    {
+      "confirmed_to_exist": false,
+      "expected_host": "api.github.com",
+      "family": "git_docs",
+      "final_url": "https://api.github.com/repos/hasura/graphql-engine",
+      "http_status": 200,
+      "identity": {
+        "archived": false,
+        "default_branch": "master",
+        "disabled": false,
+        "full_name": "hasura/graphql-engine",
+        "prefix_http_status": 404,
+        "prefix_reachable": false,
+        "private": false
+      },
+      "reason": "repository exists but declared prefix 'docs/graphql/core/' did not resolve to a non-empty directory listing (HTTPError: HTTP Error 404: Not Found)",
+      "redirected": false,
+      "root_id": "hasura/graphql-engine",
+      "state": "NOT_FOUND",
+      "url_checked": "https://api.github.com/repos/hasura/graphql-engine"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-5.json?part=2635",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-5-part-2635",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-5.json?part=2635"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-7.json?part=301",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-7-part-301",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-7.json?part=301"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-8.json?part=204",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-8-part-204",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-8.json?part=204"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-9.json?part=3",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-9-part-3",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-9.json?part=3"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-10.json?part=72",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-10-part-72",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-10.json?part=72"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-11.json?part=104",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-11-part-104",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-11.json?part=104"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-12.json?part=1041",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-12-part-1041",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-12.json?part=1041"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-13.json?part=120",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-13-part-120",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-13.json?part=120"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-14.json?part=71",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-14-part-71",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-14.json?part=71"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-15.json?part=740",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-15-part-740",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-15.json?part=740"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-16.json?part=444",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-16-part-444",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-16.json?part=444"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-17.json?part=249",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-17-part-249",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-17.json?part=249"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-18.json?part=35",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-18-part-35",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-18.json?part=35"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-19.json?part=10",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-19-part-10",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-19.json?part=10"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-20.json?part=416",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-20-part-416",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-20.json?part=416"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-21.json?part=1301",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-21-part-1301",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-21.json?part=1301"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-22.json?part=120",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-22-part-120",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-22.json?part=120"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-23.json?part=650",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-23-part-650",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-23.json?part=650"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-24.json?part=3282",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-24-part-3282",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-24.json?part=3282"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-25.json?part=151",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-25-part-151",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-25.json?part=151"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-26.json?part=31",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-26-part-31",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-26.json?part=31"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-27.json?part=9",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-27-part-9",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-27.json?part=9"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-28.json?part=35",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-28-part-35",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-28.json?part=35"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-29.json?part=1602",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-29-part-1602",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-29.json?part=1602"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-30.json?part=550",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-30-part-550",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-30.json?part=550"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-31.json?part=560",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-31-part-560",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-31.json?part=560"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-32.json?part=2001",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-32-part-2001",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-32.json?part=2001"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-33.json?part=334",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-33-part-334",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-33.json?part=334"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-34.json?part=685",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-34-part-685",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-34.json?part=685"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-36.json?part=7",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-36-part-7",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-36.json?part=7"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-37.json?part=202",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-37-part-202",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-37.json?part=202"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-38.json?part=36",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-38-part-36",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-38.json?part=36"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-40.json?part=125",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-40-part-125",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-40.json?part=125"
+    },
+    {
+      "confirmed_to_exist": false,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-41.json?part=301",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": false
+      },
+      "reason": "title/part resolved but carries no recorded content_versions",
+      "redirected": false,
+      "root_id": "title-41-part-301",
+      "state": "NOT_FOUND",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-41.json?part=301"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-42.json?part=84",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-42-part-84",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-42.json?part=84"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "www.ecfr.gov",
+      "family": "regulation_ecfr",
+      "final_url": "https://www.ecfr.gov/api/versioner/v1/versions/title-45.json?part=75",
+      "http_status": 200,
+      "identity": {
+        "has_content_versions": true
+      },
+      "reason": "title/part resolved with at least one recorded version",
+      "redirected": false,
+      "root_id": "title-45-part-75",
+      "state": "VALID",
+      "url_checked": "https://www.ecfr.gov/api/versioner/v1/versions/title-45.json?part=75"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "en.wikipedia.org",
+      "family": "encyclopedia_wikipedia",
+      "final_url": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3AMunicipalities%20of%20Finland&prop=info&format=json",
+      "http_status": 200,
+      "identity": {
+        "namespace_is_category": true,
+        "pageid_present": true
+      },
+      "reason": "category page exists in the Category namespace",
+      "redirected": false,
+      "root_id": "Category:Municipalities of Finland",
+      "state": "VALID",
+      "url_checked": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3AMunicipalities%20of%20Finland&prop=info&format=json"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "en.wikipedia.org",
+      "family": "encyclopedia_wikipedia",
+      "final_url": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3ACities%20in%20Poland&prop=info&format=json",
+      "http_status": 200,
+      "identity": {
+        "namespace_is_category": true,
+        "pageid_present": true
+      },
+      "reason": "category page exists in the Category namespace",
+      "redirected": false,
+      "root_id": "Category:Cities in Poland",
+      "state": "VALID",
+      "url_checked": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3ACities%20in%20Poland&prop=info&format=json"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "en.wikipedia.org",
+      "family": "encyclopedia_wikipedia",
+      "final_url": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3AMunicipalities%20of%20the%20Netherlands&prop=info&format=json",
+      "http_status": 200,
+      "identity": {
+        "namespace_is_category": true,
+        "pageid_present": true
+      },
+      "reason": "category page exists in the Category namespace",
+      "redirected": false,
+      "root_id": "Category:Municipalities of the Netherlands",
+      "state": "VALID",
+      "url_checked": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3AMunicipalities%20of%20the%20Netherlands&prop=info&format=json"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "en.wikipedia.org",
+      "family": "encyclopedia_wikipedia",
+      "final_url": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3ATowns%20in%20Ireland&prop=info&format=json",
+      "http_status": 200,
+      "identity": {
+        "namespace_is_category": true,
+        "pageid_present": true
+      },
+      "reason": "category page exists in the Category namespace",
+      "redirected": false,
+      "root_id": "Category:Towns in Ireland",
+      "state": "VALID",
+      "url_checked": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3ATowns%20in%20Ireland&prop=info&format=json"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "en.wikipedia.org",
+      "family": "encyclopedia_wikipedia",
+      "final_url": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3AMunicipalities%20of%20Portugal&prop=info&format=json",
+      "http_status": 200,
+      "identity": {
+        "namespace_is_category": true,
+        "pageid_present": true
+      },
+      "reason": "category page exists in the Category namespace",
+      "redirected": false,
+      "root_id": "Category:Municipalities of Portugal",
+      "state": "VALID",
+      "url_checked": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3AMunicipalities%20of%20Portugal&prop=info&format=json"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "en.wikipedia.org",
+      "family": "encyclopedia_wikipedia",
+      "final_url": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3ACities%20in%20Chile&prop=info&format=json",
+      "http_status": 200,
+      "identity": {
+        "namespace_is_category": true,
+        "pageid_present": true
+      },
+      "reason": "category page exists in the Category namespace",
+      "redirected": false,
+      "root_id": "Category:Cities in Chile",
+      "state": "VALID",
+      "url_checked": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3ACities%20in%20Chile&prop=info&format=json"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "en.wikipedia.org",
+      "family": "encyclopedia_wikipedia",
+      "final_url": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3AMunicipalities%20of%20Slovakia&prop=info&format=json",
+      "http_status": 200,
+      "identity": {
+        "namespace_is_category": true,
+        "pageid_present": true
+      },
+      "reason": "category page exists in the Category namespace",
+      "redirected": false,
+      "root_id": "Category:Municipalities of Slovakia",
+      "state": "VALID",
+      "url_checked": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3AMunicipalities%20of%20Slovakia&prop=info&format=json"
+    },
+    {
+      "confirmed_to_exist": false,
+      "expected_host": "en.wikipedia.org",
+      "family": "encyclopedia_wikipedia",
+      "final_url": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3ACities%20and%20towns%20in%20Hyogo%20Prefecture&prop=info&format=json",
+      "http_status": 200,
+      "identity": {
+        "namespace_is_category": true,
+        "pageid_present": false
+      },
+      "reason": "category page missing or not in the Category namespace",
+      "redirected": false,
+      "root_id": "Category:Cities and towns in Hyogo Prefecture",
+      "state": "NOT_FOUND",
+      "url_checked": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3ACities%20and%20towns%20in%20Hyogo%20Prefecture&prop=info&format=json"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "en.wikipedia.org",
+      "family": "encyclopedia_wikipedia",
+      "final_url": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3AMunicipalities%20of%20Belgium&prop=info&format=json",
+      "http_status": 200,
+      "identity": {
+        "namespace_is_category": true,
+        "pageid_present": true
+      },
+      "reason": "category page exists in the Category namespace",
+      "redirected": false,
+      "root_id": "Category:Municipalities of Belgium",
+      "state": "VALID",
+      "url_checked": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3AMunicipalities%20of%20Belgium&prop=info&format=json"
+    },
+    {
+      "confirmed_to_exist": true,
+      "expected_host": "en.wikipedia.org",
+      "family": "encyclopedia_wikipedia",
+      "final_url": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3APopulated%20places%20in%20Bulgaria&prop=info&format=json",
+      "http_status": 200,
+      "identity": {
+        "namespace_is_category": true,
+        "pageid_present": true
+      },
+      "reason": "category page exists in the Category namespace",
+      "redirected": false,
+      "root_id": "Category:Populated places in Bulgaria",
+      "state": "VALID",
+      "url_checked": "https://en.wikipedia.org/w/api.php?action=query&titles=Category%3APopulated%20places%20in%20Bulgaria&prop=info&format=json"
+    }
+  ],
+  "replacement_rule": "if a root must be replaced, it is replaced using only a pre-declared availability criterion (this receipt's state per root) — never content, quality or expected yield. Replacement itself is not performed by this tool.",
+  "schema": "tavonel.v2.sfi3_root_preflight.v1",
+  "scope": "identity and reachability only — no revision content opened, no yield estimated",
+  "started_at": "2026-08-23T11:34:57.021535+00:00",
+  "structural_floor_note": "the 200-pair floor cannot be reached if any declared family has zero confirmed-reachable roots: none did. Beyond that degenerate case, this preflight makes no floor-feasibility claim — whether a PARTIAL root loss (some roots invalid, some valid) still leaves the floor reachable depends on how many lineages each surviving root supplies, which is yield estimation and is explicitly out of scope for an availability-only check; that determination belongs to the frame freeze and cohort build, after this.",
+  "total_roots": 78,
+  "valid_root_count_per_family": {
+    "encyclopedia_wikipedia": 9,
+    "git_docs": 20,
+    "regulation_ecfr": 35
+  },
+  "zero_valid_families": []
+}

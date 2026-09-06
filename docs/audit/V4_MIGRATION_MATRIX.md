@@ -83,6 +83,8 @@ PART 20.2's rows, resolved to paths and given a status.
 | 14 | Health Scan / billing | — | BUILD | MISSING | payment *plumbing* exists (`AKC_PAYMENT_*`, migration 0009); the metered ledger does not |
 | 15 | connectors | — | BUILD | MISSING | Drive first, then storage |
 | 16 | decision replay / write MCP | — | DEFER | DEFERRED | gated on paid demand + governance |
+| 17 | `akc_readers` (reader plane) | `packages/readers/src/akc_readers/` | BUILD | IMPLEMENTED_NOT_PROVEN | ADR-007 §2. Registration and refusal are covered by tests; no §27 qualification suite has been run, so every capability is `BEST_EFFORT` and nothing is `VERIFIED_*` |
+| 18 | `akc_cir.evidence_locator` (+ resolvers) | `packages/cir-python/src/akc_cir/evidence_locator.py`, `.../evidence_locator_resolvers.py` | BUILD | IMPLEMENTED_NOT_PROVEN | ADR-007 §4. A sibling of `SourceRef`, not a replacement; 3 of 13 variants resolve, and only against committed synthetic fixtures — no corpus measures it |
 
 ### Corrections to PART 20.2 found while resolving paths
 

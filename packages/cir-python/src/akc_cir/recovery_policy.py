@@ -35,6 +35,8 @@ runs out, the outcome is `HUMAN_REVIEW` or `FAIL_CLOSED` with the reason attache
 
 from __future__ import annotations
 
+import hashlib
+import json
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from enum import IntEnum, StrEnum
@@ -55,8 +57,10 @@ __all__ = [
     "RecoveryLevel",
     "RecoveryOutcome",
     "RecoveryPolicy",
+    "RecoveryTraceReceipt",
     "arbitrate",
     "circuit_state",
+    "default_recovery_registry",
     "document_availability",
     "select_recovery",
 ]
@@ -127,6 +131,7 @@ class RecoveryPolicy:
     action: str
     estimated_gpu_seconds: float = 0.0
     estimated_cost_units: float = 0.0
+    estimated_wall_clock_seconds: float = 0.0
 
     @property
     def signature(self) -> str:
@@ -143,6 +148,7 @@ class RecoveryAttempt:
     succeeded: bool = False
     gpu_seconds: float = 0.0
     cost_units: float = 0.0
+    wall_clock_seconds: float = 0.0
 
 
 @dataclass(frozen=True, slots=True)
@@ -160,10 +166,14 @@ class RecoveryBudget:
     stop_on_same_failure_signature: bool = True
 
     def spent(self, history: Sequence[RecoveryAttempt]) -> tuple[float, float]:
+        """Legacy-compatible GPU/cost accounting tuple."""
         return (
             sum(attempt.gpu_seconds for attempt in history),
             sum(attempt.cost_units for attempt in history),
         )
+
+    def wall_clock_spent(self, history: Sequence[RecoveryAttempt]) -> float:
+        return sum(attempt.wall_clock_seconds for attempt in history)
 
     def can_afford(
         self, policy: RecoveryPolicy, history: Sequence[RecoveryAttempt]
@@ -171,8 +181,10 @@ class RecoveryBudget:
         if len(history) >= self.max_attempts_per_page:
             return False
         gpu, cost = self.spent(history)
+        wall = self.wall_clock_spent(history)
         return (
             gpu + policy.estimated_gpu_seconds <= self.max_gpu_seconds
+            and wall + policy.estimated_wall_clock_seconds <= self.max_wall_clock_seconds
             and cost + policy.estimated_cost_units <= self.max_cost_units
         )
 
@@ -189,6 +201,84 @@ class RecoveryDecision:
             "policy_id": self.policy.policy_id if self.policy else None,
             "level": self.policy.level.name if self.policy else None,
             "reason": self.reason,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class RecoveryTraceReceipt:
+    """Secret-free, deterministic account of one page's recovery loop."""
+
+    tenant_id: str
+    page_id: str
+    failure_code: FailureCode
+    attempts: tuple[RecoveryAttempt, ...]
+    final_decision: RecoveryDecision
+    trace_id: str
+
+    @classmethod
+    def build(
+        cls,
+        *,
+        tenant_id: str,
+        page_id: str,
+        failure_code: FailureCode,
+        attempts: Sequence[RecoveryAttempt],
+        final_decision: RecoveryDecision,
+    ) -> RecoveryTraceReceipt:
+        if not tenant_id or not page_id:
+            raise ValueError("tenant_id and page_id are required for recovery receipts")
+        body = {
+            "tenant_id": tenant_id,
+            "page_id": page_id,
+            "failure_code": failure_code.value,
+            "attempts": [
+                {
+                    "policy_signature": item.policy_signature,
+                    "failure_signature": item.failure_signature,
+                    "succeeded": item.succeeded,
+                    "gpu_seconds": item.gpu_seconds,
+                    "wall_clock_seconds": item.wall_clock_seconds,
+                    "cost_units": item.cost_units,
+                }
+                for item in attempts
+            ],
+            "final_decision": final_decision.as_record(),
+        }
+        digest = hashlib.sha256(
+            json.dumps(body, sort_keys=True, separators=(",", ":")).encode("utf-8")
+        ).hexdigest()
+        return cls(
+            tenant_id=tenant_id,
+            page_id=page_id,
+            failure_code=failure_code,
+            attempts=tuple(attempts),
+            final_decision=final_decision,
+            trace_id=f"recovery_{digest[:32]}",
+        )
+
+    @property
+    def gpu_seconds(self) -> float:
+        return sum(item.gpu_seconds for item in self.attempts)
+
+    @property
+    def wall_clock_seconds(self) -> float:
+        return sum(item.wall_clock_seconds for item in self.attempts)
+
+    @property
+    def cost_units(self) -> float:
+        return sum(item.cost_units for item in self.attempts)
+
+    def as_record(self) -> dict[str, object]:
+        return {
+            "trace_id": self.trace_id,
+            "tenant_id": self.tenant_id,
+            "page_id": self.page_id,
+            "failure_code": self.failure_code.value,
+            "attempt_count": len(self.attempts),
+            "gpu_seconds": self.gpu_seconds,
+            "wall_clock_seconds": self.wall_clock_seconds,
+            "cost_units": self.cost_units,
+            "final_decision": self.final_decision.as_record(),
         }
 
 
@@ -220,6 +310,249 @@ class PolicyRegistry:
     def uncovered(self, codes: Iterable[FailureCode]) -> tuple[FailureCode, ...]:
         """Codes the inspector can raise that no rung addresses."""
         return tuple(sorted(set(codes) - self.covered_codes(), key=lambda c: c.value))
+
+
+def _default_policy(
+    code: FailureCode,
+    level: RecoveryLevel,
+    action: str,
+    *,
+    gpu_seconds: float = 0.0,
+    cost_units: float = 0.0,
+    wall_seconds: float = 0.0,
+) -> RecoveryPolicy:
+    return RecoveryPolicy(
+        policy_id=f"default_{action}_v1",
+        code=code,
+        level=level,
+        action=action,
+        estimated_gpu_seconds=gpu_seconds,
+        estimated_cost_units=cost_units,
+        estimated_wall_clock_seconds=wall_seconds,
+    )
+
+
+def default_recovery_registry() -> PolicyRegistry:
+    """Production default page/content recovery ladder.
+
+    This registry intentionally does *not* invent a retry for every failure code.
+    Security failures are blocked before registry lookup, while provider/account,
+    permission, license, checksum and other non-page failures remain uncovered so
+    callers fail closed or hand them to the subsystem-specific controller. The
+    policies here are the content-repair actions that can be safely selected by
+    ``select_recovery`` under its attempt/GPU/wall-clock/cost budgets.
+    """
+
+    policies: list[RecoveryPolicy] = []
+
+    def add(
+        codes: Iterable[FailureCode],
+        level: RecoveryLevel,
+        action: str,
+        *,
+        gpu_seconds: float = 0.0,
+        cost_units: float = 0.0,
+        wall_seconds: float = 0.0,
+    ) -> None:
+        for code in codes:
+            policies.append(
+                _default_policy(
+                    code,
+                    level,
+                    action,
+                    gpu_seconds=gpu_seconds,
+                    cost_units=cost_units,
+                    wall_seconds=wall_seconds,
+                )
+            )
+
+    basic_quality = (
+        FailureCode.F7_PARSER_EXCEPTION,
+        FailureCode.F8_EMPTY_OUTPUT,
+        FailureCode.F9_SUSPICIOUSLY_SHORT,
+        FailureCode.F10_DUPLICATED_CONTENT,
+        FailureCode.F11_GARBLED_TEXT,
+        FailureCode.F17_NATIVE_RENDER_DISAGREEMENT,
+    )
+    structured_quality = (
+        FailureCode.F12_READING_ORDER,
+        FailureCode.F13_TABLE_STRUCTURE,
+        FailureCode.F14_FORMULA,
+        FailureCode.F15_FIGURE_CAPTION,
+    )
+    cross_page = (FailureCode.F16_CROSS_PAGE,)
+    disagreement = (FailureCode.F18_PARSER_DISAGREEMENT,)
+
+    add(
+        basic_quality,
+        RecoveryLevel.L1_SAFE_RERENDER,
+        "deterministic_normalization",
+        wall_seconds=2.0,
+    )
+    add(
+        basic_quality,
+        RecoveryLevel.L2_SAME_PARSER_VARIATION,
+        "bbox_expansion_crop_retry",
+        gpu_seconds=4.0,
+        cost_units=0.05,
+        wall_seconds=12.0,
+    )
+    add(
+        basic_quality,
+        RecoveryLevel.L3_ALTERNATE_PARSER_FAMILY,
+        "alternate_parser_family",
+        gpu_seconds=12.0,
+        cost_units=0.20,
+        wall_seconds=30.0,
+    )
+
+    add(structured_quality, RecoveryLevel.L1_SAFE_RERENDER, "rerender_300dpi", wall_seconds=4.0)
+    add(
+        structured_quality,
+        RecoveryLevel.L2_SAME_PARSER_VARIATION,
+        "overlapping_tile_or_crop_retry",
+        gpu_seconds=6.0,
+        cost_units=0.08,
+        wall_seconds=15.0,
+    )
+    add(
+        structured_quality,
+        RecoveryLevel.L3_ALTERNATE_PARSER_FAMILY,
+        "alternate_parser_family",
+        gpu_seconds=14.0,
+        cost_units=0.25,
+        wall_seconds=35.0,
+    )
+    add(
+        structured_quality,
+        RecoveryLevel.L4_CONDITIONAL_ENSEMBLE,
+        "parser_consensus",
+        gpu_seconds=24.0,
+        cost_units=0.45,
+        wall_seconds=50.0,
+    )
+    add(
+        structured_quality,
+        RecoveryLevel.L5_STRONGER_VERIFIER,
+        "stronger_verifier",
+        gpu_seconds=36.0,
+        cost_units=0.75,
+        wall_seconds=70.0,
+    )
+
+    add(
+        cross_page,
+        RecoveryLevel.L2_SAME_PARSER_VARIATION,
+        "page_neighbor_context",
+        gpu_seconds=4.0,
+        cost_units=0.05,
+        wall_seconds=12.0,
+    )
+    add(
+        cross_page,
+        RecoveryLevel.L3_ALTERNATE_PARSER_FAMILY,
+        "alternate_parser_family",
+        gpu_seconds=14.0,
+        cost_units=0.25,
+        wall_seconds=35.0,
+    )
+    add(
+        cross_page,
+        RecoveryLevel.L6_DOCUMENT_JOINT_RECONCILE,
+        "document_joint_reconcile",
+        gpu_seconds=55.0,
+        cost_units=1.0,
+        wall_seconds=100.0,
+    )
+
+    add(
+        disagreement,
+        RecoveryLevel.L4_CONDITIONAL_ENSEMBLE,
+        "third_parser_consensus",
+        gpu_seconds=22.0,
+        cost_units=0.4,
+        wall_seconds=45.0,
+    )
+    add(
+        disagreement,
+        RecoveryLevel.L5_STRONGER_VERIFIER,
+        "stronger_verifier",
+        gpu_seconds=36.0,
+        cost_units=0.75,
+        wall_seconds=70.0,
+    )
+    add(
+        disagreement,
+        RecoveryLevel.L6_DOCUMENT_JOINT_RECONCILE,
+        "document_joint_reconcile",
+        gpu_seconds=55.0,
+        cost_units=1.0,
+        wall_seconds=100.0,
+    )
+
+    add(
+        (FailureCode.F19_ENTITY_AMBIGUITY,),
+        RecoveryLevel.L5_STRONGER_VERIFIER,
+        "entity_evidence_verifier",
+        gpu_seconds=20.0,
+        cost_units=0.35,
+        wall_seconds=40.0,
+    )
+    add(
+        (FailureCode.F20_AUTHORITY_CONFLICT,),
+        RecoveryLevel.L5_STRONGER_VERIFIER,
+        "authority_source_verifier",
+        gpu_seconds=12.0,
+        cost_units=0.2,
+        wall_seconds=35.0,
+    )
+    add(
+        (FailureCode.F21_TEMPORAL_UNCERTAINTY,),
+        RecoveryLevel.L5_STRONGER_VERIFIER,
+        "temporal_authority_verifier",
+        gpu_seconds=12.0,
+        cost_units=0.2,
+        wall_seconds=35.0,
+    )
+    add(
+        (FailureCode.F22_LINEAGE_BROKEN, FailureCode.F24_RECOMPILE_DIVERGENCE),
+        RecoveryLevel.L6_DOCUMENT_JOINT_RECONCILE,
+        "rebuild_lineage_and_full_compare",
+        wall_seconds=30.0,
+    )
+    add(
+        (FailureCode.F26_STALE_WORLD_STATE,),
+        RecoveryLevel.L6_DOCUMENT_JOINT_RECONCILE,
+        "recompute_world_state_from_pinned_inputs",
+        wall_seconds=30.0,
+    )
+    add(
+        (FailureCode.F31_SCHEMA_INCOMPATIBLE,),
+        RecoveryLevel.L2_SAME_PARSER_VARIATION,
+        "schema_repair",
+        wall_seconds=5.0,
+    )
+    add(
+        (FailureCode.F41_EMBEDDING_VERSION_MIXED,),
+        RecoveryLevel.L6_DOCUMENT_JOINT_RECONCILE,
+        "rebuild_embeddings_with_pinned_version",
+        gpu_seconds=10.0,
+        cost_units=0.1,
+        wall_seconds=30.0,
+    )
+    add(
+        (FailureCode.F42_MODEL_UPGRADE_REGRESSION,),
+        RecoveryLevel.L3_ALTERNATE_PARSER_FAMILY,
+        "fallback_to_pinned_previous_model",
+        gpu_seconds=12.0,
+        cost_units=0.2,
+        wall_seconds=30.0,
+    )
+
+    registry = PolicyRegistry(policies)
+    if SECURITY_CODES & registry.covered_codes():
+        raise RuntimeError("default recovery registry must never retry security failures")
+    return registry
 
 
 def select_recovery(

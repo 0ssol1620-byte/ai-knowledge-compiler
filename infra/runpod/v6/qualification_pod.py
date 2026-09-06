@@ -12,7 +12,6 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
-from ipaddress import IPv4Address
 from typing import Any, Final
 
 import httpx
@@ -42,13 +41,14 @@ class QualificationPodSpec:
     name: str
     image_name: str
     gpu_type: str
-    public_key: str
     allocation_id: str
     maximum_hourly_rate_usd: Decimal
     maximum_runtime_hours: Decimal
+    public_key: str | None = None
     non_compute_contingency_usd: Decimal = Decimal("2")
     container_disk_gb: int = 80
-    volume_gb: int = 20
+    volume_gb: int = 0
+    evidence_port: int = 8001
     allowed_cuda_versions: tuple[str, ...] = ("12.8", "12.9")
     vllm_cuda_compatibility: bool = False
 
@@ -59,7 +59,9 @@ class QualificationPodSpec:
             raise ContractError("qualification image must be an immutable GHCR digest")
         if self.gpu_type not in _GPU_ALIASES:
             raise ContractError("qualification GPU type is unsupported")
-        if not self.public_key.startswith(("ssh-ed25519 ", "ssh-rsa ")):
+        if self.public_key is not None and not self.public_key.startswith(
+            ("ssh-ed25519 ", "ssh-rsa ")
+        ):
             raise ContractError("qualification public key is invalid")
         if not self.allocation_id.strip():
             raise ContractError("qualification allocation_id is required")
@@ -67,6 +69,8 @@ class QualificationPodSpec:
             raise ContractError("qualification container disk is out of bounds")
         if not 0 <= self.volume_gb <= 100:
             raise ContractError("qualification volume is out of bounds")
+        if not 1 <= self.evidence_port <= 65535:
+            raise ContractError("qualification evidence port is invalid")
         if self.maximum_hourly_rate_usd <= 0 or self.maximum_hourly_rate_usd > 5:
             raise ContractError("qualification hourly-rate ceiling is invalid")
         if self.maximum_runtime_hours <= 0 or self.maximum_runtime_hours > 8:
@@ -85,10 +89,13 @@ class QualificationPodSpec:
 
     def provider_payload(self) -> dict[str, Any]:
         environment = {
-            "PUBLIC_KEY": self.public_key,
             "FOLYNTA_IMAGE_DIGEST": self.image_name,
             "FOLYNTA_QUALIFICATION_ONLY": "1",
         }
+        ports = [f"{self.evidence_port}/http"]
+        if self.public_key is not None:
+            environment["PUBLIC_KEY"] = self.public_key
+            ports.append("22/tcp")
         if self.vllm_cuda_compatibility:
             environment["VLLM_ENABLE_CUDA_COMPATIBILITY"] = "1"
         return {
@@ -102,7 +109,7 @@ class QualificationPodSpec:
             "containerDiskInGb": self.container_disk_gb,
             "volumeInGb": self.volume_gb,
             "volumeMountPath": "/workspace",
-            "ports": ["22/tcp"],
+            "ports": ports,
             "supportPublicIp": True,
             "interruptible": False,
             "allowedCudaVersions": list(self.allowed_cuda_versions),
@@ -112,16 +119,22 @@ class QualificationPodSpec:
     def redacted_identity(self) -> dict[str, Any]:
         payload = self.provider_payload()
         payload["env"] = {
-            "PUBLIC_KEY": "redacted",
             "FOLYNTA_IMAGE_DIGEST": self.image_name,
             "FOLYNTA_QUALIFICATION_ONLY": "1",
         }
+        if self.public_key is not None:
+            payload["env"]["PUBLIC_KEY"] = "redacted"
         if self.vllm_cuda_compatibility:
             payload["env"]["VLLM_ENABLE_CUDA_COMPATIBILITY"] = "1"
         payload["allocationId"] = self.allocation_id
         payload["maximumCostUsd"] = str(self.maximum_cost_usd)
         payload["publicBenchmarkInferenceAllowed"] = False
         return payload
+
+    def evidence_url(self, pod_id: str) -> str:
+        if not _POD_ID.fullmatch(pod_id):
+            raise ContractError("invalid qualification pod_id")
+        return f"https://{pod_id}-{self.evidence_port}.proxy.runpod.net"
 
 
 class RunPodQualificationClient:
@@ -202,21 +215,6 @@ class RunPodQualificationClient:
         hourly_rate = self._rate(value)
         if hourly_rate > spec.maximum_hourly_rate_usd:
             raise QualificationPodError("qualification hourly rate exceeds authorization")
-        public_ip = str(value.get("publicIp", ""))
-        try:
-            IPv4Address(public_ip)
-        except ValueError as exc:
-            raise QualificationPodError("qualification public IP is unavailable") from exc
-        mappings = value.get("portMappings")
-        ssh_value = mappings.get("22") if isinstance(mappings, dict) else None
-        if not isinstance(ssh_value, (int, str)):
-            raise QualificationPodError("qualification SSH port is unavailable")
-        try:
-            ssh_port = int(ssh_value)
-        except (TypeError, ValueError) as exc:
-            raise QualificationPodError("qualification SSH port is unavailable") from exc
-        if not 1 <= ssh_port <= 65535:
-            raise QualificationPodError("qualification SSH port is invalid")
         receipt: dict[str, Any] = {
             "schema": "folynta.runpod-qualification-ready.v1",
             "pod_id": pod_id,
@@ -224,8 +222,10 @@ class RunPodQualificationClient:
             "gpu": gpu_name,
             "gpu_identity_source": ("rest_pod_response" if rest_gpu else "graphql_cross_check"),
             "hourly_rate_usd": str(hourly_rate),
-            "public_ip": public_ip,
-            "ssh_port": ssh_port,
+            "evidence_access": "runpod_http_proxy",
+            "evidence_port": spec.evidence_port,
+            "evidence_url": spec.evidence_url(pod_id),
+            "ssh_required": False,
             "public_benchmark_inference_allowed": False,
         }
         receipt["receipt_sha256"] = canonical_sha256(receipt)

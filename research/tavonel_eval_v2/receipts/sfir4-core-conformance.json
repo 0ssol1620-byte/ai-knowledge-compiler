@@ -1,0 +1,44 @@
+{
+  "absent": [],
+  "core_file_digests": {
+    "packages/cir-python/src/akc_cir/dependency.py": "sha256:3cf21ec387e5fbe5f613bd789280db50a43c9454fc0517dc8040afc60f802cfb",
+    "packages/cir-python/src/akc_cir/recompilation.py": "sha256:c8962d8d5ce21f797aef99551c6600de19be30e8e8380f087fe07249fe5e143a",
+    "packages/cir-python/src/akc_cir/semantic_diff.py": "sha256:05b6a7f7234370e4926b64bcdd2b74a5fd065b5ddc631854c8c90d9d72ed4e6b"
+  },
+  "estimated_cost_usd": 0.0,
+  "expected_root": null,
+  "generated_at": "2026-08-26T23:36:18.034774+00:00",
+  "gpu_seconds": 0,
+  "present": [
+    "akc_cir.dependency.ALL_DEPENDENCY_CHANNELS",
+    "akc_cir.dependency.DependencyChannel",
+    "akc_cir.dependency.DependencyGraph",
+    "akc_cir.recompilation.FacetVerdict",
+    "akc_cir.recompilation.StructuralPolicy",
+    "akc_cir.recompilation.plan_recompilation",
+    "akc_cir.semantic_diff.ChangeChannel",
+    "akc_cir.semantic_diff.DiffLevel",
+    "akc_cir.semantic_diff.QUARANTINE_UNSETTLED_IDENTITY_DEFAULT",
+    "akc_cir.semantic_diff.SemanticDiff",
+    "akc_cir.semantic_diff.UnitSnapshot",
+    "akc_cir.semantic_diff.content_facet_verdict",
+    "akc_cir.semantic_diff.diff_documents"
+  ],
+  "read_only": true,
+  "receipt_sha256": "sha256:35867857c887d3f25d7bd9013c367c5d86d11068c1abfd66f4aeec16105795ff",
+  "resolved_from": {
+    "origin": "D:\\CodexProjects\\ai-knowledge-compiler\\packages\\cir-python\\src\\akc_cir\\__init__.py",
+    "package_root": "D:\\CodexProjects\\ai-knowledge-compiler\\packages\\cir-python\\src\\akc_cir"
+  },
+  "schema": "tavonel.sfir4.core_conformance.v1",
+  "totals": {
+    "absent": 0,
+    "present": 13,
+    "required_symbols": 13,
+    "unimportable_modules": 0
+  },
+  "unimportable": [],
+  "verdict": "PASS",
+  "what_a_pass_means": "the akc_cir that this interpreter would actually import comes from the intended root and exposes every symbol the paper's claim chain depends on. It is not a statement that those symbols are correct -- the SFIR4 suite and the hostile audit speak to that -- only that the algorithm under study is the algorithm that would run.",
+  "why": []
+}

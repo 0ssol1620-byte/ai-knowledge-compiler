@@ -1,0 +1,34 @@
+{
+  "base_download_receipt_sha256": "sha256:de81ae95f767693de3d5ddb8d3eb0ddfb8baef70d519dc70ca2eeddf4588dffb",
+  "base_selected_manifest_digest": "sha256:e3443c4bde800f560de428f95952644e513a397b16f18e027d63d1a036350757",
+  "base_source_multiarch_digest": "sha256:e1668bce9790a4b86682f8fcc99678153a13e12dc70e05348d8e239ffa474b05",
+  "base_transport_normalization_receipt_sha256": "sha256:b73550befd55c61f79cfcaef0cd81575d582b4133c795e9c59afc9c838d05fd5",
+  "builder": {
+    "distro": "Ubuntu-24.04",
+    "gpu_used": false,
+    "pull_policy": "never",
+    "storage_config": "isolated-v21",
+    "storage_driver": "vfs"
+  },
+  "completed_at_utc": "2026-08-16T00:54:27.509430+00:00",
+  "dockerfile_sha256": "sha256:93975a9142356c96dfde0e9af06837367252368358e8f89e8620a0c24028e7aa",
+  "failure_message": "WSL command failed (1): buildah bud --pull-never --build-arg",
+  "failure_type": "RuntimeError",
+  "ghcr_login": {
+    "credential_persisted_in_receipt": false,
+    "passed": true
+  },
+  "ghcr_logout_acknowledged": false,
+  "image_tag": "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/ovisocr2-m1:wsl-171dfd012ab14dc84e12-005216",
+  "model_artifact_sha256": "sha256:9270560288656ece5cb3a6989001afcf5af8d223bceed4a423c33a008861d009",
+  "model_revision": "65c619d374b55d4152e85150fc1b003700bc1f0c",
+  "passed": false,
+  "scanner_versions": {
+    "syft": "1.50.0",
+    "trivy": "0.72.0"
+  },
+  "schema": "tavonel.ovis-wsl-builder.v21",
+  "source_commit": "46edd908b83d8d4390039a0db4d52ae56d917c8a",
+  "source_tree_sha256": "sha256:171dfd012ab14dc84e12e2b957be66aae9d15a93406f860afb73ecf852017736",
+  "started_at_utc": "2026-08-16T00:52:16.129633+00:00"
+}

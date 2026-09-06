@@ -1,0 +1,197 @@
+# P4f — cohort expansion, frozen after the locality v2 decision gate.
+#
+# Frozen in response to the gate outcome: eligible Q1 = 5 against a preregistered
+# floor of 190. The founder's rule for that branch is: do not request GPU, do not
+# re-fit the instrument to this cohort, freeze a new cohort acquisition protocol
+# expanding documents and revision pairs. This is that protocol.
+#
+# It also records, before any acquisition begins, why expansion alone will not be
+# sufficient. Freezing a plan that cannot work and discovering it afterwards
+# would waste the acquisition and the argument.
+
+schema: tavonel.v2.protocol.P4f.v1
+protocol_id: P4f_cohort_expansion
+version: 1
+authored: 2026-08-22
+supersedes: null
+
+relates_to:
+  P4e_provenance_retrieval: {state: Core PASS 12/12, rule: read-only}
+  SOURCE_LOCALITY_V2:
+    state: PASS, 7 of 7 gates, 8 of 8 controls
+    rule: read-only. The instrument is sealed and is not re-fitted to any cohort.
+  P0d_source_coverage: {rule: read-only, standing_result: 26 of 26 SOURCE_COVERAGE_INCOMPLETE}
+
+# ---------------------------------------------------------------------------
+# 1. The arithmetic that shapes this protocol
+# ---------------------------------------------------------------------------
+
+observed_on_the_frozen_P4e_cohort:
+  documents: 57
+  questions: 720
+  q1_questions: 175
+  locally_complete_total: 77
+  locally_complete_q1: 5
+  eligible_q1_by_family: {git_docs: 5}
+  q1_by_family: {encyclopedia_wikipedia: 93, regulation_ecfr: 59, sec_edgar: 17, git_docs: 6}
+
+the_structure_behind_the_number:
+  naive_reading: >-
+    overall eligible-Q1 yield is 5/175 = 0.0286, so reaching 190 needs about
+    6,650 Q1 questions, which at 3.07 Q1 per document is roughly 2,166
+    documents — about 38 times the current cohort.
+  actual_structure: >-
+    within git_docs the eligibility rate is 5 of 6 Q1 = 0.83. The other three
+    families contribute 169 Q1 questions and ZERO eligible ones.
+  therefore: >-
+    **expansion alone multiplies a zero.** Acquiring 2,000 more documents in the
+    present family mix would raise eligible Q1 roughly in proportion to the
+    markdown share and leave the markup families at zero. The binding constraint
+    is front-end source coverage on HTML and XML sources, not cohort size.
+  and_yet_expansion_is_still_required: >-
+    markdown-only narrowing is not adopted, and even the markdown family has
+    only 6 Q1 questions on this cohort. Expansion and coverage work are both
+    necessary; neither is sufficient.
+
+# ---------------------------------------------------------------------------
+# 2. The trap this protocol must not walk into
+# ---------------------------------------------------------------------------
+
+anti_fitting:
+  binding: yes
+  inherited_from: SOURCE_LOCALITY_V2
+  the_specific_temptation: >-
+    the fastest way to raise eligible Q1 is to declare more HTML and XML
+    constructs IGNORED_BY_DECLARED_POLICY. Presentational markup genuinely is
+    non-semantic, so each individual reclassification would look defensible, and
+    the aggregate effect would be an eligibility count engineered to clear 190.
+  rule: >-
+    any addition to the declared-ignored list is justified on what the construct
+    MEANS, is written down with that justification, and is declared BEFORE the
+    measurement it affects. A reclassification proposed while looking at an
+    eligibility count is refused regardless of how defensible it looks in
+    isolation.
+  and: >-
+    the locality v2 instrument is not modified by this protocol. If a genuine
+    conformance defect is found it is a separate recorded incident preserving the
+    existing run and receipt.
+
+# ---------------------------------------------------------------------------
+# 3. Expansion targets, frozen before acquisition
+# ---------------------------------------------------------------------------
+
+targets:
+  source_documents: 400
+  minimum_families: 4
+  markdown_family_documents: 120
+  rationale_for_the_markdown_target: >-
+    git_docs is the only family currently able to produce an eligible question,
+    and it holds 7 documents. Raising it to 120 is expansion of the family that
+    demonstrably yields, and is NOT a narrowing to markdown only — the other
+    three families are expanded in the same run and remain in every measure.
+  revision_pairs: one per source document, unchanged
+  spacing_rule: unchanged from P4e and frozen there
+  container_cap: at most 8 documents per repository, issuer or CFR part
+
+acquisition_families:
+  git_docs: >-
+    widened to a declared list of documentation repositories with permissive
+    licences, recorded per document. The declared list is frozen before fetch.
+  encyclopedia_wikipedia: unchanged rule, more articles
+  regulation_ecfr: unchanged rule, more parts
+  sec_edgar: unchanged rule, more issuers
+  dart_kr: >-
+    still BLOCKED_MISSING_CREDENTIAL. Blocks nothing and is recorded, not
+    inferred.
+
+selection:
+  frozen_before_any_retrieval_or_eligibility_result: true
+  never_conditioned_on:
+    - any eligibility count
+    - any coverage status
+    - any retrieval score
+    - the Q1 count
+  note: >-
+    selecting documents by their coverage status would be fitting the cohort to
+    the instrument, which is the mirror image of fitting the instrument to the
+    cohort and is equally forbidden.
+
+# ---------------------------------------------------------------------------
+# 4. The parallel workstream, without which expansion is wasted
+# ---------------------------------------------------------------------------
+
+markup_coverage_workstream:
+  problem: >-
+    HTML and XML sources produce zero eligible questions because every question
+    closure contains at least one UNMODELED_SOURCE_FACT. Position is no longer
+    the issue — locality v2 located every span, with zero
+    LOCATION_UNVERIFIABLE across the whole cohort.
+  two_admissible_responses:
+    model_it: >-
+      a construct that carries meaning becomes a canonical fact or a typed
+      reference edge, as INC-V2-006 required for markdown.
+    declare_it: >-
+      a construct that is genuinely presentational joins the declared-ignored
+      list WITH its justification, before measurement.
+  inadmissible: >-
+    leaving it unmodeled and granting completeness anyway; or reclassifying in
+    bulk without per-construct justification.
+  sequencing: >-
+    this work is declared and completed BEFORE the expanded cohort is scored, so
+    the expanded cohort is scored once by a settled instrument.
+
+# ---------------------------------------------------------------------------
+# 5. Gates
+# ---------------------------------------------------------------------------
+
+gates:
+  G_P4F_SCALE:
+    predicate: at least 400 source documents across at least 4 families
+  G_P4F_INDEPENDENCE:
+    predicate: one revision pair per source document
+  G_P4F_SELECTION_BLIND:
+    predicate: >-
+      the document list and family quotas are fixed before any eligibility,
+      coverage or retrieval figure is computed
+  G_P4F_NO_NARROWING:
+    predicate: >-
+      all four families appear in the scored cohort and in every reported
+      measure. Markdown-only reporting is a protocol violation, not an option.
+  G_P4F_INSTRUMENT_UNCHANGED:
+    predicate: >-
+      the locality v2 tool digests at scoring time equal those sealed in the
+      SOURCE_LOCALITY_V2 receipt, or a recorded incident explains the difference
+  G_P4F_COST:
+    predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+
+reported_not_gated:
+  - eligible Q1, total and by family
+  - eligible Q1 yield per family
+  - witness failure reasons by family
+  why: >-
+    these are the decision-gate numbers again. Gating the thing under
+    investigation would make the protocol unable to return bad news.
+
+# ---------------------------------------------------------------------------
+# 6. Decision gate, unchanged
+# ---------------------------------------------------------------------------
+
+decision_gate:
+  hard_minimum_eligible_Q1: 190
+  status: conservative preregistered floor. Exact McNemar power at 190 is 0.967;
+    the target of 0.95 is first reached at n = 173. The floor is not lowered.
+  spread_requirement: eligible Q1 present in more than one family
+  if_met: resubmit the model-study proposal with real numbers, for approval
+  if_not_met: >-
+    report it. Do not request GPU, do not re-fit the instrument, do not narrow to
+    markdown, do not lower the floor.
+
+claim_boundary:
+  forbidden:
+    - reporting a markdown-only figure as the cohort result
+    - re-fitting the locality instrument to any cohort
+    - lowering the 190 floor
+    - declaring constructs ignored in order to raise eligibility
+    - calling any document revision source-faithful end-to-end
+  overall_programme_status: >-
+    PARTIAL — MECHANISM EVIDENCED, ENDPOINT NOT YET ESTABLISHED.

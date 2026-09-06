@@ -1,0 +1,392 @@
+{
+  "accounting": {
+    "eligibility_dispositions": {
+      "ELIGIBLE": 65174,
+      "REJECTED_created_utc_on_or_before": 2225592,
+      "REJECTED_host_eq": 25576,
+      "REJECTED_last_activity_utc_on_or_after": 3038235,
+      "REJECTED_spdx_license_id_in": 31164781
+    },
+    "eligible_in_partition": 973,
+    "rows_read": 37702060,
+    "unreadable": {
+      "NAME_WITH_OWNER_NOT_OWNER_SLASH_REPO": 39401,
+      "NO_LAST_ACTIVITY_TIMESTAMP": 1143301
+    }
+  },
+  "entries": [
+    {
+      "catalogue_address": "tapjs/node-tap",
+      "host_uuid": "1507818",
+      "record_id": "156253",
+      "selection_ordinal": 1,
+      "source_rank": 21
+    },
+    {
+      "catalogue_address": "floatdrop/gulp-watch",
+      "host_uuid": "16029103",
+      "record_id": "105668",
+      "selection_ordinal": 2,
+      "source_rank": 20
+    },
+    {
+      "catalogue_address": "remarkjs/remark",
+      "host_uuid": "22355214",
+      "record_id": "1907",
+      "selection_ordinal": 3,
+      "source_rank": 20
+    },
+    {
+      "catalogue_address": "foundation/foundation-sites",
+      "host_uuid": "2573058",
+      "record_id": "48385",
+      "selection_ordinal": 4,
+      "source_rank": 20
+    },
+    {
+      "catalogue_address": "sindresorhus/screenfull.js",
+      "host_uuid": "3362916",
+      "record_id": "33024",
+      "selection_ordinal": 5,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "apache/thrift",
+      "host_uuid": "310611",
+      "record_id": "35067",
+      "selection_ordinal": 6,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "fideloper/TrustedProxy",
+      "host_uuid": "9779017",
+      "record_id": "53714",
+      "selection_ordinal": 7,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "bholloway/resolve-url-loader",
+      "host_uuid": "40636076",
+      "record_id": "962939",
+      "selection_ordinal": 8,
+      "source_rank": 18
+    },
+    {
+      "catalogue_address": "jdesboeufs/connect-mongo",
+      "host_uuid": "1453143",
+      "record_id": "127275",
+      "selection_ordinal": 9,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "NaturalNode/natural",
+      "host_uuid": "1714160",
+      "record_id": "128141",
+      "selection_ordinal": 10,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "mscdex/node-ftp",
+      "host_uuid": "1589664",
+      "record_id": "131189",
+      "selection_ordinal": 11,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "kaizhu256/node-utility2",
+      "host_uuid": "20893223",
+      "record_id": "160383",
+      "selection_ordinal": 12,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "ahmadnassri/node-har-validator",
+      "host_uuid": "30582954",
+      "record_id": "186451",
+      "selection_ordinal": 13,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "symfony/polyfill-intl-icu",
+      "host_uuid": "44745114",
+      "record_id": "2789128",
+      "selection_ordinal": 14,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "Intellicode/eslint-plugin-react-native",
+      "host_uuid": "46659634",
+      "record_id": "3461207",
+      "selection_ordinal": 15,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "scribejava/scribejava",
+      "host_uuid": "889932",
+      "record_id": "355058",
+      "selection_ordinal": 16,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "guard/guard-bundler",
+      "host_uuid": "1019306",
+      "record_id": "41074",
+      "selection_ordinal": 17,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "Geal/nom",
+      "host_uuid": "27029984",
+      "record_id": "4788",
+      "selection_ordinal": 18,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "puppetlabs/puppetlabs-stdlib",
+      "host_uuid": "1794823",
+      "record_id": "561665",
+      "selection_ordinal": 19,
+      "source_rank": 17
+    },
+    {
+      "catalogue_address": "airbnb/polyglot.js",
+      "host_uuid": "5987222",
+      "record_id": "10296",
+      "selection_ordinal": 20,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "rejas/gulp-json-editor",
+      "host_uuid": "16544325",
+      "record_id": "105095",
+      "selection_ordinal": 21,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "react-component/select",
+      "host_uuid": "30027024",
+      "record_id": "342932",
+      "selection_ordinal": 22,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "AndiDittrich/Node.CLI-Progress",
+      "host_uuid": "47921134",
+      "record_id": "3948141",
+      "selection_ordinal": 23,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "fxsjy/jieba",
+      "host_uuid": "6007295",
+      "record_id": "403436",
+      "selection_ordinal": 24,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "z-song/laravel-admin",
+      "host_uuid": "48796179",
+      "record_id": "4259730",
+      "selection_ordinal": 25,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "thephpleague/tactician",
+      "host_uuid": "28866000",
+      "record_id": "62781",
+      "selection_ordinal": 26,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "dart-lang/crypto",
+      "host_uuid": "31254139",
+      "record_id": "673795",
+      "selection_ordinal": 27,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "Sylius/Sylius",
+      "host_uuid": "2717549",
+      "record_id": "78914",
+      "selection_ordinal": 28,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "benjamn/ast-types",
+      "host_uuid": "9653495",
+      "record_id": "87850",
+      "selection_ordinal": 29,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "brianloveswords/base64url",
+      "host_uuid": "7610201",
+      "record_id": "88739",
+      "selection_ordinal": 30,
+      "source_rank": 16
+    },
+    {
+      "catalogue_address": "ivpusic/react-native-image-crop-picker",
+      "host_uuid": "59029620",
+      "record_id": "10270787",
+      "selection_ordinal": 31,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "json-schema-faker/json-schema-faker",
+      "host_uuid": "24914297",
+      "record_id": "110060",
+      "selection_ordinal": 32,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "laravel/scout",
+      "host_uuid": "62261287",
+      "record_id": "12553684",
+      "selection_ordinal": 33,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "hyperledger/fabric-sdk-node",
+      "host_uuid": "68028428",
+      "record_id": "13740532",
+      "selection_ordinal": 34,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "foliojs/png.js",
+      "host_uuid": "2165528",
+      "record_id": "143990",
+      "selection_ordinal": 35,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "Bttstrp/bootstrap-switch",
+      "host_uuid": "7805574",
+      "record_id": "15232",
+      "selection_ordinal": 36,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "slackapi/python-slackclient",
+      "host_uuid": "26456792",
+      "record_id": "196130",
+      "selection_ordinal": 37,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "GitTools/GitVersion",
+      "host_uuid": "12399790",
+      "record_id": "273163",
+      "selection_ordinal": 38,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "contao/core-bundle",
+      "host_uuid": "20519851",
+      "record_id": "27874",
+      "selection_ordinal": 39,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "liufengyun/hashdiff",
+      "host_uuid": "4405769",
+      "record_id": "310348",
+      "selection_ordinal": 40,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "matthewrudy/memoist",
+      "host_uuid": "2930241",
+      "record_id": "316330",
+      "selection_ordinal": 41,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "kriasoft/isomorphic-style-loader",
+      "host_uuid": "46555028",
+      "record_id": "3411973",
+      "selection_ordinal": 42,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "liip/LiipImagineBundle",
+      "host_uuid": "2515323",
+      "record_id": "63142",
+      "selection_ordinal": 43,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "sonata-project/SonataDoctrineORMAdminBundle",
+      "host_uuid": "2687013",
+      "record_id": "77447",
+      "selection_ordinal": 44,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "tj/n",
+      "host_uuid": "1223029",
+      "record_id": "94933",
+      "selection_ordinal": 45,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "Rapptz/discord.py",
+      "host_uuid": "41179827",
+      "record_id": "976610",
+      "selection_ordinal": 46,
+      "source_rank": 15
+    },
+    {
+      "catalogue_address": "apollographql/graphql-subscriptions",
+      "host_uuid": "66106110",
+      "record_id": "12953988",
+      "selection_ordinal": 47,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "matthewdavidson/node-sass-tilde-importer",
+      "host_uuid": "67536146",
+      "record_id": "13234274",
+      "selection_ordinal": 48,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "sindresorhus/p-defer",
+      "host_uuid": "71531782",
+      "record_id": "14944843",
+      "selection_ordinal": 49,
+      "source_rank": 14
+    },
+    {
+      "catalogue_address": "imcvampire/vue-axios",
+      "host_uuid": "71871673",
+      "record_id": "15120574",
+      "selection_ordinal": 50,
+      "source_rank": 14
+    }
+  ],
+  "entry_count": 50,
+  "freeze_digest": "sha256:09306d2fff3b61f60d82105763efe7ba1a5ff3357997683832e03d950e1a20db",
+  "input_binding_digest": "sha256:9513898c0f313f30a11559396b1d6a9edb9a1be5299951a0ded1bd83669c272a",
+  "n": 50,
+  "partition": {
+    "count": 64,
+    "index": 1,
+    "predecessor_index": 0,
+    "salt_digest": "sha256:32a46f72d8f2976b397efb2950aa03fd0e5ddbd0dde595b3192f15c936832da2"
+  },
+  "protocol_digest": "sha256:5d50cbd241767d00977d55fb2b1fca516f7ef4a9c453f47de101ca346791147c",
+  "roster_seal": "sha256:cd0da092e18b9f6c87adbc79e05caa8cffbeff73b9f4a20cfe4f76fe586601cd",
+  "schema": "tavonel.sfir10r1.cohort_roster.v1",
+  "selection_digest": "sha256:ad7305f978de88470453d1e9a465a8dd83d8223a5018285af0005f2defb315af",
+  "spent_exclusion": {
+    "count": 0,
+    "host_uuids": [],
+    "reason": "SPENT_DEVELOPMENT_ROOT",
+    "why": "these identities have been looked at. That is a property of this study's history, not of the repository, and it is the only reason any identity is excluded."
+  },
+  "state": "SEALED",
+  "study_id": "SOURCE_FACT_IR_FRESH_HELDOUT_V10R1",
+  "what_this_does_not_establish": "capacity, C, Q, or any model/compiler endpoint"
+}

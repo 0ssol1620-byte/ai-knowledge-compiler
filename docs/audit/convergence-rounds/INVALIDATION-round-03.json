@@ -1,0 +1,12 @@
+{
+  "consequence": "round-03 does not count. The runner now has --dry-run so verification executions cannot create round records.",
+  "correct_reading": "A tool-verification execution is not a round and must not be counted.",
+  "generated_at": "2026-08-19T09:29:27.375256+00:00",
+  "invalidated_round_sha256": "sha256:847e50fb1831503444ef7b2616ec279b17afaa1048d5c4bcec2c1e521fcf4b86",
+  "invalidates": "round-03.json",
+  "reason": "Not a protocol round. The runner was executed to verify a lint fix, and it wrote a round file as a side effect. Its pass-A input was the same count re-asserted from round 2 rather than a fresh human read, which is the defect that invalidated round 1.",
+  "receipt_sha256": "sha256:fd72f1c6093170bd8a8f628b55c424210bd31b25bd66d44889235787233bc06d",
+  "round_file_deleted": false,
+  "round_file_edited": false,
+  "schema": "tavonel.convergence-round-invalidation.v1"
+}

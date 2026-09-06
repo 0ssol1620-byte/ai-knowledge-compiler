@@ -4,7 +4,8 @@ import { PUBLIC_PAGES } from "@/lib/tavonel-content";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://127.0.0.1:3000";
-  const paths = ["/", ...Object.keys(PUBLIC_PAGES)];
+  const hidden = new Set(["/customers", "/benchmarks", "/research/experiments"]);
+  const paths = ["/", ...Object.keys(PUBLIC_PAGES).filter((path) => !hidden.has(path))];
   return paths.map((path) => ({
     url: new URL(path, siteUrl).toString(),
     changeFrequency:

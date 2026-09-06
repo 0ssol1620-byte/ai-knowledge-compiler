@@ -49,11 +49,16 @@ def test_running_the_diagnostic_mutates_no_core_constant() -> None:
     assert scheme == IDENTITY_SCHEME_VERSION
 
 
-def test_the_actual_arm_rebuilds_everything() -> None:
-    """The number the whole diagnostic exists to explain."""
+def test_the_promoted_semantic_channel_fix_reduces_the_actual_arm_safely() -> None:
+    """DIAG-B-01's safe C3 finding is now a core invariant, not a counterfactual."""
     outcomes = run_counterfactuals(_case(MutationClass.MAY_TO_MUST))
-    assert outcomes["actual"].rebuild_fraction == 1.0
+    assert outcomes["actual"].rebuild_fraction < 1.0
     assert outcomes["actual"].equivalent
+    assert outcomes["actual"].stale_left_behind == 0
+    assert (
+        outcomes["actual"].rebuild_fraction
+        == outcomes["c3_semantic_channel_only"].rebuild_fraction
+    )
 
 
 def test_attribution_counts_ids_not_changes() -> None:

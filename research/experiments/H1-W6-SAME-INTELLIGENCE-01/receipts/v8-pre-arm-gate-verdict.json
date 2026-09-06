@@ -1,0 +1,104 @@
+{
+  "arms_run": false,
+  "boundary": "The sealed confirmatory cohort has been accessed by the transport, a question set has been generated from it, and three pre-arm gates have been measured on it. No arm was run, no answer was generated, no score exists, and no threshold, cohort, retriever, model or decoding parameter was changed as a result of any holdout observation.",
+  "criteria_that_passed": {
+    "before_after_separable_share": {
+      "ceiling": null,
+      "floor": 0.8,
+      "value": 1.0
+    },
+    "new_value_absent_from_before_revision_share": {
+      "ceiling": null,
+      "floor": null,
+      "value": 0.3373
+    },
+    "normalized_candidate_entropy": {
+      "ceiling": 0.99,
+      "floor": 0.2,
+      "value": 0.7055
+    },
+    "stale_revision_retrieval_rate": {
+      "ceiling": 0.9,
+      "floor": 0.02,
+      "value": 0.488
+    },
+    "unit_recall_at_1": {
+      "ceiling": 0.95,
+      "floor": 0.093,
+      "value": 0.3494
+    },
+    "unit_recall_at_5": {
+      "ceiling": 0.99,
+      "floor": 0.4173,
+      "value": 0.9217
+    }
+  },
+  "experiment": "H1-W6-SAME-INTELLIGENCE-01",
+  "external_gpu_cost_usd": 0.0,
+  "failing_criterion": {
+    "ceiling": 0.1,
+    "interpretation": "a tie is resolved by index order, so a tied retrieval is ranking that did not happen. At 0.1145 more than one question in nine is decided by list position rather than by the retriever, which is above the ceiling fixed before the holdout was opened. The holdout came in 0.0107 above the development value and 0.0145 above the ceiling.",
+    "margin_over_ceiling": 0.0145,
+    "name": "exact_tie_rate",
+    "v7_development_value": 0.1038,
+    "value": 0.1145,
+    "why_it_exists": "v7 measured 0.1038; a tie is resolved by index order, so ties are ranking that did not happen. One-sided: fewer ties is never a defect"
+  },
+  "gates": {
+    "baseline_validity": {
+      "file": "v8-entity-conditioned-gate-holdout.json",
+      "passes": false,
+      "sha256": "sha256:3599f10efb9488a23595b8ad2fb38837524500fad927235ba3fa61264931252c",
+      "state": "FAIL"
+    },
+    "residual_leakage": {
+      "evidence": "residual median 0.0, p90 0.0 against frozen ceilings of 0.05; injected positive control exceeds, clean control within, controls separate.",
+      "file": "v8-residual-overlap-holdout.json",
+      "passes": true,
+      "sha256": "sha256:d7c190bf64281cbe03caf631f044fd47c47a0f8e24cf2e9af7cb860afd1d1939"
+    },
+    "structural_taint": {
+      "evidence": "reference builder tainted=0; all three mutants caught at 477/477. The gate is live, not vacuous.",
+      "file": "v8-structural-taint-gate-holdout.json",
+      "passes": true,
+      "sha256": "sha256:3ca44f12371e506e93ce9ae24168c03064c26c692ff3ad8d3a5ccb2f811fd16c",
+      "state": "PASS"
+    }
+  },
+  "generated_at": "2026-08-20T08:53:47.633030+00:00",
+  "gpu_note": "no arm ran, so no inference cost was incurred at this stage. The attested runtime was idle throughout the gates.",
+  "holdout_status": "OPENED_PRE_ARM_GATE_MEASURED_ENDPOINT_NOT_RUN",
+  "receipt_labelling_defect": {
+    "disposition": "the frozen gate script is NOT edited to fix the label --- it is a pinned source and the holdout is open. The defect is recorded here instead and the verdict is taken from the measurement, not from the stale run_class string.",
+    "id": "W6-V8-GATE-01",
+    "observation": "entity_conditioned_gate_v8.py hard-codes run_class DEVELOPMENT_ONLY and a note saying the input is the sealed v7 development set. It has no run-class parameter, because it was written when only development data existed. Its receipt therefore mislabels this run.",
+    "verified_binding": {
+      "gate_input_digest": "sha256:2f20b9a5c3648aec0df2709e18b69beeacfe0ae83326fdd29252a67c438ab48f",
+      "holdout_question_set_receipt_sha256": "sha256:2f20b9a5c3648aec0df2709e18b69beeacfe0ae83326fdd29252a67c438ab48f",
+      "match": true
+    },
+    "what_the_bytes_prove": "the receipt's development_question_set_sha256 is sha256:2f20b9a5c3648aec0df2709e18b69beeacfe0ae83326fdd29252a67c438ab48f, which is the receipt_sha256 of question-set-v8-holdout.json. The measurement was performed on the HOLDOUT question set. The digest is authoritative over the prose label."
+  },
+  "receipt_sha256": "sha256:b2b4e1555d7412cc7a5978ddbd488b809c5f3ad236b11f369800222d848f2bd2",
+  "reported_not_gated": {
+    "note": "in 64.46% of evaluated questions the superseded revision's best unit outranks the current one. This is reported, not gated, and it is a substantive fact about the difficulty of this cohort rather than a defect in it.",
+    "oracle_minus_strongest_wrong_revision": {
+      "median": -0.0537,
+      "note": "the discrimination actually under test: how far the oracle unit sits above the best CORRECT SUBJECT + WRONG REVISION unit. A negative gap is a question where the superseded revision outranks the current one.",
+      "p10": -1.041,
+      "share_negative": 0.6446
+    }
+  },
+  "run_class": "HOLDOUT_CONFIRMATORY",
+  "schema": "tavonel.w6-v8-pre-arm-gate-verdict.v1",
+  "verdict": "CONFIRMATORY_PRE_ARM_GATE_FAILURE_ENDPOINT_NOT_RUN",
+  "what_is_forbidden_now": [
+    "raising or removing the exact_tie_rate ceiling",
+    "regenerating the question set with different admission or tie-breaking",
+    "deleting or filtering questions to lower the tie rate",
+    "changing the retriever, top-k, BM25 or RM3 to break ties differently",
+    "running the four arms on this holdout anyway",
+    "creating a V9 immediately in order to obtain a runnable cohort"
+  ],
+  "why_forbidden": "the ceiling was fixed before the holdout was opened, and the holdout has now been measured against it. Any adjustment made after seeing 0.1145 is tuning against the holdout, which would convert a confirmatory run into a development one and destroy the only untouched cohort this programme has."
+}

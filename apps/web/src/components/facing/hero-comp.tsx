@@ -4,6 +4,7 @@ import { FacingPages } from "@/components/facing/facing-pages";
 import { HeroDropzone } from "@/components/facing/hero-dropzone";
 import { bboxStyle } from "@/lib/bbox";
 import type { ThreadAnchor } from "@/lib/facing/thread";
+import type { StructaraLocale } from "@/lib/locale";
 
 /**
  * Hero static comps — DESIGN_MASTER_V3 §12.2, W1.
@@ -33,8 +34,8 @@ export type HeroCopy = {
 export const HERO_COPY: Record<HeroCopy["id"], HeroCopy> = {
   d1: {
     id: "d1",
-    headline: ["Every output returns", "to its source."],
-    lead: "Documents become structured, verified knowledge that people and AI can reuse — with every value traceable to the page it came from.",
+    headline: ["Turn documents and connected systems", "into a source-grounded World your AI can use."],
+    lead: "Files go in. Structured, traceable knowledge comes out.",
   },
   d2: {
     id: "d2",
@@ -73,6 +74,7 @@ const ANCHORS: readonly ThreadAnchor[] = [
 export function HeroComp({
   variant,
   copy,
+  locale = "en",
   /**
    * Comps render the CTAs as inert <span> so an unwired control never reaches
    * the page (§14.3). The live hero passes `live` and gets real controls and a
@@ -82,8 +84,10 @@ export function HeroComp({
 }: {
   variant: HeroVariant;
   copy: HeroCopy;
+  locale?: StructaraLocale;
   live?: boolean;
 }) {
+  const korean = locale === "ko";
   return (
     <section
       // tv-paper carries the §15.3 fibre. data-surface picks the amplitude for
@@ -94,7 +98,7 @@ export function HeroComp({
       data-live={live || undefined}
     >
       <div className="tv-hero-comp-copy">
-        <p className="tv-hero-comp-eyebrow">The Knowledge Compiler</p>
+        <p className="tv-hero-comp-eyebrow">TAVONEL · KNOWLEDGE COMPILER</p>
         <h1>
           {copy.headline.map((line, index) => (
             <span key={line}>
@@ -114,31 +118,28 @@ export function HeroComp({
                 className="tv-hero-comp-cta"
                 data-kind="primary"
               >
-                Start compiling
+                {korean ? "내 파일 컴파일하기" : "Compile your own files"}
               </Link>
               <Link
                 href="/demo/dart"
                 className="tv-hero-comp-cta"
                 data-kind="secondary"
               >
-                Inspect the proof
+                {korean ? "Compiled World 살펴보기" : "Explore a Compiled World"}
               </Link>
             </>
           ) : (
             <>
               <span className="tv-hero-comp-cta" data-kind="primary">
-                Start compiling
+                Compile your own files
               </span>
               <span className="tv-hero-comp-cta" data-kind="secondary">
-                Inspect the proof
+                Explore a Compiled World
               </span>
             </>
           )}
         </div>
 
-        <p className="tv-hero-comp-trust">
-          Source-linked output · KO DART / US SEC · No unverified claims
-        </p>
       </div>
 
       <div className="tv-hero-comp-stage">
@@ -148,13 +149,15 @@ export function HeroComp({
           anchors={ANCHORS}
           meta={
             <>
-              <span>Sample · Journal of Reliable AI Systems · Page 8</span>
-              <span data-state="verified">Verified</span>
+              <span>{korean ? "샘플 · Journal of Reliable AI Systems · 8페이지" : "Sample · Journal of Reliable AI Systems · Page 8"}</span>
+              <span data-state="verified">{korean ? "검증됨" : "Verified"}</span>
             </>
           }
           caption={
             live
-              ? "Sample document, compiled. Drop your own below."
+              ? korean
+                ? "컴파일된 샘플 문서입니다. 아래에 내 문서를 넣어보세요."
+                : "Sample document, compiled. Drop your own below."
               : "Drop a document here to compile your own — sample shown"
           }
           verso={<VersoPage />}

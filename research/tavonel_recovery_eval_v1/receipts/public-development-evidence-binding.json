@@ -1,0 +1,145 @@
+{
+  "approved_claims_bound": 11,
+  "binding_digest": "sha256:e0b7c43f44b8f86fb295e49e430a2680c1da6847087a15420218097dacdd5eb0",
+  "claims": [
+    {
+      "artifacts": [
+        {
+          "declared_path": "docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__olmocr-bench__evaluation-summary.json",
+          "sha256": "sha256:4d75ae96e70c7c1c425b991df0f1c356ec6393e73914aaed27f5f54b0048a559"
+        }
+      ],
+      "claim_id": "accuracy-by-document-type",
+      "status": "HISTORICAL_DEVELOPMENT_ONLY"
+    },
+    {
+      "artifacts": [
+        {
+          "declared_path": "docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__olmocr-bench__evaluation-summary.json",
+          "sha256": "sha256:4d75ae96e70c7c1c425b991df0f1c356ec6393e73914aaed27f5f54b0048a559"
+        }
+      ],
+      "claim_id": "benchmark-accuracy",
+      "status": "HISTORICAL_DEVELOPMENT_ONLY"
+    },
+    {
+      "artifacts": [
+        {
+          "declared_path": "docs/evidence/artifacts/folynta-knowledge-compilation-properties-2026-08-08.json",
+          "sha256": "sha256:936b859c484fb54a8bdff3175d89d2fd47d695d48ec93b99fcfd93ac53ee2e25"
+        }
+      ],
+      "claim_id": "compilation-guarantees",
+      "status": "HISTORICAL_DEVELOPMENT_ONLY"
+    },
+    {
+      "artifacts": [
+        {
+          "declared_path": "docs/evidence/artifacts/folynta-campaign-completion-ledger-2026-08-08.json",
+          "sha256": "sha256:3dcaf2ae6ef143e9ef37e0efa347b14bcc14fb50207d0ae9eab873a160d61f0d"
+        }
+      ],
+      "claim_id": "completion-rate",
+      "status": "HISTORICAL_DEVELOPMENT_ONLY"
+    },
+    {
+      "artifacts": [
+        {
+          "declared_path": "docs/evidence/artifacts/folynta-campaign-completion-ledger-2026-08-08.json",
+          "sha256": "sha256:3dcaf2ae6ef143e9ef37e0efa347b14bcc14fb50207d0ae9eab873a160d61f0d"
+        }
+      ],
+      "claim_id": "corpus-scale",
+      "status": "HISTORICAL_DEVELOPMENT_ONLY"
+    },
+    {
+      "artifacts": [
+        {
+          "declared_path": "docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__omnidocbench__repeat-1__metric-result.json",
+          "sha256": "sha256:bab2df526db11fbcd87b1a026a223d8b8a7ce03ba1b4f99a9899b4c34f4c731a"
+        }
+      ],
+      "claim_id": "customer-facing-fidelity",
+      "status": "HISTORICAL_DEVELOPMENT_ONLY"
+    },
+    {
+      "artifacts": [
+        {
+          "declared_path": "packages/domain-packs/src/akc_domain_packs/blueprints.py",
+          "sha256": "sha256:67ea05f394faae5f6dc97d5be94ca75d8635cfd9552658bf6579cf7391fb8588"
+        },
+        {
+          "declared_path": "packages/exporters/src/akc_exporters/vault.py",
+          "sha256": "sha256:e28da7971c3d59d5811bef5e96dfebcee1db6099bd983eec2d2ed70bbc801d72"
+        },
+        {
+          "declared_path": "packages/exporters/src/akc_exporters/knowledge_package.py",
+          "sha256": "sha256:84a07ab3c323be9d2cc6f148998df4cc5433154bc4ffda0fc06c01a014342fa0"
+        },
+        {
+          "declared_path": "docs/evidence/artifacts/folynta-knowledge-compilation-properties-2026-08-08.json",
+          "sha256": "sha256:936b859c484fb54a8bdff3175d89d2fd47d695d48ec93b99fcfd93ac53ee2e25"
+        }
+      ],
+      "claim_id": "product-pipeline",
+      "status": "HISTORICAL_DEVELOPMENT_ONLY"
+    },
+    {
+      "artifacts": [
+        {
+          "declared_path": "docs/evidence/artifacts/folynta-recovery-accuracy-counterfactual-olmocr-2026-08-08.json",
+          "sha256": "sha256:1f5b6220c1fa569e8e33530d933a16eb7ad6b856c56e22f1744f8fa96efe33e0"
+        }
+      ],
+      "claim_id": "recovery-contribution-olmocr",
+      "status": "HISTORICAL_DEVELOPMENT_ONLY"
+    },
+    {
+      "artifacts": [
+        {
+          "declared_path": "docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__omnidocbench__repeat-1__metric-result.json",
+          "sha256": "sha256:bab2df526db11fbcd87b1a026a223d8b8a7ce03ba1b4f99a9899b4c34f4c731a"
+        },
+        {
+          "declared_path": "docs/evidence/artifacts/folynta-counterfactual-no-recovery-omnidocbench-2026-08-08__repeat-1__metric-result.json",
+          "sha256": "sha256:83181525448986e54ceee018c652f9e2911d92a44c9474b38cdd647c3cf8666b"
+        }
+      ],
+      "claim_id": "recovery-contribution-omnidocbench",
+      "status": "HISTORICAL_DEVELOPMENT_ONLY"
+    },
+    {
+      "artifacts": [
+        {
+          "declared_path": "docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__parsebench__evaluation-summary.json",
+          "sha256": "sha256:22cf5bf183ef875338de8442a6d3c5c3dca89ae52346b7f36a07b9332471a228"
+        },
+        {
+          "declared_path": "docs/evidence/artifacts/folynta-counterfactual-no-recovery-parsebench-2026-08-08__evaluation-summary.json",
+          "sha256": "sha256:f21b8d20051c342cd25a7fc3d312ce847746e2965b1da09b1899a48e516dfdb0"
+        }
+      ],
+      "claim_id": "recovery-contribution-parsebench",
+      "status": "HISTORICAL_DEVELOPMENT_ONLY"
+    },
+    {
+      "artifacts": [
+        {
+          "declared_path": "docs/evidence/artifacts/folynta-campaign-completion-ledger-2026-08-08.json",
+          "sha256": "sha256:3dcaf2ae6ef143e9ef37e0efa347b14bcc14fb50207d0ae9eab873a160d61f0d"
+        }
+      ],
+      "claim_id": "recovery-rate",
+      "status": "HISTORICAL_DEVELOPMENT_ONLY"
+    }
+  ],
+  "claims_pack": {
+    "path": "docs/evidence/folynta-public-claims-pack.json",
+    "sha256": "sha256:ff6f9f6b17b7845c545c1c76c0c9ef7396bc329c92bc1152c0108aae69d3065e"
+  },
+  "confirmatory_eligible": false,
+  "evidence_class": "MEASURED_HISTORICAL_DEVELOPMENT",
+  "interpretation": "This receipt binds existing approved historical claims to their exact artifact bytes. It does not make the historical corpus fresh or confirmatory.",
+  "repository_root": ".",
+  "schema": "tavonel.recovery.public_development_evidence_binding.v1"
+}

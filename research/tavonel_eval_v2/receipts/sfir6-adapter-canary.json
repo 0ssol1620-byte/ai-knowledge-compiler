@@ -1,0 +1,107 @@
+{
+  "canary_pages": {
+    "Association football": 10568,
+    "Cheese": 6784,
+    "The Beatles": 21501
+  },
+  "checks": [
+    {
+      "batch_complete": true,
+      "carries_rvlimit": false,
+      "gate": "pass_1_batched_latest_revision",
+      "identities_accounted": {
+        "absent": [
+          21501
+        ],
+        "present": [
+          6784,
+          10568
+        ]
+      },
+      "protocol_success": true,
+      "transport_status": 200
+    },
+    {
+      "batch_complete": true,
+      "gate": "pass_2_batched_parent_revisions",
+      "parents_requested": 2,
+      "parents_resolved": 2,
+      "protocol_success": true,
+      "transport_status": 200
+    },
+    {
+      "gate": "pair_construction",
+      "note": "a count of CANARY pages only. It is not a candidate count and has no relationship to C_f for any family.",
+      "pages_yielding_a_pair": 2
+    },
+    {
+      "gate": "sfir5_request_shape_still_refused_by_the_live_endpoint",
+      "http_status_was_success": true,
+      "protocol_layer_refused": true,
+      "transport_status": 200,
+      "why_this_gate_exists": "it proves the two layers really are independent, live rather than in a fixture: the transport succeeded and the protocol refused, in the same response."
+    }
+  ],
+  "content_sha256": "sha256:d61f9b70c4022ee40fbf4ad01775f5f471d1cfa53f4166cf63b954138cb34617",
+  "declared_roots_untouched": [
+    "Anthropology",
+    "Architecture",
+    "Astronomy",
+    "Biology",
+    "Chemistry",
+    "Ecology",
+    "Economics",
+    "Education",
+    "Electronics",
+    "Engineering",
+    "Genetics",
+    "Geology",
+    "Immunology",
+    "Law",
+    "Linguistics",
+    "Mathematics",
+    "Meteorology",
+    "Neuroscience",
+    "Oceanography",
+    "Pharmacology",
+    "Philosophy",
+    "Physics",
+    "Political science",
+    "Psychology",
+    "Sociology",
+    "Statistics",
+    "Surgery",
+    "Telecommunications",
+    "Transportation",
+    "Virology"
+  ],
+  "estimated_cost_usd": 0.0,
+  "excluded_from_the_scientific_denominator": true,
+  "generated_at": "2026-08-27T06:40:15.356969+00:00",
+  "gpu_seconds": 0,
+  "protocol_id": "SOURCE_FACT_IR_INDEPENDENT_REPLICATION_V6",
+  "purpose": "verify the repaired MediaWiki grammar against the live endpoint before SFIR6 is frozen (INC-V2-106)",
+  "response_evidence": [
+    {
+      "content_digest": "sha256:dd0501a0be9f9b649651f6938b22be6acbd82c3b4253a452171a6924d5b1ca3b",
+      "observed_length": 4824,
+      "status": 200,
+      "url": "https://en.wikipedia.org/w/api.php?action=query&pageids=6784%7C10568%7C21501&prop=revisions%7Cinfo%7Credirects&rvprop=ids%7Ctimestamp&rdlimit=max&format=json&formatversion=2"
+    },
+    {
+      "content_digest": "sha256:5a9e6364216a32b5806ef7a6c20241d994562484eb642d95f0c42d759c63cb7f",
+      "observed_length": 326,
+      "status": 200,
+      "url": "https://en.wikipedia.org/w/api.php?action=query&revids=1363349507%7C1371194875&prop=revisions&rvprop=ids%7Ctimestamp&format=json&formatversion=2"
+    },
+    {
+      "content_digest": "sha256:cce5c673c995ef3a425d095b626f262500bc8cd5eac37c6b6dcfad660d27ec89",
+      "observed_length": 611,
+      "status": 200,
+      "url": "https://en.wikipedia.org/w/api.php?action=query&pageids=6784%7C10568%7C21501&prop=revisions%7Cinfo%7Credirects&rvprop=ids%7Ctimestamp&rdlimit=max&format=json&formatversion=2&rvlimit=2"
+    }
+  ],
+  "schema": "tavonel.sfir6.adapter_canary.v1",
+  "state": "ADAPTER_CANARY_PASS",
+  "why_it_cannot_contaminate": "it emits no candidate and no count, reads no declared category root, and evaluates no threshold. It checks response shape. The pages are fixed, public and outside the thirty declared roots."
+}

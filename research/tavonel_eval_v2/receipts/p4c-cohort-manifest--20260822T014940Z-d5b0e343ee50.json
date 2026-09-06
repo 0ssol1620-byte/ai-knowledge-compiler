@@ -1,0 +1,1612 @@
+{
+  "container_cap": 4,
+  "container_counts": {
+    "0000021344": 1,
+    "0000789019": 1,
+    "0001318605": 2,
+    "17 CFR 240": 4,
+    "17 CFR 275": 4,
+    "21 CFR 314": 4,
+    "29 CFR 1910": 4,
+    "40 CFR 63": 3,
+    "astral-sh/uv": 1,
+    "en.wikipedia.org": 18,
+    "kubernetes/website": 2,
+    "prometheus/prometheus": 3,
+    "rust-lang/book": 1
+  },
+  "credentials_sent": false,
+  "dart": {
+    "api_message": "인증키가 누락되었습니다.",
+    "api_status": "100",
+    "credential_env": "DART_API_KEY / crtfc_key",
+    "documents_acquired": 0,
+    "endpoint": "https://opendart.fss.or.kr/api/list.json",
+    "family": "dart_kr",
+    "note": "declared so its absence is recorded rather than inferred from the family list. A missing credential is a founder decision.",
+    "resolution": "founder decision: a DART certification key is a missing secret",
+    "state": "BLOCKED_MISSING_CREDENTIAL"
+  },
+  "document_count": 48,
+  "documents": [
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/git-astral-sh-uv-docs-concepts-projects-dependencies-md/after.json",
+        "canonical_sha256": "sha256:993d677a545e159e5984f45a391397096cbe96edee3e394c71508a87af63dd0d",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/git-astral-sh-uv-docs-concepts-projects-dependencies-md/after.md",
+        "raw_sha256": "sha256:abd68b302b56e9e23e421099851d3531e3e40bd7ae8eb10b4e9e0281c9d68364",
+        "unit_count": 27
+      },
+      "after_version": "7e6caa45f62a0506fea1b8ecfa0558e5d62d520c",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/git-astral-sh-uv-docs-concepts-projects-dependencies-md/before.json",
+        "canonical_sha256": "sha256:21866f12345fbb43fae68e0d1bccefd0b4cbd7ffd1dcd498ecf36c86137ab156",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/git-astral-sh-uv-docs-concepts-projects-dependencies-md/before.md",
+        "raw_sha256": "sha256:d5a7e3a6ca77d497287699922f3873e5a0909e6990c777a8405c54b610263072",
+        "unit_count": 27
+      },
+      "before_version": "50d437988227755233271e64c1cf86db8d4c98ba",
+      "container": "astral-sh/uv",
+      "container_name": "astral-sh/uv",
+      "doc_type": "markdown documentation",
+      "document_id": "git:astral-sh/uv:docs/concepts/projects/dependencies.md",
+      "document_slug": "git-astral-sh-uv-docs-concepts-projects-dependencies-md",
+      "family": "git_docs",
+      "identity": "astral-sh/uv dependencies",
+      "licence": "MIT OR Apache-2.0",
+      "reused_pair_id": "git-021-uv-dependencies",
+      "spoken_type": "documentation",
+      "suffix": ".md",
+      "title_field": "astral-sh/uv dependencies"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/git-kubernetes-website-content-en-docs-concepts-services-networking-service-md/after.json",
+        "canonical_sha256": "sha256:77ef7cce977dc577348be2540d0697ac606651415472a374840d68473e879d02",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/git-kubernetes-website-content-en-docs-concepts-services-networking-service-md/after.md",
+        "raw_sha256": "sha256:124a280dfbc2dad83498c579e960e5d199ca612b727033e2a88da1103e1acb51",
+        "unit_count": 40
+      },
+      "after_version": "90d449e0c3fa65cdcf61dac336121f5586644157",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/git-kubernetes-website-content-en-docs-concepts-services-networking-service-md/before.json",
+        "canonical_sha256": "sha256:9ec2d961c8bf2c758f236d5f7dca40a306f02967c40502f300fd3ce59791db20",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/git-kubernetes-website-content-en-docs-concepts-services-networking-service-md/before.md",
+        "raw_sha256": "sha256:cf12c06b6d235eda27385099d0b4d74de435cd201a885c36c7b66f683c737700",
+        "unit_count": 40
+      },
+      "before_version": "434ae53916eca3e50394ffb47320b0908d41fe3f",
+      "container": "kubernetes/website",
+      "container_name": "kubernetes/website",
+      "doc_type": "markdown documentation",
+      "document_id": "git:kubernetes/website:content/en/docs/concepts/services-networking/service.md",
+      "document_slug": "git-kubernetes-website-content-en-docs-concepts-services-networking-service-md",
+      "family": "git_docs",
+      "identity": "kubernetes/website service",
+      "licence": "CC-BY-4.0",
+      "reused_pair_id": "git-015-website-service",
+      "spoken_type": "documentation",
+      "suffix": ".md",
+      "title_field": "kubernetes/website service"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/git-kubernetes-website-content-en-docs-concepts-workloads-controllers-deployment/after.json",
+        "canonical_sha256": "sha256:b47f9b5b6594b775b248e10d17e8a94167628b21df9bb86206c380ef92641840",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/git-kubernetes-website-content-en-docs-concepts-workloads-controllers-deployment/after.md",
+        "raw_sha256": "sha256:b4896e5d45a7d97b0d36ca5fe9e2cac2188ab46ce9cfbc61b4c143220e550c98",
+        "unit_count": 35
+      },
+      "after_version": "a03054abc6670d709271bb840dbdd1101eb4db87",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/git-kubernetes-website-content-en-docs-concepts-workloads-controllers-deployment/before.json",
+        "canonical_sha256": "sha256:691a9fd8b319feec28b9fb732664040a0512b2f94b6d22038bdf2cdbc0783adb",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/git-kubernetes-website-content-en-docs-concepts-workloads-controllers-deployment/before.md",
+        "raw_sha256": "sha256:ec8a93307efd8bf37349da4f103e5ad2c9698e9171d61a26ca9734bf684fe222",
+        "unit_count": 35
+      },
+      "before_version": "c37d57216103cd3473e82dc7b481bf5b34a1a197",
+      "container": "kubernetes/website",
+      "container_name": "kubernetes/website",
+      "doc_type": "markdown documentation",
+      "document_id": "git:kubernetes/website:content/en/docs/concepts/workloads/controllers/deployment.md",
+      "document_slug": "git-kubernetes-website-content-en-docs-concepts-workloads-controllers-deployment",
+      "family": "git_docs",
+      "identity": "kubernetes/website deployment",
+      "licence": "CC-BY-4.0",
+      "reused_pair_id": "git-012-website-deployment",
+      "spoken_type": "documentation",
+      "suffix": ".md",
+      "title_field": "kubernetes/website deployment"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/git-prometheus-prometheus-docs-configuration-configuration-md/after.json",
+        "canonical_sha256": "sha256:53367df4f4fb8a3e48304ef83de06cd1d4ea84f58551d3ec1ca831c2e8be4094",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/git-prometheus-prometheus-docs-configuration-configuration-md/after.md",
+        "raw_sha256": "sha256:d7f0348efdff475a0fbef3c1fc24b000856d0fe1e34f60f45a47184fce5120da",
+        "unit_count": 74
+      },
+      "after_version": "a8b5db65156fe8aa3c3f7e15e7d22e8af7875c97",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/git-prometheus-prometheus-docs-configuration-configuration-md/before.json",
+        "canonical_sha256": "sha256:28b1311ad38a9d37fe7ecbb907f62a1aca12f90da45367a5fc67b2990c946b8c",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/git-prometheus-prometheus-docs-configuration-configuration-md/before.md",
+        "raw_sha256": "sha256:b2e1a8e18f9c6088aaa9b85c017ba6b2c56de8f0e5feffef391e2995b1c03912",
+        "unit_count": 74
+      },
+      "before_version": "223b91d48f79754209b432d32951e84abf05df23",
+      "container": "prometheus/prometheus",
+      "container_name": "prometheus/prometheus",
+      "doc_type": "markdown documentation",
+      "document_id": "git:prometheus/prometheus:docs/configuration/configuration.md",
+      "document_slug": "git-prometheus-prometheus-docs-configuration-configuration-md",
+      "family": "git_docs",
+      "identity": "prometheus/prometheus configuration",
+      "licence": "Apache-2.0",
+      "reused_pair_id": "git-000-prometheus-configuration",
+      "spoken_type": "documentation",
+      "suffix": ".md",
+      "title_field": "prometheus/prometheus configuration"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/git-prometheus-prometheus-docs-querying-basics-md/after.json",
+        "canonical_sha256": "sha256:a6f3de7403364253da1898a93a5b151c98be54603cff33f76f148d88f94a678c",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/git-prometheus-prometheus-docs-querying-basics-md/after.md",
+        "raw_sha256": "sha256:bdf7feaa71b6e6cddb1c143974e579c9d3c5ea19c6e6b4af16f0f9927c9f6853",
+        "unit_count": 17
+      },
+      "after_version": "352e36a7601cd720254d1a40d3cc07babce0cc82",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/git-prometheus-prometheus-docs-querying-basics-md/before.json",
+        "canonical_sha256": "sha256:1f41e160bc31f4349101f9eb1306508ed67bb584b31fa343e6e1248318b73df0",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/git-prometheus-prometheus-docs-querying-basics-md/before.md",
+        "raw_sha256": "sha256:de1194d5db88b22665fbf51f0d1539cdec4d48fd1a142f5e977fd4b8abc81717",
+        "unit_count": 16
+      },
+      "before_version": "7b29b912e3712cb06e93d3c2db7f77cc2b4fee96",
+      "container": "prometheus/prometheus",
+      "container_name": "prometheus/prometheus",
+      "doc_type": "markdown documentation",
+      "document_id": "git:prometheus/prometheus:docs/querying/basics.md",
+      "document_slug": "git-prometheus-prometheus-docs-querying-basics-md",
+      "family": "git_docs",
+      "identity": "prometheus/prometheus basics",
+      "licence": "Apache-2.0",
+      "reused_pair_id": "git-006-prometheus-basics",
+      "spoken_type": "documentation",
+      "suffix": ".md",
+      "title_field": "prometheus/prometheus basics"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/git-prometheus-prometheus-docs-querying-functions-md/after.json",
+        "canonical_sha256": "sha256:9997b99165efbcf085d05f79082cb84035add947c9f185881fc2d0623b11899e",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/git-prometheus-prometheus-docs-querying-functions-md/after.md",
+        "raw_sha256": "sha256:21a0b70b5178dbe74a0d707818f533f827cee0368133067bda0228aaccb09821",
+        "unit_count": 60
+      },
+      "after_version": "4c352ffb82a082310978147b14070d7969e9d5d4",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/git-prometheus-prometheus-docs-querying-functions-md/before.json",
+        "canonical_sha256": "sha256:ea952112eea675452a8f9877be30adf758aeb141b9f27d5a7431bb8a5a6bc398",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/git-prometheus-prometheus-docs-querying-functions-md/before.md",
+        "raw_sha256": "sha256:f59a239be0d6024027485e7ccc51e11e4b6aacf1fd488dec8afb27bba03925d0",
+        "unit_count": 59
+      },
+      "before_version": "b4741eeb99c742229e20e6540dd21aa044373eb5",
+      "container": "prometheus/prometheus",
+      "container_name": "prometheus/prometheus",
+      "doc_type": "markdown documentation",
+      "document_id": "git:prometheus/prometheus:docs/querying/functions.md",
+      "document_slug": "git-prometheus-prometheus-docs-querying-functions-md",
+      "family": "git_docs",
+      "identity": "prometheus/prometheus functions",
+      "licence": "Apache-2.0",
+      "reused_pair_id": "git-003-prometheus-functions",
+      "spoken_type": "documentation",
+      "suffix": ".md",
+      "title_field": "prometheus/prometheus functions"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/git-rust-lang-book-src-ch04-01-what-is-ownership-md/after.json",
+        "canonical_sha256": "sha256:94bc26cdb6098dc1c40a2d903c3ba768b41844e01f090b236e3e20956a2b20ed",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/git-rust-lang-book-src-ch04-01-what-is-ownership-md/after.md",
+        "raw_sha256": "sha256:873724c6862ad0cc447becf0e818eb39a324c5d4bfa26ef721286aae1941c0ba",
+        "unit_count": 11
+      },
+      "after_version": "05d114287b7d6f6c9253d5242540f00fbd6172ab",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/git-rust-lang-book-src-ch04-01-what-is-ownership-md/before.json",
+        "canonical_sha256": "sha256:ff7e302d762d26e3ee8df1dfd5696d25ff901ff68acb583cd153d500a21dfa94",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/git-rust-lang-book-src-ch04-01-what-is-ownership-md/before.md",
+        "raw_sha256": "sha256:7c6b95dfc1a5e87f39a40bcda2ab794ebfcd239326d13ea5c3bd432691ff381a",
+        "unit_count": 11
+      },
+      "before_version": "8a6130451b0817ead5c2522ce641dcb0f11a8571",
+      "container": "rust-lang/book",
+      "container_name": "rust-lang/book",
+      "doc_type": "markdown documentation",
+      "document_id": "git:rust-lang/book:src/ch04-01-what-is-ownership.md",
+      "document_slug": "git-rust-lang-book-src-ch04-01-what-is-ownership-md",
+      "family": "git_docs",
+      "identity": "rust-lang/book ch04 01 what is ownership",
+      "licence": "MIT OR Apache-2.0",
+      "reused_pair_id": "git-018-book-ch04-01-what-is-ownership",
+      "spoken_type": "documentation",
+      "suffix": ".md",
+      "title_field": "rust-lang/book ch04 01 what is ownership"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/sec-0000021344-10-q-2024-03-29/after.json",
+        "canonical_sha256": "sha256:6e50b1294ffe1290fd023d063417b75db31a5a4442b5f1256c498487c0165d06",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/sec-0000021344-10-q-2024-03-29/after.html",
+        "raw_sha256": "sha256:d5f8c22f1f670fd22c3b2168c3fec8388e0824e92505d6f64ff345ec68c75503",
+        "unit_count": 3
+      },
+      "after_version": "0000021344-24-000019",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/sec-0000021344-10-q-2024-03-29/before.json",
+        "canonical_sha256": "sha256:7ab58b5a4af8b41cec8999e08f820515311d0e21465f99c9f7a0eab2b7d1dee4",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/sec-0000021344-10-q-2024-03-29/before.html",
+        "raw_sha256": "sha256:0ab7273516edd8b6479ca91bf090546cf385c4c470472f5befab8102528e54a7",
+        "unit_count": 12
+      },
+      "before_version": "0000021344-24-000017",
+      "container": "0000021344",
+      "container_name": "0000021344",
+      "doc_type": "10-Q",
+      "document_id": "sec:0000021344:10-Q:2024-03-29",
+      "document_slug": "sec-0000021344-10-q-2024-03-29",
+      "family": "sec_edgar",
+      "identity": "10-Q",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "reused_pair_id": "sec-005-ko-10-q",
+      "spoken_type": "10-Q filing",
+      "suffix": ".html",
+      "title_field": "10-Q filing"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/sec-0000789019-8-k-2024-01-17/after.json",
+        "canonical_sha256": "sha256:3e779610a76816e29167a078a432f61aa39b9e89b56e9352d5cb7308300e94e6",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/sec-0000789019-8-k-2024-01-17/after.html",
+        "raw_sha256": "sha256:66ef5cb0574479ded15b1de0f56366c1de45dc3ec8d3c7bc7c5415dcf34edd96",
+        "unit_count": 4
+      },
+      "after_version": "0001193125-24-062997",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/sec-0000789019-8-k-2024-01-17/before.json",
+        "canonical_sha256": "sha256:43de2dfad1fa42e41a2f8346591f9de4baec3a8089aadffe5a854a382dbfa622",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/sec-0000789019-8-k-2024-01-17/before.html",
+        "raw_sha256": "sha256:9e47379ea22d69508a44b4183a4b0589002ad99696b24382029ea8859a7aa933",
+        "unit_count": 4
+      },
+      "before_version": "0001193125-24-011295",
+      "container": "0000789019",
+      "container_name": "0000789019",
+      "doc_type": "8-K",
+      "document_id": "sec:0000789019:8-K:2024-01-17",
+      "document_slug": "sec-0000789019-8-k-2024-01-17",
+      "family": "sec_edgar",
+      "identity": "8-K",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "reused_pair_id": "sec-006-msft-8-k",
+      "spoken_type": "8-K filing",
+      "suffix": ".html",
+      "title_field": "8-K filing"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/sec-0001318605-10-k-2024-12-31/after.json",
+        "canonical_sha256": "sha256:a592014e625d68c540389bfdb3a15e78523e83621dcf9ca4d42408336b511e44",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/sec-0001318605-10-k-2024-12-31/after.html",
+        "raw_sha256": "sha256:c28e39f1152a8210d53b5f4265ee0562e8d0a7be586f1730318e34480fabaf6d",
+        "unit_count": 7
+      },
+      "after_version": "0001104659-25-042659",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/sec-0001318605-10-k-2024-12-31/before.json",
+        "canonical_sha256": "sha256:dbf08609f9c4b1618b810453f6eb39a75795de1fefb8edc1967d6c4f93109eca",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/sec-0001318605-10-k-2024-12-31/before.html",
+        "raw_sha256": "sha256:2a5dc10024afd96cf71f154c949759123c1da05715fb574866eaba6e1ec3bb18",
+        "unit_count": 20
+      },
+      "before_version": "0001628280-25-003063",
+      "container": "0001318605",
+      "container_name": "0001318605",
+      "doc_type": "10-K",
+      "document_id": "sec:0001318605:10-K:2024-12-31",
+      "document_slug": "sec-0001318605-10-k-2024-12-31",
+      "family": "sec_edgar",
+      "identity": "10-K",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "reused_pair_id": "sec-001-tsla-10-k",
+      "spoken_type": "10-K filing",
+      "suffix": ".html",
+      "title_field": "10-K filing"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/sec-0001318605-10-k-2025-12-31/after.json",
+        "canonical_sha256": "sha256:4d116f180e09c57f34d7f271ec70a9595389a2f7848a4e6ca7298b0159aaad3c",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/sec-0001318605-10-k-2025-12-31/after.html",
+        "raw_sha256": "sha256:35e8e3c985ad540e22aa71d6da889dcd4b4d65194cc6f05cd00e6257f168ea4b",
+        "unit_count": 7
+      },
+      "after_version": "0001104659-26-053166",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/sec-0001318605-10-k-2025-12-31/before.json",
+        "canonical_sha256": "sha256:518425234cb221e6c3cc7fff0304a8de2c1a9b80b2207af2e271e46c27004eaf",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/sec-0001318605-10-k-2025-12-31/before.html",
+        "raw_sha256": "sha256:90d5d2bc4057df41c645f85dcebe575af9b0953a6a1902d189297bec17fd440a",
+        "unit_count": 20
+      },
+      "before_version": "0001628280-26-003952",
+      "container": "0001318605",
+      "container_name": "0001318605",
+      "doc_type": "10-K",
+      "document_id": "sec:0001318605:10-K:2025-12-31",
+      "document_slug": "sec-0001318605-10-k-2025-12-31",
+      "family": "sec_edgar",
+      "identity": "10-K",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "reused_pair_id": "sec-000-tsla-10-k",
+      "spoken_type": "10-K filing",
+      "suffix": ".html",
+      "title_field": "10-K filing"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-240-240-0-1/after.json",
+        "canonical_sha256": "sha256:81905d77d0d365907476d464f34a9ee167734c3b5fbb648762cf94529ab0e373",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-240-240-0-1/after.xml",
+        "raw_sha256": "sha256:ad414ede151e557d2543e2a74b92f360928dfdd62109656b1f044486ae9c2988",
+        "unit_count": 7
+      },
+      "after_version": "2022-06-10",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-240-240-0-1/before.json",
+        "canonical_sha256": "sha256:15e228703626ad1b6611030c451bfa36305cd03f864ce337264af0bf415b2bb1",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-240-240-0-1/before.xml",
+        "raw_sha256": "sha256:baebfe3310431d106632798af4176cdc67b4e75f32aee38c7d63ff87deb16c25",
+        "unit_count": 7
+      },
+      "before_version": "2022-05-31",
+      "container": "17 CFR 240",
+      "container_name": "Securities Exchange Act general rules and regulations",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:17:240:240.0-1",
+      "document_slug": "ecfr-17-240-240-0-1",
+      "family": "regulation_ecfr",
+      "identity": "17 CFR 240.0-1",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "17 CFR part 240 Securities Exchange Act general rules and regulations"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-240-240-0-11/after.json",
+        "canonical_sha256": "sha256:8cc406d09a09136e7de180ecf145148ed40ceca98c4bc33c40ef7395519db38e",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-240-240-0-11/after.xml",
+        "raw_sha256": "sha256:11b009cf9b7e3c1b21ff51460c9967af22b08b1520f4baf52572ed9fd259eb7c",
+        "unit_count": 16
+      },
+      "after_version": "2022-01-31",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-240-240-0-11/before.json",
+        "canonical_sha256": "sha256:f26a758ef91725779166349e133ecbe52bcf3e1ded2647e4fa412dce27406d6a",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-240-240-0-11/before.xml",
+        "raw_sha256": "sha256:afadc01c037be213202f0dd8471dbd902a7c1cdb1ca20be59cbf5d78212967d9",
+        "unit_count": 16
+      },
+      "before_version": "2021-12-09",
+      "container": "17 CFR 240",
+      "container_name": "Securities Exchange Act general rules and regulations",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:17:240:240.0-11",
+      "document_slug": "ecfr-17-240-240-0-11",
+      "family": "regulation_ecfr",
+      "identity": "17 CFR 240.0-11",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "17 CFR part 240 Securities Exchange Act general rules and regulations"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-240-240-0-13/after.json",
+        "canonical_sha256": "sha256:e4a507de3ca8abcdf9574e212c6b235e7de3d13b3f68ad45fb5fd24ec4d5105b",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-240-240-0-13/after.xml",
+        "raw_sha256": "sha256:37e502db618857267041ed0efb25d8e7103701329a1dffa4e24aa7e2413e50af",
+        "unit_count": 8
+      },
+      "after_version": "2020-04-06",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-240-240-0-13/before.json",
+        "canonical_sha256": "sha256:eb9e25dfd44e9159b22cf479fdb60db694b6d32ba9be0ed736f04a4e9c881a69",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-240-240-0-13/before.xml",
+        "raw_sha256": "sha256:ce3906bfe98f6f2367dd622a5f3b916d2e7a62d9ade906108a34488b09eecf81",
+        "unit_count": 8
+      },
+      "before_version": "2020-02-04",
+      "container": "17 CFR 240",
+      "container_name": "Securities Exchange Act general rules and regulations",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:17:240:240.0-13",
+      "document_slug": "ecfr-17-240-240-0-13",
+      "family": "regulation_ecfr",
+      "identity": "17 CFR 240.0-13",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "17 CFR part 240 Securities Exchange Act general rules and regulations"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-240-240-0-2/after.json",
+        "canonical_sha256": "sha256:8bac135e4cd49def14d3f5de1e2ea3c666b276c34a2229e755df025990330868",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-240-240-0-2/after.xml",
+        "raw_sha256": "sha256:244a02ef164a7f613e4c796cce8cd8a5205846b9caf5404a31894504d9707139",
+        "unit_count": 3
+      },
+      "after_version": "2023-03-20",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-240-240-0-2/before.json",
+        "canonical_sha256": "sha256:3cb1418ee7957abfaf1242cd03ad8aff7ada5224058fde063db492c8c61ff1c3",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-240-240-0-2/before.xml",
+        "raw_sha256": "sha256:1575944865d80ca0ccc6a588e3e2a8edec46ec27c1d4760ff72b112567e6c85d",
+        "unit_count": 3
+      },
+      "before_version": "2023-02-27",
+      "container": "17 CFR 240",
+      "container_name": "Securities Exchange Act general rules and regulations",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:17:240:240.0-2",
+      "document_slug": "ecfr-17-240-240-0-2",
+      "family": "regulation_ecfr",
+      "identity": "17 CFR 240.0-2",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "17 CFR part 240 Securities Exchange Act general rules and regulations"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-275-275-0-4/after.json",
+        "canonical_sha256": "sha256:8deb55c6ac0d543e87c43562d9bf55b1c23257ca47821c3ad04dedf39e9860e5",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-275-275-0-4/after.xml",
+        "raw_sha256": "sha256:ce5e99918e675cd6fe6ab568b1194cae374462818f47afa4a622575b4fe062ca",
+        "unit_count": 12
+      },
+      "after_version": "2022-08-29",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-275-275-0-4/before.json",
+        "canonical_sha256": "sha256:bfa6ba731e95d0279c83c4d43bc2630aed9bf1fc3747f57fe177c13dcc3ab0d7",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-275-275-0-4/before.xml",
+        "raw_sha256": "sha256:c2351cc988d3674384dc356d87839b54bb9337061d66fc82f4094710df07d0aa",
+        "unit_count": 13
+      },
+      "before_version": "2022-06-30",
+      "container": "17 CFR 275",
+      "container_name": "Investment Advisers Act rules",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:17:275:275.0-4",
+      "document_slug": "ecfr-17-275-275-0-4",
+      "family": "regulation_ecfr",
+      "identity": "17 CFR 275.0-4",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "17 CFR part 275 Investment Advisers Act rules"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-275-275-0-6/after.json",
+        "canonical_sha256": "sha256:f147e0c35c9f3815260a060ae90073e947f829d2f579aa587c975c659647fb31",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-275-275-0-6/after.xml",
+        "raw_sha256": "sha256:14f1d4da923a6735c853f2b069437fd2cd09cb2157df02f5ae44cd8a7dc1d198",
+        "unit_count": 3
+      },
+      "after_version": "2019-05-02",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-275-275-0-6/before.json",
+        "canonical_sha256": "sha256:f3a9dfb4536ed04441c813833c4cf76dbebb465a9f037cbf90c81d2b679b8d04",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-275-275-0-6/before.xml",
+        "raw_sha256": "sha256:bfb733a83c24a33539001b2cedee5937a7f4ce58715701243c70661cba3131fe",
+        "unit_count": 6
+      },
+      "before_version": "2019-04-02",
+      "container": "17 CFR 275",
+      "container_name": "Investment Advisers Act rules",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:17:275:275.0-6",
+      "document_slug": "ecfr-17-275-275-0-6",
+      "family": "regulation_ecfr",
+      "identity": "17 CFR 275.0-6",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "17 CFR part 275 Investment Advisers Act rules"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-275-275-203-l-1/after.json",
+        "canonical_sha256": "sha256:fbd17dd643e997ac8ba08943e973b76689f2324d6d3dc576365b1e8ba47aa99e",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-275-275-203-l-1/after.xml",
+        "raw_sha256": "sha256:f3967b4b164521e6441cc9bf75b1021567a75e6997e244275eb05236b0877df1",
+        "unit_count": 17
+      },
+      "after_version": "2018-03-12",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-275-275-203-l-1/before.json",
+        "canonical_sha256": "sha256:1cd92f3628d7d19ceba79f39003b0e419ff4cd7012d54f433e9bcee6133a7627",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-275-275-203-l-1/before.xml",
+        "raw_sha256": "sha256:c80e01b6d9103f7b7efe22e5e5a7f3a62a93c6e0de51a402ea96ade48c7210d4",
+        "unit_count": 17
+      },
+      "before_version": "2018-01-11",
+      "container": "17 CFR 275",
+      "container_name": "Investment Advisers Act rules",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:17:275:275.203(l)-1",
+      "document_slug": "ecfr-17-275-275-203-l-1",
+      "family": "regulation_ecfr",
+      "identity": "17 CFR 275.203(l)-1",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "17 CFR part 275 Investment Advisers Act rules"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-275-275-203-m-1/after.json",
+        "canonical_sha256": "sha256:8ef2077094acb8d3deddf80a4fc4357c554fb1dd5348d32f9700f52011bd9234",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-275-275-203-m-1/after.xml",
+        "raw_sha256": "sha256:203ae1bd4a9930d88330910a64c388075d8f46b318e39ca285d635bde4b72755",
+        "unit_count": 11
+      },
+      "after_version": "2018-03-12",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-17-275-275-203-m-1/before.json",
+        "canonical_sha256": "sha256:c241f0138cf36a84329ba525384d7b5227a7a92b8c670b8a96b357e419323505",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-17-275-275-203-m-1/before.xml",
+        "raw_sha256": "sha256:3e0752581c8bd0feb42142902747948ebf0df22d58a01f4494ab27836ceb8a4b",
+        "unit_count": 9
+      },
+      "before_version": "2018-01-11",
+      "container": "17 CFR 275",
+      "container_name": "Investment Advisers Act rules",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:17:275:275.203(m)-1",
+      "document_slug": "ecfr-17-275-275-203-m-1",
+      "family": "regulation_ecfr",
+      "identity": "17 CFR 275.203(m)-1",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "17 CFR part 275 Investment Advisers Act rules"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-40-63-63-1/after.json",
+        "canonical_sha256": "sha256:1ed6708522d1f7bf3e82438287fe2f6e76c5ad988b2f4aaed6e2805757ffa23d",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-40-63-63-1/after.xml",
+        "raw_sha256": "sha256:ce04f68418ed088d726b173297cb74fe7b2fafe303387aeffb8f1aadfbdbc184",
+        "unit_count": 23
+      },
+      "after_version": "2026-01-02",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-40-63-63-1/before.json",
+        "canonical_sha256": "sha256:ee17c026c8b4b65c00add593f8003c812fe00fceaee966abae2405e250af8cd6",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-40-63-63-1/before.xml",
+        "raw_sha256": "sha256:8a8b254e04e6830fd3173c1f93f3416c5c952934d1b1e428ee0671c1d7c68546",
+        "unit_count": 24
+      },
+      "before_version": "2025-01-07",
+      "container": "40 CFR 63",
+      "container_name": "National emission standards for hazardous air pollutants",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:40:63:63.1",
+      "document_slug": "ecfr-40-63-63-1",
+      "family": "regulation_ecfr",
+      "identity": "40 CFR 63.1",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "40 CFR part 63 National emission standards for hazardous air pollutants"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-40-63-63-10/after.json",
+        "canonical_sha256": "sha256:a24b5f8487c51c1c254da1613128d2bc9ba9c6722f049ee343e8d2ea23ce4983",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-40-63-63-10/after.xml",
+        "raw_sha256": "sha256:1a78c8898129029bb1a7410ed70811bc7ee1f8175546309109e3991a908706ca",
+        "unit_count": 49
+      },
+      "after_version": "2021-01-19",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-40-63-63-10/before.json",
+        "canonical_sha256": "sha256:5a00c60b65014c678fc22404a1b8c9c682bfecd5f5c21cba57a7ce3ca7509ab3",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-40-63-63-10/before.xml",
+        "raw_sha256": "sha256:387378e146383761c182d21027562d65da14b14a4db7ee3acda7777527a72a4a",
+        "unit_count": 49
+      },
+      "before_version": "2020-11-19",
+      "container": "40 CFR 63",
+      "container_name": "National emission standards for hazardous air pollutants",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:40:63:63.10",
+      "document_slug": "ecfr-40-63-63-10",
+      "family": "regulation_ecfr",
+      "identity": "40 CFR 63.10",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "40 CFR part 63 National emission standards for hazardous air pollutants"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-40-63-63-11081/after.json",
+        "canonical_sha256": "sha256:a902739272e97e2e66e2e8d5748388323cc3f883d36306ae6bb77216acdad5bf",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-40-63-63-11081/after.xml",
+        "raw_sha256": "sha256:23aedabc8872164f94ddce21e994285ef9e6ac37c167ba517722c86488ad0039",
+        "unit_count": 11
+      },
+      "after_version": "2024-07-08",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-40-63-63-11081/before.json",
+        "canonical_sha256": "sha256:714dfe0f3db14019082c177010246d392da71b921de95a3d13dfc5ad1baa5403",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-40-63-63-11081/before.xml",
+        "raw_sha256": "sha256:dfd4c28fe575478502b5c277e05679c0635c866f4de286b55d8d6495ffc93be1",
+        "unit_count": 11
+      },
+      "before_version": "2024-05-08",
+      "container": "40 CFR 63",
+      "container_name": "National emission standards for hazardous air pollutants",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:40:63:63.11081",
+      "document_slug": "ecfr-40-63-63-11081",
+      "family": "regulation_ecfr",
+      "identity": "40 CFR 63.11081",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "40 CFR part 63 National emission standards for hazardous air pollutants"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-21-314-314-1/after.json",
+        "canonical_sha256": "sha256:d4d7ccc2ad283d735e4b48ad9edd602e8d117dc189369ab3cbd5ab9fb918ab4d",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-21-314-314-1/after.xml",
+        "raw_sha256": "sha256:35dbdfde51059af4d00d00f8f82ac0c2a6f8054a0090561d291d734899c772c8",
+        "unit_count": 4
+      },
+      "after_version": "2025-12-18",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-21-314-314-1/before.json",
+        "canonical_sha256": "sha256:88f48c3115cba60cf57f13edc9937d814e19b8962907be211cebb652a65beb62",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-21-314-314-1/before.xml",
+        "raw_sha256": "sha256:b627379b330b6980e0d3ea5cf18d2e09beffea78cc12d86cf94dd29eb46bb0be",
+        "unit_count": 3
+      },
+      "before_version": "2024-06-18",
+      "container": "21 CFR 314",
+      "container_name": "Applications for FDA approval to market a new drug",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:21:314:314.1",
+      "document_slug": "ecfr-21-314-314-1",
+      "family": "regulation_ecfr",
+      "identity": "21 CFR 314.1",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "21 CFR part 314 Applications for FDA approval to market a new drug"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-21-314-314-125/after.json",
+        "canonical_sha256": "sha256:64a2d3545c294fab20923998be48bd35b6ea6df95d394d90641196d1f9a2a4dc",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-21-314-314-125/after.xml",
+        "raw_sha256": "sha256:4a8f01fea314a46d8cad31c1cec3a03bb3c6ed92884dcf177cbace5b6080c6be",
+        "unit_count": 18
+      },
+      "after_version": "2025-05-27",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-21-314-314-125/before.json",
+        "canonical_sha256": "sha256:33c639d1884e7d12a40030608562740fb31a8258ee5eb8a6c58534ff840a8c5e",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-21-314-314-125/before.xml",
+        "raw_sha256": "sha256:fbb71c3aa6f468087d441c84d51edc9ebe433706dcc7b20f54eb17f5f2e60cfb",
+        "unit_count": 17
+      },
+      "before_version": "2025-03-25",
+      "container": "21 CFR 314",
+      "container_name": "Applications for FDA approval to market a new drug",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:21:314:314.125",
+      "document_slug": "ecfr-21-314-314-125",
+      "family": "regulation_ecfr",
+      "identity": "21 CFR 314.125",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "21 CFR part 314 Applications for FDA approval to market a new drug"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-21-314-314-127/after.json",
+        "canonical_sha256": "sha256:2f360931abd6017a3e04b18fcfa0611292c90ea8ed31d8c5e00c3fa30338ee85",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-21-314-314-127/after.xml",
+        "raw_sha256": "sha256:48f97200e4811aef4492de4ae7b5918b3f200347f736ab57bbc50180c144469c",
+        "unit_count": 21
+      },
+      "after_version": "2025-05-27",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-21-314-314-127/before.json",
+        "canonical_sha256": "sha256:9e7cb3335379e9b1b6768497dcb052fea26b8c01efece32352da49e98ed4a91d",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-21-314-314-127/before.xml",
+        "raw_sha256": "sha256:7d709db0593c3125382ff2a353c51ecef500217405f023a2cbd0363c2a3b858c",
+        "unit_count": 20
+      },
+      "before_version": "2025-03-25",
+      "container": "21 CFR 314",
+      "container_name": "Applications for FDA approval to market a new drug",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:21:314:314.127",
+      "document_slug": "ecfr-21-314-314-127",
+      "family": "regulation_ecfr",
+      "identity": "21 CFR 314.127",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "21 CFR part 314 Applications for FDA approval to market a new drug"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-21-314-314-151/after.json",
+        "canonical_sha256": "sha256:4d75dec0d828dfa8635589d27459ab6ace304a6d1ee9f900e0f168051315b657",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-21-314-314-151/after.xml",
+        "raw_sha256": "sha256:38a9b966c4d9da85a0b5f4284d93e0918e5e86c2cc30257b7b46a5a973790a9a",
+        "unit_count": 11
+      },
+      "after_version": "2023-07-14",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-21-314-314-151/before.json",
+        "canonical_sha256": "sha256:246b6ad58219874fae24cf3c0a864bc77e1d7342b3b1d3f25169e62c0a4d5ee3",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-21-314-314-151/before.xml",
+        "raw_sha256": "sha256:292fc879aa28aa3fd0865dd333fa044f0aee32b2f68fbe5e61aaab258f0e0233",
+        "unit_count": 11
+      },
+      "before_version": "2016-12-23",
+      "container": "21 CFR 314",
+      "container_name": "Applications for FDA approval to market a new drug",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:21:314:314.151",
+      "document_slug": "ecfr-21-314-314-151",
+      "family": "regulation_ecfr",
+      "identity": "21 CFR 314.151",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "21 CFR part 314 Applications for FDA approval to market a new drug"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-29-1910-1910-1000/after.json",
+        "canonical_sha256": "sha256:6b0ce93b3f37fb26fe9860add9a4f0f9b983ef497dc21e4f6af94b4e9d3508ff",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-29-1910-1910-1000/after.xml",
+        "raw_sha256": "sha256:157df1e54ab34ad1bce3c677df09da8acf549cd2c376eb78d92f97a6bcfee5c5",
+        "unit_count": 12
+      },
+      "after_version": "2017-05-30",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-29-1910-1910-1000/before.json",
+        "canonical_sha256": "sha256:85b3b7676436eb9d4ec50f66b1ffaa6fbe014cccaab930c0225bb74e87634c38",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-29-1910-1910-1000/before.xml",
+        "raw_sha256": "sha256:f139d874419248ce189429f64adc0fa406aef6818236a3cdf86e915a10f5c88a",
+        "unit_count": 17
+      },
+      "before_version": "2017-03-21",
+      "container": "29 CFR 1910",
+      "container_name": "Occupational safety and health standards",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:29:1910:1910.1000",
+      "document_slug": "ecfr-29-1910-1910-1000",
+      "family": "regulation_ecfr",
+      "identity": "29 CFR 1910.1000",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "29 CFR part 1910 Occupational safety and health standards"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-29-1910-1910-1001/after.json",
+        "canonical_sha256": "sha256:d858f705f431a18ded914b4378d42e72663809d72cd93f225846a8b34662b3c3",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-29-1910-1910-1001/after.xml",
+        "raw_sha256": "sha256:88840aeefa028f744a827f84f24bf4806a16dcf4062f6803c7ebf491c86a86b3",
+        "unit_count": 198
+      },
+      "after_version": "2019-07-31",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-29-1910-1910-1001/before.json",
+        "canonical_sha256": "sha256:5493cc71e5446c1297d780c62a251ebfccabe41495ec67b138c89b902b772f90",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-29-1910-1910-1001/before.xml",
+        "raw_sha256": "sha256:5b2b217a012373692ea4bed5204591011f10b22d5ebe2fc671251bc54800e7c9",
+        "unit_count": 198
+      },
+      "before_version": "2019-07-15",
+      "container": "29 CFR 1910",
+      "container_name": "Occupational safety and health standards",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:29:1910:1910.1001",
+      "document_slug": "ecfr-29-1910-1910-1001",
+      "family": "regulation_ecfr",
+      "identity": "29 CFR 1910.1001",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "29 CFR part 1910 Occupational safety and health standards"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-29-1910-1910-1017/after.json",
+        "canonical_sha256": "sha256:2b349db6e68213465436c9bacb204ec2686a78a5d22ca8e37c37f7180d719c7d",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-29-1910-1910-1017/after.xml",
+        "raw_sha256": "sha256:caa8fe5b44edd5946d9ede4927d9f5ef346c6400da03ec90f2c60c0c2c8c758b",
+        "unit_count": 60
+      },
+      "after_version": "2019-07-31",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-29-1910-1910-1017/before.json",
+        "canonical_sha256": "sha256:68bce5973e8914ade3cd51647de48ec5b5c70c271eeb1ae25b16346fb912777f",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-29-1910-1910-1017/before.xml",
+        "raw_sha256": "sha256:3014b652977b52e29feeef381e614637cf0b7227fbe401cdaf3eb8c0f5d2c627",
+        "unit_count": 60
+      },
+      "before_version": "2018-03-15",
+      "container": "29 CFR 1910",
+      "container_name": "Occupational safety and health standards",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:29:1910:1910.1017",
+      "document_slug": "ecfr-29-1910-1910-1017",
+      "family": "regulation_ecfr",
+      "identity": "29 CFR 1910.1017",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "29 CFR part 1910 Occupational safety and health standards"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-29-1910-1910-1018/after.json",
+        "canonical_sha256": "sha256:be61de6efa9758428be6e8f44ed905a79f346f9090612e0087e5b129be269ac3",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-29-1910-1910-1018/after.xml",
+        "raw_sha256": "sha256:20676295812134bdb499b36411fcce39acc5e9e64354336b398bb29c6a0e5beb",
+        "unit_count": 93
+      },
+      "after_version": "2019-07-31",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/ecfr-29-1910-1910-1018/before.json",
+        "canonical_sha256": "sha256:1aa8d65306220df0d537906c4467baf8860dee7ae1fe24dc19622bdf928d1f1f",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/ecfr-29-1910-1910-1018/before.xml",
+        "raw_sha256": "sha256:8839be327288ac80440ef1f004f26fd5429d79951e4067a27f461648fa0a9752",
+        "unit_count": 95
+      },
+      "before_version": "2019-07-15",
+      "container": "29 CFR 1910",
+      "container_name": "Occupational safety and health standards",
+      "doc_type": "Code of Federal Regulations section",
+      "document_id": "ecfr:29:1910:1910.1018",
+      "document_slug": "ecfr-29-1910-1910-1018",
+      "family": "regulation_ecfr",
+      "identity": "29 CFR 1910.1018",
+      "licence": "US federal government work, public domain (17 USC 105)",
+      "spoken_type": "Code of Federal Regulations section",
+      "suffix": ".xml",
+      "title_field": "29 CFR part 1910 Occupational safety and health standards"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-ozone-layer/after.json",
+        "canonical_sha256": "sha256:f9ef13440230d99c9202b5aa06d17fd6bb54e46f22b8633638f7aee30ab9a78b",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-ozone-layer/after.html",
+        "raw_sha256": "sha256:7f1acb3da30c3fda6417f4b139cd1ce77f700afa40c6d02e43530e1f36dd8c45",
+        "unit_count": 6
+      },
+      "after_known_at": "2025-10-22T05:28:16Z",
+      "after_version": "1318147102",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-ozone-layer/before.json",
+        "canonical_sha256": "sha256:f0e6e025fd279899da33d56632fda2453ecd9b9d1dff2cb90f35dc16df3f2a93",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-ozone-layer/before.html",
+        "raw_sha256": "sha256:0766279d9d4aa91d1f897150b4193674be5a23a5674d8298bf1d84ad40071506",
+        "unit_count": 6
+      },
+      "before_known_at": "2025-07-06T01:42:42Z",
+      "before_version": "1299007812",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Ozone layer",
+      "document_slug": "wikipedia-en-ozone-layer",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Ozone layer",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Ozone layer",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-photosynthesis/after.json",
+        "canonical_sha256": "sha256:58fc76f9e277d4f66aad10eeb71b2f8d9fa41de134f52959a1d3de2d485eae60",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-photosynthesis/after.html",
+        "raw_sha256": "sha256:f7d6841f898363d5a3e121b0d0ca9bf24a2c701365de3e808ed0716f426e8851",
+        "unit_count": 22
+      },
+      "after_known_at": "2026-08-19T14:45:01Z",
+      "after_version": "1370173331",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-photosynthesis/before.json",
+        "canonical_sha256": "sha256:5da8073ebfd70ec7f7b1b21950661e44be14a6e88b046c372368a9cb25c8f268",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-photosynthesis/before.html",
+        "raw_sha256": "sha256:1dd6d977ed238c2efefb7a31f809d0b7496445cde6c96c9f6a42a501baa64676",
+        "unit_count": 22
+      },
+      "before_known_at": "2026-08-19T14:43:42Z",
+      "before_version": "1370173193",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Photosynthesis",
+      "document_slug": "wikipedia-en-photosynthesis",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Photosynthesis",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Photosynthesis",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-byzantine-empire/after.json",
+        "canonical_sha256": "sha256:d5a81336d7c4185ca968dc5a12e27bd1df28850d8c4f0762f8de9651a617d78b",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-byzantine-empire/after.html",
+        "raw_sha256": "sha256:84f6710c3ad37bb665a88617c61766ce77027337d59a8e9926e3da4578ac5ad2",
+        "unit_count": 25
+      },
+      "after_known_at": "2026-08-16T02:01:39Z",
+      "after_version": "1369614979",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-byzantine-empire/before.json",
+        "canonical_sha256": "sha256:6391ebba32c0af6884a887280e8c1a971f05a0cccd408527b2620b15406672ce",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-byzantine-empire/before.html",
+        "raw_sha256": "sha256:62e752391f91799e012a6f2a6829c7f2b217dec46e3810919436ed63984ac42e",
+        "unit_count": 25
+      },
+      "before_known_at": "2026-08-15T21:48:11Z",
+      "before_version": "1369582662",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Byzantine Empire",
+      "document_slug": "wikipedia-en-byzantine-empire",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Byzantine Empire",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Byzantine Empire",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-quantum-entanglement/after.json",
+        "canonical_sha256": "sha256:a43f83489404ab24e0f03543aaf4fad6b0abb357a565ea53e616d664d1590a94",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-quantum-entanglement/after.html",
+        "raw_sha256": "sha256:d3cf7653a5c8ae809baf9fe556d79557da5c03b28fabed427b322904eb811068",
+        "unit_count": 27
+      },
+      "after_known_at": "2026-08-11T12:11:56Z",
+      "after_version": "1368850287",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-quantum-entanglement/before.json",
+        "canonical_sha256": "sha256:0b6783661f8592515762831c6aa116725e12cfcb0a0c4a2a01b6e3db0cd211ec",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-quantum-entanglement/before.html",
+        "raw_sha256": "sha256:ea21ccadb0fc41c61c6d12d7049aee72f569bdf76e7abb69f5e8bd91a1966f1d",
+        "unit_count": 27
+      },
+      "before_known_at": "2026-08-10T06:28:53Z",
+      "before_version": "1368640088",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Quantum entanglement",
+      "document_slug": "wikipedia-en-quantum-entanglement",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Quantum entanglement",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Quantum entanglement",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-monetary-policy/after.json",
+        "canonical_sha256": "sha256:e70c450a81033cce7d5536e4c3cfa4e1c9ce2ec7a4757b206d59ef38a9aad2e0",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-monetary-policy/after.html",
+        "raw_sha256": "sha256:0c75f3c82f45338e540571727bdab6b57fa80a71bb8025088f6d19f948a5405c",
+        "unit_count": 30
+      },
+      "after_known_at": "2026-06-20T00:59:25Z",
+      "after_version": "1360221455",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-monetary-policy/before.json",
+        "canonical_sha256": "sha256:60e99a75c181196d1814e73685ebc0be5de9791a4fa2b80cf273496d1c85f41d",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-monetary-policy/before.html",
+        "raw_sha256": "sha256:3cec568347df127046910bfcac92a24f1ba2c55f3b181f88e0679942fedb0ce0",
+        "unit_count": 30
+      },
+      "before_known_at": "2026-05-20T19:27:34Z",
+      "before_version": "1355245325",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Monetary policy",
+      "document_slug": "wikipedia-en-monetary-policy",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Monetary policy",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Monetary policy",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-plate-tectonics/after.json",
+        "canonical_sha256": "sha256:d19d44de4c56b307492d8ad0a5333dbd2a67ea96c4a0575ffe5648dfea1964dc",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-plate-tectonics/after.html",
+        "raw_sha256": "sha256:dba8c6515d022f2222c44c18933861a1e198b2a8fae649019384e4b95955bb26",
+        "unit_count": 29
+      },
+      "after_known_at": "2026-08-21T19:57:31Z",
+      "after_version": "1370550624",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-plate-tectonics/before.json",
+        "canonical_sha256": "sha256:82c3399ccf1e8b2f3bad036ba1384e1d0147382513877ed31695f459209e295c",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-plate-tectonics/before.html",
+        "raw_sha256": "sha256:9499e86939d8516e8ab320e735135e9bdc476ef23f5172e0b6ff6998dc77f4ce",
+        "unit_count": 29
+      },
+      "before_known_at": "2026-08-21T12:13:56Z",
+      "before_version": "1370492128",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Plate tectonics",
+      "document_slug": "wikipedia-en-plate-tectonics",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Plate tectonics",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Plate tectonics",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-machine-translation/after.json",
+        "canonical_sha256": "sha256:a3c6827f637fbb9341dad7d4ca53fbee2b9182ad5a692c4b8f084ca1e54ae61a",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-machine-translation/after.html",
+        "raw_sha256": "sha256:e777df68fb651ff114be6abba9f1d16cee058d78f3469a651ac61124f54c42db",
+        "unit_count": 30
+      },
+      "after_known_at": "2026-07-15T10:52:47Z",
+      "after_version": "1364239998",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-machine-translation/before.json",
+        "canonical_sha256": "sha256:046951f868646bb2d143589cfc10def4a80e51ea859d0fe0ee53f04194522164",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-machine-translation/before.html",
+        "raw_sha256": "sha256:bb7c23e75888a97df75eec4150b3f7b9b9a661d67396a36004e0ec61cf22d1b2",
+        "unit_count": 31
+      },
+      "before_known_at": "2026-07-15T07:29:18Z",
+      "before_version": "1364225808",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Machine translation",
+      "document_slug": "wikipedia-en-machine-translation",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Machine translation",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Machine translation",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-coral-reef/after.json",
+        "canonical_sha256": "sha256:114ab1a797110242e164615328ded7a3ebcaa59143dc0d5dbda7afa192ff3b38",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-coral-reef/after.html",
+        "raw_sha256": "sha256:53282650efb8d042ced22799e43d526afafa07e66824004c2c4eb927fc91eb2f",
+        "unit_count": 42
+      },
+      "after_known_at": "2026-08-17T05:12:08Z",
+      "after_version": "1369792388",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-coral-reef/before.json",
+        "canonical_sha256": "sha256:c6be8ada4822a251abd3f1e8afadc27fc8004cc461af2926183bb95a0bcd598f",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-coral-reef/before.html",
+        "raw_sha256": "sha256:ada0b15bf49c0de6fec931a885715373704971fc1956996443fec54080f62b25",
+        "unit_count": 42
+      },
+      "before_known_at": "2026-08-16T01:46:31Z",
+      "before_version": "1369612685",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Coral reef",
+      "document_slug": "wikipedia-en-coral-reef",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Coral reef",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Coral reef",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-silk-road/after.json",
+        "canonical_sha256": "sha256:ebc867b6f58dea1c336f0dece57bb349d8185f4c33712374a58f5216c9f066cd",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-silk-road/after.html",
+        "raw_sha256": "sha256:4c3c9ba49273428c5e6ef248124f20fdf7bb1b81dbf5528c0c5ec9cc4965c469",
+        "unit_count": 22
+      },
+      "after_known_at": "2026-08-19T19:47:33Z",
+      "after_version": "1370211457",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-silk-road/before.json",
+        "canonical_sha256": "sha256:a0058ca9774d69633936d18a8f58db896267a385122f0d85b707fe3b7920963c",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-silk-road/before.html",
+        "raw_sha256": "sha256:a1261536298027e5c4f840fce08ba03089b10a8e1e3b4bd54198101c280737e8",
+        "unit_count": 22
+      },
+      "before_known_at": "2026-08-19T14:13:30Z",
+      "before_version": "1370168600",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Silk Road",
+      "document_slug": "wikipedia-en-silk-road",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Silk Road",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Silk Road",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-immune-system/after.json",
+        "canonical_sha256": "sha256:d306f39b59e39086d0c802ba1083bd52fc075b438e069a5a32c89f3fcbd5ae1e",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-immune-system/after.html",
+        "raw_sha256": "sha256:de34e5f309ad70f2e9fe8198839400843bf80c54c1356d7fe44bcc8d85fb1b55",
+        "unit_count": 39
+      },
+      "after_known_at": "2026-08-11T21:04:30Z",
+      "after_version": "1368916983",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-immune-system/before.json",
+        "canonical_sha256": "sha256:3f93982fe56e0183e7a003c008f1cfd89a27adcc38a9943e7e4355ebb4eae6b0",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-immune-system/before.html",
+        "raw_sha256": "sha256:2a99448e03f775fcd1464f5c55ec9a1fb66819a93379351042e3fd98ad7e7023",
+        "unit_count": 39
+      },
+      "before_known_at": "2026-04-20T18:47:03Z",
+      "before_version": "1350208094",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Immune system",
+      "document_slug": "wikipedia-en-immune-system",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Immune system",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Immune system",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-renewable-energy/after.json",
+        "canonical_sha256": "sha256:1b090839c287986af418b92a5dbf0f9f1e48ba5e1b3cde21f1e822229c9016df",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-renewable-energy/after.html",
+        "raw_sha256": "sha256:6249f4da18fef821ad497d1ae843ef7d4ef950755b58b7ab99b617ad2d989aed",
+        "unit_count": 45
+      },
+      "after_known_at": "2026-08-19T10:47:49Z",
+      "after_version": "1370146193",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-renewable-energy/before.json",
+        "canonical_sha256": "sha256:c8a6521e899f03ba90b9538d70abd5760a69e6af234f91144443af09aa0f545d",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-renewable-energy/before.html",
+        "raw_sha256": "sha256:d2954921ecc0e8ec8d72f885bc02aa9c595a614f0bdcc70e0d882c9e2984d332",
+        "unit_count": 45
+      },
+      "before_known_at": "2026-08-11T12:14:37Z",
+      "before_version": "1368850615",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Renewable energy",
+      "document_slug": "wikipedia-en-renewable-energy",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Renewable energy",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Renewable energy",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-volcano/after.json",
+        "canonical_sha256": "sha256:1d870856a368c975fcce8e0f24965353c1f16b8ebe7c9296169cfc18ba6b5b11",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-volcano/after.html",
+        "raw_sha256": "sha256:2b143d2774f53cf7875b7f11a8104d656ef08787191272fb47d0d40db2c2438f",
+        "unit_count": 40
+      },
+      "after_known_at": "2026-06-14T05:13:07Z",
+      "after_version": "1359260399",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-volcano/before.json",
+        "canonical_sha256": "sha256:86444a81d42c65a22c785d07b6f43a5e4c037dad4500ab7e8031bf25a1f69653",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-volcano/before.html",
+        "raw_sha256": "sha256:15d4f6ebf65df814e31485ae2ed49fde2caed7471d282b4b318b12de2833c21c",
+        "unit_count": 40
+      },
+      "before_known_at": "2026-06-07T02:37:34Z",
+      "before_version": "1358179138",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Volcano",
+      "document_slug": "wikipedia-en-volcano",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Volcano",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Volcano",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-prime-number/after.json",
+        "canonical_sha256": "sha256:df8ad8728df1e467ea73c2e6f9b79c193e824e40154eb4c99dab3ca70a417e13",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-prime-number/after.html",
+        "raw_sha256": "sha256:98d08703ac6d9b5979d8ccedaee59a5fc92373a342958df0c42b03763fb3bd5f",
+        "unit_count": 31
+      },
+      "after_known_at": "2026-08-12T12:44:57Z",
+      "after_version": "1369028667",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-prime-number/before.json",
+        "canonical_sha256": "sha256:e1993bfdd6e509558ca2efb506411485b9058bdb9cbab483d464c26f4ad4f68f",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-prime-number/before.html",
+        "raw_sha256": "sha256:8e14a53bee4c60cf67bd35cdd8058145ad1330c4c09cb9ac0e16564d67bc9337",
+        "unit_count": 31
+      },
+      "before_known_at": "2026-07-09T19:50:49Z",
+      "before_version": "1363371252",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Prime number",
+      "document_slug": "wikipedia-en-prime-number",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Prime number",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Prime number",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-bauhaus/after.json",
+        "canonical_sha256": "sha256:8aee4f421303ce7671214a5290c73e83a884c3c34d74b69881da55f383480c4d",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-bauhaus/after.html",
+        "raw_sha256": "sha256:9066c04852494d90085410c926d958e263ca90c284ad2be487db113577d9c5ea",
+        "unit_count": 13
+      },
+      "after_known_at": "2026-08-19T21:05:52Z",
+      "after_version": "1370222154",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-bauhaus/before.json",
+        "canonical_sha256": "sha256:4e70ee4830809f6c970fa0b9c8fcb120243f794836e4be72b40dbcb64d687b3f",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-bauhaus/before.html",
+        "raw_sha256": "sha256:17a6c2d3e65c01429d497a3dfa35943dd7be3005bf4575f8674dad22ca02281d",
+        "unit_count": 13
+      },
+      "before_known_at": "2026-07-26T16:10:32Z",
+      "before_version": "1366152510",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Bauhaus",
+      "document_slug": "wikipedia-en-bauhaus",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Bauhaus",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Bauhaus",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-great-barrier-reef/after.json",
+        "canonical_sha256": "sha256:7d63da36402698a03119ab11c6c91b70d715d02f7638849fe980990777e863d6",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-great-barrier-reef/after.html",
+        "raw_sha256": "sha256:9ee5a64f71c56e79ddac8089b671dd80ae66b4db4b09d875c09ed70b5784b9e0",
+        "unit_count": 25
+      },
+      "after_known_at": "2026-08-16T02:02:26Z",
+      "after_version": "1369615077",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-great-barrier-reef/before.json",
+        "canonical_sha256": "sha256:35ffe69aec7777ca88b7c7bbaa446547364064f0a9a401514127fe6ced5e9853",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-great-barrier-reef/before.html",
+        "raw_sha256": "sha256:68fb96a07a02b1d4d98ce2eb6931e38c32caa78a3bc7ba1f0f423a56fa294b02",
+        "unit_count": 25
+      },
+      "before_known_at": "2026-08-15T04:14:18Z",
+      "before_version": "1369465195",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Great Barrier Reef",
+      "document_slug": "wikipedia-en-great-barrier-reef",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Great Barrier Reef",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Great Barrier Reef",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-cryptography/after.json",
+        "canonical_sha256": "sha256:86bac7cdd6a7e0794604202840508977f05b2402d83bc91f1a150caf50febb15",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-cryptography/after.html",
+        "raw_sha256": "sha256:e15ed381b2a9a4d5019431720eab453daaeb92600ac031c1f51c697fa351865e",
+        "unit_count": 22
+      },
+      "after_known_at": "2026-08-10T18:16:03Z",
+      "after_version": "1368717255",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-cryptography/before.json",
+        "canonical_sha256": "sha256:87455c0bde65a18f99a82e885d5a3c5ae49209c512685655c8d41c0ee563b9fb",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-cryptography/before.html",
+        "raw_sha256": "sha256:a09e8bc7c8a9c65890cc8226363c56f1af0aa00d84b5f4c6807ec490bbbc15f5",
+        "unit_count": 22
+      },
+      "before_known_at": "2026-08-10T17:51:46Z",
+      "before_version": "1368713553",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Cryptography",
+      "document_slug": "wikipedia-en-cryptography",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Cryptography",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Cryptography",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-amazon-rainforest/after.json",
+        "canonical_sha256": "sha256:f04511bb5781ccf585c3d5c69d0335779bbae796b314593caae981abe156a5ab",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-amazon-rainforest/after.html",
+        "raw_sha256": "sha256:14ed25a9bd20b56e4c6d706773c2666436230482b97003baa0aa61a1acfc1820",
+        "unit_count": 14
+      },
+      "after_known_at": "2026-07-29T03:21:38Z",
+      "after_version": "1366623979",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-amazon-rainforest/before.json",
+        "canonical_sha256": "sha256:b7997851bb06b132c9c3684bd1593557f060a864f350921fb3e0f2c6f512c6d9",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-amazon-rainforest/before.html",
+        "raw_sha256": "sha256:be1a64bd1e21a7305fbc3967b80988072af3076c0120742e400617016d7091d6",
+        "unit_count": 14
+      },
+      "before_known_at": "2026-07-27T17:25:46Z",
+      "before_version": "1366375207",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Amazon rainforest",
+      "document_slug": "wikipedia-en-amazon-rainforest",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Amazon rainforest",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Amazon rainforest",
+      "unwrap": "parse.text"
+    },
+    {
+      "after": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-industrial-revolution/after.json",
+        "canonical_sha256": "sha256:d269a02bab79fcea8ffa2d2abd9d3f9d8e2253cee75ec12237f04dd5e4719c4a",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-industrial-revolution/after.html",
+        "raw_sha256": "sha256:446a3af25b19261b907b20a9f2622f04dda707bf592aaed1644b0c9801dafc76",
+        "unit_count": 64
+      },
+      "after_known_at": "2026-08-21T04:21:08Z",
+      "after_version": "1370447719",
+      "before": {
+        "canonical_path": "research/tavonel_eval_v2/artifacts/development/canonical_p4c/wikipedia-en-industrial-revolution/before.json",
+        "canonical_sha256": "sha256:3ea4652f62c782922ae5e00f740d5c9ab3b56174adc4eb52d5b9913095b28437",
+        "raw_path": "research/tavonel_eval_v2/artifacts/development/raw_p4c/wikipedia-en-industrial-revolution/before.html",
+        "raw_sha256": "sha256:513624a0013ef9c6948531133536ee2c136338bd986625eab2c48e17761851a5",
+        "unit_count": 64
+      },
+      "before_known_at": "2026-08-15T04:11:34Z",
+      "before_version": "1369464947",
+      "container": "en.wikipedia.org",
+      "container_name": "English Wikipedia",
+      "doc_type": "encyclopedia article",
+      "document_id": "wikipedia:en:Industrial Revolution",
+      "document_slug": "wikipedia-en-industrial-revolution",
+      "family": "encyclopedia_wikipedia",
+      "identity": "Industrial Revolution",
+      "licence": "CC BY-SA 4.0",
+      "spoken_type": "encyclopedia article",
+      "suffix": ".html",
+      "title_field": "Industrial Revolution",
+      "unwrap": "parse.text"
+    }
+  ],
+  "ended_at": "2026-08-22T01:49:40.299813+00:00",
+  "estimated_cost_usd": 0.0,
+  "excluded": [
+    {
+      "document_id": "git:grafana/loki:docs/sources/configure/_index.md",
+      "reason": "INELIGIBLE_PARSE_FLOOR",
+      "units": {
+        "after": 1,
+        "before": 1
+      }
+    },
+    {
+      "document_id": "sec:0000034088:8-K:2023-11-06",
+      "reason": "INELIGIBLE_PARSE_FLOOR",
+      "units": {
+        "after": 2,
+        "before": 2
+      }
+    },
+    {
+      "document_id": "sec:0000034088:8-K:2024-05-03",
+      "reason": "INELIGIBLE_PARSE_FLOOR",
+      "units": {
+        "after": 2,
+        "before": 6
+      }
+    },
+    {
+      "document_id": "sec:0000037996:8-K:2024-10-30",
+      "reason": "INELIGIBLE_PARSE_FLOOR",
+      "units": {
+        "after": 1,
+        "before": 1
+      }
+    },
+    {
+      "document_id": "sec:0000040545:8-K:2023-05-17",
+      "reason": "INELIGIBLE_PARSE_FLOOR",
+      "units": {
+        "after": 1,
+        "before": 2
+      }
+    },
+    {
+      "document_id": "sec:0000040545:8-K:2023-11-13",
+      "reason": "INELIGIBLE_PARSE_FLOOR",
+      "units": {
+        "after": 1,
+        "before": 2
+      }
+    },
+    {
+      "document_id": "sec:0000050863:8-K:2024-12-01",
+      "reason": "INELIGIBLE_PARSE_FLOOR",
+      "units": {
+        "after": 2,
+        "before": 3
+      }
+    },
+    {
+      "document_id": "ecfr:40:63:63.11082",
+      "reason": "INELIGIBLE_PARSE_FLOOR",
+      "units": {
+        "after": 2,
+        "before": 2
+      }
+    },
+    {
+      "document_id": "wikipedia:en:Antibiotic resistance",
+      "reason": "INELIGIBLE_PARSE_FLOOR",
+      "units": {
+        "after": 0,
+        "before": 0
+      }
+    },
+    {
+      "document_id": "wikipedia:en:Mitochondrion",
+      "reason": "INELIGIBLE_PARSE_FLOOR",
+      "units": {
+        "after": 0,
+        "before": 0
+      }
+    }
+  ],
+  "family_counts": {
+    "encyclopedia_wikipedia": 18,
+    "git_docs": 7,
+    "regulation_ecfr": 19,
+    "sec_edgar": 4
+  },
+  "fetcher_sha256": "sha256:b5ea2bba7a2ae7ac451cd780186a23f33e77ed2e848926da96aec502f5bae80a",
+  "gpu_seconds": 0,
+  "network_reads_only": true,
+  "protocol": "P4c_retrieval_validity",
+  "provenance": {
+    "generated_at": "2026-08-22T01:49:40.301656+00:00",
+    "immutable": true,
+    "overwrite_refused_by": "research/tavonel_eval_v2/tools/evidence.py",
+    "protocol": null,
+    "protocol_sha256": null,
+    "receipt_stem": "p4c-cohort-manifest",
+    "run_id": "20260822T014940Z-d5b0e343ee50",
+    "schema": "tavonel.v2.immutable_receipt_envelope.v1",
+    "tool": "research/tavonel_eval_v2/acquisition/fetch_p4c_corpus.py",
+    "tool_sha256": "sha256:b5ea2bba7a2ae7ac451cd780186a23f33e77ed2e848926da96aec502f5bae80a"
+  },
+  "receipt_sha256": "sha256:faffdccc3728752efb758bbbc1106cdb1eb97f0ea6d9e5b903c1c591a99cdde8",
+  "redistribution": "LOCAL_ONLY_NO_REDISTRIBUTION_WHILE_IP_GATE_CLOSED",
+  "schema": "tavonel.v2.p4c_cohort_manifest.v1",
+  "selection_rule": {
+    "container_cap": "at most 4 documents per container — repository, issuer, CFR part — so no single container dominates the routing task",
+    "eligibility": "both revisions parse, both yield at least 3 canonical units, and the licence permits local research use",
+    "encyclopedia_wikipedia": "the two most recent revisions of the article at fetch time",
+    "frozen_before_any_retrieval_result": true,
+    "git_docs": "among the consecutive-commit pairs held for that document, the pair whose after-revision has the most recent known_at; ties broken by the lexicographically smallest pair identifier",
+    "one_pair_per_source_document": true,
+    "regulation_ecfr": "the two most recent distinct dated versions of the section",
+    "sec_edgar": "a source document is (CIK, base form, period of report), which already admits at most one amendment pair"
+  },
+  "selection_rule_frozen_before_any_retrieval_result": true,
+  "sources_module_sha256": "sha256:f0503410304ed70c758cde592789cf1e9bcf081b452ec1d215f050d676ec0c96",
+  "started_at": "2026-08-22T01:44:25.622475+00:00"
+}

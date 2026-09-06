@@ -1,0 +1,234 @@
+# P4d — canonical granularity and retrieval granularity, separated.
+#
+# Frozen before any P4d result exists. Every threshold below is fixed here and
+# none of them is derived from a P4c number.
+#
+# P4c stands at Core FAIL / Global PASS and is not re-scored, not re-run and not
+# reinterpreted. P4d is a different experiment: it does not repair P4c, and a
+# P4d PASS does not convert P4c-Core into anything other than FAIL.
+
+schema: tavonel.v2.protocol.P4d.v1
+protocol_id: P4d_retrieval_granularity
+version: 1
+authored: 2026-08-22
+supersedes: null
+
+relates_to:
+  P4_retrieval_validity:  {state: FAIL, rule: read-only}
+  P4b_retrieval_validity: {state: FAIL, rule: read-only}
+  P4c_retrieval_validity:
+    core: {state: FAIL, rule: read-only}
+    global: {state: PASS, rule: read-only}
+    reused: >-
+      the frozen cohort and the fielded BM25 scorer, unchanged. The cohort is
+      reused deliberately: if the cohort also moved, a P4d result could not be
+      attributed to the granularity change, which is the only thing under test.
+    not_reused: >-
+      no P4c threshold, and no P4c observation as support for one.
+
+# ---------------------------------------------------------------------------
+# 1. The ruling this protocol implements
+# ---------------------------------------------------------------------------
+
+ruling:
+  source: founder, 2026-08-22
+  none_of_the_three_proposals_adopted: >-
+    a coarser canonical unit, a family-specific intent rule, and declaring the
+    family out of scope were all declined. Canonical granularity and retrieval
+    granularity are separated instead.
+  canonical_granularity:
+    unchanged: true
+    atoms: "§ X.Y → (a) → (1) → (i), each a canonical atom"
+    each_atom_remains_the_unit_of:
+      - stable identity
+      - revision lineage
+      - source evidence
+      - invalidation
+    not_forced_to_be: a direct target of natural-language retrieval
+  retrieval_granularity:
+    artifact: queryable retrieval envelope
+    definition: >-
+      the structurally-determined minimal self-contained window — a named anchor
+      heading together with its own text and its enumerated descendants.
+    status: DERIVED_RETRIEVAL_ARTIFACT, never a new authoritative fact
+
+envelope_contract:
+  records_member_logical_ids: required
+  source_evidence_traces_to_child_atoms: required
+  member_change_invalidates_the_envelope: required, by typed dependency edge
+  answers_and_citations_return_fine_atom_evidence: required
+  envelope_is_never_source_of_truth: required, and `authoritative` is False
+  fingerprint: >-
+    over member ids and member atom digests, never over concatenated prose. An
+    envelope that fingerprinted its own text could drift from its members
+    without either noticing.
+  construction_inputs: >-
+    document structure only. No question, no score and no retrieval outcome
+    enters envelope construction, and the rule is frozen in this file before any
+    envelope is built.
+
+# ---------------------------------------------------------------------------
+# 2. Two retrieval modes, never combined
+# ---------------------------------------------------------------------------
+
+modes:
+  A_semantic_intent:
+    input: a natural-language question
+    target: queryable envelope
+    then: the fine evidence atom is recovered from the retrieved envelope
+    rule: >-
+      semantic targeting is never required to discriminate on an enumeration
+      marker alone. That requirement is what P4c-Core measured failing, and it
+      was a property of the addressing layer rather than of the representation.
+  B_citation_addressed:
+    input: a source-native locator, e.g. "§ 240.0-1(a)(3)"
+    target: the exact canonical atom
+    not_answer_leakage: >-
+      founder ruling. An official citation is an address the source itself
+      publishes and a reader already holds. It names WHERE to look and never
+      WHAT is written there. The forbidden list of P4c section 3 is unchanged
+      and still governs mode A.
+    scope: only families that have a source-native citation scheme
+  never_combined: >-
+    the two modes carry separate verdicts and are never summed, averaged, or
+    reported as one number. Citation routing is not permitted to raise a
+    semantic retrieval figure.
+
+# ---------------------------------------------------------------------------
+# 3. Question construction — mode A inherits P4c section 3 unchanged
+# ---------------------------------------------------------------------------
+
+questions:
+  permitted_intent_sources:
+    - source-provided document title
+    - issuer, project or document identity a user would normally have
+    - document or form type
+    - the envelope's named anchor heading
+    - the anchor's immediate parent heading
+  forbidden_intent_sources:
+    - any answer span
+    - any token taken from a member atom's body in order to identify the answer
+    - the oracle-current revision identifier
+    - the revision window
+    - any before/after label
+    - any current/superseded indicator
+    - any machine routing identifier (SEC CIK, bare numeric CFR token)
+  leakage_check: >-
+    mechanical and gated at zero. Every mode-A query is checked against the
+    tokens of its own target atom bodies; any overlap beyond a declared
+    function-word list is leakage and fails the gate.
+  types:
+    Q1_REVISED_VALUE: a member atom whose SEMANTIC facet moved between revisions
+    C1_UNCHANGED_CONTROL: a member atom whose SEMANTIC facet did not move
+  per_document_cap: 12 of each type, in reading order
+
+# ---------------------------------------------------------------------------
+# 4. Tie policy — carried from P4c unchanged
+# ---------------------------------------------------------------------------
+
+tie_policy:
+  rule: an exact top-score tie returns the whole tied set; never broken by
+    list position, index order or identifier
+  granularity: measures are stated over envelopes in mode A and over atoms in mode B
+  rank: conservative — every tied competitor counts against the target
+  rounding: scores rounded to 9 decimal places
+  determinism_check: reversed insertion order must reproduce every score and tied set
+
+# ---------------------------------------------------------------------------
+# 5. Gates. Thresholds fixed here, before any score is computed.
+# ---------------------------------------------------------------------------
+
+gates:
+  core_semantic:
+    G_P4D_SCALE:
+      predicate: at least 250 scored questions and at least 4 source families
+    G_P4D_Q1_SCALE:
+      predicate: at least 100 Q1 questions
+      basis: measurability, not outcome. Carried at the same value P4c set.
+    G_P4D_ENVELOPE_RETRIEVABLE:
+      predicate: the oracle-current envelope is in the top 10 within the lineage >= 0.90
+    G_P4D_ATOM_RECOVERABLE:
+      predicate: >-
+        the fine evidence atom is recoverable from the retrieved envelope >= 0.95
+      basis: >-
+        the envelope is only useful if it leads back to the atom. This is the
+        gate that stops the layer degenerating into a coarser unit.
+    G_P4D_NO_LEAKAGE:
+      predicate: answer-derived token leakage == 0
+      on_fail: STOP. A leaked token makes every other number on this run void.
+    G_P4D_DETERMINISM:
+      predicate: the reversed-order index reproduces every score and every tied set
+    G_P4D_COST:
+      predicate: gpu_seconds == 0 and estimated_cost_usd == 0.0
+    G_P4D_ENVELOPE_NOT_AUTHORITATIVE:
+      predicate: >-
+        every envelope reports authoritative == False, every returned evidence
+        record is a canonical atom, and no returned record carries envelope-level
+        text
+    G_P4D_INVALIDATION:
+      predicate: >-
+        every envelope with a semantically moved member atom is invalidated, and
+        no envelope without one is
+
+  citation:
+    G_P4D_CITATION_EXACT:
+      predicate: >-
+        a source-native locator routes to the exact canonical atom >= 0.95, on
+        the families that have such a scheme
+    G_P4D_CITATION_SCOPE:
+      predicate: at least one family with a source-native citation scheme
+    G_P4D_CITATION_SEPARATE:
+      predicate: >-
+        the citation figure appears in no combined metric with mode A
+      on_fail: STOP. Combining them is the failure this gate exists to prevent.
+
+not_gated_deliberately:
+  LEXICAL_ONLY_rates: the finding, reported and never gated
+  source_coverage: owned by P0d; a coverage adequacy threshold is not declared here
+
+# ---------------------------------------------------------------------------
+# 6. Pre-registered predictions
+# ---------------------------------------------------------------------------
+
+predictions:
+  ecfr_improves_most_under_mode_A: >-
+    the envelope layer exists because enumerated headings carry no intent. eCFR
+    is where that bites, so it is where the change should show. If eCFR does not
+    move, the diagnosis in STOP-V2-003 was wrong.
+  named_heading_families_move_little: >-
+    Wikipedia, git and SEC atoms mostly have named headings, so most of their
+    envelopes are single-member and behave as before. A large move there would
+    mean the envelope is doing something other than what it claims.
+  atom_recovery_is_the_binding_constraint: >-
+    a larger retrieval window makes the envelope easier to find and the atom
+    inside it harder to pin. Whether that trade lands above 0.95 is the open
+    question, and no direction is assumed.
+  citation_routing_is_near_exact: >-
+    a locator is an identifier, so mode B should be close to 1.0. A low figure
+    would mean the citation assembly is wrong, not that addressing is hard.
+
+# ---------------------------------------------------------------------------
+# 7. Claim boundary
+# ---------------------------------------------------------------------------
+
+claim_boundary:
+  permitted: >-
+    Under a fielded BM25 representation over derived retrieval envelopes covering
+    canonical atoms, on the frozen P4c cohort, natural-language questions reached
+    the oracle-current envelope at these rates and the fine evidence atom was
+    recoverable at these rates; and source-native locators routed to exact atoms
+    at this rate.
+  forbidden:
+    - combining mode A and mode B into one number
+    - presenting an envelope as a canonical fact, a source of truth or evidence
+    - claiming P4c-Core is repaired, retired or superseded by any P4d result
+    - claiming source-faithful correctness; that is P0d's question and it is open
+    - any statement about a dense or hybrid representation, which was not run
+    - any statement about answer correctness; no model is executed in P4d
+    - reading a passed Core-Semantic endpoint as authorising spend. It makes a
+      model study eligible to be PROPOSED, and the proposal is submitted for
+      approval before any GPU runs.
+    - treating a development-split result as confirmatory
+  overall_programme_status: >-
+    PARTIAL — MECHANISM EVIDENCED, ENDPOINT NOT YET ESTABLISHED. This protocol
+    cannot change that, whatever it returns.
