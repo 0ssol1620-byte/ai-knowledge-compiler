@@ -14,7 +14,7 @@
     "sha256": "sha256:80333ed5a2e54dc032ea770b767c9847cb9d6a00a17ac2dae0ab60871271f902"
   },
   "runtime": {
-    "digest": "sha256:9523fe42dcd192a244680510a687390ca2cb7072a668e59c100805931157350f",
+    "digest": "sha256:995e444142191e5a027de7ad732093ae282e8b7b9c3a7964fda760b0d86deba0",
     "python": "3.13.0"
   },
   "rows": [
@@ -182,8 +182,10 @@
       "expected": {
         "2": "Source: the internal revenue ledger."
       },
-      "observed": {},
-      "pass": false
+      "observed": {
+        "2": "Source: the internal revenue ledger."
+      },
+      "pass": true
     },
     {
       "file": "docx/09-omml-equation.docx",
@@ -222,13 +224,12 @@
   ],
   "totals": {
     "rows": 14,
-    "passed": 9,
-    "failed": 5
+    "passed": 10,
+    "failed": 4
   },
   "failedCapabilities": [
     "docx_comment_author",
     "docx_equation_formula",
-    "docx_footnotes",
     "docx_merged_cell_spans",
     "docx_tracked_changes"
   ],

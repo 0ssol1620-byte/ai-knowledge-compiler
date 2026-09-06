@@ -423,3 +423,24 @@ def test_a_password_protected_office_container_is_locked_not_corrupt() -> None:
     assert output is None
     assert receipt.accepted is False
     assert receipt.failure_class is FailureClass.ENCRYPTED_SOURCE
+
+
+def test_a_docx_footnote_becomes_a_unit_with_a_footnote_locator() -> None:
+    """Lane C-3 fidelity gap: footnotes were not extracted at all.
+
+    A footnote carries the sentence's source, so dropping it makes a claim look
+    unsourced. The locator variant already had a ``footnoteId`` anchor; nothing
+    produced an id for it. Word's separator and continuation footnotes are
+    layout furniture and stay out of the unit stream.
+    """
+    corpus = Path(__file__).resolve().parents[1] / "fixtures/office_corpus/docx/08-footnotes.docx"
+    output = NativeDocxV1().extract_native(
+        _input(corpus.read_bytes(), filename="08-footnotes.docx", declared_mime=DOCX_MIME)
+    )
+    footnotes = [
+        unit for unit in output.units if unit.locator and "footnoteId" in unit.locator
+    ]
+    assert [unit.text for unit in footnotes] == ["Source: the internal revenue ledger."]
+    assert footnotes[0].locator is not None
+    assert footnotes[0].locator["footnoteId"] == "2"
+    validate_evidence_locator(footnotes[0].locator)

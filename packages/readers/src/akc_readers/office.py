@@ -4,8 +4,19 @@ Each provider **wraps** `akc_native_parsers.parse_non_pdf_to_cir` the way
 `LegacyPdfV1` wraps `parse_pdf_to_cir`: the parser package is not modified, the
 content-detected MIME (never the filename) decides `can_read` and the name the
 parser is handed, and only the features a probe sample demonstrably produces are
-declared. None of the three is VERIFIED — no §27 qualification receipt exists
-yet, and lane C-3 is what may raise the tier.
+declared.
+
+None of the three is VERIFIED. Lane C-3 qualified all three against a committed
+corpus and every one of them failed rows, so every capability stays
+`BEST_EFFORT` and carries no `qualification_receipt`:
+
+* `docs/evidence/receipts/office_reader_qualification_xlsx_2026-09-06.json` — 18/22
+* `docs/evidence/receipts/office_reader_qualification_docx_2026-09-06.json` — 10/14
+* `docs/evidence/receipts/office_reader_qualification_pptx_2026-09-06.json` — 10/13
+
+Each class below lists the rows it failed. They share one cause: `ExtractedUnit`
+has fields for text, an anchor, a bbox, a table id and a formula, and a fact the
+wrapped parser knows that fits none of them cannot reach a caller at all.
 
 Two consequences of the frozen contracts are worth stating rather than
 discovering:
@@ -81,6 +92,7 @@ _DOCX_PARAGRAPH = re.compile(
 )
 _DOCX_CELL = re.compile(r"^(docx/body/table/\d+)/(r/\d+/c/\d+)$")
 _DOCX_COMMENT = re.compile(r"^docx/comments/(\S+)$")
+_DOCX_FOOTNOTE = re.compile(r"^docx/footnotes/(\S+)$")
 
 _PPTX_SHAPE = re.compile(r"^pptx/slide/(\d+)(?:/shape/([0-9.]+))?(?:/.*)?$")
 
@@ -353,6 +365,17 @@ class NativeXlsxV1(_NativeOfficeV1):
     A worksheet *as a whole* has no v2 anchor (the variant requires a cell,
     range, named range, table or chart), and neither does an embedded image, so
     those units carry `locator=None`.
+
+    Known limitations — the rows this reader failed in the 2026-09-06
+    qualification, verbatim from the receipt:
+
+    * `xlsx_merged_ranges` — a merged range's extent never reaches a caller;
+      `CanonicalCell` has the spans, `ExtractedUnit` has no field for them.
+    * `xlsx_hidden_sheets` — sheet visibility stays in the parser's metadata.
+    * `xlsx_named_ranges` — the parser reads no defined names at all, so the v2
+      `namedRange` anchor has nothing to fill it.
+    * `xlsx_chart_series_names` — a chart series is named by its cell reference
+      (`'Data'!B1`) rather than by the label that cell holds (`Revenue`).
     """
 
     provider_id = "native_xlsx_v1"
@@ -394,12 +417,24 @@ class NativeXlsxV1(_NativeOfficeV1):
 
 
 class NativeDocxV1(_NativeOfficeV1):
-    """DOCX → paragraph, table-cell and comment locators.
+    """DOCX → paragraph, table-cell, comment and footnote locators.
 
     A table *as a whole* has no v2 anchor (the variant requires `tableId` **and**
     `cellId`), and a drawing is not a paragraph, so those units carry
     `locator=None`. Every anchor is derived from the parser's own
     `native_object_id`; `metadata["docx"]` carries counts, not addresses.
+
+    Known limitations — the rows this reader failed in the 2026-09-06
+    qualification, verbatim from the receipt:
+
+    * `docx_comment_author` — the author is kept as a quality flag on the
+      comment block, so a caller reads the comment without knowing who wrote it.
+    * `docx_tracked_changes` — insertions are folded into the visible paragraph
+      text and deletions live only in `metadata["docx"]["trackedChanges"]`;
+      neither the change list nor the deleted text is a unit.
+    * `docx_merged_cell_spans` — as for XLSX: the span is computed and dropped.
+    * `docx_equation_formula` — OMML is flattened to its run text, so `E²=mc`
+      arrives as `E2=mc` and no `formula` is emitted.
     """
 
     provider_id = "native_docx_v1"
@@ -425,11 +460,26 @@ class NativeDocxV1(_NativeOfficeV1):
         comment = _DOCX_COMMENT.match(native_object_id)
         if comment is not None:
             return {"commentId": comment.group(1)}
+        footnote = _DOCX_FOOTNOTE.match(native_object_id)
+        if footnote is not None:
+            return {"footnoteId": footnote.group(1)}
         return None
 
 
 class NativePptxV1(_NativeOfficeV1):
-    """PPTX → slide-anchored locators, with the shape id where one is known."""
+    """PPTX → slide-anchored locators, with the shape id where one is known.
+
+    Known limitations — the rows this reader failed in the 2026-09-06
+    qualification, verbatim from the receipt:
+
+    * `pptx_speaker_notes` — the notes block's native id is
+      `pptx/slide/NNNN/notes`, but the v2 pptx variant has no notes field, so
+      the anchor collapses to `slideNumber1` — which is also what the
+      slide-heading unit carries. A caller cannot tell a speaker note from a
+      slide title. This one is a schema gap, not a parser gap.
+    * `pptx_merged_cell_spans` — as for XLSX, plus the pptx variant has no cell
+      anchor at all: a cell is addressed no finer than its shape.
+    """
 
     provider_id = "native_pptx_v1"
     mime = PPTX_MIME
