@@ -28,13 +28,23 @@ class DeadlineClass(StrEnum):
 
 
 class ExecutionLane(StrEnum):
-    """Symbolic execution lane. Concrete routes are bound from ready routes."""
+    """The ten §25 execution roles. A role is not a model.
+
+    Separating the role from the model is the point: a lane names *what job the
+    page needs done*, and `portfolio.py` binds it to a concrete model only where
+    registry and Arena evidence supports the binding. Nothing here asserts that
+    any model can do any of these jobs.
+    """
 
     NATIVE = "native"
     AUTHORITY = "authority"
     FAST_VISUAL = "fast_visual"
     PEER_VISUAL = "peer_visual"
-    SPECIALIST_VLM = "specialist_vlm"
+    TABLE_SPECIALIST = "table_specialist"
+    FORMULA_SPECIALIST = "formula_specialist"
+    CHART_SPECIALIST = "chart_specialist"
+    DEGRADED_SCAN_SPECIALIST = "degraded_scan_specialist"
+    EXTERNAL_ADJUDICATOR = "external_adjudicator"
     HUMAN_REVIEW = "human_review"
 
 

@@ -93,14 +93,14 @@ INITIAL_SPECULATION_POLICY: dict[SpeculationClass, SpeculationPolicy] = {
         SpeculationPolicy(
             speculation_class=SpeculationClass.CHART_HEAVY,
             primary_lanes=(_L.FAST_VISUAL,),
-            peer_lanes=(_L.SPECIALIST_VLM,),
+            peer_lanes=(_L.CHART_SPECIALIST,),
             parallel_peers=True,
             verification=_V.PEER_AGREEMENT,
         ),
         SpeculationPolicy(
             speculation_class=SpeculationClass.DEGRADED_PHOTO,
             primary_lanes=(_L.FAST_VISUAL,),
-            peer_lanes=(_L.PEER_VISUAL, _L.SPECIALIST_VLM),
+            peer_lanes=(_L.PEER_VISUAL, _L.DEGRADED_SCAN_SPECIALIST),
             parallel_peers=True,
             verification=_V.PEER_AGREEMENT,
         ),
@@ -113,7 +113,7 @@ INITIAL_SPECULATION_POLICY: dict[SpeculationClass, SpeculationPolicy] = {
         ),
         SpeculationPolicy(
             speculation_class=SpeculationClass.HANDWRITING,
-            primary_lanes=(_L.SPECIALIST_VLM,),
+            primary_lanes=(_L.DEGRADED_SCAN_SPECIALIST,),
             peer_lanes=(_L.HUMAN_REVIEW,),
             verification=_V.HUMAN_REVIEW,
         ),
