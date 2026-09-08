@@ -867,6 +867,17 @@ def replay_record(result: PlannerResult, unit_plan: UnitPlan) -> RouterReplayRec
     )
 
 
+def build_replay_policy(strong: str, primary: str = "") -> object:
+    """Entry point the WP-R10 replay harness looks for on this module.
+
+    Imported lazily so `akc_router.planner` never pulls the adapter (and its
+    duck-typed research-tree shim) into a normal runtime import.
+    """
+    from .replay_adapter import build_replay_policy as _build
+
+    return _build(strong=strong, primary=primary)
+
+
 __all__ = [
     "DEFAULT_COST_MODEL",
     "PLANNER_REVISION",
@@ -881,6 +892,7 @@ __all__ = [
     "UnitFeatures",
     "UnitPlan",
     "UnknownRouteCostError",
+    "build_replay_policy",
     "classify_speculation",
     "plan_document",
     "replay_record",

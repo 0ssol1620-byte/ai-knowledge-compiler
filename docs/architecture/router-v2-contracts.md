@@ -1,17 +1,22 @@
-# Router v2 contracts (WP-R2)
+# Router v2 contracts (WP-R2) and planner (WP-R3/R5/R6)
 
 Status: **PROPOSED** contracts, `IMPLEMENTED_NOT_PROVEN` code
-(`docs/audit/V4_MIGRATION_MATRIX.md` vocabulary).
+(`docs/audit/V4_MIGRATION_MATRIX.md` vocabulary). Nothing here is promoted, and
+nothing here is calibrated: `CalibrationTable.calibrated` is `False` across the
+repository, every threshold and cost in the planner is an author's prediction,
+and the code says so at runtime rather than only in this document.
 
 Source: `TAVONEL_FINAL_RESEARCH_ADAPTIVE_ROUTER_INFORMATION_LOSS_MASTER_BLUEPRINT_2026-09-08.md`
 §16, §18, §20–§24, §27, §55, §63, §65 WP-R2, §66, Appendix D/G.
 
-This work package adds **contracts only**. It plans nothing, schedules nothing,
-executes nothing, and measures nothing. `engine.py` and `akc_cir.*` are
-untouched; the live first-route and escalation policy is still `engine.py`.
-Nothing here is evidence that any route, model or latency figure is achievable —
-the numbers a plan carries are *predictions written by whoever builds the
-planner* (WP-R6), not measurements.
+WP-R2 added **contracts only**. WP-R3, WP-R5 and WP-R6 added code that uses
+them: preflight estimation, a portfolio, a planner, a dependency builder, an
+in-process scheduler and an observability record. `akc_cir.*` is still
+untouched, and **the live first-route and escalation policy is still
+`engine.py`** — the planner runs only behind `ROUTER_V2_SHADOW=1` with zero
+decision authority. Nothing here is evidence that any route, model or latency
+figure is achievable; the numbers a plan carries are *predictions written by
+whoever built the planner*, not measurements.
 
 ## What was added
 
@@ -72,10 +77,19 @@ behind promotion evidence that does not exist. `speculate()` returns the row for
 a named class and raises `UnknownSpeculationClassError` for anything the table
 does not name — it never guesses a default.
 
-Lanes are symbolic (`native`, `authority`, `fast_visual`, `peer_visual`,
-`specialist_vlm`, `human_review`). No row names a model or a route, because §21
-requires the concrete primary to be bound from the tenant's current ready
-routes. Nothing in the table asserts that a given model is qualified for a lane.
+Lanes are symbolic and there are now ten of them (§25 / program §6): `native`,
+`authority`, `fast_visual`, `peer_visual`, `table_specialist`,
+`formula_specialist`, `chart_specialist`, `degraded_scan_specialist`,
+`external_adjudicator`, `human_review`. The single `specialist_vlm` is gone; the
+§21 rows that named it now name the chart or degraded-scan specialist, and no
+other row changed. No row names a model or a route, because §21 requires the
+concrete primary to be bound from the tenant's current ready routes. Nothing in
+the table asserts that a given model is qualified for a lane.
+
+**Peers are not all optional.** When a row's verification is `AUTHORITY_MATCH`
+or `HUMAN_REVIEW` the peer *is* the verification mechanism, and the planner will
+not drop it for cost. A `PEER_AGREEMENT` peer is also reachable by escalation,
+so pre-launching it is the optional spend §9 governs.
 
 ## C-09 — unmeasured visual signals (PRODUCTION_BEHAVIOUR_CHANGE)
 
@@ -137,9 +151,36 @@ signal declared confident, an undeclared unknown signal, both or neither replan
 trigger family, an operational trigger routed to a semantic action, and a public
 projection that would leak an internal field.
 
+## The §57 chain — what executes, what is contract only
+
+`source -> early preflight -> RiskVector -> policy-filtered candidates ->
+adaptive plan -> dependency DAG -> queue/batch -> selective speculation ->
+inference -> loss detection -> selective recovery -> independent verification ->
+verified merge/refuse -> exact evidence`.
+
+| Stage | State | Where |
+|---|---|---|
+| source intake | executes (production) | `workers/cpu-document` |
+| early preflight — native lane | executes | `source_preflight.inspect_pdf_native`; Office families are a capability table, not a reader call |
+| early preflight — visual lane | executes | `source_preflight.estimate_page_visual` (Pillow only); **not wired into the worker** |
+| RiskVector | executes | `risk_adapter.page_metrics_to_risk_vector`, all 22 signals, 8 page-local blind spots unknown by construction |
+| policy-filtered candidates | executes | `data_policy.filter_candidate_routes`, called by the planner before any scoring |
+| adaptive plan | executes (shadow only) | `planner.plan_document` |
+| dependency DAG | executes | `dependency.build_dependency_edges`; inputs are a contract, no reader populates them yet |
+| queue / batch | executes (in-process) | `scheduler.Scheduler`; not wired to a worker pool |
+| selective speculation | executes | `planner._speculative_routes` over the §21 table |
+| inference | executes (production, legacy route) | existing worker + providers |
+| loss detection | contract only | `akc_cir.critical_tokens` exists; WP-R7 wiring is lane A3's |
+| selective recovery | contract only | `EscalationPolicy.REGION_RECOVERY` is emitted; WP-R8 is not built |
+| independent verification | contract only | `VerificationPolicy` is emitted and never enforced; WP-R9 is not built |
+| verified merge / refuse | partial | the planner refuses (returns no plan) but nothing merges yet |
+| exact evidence | contract only | `observability.RouterExecutionRecord` exists; nothing writes it |
+| offline evidence / fresh holdout / shadow / canary / rollback | shadow hook only | `engine.set_router_v2_shadow_sink`; replay is lane A2 |
+
 ## Not done here
 
-Planner (WP-R6), early preflight lanes (WP-R3, §17), portfolio routes (WP-R5),
-loss detector (WP-R7), scheduler queues and fairness (§22, §67), replay harness
-(WP-R10), and the observability record of §63 beyond the Appendix D shape. No
-schema here is wired into an API surface or a migration yet.
+Loss detector (WP-R7), selective recovery (WP-R8), independent verifier (WP-R9),
+the replay harness itself (WP-R10, lane A2), and wiring the lane-B visual
+estimator into the CPU worker — that is a second production behaviour change and
+needs its own shadow. No schema here is wired into an API surface or a migration,
+and no threshold in the planner has been calibrated against any corpus.

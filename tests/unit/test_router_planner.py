@@ -529,3 +529,65 @@ def test_a_failing_shadow_sink_cannot_break_the_legacy_decision(
     finally:
         set_router_v2_shadow_sink(None)
     assert decision.route is Route.NATIVE
+
+
+# --- WP-R10 replay adapter ----------------------------------------------------
+
+
+class _StubOutput:
+    def __init__(self, *, present: bool = True) -> None:
+        self.present = present
+
+
+class _StubUnitFeatures:
+    """The harness's runtime-visible shape, duck-typed."""
+
+    def __init__(self, **overrides: object) -> None:
+        self.case_key = "olmocr/old_scans/1.pdf"
+        self.page_index = 0
+        self.native_text_chars = 0
+        self.native_word_count = 0
+        self.native_text_available = False
+        self.native_invalid_unicode_ratio = 0.0
+        self.native_replacement_ratio = 0.0
+        self.render_edge_density: float | None = 0.1
+        self.render_near_white_ratio: float | None = 0.8
+        self.render_entropy: float | None = None
+        self.render_probably_blank: bool | None = False
+        self.critical_token_risk = 0.0
+        self.critical_token_kinds: tuple[str, ...] = ()
+        self.outputs = {"fast": _StubOutput(), "strong": _StubOutput()}
+        self.unknown_fields: tuple[str, ...] = ()
+        for key, value in overrides.items():
+            setattr(self, key, value)
+
+
+def test_the_replay_adapter_plans_from_runtime_visible_features_only() -> None:
+    from akc_router.planner import build_replay_policy
+
+    policy = build_replay_policy(strong="strong", primary="fast")
+    plan = policy.plan(_StubUnitFeatures())
+    assert plan.routes[0] == "fast"
+    assert plan.accepted == "fast"
+    assert any(code.startswith("speculation_class:") for code in plan.reason_codes)
+
+
+def test_the_replay_adapter_reports_unresolved_when_no_output_exists() -> None:
+    from akc_router.planner import build_replay_policy
+
+    policy = build_replay_policy(strong="strong", primary="fast")
+    plan = policy.plan(_StubUnitFeatures(outputs={"fast": _StubOutput(present=False)}))
+    assert plan.accepted is None
+    assert plan.unresolved_reason
+
+
+def test_the_replay_adapter_keeps_unmeasured_signals_unknown() -> None:
+    from akc_router.replay_adapter import replay_risk_vector
+
+    vector = replay_risk_vector(
+        _StubUnitFeatures(render_edge_density=None, unknown_fields=("render_near_white_ratio",))
+    )
+    assert vector.is_unknown(RiskFeature.SMALL_TEXT_RISK)
+    assert vector.is_unknown(RiskFeature.IMAGE_SEMANTICS_RISK)
+    assert vector.is_unknown(RiskFeature.HANDWRITING_RISK)
+    assert set(vector.signals) == set(RiskFeature)
