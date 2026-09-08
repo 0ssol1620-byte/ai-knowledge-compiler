@@ -116,6 +116,10 @@ def select_first_route(context: RouterContext, page: PageMetrics) -> RouteDecisi
         and context.mode == ProcessingMode.SPEED
         and language in {"en", "zh", "zh-cn", "zh-tw"}
         and preflight_difficulty(page) < 65
+        # C-09: an unmeasured handwriting signal is not evidence of no
+        # handwriting, so it does not open the cheap lane. Fail closed to the
+        # slower route until an estimator supplies the observation.
+        and page.handwriting_probability is not None
         and page.handwriting_probability < 0.2
     ):
         return _require_ready_route(

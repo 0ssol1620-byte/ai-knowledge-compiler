@@ -77,6 +77,47 @@ Lanes are symbolic (`native`, `authority`, `fast_visual`, `peer_visual`,
 requires the concrete primary to be bound from the tenant's current ready
 routes. Nothing in the table asserts that a given model is qualified for a lane.
 
+## C-09 — unmeasured visual signals (PRODUCTION_BEHAVIOUR_CHANGE)
+
+`PageMetrics.handwriting_probability`, `rotation_degrees`, `skew_degrees`,
+`blur_score`, `contrast_score` and `small_text_score` are now `float | None`
+(required, nullable). `None` means **no estimator ran**.
+
+**The defect.** The CPU worker had no visual estimator and persisted `0.5` as a
+"neutral" sentinel. `classify_page` returns `HANDWRITTEN` at `>= 0.50`, so every
+natively parsed page in production carried `technical_class = handwritten`, and
+`select_first_route`'s HPD gate (`handwriting_probability < 0.2`) could never
+open. The threshold was never wrong; the sentinel was a fabricated observation.
+
+**What changed.**
+
+- `classify_page` and `preflight_difficulty` branch on `None`: an unmeasured
+  term is *absent from the sum*, not scored zero. `unmeasured_visual_signals()`
+  names which ones, so "difficulty 0.24" and "difficulty 0.24 with four
+  unknowns" stay distinguishable.
+- The HPD gate now requires an *observed* handwriting value. Unknown does not
+  open the cheap lane — fail closed (§11).
+- The worker writes `null` and keeps the field in `unknown_visual_metrics`. It
+  no longer drops `contrast_score` from that list when a preprocessing transform
+  exists: the transform manifest records whether bounded autocontrast was
+  *applied*, which is not a contrast score.
+
+**Compatibility.** `technical_class` is persisted into the page `analysis`
+payload with `router_metrics` beside it. No consumer in this repository reads
+either back — searched across Python, TypeScript, SQL and the JSON schemas;
+there is no `page-metrics` schema, and `PageMetrics` is constructed in exactly
+one place. So no migration is required, but two facts hold:
+
+1. **Historical rows are wrong and stay wrong.** Every page analysed before this
+   change carries `technical_class = handwritten` and four `0.5` metrics. They
+   are not rewritten — evidence is never overwritten — so any comparison across
+   the change must partition on it.
+2. **This is a production behaviour change and takes the compatibility ladder.**
+   Shadow first: run the new classification beside the old and compare the class
+   distribution before it becomes authoritative. The TypeScript `PageMetrics`
+   interface now types the six fields `| null`, so a consumer added later cannot
+   quietly ignore the state.
+
 ## Units and naming
 
 - `predicted_p50` / `predicted_p95` are predicted wall-clock **milliseconds**.
