@@ -45,6 +45,22 @@ NON_MODEL_LANES: frozenset[ExecutionLane] = frozenset(
 #: these must be in `data_policy.EXTERNAL_ROUTES`, and only these.
 EXTERNAL_LANES: frozenset[ExecutionLane] = frozenset({ExecutionLane.EXTERNAL_ADJUDICATOR})
 
+#: Lanes whose name is itself a capability claim. Binding a route into one of
+#: these says "this reads tables" or "this recovers degraded scans", which is a
+#: claim about a *model* and needs model evidence. The generic lanes make no
+#: such claim -- `fast_visual` says only "run the fast visual route" -- so a
+#: proposal that names no model there is a request to use a route the tenant is
+#: already running, not a promotion.
+CAPABILITY_CLAIM_LANES: frozenset[ExecutionLane] = frozenset(
+    {
+        ExecutionLane.TABLE_SPECIALIST,
+        ExecutionLane.FORMULA_SPECIALIST,
+        ExecutionLane.CHART_SPECIALIST,
+        ExecutionLane.DEGRADED_SCAN_SPECIALIST,
+        ExecutionLane.EXTERNAL_ADJUDICATOR,
+    }
+)
+
 #: WP-R4 (§5) evidence a model needs before it can be a champion for a lane.
 REQUIRED_EVIDENCE: tuple[str, ...] = (
     "weights_repo",
@@ -258,13 +274,19 @@ def build_portfolio(
             )
             continue
         if model_key is None:
+            # No model is being promoted. On a generic lane that is a request to
+            # use a route the tenant already runs; on a specialist lane it is an
+            # unevidenced capability claim, and it stays a candidate.
+            claims_capability = lane in CAPABILITY_CLAIM_LANES
             bindings.append(
                 LaneBinding(
                     lane=lane,
                     route=route,
                     model_key=None,
-                    qualification=Qualification.CANDIDATE,
-                    missing_evidence=("model_key",),
+                    qualification=(
+                        Qualification.CANDIDATE if claims_capability else Qualification.QUALIFIED
+                    ),
+                    missing_evidence=("model_key",) if claims_capability else (),
                 )
             )
             continue
@@ -334,6 +356,7 @@ def _inference_args_sha256(config: object) -> str | None:
 
 __all__ = [
     "APPROVED_LICENCE_STATUS",
+    "CAPABILITY_CLAIM_LANES",
     "EXTERNAL_LANES",
     "NON_MODEL_LANES",
     "REQUIRED_EVIDENCE",
