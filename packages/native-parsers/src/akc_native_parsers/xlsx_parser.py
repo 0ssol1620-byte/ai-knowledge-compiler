@@ -89,6 +89,13 @@ def parse_xlsx(data: bytes, builder: CirBuilder) -> str:
                 sheet_index0=sheet_index0,
                 parent_id=sheet_block.id,
             )
+            comments = _add_sheet_comments(
+                worksheet,
+                builder=builder,
+                sheet_index0=sheet_index0,
+                parent_id=sheet_block.id,
+            )
+            number_formats = _sheet_number_formats(worksheet)
             hidden_rows = sorted(
                 int(index)
                 for index, dimension in worksheet.row_dimensions.items()
@@ -110,10 +117,20 @@ def parse_xlsx(data: bytes, builder: CirBuilder) -> str:
                     "formulas": formulas,
                     "hiddenRows": hidden_rows,
                     "hiddenColumns": hidden_columns,
+                    "commentCount": comments,
+                    "numberFormats": number_formats,
                     "hasCanonicalTable": table_block is not None,
                 }
             )
         builder.metadata["sheets"] = sheet_metadata
+        builder.metadata["definedNames"] = _add_defined_names(
+            formula_book,
+            builder=builder,
+            sheet_index_by_title={
+                worksheet.title: index
+                for index, worksheet in enumerate(formula_book.worksheets)
+            },
+        )
         if not builder.blocks:
             raise StructuredParseError("XLSX_EMPTY_WORKBOOK")
         return title or _filename_title(builder.source_filename)
@@ -180,6 +197,13 @@ def _add_sheet_table(
             quality_flags.append("formula_preserved_not_executed")
             if cached_value is None:
                 quality_flags.append("formula_cached_value_missing")
+        if cell is not None and _is_explicit_number_format(cell.number_format):
+            # The workbook shows `(1,234)` or `₩1,234`; this text is `-1234`.
+            # The parser does not apply the format — that is a rendering
+            # decision it must not make silently — so the cell says the display
+            # form was dropped and `metadata["sheets"][*]["numberFormats"]`
+            # carries the format string a caller would need to reproduce it.
+            quality_flags.append("number_format_not_applied")
         if worksheet.row_dimensions[row].hidden:
             quality_flags.append("hidden_row")
         column_letter = get_column_letter(column)
@@ -242,6 +266,137 @@ def _add_sheet_table(
         quality_flags=(("header_row_inferred",) if inferred_header and not explicit_header else ()),
     )
     return table_block.id, formulas
+
+
+def _is_explicit_number_format(number_format: Any) -> bool:
+    """True where the cell carries a format other than the workbook default."""
+    return bool(number_format) and str(number_format) != "General"
+
+
+def _sheet_number_formats(worksheet: Any) -> dict[str, str]:
+    """`A1 -> number format string` for every cell that sets one.
+
+    §27 asks for formatting semantics. `ExtractedUnit` has no field for a
+    format, so this reaches a caller of the reader plane through nothing but the
+    cell's `number_format_not_applied` flag; the strings live here so the fact is
+    recorded in CIR rather than lost. Naming the gap is the point — see the
+    `xlsx_number_formats` row of the qualification receipt.
+    """
+    formats: dict[str, str] = {}
+    for coordinate, cell in worksheet._cells.items():
+        if not isinstance(cell, Cell) or cell.value is None:
+            continue
+        if not _is_explicit_number_format(cell.number_format):
+            continue
+        row, column = coordinate
+        formats[f"{get_column_letter(column)}{row}"] = str(cell.number_format)
+    return dict(sorted(formats.items()))
+
+
+def _add_sheet_comments(
+    worksheet: Any,
+    *,
+    builder: CirBuilder,
+    sheet_index0: int,
+    parent_id: str,
+) -> int:
+    """Cell notes from `xl/comments*.xml`, one block each.
+
+    A note is content a reviewer wrote and the grid does not show. It is
+    anchored at the cell it annotates, which is an address EvidenceLocator v2's
+    xlsx variant already has, so the note is addressable evidence rather than
+    floating text.
+
+    **Threaded comments are a different part.** Modern Excel writes
+    `xl/threadedComments/*.xml` and openpyxl does not read it; those are flagged
+    by `_preflight_worksheet_xml`, not silently skipped.
+    """
+    count = 0
+    for coordinate, cell in sorted(worksheet._cells.items()):
+        if not isinstance(cell, Cell) or cell.comment is None:
+            continue
+        text = normalize_text(str(cell.comment.text or ""))
+        if not text:
+            continue
+        row, column = coordinate
+        flags = ["xlsx_cell_comment"]
+        if cell.comment.author:
+            flags.append("comment_author_preserved")
+        builder.add_block(
+            block_type=BlockType.FOOTNOTE,
+            location=SourceLocation(
+                page_index0=sheet_index0,
+                native_object_id=(
+                    f"xlsx/sheet/{sheet_index0:04d}/comment/{get_column_letter(column)}{row}"
+                ),
+            ),
+            raw_text=text,
+            markdown=text,
+            parent_id=parent_id,
+            quality_flags=tuple(flags),
+        )
+        count += 1
+    return count
+
+
+def _add_defined_names(
+    workbook: Any,
+    *,
+    builder: CirBuilder,
+    sheet_index_by_title: dict[str, int],
+) -> list[dict[str, Any]]:
+    """Workbook and sheet-scoped defined names, one block each.
+
+    A named range is how a spreadsheet says what a region *means* — `RevenueColumn`
+    rather than `B2:B4` — and a reader that drops it loses the only label the
+    author gave the numbers. EvidenceLocator v2's xlsx variant has a `namedRange`
+    anchor; until now nothing produced a name to put in it.
+
+    The block's text is the name's **target reference**, so the unit reads as
+    "what this name points at" with the name itself in the anchor. A name whose
+    target is not a cell range (a constant, a macro, a formula) has no sheet to
+    anchor to and is recorded in metadata with a warning rather than guessed at.
+    """
+    recorded: list[dict[str, Any]] = []
+    scoped: list[tuple[str, Any, int | None]] = [
+        (name, defined, None) for name, defined in workbook.defined_names.items()
+    ]
+    for sheet_index0, worksheet in enumerate(workbook.worksheets):
+        scoped.extend(
+            (name, defined, sheet_index0)
+            for name, defined in getattr(worksheet, "defined_names", {}).items()
+        )
+    for name, defined, scope_index0 in sorted(scoped, key=lambda item: (item[0], item[2] or -1)):
+        reference = normalize_text(str(defined.attr_text or ""))
+        destinations = list(defined.destinations) if defined.type == "RANGE" else []
+        anchor_index0 = scope_index0
+        if destinations:
+            anchor_index0 = sheet_index_by_title.get(destinations[0][0], scope_index0)
+        entry: dict[str, Any] = {
+            "name": name,
+            "reference": reference,
+            "type": str(defined.type),
+            "scopeSheetIndex0": scope_index0,
+        }
+        if anchor_index0 is None or not reference:
+            entry["extracted"] = False
+            builder.add_warning("xlsx_defined_name_not_anchored")
+            recorded.append(entry)
+            continue
+        entry["extracted"] = True
+        entry["sheetIndex0"] = anchor_index0
+        builder.add_block(
+            block_type=BlockType.PARAGRAPH,
+            location=SourceLocation(
+                page_index0=anchor_index0,
+                native_object_id=f"xlsx/sheet/{anchor_index0:04d}/definedName/{name}",
+            ),
+            raw_text=reference,
+            markdown=reference,
+            quality_flags=("xlsx_defined_name",),
+        )
+        recorded.append(entry)
+    return recorded
 
 
 def _add_sheet_assets(
@@ -432,6 +587,14 @@ def _preflight_worksheet_xml(data: bytes, builder: CirBuilder) -> None:
     except (OSError, zipfile.BadZipFile) as exc:
         raise StructuredParseError("XLSX_PARSE_FAILED") from exc
     with archive:
+        names = [entry.filename.replace("\\", "/").casefold() for entry in archive.infolist()]
+        if any(name.startswith("xl/threadedcomments/") for name in names):
+            # openpyxl reads `xl/comments*.xml` (a legacy note) and not
+            # `xl/threadedComments/*.xml` (a modern reply thread). Both are
+            # comments to the person who wrote them, so a workbook whose review
+            # thread is dropped must say so rather than report the notes it
+            # happens to understand as the whole of its comments.
+            builder.add_warning("xlsx_threaded_comments_not_extracted")
         worksheet_entries = sorted(
             (
                 entry

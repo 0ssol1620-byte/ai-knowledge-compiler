@@ -16,7 +16,9 @@ from docx import Document as WordDocument
 from lxml import etree
 from openpyxl import Workbook
 from openpyxl.chart import BarChart, Reference
+from openpyxl.comments import Comment as SpreadsheetComment
 from openpyxl.drawing.image import Image as SpreadsheetImage
+from openpyxl.workbook.defined_name import DefinedName
 from PIL import Image
 from pptx import Presentation
 from pptx.chart.data import ChartData
@@ -25,6 +27,9 @@ from pptx.enum.shapes import MSO_CONNECTOR
 from pptx.util import Inches
 
 _WORD_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+#: A Korean finance number format: thousands separator, the 원 suffix, and a
+#: negative shown in parentheses rather than with a minus sign.
+KRW_FORMAT = '#,##0"원";(#,##0)"원"'
 _MIME = {
     "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
@@ -387,3 +392,280 @@ def _rewrite_zip(
         for name, payload in (additions or {}).items():
             rewritten.writestr(name, payload)
     return output.getvalue()
+
+
+_ENDNOTES_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.endnotes+xml"
+_ENDNOTES_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/endnotes"
+_DIAGRAM_URI = "http://schemas.openxmlformats.org/drawingml/2006/diagram"
+_OLE_URI = "http://schemas.openxmlformats.org/presentationml/2006/ole"
+_PPTX_NS = "http://schemas.openxmlformats.org/presentationml/2006/main"
+_DRAWING_NS = "http://schemas.openxmlformats.org/drawingml/2006/main"
+
+
+def _docx_with_endnotes() -> bytes:
+    document = WordDocument()
+    document.add_paragraph("Costs fell four percent.")
+    output = io.BytesIO()
+    document.save(output)
+    endnotes = (
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+        f'<w:endnotes xmlns:w="{_WORD_NS}">'
+        '<w:endnote w:type="separator" w:id="-1"><w:p><w:r><w:separator/></w:r></w:p>'
+        "</w:endnote>"
+        '<w:endnote w:id="2"><w:p><w:r>'
+        "<w:t>Source: the board minutes of 2 January.</w:t></w:r></w:p></w:endnote>"
+        "</w:endnotes>"
+    ).encode()
+
+    def declare_type(value: bytes) -> bytes:
+        return value.replace(
+            b"</Types>",
+            b'<Override PartName="/word/endnotes.xml" ContentType="'
+            + _ENDNOTES_TYPE.encode()
+            + b'"/></Types>',
+            1,
+        )
+
+    def declare_relationship(value: bytes) -> bytes:
+        return value.replace(
+            b"</Relationships>",
+            b'<Relationship Id="rIdEndnotes" Type="'
+            + _ENDNOTES_REL.encode()
+            + b'" Target="endnotes.xml"/></Relationships>',
+            1,
+        )
+
+    return _rewrite_zip(
+        output.getvalue(),
+        transform={
+            "[Content_Types].xml": declare_type,
+            "word/_rels/document.xml.rels": declare_relationship,
+        },
+        additions={"word/endnotes.xml": endnotes},
+    )
+
+
+def test_docx_extracts_endnote_bodies_and_says_they_are_unanchored() -> None:
+    """`word/endnotes.xml` used to be read by nothing at all.
+
+    The separator endnote Word writes into every file is layout furniture and
+    must not become a block; the one real endnote must, and the document must
+    say the text arrives without an EvidenceLocator v2 anchor rather than let a
+    caller assume one exists.
+    """
+    document = _parse("endnotes.docx", _docx_with_endnotes())
+
+    endnotes = [block for block in document.blocks if "docx_endnote" in block.quality_flags]
+    assert [block.raw_text for block in endnotes] == ["Source: the board minutes of 2 January."]
+    assert endnotes[0].source_refs[0].native_object_id == "docx/endnotes/2"
+    assert endnotes[0].type == BlockType.FOOTNOTE
+    assert document.metadata["docx"]["endnoteCount"] == 1
+    assert "docx_endnotes_extracted_without_anchor" in document.metadata["warnings"]
+
+
+def _pptx_with_graphic_frame(uri: str) -> bytes:
+    presentation = Presentation()
+    slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+    box = slide.shapes.add_textbox(Inches(1), Inches(1), Inches(4), Inches(1))
+    box.text_frame.text = "Delivery model"
+    output = io.BytesIO()
+    presentation.save(output)
+    frame = (
+        f'<p:graphicFrame xmlns:p="{_PPTX_NS}" xmlns:a="{_DRAWING_NS}">'
+        "<p:nvGraphicFramePr>"
+        '<p:cNvPr id="9" name="Frame 9"/><p:cNvGraphicFramePr/><p:nvPr/>'
+        "</p:nvGraphicFramePr>"
+        '<p:xfrm><a:off x="914400" y="3200400"/><a:ext cx="3657600" cy="1828800"/></p:xfrm>'
+        f'<a:graphic><a:graphicData uri="{uri}"/></a:graphic></p:graphicFrame>'
+    ).encode()
+
+    def inject(value: bytes) -> bytes:
+        assert b"</p:spTree>" in value
+        return value.replace(b"</p:spTree>", frame + b"</p:spTree>", 1)
+
+    return _rewrite_zip(output.getvalue(), transform={"ppt/slides/slide1.xml": inject})
+
+
+@pytest.mark.parametrize(
+    ("uri", "warning"),
+    [
+        (_DIAGRAM_URI, "pptx_smartart_not_extracted"),
+        (_OLE_URI, "pptx_embedded_object_not_extracted"),
+    ],
+)
+def test_pptx_flags_smartart_and_embedded_objects_instead_of_dropping_them(
+    uri: str,
+    warning: str,
+) -> None:
+    """A graphic frame that is neither a table nor a chart used to vanish.
+
+    The DOCX parser has flagged the same content since lane C-2
+    (`docx_smartart_not_extracted`); PPTX returned `None` from `_add_shape` and
+    said nothing, which is the silent drop the constitution forbids. The diagram
+    is still not extracted — that is the honest half — and the slide's real text
+    is unaffected.
+    """
+    document = _parse("frame.pptx", _pptx_with_graphic_frame(uri))
+
+    assert warning in document.metadata["warnings"]
+    assert any(block.raw_text == "Delivery model" for block in document.blocks)
+
+
+def test_pptx_without_a_graphic_frame_raises_no_diagram_warning() -> None:
+    """The flag is a fact about the file, not a constant."""
+    presentation = Presentation()
+    slide = presentation.slides.add_slide(presentation.slide_layouts[6])
+    box = slide.shapes.add_textbox(Inches(1), Inches(1), Inches(4), Inches(1))
+    box.text_frame.text = "Delivery model"
+    output = io.BytesIO()
+    presentation.save(output)
+
+    document = _parse("plain.pptx", output.getvalue())
+
+    assert "pptx_smartart_not_extracted" not in document.metadata["warnings"]
+    assert "pptx_embedded_object_not_extracted" not in document.metadata["warnings"]
+
+
+def _xlsx_with_comments_names_and_formats() -> bytes:
+    workbook = Workbook()
+    sheet = workbook.worksheets[0]
+    sheet.title = "Data"
+    sheet["A1"] = "항목"
+    sheet["B1"] = "금액"
+    sheet["A2"] = "매출"
+    sheet["B2"] = 1234
+    sheet["A3"] = "영업손실"
+    sheet["B3"] = -1234
+    sheet["B2"].number_format = KRW_FORMAT
+    sheet["B3"].number_format = KRW_FORMAT
+    sheet["B2"].comment = SpreadsheetComment("2분기 마감 후 재작성.", "reviewer")
+    workbook.defined_names.add(DefinedName("금액열", attr_text="Data!$B$2:$B$3"))
+    output = io.BytesIO()
+    workbook.save(output)
+    return output.getvalue()
+
+
+def test_xlsx_extracts_cell_comments_defined_names_and_number_formats() -> None:
+    """Three facts `xlsx_parser.py` matched zero greps for before this change.
+
+    A note, a named range and a number format each survive differently: the note
+    and the name become blocks addressable by the v2 xlsx variant's `cell` and
+    `namedRange` anchors, while the format reaches CIR only — recorded per cell
+    in metadata and flagged on the cell — because `ExtractedUnit` has no
+    formatting field. The Korean literals are here because the anchor has to
+    carry a Hangul defined name without mangling it.
+    """
+    document = _parse("finance.xlsx", _xlsx_with_comments_names_and_formats())
+
+    comments = [block for block in document.blocks if "xlsx_cell_comment" in block.quality_flags]
+    assert [block.raw_text for block in comments] == ["2분기 마감 후 재작성."]
+    assert comments[0].source_refs[0].native_object_id == "xlsx/sheet/0000/comment/B2"
+    assert "comment_author_preserved" in comments[0].quality_flags
+
+    names = [block for block in document.blocks if "xlsx_defined_name" in block.quality_flags]
+    assert [block.raw_text for block in names] == ["Data!$B$2:$B$3"]
+    assert (
+        names[0].source_refs[0].native_object_id
+        == "xlsx/sheet/0000/definedName/금액열"
+    )
+    assert document.metadata["definedNames"] == [
+        {
+            "name": "금액열",
+            "reference": "Data!$B$2:$B$3",
+            "type": "RANGE",
+            "scopeSheetIndex0": None,
+            "extracted": True,
+            "sheetIndex0": 0,
+        }
+    ]
+
+    sheet_metadata = document.metadata["sheets"][0]
+    assert sheet_metadata["commentCount"] == 1
+    assert sheet_metadata["numberFormats"] == {"B2": KRW_FORMAT, "B3": KRW_FORMAT}
+    table = next(block for block in document.blocks if block.table is not None)
+    formatted = next(
+        cell
+        for cell in table.table.cells
+        if cell.source_refs[0].native_object_id == "xlsx/sheet/0000/cell/B3"
+    )
+    assert "number_format_not_applied" in formatted.quality_flags
+    assert formatted.raw_text == "-1234"
+
+
+def test_xlsx_flags_a_threaded_comment_part_it_cannot_read() -> None:
+    """openpyxl reads `xl/comments*.xml` and not `xl/threadedComments/*`.
+
+    Both are comments to the person who wrote them, so a workbook whose review
+    thread is dropped has to say so instead of reporting the notes it happens to
+    understand as the whole of its comments.
+    """
+    threaded = (
+        b'<?xml version="1.0" encoding="UTF-8"?>'
+        b'<ThreadedComments xmlns="http://schemas.microsoft.com/office/spreadsheetml/2018/'
+        b'threadedcomments"/>'
+    )
+    payload = _rewrite_zip(
+        _xlsx_with_comments_names_and_formats(),
+        additions={"xl/threadedComments/threadedComment1.xml": threaded},
+    )
+
+    document = _parse("threaded.xlsx", payload)
+
+    assert "xlsx_threaded_comments_not_extracted" in document.metadata["warnings"]
+
+
+def test_a_corrupt_docx_zip_is_a_stable_refusal_not_a_traceback() -> None:
+    """The failure path of every fixture above: bytes that are not a package."""
+    payload = bytearray(_docx_with_endnotes())
+    payload[40:120] = b"\x00" * 80
+
+    with pytest.raises(StructuredParseError) as failure:
+        _parse("corrupt.docx", bytes(payload))
+    assert failure.value.code.startswith(("INVALID_OFFICE", "DOCX_"))
+
+
+def test_an_xlsx_hidden_sheet_with_an_external_link_is_refused_whole() -> None:
+    """A hidden sheet is read; an external relationship refuses the package.
+
+    The two facts belong in one test because the tempting behaviour is to read
+    the visible sheets and quietly skip the link — a partial extraction of a
+    workbook that points somewhere this parser will not follow.
+    """
+    workbook = Workbook()
+    sheet = workbook.worksheets[0]
+    sheet.title = "Visible"
+    sheet["A1"] = "Item"
+    draft = workbook.create_sheet("Draft")
+    draft["A1"] = "not for release"
+    draft.sheet_state = "hidden"
+    output = io.BytesIO()
+    workbook.save(output)
+
+    document = _parse("hidden.xlsx", output.getvalue())
+    assert [sheet["state"] for sheet in document.metadata["sheets"]] == ["visible", "hidden"]
+
+    def add_external_relationship(value: bytes) -> bytes:
+        return value.replace(
+            b"</Relationships>",
+            b'<Relationship Id="rIdExternal" Type="http://schemas.openxmlformats.org/'
+            b'officeDocument/2006/relationships/hyperlink" Target="https://example.invalid/"'
+            b' TargetMode="External"/></Relationships>',
+            1,
+        )
+
+    linked = _rewrite_zip(
+        output.getvalue(),
+        transform={"xl/worksheets/_rels/sheet1.xml.rels": add_external_relationship},
+        additions={
+            "xl/worksheets/_rels/sheet1.xml.rels": (
+                b'<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                b'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/'
+                b'relationships"><Relationship Id="rIdExternal" Type="http://schemas.'
+                b'openxmlformats.org/officeDocument/2006/relationships/hyperlink" '
+                b'Target="https://example.invalid/" TargetMode="External"/></Relationships>'
+            )
+        },
+    )
+    with pytest.raises(StructuredParseError) as failure:
+        _parse("linked.xlsx", linked)
+    assert failure.value.code == "OFFICE_EXTERNAL_RELATION"

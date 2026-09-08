@@ -27,6 +27,7 @@ from .models import (
 _HEADING_PATTERN = re.compile(r"^heading\s*([1-9])$", re.IGNORECASE)
 _RELATIONSHIP_ATTRIBUTE_NAMES = frozenset({"embed", "id"})
 #: `w:footnote/@w:type` values that are layout furniture rather than content.
+#: `w:endnote/@w:type` uses the same vocabulary.
 _FOOTNOTE_FURNITURE = frozenset({"separator", "continuationSeparator", "continuationNotice"})
 
 
@@ -150,7 +151,24 @@ def parse_docx(data: bytes, builder: CirBuilder) -> str:
 
     story_image_count = _add_headers_and_footers(document, builder)
     comments = _add_comments(data, builder, comment_parents)
-    footnotes = _add_footnotes(data, builder)
+    footnotes = _add_notes(
+        data,
+        builder,
+        part="word/footnotes.xml",
+        tag="footnote",
+        prefix="docx/footnotes",
+        flag="docx_footnote",
+    )
+    endnotes = _add_notes(
+        data,
+        builder,
+        part="word/endnotes.xml",
+        tag="endnote",
+        prefix="docx/endnotes",
+        flag="docx_endnote",
+    )
+    if endnotes:
+        builder.add_warning("docx_endnotes_extracted_without_anchor")
     revisions = _collect_revisions(data, builder)
     if revisions:
         builder.add_warning("docx_tracked_changes_visible_view_preserved")
@@ -161,6 +179,7 @@ def parse_docx(data: bytes, builder: CirBuilder) -> str:
         "textBoxCount": text_box_count,
         "commentCount": comments,
         "footnoteCount": footnotes,
+        "endnoteCount": endnotes,
         "trackedChanges": revisions,
         "trackedChangeView": "insertions-visible-deletions-metadata-only",
     }
@@ -465,45 +484,59 @@ def _add_comments(
     return count
 
 
-def _add_footnotes(data: bytes, builder: CirBuilder) -> int:
-    """Footnote bodies from `word/footnotes.xml` (lane C-3 fidelity gap).
+def _add_notes(
+    data: bytes,
+    builder: CirBuilder,
+    *,
+    part: str,
+    tag: str,
+    prefix: str,
+    flag: str,
+) -> int:
+    """Footnote and endnote bodies from `word/{foot,end}notes.xml`.
 
-    A footnote carries the sentence's source, so a document whose footnotes are
-    dropped reads as if its claims had none. EvidenceLocator v2 already has a
-    `footnoteId` anchor; nothing produced an id to put in it.
+    A note carries the sentence's source, so a document whose notes are dropped
+    reads as if its claims had none. The two parts have the same shape — a list
+    of `w:footnote` / `w:endnote` elements keyed by `w:id`, with the same
+    `@w:type` furniture vocabulary — so one walk serves both.
 
-    The separator and continuation footnotes Word writes into every file are
-    layout furniture, not content, and are skipped by type rather than by
-    guessing from their (empty) text.
+    The separator and continuation notes Word writes into every file are layout
+    furniture, not content, and are skipped by type rather than by guessing from
+    their (empty) text.
+
+    EvidenceLocator v2 has a `footnoteId` anchor and **no endnote anchor**, so an
+    endnote's text reaches a caller unaddressed. That is stated by the
+    `docx_endnotes_extracted_without_anchor` warning rather than by anchoring an
+    endnote to a `footnoteId` it does not have.
     """
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
-        if "word/footnotes.xml" not in archive.namelist():
+        if part not in archive.namelist():
             return 0
         try:
-            root = SafeElementTree.fromstring(archive.read("word/footnotes.xml"))
+            root = SafeElementTree.fromstring(archive.read(part))
         except (DefusedXmlException, SafeElementTree.ParseError) as exc:
             raise StructuredParseError("DOCX_PARSE_FAILED") from exc
     count = 0
-    for footnote in root.iter():
-        if _local_name(footnote) != "footnote":
+    for note in root.iter():
+        if _local_name(note) != tag:
             continue
-        footnote_id = _attribute_by_local_names(footnote, frozenset({"id"}))
-        if footnote_id is None:
+        note_id = _attribute_by_local_names(note, frozenset({"id"}))
+        if note_id is None:
             continue
-        if _attribute_by_local_names(footnote, frozenset({"type"})) in _FOOTNOTE_FURNITURE:
+        if _attribute_by_local_names(note, frozenset({"type"})) in _FOOTNOTE_FURNITURE:
             continue
-        text = _visible_text(footnote, include_text_boxes=True)
+        text = _visible_text(note, include_text_boxes=True)
         if not text:
             continue
         builder.add_block(
             block_type=BlockType.FOOTNOTE,
             location=SourceLocation(
                 page_index0=0,
-                native_object_id=f"docx/footnotes/{footnote_id}",
+                native_object_id=f"{prefix}/{note_id}",
             ),
             raw_text=text,
             markdown=text,
-            quality_flags=("docx_footnote",),
+            quality_flags=(flag,),
         )
         count += 1
     return count
