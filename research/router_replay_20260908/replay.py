@@ -35,8 +35,8 @@ for _path in (HERE, _ORACLE):
 
 import features as F  # noqa: E402
 import scorer as S  # noqa: E402
-from bind import load_json, sha256_file  # type: ignore[import-untyped]  # noqa: E402
-from oracle import document_family  # type: ignore[import-untyped]  # noqa: E402
+from bind import load_json, sha256_file  # type: ignore[import-not-found]  # noqa: E402
+from oracle import document_family  # type: ignore[import-not-found]  # noqa: E402
 
 REPLAY_ID = "TAVONEL-ROUTER-REPLAY-2026-09-08-V1"
 BOOTSTRAP_REPLICATES = 2000
@@ -150,10 +150,14 @@ def evaluate_arm(
     critical_opportunities = 0
     route_cost = 0.0
     route_gpu_seconds = 0.0
+    ledger_seconds = 0.0
     missing_latency = 0
+    unpriced: set[str] = set()
+    untimed: set[str] = set()
     reasons: dict[str, int] = defaultdict(int)
 
     per_model_cost = cost["per_model"]
+    per_model_speed = cost["per_model_speed"]
     for unit in units:
         key = unit.unit_key
         plan = arm.plan(unit)
@@ -192,11 +196,19 @@ def evaluate_arm(
         have_latency = bool(plan.routes)
         for model in plan.routes:
             row = per_model_cost.get(model)
-            if row is not None:
+            if row is None:
+                # No pod ledger row. A missing cost is UNMEASURED, never zero.
+                unpriced.add(model)
+            else:
                 route_cost += float(row.get("cost_per_1000_pages_usd") or 0.0) / 1000.0
                 billed = float(row.get("billed_seconds") or 0.0)
                 pages = float(row.get("pages_basis") or 0.0)
                 route_gpu_seconds += (billed / pages) if pages else 0.0
+            speed = (per_model_speed.get(model) or {}).get("median_sec_per_page")
+            if speed is None:
+                untimed.add(model)
+            else:
+                ledger_seconds += float(speed)
             out = unit.outputs.get(model)
             if out is None or out.inference_ms is None:
                 have_latency = False
@@ -236,8 +248,21 @@ def evaluate_arm(
         ),
         "sclr_critical_events": critical_events,
         "sclr_critical_opportunities": critical_opportunities,
-        "cost_usd_per_1000_units": (route_cost / n * 1000.0) if n else None,
-        "gpu_seconds_per_unit": (route_gpu_seconds / n) if n else None,
+        "cost_usd_per_1000_units": (
+            None if (unpriced or not n) else route_cost / n * 1000.0
+        ),
+        "cost_incomplete_models": sorted(unpriced),
+        "cost_note": (
+            "UNMEASURED: " + ", ".join(sorted(unpriced)) + " has no pod ledger row; "
+            "a missing cost row is not a zero cost, so this arm has NO cost figure"
+            if unpriced
+            else "raw GPU provider cost from the campaign ledger"
+        ),
+        "gpu_seconds_per_unit": (
+            None if (unpriced or not n) else route_gpu_seconds / n
+        ),
+        "ledger_sec_per_unit": (None if (untimed or not n) else ledger_seconds / n),
+        "latency_incomplete_models": sorted(untimed),
         "latency_ms": _percentiles(latency_ms, missing_latency, n),
         "_per_unit_loss": per_unit_loss,
     }
@@ -578,7 +603,13 @@ def main(argv: list[str] | None = None) -> int:
             text_cache[benchmark] = built_texts
         scored_units = set(surface.all_units())
         units = [u for u in unit_cache[benchmark] if u.unit_key in scored_units]
-        print(f"{key}: {len(units)} units with a score, {len(surface.models)} models")
+        # A scored unit with no runtime-visible feature row would silently leave
+        # the denominator. Count it rather than let it vanish.
+        orphans = sorted(scored_units - {u.unit_key for u in units})
+        print(
+            f"{key}: {len(units)} units with a score, {len(surface.models)} models, "
+            f"{len(orphans)} scored units with no feature row"
+        )
 
         gt = S.ground_truth(key)
         opportunities = opportunity_freeze["surfaces"][key]["per_unit"]
@@ -596,6 +627,10 @@ def main(argv: list[str] | None = None) -> int:
             for unit in units
         }
         cost = F.load_cost(root)
+        # The campaign speed ledger is bound in ARENA_BIND.json, so the driver
+        # reads it there rather than reaching into `reports/` -- which the
+        # runtime-visible allow-list refuses, and rightly.
+        cost["per_model_speed"] = bind["cost_and_latency"]["per_model"]
 
         arms = build_arms(surface.models) + [
             arm for strong in F.STRONG_MODELS for arm in ablation_arms(strong)
@@ -657,6 +692,8 @@ def main(argv: list[str] | None = None) -> int:
             "unit_label": surface.unit_label,
             "n_units_scored": len(units),
             "n_units_union": len(surface.all_units()),
+            "n_scored_units_without_feature_row": len(orphans),
+            "scored_units_without_feature_row": orphans[:10],
             "models": surface.models,
             "gt_completeness": S.GT_COMPLETENESS.get(key),
             "primary_model_scored_on_this_surface": F.PRIMARY_MODEL in surface.models,
@@ -812,9 +849,9 @@ def render_tables(results: dict[str, Any]) -> str:
             "",
             "| arm | n | mean loss | 95% CI | IRR proxy | hard fail | regret | "
             "unresolved | escalation | strong | SCLR/unit | SCLR/opp | $/1k | "
-            "GPU s/unit | p50 ms | p95 ms | p99 ms |",
+            "GPU s/unit | p50 ms | p95 ms | p99 ms | ledger s |",
             "| --- | ---: | ---: | --- | ---: | ---: | ---: | ---: | ---: | ---: | "
-            "---: | ---: | ---: | ---: | ---: | ---: | ---: |",
+            "---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |",
         ]
         ci_all = block["bootstrap"].get("mean_loss_ci95", {})
         order = sorted(
@@ -846,7 +883,7 @@ def render_tables(results: dict[str, Any]) -> str:
                 f"{fmt(row.get('cost_usd_per_1000_units'), 2)} | "
                 f"{fmt(row.get('gpu_seconds_per_unit'), 2)} | "
                 f"{fmt(lat.get('p50'), 0)} | {fmt(lat.get('p95'), 0)} | "
-                f"{fmt(lat.get('p99'), 0)} |"
+                f"{fmt(lat.get('p99'), 0)} | {fmt(row.get('ledger_sec_per_unit'), 1)} |"
             )
         lines.append("")
         boot = block["bootstrap"]

@@ -29,9 +29,9 @@ _ORACLE = Path(__file__).resolve().parents[1] / "router_oracle_20260908"
 if str(_ORACLE) not in sys.path:
     sys.path.insert(0, str(_ORACLE))
 
-import oracle as _oracle  # type: ignore[import-untyped]  # noqa: E402
-from bind import load_json  # type: ignore[import-untyped]  # noqa: E402
-from reconciler import UNRESOLVED  # type: ignore[import-untyped]  # noqa: E402
+import oracle as _oracle  # type: ignore[import-not-found]  # noqa: E402
+from bind import load_json  # type: ignore[import-not-found]  # noqa: E402
+from reconciler import UNRESOLVED  # type: ignore[import-not-found]  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 

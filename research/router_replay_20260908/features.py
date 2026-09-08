@@ -51,7 +51,7 @@ import sys  # noqa: E402
 if str(_ORACLE) not in sys.path:
     sys.path.insert(0, str(_ORACLE))
 
-from reconciler import (  # type: ignore[import-untyped]  # noqa: E402
+from reconciler import (  # type: ignore[import-not-found]  # noqa: E402
     UNRESOLVED,
     normalize,
     select,
@@ -500,11 +500,14 @@ def build_units(
 
     cache_dir.mkdir(parents=True, exist_ok=True)
     rows = load_manifest(root, benchmark)
-    case_keys = [str(row["case_key"]) for row in rows]
+    # Receipts are cached per model across the WHOLE campaign, not per
+    # benchmark: a cache built from one benchmark's case keys would silently
+    # answer "no telemetry" for the other two.
+    all_case_keys = [str(row["case_key"]) for row in load_manifest(root)]
     frozen = {model: load_frozen_status(root, model, benchmark) for model in models}
     telemetry = {
         model: (
-            load_receipts(root, model, case_keys, cache_dir)
+            load_receipts(root, model, all_case_keys, cache_dir)
             if model in LATENCY_MODELS
             else {}
         )
@@ -1109,6 +1112,19 @@ def frozen_policy_parameters() -> dict[str, Any]:
             "cost/",
             *[f"<source_root>/{sub}" for sub in SOURCE_SUBROOTS.values()],
         ],
+        "core_router_context": {
+            "modes_replayed": ["balanced", "speed"],
+            "dominant_language": "en",
+            "dominant_language_note": (
+                "The corpus carries no per-page language signal a runtime could "
+                "read before parsing. 'en' is declared, not measured. It matters "
+                "only for the HPD gate, which admits en/zh/zh-cn/zh-tw -- the two "
+                "language families this corpus is built from -- so the gate is "
+                "effectively open either way."
+            ),
+            "ready_routes": ["native", "hpd_fast", "paddle_fast", "paddle_vl"],
+            "feature_flags": ["hpd_enabled", "paddle_fast_enabled", "unlimited_long_enabled"],
+        },
         "notes": [
             "Every threshold above was written down before any score file was "
             "opened. None was moved after a result was seen.",
