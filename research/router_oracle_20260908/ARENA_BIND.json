@@ -1,0 +1,2273 @@
+{
+  "arena_root": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903",
+  "campaign_id": "TAVONEL-MODEL-ARENA-PUBLIC-20260903-V1",
+  "corpus": {
+    "rows_by_benchmark": {
+      "olmocr": 1403,
+      "omnidoc": 1651,
+      "parsebench": 2078
+    },
+    "source_manifest_rows": 5132
+  },
+  "cost_and_latency": {
+    "campaign_totals": {
+      "cost_per_1000_pages_usd": 10.8554,
+      "gpu_seconds_per_page": 38.4371,
+      "idle_overhead_ratio": 0.6623,
+      "notes": [
+        "18 of 283 pod(s) have no terminated_at and are still billing; their 326.60 GPU-h is measured to now, not to teardown, and will keep growing until they close. 265 pod(s) are settled, totaling 254.71 GPU-h -- that is what cost/pod_ledger.jsonl carries."
+      ],
+      "successful_pages": 54445,
+      "total_cost_usd": 591.0237
+    },
+    "caveats": [
+      "Cost is raw GPU provider cost from the campaign ledger. It never sits beside a retail price.",
+      "Latency is per-job wall time from the queue database, not pure GPU kernel time, and the hardware mix differs across models.",
+      "opus5_subscription is a subscription API: it has no pod ledger and no speed row. Its cost is UNMEASURED here, not zero.",
+      "Some pods had not terminated when the ledger was written; their billed seconds are measured to that moment, not to teardown.",
+      "The campaign idle_overhead_ratio is 0.66: two thirds of the billed GPU time was idle pod time, not inference. cost_per_1000_pages_usd here is therefore CAMPAIGN OPERATIONAL cost under an exploratory scheduling pattern, not a steady-state serving cost, and it must never be quoted as a per-page price.",
+      "infinity_parser2_pro was FOUNDER_EXCLUDED part way through, so its per-1k figure divides real pod cost by a truncated page count and is not comparable to the others."
+    ],
+    "per_model": {
+      "deepseek_ocr2": {
+        "billed_seconds": 283271.497,
+        "cost_per_1000_pages_usd": 11.346044427123925,
+        "mean_sec_per_page": 32.239,
+        "median_sec_per_page": 27.0,
+        "n_success_timed": 5132,
+        "p90_sec_per_page": 60.0,
+        "pages_basis": 5132,
+        "pod_count": 31,
+        "provider_cost_usd": 58.227899999999984,
+        "speed_role": "primary",
+        "unterminated_pods_still_billing": 31
+      },
+      "glm_ocr": {
+        "billed_seconds": 171438.49800000002,
+        "cost_per_1000_pages_usd": 8.574261520283574,
+        "mean_sec_per_page": 7.787,
+        "median_sec_per_page": 5.0,
+        "n_success_timed": 5064,
+        "p90_sec_per_page": 13.0,
+        "pages_basis": 5078,
+        "pod_count": 69,
+        "provider_cost_usd": 43.54009999999999,
+        "speed_role": "primary",
+        "unterminated_pods_still_billing": 69
+      },
+      "hpd_parsing": {
+        "billed_seconds": 111374.497,
+        "cost_per_1000_pages_usd": 20.77887763055339,
+        "mean_sec_per_page": 4.374,
+        "median_sec_per_page": 3.0,
+        "n_success_timed": 5117,
+        "p90_sec_per_page": 7.0,
+        "pages_basis": 5132,
+        "pod_count": 11,
+        "provider_cost_usd": 106.63719999999999,
+        "speed_role": "primary",
+        "unterminated_pods_still_billing": 11
+      },
+      "infinity_parser2_flash": {
+        "billed_seconds": 19859.987,
+        "cost_per_1000_pages_usd": 0.7954793452844895,
+        "pages_basis": 5132,
+        "pod_count": 4,
+        "provider_cost_usd": 4.0824,
+        "unterminated_pods_still_billing": 4
+      },
+      "infinity_parser2_pro": {
+        "billed_seconds": 42102.0,
+        "cost_per_1000_pages_usd": 53.09751471550033,
+        "mean_sec_per_page": 9.815,
+        "median_sec_per_page": 9.0,
+        "n_success_timed": 1521,
+        "p90_sec_per_page": 15.0,
+        "pages_basis": 1529,
+        "pod_count": 7,
+        "provider_cost_usd": 81.18610000000001,
+        "speed_role": "reference",
+        "unterminated_pods_still_billing": 7
+      },
+      "mineru_pipeline": {
+        "billed_seconds": 123651.496,
+        "cost_per_1000_pages_usd": 4.952727981293841,
+        "mean_sec_per_page": 7.031,
+        "median_sec_per_page": 4.0,
+        "n_success_timed": 5132,
+        "p90_sec_per_page": 13.0,
+        "pages_basis": 5132,
+        "pod_count": 10,
+        "provider_cost_usd": 25.417399999999994,
+        "speed_role": "primary",
+        "unterminated_pods_still_billing": 10
+      },
+      "mineru_vlm": {
+        "billed_seconds": 37607.0,
+        "cost_per_1000_pages_usd": 0.9974084177708493,
+        "mean_sec_per_page": 5.447,
+        "median_sec_per_page": 5.0,
+        "n_success_timed": 5117,
+        "p90_sec_per_page": 8.0,
+        "pages_basis": 5132,
+        "pod_count": 17,
+        "provider_cost_usd": 5.118699999999999,
+        "speed_role": "primary",
+        "unterminated_pods_still_billing": 17
+      },
+      "monkeyocrv2_b": {
+        "billed_seconds": 138808.49800000002,
+        "cost_per_1000_pages_usd": 5.6023169055566475,
+        "mean_sec_per_page": 7.677,
+        "median_sec_per_page": 6.0,
+        "n_success_timed": 5093,
+        "p90_sec_per_page": 16.0,
+        "pages_basis": 5093,
+        "pod_count": 33,
+        "provider_cost_usd": 28.532600000000006,
+        "speed_role": "primary",
+        "unterminated_pods_still_billing": 33
+      },
+      "olmocr2": {
+        "billed_seconds": 190837.49599999998,
+        "cost_per_1000_pages_usd": 7.643725643024162,
+        "mean_sec_per_page": 18.878,
+        "median_sec_per_page": 13.0,
+        "n_success_timed": 5132,
+        "p90_sec_per_page": 33.0,
+        "pages_basis": 5132,
+        "pod_count": 17,
+        "provider_cost_usd": 39.2276,
+        "speed_role": "primary",
+        "unterminated_pods_still_billing": 17
+      },
+      "opus5_subscription": {
+        "cost_note": "UNMEASURED: no pod ledger rows. opus5_subscription runs on a subscription API with no pod; a missing row is not a zero cost.",
+        "cost_per_1000_pages_usd": null
+      },
+      "ovisocr2": {
+        "billed_seconds": 120792.497,
+        "cost_per_1000_pages_usd": 4.838172252533124,
+        "mean_sec_per_page": 5.927,
+        "median_sec_per_page": 4.0,
+        "n_success_timed": 5132,
+        "p90_sec_per_page": 10.0,
+        "pages_basis": 5132,
+        "pod_count": 14,
+        "provider_cost_usd": 24.829499999999996,
+        "speed_role": "primary",
+        "unterminated_pods_still_billing": 14
+      },
+      "paddleocr_vl_1_6": {
+        "billed_seconds": 122805.497,
+        "cost_per_1000_pages_usd": 4.918784099766172,
+        "mean_sec_per_page": 5.505,
+        "median_sec_per_page": 4.0,
+        "n_success_timed": 5117,
+        "p90_sec_per_page": 9.0,
+        "pages_basis": 5132,
+        "pod_count": 14,
+        "provider_cost_usd": 25.243199999999995,
+        "speed_role": "primary",
+        "unterminated_pods_still_billing": 14
+      },
+      "unlimited_ocr": {
+        "billed_seconds": 730159.983,
+        "cost_per_1000_pages_usd": 29.171842569022928,
+        "mean_sec_per_page": 33.491,
+        "median_sec_per_page": 29.0,
+        "n_success_timed": 5107,
+        "p90_sec_per_page": 61.0,
+        "pages_basis": 5107,
+        "pod_count": 56,
+        "provider_cost_usd": 148.9806000000001,
+        "speed_role": "primary",
+        "unterminated_pods_still_billing": 56
+      }
+    },
+    "sources": {
+      "campaign_cost": {
+        "bytes": 931,
+        "relative_path": "cost/campaign-cost.json",
+        "sha256": "sha256:999238cdb8b0c915e58ddee12985e7a85f83627c78df53c2869c0b95cabac9f7"
+      },
+      "pod_ledger_files": 283,
+      "speed": {
+        "bytes": 4419,
+        "relative_path": "reports/partial_score_20260905/comparison_speed.json",
+        "sha256": "sha256:21e4d783af71c3115b8eb47eeae54460dd9a8d66361a32e595ea1c5add787565"
+      }
+    }
+  },
+  "evaluators": {
+    "olmocr": {
+      "benchmark": "olmocr",
+      "dataset_license": "license-review-required",
+      "dataset_manifest_sha256": "sha256:55f347b01850aec77d457f6b3b2b54ddf5adce6f451ed501e59995ec0e9bff15",
+      "dataset_redistribution": "prohibited_until_license_review",
+      "dataset_repository": "allenai/olmOCR-bench",
+      "dataset_revision": "54a96a6fb6a2bd3b297e59869491db4d3625b711",
+      "frozen": false,
+      "historical_pin": "cfa88c1eb1c2ec4495c84d6820ffe85d33b7408c",
+      "license": "upstream-license-file-absent",
+      "main_pin": "cfa88c1eb1c2ec4495c84d6820ffe85d33b7408c"
+    },
+    "omnidoc": {
+      "benchmark": "omnidoc",
+      "dataset_license": "research-only-non-commercial",
+      "dataset_manifest_sha256": "sha256:1902d23db1b0e409d774f1420306f9e9e82d1aa8638050f0fc8fd6b94c58aa99",
+      "dataset_redistribution": "prohibited_without_separate_rights_review",
+      "dataset_repository": "opendatalab/OmniDocBench",
+      "dataset_revision": "aa1ee96d106dbe53d0ae59474d75c6e6d9b53fec",
+      "frozen": false,
+      "historical_pin": "193627ae9e97d89188468ed1ee3b7a856ff76044",
+      "license": "Apache-2.0",
+      "main_pin": "193627ae9e97d89188468ed1ee3b7a856ff76044"
+    },
+    "parsebench": {
+      "benchmark": "parsebench",
+      "dataset_license": "Apache-2.0",
+      "dataset_manifest_sha256": "sha256:9e3a722a5db9e8e23273176827c06a30fe6a58a983850329db917fabcff6c30e",
+      "dataset_redistribution": "license_permits_with_notice",
+      "dataset_repository": "llamaindex/ParseBench",
+      "dataset_revision": "2805a1d940f95a203e0ae4b88be9934f7765b3fc",
+      "frozen": false,
+      "historical_pin": "1d460294b3b9c57fb3fa944dc17a9c044c24d1e5",
+      "license": "Apache-2.0",
+      "main_pin": "1dbb407c122d4b50b9896dc1f04c4c74ddd4fae3"
+    }
+  },
+  "founder_excluded_models": [
+    "infinity_parser2_pro"
+  ],
+  "gpu_spend_usd": 0,
+  "models": {
+    "deepseek_ocr2": {
+      "benchmarks": {
+        "olmocr": {
+          "artifacts": {
+            "official_result": {
+              "bytes": 2513153,
+              "relative_path": "reports/full_compare_20260905/olmocr_raw/deepseek_ocr2/official_result.json",
+              "sha256": "sha256:1379166a417fe7c31736791424dad021eddeaecb8074f4d4d4e41a7479fa3901"
+            }
+          },
+          "available": true,
+          "overall_score": 0.7691493605442711,
+          "reason": null,
+          "unit_counts": {
+            "candidate_errors": 21,
+            "pdfs": 1403,
+            "tests": 8413
+          }
+        },
+        "omnidoc": {
+          "artifacts": {
+            "formula": {
+              "bytes": 25838,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/deepseek_ocr2/markdown_quick_match_display_formula_per_page_edit.json",
+              "sha256": "sha256:a68f4b4dd70f9d899cd24fd80a5d22ccf2d310719776641543a02ca026ccc0ca"
+            },
+            "reading_order": {
+              "bytes": 120867,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/deepseek_ocr2/markdown_quick_match_reading_order_per_page_edit.json",
+              "sha256": "sha256:da9dc5290af33bee37bc8754289cef235287834d599979bb17526e08350d8a83"
+            },
+            "table": {
+              "bytes": 37985,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/deepseek_ocr2/markdown_quick_match_table_per_page_edit.json",
+              "sha256": "sha256:7cb0eeda92dac038f7ae7db2f19352dc8aa8da990c4c0e104ea57182c7a63b76"
+            },
+            "table_teds": {
+              "bytes": 101262,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/deepseek_ocr2/markdown_quick_match_table_per_table_TEDS.json",
+              "sha256": "sha256:2d3775b7ae1bd5bf9d5d084545b137e05e36b6739ec1bd6dca26792f8b2e1757"
+            },
+            "text": {
+              "bytes": 122627,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/deepseek_ocr2/markdown_quick_match_text_block_per_page_edit.json",
+              "sha256": "sha256:d507e4fb25d53ceecfe509e38b81abe76e3a02fc23c64acae6556060c65fcbef"
+            }
+          },
+          "available": true,
+          "file_prefix": "markdown_quick_match_",
+          "reason": null,
+          "unit_counts": {
+            "formula": 313,
+            "reading_order": 1638,
+            "table": 458,
+            "table_teds": 665,
+            "text": 1557
+          }
+        },
+        "parsebench": {
+          "artifacts": {
+            "chart": {
+              "bytes": 86429,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/deepseek_ocr2/chart_evaluation_results.csv",
+              "sha256": "sha256:8bdad93d40aad583989a43555a5c2be06755443a87b951f62f73741f759c0234"
+            },
+            "layout": {
+              "bytes": 130334,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/deepseek_ocr2/layout_evaluation_results.csv",
+              "sha256": "sha256:3a0f7196a7d94b5b742b775ae328526e89c1b16f31ffcfd813f90edb0c879fbe"
+            },
+            "table": {
+              "bytes": 114885,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/deepseek_ocr2/table_evaluation_results.csv",
+              "sha256": "sha256:2c7ab8c0c49aaa2315052dd1539b031bdd9e07509f5f33d98bd5922cbce80a25"
+            },
+            "text_content": {
+              "bytes": 180034,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/deepseek_ocr2/text_content_evaluation_results.csv",
+              "sha256": "sha256:19fcc597a6ec91cebe3a3c3076ce2a15c42ca112887662a29cc0ce60576512e8"
+            },
+            "text_formatting": {
+              "bytes": 100899,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/deepseek_ocr2/text_formatting_evaluation_results.csv",
+              "sha256": "sha256:f67e98eeb6ee62681e95c9cb18cfbc441af987fcc9d1a5d899aedc0707c423c5"
+            }
+          },
+          "available": true,
+          "reason": null,
+          "unit_counts": {
+            "chart": 568,
+            "layout": 501,
+            "table": 505,
+            "text_content": 506,
+            "text_formatting": 476
+          }
+        }
+      },
+      "founder_excluded": false,
+      "founder_exclusion_receipt": null,
+      "frozen_outputs": {
+        "available": true,
+        "complete": true,
+        "failed_count": 0,
+        "frozen_at": "2026-09-04T20:53:55Z",
+        "manifest": {
+          "bytes": 3392283,
+          "relative_path": "frozen_outputs/deepseek_ocr2/manifest.jsonl",
+          "sha256": "sha256:fca99e254cd4be5d754a79b29d48a2673edbceaf9bdaf5f875efbc29a10980b8"
+        },
+        "manifest_sha256_declared": "sha256:fca99e254cd4be5d754a79b29d48a2673edbceaf9bdaf5f875efbc29a10980b8",
+        "marker": {
+          "bytes": 441,
+          "relative_path": "frozen_outputs/deepseek_ocr2/FROZEN.json",
+          "sha256": "sha256:22d0839f7857894f389990c2cb14fb97c5ae5987b79e4e8f7bf3b34afe0a57b6"
+        },
+        "model_revision_declared": null,
+        "reason": null,
+        "runtime_image_digest_declared": null,
+        "sample_count": 5132,
+        "status_by_benchmark": {
+          "olmocr": {
+            "SUCCESS": 1403
+          },
+          "omnidoc": {
+            "SUCCESS": 1651
+          },
+          "parsebench": {
+            "SUCCESS": 2078
+          }
+        },
+        "success_count": 5132
+      },
+      "incomplete": false,
+      "missing_benchmarks": [],
+      "pins": {
+        "code_repositories": [
+          {
+            "license_spdx_id": "Apache-2.0",
+            "repo": "deepseek-ai/DeepSeek-OCR-2",
+            "revision": "2f3699ebbb96fa8af32212e8c170f2cc28730fad",
+            "role": "official_runtime",
+            "tag": null
+          }
+        ],
+        "container_digest": null,
+        "container_digest_unresolved_reason": "lane F resolves the immutable image digest during the build phase",
+        "container_image": null,
+        "cuda": null,
+        "display_name": "DeepSeek-OCR-2",
+        "identity_pinned_behind_upstream": false,
+        "identity_source": "runtimes/deepseek_ocr2/runtime.json",
+        "inference_config_sha256": "sha256:75d95fcd48a3493e40b02861327d7075bd9d439e1c24a3b8e0bab5588e474f72",
+        "license": "apache-2.0",
+        "weights": {
+          "file_count": 16,
+          "gated": false,
+          "largest_file": "model-00001-of-000001.safetensors",
+          "largest_file_sha256": "sha256:d8ff67a424ba6f4dd077885eb9d6a05d2537e76fe5491f0e2a9b712f8c8870fa",
+          "last_modified": "2026-02-03T00:33:19.000Z",
+          "repo": "deepseek-ai/DeepSeek-OCR-2",
+          "revision": "aaa02f3811945a91062062994c5c4a3f4c0af2b0",
+          "size_bytes": 6778573880,
+          "total_weight_bytes": 6778573880
+        }
+      }
+    },
+    "glm_ocr": {
+      "benchmarks": {
+        "olmocr": {
+          "artifacts": {
+            "official_result": {
+              "bytes": 2603427,
+              "relative_path": "reports/full_compare_20260905/olmocr_raw/glm_ocr/official_result.json",
+              "sha256": "sha256:d06cacb67c51f0815e16efa28571ec3b739940a73c79c275dab62273d60c3614"
+            }
+          },
+          "available": true,
+          "overall_score": 0.545819868110567,
+          "reason": null,
+          "unit_counts": {
+            "candidate_errors": 0,
+            "pdfs": 1403,
+            "tests": 8413
+          }
+        },
+        "omnidoc": {
+          "artifacts": {
+            "formula": {
+              "bytes": 26048,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/glm_ocr/md_glm_ocr_quick_match_display_formula_per_page_edit.json",
+              "sha256": "sha256:4fb678017092f8008c8f25050c2f37d992eca5cd584309ce3394410f9ee8748f"
+            },
+            "reading_order": {
+              "bytes": 122027,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/glm_ocr/md_glm_ocr_quick_match_reading_order_per_page_edit.json",
+              "sha256": "sha256:1f8792892699e06944cc3577ed5261a877e725a425cba5f5ac2245b7cff0509c"
+            },
+            "table": {
+              "bytes": 36131,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/glm_ocr/md_glm_ocr_quick_match_table_per_page_edit.json",
+              "sha256": "sha256:90a7b7e3bae7acc4360900fa0a29b9298f40936d51396a3a44d9d61335f8c21a"
+            },
+            "table_teds": {
+              "bytes": 98057,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/glm_ocr/md_glm_ocr_quick_match_table_per_table_TEDS.json",
+              "sha256": "sha256:35e064ea95429eedc985f7457473ad063632854e4ce2adf77427481c3f9f02dd"
+            },
+            "text": {
+              "bytes": 122480,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/glm_ocr/md_glm_ocr_quick_match_text_block_per_page_edit.json",
+              "sha256": "sha256:1ea4e5d1a442a8cc460d8bd115ae6f67ae4bb2b6a0f133c7379e66d089236bdd"
+            }
+          },
+          "available": true,
+          "file_prefix": "md_glm_ocr_quick_match_",
+          "reason": null,
+          "unit_counts": {
+            "formula": 313,
+            "reading_order": 1638,
+            "table": 458,
+            "table_teds": 665,
+            "text": 1557
+          }
+        },
+        "parsebench": {
+          "artifacts": {
+            "chart": {
+              "bytes": 83017,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/glm_ocr/chart_evaluation_results.csv",
+              "sha256": "sha256:134f7b2c6274d727453086fc4c4d713990d7a26f28f902dffca4e3d8964006e5"
+            },
+            "layout": {
+              "bytes": 127051,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/glm_ocr/layout_evaluation_results.csv",
+              "sha256": "sha256:8b3f0e6e2a61b05bb64e1022273d5b5d579198561902b2350e6ab66ca992cafa"
+            },
+            "table": {
+              "bytes": 91253,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/glm_ocr/table_evaluation_results.csv",
+              "sha256": "sha256:202c02ba921cee37728ea22f3a36078dde0525a4097ef1ec5e07475ef2e1ad24"
+            },
+            "text_content": {
+              "bytes": 170323,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/glm_ocr/text_content_evaluation_results.csv",
+              "sha256": "sha256:c18f4168462ec2ea74639b2b36f715d2a57746788a8b42dae0bb0373ebfece5c"
+            },
+            "text_formatting": {
+              "bytes": 99034,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/glm_ocr/text_formatting_evaluation_results.csv",
+              "sha256": "sha256:6da7634720d3c1d39e975c41e8f3df6d3b01ec0513e852b75bd00cdc18c1cece"
+            }
+          },
+          "available": true,
+          "reason": null,
+          "unit_counts": {
+            "chart": 568,
+            "layout": 500,
+            "table": 503,
+            "text_content": 506,
+            "text_formatting": 476
+          }
+        }
+      },
+      "founder_excluded": false,
+      "founder_exclusion_receipt": null,
+      "frozen_outputs": {
+        "available": true,
+        "complete": true,
+        "failed_count": 54,
+        "frozen_at": "2026-09-06T10:34:15Z",
+        "manifest": {
+          "bytes": 3323193,
+          "relative_path": "frozen_outputs/glm_ocr/manifest.jsonl",
+          "sha256": "sha256:018d19ae746ff083d3f5e1b582130c39c87ddfcf244c90465c06dacc001951aa"
+        },
+        "manifest_sha256_declared": "sha256:018d19ae746ff083d3f5e1b582130c39c87ddfcf244c90465c06dacc001951aa",
+        "marker": {
+          "bytes": 687,
+          "relative_path": "frozen_outputs/glm_ocr/FROZEN.json",
+          "sha256": "sha256:15fa70d5f132075986b604d1266954fcb34aa331b31c77ab0857e10d1f96a76c"
+        },
+        "model_revision_declared": "ca5d8b3e287e52589e37c28385d9655ee4372f9d",
+        "reason": null,
+        "runtime_image_digest_declared": null,
+        "sample_count": 5132,
+        "status_by_benchmark": {
+          "olmocr": {
+            "FAILED": 2,
+            "SUCCESS": 1401
+          },
+          "omnidoc": {
+            "FAILED": 52,
+            "SUCCESS": 1599
+          },
+          "parsebench": {
+            "SUCCESS": 2078
+          }
+        },
+        "success_count": 5078
+      },
+      "incomplete": false,
+      "missing_benchmarks": [],
+      "pins": {
+        "code_repositories": [],
+        "container_digest": null,
+        "container_digest_unresolved_reason": "lane F resolves the immutable image digest during the build phase",
+        "container_image": "vllm/vllm-openai:nightly",
+        "cuda": null,
+        "display_name": "GLM-OCR",
+        "identity_pinned_behind_upstream": false,
+        "identity_source": "runtimes/glm_ocr/runtime.json",
+        "inference_config_sha256": "sha256:21a82ad3c1f14ca9d8b94c01d18e66e808e052b685beaf88e169f30958be8c56",
+        "license": "mit",
+        "weights": {
+          "file_count": 11,
+          "gated": false,
+          "largest_file": "model.safetensors",
+          "largest_file_sha256": "sha256:a16eb0de98d199293371c560f95f83130d2a2c9612449df16839f08ff9498815",
+          "last_modified": "2026-05-19T12:28:43.000Z",
+          "repo": "zai-org/GLM-OCR",
+          "revision": "ca5d8b3e287e52589e37c28385d9655ee4372f9d",
+          "size_bytes": 2650579464,
+          "total_weight_bytes": 2650579464
+        }
+      }
+    },
+    "hpd_parsing": {
+      "benchmarks": {
+        "olmocr": {
+          "artifacts": {
+            "official_result": {
+              "bytes": 2640904,
+              "relative_path": "reports/full_compare_20260905/olmocr_raw/hpd_parsing/official_result.json",
+              "sha256": "sha256:9148b0ed2a0baa3312f5ec738c256f34f38e9497d392e610f642c5d4993d12e8"
+            }
+          },
+          "available": true,
+          "overall_score": 0.6548175713200822,
+          "reason": null,
+          "unit_counts": {
+            "candidate_errors": 0,
+            "pdfs": 1403,
+            "tests": 8413
+          }
+        },
+        "omnidoc": {
+          "artifacts": {
+            "formula": {
+              "bytes": 25883,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/hpd_parsing/md_hpd_parsing_quick_match_display_formula_per_page_edit.json",
+              "sha256": "sha256:c3fe3147f31b7946e12ceaecf5cf5b0bc702391a1f31300ad0a98fdb2a950e0e"
+            },
+            "reading_order": {
+              "bytes": 119630,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/hpd_parsing/md_hpd_parsing_quick_match_reading_order_per_page_edit.json",
+              "sha256": "sha256:eb8e169edc76a8b039de4739b6a790e1788e5848ebe5b9286f736153d1215a86"
+            },
+            "table": {
+              "bytes": 37960,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/hpd_parsing/md_hpd_parsing_quick_match_table_per_page_edit.json",
+              "sha256": "sha256:f32b4f4426d3fff7190c6a1f910444a8bed701afe258385ecf29e58474ba86e8"
+            },
+            "table_teds": {
+              "bytes": 101473,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/hpd_parsing/md_hpd_parsing_quick_match_table_per_table_TEDS.json",
+              "sha256": "sha256:c5273248f910c45256564c4bb1a322243d3f0958897555ab4a42cc43b60bbb40"
+            },
+            "text": {
+              "bytes": 122313,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/hpd_parsing/md_hpd_parsing_quick_match_text_block_per_page_edit.json",
+              "sha256": "sha256:1c3abe3870d9909b7f1caaa2bcbea0a9b6ba8b00bf0476f63fd966ccca649549"
+            }
+          },
+          "available": true,
+          "file_prefix": "md_hpd_parsing_quick_match_",
+          "reason": null,
+          "unit_counts": {
+            "formula": 313,
+            "reading_order": 1638,
+            "table": 458,
+            "table_teds": 665,
+            "text": 1557
+          }
+        },
+        "parsebench": {
+          "artifacts": {
+            "chart": {
+              "bytes": 85295,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/hpd_parsing/chart_evaluation_results.csv",
+              "sha256": "sha256:8c8020dd41ebd83b69b986e73f5f995be2013756c6652b75a8cf578fb5ca8d72"
+            },
+            "layout": {
+              "bytes": 129051,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/hpd_parsing/layout_evaluation_results.csv",
+              "sha256": "sha256:68caaa1cd4c1ba84b2dcf5cc796f9c75cd20b7097d0cef17983ccc72e6365eb6"
+            },
+            "table": {
+              "bytes": 111097,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/hpd_parsing/table_evaluation_results.csv",
+              "sha256": "sha256:38e43f96f876c9a1f1162f79a4a990649b8b90f0a9c891246b5ef1b42bd67bd8"
+            },
+            "text_content": {
+              "bytes": 174110,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/hpd_parsing/text_content_evaluation_results.csv",
+              "sha256": "sha256:ffc7edea92db5179485befe90290ac3f42700c7d168a1a2685da9b171534778d"
+            },
+            "text_formatting": {
+              "bytes": 100441,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/hpd_parsing/text_formatting_evaluation_results.csv",
+              "sha256": "sha256:3afe4fd5ea514514299ba8e4d39917e56283669d2129f9474568441274adfcb3"
+            }
+          },
+          "available": true,
+          "reason": null,
+          "unit_counts": {
+            "chart": 568,
+            "layout": 500,
+            "table": 503,
+            "text_content": 506,
+            "text_formatting": 476
+          }
+        }
+      },
+      "founder_excluded": false,
+      "founder_exclusion_receipt": null,
+      "frozen_outputs": {
+        "available": true,
+        "complete": true,
+        "failed_count": 0,
+        "frozen_at": "2026-09-04T20:54:09Z",
+        "manifest": {
+          "bytes": 3371755,
+          "relative_path": "frozen_outputs/hpd_parsing/manifest.jsonl",
+          "sha256": "sha256:84e020d56c2471fcda7b593bce406ef60c948bebffb358497dd04ada9f5fcfc4"
+        },
+        "manifest_sha256_declared": "sha256:84e020d56c2471fcda7b593bce406ef60c948bebffb358497dd04ada9f5fcfc4",
+        "marker": {
+          "bytes": 441,
+          "relative_path": "frozen_outputs/hpd_parsing/FROZEN.json",
+          "sha256": "sha256:e42f8a3a936f0ee60a29a3a178b8e2eeabec9855a2c5182e977553843a32fbd0"
+        },
+        "model_revision_declared": null,
+        "reason": null,
+        "runtime_image_digest_declared": null,
+        "sample_count": 5132,
+        "status_by_benchmark": {
+          "olmocr": {
+            "SUCCESS": 1403
+          },
+          "omnidoc": {
+            "SUCCESS": 1651
+          },
+          "parsebench": {
+            "SUCCESS": 2078
+          }
+        },
+        "success_count": 5132
+      },
+      "incomplete": false,
+      "missing_benchmarks": [],
+      "pins": {
+        "code_repositories": [
+          {
+            "license_spdx_id": "Apache-2.0",
+            "repo": "PaddlePaddle/PaddleOCR",
+            "revision": "2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+            "role": "official_documentation",
+            "tag": null
+          }
+        ],
+        "container_digest": null,
+        "container_digest_unresolved_reason": "lane F resolves the immutable image digest during the build phase",
+        "container_image": "ccr-2vdh3abv-pub.cnc.bj.baidubce.com/paddlepaddle/hpd-parsing-vllm:latest-nvidia-gpu",
+        "cuda": "12.8",
+        "display_name": "HPD-Parsing",
+        "identity_pinned_behind_upstream": false,
+        "identity_source": "runtimes/hpd_parsing/runtime.json",
+        "inference_config_sha256": "sha256:d120c42fc0901fbcc1a3340a3eda61c8ff8cfe4370e3ab56c4a9eb99b65c91ab",
+        "license": "apache-2.0",
+        "weights": {
+          "file_count": 25,
+          "gated": false,
+          "largest_file": "model.safetensors",
+          "largest_file_sha256": "sha256:f82b9c83ca8a85931b51b717143c24858281aa8cd1f016dd5a7a1ec5d40a7d91",
+          "last_modified": "2026-07-22T11:43:09.000Z",
+          "repo": "PaddlePaddle/HPD-Parsing",
+          "revision": "91de80054c23ab4238e3d7073fa2b83c2a7e301e",
+          "size_bytes": 2143907448,
+          "total_weight_bytes": 2788268704
+        }
+      }
+    },
+    "infinity_parser2_flash": {
+      "benchmarks": {
+        "olmocr": {
+          "artifacts": {
+            "official_result": {
+              "bytes": 2520663,
+              "relative_path": "reports/full_compare_20260905/olmocr_raw/infinity_parser2_flash/official_result.json",
+              "sha256": "sha256:3ef12587dddcaf3537894b386ea7db406bc6559da4ad7b3925d29e4512542cd4"
+            }
+          },
+          "available": true,
+          "overall_score": 0.7129102421522249,
+          "reason": null,
+          "unit_counts": {
+            "candidate_errors": 0,
+            "pdfs": 1403,
+            "tests": 8413
+          }
+        },
+        "omnidoc": {
+          "artifacts": {
+            "formula": {
+              "bytes": 25840,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/infinity_parser2_flash/md_infinity_parser2_flash_quick_match_display_formula_per_page_edit.json",
+              "sha256": "sha256:5fda1ac94e86084d712f006dfe55121adefd68426977f6478e168fe960553c9a"
+            },
+            "reading_order": {
+              "bytes": 120486,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/infinity_parser2_flash/md_infinity_parser2_flash_quick_match_reading_order_per_page_edit.json",
+              "sha256": "sha256:af60fceb23b7c303ac9f13da4cd91684bfcaf11c16914371c5a2d678252ad03b"
+            },
+            "table": {
+              "bytes": 37910,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/infinity_parser2_flash/md_infinity_parser2_flash_quick_match_table_per_page_edit.json",
+              "sha256": "sha256:6e978b8680564528ac051fb95b8f3dc06ed5b707365aef22959b2d856a3ef5a3"
+            },
+            "table_teds": {
+              "bytes": 101662,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/infinity_parser2_flash/md_infinity_parser2_flash_quick_match_table_per_table_TEDS.json",
+              "sha256": "sha256:5407c077c5a8d33ff25e79d0d7d455267b941e76cc5fee5454e5ee3cc749265d"
+            },
+            "text": {
+              "bytes": 122497,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/infinity_parser2_flash/md_infinity_parser2_flash_quick_match_text_block_per_page_edit.json",
+              "sha256": "sha256:b1d1be73919755c23d81b23d01d390c6857c378f9d3383fe10dec2ffa48b41f8"
+            }
+          },
+          "available": true,
+          "file_prefix": "md_infinity_parser2_flash_quick_match_",
+          "reason": null,
+          "unit_counts": {
+            "formula": 313,
+            "reading_order": 1638,
+            "table": 458,
+            "table_teds": 665,
+            "text": 1557
+          }
+        },
+        "parsebench": {
+          "artifacts": {
+            "chart": {
+              "bytes": 83587,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/infinity_parser2_flash/chart/_evaluation_results.csv",
+              "sha256": "sha256:bdfa08ef13d15c5be920b9daaf08575ffac0caa50c3b3acb25430619136500f8"
+            },
+            "layout": {
+              "bytes": 128447,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/infinity_parser2_flash/layout/_evaluation_results.csv",
+              "sha256": "sha256:0a129aae60f2430edc48297be0861676f60508a994ff1480c428536474a65014"
+            },
+            "table": {
+              "bytes": 106972,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/infinity_parser2_flash/table/_evaluation_results.csv",
+              "sha256": "sha256:f7379885a95cd47fdc143bc4f2dba718ffcd127b8c3d7600cb28217bb6f6e2d4"
+            },
+            "text_content": {
+              "bytes": 169936,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/infinity_parser2_flash/text_content/_evaluation_results.csv",
+              "sha256": "sha256:9df23031c509b6405939586ec64319e7ad31e5bb23356c6635a60a10cf0134a6"
+            },
+            "text_formatting": {
+              "bytes": 90744,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/infinity_parser2_flash/text_formatting/_evaluation_results.csv",
+              "sha256": "sha256:8897a07101c2c47d318a1d09424f0e2f8e392a1afaffcdae57e2dafe08e20bb4"
+            }
+          },
+          "available": true,
+          "reason": null,
+          "unit_counts": {
+            "chart": 568,
+            "layout": 500,
+            "table": 503,
+            "text_content": 506,
+            "text_formatting": 476
+          }
+        }
+      },
+      "founder_excluded": false,
+      "founder_exclusion_receipt": null,
+      "frozen_outputs": {
+        "available": true,
+        "complete": null,
+        "failed_count": 0,
+        "frozen_at": "2026-09-05T09:03:23Z",
+        "manifest": {
+          "bytes": 3484659,
+          "relative_path": "frozen_outputs/infinity_parser2_flash/manifest.jsonl",
+          "sha256": "sha256:abddfecb21a7ac3b60569927a1c05a2b97a1d1f68272566dc94d5cde3825f6c3"
+        },
+        "manifest_sha256_declared": "sha256:abddfecb21a7ac3b60569927a1c05a2b97a1d1f68272566dc94d5cde3825f6c3",
+        "marker": {
+          "bytes": 558,
+          "relative_path": "frozen_outputs/infinity_parser2_flash/FROZEN.json",
+          "sha256": "sha256:95b336d45187d24331c632acd22b7bb246957faf4238398855f1e6231c96bd02"
+        },
+        "model_revision_declared": "cfddc4106b0abc4706f05575a164f7dd35d09c46",
+        "reason": null,
+        "runtime_image_digest_declared": "bootstrap:sha256:ba280020c0ec3355e4a427d8a85b50e1950eb4fe172a8daf36e8f95a42dc213f",
+        "sample_count": 5132,
+        "status_by_benchmark": {
+          "olmocr": {
+            "SUCCESS": 1403
+          },
+          "omnidoc": {
+            "SUCCESS": 1651
+          },
+          "parsebench": {
+            "SUCCESS": 2078
+          }
+        },
+        "success_count": 5132
+      },
+      "incomplete": false,
+      "missing_benchmarks": [],
+      "pins": {
+        "code_repositories": [],
+        "container_digest": null,
+        "container_digest_unresolved_reason": "lane F resolves the immutable image digest during the build phase",
+        "container_image": null,
+        "cuda": "12.9",
+        "display_name": "Infinity-Parser2-Flash",
+        "identity_pinned_behind_upstream": false,
+        "identity_source": "runtimes/infinity_parser2_flash/runtime.json",
+        "inference_config_sha256": "sha256:c25a2cf807b2d12658f23e0c6e315201ffccf59ab20e88e65f454de321f42fe6",
+        "license": "apache-2.0",
+        "weights": {
+          "file_count": 10,
+          "gated": false,
+          "largest_file": "model.safetensors",
+          "largest_file_sha256": "sha256:761cb9295e05047bc8628effd7381023458f193955b804098dd332c464f26150",
+          "last_modified": "2026-07-20T08:47:19.000Z",
+          "repo": "infly/Infinity-Parser2-Flash",
+          "revision": "cfddc4106b0abc4706f05575a164f7dd35d09c46",
+          "size_bytes": 4426558832,
+          "total_weight_bytes": 4426558832
+        }
+      }
+    },
+    "infinity_parser2_pro": {
+      "benchmarks": {
+        "olmocr": {
+          "artifacts": {},
+          "available": false,
+          "reason": "no olmocr official_result.json",
+          "unit_counts": {}
+        },
+        "omnidoc": {
+          "artifacts": {},
+          "available": false,
+          "reason": "no omnidoc_raw directory for this model",
+          "unit_counts": {}
+        },
+        "parsebench": {
+          "artifacts": {},
+          "available": false,
+          "reason": "no parsebench_raw directory",
+          "unit_counts": {}
+        }
+      },
+      "founder_excluded": true,
+      "founder_exclusion_receipt": "FOUNDER_EXCLUDE_INFINITY_2026-09-04.md",
+      "frozen_outputs": {
+        "available": true,
+        "complete": false,
+        "failed_count": 0,
+        "frozen_at": "2026-09-04T13:34:24Z",
+        "manifest": {
+          "bytes": 1040867,
+          "relative_path": "frozen_outputs/infinity_parser2_pro/manifest.jsonl",
+          "sha256": "sha256:13be88689a1a4e76545710431a79ffa9bf355c57a650c1825bb7547b0ca5dc61"
+        },
+        "manifest_sha256_declared": "sha256:13be88689a1a4e76545710431a79ffa9bf355c57a650c1825bb7547b0ca5dc61",
+        "marker": {
+          "bytes": 442,
+          "relative_path": "frozen_outputs/infinity_parser2_pro/FROZEN.json",
+          "sha256": "sha256:b023b2f5b064960095d9865d074584a673c6ee7accb87daf26ef990c527f476b"
+        },
+        "model_revision_declared": null,
+        "reason": null,
+        "runtime_image_digest_declared": null,
+        "sample_count": 1529,
+        "status_by_benchmark": {
+          "olmocr": {
+            "SUCCESS": 987
+          },
+          "omnidoc": {
+            "SUCCESS": 537
+          },
+          "parsebench": {
+            "SUCCESS": 5
+          }
+        },
+        "success_count": 1529
+      },
+      "incomplete": true,
+      "missing_benchmarks": [
+        "omnidoc",
+        "olmocr",
+        "parsebench"
+      ],
+      "pins": {
+        "code_repositories": [],
+        "container_digest": null,
+        "container_digest_unresolved_reason": "lane F resolves the immutable image digest during the build phase",
+        "container_image": null,
+        "cuda": "12.8",
+        "display_name": "Infinity-Parser2-Pro",
+        "identity_pinned_behind_upstream": false,
+        "identity_source": "runtimes/infinity_parser2_pro/runtime.json",
+        "inference_config_sha256": "sha256:c886a891fd7ad0114741127d7786a0abafa32884cbe9071e253c5eb58079ff87",
+        "license": "apache-2.0",
+        "weights": {
+          "file_count": 26,
+          "gated": false,
+          "largest_file": "model-00006-of-00015.safetensors",
+          "largest_file_sha256": "sha256:84eee8d855324eab6838e8aefbc4c42aa67c29d9de24813712f5dc4ff6cd2b81",
+          "last_modified": "2026-07-20T08:46:43.000Z",
+          "repo": "infly/Infinity-Parser2-Pro",
+          "revision": "b27d470100514329fc6439aada8f16ccea5f9e2a",
+          "size_bytes": 32423724072,
+          "total_weight_bytes": 70214492328
+        }
+      }
+    },
+    "mineru_pipeline": {
+      "benchmarks": {
+        "olmocr": {
+          "artifacts": {
+            "official_result": {
+              "bytes": 2530393,
+              "relative_path": "reports/full_compare_20260905/olmocr_raw/mineru_pipeline/official_result.json",
+              "sha256": "sha256:b337fc7aebbb378e241f46da6bc50e019808f294acebf1b8f44e48c0fd07279a"
+            }
+          },
+          "available": true,
+          "overall_score": 0.7126284587068288,
+          "reason": null,
+          "unit_counts": {
+            "candidate_errors": 0,
+            "pdfs": 1403,
+            "tests": 8413
+          }
+        },
+        "omnidoc": {
+          "artifacts": {
+            "formula": {
+              "bytes": 26131,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/mineru_pipeline/md_mineru_pipeline_quick_match_display_formula_per_page_edit.json",
+              "sha256": "sha256:314c1574be93fa0ee28e9fafea63d3abbfd9edd4ffdb9a4c83877062a857a854"
+            },
+            "reading_order": {
+              "bytes": 121029,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/mineru_pipeline/md_mineru_pipeline_quick_match_reading_order_per_page_edit.json",
+              "sha256": "sha256:99e6124ef5ec4248aa6230e3b27c655f2303b402c182b34cba757fe18ca5e7b5"
+            },
+            "table": {
+              "bytes": 38884,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/mineru_pipeline/md_mineru_pipeline_quick_match_table_per_page_edit.json",
+              "sha256": "sha256:a69a3aca57deae4842c8f6a427cead84afcec41d8df39b1b7840e932b4bea83e"
+            },
+            "table_teds": {
+              "bytes": 103234,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/mineru_pipeline/md_mineru_pipeline_quick_match_table_per_table_TEDS.json",
+              "sha256": "sha256:542c59ef1502f7397ec63078aae8f82a9939756c237393f43418288a610d0d4a"
+            },
+            "text": {
+              "bytes": 124121,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/mineru_pipeline/md_mineru_pipeline_quick_match_text_block_per_page_edit.json",
+              "sha256": "sha256:9601f651abaca1ef91d2920d66ec078b0bd7ef6d23459a37ea2bc802d3f053a5"
+            }
+          },
+          "available": true,
+          "file_prefix": "md_mineru_pipeline_quick_match_",
+          "reason": null,
+          "unit_counts": {
+            "formula": 313,
+            "reading_order": 1638,
+            "table": 458,
+            "table_teds": 665,
+            "text": 1557
+          }
+        },
+        "parsebench": {
+          "artifacts": {
+            "chart": {
+              "bytes": 87565,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/mineru_pipeline/chart_evaluation_results.csv",
+              "sha256": "sha256:9a0eba66e68ce2d0d97684f0127ef336c2d7e63b3c28f4ffe80db2729ba3dffa"
+            },
+            "layout": {
+              "bytes": 131051,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/mineru_pipeline/layout_evaluation_results.csv",
+              "sha256": "sha256:04ba7f9cf896d90cae9ffc9e8e320b62d0399940c9943f456df4188ce268c419"
+            },
+            "table": {
+              "bytes": 115708,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/mineru_pipeline/table_evaluation_results.csv",
+              "sha256": "sha256:b73d505d33c03ed37d92768a4bab3fddce874c5945cbd24be262ef2de5377aa8"
+            },
+            "text_content": {
+              "bytes": 180352,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/mineru_pipeline/text_content_evaluation_results.csv",
+              "sha256": "sha256:c582c90fa25febfaa142a14c708cee53a362d5e13e43d72ca9549306e56c6ddd"
+            },
+            "text_formatting": {
+              "bytes": 100872,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/mineru_pipeline/text_formatting_evaluation_results.csv",
+              "sha256": "sha256:b541c28ec90fd0364442d7b201b6a706137f7febf87b3e0f6594b6ae58931eea"
+            }
+          },
+          "available": true,
+          "reason": null,
+          "unit_counts": {
+            "chart": 568,
+            "layout": 500,
+            "table": 503,
+            "text_content": 506,
+            "text_formatting": 476
+          }
+        }
+      },
+      "founder_excluded": false,
+      "founder_exclusion_receipt": null,
+      "frozen_outputs": {
+        "available": true,
+        "complete": true,
+        "failed_count": 0,
+        "frozen_at": "2026-09-04T20:54:23Z",
+        "manifest": {
+          "bytes": 3412811,
+          "relative_path": "frozen_outputs/mineru_pipeline/manifest.jsonl",
+          "sha256": "sha256:5aa9a2753ec089c6accc6b3b3c2c1f83a35f1d58aecc361de9920b2d90551c8a"
+        },
+        "manifest_sha256_declared": "sha256:5aa9a2753ec089c6accc6b3b3c2c1f83a35f1d58aecc361de9920b2d90551c8a",
+        "marker": {
+          "bytes": 441,
+          "relative_path": "frozen_outputs/mineru_pipeline/FROZEN.json",
+          "sha256": "sha256:9926ee34ac108b28efdbaf3a0795f4498c73d479d940171c6ff4e5be1f0cd0e5"
+        },
+        "model_revision_declared": null,
+        "reason": null,
+        "runtime_image_digest_declared": null,
+        "sample_count": 5132,
+        "status_by_benchmark": {
+          "olmocr": {
+            "SUCCESS": 1403
+          },
+          "omnidoc": {
+            "SUCCESS": 1651
+          },
+          "parsebench": {
+            "SUCCESS": 2078
+          }
+        },
+        "success_count": 5132
+      },
+      "incomplete": false,
+      "missing_benchmarks": [],
+      "pins": {
+        "code_repositories": [
+          {
+            "license_spdx_id": "NOASSERTION",
+            "repo": "opendatalab/MinerU",
+            "revision": "fbb1257a555a3fde78ae5aaaa931e3b3f8fb2883",
+            "role": "official_runtime",
+            "tag": "mineru-3.4.5-released"
+          }
+        ],
+        "container_digest": null,
+        "container_digest_unresolved_reason": "lane F resolves the immutable image digest during the build phase",
+        "container_image": null,
+        "cuda": null,
+        "display_name": "MinerU 3.4.5 Pipeline (PP-OCRv6)",
+        "identity_pinned_behind_upstream": true,
+        "identity_source": "runtimes/mineru_pipeline/runtime.json",
+        "inference_config_sha256": "sha256:baa12e342a87be9d81748c0c59db0fc9b4d055dbbb7c140cf2a8ab1b9805f481",
+        "license": "LicenseRef-MinerU-Open-Source-License",
+        "weights": {
+          "file_count": 187,
+          "gated": false,
+          "largest_file": "models/MFR/UniMERNet/pytorch_model.bin",
+          "largest_file_sha256": "sha256:6c80486e05b8cfbb48324a8802a2909221d219dd46aa6a936b92f2225555935e",
+          "last_modified": "2026-06-15T10:21:17.000Z",
+          "repo": "opendatalab/PDF-Extract-Kit-1.0",
+          "revision": "ed6b654c018d742e65a17671e379c5e6ecc87ec9",
+          "size_bytes": 3750208149,
+          "total_weight_bytes": 15085955808
+        }
+      }
+    },
+    "mineru_vlm": {
+      "benchmarks": {
+        "olmocr": {
+          "artifacts": {
+            "official_result": {
+              "bytes": 2460046,
+              "relative_path": "reports/full_compare_20260905/olmocr_raw/mineru_vlm/official_result.json",
+              "sha256": "sha256:f72e7086640c3e5c96d61354192c775cefb8c088e46548b73e3fb325696e8284"
+            }
+          },
+          "available": true,
+          "overall_score": 0.8057244867832957,
+          "reason": null,
+          "unit_counts": {
+            "candidate_errors": 0,
+            "pdfs": 1403,
+            "tests": 8413
+          }
+        },
+        "omnidoc": {
+          "artifacts": {
+            "formula": {
+              "bytes": 25894,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/mineru_vlm/md_mineru_vlm_quick_match_display_formula_per_page_edit.json",
+              "sha256": "sha256:3d346e7eaa956d82f1b730e32c4222f308d2480d442b0a36dab6f2d3b61dc05c"
+            },
+            "reading_order": {
+              "bytes": 119525,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/mineru_vlm/md_mineru_vlm_quick_match_reading_order_per_page_edit.json",
+              "sha256": "sha256:64891f855389cfd83c8c27e8a8d234e9adc3cdd3a8bfb179f7253e9105a83afd"
+            },
+            "table": {
+              "bytes": 37668,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/mineru_vlm/md_mineru_vlm_quick_match_table_per_page_edit.json",
+              "sha256": "sha256:012431cae1207ca6c52cf125659f06f02dccb01763cff0610a26a60f64307dba"
+            },
+            "table_teds": {
+              "bytes": 100600,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/mineru_vlm/md_mineru_vlm_quick_match_table_per_table_TEDS.json",
+              "sha256": "sha256:da65682e563d211ee544e6ddcd2b70f0c088e2a397e0ce1025f99788d785452c"
+            },
+            "text": {
+              "bytes": 122215,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/mineru_vlm/md_mineru_vlm_quick_match_text_block_per_page_edit.json",
+              "sha256": "sha256:bfa28b93ec331e35b7493422dee7977fbb70aae337b922fd6c6cb7879ba9fb84"
+            }
+          },
+          "available": true,
+          "file_prefix": "md_mineru_vlm_quick_match_",
+          "reason": null,
+          "unit_counts": {
+            "formula": 313,
+            "reading_order": 1638,
+            "table": 458,
+            "table_teds": 665,
+            "text": 1557
+          }
+        },
+        "parsebench": {
+          "artifacts": {
+            "chart": {
+              "bytes": 85867,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/mineru_vlm/chart_evaluation_results.csv",
+              "sha256": "sha256:226014238ac6db5786da9298d002b4025e88da303c29ef54131f64d09958d220"
+            },
+            "layout": {
+              "bytes": 128551,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/mineru_vlm/layout_evaluation_results.csv",
+              "sha256": "sha256:b86c56364ec2e6a2a83ea6e4dbb8631c1b8d895f8e8878d8ed5ed7437c4d095a"
+            },
+            "table": {
+              "bytes": 109992,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/mineru_vlm/table_evaluation_results.csv",
+              "sha256": "sha256:d245b6e4231bb4d702f0932cb27116634f8a6911dc2deaa9bbd6676bb3652d43"
+            },
+            "text_content": {
+              "bytes": 177348,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/mineru_vlm/text_content_evaluation_results.csv",
+              "sha256": "sha256:577fddb36b15294dd1bceae119ca5aa93fd2a724f7222b6a4bf8f52f1553de41"
+            },
+            "text_formatting": {
+              "bytes": 100865,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/mineru_vlm/text_formatting_evaluation_results.csv",
+              "sha256": "sha256:5ba5d8128bfdbe5a1c0858d5d959e10a31f556ff5c024d5d58d3e7b8bfe9d363"
+            }
+          },
+          "available": true,
+          "reason": null,
+          "unit_counts": {
+            "chart": 568,
+            "layout": 500,
+            "table": 503,
+            "text_content": 506,
+            "text_formatting": 476
+          }
+        }
+      },
+      "founder_excluded": false,
+      "founder_exclusion_receipt": null,
+      "frozen_outputs": {
+        "available": true,
+        "complete": true,
+        "failed_count": 0,
+        "frozen_at": "2026-09-04T20:54:35Z",
+        "manifest": {
+          "bytes": 3361491,
+          "relative_path": "frozen_outputs/mineru_vlm/manifest.jsonl",
+          "sha256": "sha256:2fe463087233a29cd7bf4d619e534a25727adf99588249b5dd70fa6569118b1d"
+        },
+        "manifest_sha256_declared": "sha256:2fe463087233a29cd7bf4d619e534a25727adf99588249b5dd70fa6569118b1d",
+        "marker": {
+          "bytes": 441,
+          "relative_path": "frozen_outputs/mineru_vlm/FROZEN.json",
+          "sha256": "sha256:5c0412e6beab40d7a73eb038fd9bc76a9e94ece32de55b244671214cd0ca8841"
+        },
+        "model_revision_declared": null,
+        "reason": null,
+        "runtime_image_digest_declared": null,
+        "sample_count": 5132,
+        "status_by_benchmark": {
+          "olmocr": {
+            "SUCCESS": 1403
+          },
+          "omnidoc": {
+            "SUCCESS": 1651
+          },
+          "parsebench": {
+            "SUCCESS": 2078
+          }
+        },
+        "success_count": 5132
+      },
+      "incomplete": false,
+      "missing_benchmarks": [],
+      "pins": {
+        "code_repositories": [
+          {
+            "license_spdx_id": "NOASSERTION",
+            "repo": "opendatalab/MinerU",
+            "revision": "fbb1257a555a3fde78ae5aaaa931e3b3f8fb2883",
+            "role": "official_runtime",
+            "tag": "mineru-3.4.5-released"
+          }
+        ],
+        "container_digest": null,
+        "container_digest_unresolved_reason": "lane F resolves the immutable image digest during the build phase",
+        "container_image": null,
+        "cuda": null,
+        "display_name": "MinerU VLM (MinerU2.5-Pro-2605-1.2B)",
+        "identity_pinned_behind_upstream": false,
+        "identity_source": "runtimes/mineru_vlm/runtime.json",
+        "inference_config_sha256": "sha256:ef9f5e60ef5373f03207f2f3a8daf464660b62fc13319b9265a32277d1b5c705",
+        "license": "LicenseRef-MinerU-Open-Source-License",
+        "weights": {
+          "file_count": 13,
+          "gated": false,
+          "largest_file": "model.safetensors",
+          "largest_file_sha256": "sha256:abf8681ca63b8dec7b67de257af47b821f179442f72998d0696ae2ed9232a5f0",
+          "last_modified": "2026-06-16T05:59:05.000Z",
+          "repo": "opendatalab/MinerU2.5-Pro-2605-1.2B",
+          "revision": "bff20d4ae2bf202df9f45284b4d43681555a97ed",
+          "size_bytes": 2312126640,
+          "total_weight_bytes": 2312126640
+        }
+      }
+    },
+    "monkeyocrv2_b": {
+      "benchmarks": {
+        "olmocr": {
+          "artifacts": {
+            "official_result": {
+              "bytes": 2610429,
+              "relative_path": "reports/full_compare_20260905/olmocr_raw/monkeyocrv2_b/official_result.json",
+              "sha256": "sha256:f5759d29275f3a4e05eeb15c07e1a20a9ba8aa2807a1771f20a052cbaf01add7"
+            }
+          },
+          "available": true,
+          "overall_score": 0.6601776872803793,
+          "reason": null,
+          "unit_counts": {
+            "candidate_errors": 0,
+            "pdfs": 1403,
+            "tests": 8413
+          }
+        },
+        "omnidoc": {
+          "artifacts": {
+            "formula": {
+              "bytes": 25923,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/monkeyocrv2_b/md_monkeyocrv2_b_quick_match_display_formula_per_page_edit.json",
+              "sha256": "sha256:12f220ff9d4f118c2ba5c04bb95d1490d1b21daac4afd0b9fccf0539819dffbb"
+            },
+            "reading_order": {
+              "bytes": 120088,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/monkeyocrv2_b/md_monkeyocrv2_b_quick_match_reading_order_per_page_edit.json",
+              "sha256": "sha256:a4c289596554c06d3c65f8a154f267132fcf546df71f58307ef824490de8dd60"
+            },
+            "table": {
+              "bytes": 37783,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/monkeyocrv2_b/md_monkeyocrv2_b_quick_match_table_per_page_edit.json",
+              "sha256": "sha256:001879ed356522a551bb1535e98f6924e89b4ded208000938f447bd56ad15e85"
+            },
+            "table_teds": {
+              "bytes": 100571,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/monkeyocrv2_b/md_monkeyocrv2_b_quick_match_table_per_table_TEDS.json",
+              "sha256": "sha256:ab6b876c9632fd7c67e488f5f58b9670a0997bdb49f02a0931a3b4937762b78a"
+            },
+            "text": {
+              "bytes": 124376,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/monkeyocrv2_b/md_monkeyocrv2_b_quick_match_text_block_per_page_edit.json",
+              "sha256": "sha256:7836d30628321f27c73abad21dd79d0c5e02d45f6b47cfd1986d86ba52a2ad41"
+            }
+          },
+          "available": true,
+          "file_prefix": "md_monkeyocrv2_b_quick_match_",
+          "reason": null,
+          "unit_counts": {
+            "formula": 313,
+            "reading_order": 1638,
+            "table": 458,
+            "table_teds": 665,
+            "text": 1557
+          }
+        },
+        "parsebench": {
+          "artifacts": {
+            "chart": {
+              "bytes": 83447,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/monkeyocrv2_b/chart/_evaluation_results.csv",
+              "sha256": "sha256:bc069da19fb9698ecb7968d320f87cc4cd09f2ac92a14bd2d5e48c8c01299b23"
+            },
+            "layout": {
+              "bytes": 127184,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/monkeyocrv2_b/layout/_evaluation_results.csv",
+              "sha256": "sha256:dacfcd6f430f4e6eb8e16154b3e6fbebbad9759244d32b2d04541b3fe8b5d0f3"
+            },
+            "table": {
+              "bytes": 105846,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/monkeyocrv2_b/table/_evaluation_results.csv",
+              "sha256": "sha256:82ffcf474cf2dc47383a52f663952cb2b14884c3f9d5357baecc3921f6f22bcb"
+            },
+            "text_content": {
+              "bytes": 172264,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/monkeyocrv2_b/text_content/_evaluation_results.csv",
+              "sha256": "sha256:e1879c2d1ca7d6b081f54984b2ae6447cd3924b5b6ac4748d8ba78052fb539df"
+            },
+            "text_formatting": {
+              "bytes": 99174,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/monkeyocrv2_b/text_formatting/_evaluation_results.csv",
+              "sha256": "sha256:167fa75234b16c3d1bd88bc07fef91b61eafdab017f7d1b058404cf5d9bb6efe"
+            }
+          },
+          "available": true,
+          "reason": null,
+          "unit_counts": {
+            "chart": 568,
+            "layout": 500,
+            "table": 503,
+            "text_content": 506,
+            "text_formatting": 476
+          }
+        }
+      },
+      "founder_excluded": false,
+      "founder_exclusion_receipt": null,
+      "frozen_outputs": {
+        "available": true,
+        "complete": true,
+        "failed_count": 39,
+        "frozen_at": "2026-09-06T07:04:04Z",
+        "manifest": {
+          "bytes": 3386862,
+          "relative_path": "frozen_outputs/monkeyocrv2_b/manifest.jsonl",
+          "sha256": "sha256:a50700cab65cf6bb1d8f499b00697601dd5c07b924e443ec4f94dc73361a86d1"
+        },
+        "manifest_sha256_declared": "sha256:a50700cab65cf6bb1d8f499b00697601dd5c07b924e443ec4f94dc73361a86d1",
+        "marker": {
+          "bytes": 557,
+          "relative_path": "frozen_outputs/monkeyocrv2_b/FROZEN.json",
+          "sha256": "sha256:784f0d9f8d70240b26093ac349bab6d9f2e60655da0d99272eeac8c277fa15d7"
+        },
+        "model_revision_declared": null,
+        "reason": null,
+        "runtime_image_digest_declared": null,
+        "sample_count": 5132,
+        "status_by_benchmark": {
+          "olmocr": {
+            "SUCCESS": 1403
+          },
+          "omnidoc": {
+            "SUCCESS": 1651
+          },
+          "parsebench": {
+            "FAILED": 39,
+            "SUCCESS": 2039
+          }
+        },
+        "success_count": 5093
+      },
+      "incomplete": false,
+      "missing_benchmarks": [],
+      "pins": {
+        "code_repositories": [
+          {
+            "license_spdx_id": "Apache-2.0",
+            "repo": "Yuliang-Liu/MonkeyOCR",
+            "revision": "7aace39ca43d5d226277a9450ae1b5d1dba0a46d",
+            "role": "official_parsing_toolkit",
+            "tag": null
+          }
+        ],
+        "container_digest": null,
+        "container_digest_unresolved_reason": "lane F resolves the immutable image digest during the build phase",
+        "container_image": null,
+        "cuda": "12.6",
+        "display_name": "MonkeyOCRv2-B-Parsing",
+        "identity_pinned_behind_upstream": true,
+        "identity_source": "runtimes/monkeyocrv2_b/runtime.json",
+        "inference_config_sha256": "sha256:6780ddfde830c6fa003fc143b4a3c244bc19464f31559d7bc13e6125074a41f4",
+        "license": "apache-2.0",
+        "weights": {
+          "file_count": 22,
+          "gated": false,
+          "largest_file": "model.safetensors",
+          "largest_file_sha256": "sha256:0267fdc991c9be02cf1b60405f77fe0629d084970ad9d6d08163feda3d470284",
+          "last_modified": "2026-08-12T15:48:50.000Z",
+          "repo": "zenosai/MonkeyOCRv2-B-Parsing",
+          "revision": "2419139b7bcd3fda2689b2a83167172afba91c8b",
+          "size_bytes": 1755925032,
+          "total_weight_bytes": 2049282097
+        }
+      }
+    },
+    "olmocr2": {
+      "benchmarks": {
+        "olmocr": {
+          "artifacts": {
+            "official_result": {
+              "bytes": 2468374,
+              "relative_path": "reports/full_compare_20260905/olmocr_raw/olmocr2/official_result.json",
+              "sha256": "sha256:fe9ca9ca4646b6380ffacabf1f455f066d3a3defa95e2cd35db44ecd46b8bcac"
+            }
+          },
+          "available": true,
+          "overall_score": 0.7985840274026065,
+          "reason": null,
+          "unit_counts": {
+            "candidate_errors": 0,
+            "pdfs": 1403,
+            "tests": 8413
+          }
+        },
+        "omnidoc": {
+          "artifacts": {},
+          "available": false,
+          "reason": "omnidoc_raw directory exists but holds no per-page edit files (aggregate metric_result.json only)",
+          "unit_counts": {}
+        },
+        "parsebench": {
+          "artifacts": {
+            "chart": {
+              "bytes": 83042,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/olmocr2/chart/_evaluation_results.csv",
+              "sha256": "sha256:23ab42fdc9ceb346d3b892eb8ba564b20190b1141bb6d2fb9c40c06aa64f6e67"
+            },
+            "layout": {
+              "bytes": 126996,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/olmocr2/layout/_evaluation_results.csv",
+              "sha256": "sha256:b235e2be8d50bc85631f09b52e4f31242a12963ee6a3bbf3c0353c9f9046c482"
+            },
+            "table": {
+              "bytes": 108285,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/olmocr2/table/_evaluation_results.csv",
+              "sha256": "sha256:25751322f17644ab851f7edb5ddf65792bb2e8ca9eee8f0742517dfd5182b633"
+            },
+            "text_content": {
+              "bytes": 175061,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/olmocr2/text_content/_evaluation_results.csv",
+              "sha256": "sha256:7907c98be4a2cec3b73643137542725fec12f72addc3afc914f547d5d405fb34"
+            },
+            "text_formatting": {
+              "bytes": 81547,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/olmocr2/text_formatting/_evaluation_results.csv",
+              "sha256": "sha256:57b2ce6de0419eb5167b05d641d5c4415480c225b85eb15fd760d3bcfe4dc2c6"
+            }
+          },
+          "available": true,
+          "reason": null,
+          "unit_counts": {
+            "chart": 568,
+            "layout": 500,
+            "table": 503,
+            "text_content": 506,
+            "text_formatting": 476
+          }
+        }
+      },
+      "founder_excluded": false,
+      "founder_exclusion_receipt": null,
+      "frozen_outputs": {
+        "available": true,
+        "complete": true,
+        "failed_count": 0,
+        "frozen_at": "2026-09-05T00:09:24Z",
+        "manifest": {
+          "bytes": 3330699,
+          "relative_path": "frozen_outputs/olmocr2/manifest.jsonl",
+          "sha256": "sha256:9385e23b8f0ab99dbf335635b1ff606a17a75bc5040f0c433ca3bbdeae254495"
+        },
+        "manifest_sha256_declared": "sha256:9385e23b8f0ab99dbf335635b1ff606a17a75bc5040f0c433ca3bbdeae254495",
+        "marker": {
+          "bytes": 441,
+          "relative_path": "frozen_outputs/olmocr2/FROZEN.json",
+          "sha256": "sha256:4703fb57d8b442ef3a71978e60bffac5a41c18079f6e1887fa00cf2efc0da865"
+        },
+        "model_revision_declared": null,
+        "reason": null,
+        "runtime_image_digest_declared": null,
+        "sample_count": 5132,
+        "status_by_benchmark": {
+          "olmocr": {
+            "SUCCESS": 1403
+          },
+          "omnidoc": {
+            "SUCCESS": 1651
+          },
+          "parsebench": {
+            "SUCCESS": 2078
+          }
+        },
+        "success_count": 5132
+      },
+      "incomplete": true,
+      "missing_benchmarks": [
+        "omnidoc"
+      ],
+      "pins": {
+        "code_repositories": [
+          {
+            "license_spdx_id": "Apache-2.0",
+            "repo": "allenai/olmocr",
+            "revision": "f7cfe4c22098b154c76b6ec950d1c0a464eecf8d",
+            "role": "official_toolkit",
+            "tag": null
+          }
+        ],
+        "container_digest": null,
+        "container_digest_unresolved_reason": "lane F resolves the immutable image digest during the build phase",
+        "container_image": null,
+        "cuda": null,
+        "display_name": "olmOCR-2-7B-1025-FP8",
+        "identity_pinned_behind_upstream": false,
+        "identity_source": "runtimes/olmocr2/runtime.json",
+        "inference_config_sha256": "sha256:85e43718ed46a748071c4f11fb88502efcc46f966e5360f8fd1375c9f3a027e2",
+        "license": "apache-2.0",
+        "weights": {
+          "file_count": 20,
+          "gated": false,
+          "largest_file": "model-00001-of-00003.safetensors",
+          "largest_file_sha256": "sha256:5d5550dbb21e309786fde9a151442181562cf9dc23141116a4e46e3e815b0d02",
+          "last_modified": "2026-02-19T17:30:13.000Z",
+          "repo": "allenai/olmOCR-2-7B-1025-FP8",
+          "revision": "40bd7202494b8264ee17ada08b401b5aab7a9ce1",
+          "size_bytes": 4940102568,
+          "total_weight_bytes": 10061929760
+        }
+      }
+    },
+    "opus5_subscription": {
+      "benchmarks": {
+        "olmocr": {
+          "artifacts": {
+            "official_result": {
+              "bytes": 2491232,
+              "relative_path": "reports/full_compare_20260905/olmocr_raw/opus5_subscription/official_result.json",
+              "sha256": "sha256:70a2a2d38ef6c70afb3bdde5cce75c04c902480d2f0d862e54d2c7f80b09608b"
+            }
+          },
+          "available": true,
+          "overall_score": 0.7403724719973004,
+          "reason": null,
+          "unit_counts": {
+            "candidate_errors": 0,
+            "pdfs": 1403,
+            "tests": 8413
+          }
+        },
+        "omnidoc": {
+          "artifacts": {
+            "formula": {
+              "bytes": 25879,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/opus5_subscription/md_opus5_subscription_quick_match_display_formula_per_page_edit.json",
+              "sha256": "sha256:226d87d1e5f6709d283804afe50bc0b9738d534160691fad44090f044d9e4117"
+            },
+            "reading_order": {
+              "bytes": 120345,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/opus5_subscription/md_opus5_subscription_quick_match_reading_order_per_page_edit.json",
+              "sha256": "sha256:e5cd7bec106fd0d596059efc67dbb4daa0346b885fa732bcf3157bcd913fdff5"
+            },
+            "table": {
+              "bytes": 39061,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/opus5_subscription/md_opus5_subscription_quick_match_table_per_page_edit.json",
+              "sha256": "sha256:8544b303f3058d8b3eee23b8df0159ecbfb8fbf698e4863c7b9b7897bb668cf3"
+            },
+            "table_teds": {
+              "bytes": 104012,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/opus5_subscription/md_opus5_subscription_quick_match_table_per_table_TEDS.json",
+              "sha256": "sha256:ded0f9da07842e6745bee3c2a2f99ad108dd49376b7effce99f7de11d7abdb81"
+            },
+            "text": {
+              "bytes": 121791,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/opus5_subscription/md_opus5_subscription_quick_match_text_block_per_page_edit.json",
+              "sha256": "sha256:a4f9f079eb4dc4c4d51f766d1b0c208ca5f22558b3deec7d91ad51ed91ff2cc0"
+            }
+          },
+          "available": true,
+          "file_prefix": "md_opus5_subscription_quick_match_",
+          "reason": null,
+          "unit_counts": {
+            "formula": 313,
+            "reading_order": 1638,
+            "table": 458,
+            "table_teds": 665,
+            "text": 1557
+          }
+        },
+        "parsebench": {
+          "artifacts": {
+            "chart": {
+              "bytes": 93487,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/opus5_subscription/chart/_evaluation_results.csv",
+              "sha256": "sha256:17255c96f129816ebfc40b0003b8bc504a1339c0e69d2bbd49cc2d96effffd8e"
+            },
+            "layout": {
+              "bytes": 134908,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/opus5_subscription/layout/_evaluation_results.csv",
+              "sha256": "sha256:eef6d821e2ecdd292fd0495cf3fddad2f6b76ba474b9f497db77aa7389a129c3"
+            },
+            "table": {
+              "bytes": 114567,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/opus5_subscription/table/_evaluation_results.csv",
+              "sha256": "sha256:c0ef85031b3bdc124718566f40b54ff93f25135336fc9548e44ace392d7a122e"
+            },
+            "text_content": {
+              "bytes": 172239,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/opus5_subscription/text_content/_evaluation_results.csv",
+              "sha256": "sha256:f3b085589b5adeb1e1bf7c008c0c7b75cce9180007e60e5c62660e121cc7f1f6"
+            },
+            "text_formatting": {
+              "bytes": 104641,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/opus5_subscription/text_formatting/_evaluation_results.csv",
+              "sha256": "sha256:4df55167e0e109148dfa14a92955744cd30fb8447e4bdf9961410aa0856f8118"
+            }
+          },
+          "available": true,
+          "reason": null,
+          "unit_counts": {
+            "chart": 568,
+            "layout": 500,
+            "table": 503,
+            "text_content": 506,
+            "text_formatting": 476
+          }
+        }
+      },
+      "founder_excluded": false,
+      "founder_exclusion_receipt": null,
+      "frozen_outputs": {
+        "available": true,
+        "complete": true,
+        "failed_count": 65,
+        "frozen_at": "2026-09-06T06:56:53Z",
+        "manifest": {
+          "bytes": 3434568,
+          "relative_path": "frozen_outputs/opus5_subscription/manifest.jsonl",
+          "sha256": "sha256:98206e3fda7d3b19afae923580d9c18ecb3a72f1f7c9f8f3cfd7c226714d5aac"
+        },
+        "manifest_sha256_declared": "sha256:98206e3fda7d3b19afae923580d9c18ecb3a72f1f7c9f8f3cfd7c226714d5aac",
+        "marker": {
+          "bytes": 614,
+          "relative_path": "frozen_outputs/opus5_subscription/FROZEN.json",
+          "sha256": "sha256:9d4ec25d6bbc65b3dfbceb4fa22e4faaac04569339960d8c1916b63aea7feed8"
+        },
+        "model_revision_declared": "claude-opus-5",
+        "reason": null,
+        "runtime_image_digest_declared": null,
+        "sample_count": 5132,
+        "status_by_benchmark": {
+          "olmocr": {
+            "FAILED": 26,
+            "SUCCESS": 1377
+          },
+          "omnidoc": {
+            "FAILED": 21,
+            "SUCCESS": 1630
+          },
+          "parsebench": {
+            "FAILED": 18,
+            "SUCCESS": 2060
+          }
+        },
+        "success_count": 5067
+      },
+      "incomplete": false,
+      "missing_benchmarks": [],
+      "pins": {
+        "code_repositories": [],
+        "container_digest": null,
+        "container_digest_unresolved_reason": "lane F resolves the immutable image digest during the build phase",
+        "container_image": null,
+        "cuda": null,
+        "display_name": "Claude Opus 5 - Claude Code subscription surface",
+        "identity_pinned_behind_upstream": null,
+        "identity_source": null,
+        "inference_config_sha256": null,
+        "license": "proprietary-anthropic-commercial-terms",
+        "weights": null
+      }
+    },
+    "ovisocr2": {
+      "benchmarks": {
+        "olmocr": {
+          "artifacts": {
+            "official_result": {
+              "bytes": 2526206,
+              "relative_path": "reports/full_compare_20260905/olmocr_raw/ovisocr2/official_result.json",
+              "sha256": "sha256:2aae3ae194cf36a6a4ea4a711d9bb546a1c0b08493be39d33a0d71124c217227"
+            }
+          },
+          "available": true,
+          "overall_score": 0.6791237369562902,
+          "reason": null,
+          "unit_counts": {
+            "candidate_errors": 0,
+            "pdfs": 1403,
+            "tests": 8413
+          }
+        },
+        "omnidoc": {
+          "artifacts": {
+            "formula": {
+              "bytes": 25695,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/ovisocr2/md_ovisocr2_quick_match_display_formula_per_page_edit.json",
+              "sha256": "sha256:25b07619f45ef91d822689e54c1e85b9f634b33ec8d09fdf7424c84002c39c4d"
+            },
+            "reading_order": {
+              "bytes": 119402,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/ovisocr2/md_ovisocr2_quick_match_reading_order_per_page_edit.json",
+              "sha256": "sha256:cc3c537c7c63f57177f2f74682591f43a378dd913c674a053c603d0dbe2f4eb5"
+            },
+            "table": {
+              "bytes": 37704,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/ovisocr2/md_ovisocr2_quick_match_table_per_page_edit.json",
+              "sha256": "sha256:4783b0e3df0f29d7fc375a9a856078f98802086677621a1c863316abcb09ecf9"
+            },
+            "table_teds": {
+              "bytes": 100912,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/ovisocr2/md_ovisocr2_quick_match_table_per_table_TEDS.json",
+              "sha256": "sha256:84a1e4c8309fbe9c00ea1143126a69316ba5496e13620c8c05607e3d42bec972"
+            },
+            "text": {
+              "bytes": 121132,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/ovisocr2/md_ovisocr2_quick_match_text_block_per_page_edit.json",
+              "sha256": "sha256:529772fd8ee851854a0191610967339eed0a1300dc9d05d7491514e9b7e4ec2f"
+            }
+          },
+          "available": true,
+          "file_prefix": "md_ovisocr2_quick_match_",
+          "reason": null,
+          "unit_counts": {
+            "formula": 313,
+            "reading_order": 1638,
+            "table": 458,
+            "table_teds": 665,
+            "text": 1557
+          }
+        },
+        "parsebench": {
+          "artifacts": {
+            "chart": {
+              "bytes": 83591,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/ovisocr2/chart_evaluation_results.csv",
+              "sha256": "sha256:24f3813d9da986cedd4a706fad57265d77eae8986b819061ec8d47e635947402"
+            },
+            "layout": {
+              "bytes": 127551,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/ovisocr2/layout_evaluation_results.csv",
+              "sha256": "sha256:02c463655f6ddb131d88d67bb9179159b0ba182dca5f020d033b9c13a6d454ae"
+            },
+            "table": {
+              "bytes": 109546,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/ovisocr2/table_evaluation_results.csv",
+              "sha256": "sha256:c692a6d0b5501b58c597d4b460bade2f58ac4bf8c60551a3acec6bc7fe0626a0"
+            },
+            "text_content": {
+              "bytes": 166179,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/ovisocr2/text_content_evaluation_results.csv",
+              "sha256": "sha256:43dab513a47a287a70af8dbf53381b38edc15aa872a7aa739b8a7197f5ec8297"
+            },
+            "text_formatting": {
+              "bytes": 97025,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/ovisocr2/text_formatting_evaluation_results.csv",
+              "sha256": "sha256:5aff2ec76c90807c201989841a3e5c5cbce9bdf5af7dc1a82a5a1217837fba94"
+            }
+          },
+          "available": true,
+          "reason": null,
+          "unit_counts": {
+            "chart": 568,
+            "layout": 500,
+            "table": 503,
+            "text_content": 506,
+            "text_formatting": 476
+          }
+        }
+      },
+      "founder_excluded": false,
+      "founder_exclusion_receipt": null,
+      "frozen_outputs": {
+        "available": true,
+        "complete": true,
+        "failed_count": 0,
+        "frozen_at": "2026-09-04T20:54:56Z",
+        "manifest": {
+          "bytes": 3340963,
+          "relative_path": "frozen_outputs/ovisocr2/manifest.jsonl",
+          "sha256": "sha256:2c6b82f25777b7e084dd7d35a9534e66f3b6cd747a1b792576fcaff699c2704f"
+        },
+        "manifest_sha256_declared": "sha256:2c6b82f25777b7e084dd7d35a9534e66f3b6cd747a1b792576fcaff699c2704f",
+        "marker": {
+          "bytes": 441,
+          "relative_path": "frozen_outputs/ovisocr2/FROZEN.json",
+          "sha256": "sha256:33826abd3adb5b540279d481d986ec5e0c429c21decef8b2c61e0fbe53c7858f"
+        },
+        "model_revision_declared": null,
+        "reason": null,
+        "runtime_image_digest_declared": null,
+        "sample_count": 5132,
+        "status_by_benchmark": {
+          "olmocr": {
+            "SUCCESS": 1403
+          },
+          "omnidoc": {
+            "SUCCESS": 1651
+          },
+          "parsebench": {
+            "SUCCESS": 2078
+          }
+        },
+        "success_count": 5132
+      },
+      "incomplete": false,
+      "missing_benchmarks": [],
+      "pins": {
+        "code_repositories": [],
+        "container_digest": null,
+        "container_digest_unresolved_reason": "lane F resolves the immutable image digest during the build phase",
+        "container_image": null,
+        "cuda": null,
+        "display_name": "OvisOCR2",
+        "identity_pinned_behind_upstream": false,
+        "identity_source": "runtimes/ovisocr2/runtime.json",
+        "inference_config_sha256": "sha256:8a75f05dac58061962ec0a3b2b740d34f75083441987959d5be41e6343dfcd1d",
+        "license": "apache-2.0",
+        "weights": {
+          "file_count": 16,
+          "gated": false,
+          "largest_file": "model.safetensors",
+          "largest_file_sha256": "sha256:9270560288656ece5cb3a6989001afcf5af8d223bceed4a423c33a008861d009",
+          "last_modified": "2026-08-28T08:46:00.000Z",
+          "repo": "ATH-MaaS/OvisOCR2",
+          "revision": "1fc9221b7823a371d6e97f92d527cc847e24e107",
+          "size_bytes": 1706030496,
+          "total_weight_bytes": 1706030496
+        }
+      }
+    },
+    "paddleocr_vl_1_6": {
+      "benchmarks": {
+        "olmocr": {
+          "artifacts": {
+            "official_result": {
+              "bytes": 2508569,
+              "relative_path": "reports/full_compare_20260905/olmocr_raw/paddleocr_vl_1_6/official_result.json",
+              "sha256": "sha256:7fb474d16ef3ef70ec0e37c13287a085854d23831921adf8c7a3379c82f09e97"
+            }
+          },
+          "available": true,
+          "overall_score": 0.7810869727294087,
+          "reason": null,
+          "unit_counts": {
+            "candidate_errors": 0,
+            "pdfs": 1403,
+            "tests": 8413
+          }
+        },
+        "omnidoc": {
+          "artifacts": {
+            "formula": {
+              "bytes": 25611,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/paddleocr_vl_1_6/markdown_quick_match_display_formula_per_page_edit.json",
+              "sha256": "sha256:ef49329795b643846c76e111f6388457b2898a4e0abbf4e9c656825450c723ba"
+            },
+            "reading_order": {
+              "bytes": 120381,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/paddleocr_vl_1_6/markdown_quick_match_reading_order_per_page_edit.json",
+              "sha256": "sha256:f2047de305669991283e7f0bc6086caba874ad9fd8ebe1407275b007fc4c8a4d"
+            },
+            "table": {
+              "bytes": 37977,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/paddleocr_vl_1_6/markdown_quick_match_table_per_page_edit.json",
+              "sha256": "sha256:a1d6cb6592b66d3d67383894e41f6e90380b4886cbe8dcc41c00f6677c58950c"
+            },
+            "table_teds": {
+              "bytes": 100790,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/paddleocr_vl_1_6/markdown_quick_match_table_per_table_TEDS.json",
+              "sha256": "sha256:53f48f39a80d9fae7dc407bba5ce3575c88ad99b22140802e804c12d8b97496c"
+            },
+            "text": {
+              "bytes": 122918,
+              "relative_path": "reports/full_compare_20260905/omnidoc_raw/paddleocr_vl_1_6/markdown_quick_match_text_block_per_page_edit.json",
+              "sha256": "sha256:d3eb815b15f833709123e41765d2a5939ec492097636cbd601cb53c268b575e2"
+            }
+          },
+          "available": true,
+          "file_prefix": "markdown_quick_match_",
+          "reason": null,
+          "unit_counts": {
+            "formula": 313,
+            "reading_order": 1638,
+            "table": 458,
+            "table_teds": 665,
+            "text": 1557
+          }
+        },
+        "parsebench": {
+          "artifacts": {
+            "chart": {
+              "bytes": 88133,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/paddleocr_vl_1_6/chart_evaluation_results.csv",
+              "sha256": "sha256:93cbac2b7f066cb64d4c799fb7c91f980f037781da7f27984996b3551bdd1b1e"
+            },
+            "layout": {
+              "bytes": 131837,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/paddleocr_vl_1_6/layout_evaluation_results.csv",
+              "sha256": "sha256:635d3763fc53ef261393768dc8ddefe0804871ae72c78b75addd53d6bdaed0ac"
+            },
+            "table": {
+              "bytes": 114446,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/paddleocr_vl_1_6/table_evaluation_results.csv",
+              "sha256": "sha256:d9fc66850ae29eb701cc2a4788057b45ea1e0b6fad701b80e5c5c2e480b8b1a8"
+            },
+            "text_content": {
+              "bytes": 182355,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/paddleocr_vl_1_6/text_content_evaluation_results.csv",
+              "sha256": "sha256:a84f31f8ac50bbbd2a007f62d4e28a70830464710593302a7c9740aff89185bb"
+            },
+            "text_formatting": {
+              "bytes": 103088,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/paddleocr_vl_1_6/text_formatting_evaluation_results.csv",
+              "sha256": "sha256:26ac1a11c8dadbae625bc6abdc7f357d50050212408f100fb3f0215ef3052c73"
+            }
+          },
+          "available": true,
+          "reason": null,
+          "unit_counts": {
+            "chart": 568,
+            "layout": 501,
+            "table": 505,
+            "text_content": 506,
+            "text_formatting": 476
+          }
+        }
+      },
+      "founder_excluded": false,
+      "founder_exclusion_receipt": null,
+      "frozen_outputs": {
+        "available": true,
+        "complete": true,
+        "failed_count": 0,
+        "frozen_at": "2026-09-04T20:53:36Z",
+        "manifest": {
+          "bytes": 3423075,
+          "relative_path": "frozen_outputs/paddleocr_vl_1_6/manifest.jsonl",
+          "sha256": "sha256:0fff25a57c1727905e877a5c9c3d5841cfe0534574701219242ecb9eaeb7692c"
+        },
+        "manifest_sha256_declared": "sha256:0fff25a57c1727905e877a5c9c3d5841cfe0534574701219242ecb9eaeb7692c",
+        "marker": {
+          "bytes": 441,
+          "relative_path": "frozen_outputs/paddleocr_vl_1_6/FROZEN.json",
+          "sha256": "sha256:dd7c6c339b05c55a959b79489958f2c66330a1bfcf1f4fb63f7e0162e45540be"
+        },
+        "model_revision_declared": null,
+        "reason": null,
+        "runtime_image_digest_declared": null,
+        "sample_count": 5132,
+        "status_by_benchmark": {
+          "olmocr": {
+            "SUCCESS": 1403
+          },
+          "omnidoc": {
+            "SUCCESS": 1651
+          },
+          "parsebench": {
+            "SUCCESS": 2078
+          }
+        },
+        "success_count": 5132
+      },
+      "incomplete": false,
+      "missing_benchmarks": [],
+      "pins": {
+        "code_repositories": [
+          {
+            "license_spdx_id": "Apache-2.0",
+            "repo": "PaddlePaddle/PaddleOCR",
+            "revision": "2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+            "role": "official_runtime",
+            "tag": null
+          }
+        ],
+        "container_digest": null,
+        "container_digest_unresolved_reason": "lane F resolves the immutable image digest during the build phase",
+        "container_image": "ccr-2vdh3abv-pub.cnc.bj.baidubce.com/paddlepaddle/paddleocr-genai-vllm-server:latest-nvidia-gpu",
+        "cuda": "12.6",
+        "display_name": "PaddleOCR-VL 1.6",
+        "identity_pinned_behind_upstream": false,
+        "identity_source": "runtimes/paddleocr_vl_1_6/runtime.json",
+        "inference_config_sha256": "sha256:9a44c6a46de0640999f9045df5048c867fc6f51c7170e74fa757bf78f778d05e",
+        "license": "apache-2.0",
+        "weights": {
+          "file_count": 20,
+          "gated": false,
+          "largest_file": "model.safetensors",
+          "largest_file_sha256": "sha256:85a479d506a11e724e7285d395c551be69f41dbc16b6342d3cacfb189aed71db",
+          "last_modified": "2026-08-08T14:32:21.000Z",
+          "repo": "PaddlePaddle/PaddleOCR-VL-1.6",
+          "revision": "c5630abae1d940eafe0697512a0325494b02ab42",
+          "size_bytes": 1917255968,
+          "total_weight_bytes": 1917255968
+        }
+      }
+    },
+    "unlimited_ocr": {
+      "benchmarks": {
+        "olmocr": {
+          "artifacts": {
+            "official_result": {
+              "bytes": 2530256,
+              "relative_path": "reports/full_compare_20260905/olmocr_raw/unlimited_ocr/official_result.json",
+              "sha256": "sha256:fcf371e5a4824716adbabd069ab0d925c03721aff76f46357aba6a88e0566412"
+            }
+          },
+          "available": true,
+          "overall_score": 0.6976332240327593,
+          "reason": null,
+          "unit_counts": {
+            "candidate_errors": 4,
+            "pdfs": 1403,
+            "tests": 8413
+          }
+        },
+        "omnidoc": {
+          "artifacts": {},
+          "available": false,
+          "reason": "omnidoc_raw directory exists but holds no per-page edit files (aggregate metric_result.json only)",
+          "unit_counts": {}
+        },
+        "parsebench": {
+          "artifacts": {
+            "chart": {
+              "bytes": 78513,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/unlimited_ocr/chart/_evaluation_results.csv",
+              "sha256": "sha256:017b477d16b713235f6f3006b1e2c5f4ed17f3ad25d1f4c953e6462e3fd52ebc"
+            },
+            "layout": {
+              "bytes": 123917,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/unlimited_ocr/layout/_evaluation_results.csv",
+              "sha256": "sha256:f992b623d3f2f6e3f2bef2a9fca1f1dab7c8992358fc1fa293ffb7e657151b00"
+            },
+            "table": {
+              "bytes": 104791,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/unlimited_ocr/table/_evaluation_results.csv",
+              "sha256": "sha256:05acea8f25ac6751828b0e2bec091ee6aa42a06463acd6bfe3bea0a8d9651469"
+            },
+            "text_content": {
+              "bytes": 162409,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/unlimited_ocr/text_content/_evaluation_results.csv",
+              "sha256": "sha256:0d5d1d978d4de4c79d951a5d7c0d339f67425d35ae81b21181d45c3333b1b72f"
+            },
+            "text_formatting": {
+              "bytes": 76927,
+              "relative_path": "reports/full_compare_20260905/parsebench_raw/unlimited_ocr/text_formatting/_evaluation_results.csv",
+              "sha256": "sha256:e11f1e0a3a4ec775c69a6f959dc47ccfd0fbfc46ad76a7c03f045210b4c2a62b"
+            }
+          },
+          "available": true,
+          "reason": null,
+          "unit_counts": {
+            "chart": 568,
+            "layout": 500,
+            "table": 503,
+            "text_content": 506,
+            "text_formatting": 476
+          }
+        }
+      },
+      "founder_excluded": false,
+      "founder_exclusion_receipt": null,
+      "frozen_outputs": {
+        "available": true,
+        "complete": false,
+        "failed_count": 19,
+        "frozen_at": "2026-09-06T08:12:58Z",
+        "manifest": {
+          "bytes": 3385640,
+          "relative_path": "frozen_outputs/unlimited_ocr/manifest.jsonl",
+          "sha256": "sha256:d690dc8c6e8fa027debef44b21271d6aa839ed024d601ae52cf2d0259333609d"
+        },
+        "manifest_sha256_declared": "sha256:d690dc8c6e8fa027debef44b21271d6aa839ed024d601ae52cf2d0259333609d",
+        "marker": {
+          "bytes": 578,
+          "relative_path": "frozen_outputs/unlimited_ocr/FROZEN.json",
+          "sha256": "sha256:8e8a65f9551ad7ebf2c84d3971bc6ec001fdc87024d878fdc87caf7ba498287e"
+        },
+        "model_revision_declared": null,
+        "reason": null,
+        "runtime_image_digest_declared": null,
+        "sample_count": 5126,
+        "status_by_benchmark": {
+          "olmocr": {
+            "FAILED": 3,
+            "SUCCESS": 1400
+          },
+          "omnidoc": {
+            "SUCCESS": 1645
+          },
+          "parsebench": {
+            "FAILED": 16,
+            "SUCCESS": 2062
+          }
+        },
+        "success_count": 5107
+      },
+      "incomplete": true,
+      "missing_benchmarks": [
+        "omnidoc"
+      ],
+      "pins": {
+        "code_repositories": [
+          {
+            "license_spdx_id": "MIT",
+            "repo": "baidu/Unlimited-OCR",
+            "revision": "d49ff64afffc1f47ab563dc1c589bc2f78808fa4",
+            "role": "official_runtime",
+            "tag": null
+          }
+        ],
+        "container_digest": null,
+        "container_digest_unresolved_reason": "lane F resolves the immutable image digest during the build phase",
+        "container_image": null,
+        "cuda": null,
+        "display_name": "Unlimited-OCR",
+        "identity_pinned_behind_upstream": false,
+        "identity_source": "runtimes/unlimited_ocr/runtime.json",
+        "inference_config_sha256": "sha256:4da41a17aed5e7d0ef09ecc90933ffa5b2299367f724fcc0b7b4f224bff94912",
+        "license": "mit",
+        "weights": {
+          "file_count": 20,
+          "gated": false,
+          "largest_file": "model-00001-of-000001.safetensors",
+          "largest_file_sha256": "sha256:2bc48a7a110061ea58fff65d3169367eebe3aee371ca6968dc2219c1b2855fc6",
+          "last_modified": "2026-07-29T04:34:16.000Z",
+          "repo": "baidu/Unlimited-OCR",
+          "revision": "07dea832e22aefee32ad281d4b80551282e1c168",
+          "size_bytes": 6672547120,
+          "total_weight_bytes": 6672547120
+        }
+      }
+    }
+  },
+  "notes": [
+    "Read-only bind. No file under the arena tree is modified.",
+    "container_digest is null for every model: lane F never resolved the immutable image digest, so runtime identity is pinned by identity_source + inference_config_sha256, not by an image digest.",
+    "A model with available=false for a benchmark is INCOMPLETE, not dropped. Section 37 requires both the intersection cohort and the missing-as-failure cohort to be reported."
+  ],
+  "paid_actions": "none — stored outputs only",
+  "phase": "A",
+  "required_artifacts": {
+    "evaluator_registry.json": {
+      "bytes": 13856,
+      "relative_path": "evaluator_registry.json",
+      "sha256": "sha256:668eaa0fb6fc7f823ac88cb20b692dc4d45a2c114fd4d7a6e0f5457b454a380b"
+    },
+    "model_registry.json": {
+      "bytes": 101069,
+      "relative_path": "model_registry.json",
+      "sha256": "sha256:83152ef92e2792a7ab3b2ef25fa9774115adfea2ebcd45363f7207764f8ee693"
+    },
+    "reports/full_compare_20260905/LEADERBOARD_QUALITY_SPEED.json": {
+      "bytes": 21775,
+      "relative_path": "reports/full_compare_20260905/LEADERBOARD_QUALITY_SPEED.json",
+      "sha256": "sha256:2a699cbf8c107bb57a4f837a9e053028a2cbaf18007a612f26ef0596d504f260"
+    },
+    "reports/full_compare_20260905/chain_state.json": {
+      "bytes": 445,
+      "relative_path": "reports/full_compare_20260905/chain_state.json",
+      "sha256": "sha256:92dcffe01ed312cf2fc81fd9b278fee8e387edc481664469df9dec32839ed60c"
+    },
+    "reports/full_compare_20260905/comparison_omnidoc_full.json": {
+      "bytes": 7002,
+      "relative_path": "reports/full_compare_20260905/comparison_omnidoc_full.json",
+      "sha256": "sha256:d95eefd4bae67cf15ee975dac327a4b5bd533f07d01d43c6d1a9967fd82a49e5"
+    },
+    "reports/partial_score_20260905/comparison_speed.json": {
+      "bytes": 4419,
+      "relative_path": "reports/partial_score_20260905/comparison_speed.json",
+      "sha256": "sha256:21e4d783af71c3115b8eb47eeae54460dd9a8d66361a32e595ea1c5add787565"
+    },
+    "source_manifest.jsonl": {
+      "bytes": 5199377,
+      "relative_path": "source_manifest.jsonl",
+      "sha256": "sha256:2ec00f371db5069216362ee946b084ed0d222474162d7eadcbf717f09ae55e7c"
+    }
+  },
+  "schema": "tavonel.router_oracle.arena_bind.v1"
+}
