@@ -73,7 +73,11 @@ from akc_readers.office import (  # noqa: E402
 )
 
 RECEIPT_SCHEMA = "tavonel.office_reader_qualification.v1"
-RECEIPT_DATE = "2026-09-06"
+#: The current receipt date. The 2026-09-06 receipts stay on disk as the
+#: measurement that stood before this lane; they are history and are not
+#: rewritten. `test_the_committed_receipt_matches_a_fresh_run` pins the receipt
+#: at this date, so bumping it is what moves the pinned measurement forward.
+RECEIPT_DATE = "2026-09-08"
 CORPUS_ROOT = REPO_ROOT / "tests" / "fixtures" / "office_corpus"
 EXPECTED_PATH = CORPUS_ROOT / "expected.json"
 RECEIPT_DIR = REPO_ROOT / "docs" / "evidence" / "receipts"
@@ -117,7 +121,32 @@ def _xlsx_sheet_names(units: Units) -> list[str]:
 
 
 def _xlsx_cell_values(units: Units) -> dict[str, str]:
-    return {_xlsx_key(locator, "cell"): unit.text for locator, unit in _anchored(units, "cell")}
+    """Grid values only.
+
+    A cell note is anchored at its cell as well, so the prefix test is what
+    keeps a reviewer's note out of the grid: a value comes from a
+    ``CanonicalCell`` (``cell_…``), a note from a block (``blk_…``).
+    """
+    return {
+        _xlsx_key(locator, "cell"): unit.text
+        for locator, unit in _anchored(units, "cell")
+        if unit.unit_id.startswith(_CELL_PREFIX)
+    }
+
+
+def _xlsx_cell_comments(units: Units) -> dict[str, str]:
+    return {
+        _xlsx_key(locator, "cell"): unit.text
+        for locator, unit in _anchored(units, "cell")
+        if not unit.unit_id.startswith(_CELL_PREFIX)
+    }
+
+
+def _xlsx_named_ranges(units: Units) -> dict[str, str]:
+    """`name -> target reference`: the name is the anchor, the text the target."""
+    return {
+        str(locator["namedRange"]): unit.text for locator, unit in _anchored(units, "namedRange")
+    }
 
 
 def _xlsx_formula_text(units: Units) -> dict[str, str]:
@@ -238,9 +267,19 @@ UNOBSERVABLE: dict[str, str] = {
         "surface does not. The covered cells are absent from the unit stream, which is a "
         "consequence of a merge, not evidence of its extent."
     ),
-    "xlsx_named_ranges": (
-        "the xlsx parser records no defined names at all, so no unit and no metadata "
-        "carries one; EvidenceLocator v2 has a namedRange anchor with nothing to fill it."
+    "xlsx_number_formats": (
+        "the parser records every cell's number format in "
+        "metadata['sheets'][*]['numberFormats'] and flags the cell "
+        "number_format_not_applied, but ExtractedUnit has no formatting field, so a "
+        "caller of the reader plane reads -1234 with no way to learn the workbook "
+        "displays (1,234). Closing this row needs an ExtractedUnit field, not a parser "
+        "change: NOT_EXTRACTED at the reader surface, extracted in CIR."
+    ),
+    "xlsx_formula_dependency": (
+        "nothing parses a formula's operands, so no cell-to-cell dependency edge exists "
+        "anywhere: not in a unit, not in metadata, not in CIR. Program §27 asks for it "
+        "and it is NOT_EXTRACTED. Closing it means a formula reference parser feeding "
+        "§8's dependency graph, which is a lane of its own and not a reader change."
     ),
     "xlsx_hidden_sheets": (
         "sheet visibility lives in the parser's metadata['sheets'][*]['state'] and in the "
@@ -261,11 +300,14 @@ UNOBSERVABLE: dict[str, str] = {
         "the deleted text are unreachable."
     ),
     "docx_endnotes": (
-        "the docx parser reads word/footnotes.xml and never word/endnotes.xml, so an "
-        "endnote body is not a block at all; and EvidenceLocator v2's docx variant has "
+        "the parser now reads word/endnotes.xml and emits each body as a block flagged "
+        "docx_endnote, with the warning docx_endnotes_extracted_without_anchor — that "
+        "half is closed. What remains is the schema: EvidenceLocator v2's docx variant has "
         "paragraphId / tableId+cellId / commentId / footnoteId and no endnote anchor, so "
-        "even an extracted endnote would have nothing to be addressed by. Closing this row "
-        "needs the parser and an enums v2 locator field, in that order."
+        "the unit reaches a caller with locator=None and, because ExtractedUnit carries no "
+        "quality flags, is indistinguishable at the reader surface from a body paragraph. "
+        "An endnote is NOT anchored to a footnoteId it does not have. Closing this row is "
+        "an enums v2 change, which no agent may make."
     ),
     "docx_equation_formula": (
         "the docx parser flattens OMML to its run text and never sets formula_latex, so the "
@@ -278,6 +320,15 @@ UNOBSERVABLE: dict[str, str] = {
         "so the unit carries locator=None. Its text is still emitted; what a caller cannot "
         "get is an address for it."
     ),
+    "pptx_smartart_warning": (
+        "the parser adds pptx_smartart_not_extracted to metadata['warnings'], and "
+        "NativeExtraction has no warnings field, so a caller of the reader plane cannot "
+        "tell a slide whose diagram was dropped from one that had none. The warning is "
+        "real and asserted in CIR by "
+        "tests/unit/test_native_parser_fidelity.py::"
+        "test_pptx_flags_smartart_and_embedded_objects_instead_of_dropping_them; what is "
+        "missing is a field on the extraction model to carry it."
+    ),
     "pptx_merged_cell_spans": (
         "same as xlsx_merged_ranges, and the pptx variant additionally has no cell anchor at "
         "all: a cell is addressed no finer than its shape."
@@ -287,6 +338,8 @@ UNOBSERVABLE: dict[str, str] = {
 OBSERVERS: dict[str, Observer] = {
     "xlsx_sheet_names": _xlsx_sheet_names,
     "xlsx_cell_values": _xlsx_cell_values,
+    "xlsx_cell_comments": _xlsx_cell_comments,
+    "xlsx_named_ranges": _xlsx_named_ranges,
     "xlsx_formula_text": _xlsx_formula_text,
     "xlsx_table_range": _xlsx_table_range,
     "xlsx_chart_title": _xlsx_chart_title,
@@ -336,6 +389,8 @@ LOCATOR_KEYED: frozenset[str] = frozenset(
     {
         "xlsx_sheet_names",
         "xlsx_cell_values",
+        "xlsx_cell_comments",
+        "xlsx_named_ranges",
         "xlsx_formula_text",
         "xlsx_table_range",
         "xlsx_chart_title",
@@ -409,6 +464,90 @@ EVIDENCE_NOTES: dict[str, str] = {
         "committed receipt."
     ),
 }
+
+
+#: Program §27's own feature list, per format, with where each one actually
+#: arrives. Four values, and the difference between the middle two is the whole
+#: point of publishing this block:
+#:
+#: * ``EXTRACTED_AND_ANCHORED`` — a unit carries the content **and** an
+#:   EvidenceLocator v2 anchor. This is the only value that means a caller of the
+#:   reader plane can cite it.
+#: * ``EXTRACTED_UNANCHORED`` — a unit carries the text with ``locator=None``.
+#:   The content survives; nothing can point at it.
+#: * ``EXTRACTED_PARSER_ONLY`` — the fact is in CIR (metadata or a block quality
+#:   flag) and no field of ``ExtractedUnit`` witnesses it, so it does not reach a
+#:   caller of the reader plane at all.
+#: * ``NOT_EXTRACTED`` — nothing reads it. Named, never omitted.
+#:
+#: A row here is a claim about this tree at this SHA and is checked by
+#: ``tests/unit/test_office_qualification.py``: every feature whose note cites a
+#: capability must cite one the expected manifest actually names.
+SECTION_27_COVERAGE: dict[str, dict[str, tuple[str, str]]] = {
+    "docx": {
+        "paragraph": ("EXTRACTED_AND_ANCHORED", "docx_body_paragraphs"),
+        "table": ("EXTRACTED_AND_ANCHORED", "docx_table_cells"),
+        "embedded image": (
+            "EXTRACTED_PARSER_ONLY",
+            "the image is registered as an asset and emitted as a FIGURE block; the "
+            "block has no paragraphId, so its unit carries locator=None",
+        ),
+        "headers/footers": ("EXTRACTED_AND_ANCHORED", "docx_headers_footers"),
+        "footnotes": ("EXTRACTED_AND_ANCHORED", "docx_footnotes"),
+        "endnotes": ("EXTRACTED_UNANCHORED", "docx_endnotes"),
+        "comments": ("EXTRACTED_AND_ANCHORED", "docx_comment_text"),
+        "comment author": ("EXTRACTED_PARSER_ONLY", "docx_comment_author"),
+        "tracked changes": ("EXTRACTED_PARSER_ONLY", "docx_tracked_changes"),
+    },
+    "pptx": {
+        "text": ("EXTRACTED_AND_ANCHORED", "pptx_slide_units"),
+        "image": (
+            "EXTRACTED_AND_ANCHORED",
+            "the picture's unit text is the media part's file name, not slide content",
+        ),
+        "image text": (
+            "NOT_EXTRACTED",
+            "no OCR of picture content anywhere in the native path; this is the visual "
+            "companion's job, not the native reader's",
+        ),
+        "notes": ("EXTRACTED_UNANCHORED", "pptx_speaker_notes"),
+        "shapes": ("EXTRACTED_AND_ANCHORED", "pptx_shape_reading_order"),
+        "diagrams": ("NOT_EXTRACTED", "pptx_smartart_warning"),
+        "relation": (
+            "EXTRACTED_PARSER_ONLY",
+            "connector endpoints reach metadata['slides'][*]['connectors'] and order the "
+            "shape walk; no unit carries an edge",
+        ),
+        "order": ("EXTRACTED_AND_ANCHORED", "pptx_shape_reading_order"),
+    },
+    "xlsx": {
+        "value": ("EXTRACTED_AND_ANCHORED", "xlsx_cell_values"),
+        "formula": ("EXTRACTED_AND_ANCHORED", "xlsx_formula_text"),
+        "merged cell": ("EXTRACTED_PARSER_ONLY", "xlsx_merged_ranges"),
+        "hidden sheet": ("EXTRACTED_PARSER_ONLY", "xlsx_hidden_sheets"),
+        "comments": ("EXTRACTED_AND_ANCHORED", "xlsx_cell_comments"),
+        "named ranges": ("EXTRACTED_AND_ANCHORED", "xlsx_named_ranges"),
+        "charts": ("EXTRACTED_AND_ANCHORED", "xlsx_chart_title"),
+        "formula dependency": ("NOT_EXTRACTED", "xlsx_formula_dependency"),
+        "formatting semantics": ("EXTRACTED_PARSER_ONLY", "xlsx_number_formats"),
+    },
+}
+
+
+def _section_27(source_format: str, rows: Sequence[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """§27's feature list for one format, each entry bound to its measured rows."""
+    outcomes: dict[str, list[bool]] = {}
+    for row in rows:
+        outcomes.setdefault(str(row["capability"]), []).append(bool(row["pass"]))
+    coverage: dict[str, dict[str, Any]] = {}
+    for feature, (state, note) in SECTION_27_COVERAGE[source_format].items():
+        entry: dict[str, Any] = {"coverage": state, "note": note}
+        if note in outcomes:
+            entry["capability"] = note
+            entry["rowsPassed"] = sum(1 for value in outcomes[note] if value)
+            entry["rowsMeasured"] = len(outcomes[note])
+        coverage[feature] = entry
+    return coverage
 
 
 def _cited_tests(item: str, repo_root: Path = REPO_ROOT) -> list[str]:
@@ -528,18 +667,19 @@ def build_receipt(
         "revision": provider.revision,
         "generatedAt": generated_at,
         "corpus": {
-            "root": f"tests/fixtures/office_corpus/{source_format}",
+            "root": (corpus_root / source_format).relative_to(REPO_ROOT).as_posix(),
             "fileCount": len(entries),
             "sha256": _corpus_digest([corpus_root / entry["path"] for entry in entries]),
         },
         "expectedManifest": {
-            "path": "tests/fixtures/office_corpus/expected.json",
+            "path": expected_path.relative_to(REPO_ROOT).as_posix(),
             "sha256": _file_digest(expected_path),
         },
         "runtime": {
             "digest": provider.runtime_digest,
             "python": ".".join(str(part) for part in sys.version_info[:3]),
         },
+        "programSection27": _section_27(source_format, rows),
         "rows": rows,
         "totals": {"rows": len(rows), "passed": passed, "failed": len(failed)},
         "failedCapabilities": sorted({str(row["capability"]) for row in failed}),
@@ -559,8 +699,13 @@ def build_receipt(
     }
 
 
-def receipt_path(source_format: str, generated_at: str = RECEIPT_DATE) -> Path:
-    return RECEIPT_DIR / f"office_reader_qualification_{source_format}_{generated_at}.json"
+def receipt_path(
+    source_format: str,
+    generated_at: str = RECEIPT_DATE,
+    *,
+    stem: str = "office_reader_qualification",
+) -> Path:
+    return RECEIPT_DIR / f"{stem}_{source_format}_{generated_at}.json"
 
 
 def serialise(receipt: dict[str, Any]) -> str:
@@ -575,12 +720,36 @@ def main(argv: Sequence[str] | None = None) -> int:
         help="the date recorded in the receipt and in its filename (no wall clock is read)",
     )
     parser.add_argument("--format", choices=sorted(PROVIDERS), action="append")
+    parser.add_argument(
+        "--corpus-root",
+        type=Path,
+        default=CORPUS_ROOT,
+        help="a corpus directory in the same layout, e.g. the Korean hard set",
+    )
+    parser.add_argument(
+        "--expected",
+        type=Path,
+        default=None,
+        help="the expected manifest for --corpus-root (default: <corpus-root>/expected.json)",
+    )
+    parser.add_argument(
+        "--receipt-stem",
+        default="office_reader_qualification",
+        help="receipt filename stem, so a second corpus does not overwrite the first",
+    )
     arguments = parser.parse_args(argv)
+    corpus_root = arguments.corpus_root.resolve()
+    expected = (arguments.expected or corpus_root / "expected.json").resolve()
 
     RECEIPT_DIR.mkdir(parents=True, exist_ok=True)
     for source_format in arguments.format or sorted(PROVIDERS):
-        receipt = build_receipt(source_format, generated_at=arguments.generated_at)
-        path = receipt_path(source_format, arguments.generated_at)
+        receipt = build_receipt(
+            source_format,
+            generated_at=arguments.generated_at,
+            corpus_root=corpus_root,
+            expected_path=expected,
+        )
+        path = receipt_path(source_format, arguments.generated_at, stem=arguments.receipt_stem)
         path.write_text(serialise(receipt), encoding="utf-8", newline="\n")
         totals = receipt["totals"]
         print(

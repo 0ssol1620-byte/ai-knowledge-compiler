@@ -25,6 +25,7 @@ from tests.fixtures.office_corpus.build_office_corpus import (
 from tools.office.qualify_office_readers import (
     EVIDENCE_ITEMS,
     OBSERVERS,
+    SECTION_27_COVERAGE,
     UNOBSERVABLE,
     _evidence,
     build_receipt,
@@ -133,6 +134,33 @@ def test_every_expected_capability_has_an_observer_or_a_stated_reason() -> None:
     assert named <= set(OBSERVERS)
     for capability in named & set(UNOBSERVABLE):
         assert UNOBSERVABLE[capability].strip(), capability
+
+
+@pytest.mark.parametrize("source_format", FORMATS)
+def test_every_section_27_feature_is_named_and_bound_to_a_measured_row(
+    source_format: str,
+) -> None:
+    """§27 lists features per format; a receipt that omits one hides a gap.
+
+    A feature whose note is a capability name must name one the expected
+    manifest actually measures, so `NOT_EXTRACTED` stays a measurement rather
+    than decaying into a sentence nothing checks.
+    """
+    receipt = json.loads(receipt_path(source_format).read_text(encoding="utf-8"))
+    coverage = receipt["programSection27"]
+    assert set(coverage) == set(SECTION_27_COVERAGE[source_format])
+    measured = {str(row["capability"]) for row in receipt["rows"]}
+    for feature, entry in coverage.items():
+        assert entry["coverage"] in {
+            "EXTRACTED_AND_ANCHORED",
+            "EXTRACTED_UNANCHORED",
+            "EXTRACTED_PARSER_ONLY",
+            "NOT_EXTRACTED",
+        }, feature
+        assert entry["note"].strip(), feature
+        if "capability" in entry:
+            assert entry["capability"] in measured, feature
+            assert entry["rowsMeasured"] >= 1, feature
 
 
 def test_an_unobservable_row_is_never_recorded_as_a_pass() -> None:

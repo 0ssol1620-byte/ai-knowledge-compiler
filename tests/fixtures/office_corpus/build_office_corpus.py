@@ -52,6 +52,7 @@ from docx.enum.section import WD_SECTION
 from lxml import etree
 from openpyxl import Workbook
 from openpyxl.chart import BarChart, Reference
+from openpyxl.comments import Comment
 from openpyxl.utils.cell import coordinate_to_tuple, get_column_letter
 from openpyxl.workbook.defined_name import DefinedName
 from pptx import Presentation
@@ -319,6 +320,79 @@ def _xlsx_named_range() -> tuple[bytes, list[dict[str, Any]]]:
     return _save_xlsx(workbook), [
         _row("xlsx_cell_values", _grid_cells("Data", "A1", grid)),
         _row("xlsx_named_ranges", {"RevenueColumn": "Data!$B$2:$B$3"}),
+    ]
+
+
+def _xlsx_cell_comments() -> tuple[bytes, list[dict[str, Any]]]:
+    grid = [["Item", "Count"], ["alpha", 2], ["beta", 3]]
+    workbook = _workbook("Data")
+    sheet = workbook["Data"]
+    _write_grid(sheet, "A1", grid)
+    sheet["B2"].comment = Comment("Restated after the Q2 close.", "reviewer")
+    sheet["B3"].comment = Comment("Awaiting the regional split.", "reviewer")
+    return _save_xlsx(workbook), [
+        _row("xlsx_cell_values", _grid_cells("Data", "A1", grid)),
+        _row(
+            "xlsx_cell_comments",
+            {
+                "Data!B2": "Restated after the Q2 close.",
+                "Data!B3": "Awaiting the regional split.",
+            },
+        ),
+    ]
+
+
+def _xlsx_number_formats() -> tuple[bytes, list[dict[str, Any]]]:
+    """Cells whose displayed text is not their value.
+
+    A finance sheet shows ``(1,234)`` for a negative and ``1,234원`` for an
+    amount. The reader emits ``-1234`` and ``1234``. The expected value here is
+    the format string per cell — what a caller would need to reproduce the
+    display — and the row is expected to fail at the reader surface, because
+    ``ExtractedUnit`` has no formatting field. It is in the corpus so the receipt
+    states that gap instead of omitting it.
+    """
+    grid = [["항목", "금액", "비중"], ["매출", 1234, 0.406], ["영업손실", -1234, -0.113]]
+    workbook = _workbook("Data")
+    sheet = workbook["Data"]
+    _write_grid(sheet, "A1", grid)
+    for coordinate in ("B2", "B3"):
+        sheet[coordinate].number_format = '#,##0"원";(#,##0)"원"'
+    for coordinate in ("C2", "C3"):
+        sheet[coordinate].number_format = "0.0%;(0.0%)"
+    return _save_xlsx(workbook), [
+        _row("xlsx_cell_values", _grid_cells("Data", "A1", grid)),
+        _row(
+            "xlsx_number_formats",
+            {
+                "Data!B2": '#,##0"원";(#,##0)"원"',
+                "Data!B3": '#,##0"원";(#,##0)"원"',
+                "Data!C2": "0.0%;(0.0%)",
+                "Data!C3": "0.0%;(0.0%)",
+            },
+        ),
+    ]
+
+
+def _xlsx_formula_dependency() -> tuple[bytes, list[dict[str, Any]]]:
+    """One formula whose operands are other cells.
+
+    Program §27 asks for formula dependency. Nothing parses a formula's
+    operands, so this row is expected to fail; it exists so the receipt names
+    the gap with a fixture behind it rather than in prose.
+    """
+    grid = [["Item", "Count"], ["alpha", 2], ["beta", 3], ["total", "=SUM(B2:B3)"]]
+    workbook = _workbook("Data")
+    _write_grid(workbook["Data"], "A1", grid)
+    cells = _grid_cells("Data", "A1", grid)
+    cells["Data!B4"] = "5"
+    return _save_xlsx(
+        workbook,
+        edit=_cached_value_edit("xl/worksheets/sheet1.xml", {"B4": "5"}),
+    ), [
+        _row("xlsx_cell_values", cells),
+        _row("xlsx_formula_text", {"Data!B4": "=SUM(B2:B3)"}),
+        _row("xlsx_formula_dependency", {"Data!B4": ["Data!B2", "Data!B3"]}),
     ]
 
 
@@ -928,6 +1002,42 @@ def _pptx_table_merged_header() -> tuple[bytes, list[dict[str, Any]]]:
     ]
 
 
+#: A `p:graphicFrame` carrying the SmartArt `graphicData` uri. The diagram parts
+#: it would reference in a Word-authored file are deliberately absent: this
+#: fixture exists to prove the parser *notices* a diagram frame and says so, and
+#: a frame with no `dgm:relIds` is the smallest package that puts one there.
+#: python-pptx cannot author SmartArt, so it is injected as raw XML.
+_PPTX_SMARTART_FRAME = (
+    b'<p:graphicFrame xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main"'
+    b' xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">'
+    b"<p:nvGraphicFramePr>"
+    b'<p:cNvPr id="9" name="Diagram 9"/><p:cNvGraphicFramePr/><p:nvPr/>'
+    b"</p:nvGraphicFramePr>"
+    b'<p:xfrm><a:off x="914400" y="3200400"/><a:ext cx="3657600" cy="1828800"/></p:xfrm>'
+    b'<a:graphic><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/diagram"/>'
+    b"</a:graphic></p:graphicFrame>"
+)
+
+
+def _pptx_smartart_frame() -> tuple[bytes, list[dict[str, Any]]]:
+    """A slide whose diagram the parser does not read and does not hide."""
+    presentation = _presentation()
+    slide = _blank_slide(presentation)
+    _textbox(slide.shapes, "Delivery model", top=1.0)
+    payload = io.BytesIO()
+    presentation.save(payload)
+
+    def edit(name: str, member: bytes) -> bytes:
+        if name != "ppt/slides/slide1.xml":
+            return member
+        return _replace_once(member, b"</p:spTree>", _PPTX_SMARTART_FRAME + b"</p:spTree>")
+
+    return _rewrite_package(payload.getvalue(), edit=edit), [
+        _row("pptx_slide_units", {"1": ["Delivery model"]}),
+        _row("pptx_smartart_warning", ["pptx_smartart_not_extracted"]),
+    ]
+
+
 # --------------------------------------------------------------------------
 # corpus assembly
 # --------------------------------------------------------------------------
@@ -946,6 +1056,9 @@ CORPUS: dict[str, tuple[tuple[str, Builder], ...]] = {
         ("08-multi-sheet.xlsx", _xlsx_multi_sheet),
         ("09-offset-origin.xlsx", _xlsx_offset_origin),
         ("10-value-types-unicode.xlsx", _xlsx_value_types),
+        ("11-cell-comments.xlsx", _xlsx_cell_comments),
+        ("12-number-formats.xlsx", _xlsx_number_formats),
+        ("13-formula-dependency.xlsx", _xlsx_formula_dependency),
     ),
     "docx": (
         ("01-headings-paragraphs.docx", _docx_headings_paragraphs),
@@ -973,6 +1086,7 @@ CORPUS: dict[str, tuple[tuple[str, Builder], ...]] = {
         ("08-textbox-reading-order.pptx", _pptx_textbox_reading_order),
         ("09-unicode.pptx", _pptx_unicode),
         ("10-table-merged-header.pptx", _pptx_table_merged_header),
+        ("11-smartart-frame.pptx", _pptx_smartart_frame),
     ),
 }
 

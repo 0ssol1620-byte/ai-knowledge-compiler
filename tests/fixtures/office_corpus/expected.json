@@ -286,6 +286,96 @@
       ]
     },
     {
+      "path": "xlsx/11-cell-comments.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:ca1f8f5f1eb1f7b96ef90b94dd906b5e7d41203ce21986690b294630165e41bc",
+      "rows": [
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "Data!A1": "Item",
+            "Data!B1": "Count",
+            "Data!A2": "alpha",
+            "Data!B2": "2",
+            "Data!A3": "beta",
+            "Data!B3": "3"
+          }
+        },
+        {
+          "capability": "xlsx_cell_comments",
+          "expected": {
+            "Data!B2": "Restated after the Q2 close.",
+            "Data!B3": "Awaiting the regional split."
+          }
+        }
+      ]
+    },
+    {
+      "path": "xlsx/12-number-formats.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:b6029222107f92ccd8cd7d7a8114a5d2b7e6b1a11e1e22b585ce3c94f1bfe0f6",
+      "rows": [
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "Data!A1": "항목",
+            "Data!B1": "금액",
+            "Data!C1": "비중",
+            "Data!A2": "매출",
+            "Data!B2": "1234",
+            "Data!C2": "0.406",
+            "Data!A3": "영업손실",
+            "Data!B3": "-1234",
+            "Data!C3": "-0.113"
+          }
+        },
+        {
+          "capability": "xlsx_number_formats",
+          "expected": {
+            "Data!B2": "#,##0\"원\";(#,##0)\"원\"",
+            "Data!B3": "#,##0\"원\";(#,##0)\"원\"",
+            "Data!C2": "0.0%;(0.0%)",
+            "Data!C3": "0.0%;(0.0%)"
+          }
+        }
+      ]
+    },
+    {
+      "path": "xlsx/13-formula-dependency.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:3f52717010ab4d8e6c50f6d3856bef6040ee5d44c0f9f40628487c9049776210",
+      "rows": [
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "Data!A1": "Item",
+            "Data!B1": "Count",
+            "Data!A2": "alpha",
+            "Data!B2": "2",
+            "Data!A3": "beta",
+            "Data!B3": "3",
+            "Data!A4": "total",
+            "Data!B4": "5"
+          }
+        },
+        {
+          "capability": "xlsx_formula_text",
+          "expected": {
+            "Data!B4": "=SUM(B2:B3)"
+          }
+        },
+        {
+          "capability": "xlsx_formula_dependency",
+          "expected": {
+            "Data!B4": [
+              "Data!B2",
+              "Data!B3"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "path": "docx/01-headings-paragraphs.docx",
       "format": "docx",
       "sha256": "sha256:ec90fee706255da57e9f9a49e7ba4dbc085edd6e6ab401fe5e90ff52e5a60bb6",
@@ -715,6 +805,27 @@
               ]
             }
           }
+        }
+      ]
+    },
+    {
+      "path": "pptx/11-smartart-frame.pptx",
+      "format": "pptx",
+      "sha256": "sha256:129f6dbc8fa24e64a5e750d50c371defe9b023955c1e636f4dc4516b011c88a8",
+      "rows": [
+        {
+          "capability": "pptx_slide_units",
+          "expected": {
+            "1": [
+              "Delivery model"
+            ]
+          }
+        },
+        {
+          "capability": "pptx_smartart_warning",
+          "expected": [
+            "pptx_smartart_not_extracted"
+          ]
         }
       ]
     }
