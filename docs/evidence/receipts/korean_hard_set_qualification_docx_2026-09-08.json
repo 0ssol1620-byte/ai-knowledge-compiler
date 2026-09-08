@@ -1,0 +1,197 @@
+{
+  "schemaVersion": "tavonel.office_reader_qualification.v1",
+  "format": "docx",
+  "providerId": "native_docx_v1",
+  "revision": "akc_native_parsers.parse_non_pdf_to_cir",
+  "generatedAt": "2026-09-08",
+  "corpus": {
+    "root": "research/korean_hard_set_20260908/docx",
+    "fileCount": 3,
+    "sha256": "sha256:0172e4e9e3347b3196b3357d723f11197e863e86051f4a22a7ed3274262d4c8e"
+  },
+  "expectedManifest": {
+    "path": "research/korean_hard_set_20260908/expected.json",
+    "sha256": "sha256:7abdd915694d48b8ac8e3124a4a4d51b42c765a4aa5117bcd88a644db3b84e53"
+  },
+  "runtime": {
+    "digest": "sha256:96536f89e636c129ba6ff81533548e311436ecd0f442a3b926a2ac90e048678b",
+    "python": "3.13.0"
+  },
+  "programSection27": {
+    "paragraph": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "docx_body_paragraphs",
+      "capability": "docx_body_paragraphs",
+      "rowsPassed": 3,
+      "rowsMeasured": 3
+    },
+    "table": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "docx_table_cells",
+      "capability": "docx_table_cells",
+      "rowsPassed": 1,
+      "rowsMeasured": 1
+    },
+    "embedded image": {
+      "coverage": "EXTRACTED_PARSER_ONLY",
+      "note": "the image is registered as an asset and emitted as a FIGURE block; the block has no paragraphId, so its unit carries locator=None"
+    },
+    "headers/footers": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "docx_headers_footers"
+    },
+    "footnotes": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "docx_footnotes"
+    },
+    "endnotes": {
+      "coverage": "EXTRACTED_UNANCHORED",
+      "note": "docx_endnotes"
+    },
+    "comments": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "docx_comment_text"
+    },
+    "comment author": {
+      "coverage": "EXTRACTED_PARSER_ONLY",
+      "note": "docx_comment_author"
+    },
+    "tracked changes": {
+      "coverage": "EXTRACTED_PARSER_ONLY",
+      "note": "docx_tracked_changes"
+    }
+  },
+  "rows": [
+    {
+      "file": "docx/01-clean-hangul.docx",
+      "capability": "docx_body_paragraphs",
+      "expected": [
+        "2026년 1분기 경영 보고",
+        "매출은 전 분기 대비 4퍼센트 늘었습니다.",
+        "영업이익률은 12.4％로 집계되었습니다.",
+        "가. 국내 부문",
+        "수도권 매출이 전체의 절반을 넘었습니다."
+      ],
+      "observed": [
+        "2026년 1분기 경영 보고",
+        "매출은 전 분기 대비 4퍼센트 늘었습니다.",
+        "영업이익률은 12.4％로 집계되었습니다.",
+        "가. 국내 부문",
+        "수도권 매출이 전체의 절반을 넘었습니다."
+      ],
+      "pass": true
+    },
+    {
+      "file": "docx/02-korean-english-mixed.docx",
+      "capability": "docx_body_paragraphs",
+      "expected": [
+        "TAVONEL은 조직 지식을 AI가 신뢰할 수 있는 컨텍스트로 컴파일합니다.",
+        "SLA 99.9% 를 목표로 하며, RTO는 4시간입니다.",
+        "담당: Kim Minjun (김민준), platform team",
+        "문서 ID: DOC-2026-0131, 버전 v2.1"
+      ],
+      "observed": [
+        "TAVONEL은 조직 지식을 AI가 신뢰할 수 있는 컨텍스트로 컴파일합니다.",
+        "SLA 99.9% 를 목표로 하며, RTO는 4시간입니다.",
+        "담당: Kim Minjun (김민준), platform team",
+        "문서 ID: DOC-2026-0131, 버전 v2.1"
+      ],
+      "pass": true
+    },
+    {
+      "file": "docx/03-finance-table.docx",
+      "capability": "docx_body_paragraphs",
+      "expected": [
+        "연결 재무 요약 (2026-01-31 기준)"
+      ],
+      "observed": [
+        "연결 재무 요약 (2026-01-31 기준)"
+      ],
+      "pass": true
+    },
+    {
+      "file": "docx/03-finance-table.docx",
+      "capability": "docx_table_cells",
+      "expected": {
+        "0": {
+          "r/000000/c/000000": "과목",
+          "r/000000/c/000001": "당기",
+          "r/000000/c/000002": "전기",
+          "r/000000/c/000003": "증감률",
+          "r/000001/c/000000": "매출액",
+          "r/000001/c/000001": "1,234억 원",
+          "r/000001/c/000002": "1,186억 원",
+          "r/000001/c/000003": "4.0％",
+          "r/000002/c/000000": "영업이익",
+          "r/000002/c/000001": "153억 원",
+          "r/000002/c/000002": "141억 원",
+          "r/000002/c/000003": "8.5％",
+          "r/000003/c/000000": "당기순손실",
+          "r/000003/c/000001": "(12억 원)",
+          "r/000003/c/000002": "(31억 원)",
+          "r/000003/c/000003": "(61.3％)"
+        }
+      },
+      "observed": {
+        "0": {
+          "r/000000/c/000000": "과목",
+          "r/000000/c/000001": "당기",
+          "r/000000/c/000002": "전기",
+          "r/000000/c/000003": "증감률",
+          "r/000001/c/000000": "매출액",
+          "r/000001/c/000001": "1,234억 원",
+          "r/000001/c/000002": "1,186억 원",
+          "r/000001/c/000003": "4.0％",
+          "r/000002/c/000000": "영업이익",
+          "r/000002/c/000001": "153억 원",
+          "r/000002/c/000002": "141억 원",
+          "r/000002/c/000003": "8.5％",
+          "r/000003/c/000000": "당기순손실",
+          "r/000003/c/000001": "(12억 원)",
+          "r/000003/c/000002": "(31억 원)",
+          "r/000003/c/000003": "(61.3％)"
+        }
+      },
+      "pass": true
+    }
+  ],
+  "totals": {
+    "rows": 4,
+    "passed": 4,
+    "failed": 0
+  },
+  "failedCapabilities": [],
+  "evidence": {
+    "structural": "PASS",
+    "locator": "PASS",
+    "website": "ABSENT",
+    "malformed": "PASS",
+    "performance": "ABSENT",
+    "deterministic": "PASS"
+  },
+  "evidenceNotes": {
+    "structural": "measured here: every expected-manifest row for this family, from the provider's own ExtractedUnit stream over the committed corpus.",
+    "locator": "measured here: the rows whose observed value is selected by an EvidenceLocator v2 anchor. A row whose value differs is counted as a miss, because this receipt cannot tell a wrong anchor from a right anchor over wrong content.",
+    "website": "ABSENT: the full upload -> CDR -> native read -> compile -> evidence UI sequence on a Preview deployment is lane C-5. Nothing in this repository measures it, and no test here is a substitute for it.",
+    "malformed": "not measured by this tool; the committed tests named in evidenceCitations are, and they run in the CI unit scope. They cover an undecompressable package member, a malformed main part, a zip bomb, an external relationship, macro-enabled bytes and a password-protected container, each asserted through ReaderRegistry.read().",
+    "performance": "ABSENT: no p50/p95 per file-size class has been measured for these readers. A timing taken on this machine would not be a receipt.",
+    "deterministic": "not measured by this tool; the committed tests named in evidenceCitations are. They rebuild the corpus to the committed bytes and re-run this qualifier against the committed receipt."
+  },
+  "evidenceCitations": {
+    "malformed": [
+      "tests/unit/test_office_readers.py::test_an_undecompressable_package_member_is_a_receipt_not_an_exception",
+      "tests/unit/test_office_readers.py::test_a_malformed_main_part_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_a_zip_bomb_office_package_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_an_external_relationship_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_macro_enabled_bytes_are_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_a_password_protected_office_container_is_locked_not_corrupt"
+    ],
+    "deterministic": [
+      "tests/unit/test_office_qualification.py::test_the_corpus_rebuilds_to_the_committed_bytes",
+      "tests/unit/test_office_qualification.py::test_the_committed_receipt_matches_a_fresh_run",
+      "tests/unit/test_office_readers.py::test_probe_samples_are_byte_deterministic"
+    ]
+  },
+  "status": "BEST_EFFORT",
+  "statusRule": "VERIFIED_NATIVE requires all six evidence items PASS in this receipt (lane contract §4, founder ruling G-6); C-3 supplies at most four, so this tool never mints one. Every expected row must also pass, and a failing row is listed verbatim as a known limitation. A receipt claiming VERIFIED_NATIVE with any ABSENT item is a P0 false success."
+}

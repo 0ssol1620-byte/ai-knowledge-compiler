@@ -163,6 +163,11 @@ ignore = [
 # component byte for byte, so reflowing one would silently stop it testing
 # anything -- the engine reports that as a survivor, not a skip.
 "research/tavonel_eval_v2/tools/sfir9_mutation_tables/*.py" = ["E501"]
+# The Korean hard set's subject matter is the characters themselves. `％`
+# (FULLWIDTH PERCENT SIGN) is what a Korean business document actually
+# contains, and "correcting" it to `%` would delete the case the fixture exists
+# to carry.
+"research/korean_hard_set_20260908/*.py" = ["RUF001", "RUF002"]
 
 [tool.mypy]
 python_version = "3.12"

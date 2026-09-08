@@ -25,6 +25,20 @@ _TITLE_PLACEHOLDERS = {
     PP_PLACEHOLDER.CENTER_TITLE,
 }
 
+#: `a:graphicData/@uri` values that name content this parser does not extract.
+#: A `p:graphicFrame` that is neither a table nor a chart reaches `_add_shape`
+#: with no text frame and used to return `None` — a silent drop. The DOCX parser
+#: has flagged the same content since lane C-2 (`docx_smartart_not_extracted`);
+#: these two warnings are its PPTX counterpart.
+_UNEXTRACTED_GRAPHIC_URIS: dict[str, str] = {
+    "http://schemas.openxmlformats.org/drawingml/2006/diagram": (
+        "pptx_smartart_not_extracted"
+    ),
+    "http://schemas.openxmlformats.org/presentationml/2006/ole": (
+        "pptx_embedded_object_not_extracted"
+    ),
+}
+
 
 @dataclass(frozen=True, slots=True)
 class _ShapeNode:
@@ -342,6 +356,15 @@ def _add_shape(
         )
         return BlockType.FIGURE
 
+    warning = _UNEXTRACTED_GRAPHIC_URIS.get(_graphic_data_uri(shape) or "")
+    if warning is not None:
+        # SmartArt and an embedded OLE object are content this parser does not
+        # read. Saying so is the whole fix: a caller that sees the warning knows
+        # the slide holds more than the units carry, and nothing here invents a
+        # block for content it cannot extract.
+        builder.add_warning(warning)
+        return None
+
     if not getattr(shape, "has_text_frame", False):
         return None
     emitted = False
@@ -371,6 +394,22 @@ def _add_shape(
         )
         emitted = True
     return BlockType.PARAGRAPH if emitted else None
+
+
+def _graphic_data_uri(shape: Any) -> str | None:
+    """`a:graphicData/@uri` of a `p:graphicFrame`, or None for anything else.
+
+    The uri is what tells SmartArt from a table, a chart or an OLE object;
+    `GraphicFrame.shape_type` returns None for a diagram, so it cannot.
+    """
+    element = getattr(shape, "_element", None)
+    if element is None or str(element.tag).rsplit("}", 1)[-1] != "graphicFrame":
+        return None
+    for node in element.iter():
+        if str(node.tag).rsplit("}", 1)[-1] == "graphicData":
+            uri = node.get("uri")
+            return str(uri) if uri else None
+    return None
 
 
 def _add_picture(

@@ -1,0 +1,379 @@
+{
+  "schemaVersion": "tavonel.office_reader_qualification.v1",
+  "format": "docx",
+  "providerId": "native_docx_v1",
+  "revision": "akc_native_parsers.parse_non_pdf_to_cir",
+  "generatedAt": "2026-09-08",
+  "corpus": {
+    "root": "tests/fixtures/office_corpus/docx",
+    "fileCount": 13,
+    "sha256": "sha256:c5143d6845d9de29fb3e111aee19280e06f151232c5a12cd39a132d8ae2d3cf1"
+  },
+  "expectedManifest": {
+    "path": "tests/fixtures/office_corpus/expected.json",
+    "sha256": "sha256:034b106c1492c77d5fd340e2b30c19e698e26a58797659bf05b0ca9a4f3b92f1"
+  },
+  "runtime": {
+    "digest": "sha256:96536f89e636c129ba6ff81533548e311436ecd0f442a3b926a2ac90e048678b",
+    "python": "3.13.0"
+  },
+  "programSection27": {
+    "paragraph": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "docx_body_paragraphs",
+      "capability": "docx_body_paragraphs",
+      "rowsPassed": 3,
+      "rowsMeasured": 4
+    },
+    "table": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "docx_table_cells",
+      "capability": "docx_table_cells",
+      "rowsPassed": 2,
+      "rowsMeasured": 3
+    },
+    "embedded image": {
+      "coverage": "EXTRACTED_PARSER_ONLY",
+      "note": "the image is registered as an asset and emitted as a FIGURE block; the block has no paragraphId, so its unit carries locator=None"
+    },
+    "headers/footers": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "docx_headers_footers",
+      "capability": "docx_headers_footers",
+      "rowsPassed": 2,
+      "rowsMeasured": 2
+    },
+    "footnotes": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "docx_footnotes",
+      "capability": "docx_footnotes",
+      "rowsPassed": 1,
+      "rowsMeasured": 1
+    },
+    "endnotes": {
+      "coverage": "EXTRACTED_UNANCHORED",
+      "note": "docx_endnotes",
+      "capability": "docx_endnotes",
+      "rowsPassed": 0,
+      "rowsMeasured": 1
+    },
+    "comments": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "docx_comment_text",
+      "capability": "docx_comment_text",
+      "rowsPassed": 1,
+      "rowsMeasured": 1
+    },
+    "comment author": {
+      "coverage": "EXTRACTED_PARSER_ONLY",
+      "note": "docx_comment_author",
+      "capability": "docx_comment_author",
+      "rowsPassed": 0,
+      "rowsMeasured": 1
+    },
+    "tracked changes": {
+      "coverage": "EXTRACTED_PARSER_ONLY",
+      "note": "docx_tracked_changes",
+      "capability": "docx_tracked_changes",
+      "rowsPassed": 0,
+      "rowsMeasured": 1
+    }
+  },
+  "rows": [
+    {
+      "file": "docx/01-headings-paragraphs.docx",
+      "capability": "docx_body_paragraphs",
+      "expected": [
+        "Quarterly report",
+        "Revenue rose in every region.",
+        "Risks",
+        "Supply remains constrained."
+      ],
+      "observed": [
+        "Quarterly report",
+        "Revenue rose in every region.",
+        "Risks",
+        "Supply remains constrained."
+      ],
+      "pass": true
+    },
+    {
+      "file": "docx/02-table-simple.docx",
+      "capability": "docx_table_cells",
+      "expected": {
+        "0": {
+          "r/000000/c/000000": "Team",
+          "r/000000/c/000001": "People",
+          "r/000001/c/000000": "platform",
+          "r/000001/c/000001": "4",
+          "r/000002/c/000000": "research",
+          "r/000002/c/000001": "2"
+        }
+      },
+      "observed": {
+        "0": {
+          "r/000000/c/000000": "Team",
+          "r/000000/c/000001": "People",
+          "r/000001/c/000000": "platform",
+          "r/000001/c/000001": "4",
+          "r/000002/c/000000": "research",
+          "r/000002/c/000001": "2"
+        }
+      },
+      "pass": true
+    },
+    {
+      "file": "docx/03-table-merged-header.docx",
+      "capability": "docx_table_cells",
+      "expected": {
+        "0": {
+          "r/000000/c/000000": "Headcount",
+          "r/000001/c/000000": "platform",
+          "r/000001/c/000001": "4",
+          "r/000002/c/000000": "research",
+          "r/000002/c/000001": "2"
+        }
+      },
+      "observed": {
+        "0": {
+          "r/000000/c/000000": "Headcount",
+          "r/000001/c/000000": "platform",
+          "r/000001/c/000001": "4",
+          "r/000002/c/000000": "research",
+          "r/000002/c/000001": "2"
+        }
+      },
+      "pass": true
+    },
+    {
+      "file": "docx/03-table-merged-header.docx",
+      "capability": "docx_merged_cell_spans",
+      "expected": {
+        "0": {
+          "r/000000/c/000000": [
+            1,
+            2
+          ]
+        }
+      },
+      "observed": null,
+      "pass": false,
+      "unobservable": "same as xlsx_merged_ranges: the span is computed by the parser and dropped at the reader surface."
+    },
+    {
+      "file": "docx/04-comments.docx",
+      "capability": "docx_comment_text",
+      "expected": {
+        "0": "Check this number.",
+        "1": "Source, please."
+      },
+      "observed": {
+        "0": "Check this number.",
+        "1": "Source, please."
+      },
+      "pass": true
+    },
+    {
+      "file": "docx/04-comments.docx",
+      "capability": "docx_comment_author",
+      "expected": {
+        "0": "Dana Reviewer",
+        "1": "Kim Auditor"
+      },
+      "observed": null,
+      "pass": false,
+      "unobservable": "the parser keeps the author as a quality flag on the comment block (comment_author_preserved) rather than as text; ExtractedUnit has no attribution field, so the author cannot reach a caller."
+    },
+    {
+      "file": "docx/05-tracked-changes.docx",
+      "capability": "docx_body_paragraphs",
+      "expected": [
+        "The contract runs for three years"
+      ],
+      "observed": [
+        "The contract runs for three years"
+      ],
+      "pass": true
+    },
+    {
+      "file": "docx/05-tracked-changes.docx",
+      "capability": "docx_tracked_changes",
+      "expected": [
+        {
+          "kind": "insertion",
+          "text": "three years"
+        },
+        {
+          "kind": "deletion",
+          "text": "two years"
+        }
+      ],
+      "observed": null,
+      "pass": false,
+      "unobservable": "insertions are folded into the visible paragraph text and deletions are kept only in metadata['docx']['trackedChanges']; neither is a unit, so the change list and the deleted text are unreachable."
+    },
+    {
+      "file": "docx/06-headers-footers.docx",
+      "capability": "docx_headers_footers",
+      "expected": {
+        "docx/section/0000/header/p/000000": "Acme internal",
+        "docx/section/0000/footer/p/000000": "Confidential draft"
+      },
+      "observed": {
+        "docx/section/0000/header/p/000000": "Acme internal",
+        "docx/section/0000/footer/p/000000": "Confidential draft"
+      },
+      "pass": true
+    },
+    {
+      "file": "docx/07-multi-section-headers.docx",
+      "capability": "docx_headers_footers",
+      "expected": {
+        "docx/section/0000/header/p/000000": "Part one",
+        "docx/section/0001/header/p/000000": "Part two"
+      },
+      "observed": {
+        "docx/section/0000/header/p/000000": "Part one",
+        "docx/section/0001/header/p/000000": "Part two"
+      },
+      "pass": true
+    },
+    {
+      "file": "docx/08-footnotes.docx",
+      "capability": "docx_footnotes",
+      "expected": {
+        "2": "Source: the internal revenue ledger."
+      },
+      "observed": {
+        "2": "Source: the internal revenue ledger."
+      },
+      "pass": true
+    },
+    {
+      "file": "docx/09-omml-equation.docx",
+      "capability": "docx_equation_text",
+      "expected": [
+        "E2=mc"
+      ],
+      "observed": [
+        "E2=mc"
+      ],
+      "pass": true
+    },
+    {
+      "file": "docx/09-omml-equation.docx",
+      "capability": "docx_equation_formula",
+      "expected": true,
+      "observed": null,
+      "pass": false,
+      "unobservable": "the docx parser flattens OMML to its run text and never sets formula_latex, so the equation's structure (the superscript) is lost even though its characters survive."
+    },
+    {
+      "file": "docx/10-unicode-lists.docx",
+      "capability": "docx_body_paragraphs",
+      "expected": [
+        "분기 보고서",
+        "첫 번째 항목",
+        "Zweiter Eintrag — mit Gedankenstrich"
+      ],
+      "observed": [
+        "분기 보고서",
+        "첫 번째 항목",
+        "Zweiter Eintrag — mit Gedankenstrich"
+      ],
+      "pass": true
+    },
+    {
+      "file": "docx/11-sdt-content-control.docx",
+      "capability": "docx_body_paragraphs",
+      "expected": [
+        "Contract summary.",
+        "Approved by the audit committee.",
+        "Signed on the first of January."
+      ],
+      "observed": [
+        "Contract summary.",
+        "Signed on the first of January."
+      ],
+      "pass": false
+    },
+    {
+      "file": "docx/12-endnotes.docx",
+      "capability": "docx_endnotes",
+      "expected": {
+        "2": "Source: the board minutes of 2 January."
+      },
+      "observed": null,
+      "pass": false,
+      "unobservable": "the parser now reads word/endnotes.xml and emits each body as a block flagged docx_endnote, with the warning docx_endnotes_extracted_without_anchor — that half is closed. What remains is the schema: EvidenceLocator v2's docx variant has paragraphId / tableId+cellId / commentId / footnoteId and no endnote anchor, so the unit reaches a caller with locator=None and, because ExtractedUnit carries no quality flags, is indistinguishable at the reader surface from a body paragraph. An endnote is NOT anchored to a footnoteId it does not have. Closing this row is an enums v2 change, which no agent may make."
+    },
+    {
+      "file": "docx/13-nested-table.docx",
+      "capability": "docx_table_cells",
+      "expected": {
+        "0": {
+          "r/000000/c/000000": "Outer cell\nInner cell",
+          "r/000000/c/000001": "Right cell",
+          "r/000001/c/000000": "platform",
+          "r/000001/c/000001": "4"
+        }
+      },
+      "observed": {
+        "0": {
+          "r/000000/c/000000": "Outer cell",
+          "r/000000/c/000001": "Right cell",
+          "r/000001/c/000000": "platform",
+          "r/000001/c/000001": "4"
+        }
+      },
+      "pass": false
+    }
+  ],
+  "totals": {
+    "rows": 17,
+    "passed": 10,
+    "failed": 7
+  },
+  "failedCapabilities": [
+    "docx_body_paragraphs",
+    "docx_comment_author",
+    "docx_endnotes",
+    "docx_equation_formula",
+    "docx_merged_cell_spans",
+    "docx_table_cells",
+    "docx_tracked_changes"
+  ],
+  "evidence": {
+    "structural": "FAIL",
+    "locator": "FAIL",
+    "website": "ABSENT",
+    "malformed": "PASS",
+    "performance": "ABSENT",
+    "deterministic": "PASS"
+  },
+  "evidenceNotes": {
+    "structural": "measured here: every expected-manifest row for this family, from the provider's own ExtractedUnit stream over the committed corpus.",
+    "locator": "measured here: the rows whose observed value is selected by an EvidenceLocator v2 anchor. A row whose value differs is counted as a miss, because this receipt cannot tell a wrong anchor from a right anchor over wrong content.",
+    "website": "ABSENT: the full upload -> CDR -> native read -> compile -> evidence UI sequence on a Preview deployment is lane C-5. Nothing in this repository measures it, and no test here is a substitute for it.",
+    "malformed": "not measured by this tool; the committed tests named in evidenceCitations are, and they run in the CI unit scope. They cover an undecompressable package member, a malformed main part, a zip bomb, an external relationship, macro-enabled bytes and a password-protected container, each asserted through ReaderRegistry.read().",
+    "performance": "ABSENT: no p50/p95 per file-size class has been measured for these readers. A timing taken on this machine would not be a receipt.",
+    "deterministic": "not measured by this tool; the committed tests named in evidenceCitations are. They rebuild the corpus to the committed bytes and re-run this qualifier against the committed receipt."
+  },
+  "evidenceCitations": {
+    "malformed": [
+      "tests/unit/test_office_readers.py::test_an_undecompressable_package_member_is_a_receipt_not_an_exception",
+      "tests/unit/test_office_readers.py::test_a_malformed_main_part_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_a_zip_bomb_office_package_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_an_external_relationship_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_macro_enabled_bytes_are_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_a_password_protected_office_container_is_locked_not_corrupt"
+    ],
+    "deterministic": [
+      "tests/unit/test_office_qualification.py::test_the_corpus_rebuilds_to_the_committed_bytes",
+      "tests/unit/test_office_qualification.py::test_the_committed_receipt_matches_a_fresh_run",
+      "tests/unit/test_office_readers.py::test_probe_samples_are_byte_deterministic"
+    ]
+  },
+  "status": "BEST_EFFORT",
+  "statusRule": "VERIFIED_NATIVE requires all six evidence items PASS in this receipt (lane contract §4, founder ruling G-6); C-3 supplies at most four, so this tool never mints one. Every expected row must also pass, and a failing row is listed verbatim as a known limitation. A receipt claiming VERIFIED_NATIVE with any ABSENT item is a P0 false success."
+}

@@ -13,9 +13,17 @@ family's receipt, of which C-3 can supply four. The website full sequence and
 the measured performance are recorded `ABSENT`, so every capability stays
 `BEST_EFFORT` and carries no `qualification_receipt`:
 
-* `docs/evidence/receipts/office_reader_qualification_xlsx_2026-09-06.json` — 18/22
-* `docs/evidence/receipts/office_reader_qualification_docx_2026-09-06.json` — 10/17
-* `docs/evidence/receipts/office_reader_qualification_pptx_2026-09-06.json` — 10/13
+* `docs/evidence/receipts/office_reader_qualification_xlsx_2026-09-08.json` — 24/29
+* `docs/evidence/receipts/office_reader_qualification_docx_2026-09-08.json` — 10/17
+* `docs/evidence/receipts/office_reader_qualification_pptx_2026-09-08.json` — 11/15
+
+The 2026-09-06 receipts beside them are the measurement that stood before the
+gap-closure lane (xlsx 18/22, docx 10/17, pptx 10/13). They are history and are
+not rewritten. The same three corpora are re-run against
+`research/korean_hard_set_20260908/` and produce
+`korean_hard_set_qualification_<format>_2026-09-08.json`; those receipts measure
+Hangul content through the same providers and are `BEST_EFFORT` for the same
+reasons.
 
 Each class below lists the rows it failed. They share one cause: `ExtractedUnit`
 has fields for text, an anchor, a bbox, a table id and a formula, and a fact the
@@ -96,6 +104,12 @@ _A1 = r"\$?[A-Z]{1,3}\$?[1-9][0-9]{0,6}"
 _XLSX_CELL = re.compile(rf"^xlsx/sheet/(\d+)/cell/({_A1})$")
 _XLSX_RANGE = re.compile(rf"^xlsx/sheet/(\d+)/range/({_A1}:{_A1})$")
 _XLSX_CHART = re.compile(r"^xlsx/sheet/(\d+)/chart/(\d+)$")
+#: A cell note is anchored at the cell it annotates — the v2 xlsx variant's own
+#: `cell` field — so a caller resolves it exactly where the reviewer put it.
+_XLSX_COMMENT = re.compile(rf"^xlsx/sheet/(\d+)/comment/({_A1})$")
+#: An Excel defined name may hold any character the format allows, Hangul
+#: included, so the name is taken verbatim rather than pattern-matched.
+_XLSX_DEFINED_NAME = re.compile(r"^xlsx/sheet/(\d+)/definedName/(.+)$")
 
 _DOCX_PARAGRAPH = re.compile(
     r"^docx/(?:body/p/\d+(?:/textbox/\d+/p/\d+)?|section/\d+/(?:header|footer)/p/\d+)$"
@@ -404,14 +418,23 @@ class NativeXlsxV1(_NativeOfficeV1):
     a consumer that looks for `rId<chartId>` in the drawing rels will not find
     it.
 
-    Known limitations — the rows this reader failed in the 2026-09-06
+    A defined name is anchored by `namedRange` and a cell note by the `cell` of
+    the cell it annotates; both are units in their own right, so a caller keys a
+    grid value by `unit_id.startswith("cell_")` and a note by anything else at
+    the same anchor.
+
+    Known limitations — the rows this reader failed in the 2026-09-08
     qualification, verbatim from the receipt:
 
     * `xlsx_merged_ranges` — a merged range's extent never reaches a caller;
       `CanonicalCell` has the spans, `ExtractedUnit` has no field for them.
     * `xlsx_hidden_sheets` — sheet visibility stays in the parser's metadata.
-    * `xlsx_named_ranges` — the parser reads no defined names at all, so the v2
-      `namedRange` anchor has nothing to fill it.
+    * `xlsx_number_formats` — the parser records every format string in
+      `metadata["sheets"][*]["numberFormats"]` and flags the cell
+      `number_format_not_applied`; `ExtractedUnit` has no formatting field, so a
+      caller reads `-1234` and cannot learn the workbook shows `(1,234)원`.
+    * `xlsx_formula_dependency` — nothing parses a formula's operands, so no
+      cell-to-cell edge exists anywhere. NOT_EXTRACTED, not merely unaddressable.
     * `xlsx_chart_series_names` — a chart series is named by its cell reference
       (`'Data'!B1`) rather than by the label that cell holds (`Revenue`).
     """
@@ -440,8 +463,10 @@ class NativeXlsxV1(_NativeOfficeV1):
     def _anchor(self, native_object_id: str, index: dict[int, str]) -> dict[str, Any] | None:
         for pattern, field in (
             (_XLSX_CELL, "cell"),
+            (_XLSX_COMMENT, "cell"),
             (_XLSX_RANGE, "range"),
             (_XLSX_CHART, "chartId"),
+            (_XLSX_DEFINED_NAME, "namedRange"),
         ):
             match = pattern.match(native_object_id)
             if match is None:
@@ -491,10 +516,13 @@ class NativeDocxV1(_NativeOfficeV1):
       approval block, a date picker) is not a `w:p` child of `w:body`, and the
       body walk dispatches on the child's tag name, so its text never becomes a
       unit and no warning says so.
-    * `docx_endnotes` (`12-endnotes.docx`) — `word/endnotes.xml` is not read at
-      all; only `word/footnotes.xml` is. EvidenceLocator v2's docx variant also
-      has no endnote anchor, so closing this needs the parser first and an
-      enums v2 locator field second.
+    * `docx_endnotes` (`12-endnotes.docx`) — `word/endnotes.xml` **is** read now
+      and each body is emitted as a block flagged `docx_endnote`, with the
+      warning `docx_endnotes_extracted_without_anchor`. What remains is the
+      schema: the v2 docx variant has no endnote anchor, so the unit arrives
+      with `locator=None` and, because `ExtractedUnit` carries no quality flags,
+      a caller cannot tell it from a body paragraph. An endnote is not anchored
+      to a `footnoteId` it does not have; closing this row is an enums v2 change.
     * `docx_table_cells` (`13-nested-table.docx`) — a `w:tbl` inside a `w:tc` is
       dropped: `_Cell.text` walks the cell's paragraphs only, so the outer cell
       reads `Outer cell` and the inner table's text reaches no unit.

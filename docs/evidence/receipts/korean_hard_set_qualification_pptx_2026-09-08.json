@@ -1,0 +1,147 @@
+{
+  "schemaVersion": "tavonel.office_reader_qualification.v1",
+  "format": "pptx",
+  "providerId": "native_pptx_v1",
+  "revision": "akc_native_parsers.parse_non_pdf_to_cir",
+  "generatedAt": "2026-09-08",
+  "corpus": {
+    "root": "research/korean_hard_set_20260908/pptx",
+    "fileCount": 2,
+    "sha256": "sha256:f0f417df219cf8448a0b36fe82d111becb738c45fad378efa1164dee21c421cd"
+  },
+  "expectedManifest": {
+    "path": "research/korean_hard_set_20260908/expected.json",
+    "sha256": "sha256:7abdd915694d48b8ac8e3124a4a4d51b42c765a4aa5117bcd88a644db3b84e53"
+  },
+  "runtime": {
+    "digest": "sha256:08ff51afead7f3e7f13ed710337b4dc87aab72ffeb43000b137814e78da3d418",
+    "python": "3.13.0"
+  },
+  "programSection27": {
+    "text": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "pptx_slide_units",
+      "capability": "pptx_slide_units",
+      "rowsPassed": 2,
+      "rowsMeasured": 2
+    },
+    "image": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "the picture's unit text is the media part's file name, not slide content"
+    },
+    "image text": {
+      "coverage": "NOT_EXTRACTED",
+      "note": "no OCR of picture content anywhere in the native path; this is the visual companion's job, not the native reader's"
+    },
+    "notes": {
+      "coverage": "EXTRACTED_UNANCHORED",
+      "note": "pptx_speaker_notes",
+      "capability": "pptx_speaker_notes",
+      "rowsPassed": 0,
+      "rowsMeasured": 1
+    },
+    "shapes": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "pptx_shape_reading_order"
+    },
+    "diagrams": {
+      "coverage": "NOT_EXTRACTED",
+      "note": "pptx_smartart_warning"
+    },
+    "relation": {
+      "coverage": "EXTRACTED_PARSER_ONLY",
+      "note": "connector endpoints reach metadata['slides'][*]['connectors'] and order the shape walk; no unit carries an edge"
+    },
+    "order": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "pptx_shape_reading_order"
+    }
+  },
+  "rows": [
+    {
+      "file": "pptx/01-clean-hangul.pptx",
+      "capability": "pptx_slide_units",
+      "expected": {
+        "1": [
+          "2026년 1분기 검토",
+          "모든 지역에서 매출이 늘었습니다."
+        ]
+      },
+      "observed": {
+        "1": [
+          "2026년 1분기 검토",
+          "모든 지역에서 매출이 늘었습니다."
+        ]
+      },
+      "pass": true
+    },
+    {
+      "file": "pptx/02-notes-mixed.pptx",
+      "capability": "pptx_slide_units",
+      "expected": {
+        "1": [
+          "Roadmap 로드맵 2026 H1",
+          "P0: 커넥터 · P1: 온톨로지 · P2: MCP"
+        ]
+      },
+      "observed": {
+        "1": [
+          "Roadmap 로드맵 2026 H1",
+          "P0: 커넥터 · P1: 온톨로지 · P2: MCP"
+        ]
+      },
+      "pass": true
+    },
+    {
+      "file": "pptx/02-notes-mixed.pptx",
+      "capability": "pptx_speaker_notes",
+      "expected": {
+        "1": "지연된 두 건의 계약을 언급할 것."
+      },
+      "observed": null,
+      "pass": false,
+      "unobservable": "the notes block's native id is pptx/slide/NNNN/notes and EvidenceLocator v2's pptx variant has no notes field. The note's text lives in ppt/notesSlides/notesSlideN.xml, not in the slide part a slideNumber1 anchor names, so the unit carries locator=None. Its text is still emitted; what a caller cannot get is an address for it."
+    }
+  ],
+  "totals": {
+    "rows": 3,
+    "passed": 2,
+    "failed": 1
+  },
+  "failedCapabilities": [
+    "pptx_speaker_notes"
+  ],
+  "evidence": {
+    "structural": "FAIL",
+    "locator": "PASS",
+    "website": "ABSENT",
+    "malformed": "PASS",
+    "performance": "ABSENT",
+    "deterministic": "PASS"
+  },
+  "evidenceNotes": {
+    "structural": "measured here: every expected-manifest row for this family, from the provider's own ExtractedUnit stream over the committed corpus.",
+    "locator": "measured here: the rows whose observed value is selected by an EvidenceLocator v2 anchor. A row whose value differs is counted as a miss, because this receipt cannot tell a wrong anchor from a right anchor over wrong content.",
+    "website": "ABSENT: the full upload -> CDR -> native read -> compile -> evidence UI sequence on a Preview deployment is lane C-5. Nothing in this repository measures it, and no test here is a substitute for it.",
+    "malformed": "not measured by this tool; the committed tests named in evidenceCitations are, and they run in the CI unit scope. They cover an undecompressable package member, a malformed main part, a zip bomb, an external relationship, macro-enabled bytes and a password-protected container, each asserted through ReaderRegistry.read().",
+    "performance": "ABSENT: no p50/p95 per file-size class has been measured for these readers. A timing taken on this machine would not be a receipt.",
+    "deterministic": "not measured by this tool; the committed tests named in evidenceCitations are. They rebuild the corpus to the committed bytes and re-run this qualifier against the committed receipt."
+  },
+  "evidenceCitations": {
+    "malformed": [
+      "tests/unit/test_office_readers.py::test_an_undecompressable_package_member_is_a_receipt_not_an_exception",
+      "tests/unit/test_office_readers.py::test_a_malformed_main_part_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_a_zip_bomb_office_package_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_an_external_relationship_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_macro_enabled_bytes_are_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_a_password_protected_office_container_is_locked_not_corrupt"
+    ],
+    "deterministic": [
+      "tests/unit/test_office_qualification.py::test_the_corpus_rebuilds_to_the_committed_bytes",
+      "tests/unit/test_office_qualification.py::test_the_committed_receipt_matches_a_fresh_run",
+      "tests/unit/test_office_readers.py::test_probe_samples_are_byte_deterministic"
+    ]
+  },
+  "status": "BEST_EFFORT",
+  "statusRule": "VERIFIED_NATIVE requires all six evidence items PASS in this receipt (lane contract §4, founder ruling G-6); C-3 supplies at most four, so this tool never mints one. Every expected row must also pass, and a failing row is listed verbatim as a known limitation. A receipt claiming VERIFIED_NATIVE with any ABSENT item is a P0 false success."
+}
