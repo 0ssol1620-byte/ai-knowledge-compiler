@@ -13,10 +13,32 @@ from akc_cir import ContractModel
 
 from .models import DataPolicy, ProcessingMode, Route
 
+#: Whether executing a route sends *tenant content* to a third party.
+#:
+#: Exhaustive over `Route` on purpose: `test_router_lanes.py` fails when a new
+#: route is added and not classified here, so "nobody checked" cannot happen
+#: quietly. Pulling a public authority document *in* is not egress -- the
+#: authority lane fetches a filing, it does not upload the customer's page.
+SENDS_TENANT_CONTENT_OFFSITE: dict[Route, bool] = {
+    Route.NATIVE: False,
+    Route.PADDLE_VL: False,
+    Route.PADDLE_FAST: False,
+    Route.HPD_FAST: False,
+    Route.UNLIMITED_LONG: False,
+    Route.MISTRAL_FALLBACK: True,
+    Route.REGION_RECOVERY: False,
+    Route.AUTHORITY_RECONSTRUCTION: False,
+    Route.UNRESOLVED: False,
+    Route.QUARANTINE: False,
+}
+
 #: Routes whose execution leaves the tenant boundary. `models.RouterContext`
 #: already refuses to mark these ready in private mode; this is the same fact
-#: applied to a candidate set. A new external route is added here too.
-EXTERNAL_ROUTES: frozenset[Route] = frozenset({Route.MISTRAL_FALLBACK})
+#: applied to a candidate set. Derived from the table above so the two can
+#: never drift apart.
+EXTERNAL_ROUTES: frozenset[Route] = frozenset(
+    route for route, offsite in SENDS_TENANT_CONTENT_OFFSITE.items() if offsite
+)
 
 
 class PolicyFilterResult(ContractModel):

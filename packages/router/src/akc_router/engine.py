@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+import logging
+import os
+from collections.abc import Callable
+
+from .execution_plan import ExecutionLane, RouterReplayRecord
 from .models import (
     MODE_PROFILE,
     EscalationAction,
@@ -15,6 +20,7 @@ from .models import (
 from .preflight import (
     PageMetrics,
     RiskTier,
+    classify_page,
     native_candidate,
     native_requires_visual_cross_check,
     preflight_difficulty,
@@ -88,7 +94,109 @@ def estimate_route_credits(
     return credits
 
 
+#: Router v2 shadow (§22). The flag is read per call so a rollout can turn it
+#: off without a restart, and the sink is process-local: nothing is written
+#: anywhere unless a host installs one.
+ROUTER_V2_SHADOW_ENV = "ROUTER_V2_SHADOW"
+_shadow_sink: Callable[[RouterReplayRecord], None] | None = None
+_logger = logging.getLogger(__name__)
+
+
+def set_router_v2_shadow_sink(sink: Callable[[RouterReplayRecord], None] | None) -> None:
+    """Install (or clear) the sink that receives shadow records.
+
+    The shadow has **zero decision authority**. `select_first_route` returns the
+    legacy decision whether or not a v2 plan was computed, whether or not the
+    sink raises, and whether or not the planner refuses the unit.
+    """
+    global _shadow_sink
+    _shadow_sink = sink
+
+
+def router_v2_shadow_enabled() -> bool:
+    return os.environ.get(ROUTER_V2_SHADOW_ENV) == "1"
+
+
+def _emit_router_v2_shadow(context: RouterContext, page: PageMetrics) -> None:
+    """Compute the v2 plan beside the legacy decision and hand it to the sink.
+
+    Every failure here is swallowed: a shadow that can break production is not a
+    shadow. It is logged without page content.
+    """
+    sink = _shadow_sink
+    if sink is None or not router_v2_shadow_enabled():
+        return
+    try:
+        from .planner import (
+            CapacityState,
+            PlannerRequest,
+            UnitFeatures,
+            plan_document,
+            replay_record,
+        )
+        from .portfolio import build_portfolio
+        from .risk_adapter import page_metrics_to_risk_vector
+
+        unit = UnitFeatures(
+            unit_id=f"page-{page.page_index0}",
+            page_index0=page.page_index0,
+            technical_class=classify_page(page),
+            risk_vector=page_metrics_to_risk_vector(page),
+            secret_detected=page.suspected_prompt_injection,
+        )
+        portfolio = build_portfolio(_shadow_proposals(context), {})
+        result = plan_document(
+            PlannerRequest(
+                source_version_id="shadow",
+                units=(unit,),
+                data_policy=context.data_policy,
+                mode=context.mode,
+                portfolio=portfolio,
+                ready_routes=context.ready_routes,
+                cost_budget=1_000.0,
+                capacity=CapacityState(warm_routes=context.ready_routes),
+            )
+        )
+        for unit_plan in result.unit_plans:
+            sink(replay_record(result, unit_plan))
+    except Exception:
+        _logger.warning("router v2 shadow failed; legacy decision unaffected", exc_info=True)
+
+
+def _shadow_proposals(
+    context: RouterContext,
+) -> dict[ExecutionLane, tuple[Route, str | None]]:
+    """Bind the symbolic lanes to whatever this tenant already has ready.
+
+    Shadow-only, and it names no model: every binding is a route the tenant is
+    already running, so nothing here asserts a model capability.
+    """
+    proposals: dict[ExecutionLane, tuple[Route, str | None]] = {}
+    if Route.NATIVE in context.ready_routes:
+        proposals[ExecutionLane.NATIVE] = (Route.NATIVE, None)
+    for lane, route in (
+        (ExecutionLane.FAST_VISUAL, Route.PADDLE_FAST),
+        (ExecutionLane.FAST_VISUAL, Route.HPD_FAST),
+        (ExecutionLane.PEER_VISUAL, Route.PADDLE_VL),
+        (ExecutionLane.DEGRADED_SCAN_SPECIALIST, Route.PADDLE_VL),
+        (ExecutionLane.CHART_SPECIALIST, Route.PADDLE_VL),
+        (ExecutionLane.AUTHORITY, Route.AUTHORITY_RECONSTRUCTION),
+        (ExecutionLane.EXTERNAL_ADJUDICATOR, Route.MISTRAL_FALLBACK),
+    ):
+        if route in context.ready_routes and lane not in proposals:
+            proposals[lane] = (route, None)
+    proposals.setdefault(ExecutionLane.HUMAN_REVIEW, (Route.REGION_RECOVERY, None))
+    return proposals
+
+
 def select_first_route(context: RouterContext, page: PageMetrics) -> RouteDecision:
+    """The live first-route policy. Unchanged by the v2 shadow (§22)."""
+    decision = _select_first_route(context, page)
+    _emit_router_v2_shadow(context, page)
+    return decision
+
+
+def _select_first_route(context: RouterContext, page: PageMetrics) -> RouteDecision:
     profile = MODE_PROFILE[context.mode]
     high_risk = context.risk_tier == RiskTier.HIGH
     if native_candidate(page):
@@ -116,6 +224,10 @@ def select_first_route(context: RouterContext, page: PageMetrics) -> RouteDecisi
         and context.mode == ProcessingMode.SPEED
         and language in {"en", "zh", "zh-cn", "zh-tw"}
         and preflight_difficulty(page) < 65
+        # C-09: an unmeasured handwriting signal is not evidence of no
+        # handwriting, so it does not open the cheap lane. Fail closed to the
+        # slower route until an estimator supplies the observation.
+        and page.handwriting_probability is not None
         and page.handwriting_probability < 0.2
     ):
         return _require_ready_route(

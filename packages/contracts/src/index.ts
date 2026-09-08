@@ -270,12 +270,14 @@ export interface PageMetrics {
   readonly tableDensity: number;
   readonly formulaDensity: number;
   readonly chartProbability: number;
-  readonly handwritingProbability: number;
-  readonly rotationDegrees: 0 | 90 | 180 | 270;
-  readonly skewDegrees: number;
-  readonly blurScore: number;
-  readonly contrastScore: number;
-  readonly smallTextScore: number;
+  // C-09: null means "no visual estimator ran". Never a neutral 0.5 and never a
+  // confident 0 -- a classifier branch on a null signal is skipped, not taken.
+  readonly handwritingProbability: number | null;
+  readonly rotationDegrees: 0 | 90 | 180 | 270 | null;
+  readonly skewDegrees: number | null;
+  readonly blurScore: number | null;
+  readonly contrastScore: number | null;
+  readonly smallTextScore: number | null;
   readonly scriptDistribution: Readonly<Record<string, number>>;
   readonly suspectedPromptInjection: boolean;
 }

@@ -66,6 +66,7 @@ from .models import (
     RoutingAudit,
 )
 from .preflight import (
+    VISUAL_ESTIMATOR_FIELDS,
     DocumentMetrics,
     PageMetrics,
     PageTechnicalClass,
@@ -75,6 +76,7 @@ from .preflight import (
     native_candidate,
     native_requires_visual_cross_check,
     preflight_difficulty,
+    unmeasured_visual_signals,
 )
 from .providers import (
     KnowledgeProvider,
@@ -114,6 +116,7 @@ __all__ = [
     "OPERATIONAL_ACTIONS",
     "SEMANTIC_ACTIONS",
     "TERMINAL_ROUTES",
+    "VISUAL_ESTIMATOR_FIELDS",
     "BetaBinomialPosterior",
     "CalibrationBin",
     "CandidateForecast",
@@ -206,4 +209,5 @@ __all__ = [
     "select_first_route",
     "select_risk_constrained_candidate",
     "speculate",
+    "unmeasured_visual_signals",
 ]
