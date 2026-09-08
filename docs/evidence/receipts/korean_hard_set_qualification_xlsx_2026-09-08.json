@@ -1,0 +1,271 @@
+{
+  "schemaVersion": "tavonel.office_reader_qualification.v1",
+  "format": "xlsx",
+  "providerId": "native_xlsx_v1",
+  "revision": "akc_native_parsers.parse_non_pdf_to_cir",
+  "generatedAt": "2026-09-08",
+  "corpus": {
+    "root": "research/korean_hard_set_20260908/xlsx",
+    "fileCount": 2,
+    "sha256": "sha256:c746ac8458003b71df3bf1f65b630b3f9cfe0314bbd4e9eac910d2ce653bf0f5"
+  },
+  "expectedManifest": {
+    "path": "research/korean_hard_set_20260908/expected.json",
+    "sha256": "sha256:7abdd915694d48b8ac8e3124a4a4d51b42c765a4aa5117bcd88a644db3b84e53"
+  },
+  "runtime": {
+    "digest": "sha256:b5be146d4d6fefd6233d490fe55845a813c8b61db4eb24fbfe1746b2979ff389",
+    "python": "3.13.0"
+  },
+  "programSection27": {
+    "value": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "xlsx_cell_values",
+      "capability": "xlsx_cell_values",
+      "rowsPassed": 2,
+      "rowsMeasured": 2
+    },
+    "formula": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "xlsx_formula_text"
+    },
+    "merged cell": {
+      "coverage": "EXTRACTED_PARSER_ONLY",
+      "note": "xlsx_merged_ranges"
+    },
+    "hidden sheet": {
+      "coverage": "EXTRACTED_PARSER_ONLY",
+      "note": "xlsx_hidden_sheets",
+      "capability": "xlsx_hidden_sheets",
+      "rowsPassed": 0,
+      "rowsMeasured": 1
+    },
+    "comments": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "xlsx_cell_comments",
+      "capability": "xlsx_cell_comments",
+      "rowsPassed": 1,
+      "rowsMeasured": 1
+    },
+    "named ranges": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "xlsx_named_ranges",
+      "capability": "xlsx_named_ranges",
+      "rowsPassed": 1,
+      "rowsMeasured": 1
+    },
+    "charts": {
+      "coverage": "EXTRACTED_AND_ANCHORED",
+      "note": "xlsx_chart_title"
+    },
+    "formula dependency": {
+      "coverage": "NOT_EXTRACTED",
+      "note": "xlsx_formula_dependency"
+    },
+    "formatting semantics": {
+      "coverage": "EXTRACTED_PARSER_ONLY",
+      "note": "xlsx_number_formats",
+      "capability": "xlsx_number_formats",
+      "rowsPassed": 0,
+      "rowsMeasured": 2
+    }
+  },
+  "rows": [
+    {
+      "file": "xlsx/01-finance-sheet.xlsx",
+      "capability": "xlsx_sheet_names",
+      "expected": [
+        "재무요약"
+      ],
+      "observed": [
+        "재무요약"
+      ],
+      "pass": true
+    },
+    {
+      "file": "xlsx/01-finance-sheet.xlsx",
+      "capability": "xlsx_cell_values",
+      "expected": {
+        "재무요약!A1": "과목",
+        "재무요약!B1": "당기",
+        "재무요약!C1": "전기",
+        "재무요약!A2": "매출액",
+        "재무요약!B2": "123400000000",
+        "재무요약!C2": "118600000000",
+        "재무요약!A3": "영업이익",
+        "재무요약!B3": "15300000000",
+        "재무요약!C3": "14100000000",
+        "재무요약!A4": "당기순손실",
+        "재무요약!B4": "-1200000000",
+        "재무요약!C4": "-3100000000"
+      },
+      "observed": {
+        "재무요약!A1": "과목",
+        "재무요약!B1": "당기",
+        "재무요약!C1": "전기",
+        "재무요약!A2": "매출액",
+        "재무요약!B2": "123400000000",
+        "재무요약!C2": "118600000000",
+        "재무요약!A3": "영업이익",
+        "재무요약!B3": "15300000000",
+        "재무요약!C3": "14100000000",
+        "재무요약!A4": "당기순손실",
+        "재무요약!B4": "-1200000000",
+        "재무요약!C4": "-3100000000"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/01-finance-sheet.xlsx",
+      "capability": "xlsx_table_range",
+      "expected": {
+        "재무요약": "A1:C4"
+      },
+      "observed": {
+        "재무요약": "A1:C4"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/01-finance-sheet.xlsx",
+      "capability": "xlsx_cell_comments",
+      "expected": {
+        "재무요약!B4": "일회성 손상차손 반영."
+      },
+      "observed": {
+        "재무요약!B4": "일회성 손상차손 반영."
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/01-finance-sheet.xlsx",
+      "capability": "xlsx_named_ranges",
+      "expected": {
+        "당기금액": "재무요약!$B$2:$B$4"
+      },
+      "observed": {
+        "당기금액": "재무요약!$B$2:$B$4"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/01-finance-sheet.xlsx",
+      "capability": "xlsx_number_formats",
+      "expected": {
+        "재무요약!B2": "#,##0\"원\";(#,##0)\"원\"",
+        "재무요약!C2": "#,##0\"원\";(#,##0)\"원\"",
+        "재무요약!B3": "#,##0\"원\";(#,##0)\"원\"",
+        "재무요약!C3": "#,##0\"원\";(#,##0)\"원\"",
+        "재무요약!B4": "#,##0\"원\";(#,##0)\"원\"",
+        "재무요약!C4": "#,##0\"원\";(#,##0)\"원\""
+      },
+      "observed": null,
+      "pass": false,
+      "unobservable": "the parser records every cell's number format in metadata['sheets'][*]['numberFormats'] and flags the cell number_format_not_applied, but ExtractedUnit has no formatting field, so a caller of the reader plane reads -1234 with no way to learn the workbook displays (1,234). Closing this row needs an ExtractedUnit field, not a parser change: NOT_EXTRACTED at the reader surface, extracted in CIR."
+    },
+    {
+      "file": "xlsx/02-mixed-sheet-names.xlsx",
+      "capability": "xlsx_sheet_names",
+      "expected": [
+        "요약 Summary",
+        "초안 Draft"
+      ],
+      "observed": [
+        "요약 Summary",
+        "초안 Draft"
+      ],
+      "pass": true
+    },
+    {
+      "file": "xlsx/02-mixed-sheet-names.xlsx",
+      "capability": "xlsx_cell_values",
+      "expected": {
+        "요약 Summary!A1": "항목",
+        "요약 Summary!B1": "Value",
+        "요약 Summary!A2": "매출 Revenue",
+        "요약 Summary!B2": "1234",
+        "요약 Summary!A3": "비중 Share",
+        "요약 Summary!B3": "0.406",
+        "초안 Draft!A1": "비고",
+        "초안 Draft!B1": "Note",
+        "초안 Draft!A2": "내부 검토용",
+        "초안 Draft!B2": "internal only"
+      },
+      "observed": {
+        "요약 Summary!A1": "항목",
+        "요약 Summary!B1": "Value",
+        "요약 Summary!A2": "매출 Revenue",
+        "요약 Summary!B2": "1234",
+        "요약 Summary!A3": "비중 Share",
+        "요약 Summary!B3": "0.406",
+        "초안 Draft!A1": "비고",
+        "초안 Draft!B1": "Note",
+        "초안 Draft!A2": "내부 검토용",
+        "초안 Draft!B2": "internal only"
+      },
+      "pass": true
+    },
+    {
+      "file": "xlsx/02-mixed-sheet-names.xlsx",
+      "capability": "xlsx_hidden_sheets",
+      "expected": [
+        "초안 Draft"
+      ],
+      "observed": null,
+      "pass": false,
+      "unobservable": "sheet visibility lives in the parser's metadata['sheets'][*]['state'] and in the cell quality flags; NativeExtraction carries neither."
+    },
+    {
+      "file": "xlsx/02-mixed-sheet-names.xlsx",
+      "capability": "xlsx_number_formats",
+      "expected": {
+        "요약 Summary!B3": "0.0%;(0.0%)"
+      },
+      "observed": null,
+      "pass": false,
+      "unobservable": "the parser records every cell's number format in metadata['sheets'][*]['numberFormats'] and flags the cell number_format_not_applied, but ExtractedUnit has no formatting field, so a caller of the reader plane reads -1234 with no way to learn the workbook displays (1,234). Closing this row needs an ExtractedUnit field, not a parser change: NOT_EXTRACTED at the reader surface, extracted in CIR."
+    }
+  ],
+  "totals": {
+    "rows": 10,
+    "passed": 7,
+    "failed": 3
+  },
+  "failedCapabilities": [
+    "xlsx_hidden_sheets",
+    "xlsx_number_formats"
+  ],
+  "evidence": {
+    "structural": "FAIL",
+    "locator": "PASS",
+    "website": "ABSENT",
+    "malformed": "PASS",
+    "performance": "ABSENT",
+    "deterministic": "PASS"
+  },
+  "evidenceNotes": {
+    "structural": "measured here: every expected-manifest row for this family, from the provider's own ExtractedUnit stream over the committed corpus.",
+    "locator": "measured here: the rows whose observed value is selected by an EvidenceLocator v2 anchor. A row whose value differs is counted as a miss, because this receipt cannot tell a wrong anchor from a right anchor over wrong content.",
+    "website": "ABSENT: the full upload -> CDR -> native read -> compile -> evidence UI sequence on a Preview deployment is lane C-5. Nothing in this repository measures it, and no test here is a substitute for it.",
+    "malformed": "not measured by this tool; the committed tests named in evidenceCitations are, and they run in the CI unit scope. They cover an undecompressable package member, a malformed main part, a zip bomb, an external relationship, macro-enabled bytes and a password-protected container, each asserted through ReaderRegistry.read().",
+    "performance": "ABSENT: no p50/p95 per file-size class has been measured for these readers. A timing taken on this machine would not be a receipt.",
+    "deterministic": "not measured by this tool; the committed tests named in evidenceCitations are. They rebuild the corpus to the committed bytes and re-run this qualifier against the committed receipt."
+  },
+  "evidenceCitations": {
+    "malformed": [
+      "tests/unit/test_office_readers.py::test_an_undecompressable_package_member_is_a_receipt_not_an_exception",
+      "tests/unit/test_office_readers.py::test_a_malformed_main_part_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_a_zip_bomb_office_package_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_an_external_relationship_is_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_macro_enabled_bytes_are_refused_not_partially_extracted",
+      "tests/unit/test_office_readers.py::test_a_password_protected_office_container_is_locked_not_corrupt"
+    ],
+    "deterministic": [
+      "tests/unit/test_office_qualification.py::test_the_corpus_rebuilds_to_the_committed_bytes",
+      "tests/unit/test_office_qualification.py::test_the_committed_receipt_matches_a_fresh_run",
+      "tests/unit/test_office_readers.py::test_probe_samples_are_byte_deterministic"
+    ]
+  },
+  "status": "BEST_EFFORT",
+  "statusRule": "VERIFIED_NATIVE requires all six evidence items PASS in this receipt (lane contract §4, founder ruling G-6); C-3 supplies at most four, so this tool never mints one. Every expected row must also pass, and a failing row is listed verbatim as a known limitation. A receipt claiming VERIFIED_NATIVE with any ABSENT item is a P0 false success."
+}

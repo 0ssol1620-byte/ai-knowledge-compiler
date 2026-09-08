@@ -1,0 +1,256 @@
+{
+  "schemaVersion": "tavonel.office_corpus_expected.v1",
+  "builder": "research/korean_hard_set_20260908/build_korean_hard_set.py",
+  "libraries": {
+    "openpyxl": "3.1.5",
+    "python-docx": "1.2.0",
+    "python-pptx": "1.0.2"
+  },
+  "families": {
+    "clean Hangul": {
+      "coverage": "real",
+      "fixtures": "docx/01-clean-hangul.docx, pptx/01-clean-hangul.pptx"
+    },
+    "Korean/English mixed": {
+      "coverage": "real",
+      "fixtures": "docx/02-korean-english-mixed.docx, pptx/02-notes-mixed.pptx, xlsx/02-mixed-sheet-names.xlsx"
+    },
+    "finance": {
+      "coverage": "real",
+      "fixtures": "xlsx/01-finance-sheet.xlsx, docx/03-finance-table.docx"
+    },
+    "Office Korean fonts": {
+      "coverage": "real",
+      "fixtures": "every docx and pptx here names 맑은 고딕 on its runs; no font binary is embedded"
+    },
+    "PPTX/DOCX/XLSX": {
+      "coverage": "real",
+      "fixtures": "all seven packages"
+    },
+    "scanned Korean": {
+      "coverage": "synthetic",
+      "fixtures": "rendered/korean-page-SYNTHETIC_DEGRADATION.png — a page this builder drew and then rotated, blurred and lightened. NOT a scan; no OCR is measured against it in this lane"
+    },
+    "screenshots / photos": {
+      "coverage": "synthetic",
+      "fixtures": "the same rendered pages; no camera, no screen capture, no real device"
+    },
+    "HWPX": {
+      "coverage": "none",
+      "fixtures": "NOT_SUPPORTED — zero code in this repository; see README.md"
+    },
+    "Korean finance from OpenDART": {
+      "coverage": "none",
+      "fixtures": "authorised credentials required (program §15); the tables here are written in the style of a filing and are not filings"
+    }
+  },
+  "files": [
+    {
+      "path": "xlsx/01-finance-sheet.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:6ebbc70d669483674346d40cbdaf367e3c8f8938a286ab54bae8d7722c6682f0",
+      "rows": [
+        {
+          "capability": "xlsx_sheet_names",
+          "expected": [
+            "재무요약"
+          ]
+        },
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "재무요약!A1": "과목",
+            "재무요약!B1": "당기",
+            "재무요약!C1": "전기",
+            "재무요약!A2": "매출액",
+            "재무요약!B2": "123400000000",
+            "재무요약!C2": "118600000000",
+            "재무요약!A3": "영업이익",
+            "재무요약!B3": "15300000000",
+            "재무요약!C3": "14100000000",
+            "재무요약!A4": "당기순손실",
+            "재무요약!B4": "-1200000000",
+            "재무요약!C4": "-3100000000"
+          }
+        },
+        {
+          "capability": "xlsx_table_range",
+          "expected": {
+            "재무요약": "A1:C4"
+          }
+        },
+        {
+          "capability": "xlsx_cell_comments",
+          "expected": {
+            "재무요약!B4": "일회성 손상차손 반영."
+          }
+        },
+        {
+          "capability": "xlsx_named_ranges",
+          "expected": {
+            "당기금액": "재무요약!$B$2:$B$4"
+          }
+        },
+        {
+          "capability": "xlsx_number_formats",
+          "expected": {
+            "재무요약!B2": "#,##0\"원\";(#,##0)\"원\"",
+            "재무요약!C2": "#,##0\"원\";(#,##0)\"원\"",
+            "재무요약!B3": "#,##0\"원\";(#,##0)\"원\"",
+            "재무요약!C3": "#,##0\"원\";(#,##0)\"원\"",
+            "재무요약!B4": "#,##0\"원\";(#,##0)\"원\"",
+            "재무요약!C4": "#,##0\"원\";(#,##0)\"원\""
+          }
+        }
+      ]
+    },
+    {
+      "path": "xlsx/02-mixed-sheet-names.xlsx",
+      "format": "xlsx",
+      "sha256": "sha256:5c11656d8cc2ba0b0c4d60bca019f1e7770a8d23b1f48dfc22d9ea9e91a7a1b2",
+      "rows": [
+        {
+          "capability": "xlsx_sheet_names",
+          "expected": [
+            "요약 Summary",
+            "초안 Draft"
+          ]
+        },
+        {
+          "capability": "xlsx_cell_values",
+          "expected": {
+            "요약 Summary!A1": "항목",
+            "요약 Summary!B1": "Value",
+            "요약 Summary!A2": "매출 Revenue",
+            "요약 Summary!B2": "1234",
+            "요약 Summary!A3": "비중 Share",
+            "요약 Summary!B3": "0.406",
+            "초안 Draft!A1": "비고",
+            "초안 Draft!B1": "Note",
+            "초안 Draft!A2": "내부 검토용",
+            "초안 Draft!B2": "internal only"
+          }
+        },
+        {
+          "capability": "xlsx_hidden_sheets",
+          "expected": [
+            "초안 Draft"
+          ]
+        },
+        {
+          "capability": "xlsx_number_formats",
+          "expected": {
+            "요약 Summary!B3": "0.0%;(0.0%)"
+          }
+        }
+      ]
+    },
+    {
+      "path": "docx/01-clean-hangul.docx",
+      "format": "docx",
+      "sha256": "sha256:b6b6ad2795bbbe752bfcf48833e71c1e3fce76e82954755df63e15ff2b765cd0",
+      "rows": [
+        {
+          "capability": "docx_body_paragraphs",
+          "expected": [
+            "2026년 1분기 경영 보고",
+            "매출은 전 분기 대비 4퍼센트 늘었습니다.",
+            "영업이익률은 12.4％로 집계되었습니다.",
+            "가. 국내 부문",
+            "수도권 매출이 전체의 절반을 넘었습니다."
+          ]
+        }
+      ]
+    },
+    {
+      "path": "docx/02-korean-english-mixed.docx",
+      "format": "docx",
+      "sha256": "sha256:14380447561d9f8c04d2a33d4747133ef0f02f0477cdbbbadec3f81ce3633305",
+      "rows": [
+        {
+          "capability": "docx_body_paragraphs",
+          "expected": [
+            "TAVONEL은 조직 지식을 AI가 신뢰할 수 있는 컨텍스트로 컴파일합니다.",
+            "SLA 99.9% 를 목표로 하며, RTO는 4시간입니다.",
+            "담당: Kim Minjun (김민준), platform team",
+            "문서 ID: DOC-2026-0131, 버전 v2.1"
+          ]
+        }
+      ]
+    },
+    {
+      "path": "docx/03-finance-table.docx",
+      "format": "docx",
+      "sha256": "sha256:5166f1593fc97325986daf1195f2d8341c4249759641cbb46d68dfae89f1028d",
+      "rows": [
+        {
+          "capability": "docx_body_paragraphs",
+          "expected": [
+            "연결 재무 요약 (2026-01-31 기준)"
+          ]
+        },
+        {
+          "capability": "docx_table_cells",
+          "expected": {
+            "0": {
+              "r/000000/c/000000": "과목",
+              "r/000000/c/000001": "당기",
+              "r/000000/c/000002": "전기",
+              "r/000000/c/000003": "증감률",
+              "r/000001/c/000000": "매출액",
+              "r/000001/c/000001": "1,234억 원",
+              "r/000001/c/000002": "1,186억 원",
+              "r/000001/c/000003": "4.0％",
+              "r/000002/c/000000": "영업이익",
+              "r/000002/c/000001": "153억 원",
+              "r/000002/c/000002": "141억 원",
+              "r/000002/c/000003": "8.5％",
+              "r/000003/c/000000": "당기순손실",
+              "r/000003/c/000001": "(12억 원)",
+              "r/000003/c/000002": "(31억 원)",
+              "r/000003/c/000003": "(61.3％)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "path": "pptx/01-clean-hangul.pptx",
+      "format": "pptx",
+      "sha256": "sha256:8fee56f91515e99a267f6f54fdd8da29b0193d8af840bac708395ab76459ce74",
+      "rows": [
+        {
+          "capability": "pptx_slide_units",
+          "expected": {
+            "1": [
+              "2026년 1분기 검토",
+              "모든 지역에서 매출이 늘었습니다."
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "path": "pptx/02-notes-mixed.pptx",
+      "format": "pptx",
+      "sha256": "sha256:8d44d2501f24dad25a0b4048413b92778316fc76f009e96744d9ae1956fa8d56",
+      "rows": [
+        {
+          "capability": "pptx_slide_units",
+          "expected": {
+            "1": [
+              "Roadmap 로드맵 2026 H1",
+              "P0: 커넥터 · P1: 온톨로지 · P2: MCP"
+            ]
+          }
+        },
+        {
+          "capability": "pptx_speaker_notes",
+          "expected": {
+            "1": "지연된 두 건의 계약을 언급할 것."
+          }
+        }
+      ]
+    }
+  ]
+}

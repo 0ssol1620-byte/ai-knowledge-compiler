@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "tavonel.korean_rendered_pages.v1",
+  "builder": "research/korean_hard_set_20260908/build_korean_hard_set.py",
+  "renderer": {
+    "pillow": "12.3.0",
+    "font": "wanted-sans-ko-400.woff2",
+    "licence": "OFL"
+  },
+  "byteReproducible": false,
+  "byteReproducibleNote": "FreeType rasterises differently between platform builds, so these bytes are pinned by digest and never rebuilt in CI.",
+  "pages": [
+    {
+      "path": "rendered/korean-page-clean.png",
+      "kind": "RENDERED_SOURCE",
+      "sha256": "sha256:0fd2e8d5968fca84b6daff47e9b3f23b6bd77fbf4adf0467fc0e5bf662de7c41",
+      "groundTruthLines": [
+        "2026년 1분기 경영 보고",
+        "매출은 전 분기 대비 4퍼센트 늘었습니다.",
+        "영업이익률은 12.4％로 집계되었습니다.",
+        "가. 국내 부문",
+        "수도권 매출이 전체의 절반을 넘었습니다."
+      ],
+      "measured": false,
+      "note": "drawn by this builder with an OFL font and damaged with fixed PIL parameters. Not a scan, not a photograph. No OCR result is recorded against it here."
+    },
+    {
+      "path": "rendered/korean-page-SYNTHETIC_DEGRADATION.png",
+      "kind": "SYNTHETIC_DEGRADATION",
+      "sha256": "sha256:af2d827a43be8cb9db13900db3af39d64f74eb58f11976b3b305bd749b825879",
+      "groundTruthLines": [
+        "2026년 1분기 경영 보고",
+        "매출은 전 분기 대비 4퍼센트 늘었습니다.",
+        "영업이익률은 12.4％로 집계되었습니다.",
+        "가. 국내 부문",
+        "수도권 매출이 전체의 절반을 넘었습니다."
+      ],
+      "measured": false,
+      "note": "drawn by this builder with an OFL font and damaged with fixed PIL parameters. Not a scan, not a photograph. No OCR result is recorded against it here."
+    }
+  ]
+}
