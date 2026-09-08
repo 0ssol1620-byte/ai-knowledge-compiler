@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.aiknowledgecompiler.dev/region-execution-plan/1.0.0",
+  "title": "RegionExecutionPlan",
+  "description": "Blueprint 2026-09-08 §18. Region recovery is scoped to an evidence-bound crop, never to an invented one.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "regionId",
+    "sourceLocator",
+    "type",
+    "riskVector",
+    "cropGeometry",
+    "scaleDpi",
+    "primary",
+    "verificationContract"
+  ],
+  "properties": {
+    "regionId": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "sourceLocator": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "description": "Evidence locator (§82) of the region in its source version."
+    },
+    "type": {
+      "enum": [
+        "text_block",
+        "table",
+        "formula",
+        "chart",
+        "figure",
+        "signature",
+        "handwriting",
+        "stamp"
+      ]
+    },
+    "riskVector": { "$ref": "https://schemas.aiknowledgecompiler.dev/risk-vector/1.0.0" },
+    "cropGeometry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pageIndex0", "x", "y", "width", "height"],
+      "properties": {
+        "pageIndex0": { "type": "integer", "minimum": 0 },
+        "x": { "type": "number", "minimum": 0 },
+        "y": { "type": "number", "minimum": 0 },
+        "width": { "type": "number", "exclusiveMinimum": 0 },
+        "height": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "scaleDpi": { "type": "integer", "minimum": 72, "maximum": 1200 },
+    "primary": {
+      "$ref": "https://schemas.aiknowledgecompiler.dev/page-execution-plan/1.0.0#/$defs/executableRoute"
+    },
+    "peer": {
+      "oneOf": [
+        {
+          "$ref": "https://schemas.aiknowledgecompiler.dev/page-execution-plan/1.0.0#/$defs/route"
+        },
+        { "type": "null" }
+      ]
+    },
+    "specialist": {
+      "oneOf": [
+        {
+          "$ref": "https://schemas.aiknowledgecompiler.dev/page-execution-plan/1.0.0#/$defs/route"
+        },
+        { "type": "null" }
+      ]
+    },
+    "verificationContract": {
+      "$ref": "https://schemas.aiknowledgecompiler.dev/page-execution-plan/1.0.0#/$defs/verificationPolicy"
+    }
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.aiknowledgecompiler.dev/document-execution-plan/1.0.0",
+  "title": "DocumentExecutionPlan",
+  "description": "Blueprint 2026-09-08 §18. A plan is a contract, not a claim: nothing here asserts that a route or model can do anything.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "planId",
+    "sourceVersionId",
+    "plannerRevision",
+    "featureManifestSha256",
+    "portfolioRevision",
+    "dataPolicy",
+    "deadlineClass",
+    "costBudget",
+    "parallelismBudget",
+    "executionWaves",
+    "dependencyEdges",
+    "predictedP50",
+    "predictedP95",
+    "predictedVerifiedCost",
+    "unresolvedConstraints"
+  ],
+  "properties": {
+    "planId": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "sourceVersionId": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "plannerRevision": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "featureManifestSha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "portfolioRevision": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "dataPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["externalApiAllowed", "retentionDays", "privateProcessing"],
+      "properties": {
+        "externalApiAllowed": { "type": "boolean" },
+        "retentionDays": { "type": "integer", "minimum": 0 },
+        "regionalRestriction": { "type": ["string", "null"] },
+        "privateProcessing": { "type": "boolean" }
+      }
+    },
+    "deadlineClass": { "enum": ["interactive", "standard", "batch"] },
+    "costBudget": { "type": "number", "minimum": 0 },
+    "parallelismBudget": { "type": "integer", "minimum": 1, "maximum": 1024 },
+    "executionWaves": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/executionWave" }
+    },
+    "dependencyEdges": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dependencyEdge" }
+    },
+    "predictedP50": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Predicted wall-clock milliseconds, p50. Predicted, never a measured claim."
+    },
+    "predictedP95": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Predicted wall-clock milliseconds, p95. Never below predictedP50."
+    },
+    "predictedVerifiedCost": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Expected verified cost (§42), not raw inference cost."
+    },
+    "unresolvedConstraints": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Non-empty means the plan is not executable. Fail closed; do not dispatch."
+    }
+  },
+  "$defs": {
+    "executionWave": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["waveIndex", "lane", "unitIds"],
+      "properties": {
+        "waveIndex": { "type": "integer", "minimum": 0 },
+        "lane": {
+          "enum": [
+            "native",
+            "authority",
+            "fast_visual",
+            "peer_visual",
+            "specialist_vlm",
+            "human_review"
+          ]
+        },
+        "unitIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+        },
+        "batchGroup": { "type": ["string", "null"], "maxLength": 256 }
+      }
+    },
+    "dependencyEdge": {
+      "$ref": "https://schemas.aiknowledgecompiler.dev/page-execution-plan/1.0.0#/$defs/dependencyEdge"
+    }
+  }
+}
