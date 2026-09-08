@@ -1,0 +1,101 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.aiknowledgecompiler.dev/risk-vector/1.0.0",
+  "title": "RiskVector",
+  "description": "Blueprint 2026-09-08 §16. Routing never reduces a document to one scalar difficulty score, and an unobserved signal is never presented as a confident observation (§11).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["signals", "unknownFeatures", "languageScript", "authorityAvailable"],
+  "properties": {
+    "signals": {
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/riskFeature" },
+      "additionalProperties": { "$ref": "#/$defs/riskSignal" }
+    },
+    "unknownFeatures": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/riskFeature" }
+    },
+    "languageScript": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "authorityAvailable": { "type": "boolean" }
+  },
+  "$defs": {
+    "riskFeature": {
+      "enum": [
+        "source_integrity_risk",
+        "native_quality",
+        "scan_need",
+        "text_loss_risk",
+        "numeric_risk",
+        "sign_unit_currency_risk",
+        "table_structure_risk",
+        "formula_risk",
+        "chart_visual_risk",
+        "reading_order_risk",
+        "image_semantics_risk",
+        "handwriting_risk",
+        "degradation_risk",
+        "small_text_risk",
+        "rotation_skew_risk",
+        "cross_page_dependency_risk",
+        "footnote_comment_risk",
+        "tracked_change_risk",
+        "authority_conflict_risk",
+        "provenance_risk",
+        "prompt_injection_risk",
+        "sensitive_data_risk"
+      ]
+    },
+    "observationSource": {
+      "enum": ["native_inspect", "visual_scan", "authority_source", "derived", "unavailable"]
+    },
+    "riskSignal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observationSource", "unknown", "calibrated"],
+      "properties": {
+        "value": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "confidence": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Calibration/confidence of the value. Never populated for an unknown signal; a reader treats an absent confidence as 0.0."
+        },
+        "observationSource": { "$ref": "#/$defs/observationSource" },
+        "unknown": { "type": "boolean" },
+        "calibrated": { "type": "boolean" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "unknown": { "const": true } }, "required": ["unknown"] },
+          "then": {
+            "properties": {
+              "value": { "type": "null" },
+              "confidence": { "type": "null" },
+              "observationSource": { "const": "unavailable" },
+              "calibrated": { "const": false }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "unknown": { "const": false } }, "required": ["unknown"] },
+          "then": {
+            "required": ["value"],
+            "properties": {
+              "value": { "type": "number" },
+              "observationSource": { "not": { "const": "unavailable" } }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
