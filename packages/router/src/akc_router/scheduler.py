@@ -116,10 +116,14 @@ class Scheduler:
             raise SchedulerError(
                 f"attempt {task.attempt} exceeds max_attempts {self._policy.max_attempts}"
             )
-        if task.task_id in self._states and self._states[task.task_id] in {
-            TaskState.QUEUED,
-            TaskState.RUNNING,
-        }:
+        if task.task_id in self._running or (
+            task.task_id in self._states
+            and self._states[task.task_id]
+            in {
+                TaskState.QUEUED,
+                TaskState.RUNNING,
+            }
+        ):
             raise SchedulerError(f"task {task.task_id} is already in flight")
         self._queues.setdefault(task.route, []).append(_Entry(task=task, enqueued_at=self._now()))
         self._states[task.task_id] = TaskState.QUEUED
@@ -172,9 +176,16 @@ class Scheduler:
         is not, whatever its priority or arrival order.
         """
         barrier: dict[str, int] = {}
-        for entry in queue:
-            tenant = entry.task.tenant_id
-            barrier[tenant] = min(barrier.get(tenant, entry.task.wave_index), entry.task.wave_index)
+        # A wave belongs to the tenant, not to a provider queue. Earlier work
+        # remains a barrier after dispatch until its worker actually completes.
+        # Cancelled running entries still occupy capacity and hold this barrier;
+        # their computation has not stopped merely because delivery is cancelled.
+        for entries in (*self._queues.values(), tuple(self._running.values())):
+            for entry in entries:
+                tenant = entry.task.tenant_id
+                barrier[tenant] = min(
+                    barrier.get(tenant, entry.task.wave_index), entry.task.wave_index
+                )
         ready = [entry for entry in queue if entry.task.wave_index == barrier[entry.task.tenant_id]]
         return sorted(
             ready,
@@ -202,6 +213,11 @@ class Scheduler:
         entry = self._running.pop(task_id, None)
         if entry is None:
             raise SchedulerError(f"task {task_id} is not running")
+        if entry.state is TaskState.CANCELLED:
+            # No successful publication and no retry after cancellation. Do not
+            # count an intentional cancellation as a provider-health failure.
+            self._states[task_id] = TaskState.CANCELLED
+            return None
         route = entry.task.route
         if success:
             entry.state = TaskState.SUCCEEDED
@@ -236,6 +252,16 @@ class Scheduler:
         if (task_id is None) == (tenant_id is None):
             raise SchedulerError("cancel exactly one of task_id or tenant_id")
         cancelled = 0
+        for entry in self._running.values():
+            if task_id is not None and entry.task.task_id != task_id:
+                continue
+            if tenant_id is not None and entry.task.tenant_id != tenant_id:
+                continue
+            if entry.state is TaskState.CANCELLED:
+                continue
+            entry.state = TaskState.CANCELLED
+            self._states[entry.task.task_id] = TaskState.CANCELLED
+            cancelled += 1
         for queue in self._queues.values():
             for entry in list(queue):
                 if task_id is not None and entry.task.task_id != task_id:
