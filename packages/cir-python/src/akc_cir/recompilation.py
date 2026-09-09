@@ -344,6 +344,7 @@ def plan_recompilation(
     structural_policy: StructuralPolicy = StructuralPolicy.LEGACY,
     facet_policy: FacetPolicy = FacetPolicy.DECLARED,
     seed_unresolved_incoming: bool = True,
+    include_visual_facet: bool = False,
 ) -> RecompilationPlan:
     """Decide what a selective rebuild must touch, and record why.
 
@@ -385,6 +386,12 @@ def plan_recompilation(
     and on 23 real revision pairs it cost two additional artifact rebuilds out
     of 334. It remains switchable so the two fixes can be measured apart.
     """
+    # Versioned opt-in: existing callers and frozen INC-V2-038 receipts retain
+    # the measured facet set. Source-bound projections explicitly read visual
+    # witnesses and therefore opt into their already-typed change propagation.
+    facet_channels = _FACET_CHANNELS + (
+        ((ChangeChannel.VISUAL, DependencyChannel.VISUAL),) if include_visual_facet else ()
+    )
     inventory = list(dict.fromkeys(artifacts))
     inventory_set = set(inventory)
 
@@ -439,7 +446,7 @@ def plan_recompilation(
     facet_cycles: list[tuple[str, ...]] = []
     facet_truncated = False
     facet_resolutions: list[FacetResolution] = []
-    for change_channel, dep_channel in _FACET_CHANNELS:
+    for change_channel, dep_channel in facet_channels:
         seeds = diff.changed_logical_ids_for(change_channel)
         if not seeds:
             # No typed change on this channel. Nothing was seen, so there is

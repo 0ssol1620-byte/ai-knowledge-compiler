@@ -27,6 +27,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
+from enum import StrEnum
 from typing import Any
 
 from akc_cir.dependency import (
@@ -46,6 +47,7 @@ __all__ = [
     "RESERVED_PREFIX",
     "RETRIEVAL_INDEX",
     "ArtifactPlan",
+    "ProjectionPolicy",
     "plan_artifacts",
 ]
 
@@ -75,6 +77,19 @@ _GROUNDED = frozenset(
     {DependencyChannel.SEMANTIC, DependencyChannel.LOCATOR, DependencyChannel.VISUAL}
 )
 _SEMANTIC_STRUCTURAL = frozenset({DependencyChannel.SEMANTIC, DependencyChannel.STRUCTURAL})
+_GROUNDED_STRUCTURAL = _GROUNDED | _STRUCTURAL
+
+
+class ProjectionPolicy(StrEnum):
+    """Versioned sensitivity contract, not a silent production-default change.
+
+    LEGACY preserves the exact historical Apple receipts. SOURCE_BOUND repairs
+    declarations for bodies that already contain provenance; body bytes and
+    artifact ids are unchanged. Promotion still needs the compatibility ladder.
+    """
+
+    LEGACY = "legacy-v1"
+    SOURCE_BOUND = "source-bound-v2"
 
 
 def claim_id(unit: CanonicalUnit) -> str:
@@ -218,7 +233,11 @@ def _body(
     }
 
 
-def plan_artifacts(resolved: ResolvedSource) -> ArtifactPlan:
+def plan_artifacts(
+    resolved: ResolvedSource, *, policy: ProjectionPolicy = ProjectionPolicy.LEGACY
+) -> ArtifactPlan:
+    if not isinstance(policy, ProjectionPolicy):
+        raise ValueError("projection policy must be an explicit ProjectionPolicy")
     units = resolved.units
     reads: dict[str, tuple[str, ...]] = {}
     channels: dict[str, frozenset[DependencyChannel]] = {}
@@ -227,7 +246,9 @@ def plan_artifacts(resolved: ResolvedSource) -> ArtifactPlan:
         if unit.logical_id.startswith(RESERVED_PREFIX):  # pragma: no cover - id shape forbids it
             raise ValueError(f"unit id enters the reserved projection namespace: {unit.logical_id}")
         reads[claim_id(unit)] = (unit.logical_id,)
-        channels[claim_id(unit)] = _SEMANTIC
+        channels[claim_id(unit)] = (
+            _GROUNDED if policy is ProjectionPolicy.SOURCE_BOUND else _SEMANTIC
+        )
         reads[retrieval_id(unit)] = (unit.logical_id,)
         channels[retrieval_id(unit)] = _GROUNDED
 
@@ -236,7 +257,9 @@ def plan_artifacts(resolved: ResolvedSource) -> ArtifactPlan:
         if not members:
             continue
         reads[summary_id(document.document_id)] = members
-        channels[summary_id(document.document_id)] = _SEMANTIC
+        channels[summary_id(document.document_id)] = (
+            _GROUNDED_STRUCTURAL if policy is ProjectionPolicy.SOURCE_BOUND else _SEMANTIC
+        )
 
     everything = tuple(unit.logical_id for unit in units)
     reads[GRAPH_RELATIONS] = everything
@@ -244,9 +267,13 @@ def plan_artifacts(resolved: ResolvedSource) -> ArtifactPlan:
     reads[DIRECTORY] = everything
     channels[DIRECTORY] = _STRUCTURAL
     reads[ONTOLOGY] = everything
-    channels[ONTOLOGY] = _SEMANTIC_STRUCTURAL
+    channels[ONTOLOGY] = (
+        _GROUNDED_STRUCTURAL if policy is ProjectionPolicy.SOURCE_BOUND else _SEMANTIC_STRUCTURAL
+    )
     reads[RETRIEVAL_INDEX] = everything
-    channels[RETRIEVAL_INDEX] = _GROUNDED
+    channels[RETRIEVAL_INDEX] = (
+        _GROUNDED_STRUCTURAL if policy is ProjectionPolicy.SOURCE_BOUND else _GROUNDED
+    )
 
     graph = DependencyGraph(
         [
