@@ -8,6 +8,7 @@ samples deterministically by source path family before any output is read.
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import importlib.metadata
 import json
@@ -30,29 +31,49 @@ def sha(data: bytes) -> str:
     return "sha256:" + hashlib.sha256(data).hexdigest()
 
 
-def run() -> None:
-    arena = Path(os.environ["TAVONEL_SPENT_ARENA_ROOT"]).resolve(strict=True)
-    sources = Path(os.environ["TAVONEL_SPENT_SOURCE_ROOT"]).resolve(strict=True)
-    output = ROOT / ".chatgpt2codex" / "native-spent-pilot-v2"
-    manifest = (arena / "source_manifest.jsonl").read_bytes()
+def select_rows(
+    manifest: bytes, *, all_units: bool, expected_units: int
+) -> tuple[list[dict], int]:
+    """Select using source inventory only, never outcomes or benchmark labels."""
+    if type(expected_units) is not int or not 1 <= expected_units <= 2000:
+        raise ValueError("SPENT_SCOPE_BOUND_INVALID")
     family_rows: dict[str, list[dict]] = defaultdict(list)
+    identities: set[str] = set()
     for line in manifest.decode("utf-8-sig").splitlines():
         row = json.loads(line)
         if row["benchmark"] != "olmocr" or row["media_type"] != "pdf":
             continue
+        if row.get("campaign_id") != "TAVONEL-MODEL-ARENA-PUBLIC-20260903-V1":
+            raise ValueError("SPENT_CAMPAIGN_MISMATCH")
+        if row["sample_id"] in identities:
+            raise ValueError("DUPLICATE_SPENT_SOURCE_UNIT")
+        identities.add(row["sample_id"])
         relative = Path(row["original_source_relative_path"])
         if relative.is_absolute() or ".." in relative.parts or relative.suffix.lower() != ".pdf":
             raise ValueError("PUBLIC_SOURCE_PATH_INVALID")
         family_rows[relative.parts[2] if len(relative.parts) > 3 else "unspecified"].append(row)
     if not family_rows:
         raise ValueError("NO_ELIGIBLE_SPENT_SOURCE_UNITS")
+    eligible = sum(len(rows) for rows in family_rows.values())
+    if eligible != expected_units:
+        raise ValueError("SPENT_SOURCE_DENOMINATOR_MISMATCH")
     selected = []
     for _family, rows in sorted(family_rows.items()):
-        selected.extend(
-            sorted(rows, key=lambda r: hashlib.sha256(r["sample_id"].encode()).hexdigest())[:8]
-        )
-    if len(selected) > 256:
+        ordered = sorted(rows, key=lambda r: hashlib.sha256(r["sample_id"].encode()).hexdigest())
+        selected.extend(ordered if all_units else ordered[:8])
+    if not all_units and len(selected) > 256:
         raise ValueError("PILOT_SCOPE_EXCEEDS_BOUND")
+    return selected, eligible
+
+
+def run(*, all_units: bool = False, output_name: str = "native-spent-pilot-v2") -> None:
+    arena = Path(os.environ["TAVONEL_SPENT_ARENA_ROOT"]).resolve(strict=True)
+    sources = Path(os.environ["TAVONEL_SPENT_SOURCE_ROOT"]).resolve(strict=True)
+    if not output_name or Path(output_name).name != output_name or output_name in {".", ".."}:
+        raise ValueError("OUTPUT_MUST_BE_SINGLE_NEW_SCRATCH_DIRECTORY")
+    output = ROOT / ".chatgpt2codex" / output_name
+    manifest = (arena / "source_manifest.jsonl").read_bytes()
+    selected, eligible = select_rows(manifest, all_units=all_units, expected_units=1403)
     for row in selected:
         source = (sources / "olmocr-bench" / row["original_source_relative_path"]).resolve(
             strict=True
@@ -67,9 +88,13 @@ def run() -> None:
         "quality_verified": False,
         "source_manifest_sha256": sha(manifest),
         "selection": (
+            "Every eligible source-manifest unit; family then SHA256(sample_id), before parsing"
+            if all_units else
             "Up to 8 per original path family, ascending SHA256(sample_id), before parsing"
         ),
-        "revision_note": "v2 retains TITLE blocks; v1 observations and failures remain unchanged",
+        "revision_note": (
+            "Full denominator capture option; earlier pilot evidence remains unchanged"
+        ),
         "runtime": {
             "python": platform.python_version(),
             "platform": platform.platform(),
@@ -79,7 +104,7 @@ def run() -> None:
         "native_parser_sha256": sha(
             (ROOT / "packages/native-parsers/src/akc_native_parsers/pdf_parser.py").read_bytes()
         ),
-        "eligible_units": sum(len(rows) for rows in family_rows.values()),
+        "eligible_units": eligible,
         "selected_units": len(selected),
         "selected_source_rows": selected,
         "hidden_evaluation_visible_to_runtime": False,
@@ -194,4 +219,8 @@ def run() -> None:
 
 
 if __name__ == "__main__":
-    run()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--all-units", action="store_true")
+    parser.add_argument("--output-name", default="native-spent-pilot-v2")
+    args = parser.parse_args()
+    run(all_units=args.all_units, output_name=args.output_name)
