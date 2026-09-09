@@ -99,3 +99,21 @@ def test_wrong_representation_hash_is_refused():
         project_native_pages(
             document(), expected_source_sha256="sha256:" + "b" * 64, expected_page_count=2
         )
+
+
+def test_unassigned_text_is_refused_instead_of_silently_dropped():
+    source = document(types=("paragraph",))
+    block = source.blocks[0].model_copy(update={"source_refs": []})
+    source = source.model_copy(update={"blocks": [block]})
+    with pytest.raises(ValueError, match="NATIVE_TEXT_PAGE_UNASSIGNED"):
+        project_native_pages(source, expected_source_sha256=SHA, expected_page_count=2)
+
+
+def test_mult_page_text_is_not_duplicated_on_every_page():
+    source = document(types=("paragraph",))
+    block = source.blocks[0]
+    second = block.source_refs[0].model_copy(update={"page_index0": 1, "page_number1": 2})
+    block = block.model_copy(update={"source_refs": [*block.source_refs, second]})
+    source = source.model_copy(update={"blocks": [block]})
+    with pytest.raises(ValueError, match="NATIVE_TEXT_PAGE_SPAN_UNRESOLVED"):
+        project_native_pages(source, expected_source_sha256=SHA, expected_page_count=2)

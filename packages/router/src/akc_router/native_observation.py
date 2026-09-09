@@ -72,6 +72,13 @@ def project_native_pages(
             page_refs[ref.page_index0] = (
                 page_refs.get(ref.page_index0, False) or ref.bbox1000 is not None
             )
+        # A page projection must neither drop an unassigned text block nor copy
+        # a whole multi-page block onto every page. A separate span-aware reader
+        # is required to split it; this adapter has no evidence to invent one.
+        if not page_refs:
+            raise ValueError("NATIVE_TEXT_PAGE_UNASSIGNED")
+        if len(page_refs) != 1:
+            raise ValueError("NATIVE_TEXT_PAGE_SPAN_UNRESOLVED")
         for index, has_location in page_refs.items():
             text_by_page[index].append(text)
             ids_by_page[index].append(block.id)

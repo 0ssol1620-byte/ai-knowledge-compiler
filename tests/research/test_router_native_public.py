@@ -34,7 +34,14 @@ def corpus():
     rows = json.loads(raw)
     assert len(rows) == 5
     assert sum(row["pageCount"] for row in rows) == 290
-    output = ROOT / ".chatgpt2codex" / "native-public-observations"
+    output = Path(
+        os.environ.get(
+            "TAVONEL_NATIVE_PUBLIC_OUTPUT",
+            str(ROOT / ".chatgpt2codex" / "native-public-observations"),
+        )
+    ).resolve()
+    if not output.is_relative_to((ROOT / ".chatgpt2codex").resolve()):
+        pytest.fail("Native integration receipts must stay in isolated worktree scratch")
     output.mkdir(parents=True, exist_ok=False)
     code = ROOT / "packages" / "router" / "src" / "akc_router" / "native_observation.py"
     freeze = {

@@ -199,6 +199,10 @@ class RegionExecutionResult:
 Provider = Callable[[RegionBinding], Awaitable[TextObservation]]
 
 
+class _InvalidProviderResult(ValueError):
+    """A provider violated its result contract; never include its body in logs."""
+
+
 async def execute_text_region(
     *,
     binding: RegionBinding,
@@ -208,6 +212,8 @@ async def execute_text_region(
     permitted_routes: frozenset[Route],
     cost_budget: float,
     deadline_seconds: float,
+    reserve_cost: Callable[[float], bool] | None = None,
+    authorization_valid: Callable[[], bool] | None = None,
 ) -> RegionExecutionResult:
     """Try a primary then bounded alternate crops, checking every replacement.
 
@@ -217,6 +223,11 @@ async def execute_text_region(
     terminate a non-cooperative external process. Their production adapter remains
     separately qualified. Reserved cost is NOT a measured invoice amount.
     """
+    # Bind the authorized execution set before yielding. Caller-owned mutable
+    # lists/maps must not append an unchecked route or replace a checked provider.
+    attempts = tuple(attempts)
+    providers = dict(providers)
+    permitted_routes = frozenset(permitted_routes)
     if not math.isfinite(cost_budget) or cost_budget < 0:
         raise ValueError("COST_BUDGET_INVALID")
     if not math.isfinite(deadline_seconds) or not 0 < deadline_seconds <= 180:
@@ -228,11 +239,23 @@ async def execute_text_region(
     for attempt in attempts:
         if attempt.route not in permitted_routes or attempt.route not in providers:
             raise ValueError("UNPERMITTED_OR_UNBOUND_ROUTE")
+
+    def still_authorized() -> bool:
+        if authorization_valid is None:
+            return True
+        try:
+            return authorization_valid() is True
+        except Exception:
+            return False
+
     receipts: list[AttemptReceipt] = []
     spent = 0.0
     started = time.monotonic()
     terminal_reasons: tuple[str, ...] = ("NO_VERIFIED_TEXT_REGION",)
     for attempt in attempts:
+        if not still_authorized():
+            terminal_reasons = ("EXECUTION_AUTHORIZATION_REVOKED",)
+            break
         remaining = deadline_seconds - (time.monotonic() - started)
         if remaining <= 0:
             terminal_reasons = ("EXECUTION_DEADLINE_REACHED",)
@@ -240,13 +263,41 @@ async def execute_text_region(
         if spent + attempt.reserved_cost > cost_budget:
             terminal_reasons = ("EXECUTION_BUDGET_REACHED",)
             break
+        if reserve_cost is not None and not reserve_cost(attempt.reserved_cost):
+            terminal_reasons = ("DOCUMENT_BUDGET_REACHED",)
+            break
         spent += attempt.reserved_cost
         began = time.monotonic()
+        attempt_deadline = min(started + deadline_seconds, began + attempt.timeout_seconds)
+        task = asyncio.current_task()
+        cancellations_before = task.cancelling() if task is not None else 0
         observation: TextObservation | None = None
         check: EvidenceCheck | None = None
         try:
-            async with asyncio.timeout(min(remaining, attempt.timeout_seconds)):
-                observation = await providers[attempt.route](binding)
+            async with asyncio.timeout(max(0.0, attempt_deadline - time.monotonic())) as timer:
+                raw_observation: object = await providers[attempt.route](binding)
+            # A provider may swallow cancellation or block the event loop. Neither
+            # makes a late result valid. This does not forcibly stop such workers.
+            if task is not None and task.cancelling() > cancellations_before:
+                raise asyncio.CancelledError
+            if timer.expired() or time.monotonic() >= attempt_deadline:
+                raise TimeoutError
+            if not isinstance(raw_observation, TextObservation):
+                raise _InvalidProviderResult
+            observation = raw_observation
+            if not still_authorized():
+                terminal_reasons = ("EXECUTION_AUTHORIZATION_REVOKED",)
+                receipts.append(
+                    AttemptReceipt(
+                        attempt.route,
+                        attempt.producer_id,
+                        attempt.reserved_cost,
+                        time.monotonic() - began,
+                        terminal_reasons,
+                        observation.output_sha256,
+                    )
+                )
+                break
             if observation.producer_id != attempt.producer_id:
                 check = EvidenceCheck(
                     EvidenceDisposition.QUARANTINED,
@@ -261,6 +312,8 @@ async def execute_text_region(
             terminal_reasons = ("PROVIDER_TIMEOUT",)
         except asyncio.CancelledError:
             raise
+        except _InvalidProviderResult:
+            terminal_reasons = ("PROVIDER_RESULT_INVALID",)
         except Exception:
             # Exception messages can contain customer text or credentials.
             terminal_reasons = ("PROVIDER_FAILURE",)
