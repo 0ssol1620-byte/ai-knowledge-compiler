@@ -63,6 +63,26 @@ rechecked after scoring. No production policy, queue, model or customer gate cha
 
 ## Next decision
 
+`compare_spent.py` now binds this Native arm to the 12 retained historical model
+arms through the existing Arena artifact hashes, source manifest and exact
+test-id/page/type/JSONL identity. Founder-excluded Infinity Pro remains excluded.
+All 8,413 rows match for every retained model; missing rows would remain false.
+The complete rule matrix therefore contains Native plus 12 model arms, not 13 models.
+Capture/binding/comparison tests now total 22, including refusal on row mismatch,
+missing-row retention and proof that the page oracle cannot choose per-rule outputs.
+
+The diagnostic page oracle changes from 0.9058631436437746 to
+0.9060276173279851 when Native is added. That is hidden-label headroom, not a runtime
+router score. Native passes 284 of Ovis's 1,932 failed rules, 17 of Paddle's 1,404,
+and 27 of MinerU VLM's 1,274. These are rule-level complementarity observations;
+they neither demonstrate valid merged documents nor provide a runtime selection signal.
+
+Accepted join receipt:
+`D:/trouter-0909/.chatgpt2codex/native-model-spent-bound-20260909/`.
+`BIND.json` hashes all input artifacts and the analysis code. The earlier exploratory
+join is preserved separately; the accepted run additionally verifies the captured
+source-manifest binding. No policy or threshold was fitted to these outcomes.
+
 Bind this arm into a common-denominator replay of fixed, Native, current router,
 recovery and always-all policies. Historical model runs use other environments;
 the Native-only score alone is not a fair newly measured head-to-head comparison.
