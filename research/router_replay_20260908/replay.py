@@ -34,6 +34,7 @@ for _path in (HERE, _ORACLE):
         sys.path.insert(0, str(_path))
 
 import features as F  # noqa: E402
+import native_visible as N  # noqa: E402
 import scorer as S  # noqa: E402
 from bind import load_json, sha256_file  # type: ignore[import-not-found]  # noqa: E402
 from oracle import document_family  # type: ignore[import-not-found]  # noqa: E402
@@ -81,9 +82,27 @@ def build_arms(models: Sequence[str]) -> list[Any]:
         arms.append(
             F.CoreRouter(mode=mode, reading_order_assumption=1.0, worker_sentinels=True)
         )
-    adapter = F.planner_adapter()
+    adapter = F.planner_adapter(
+        strong=F.PEER_MODEL,
+        primary=F.PRIMARY_MODEL,
+        name="ROUTER_V2_PAGE_VISUAL",
+    )
     if adapter is not None:
         arms.append(adapter)
+    if N.NATIVE_MODEL in models:
+        arms.append(
+            F.PeerAgreementVerified(
+                models=(N.NATIVE_MODEL, F.PRIMARY_MODEL, F.PEER_MODEL),
+                name="PEER_AGREEMENT_VERIFIER_V2@native+paddle+ovis",
+            )
+        )
+        native_adapter = F.planner_adapter(
+            strong=F.PRIMARY_MODEL,
+            primary=N.NATIVE_MODEL,
+            name="ROUTER_V2_PAGE_NATIVE_FIRST",
+        )
+        if native_adapter is not None:
+            arms.append(native_adapter)
     return arms
 
 
@@ -538,7 +557,27 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", type=Path, default=HERE)
     parser.add_argument("--surfaces", nargs="*", default=sorted(SURFACE_BENCHMARK))
     parser.add_argument("--replicates", type=int, default=BOOTSTRAP_REPLICATES)
+    parser.add_argument("--native-capture", type=Path)
+    parser.add_argument("--native-score", type=Path)
+    parser.add_argument("--replay-cache", type=Path, default=HERE / ".cache")
     args = parser.parse_args(argv)
+
+    if (args.native_capture is None) != (args.native_score is None):
+        raise ValueError("NATIVE_CAPTURE_AND_SCORE_REQUIRED_TOGETHER")
+    native_capture = None
+    # ``main`` is importable in tests and notebooks. Reset the process-global
+    # route binding on every invocation so a prior Native replay cannot leak
+    # into a later replay that did not supply the sealed Native evidence.
+    F.ROUTE_TO_ARENA_MODEL["native"] = None
+    if args.native_capture is not None:
+        if set(args.surfaces) != {"olmocr"}:
+            raise ValueError("NATIVE_SCORE_IS_BOUND_ONLY_TO_OLMOCR")
+        output = args.out.resolve()
+        if output == HERE.resolve() or output.exists():
+            raise ValueError("NATIVE_REPLAY_OUTPUT_MUST_BE_NEW")
+        output.mkdir(parents=False, exist_ok=False)
+        native_capture = N.load_capture(args.native_capture)
+        F.ROUTE_TO_ARENA_MODEL["native"] = N.NATIVE_MODEL
 
     started = time.time()
     root = F.arena_root()
@@ -549,7 +588,7 @@ def main(argv: list[str] | None = None) -> int:
         for model, entry in bind["models"].items()
         if not entry["founder_excluded"] and entry["frozen_outputs"]["available"]
     )
-    cache_dir = HERE / ".cache"
+    cache_dir = args.replay_cache.resolve(strict=True)
 
     # 1. The SCLR denominator is frozen BEFORE anything is scored.
     freeze_path = args.out / "SCLR_OPPORTUNITY_FREEZE.json"
@@ -565,13 +604,19 @@ def main(argv: list[str] | None = None) -> int:
         **F.frozen_policy_parameters(),
         "bootstrap": {"replicates": args.replicates, "seed": BOOTSTRAP_SEED},
         "hard_fail_tau": S.HARD_FAIL_TAU,
-        "model_scope": models,
+        "model_scope": sorted([*models, *([N.NATIVE_MODEL] if native_capture else [])]),
+        "native_visible_binding": native_capture.binding if native_capture else None,
     }
     policy_path = args.out / "REPLAY_POLICY_FREEZE.json"
     policy_digest = S.write_json(policy_path, policy_freeze)
     print(f"froze policy parameters -> {policy_path} {policy_digest}")
 
     surfaces = S.load_surfaces(root, bind)
+    native_score_binding = None
+    if native_capture is not None:
+        native_score_binding = S.add_native_olmocr_surface(surfaces["olmocr"], args.native_score)
+        if native_score_binding["capture_freeze_sha256"] != native_capture.freeze_sha256:
+            raise ValueError("NATIVE_CAPTURE_SCORE_BINDING_MISMATCH")
     unit_cache: dict[str, list[F.UnitFeatures]] = {}
     text_cache: dict[str, dict[tuple[str, str], str]] = {}
     results: dict[str, Any] = {
@@ -585,7 +630,9 @@ def main(argv: list[str] | None = None) -> int:
         "arena_bind_sha256": sha256_file(bind_path),
         "sclr_opportunity_freeze_sha256": freeze_digest,
         "replay_policy_freeze_sha256": policy_digest,
-        "model_scope": models,
+        "model_scope": sorted([*models, *([N.NATIVE_MODEL] if native_capture else [])]),
+        "native_visible_binding": native_capture.binding if native_capture else None,
+        "native_hidden_score_binding": native_score_binding,
         "hard_fail_tau": S.HARD_FAIL_TAU,
         "not_measurable_ablations": NOT_MEASURABLE_ABLATIONS,
         "surfaces": {},
@@ -599,6 +646,8 @@ def main(argv: list[str] | None = None) -> int:
         if benchmark not in unit_cache:
             print(f"building runtime-visible features for {benchmark} ...", flush=True)
             built, built_texts = F.load_or_build_units(root, benchmark, models, cache_dir)
+            if native_capture is not None and benchmark == "olmocr":
+                built, built_texts = N.augment_units(built, built_texts, native_capture)
             unit_cache[benchmark] = built
             text_cache[benchmark] = built_texts
         scored_units = set(surface.all_units())
@@ -631,6 +680,18 @@ def main(argv: list[str] | None = None) -> int:
         # reads it there rather than reaching into `reports/` -- which the
         # runtime-visible allow-list refuses, and rightly.
         cost["per_model_speed"] = bind["cost_and_latency"]["per_model"]
+        if native_capture is not None and benchmark == "olmocr":
+            native_seconds = sorted(
+                float(row["local_wall_seconds"]) for row in native_capture.records.values()
+            )
+            cost["per_model"][N.NATIVE_MODEL] = {
+                "cost_per_1000_pages_usd": 0.0,
+                "billed_seconds": 0.0,
+                "pages_basis": len(native_seconds),
+            }
+            cost["per_model_speed"][N.NATIVE_MODEL] = {
+                "median_sec_per_page": statistics.median(native_seconds),
+            }
 
         arms = build_arms(surface.models) + [
             arm for strong in F.STRONG_MODELS for arm in ablation_arms(strong)
@@ -730,6 +791,9 @@ def main(argv: list[str] | None = None) -> int:
         "and cold start are excluded and are NOT modelled.",
         "An arm's latency is the SUM over the routes it invoked, i.e. sequential "
         "execution. Parallel speculation would be lower; nothing here measures it.",
+        "Native contributes zero GPU/API provider dollars and zero GPU seconds. "
+        "Its local CPU infrastructure cost is UNMEASURED, while per-page wall "
+        "latency comes from the sealed Windows capture.",
     ]
     results["arena_report_anomalies"] = [
         "glm_ocr's OmniDoc board row (text Edit 0.0444) disagrees with its own "
@@ -787,17 +851,35 @@ def build_manifest(
             if (root / "frozen_outputs" / model / "manifest.jsonl").is_file()
         },
     }
+    native_visible = results.get("native_visible_binding")
+    native_hidden = results.get("native_hidden_score_binding")
+    if native_visible is not None:
+        inputs["native_visible_binding"] = native_visible
+    if native_hidden is not None:
+        inputs["native_hidden_score_binding"] = native_hidden
+    code_names = ["features.py", "scorer.py", "replay.py"]
+    if native_visible is not None:
+        code_names.append("native_visible.py")
+    replay_command = (
+        "ARENA_ROOT=<arena> .venv/Scripts/python.exe "
+        "research/router_replay_20260908/replay.py"
+    )
+    if native_visible is not None:
+        replay_command += (
+            " --surfaces olmocr --native-capture <sealed-native-capture>"
+            " --native-score <sealed-native-score>"
+            " --replay-cache <existing-visible-cache> --out <new-output-dir>"
+        )
     return {
         "schema": "tavonel.router_replay.manifest.v1",
         "replay_id": REPLAY_ID,
         "generated_by": "research/router_replay_20260908/replay.py",
         "code_sha256": {
-            name: sha256_file(HERE / name)
-            for name in ("features.py", "scorer.py", "replay.py")
+            name: sha256_file(HERE / name) for name in code_names
         },
         "commands": [
             "uv sync",
-            "ARENA_ROOT=<arena> .venv/Scripts/python.exe research/router_replay_20260908/replay.py",
+            replay_command,
             "pytest research/router_replay_20260908/tests -q",
         ],
         "inputs": inputs,

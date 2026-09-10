@@ -46,6 +46,8 @@ PARSEBENCH_GT_DIR = DATASETS / "parsebench"
 HARD_FAIL_TAU = _oracle.HARD_FAIL_TAU
 
 OPPORTUNITY_FREEZE_ID = "TAVONEL-ROUTER-REPLAY-SCLR-OPPORTUNITY-2026-09-08-V1"
+NATIVE_EXPECTED_UNITS = 1403
+NATIVE_EXPECTED_RULES = 8413
 
 # The critical-opportunity detector IS akc_cir's own counter set. Reusing the
 # module's compiled patterns rather than restating them is deliberate: a second
@@ -79,6 +81,91 @@ def load_surfaces(root: Path, bind: dict[str, Any]) -> dict[str, Any]:
     for facet in ("table", "chart", "text_content", "text_formatting"):
         surfaces[f"parsebench:{facet}"] = _oracle.load_parsebench(root, bind, facet)
     return surfaces
+
+
+def add_native_olmocr_surface(surface: Any, score_root: Path) -> dict[str, Any]:
+    """Bind the hidden Native rule outcome to the existing olmOCR surface.
+
+    This function remains in the scorer half.  A runtime policy receives only
+    the augmented visible observation produced by ``native_visible`` and can
+    never access this directory or any rule result.
+    """
+    score_root = score_root.resolve(strict=True)
+    if not score_root.is_dir():
+        raise ValueError("NATIVE_SCORE_DIRECTORY_REQUIRED")
+    result_path = (score_root / "RESULT.json").resolve(strict=True)
+    freeze_path = (score_root / "FREEZE.json").resolve(strict=True)
+    rules_path = (score_root / "rule-results.jsonl").resolve(strict=True)
+    for path in (result_path, freeze_path, rules_path):
+        if path.parent != score_root:
+            raise ValueError("NATIVE_SCORE_PATH_ESCAPE")
+    result = load_json(result_path)
+    freeze = load_json(freeze_path)
+    rules_sha256 = "sha256:" + hashlib.sha256(rules_path.read_bytes()).hexdigest()
+    if (
+        result.get("status") != "DEVELOPMENT_SCORED"
+        or result.get("confirmatory_eligible") is not False
+        or result.get("production_qualified") is not False
+        or result.get("units") != NATIVE_EXPECTED_UNITS
+        or result.get("tests") != NATIVE_EXPECTED_RULES
+        or result.get("evaluator_errors") != 0
+        or result.get("rule_results_sha256") != rules_sha256
+    ):
+        raise ValueError("NATIVE_SCORE_BINDING_INVALID")
+    if freeze.get("confirmatory_eligible") is not False:
+        raise ValueError("SPENT_NATIVE_SCORE_REQUIRED")
+
+    totals: dict[str, list[int]] = {}
+    by_type: dict[str, dict[str, list[int]]] = {}
+    seen: set[str] = set()
+    with rules_path.open(encoding="utf-8") as handle:
+        for line in handle:
+            row = json.loads(line)
+            test_id = row.get("test_id")
+            unit = row.get("pdf")
+            test_type = row.get("type")
+            passed = row.get("passed")
+            if (
+                not isinstance(test_id, str)
+                or test_id in seen
+                or not isinstance(unit, str)
+                or not isinstance(test_type, str)
+                or type(passed) is not bool
+                or row.get("evaluator_error") is not None
+            ):
+                raise ValueError("NATIVE_SCORE_RULE_INVALID")
+            seen.add(test_id)
+            failed = 0 if passed else 1
+            totals.setdefault(unit, [0, 0])
+            totals[unit][0] += failed
+            totals[unit][1] += 1
+            by_type.setdefault(test_type, {}).setdefault(unit, [0, 0])
+            by_type[test_type][unit][0] += failed
+            by_type[test_type][unit][1] += 1
+    if len(seen) != NATIVE_EXPECTED_RULES or len(totals) != NATIVE_EXPECTED_UNITS:
+        raise ValueError("NATIVE_SCORE_DENOMINATOR_INCOMPLETE")
+    if set(totals) != set(surface.all_units()):
+        raise ValueError("NATIVE_SCORE_PAGE_SET_MISMATCH")
+
+    surface.loss["native"] = {unit: failed / count for unit, (failed, count) in totals.items()}
+    for test_type, rows in by_type.items():
+        surface.elements.setdefault(f"type:{test_type}", {})["native"] = {
+            unit: failed / count for unit, (failed, count) in rows.items()
+        }
+    surface.models = sorted(set(surface.models) | {"native"})
+    surface.notes.append(
+        "Native is the complete spent 1,403-page text-projection arm; empty, refused, "
+        "unqualified and failed pages remain in the denominator."
+    )
+    return {
+        "score_freeze_sha256": "sha256:" + hashlib.sha256(freeze_path.read_bytes()).hexdigest(),
+        "rule_results_sha256": rules_sha256,
+        "capture_freeze_sha256": freeze.get("capture_sha256"),
+        "rules": len(seen),
+        "pages": len(totals),
+        "confirmatory_eligible": False,
+        "production_qualified": False,
+    }
 
 
 def unit_loss(surface: Any, model: str, unit: str) -> float:
@@ -368,6 +455,7 @@ __all__ = [
     "GT_COMPLETENESS",
     "HARD_FAIL_TAU",
     "OPPORTUNITY_FREEZE_ID",
+    "add_native_olmocr_surface",
     "build_opportunity_freeze",
     "count_opportunities",
     "ground_truth",

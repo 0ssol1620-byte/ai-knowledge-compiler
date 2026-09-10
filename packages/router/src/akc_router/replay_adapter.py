@@ -46,7 +46,7 @@ class _LocalUnitPlan:
 
 def _unit_plan_type() -> Any:
     try:  # pragma: no cover - exercised only with the research tree present
-        from research.router_replay_20260908.features import UnitPlan  # type: ignore
+        from research.router_replay_20260908.features import UnitPlan
     except Exception:
         return _LocalUnitPlan
     return UnitPlan
@@ -58,7 +58,15 @@ class RouterV2ReplayPolicy:
 
     primary_model: str
     strong_model: str
-    name: str = "ROUTER_V2_PAGE"
+    name: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.name:
+            object.__setattr__(
+                self,
+                "name",
+                f"ROUTER_V2_PAGE@primary={self.primary_model},peer={self.strong_model}",
+            )
 
     def plan(self, unit_features: Any) -> Any:
         plan_type = _unit_plan_type()
@@ -99,9 +107,15 @@ class RouterV2ReplayPolicy:
         )
 
 
-def build_replay_policy(strong: str, primary: str = "") -> RouterV2ReplayPolicy:
+def build_replay_policy(
+    strong: str, primary: str = "", name: str = ""
+) -> RouterV2ReplayPolicy:
     """Entry point the replay harness looks for."""
-    return RouterV2ReplayPolicy(primary_model=primary or strong, strong_model=strong)
+    return RouterV2ReplayPolicy(
+        primary_model=primary or strong,
+        strong_model=strong,
+        name=name,
+    )
 
 
 def replay_risk_vector(unit_features: Any) -> RiskVector:

@@ -939,6 +939,69 @@ class Escalating:
 
 
 @dataclass(frozen=True)
+class PeerAgreementVerified:
+    """Accept only an output corroborated by an independent route.
+
+    This is the conservative redesign evaluated after the page-router replay
+    failed to beat the best fixed arm.  It is deliberately simple and fully
+    runtime-visible: Native, Paddle and Ovis run, a candidate needs at least
+    one peer at the already-frozen agreement threshold, and the most central
+    corroborated candidate wins.  If no pair agrees, the unit is UNRESOLVED.
+
+    Missing output remains an observed route failure.  It is not silently
+    replaced; the remaining two routes may still establish agreement.
+    """
+
+    models: tuple[str, ...]
+    name: str = "PEER_AGREEMENT_VERIFIER_V2"
+
+    def plan(self, unit_features: UnitFeatures) -> UnitPlan:
+        routes = tuple(dict.fromkeys(self.models))
+        present = sorted(model for model in routes if _present(unit_features, model))
+        corroborated = [
+            model
+            for model in present
+            if any(
+                (unit_features.sim(model, other) or 0.0) >= AGREEMENT_TAU
+                for other in present
+                if other != model
+            )
+        ]
+        if not corroborated:
+            return UnitPlan(
+                routes=routes,
+                accepted=None,
+                escalate=True,
+                unresolved_reason=(
+                    "no independent route corroborated an output at the frozen threshold"
+                ),
+                reason_codes=("PEER_AGREEMENT_NOT_ESTABLISHED",),
+            )
+
+        # Restrict the medoid to candidates that passed the verifier.  The
+        # medoid similarity is output-only and was frozen before hidden scores
+        # were loaded; lexical ordering makes ties reproducible.
+        chosen = max(
+            corroborated,
+            key=lambda model: (
+                sum(
+                    unit_features.sim(model, other) or 0.0
+                    for other in present
+                    if other != model
+                )
+                / max(1, len(present) - 1),
+                model,
+            ),
+        )
+        return UnitPlan(
+            routes=routes,
+            accepted=chosen,
+            escalate=True,
+            reason_codes=("PEER_AGREEMENT_ESTABLISHED",),
+        )
+
+
+@dataclass(frozen=True)
 class CoreRouter:
     """The current production `akc_router.engine.select_first_route`, replayed.
 
@@ -1080,16 +1143,20 @@ def _medoid_of(unit: UnitFeatures, candidates: Sequence[str]) -> str | None:
     return best
 
 
-def planner_adapter(strong: str = STRONG_MODELS[0]) -> Policy | None:
+def planner_adapter(
+    strong: str = PEER_MODEL,
+    primary: str = PRIMARY_MODEL,
+    name: str = "",
+) -> Policy | None:
     """Lane A1's `akc_router.planner`, if it exists yet. Never a hard dependency."""
     try:
-        from akc_router import planner as _planner  # type: ignore[attr-defined]
+        from akc_router import planner as _planner
     except ImportError:
         return None
     factory = getattr(_planner, "build_replay_policy", None)
     if factory is None:
         return None
-    policy: Policy = factory(strong=strong)
+    policy: Policy = factory(strong=strong, primary=primary, name=name)
     return policy
 
 
@@ -1101,6 +1168,18 @@ def frozen_policy_parameters() -> dict[str, Any]:
         "peer_model": PEER_MODEL,
         "strong_models": list(STRONG_MODELS),
         "agreement_tau": AGREEMENT_TAU,
+        "peer_agreement_verifier_v2": {
+            "enabled_when": "the separately sealed spent Native arm is bound",
+            "models": ["native", PRIMARY_MODEL, PEER_MODEL],
+            "acceptance_rule": (
+                "accept the most central candidate with at least one independent "
+                "route at or above agreement_tau; otherwise UNRESOLVED"
+            ),
+            "missing_output_rule": (
+                "retain the failed route; two surviving routes may still corroborate"
+            ),
+            "tie_break": "mean pairwise similarity, then lexical model key",
+        },
         "prediction_tau": PREDICTION_TAU,
         "critical_token_tau": CRITICAL_TOKEN_TAU,
         "route_to_arena_model": dict(ROUTE_TO_ARENA_MODEL),
@@ -1128,8 +1207,12 @@ def frozen_policy_parameters() -> dict[str, Any]:
         "notes": [
             "Every threshold above was written down before any score file was "
             "opened. None was moved after a result was seen.",
-            "Route.NATIVE has no Arena arm; units routed there are UNRESOLVED, "
-            "never substituted.",
+            (
+                "Route.NATIVE is bound to the separately sealed spent Native arm."
+                if ROUTE_TO_ARENA_MODEL["native"] == "native"
+                else "Route.NATIVE has no Arena arm; units routed there are UNRESOLVED, "
+                "never substituted."
+            ),
             "native_reading_order_score is unmeasurable on this corpus and is "
             "swept over its whole range instead of guessed.",
         ],
@@ -1151,6 +1234,7 @@ __all__ = [
     "FixedModel",
     "LeakageRefusal",
     "OutputFeatures",
+    "PeerAgreementVerified",
     "Policy",
     "ReplayComposite",
     "UnitFeatures",
@@ -1160,9 +1244,11 @@ __all__ = [
     "build_units",
     "frozen_policy_parameters",
     "load_cost",
+    "normalize",
     "open_visible",
     "page_metrics",
     "planner_adapter",
+    "similarity",
     "source_root",
     "visible_roots",
 ]

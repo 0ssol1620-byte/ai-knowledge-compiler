@@ -8,7 +8,10 @@ to hold whatever the arena says.
 from __future__ import annotations
 
 import ast
+import hashlib
+import json
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
@@ -19,6 +22,7 @@ for _path in (LANE, LANE.parent / "router_oracle_20260908"):
         sys.path.insert(0, str(_path))
 
 import features as F  # noqa: E402
+import native_visible as N  # noqa: E402
 import replay as R  # noqa: E402
 import scorer as S  # noqa: E402
 
@@ -233,6 +237,59 @@ def test_prediction_arm_uses_the_frozen_threshold_only() -> None:
     assert arm.plan(high).escalate is True
 
 
+def test_peer_agreement_verifier_accepts_a_corroborated_output() -> None:
+    unit = make_unit(
+        texts={
+            "native": "alpha beta gamma delta",
+            F.PRIMARY_MODEL: "alpha beta gamma delta",
+            F.PEER_MODEL: "unrelated visual output",
+        }
+    )
+    plan = F.PeerAgreementVerified(
+        models=("native", F.PRIMARY_MODEL, F.PEER_MODEL)
+    ).plan(unit)
+    assert plan.accepted in {"native", F.PRIMARY_MODEL}
+    assert plan.unresolved_reason is None
+    assert plan.reason_codes == ("PEER_AGREEMENT_ESTABLISHED",)
+
+
+def test_peer_agreement_verifier_can_use_two_surviving_routes() -> None:
+    unit = make_unit(
+        texts={
+            F.PRIMARY_MODEL: "alpha beta gamma delta",
+            F.PEER_MODEL: "alpha beta gamma delta",
+        }
+    )
+    plan = F.PeerAgreementVerified(
+        models=("native", F.PRIMARY_MODEL, F.PEER_MODEL)
+    ).plan(unit)
+    assert plan.accepted in {F.PRIMARY_MODEL, F.PEER_MODEL}
+    assert plan.routes == ("native", F.PRIMARY_MODEL, F.PEER_MODEL)
+
+
+def test_peer_agreement_verifier_refuses_uncorroborated_outputs() -> None:
+    unit = make_unit(
+        texts={
+            "native": "alpha beta gamma",
+            F.PRIMARY_MODEL: "one two three",
+            F.PEER_MODEL: "red green blue",
+        }
+    )
+    plan = F.PeerAgreementVerified(
+        models=("native", F.PRIMARY_MODEL, F.PEER_MODEL)
+    ).plan(unit)
+    assert plan.accepted is None
+    assert plan.escalate is True
+    assert plan.reason_codes == ("PEER_AGREEMENT_NOT_ESTABLISHED",)
+
+
+def test_peer_agreement_verifier_is_fully_declared_in_the_policy_freeze() -> None:
+    freeze = F.frozen_policy_parameters()
+    verifier = freeze["peer_agreement_verifier_v2"]
+    assert verifier["models"] == ["native", F.PRIMARY_MODEL, F.PEER_MODEL]
+    assert "UNRESOLVED" in verifier["acceptance_rule"]
+
+
 def test_core_router_native_units_are_unresolved_not_substituted() -> None:
     """Route.NATIVE has no Arena arm. The absence is reported, never filled."""
     unit = make_unit(
@@ -378,3 +435,130 @@ def test_frozen_parameters_are_recorded_for_the_receipt() -> None:
     assert frozen["agreement_tau"] == F.AGREEMENT_TAU
     assert frozen["route_to_arena_model"]["native"] is None
     assert set(frozen["strong_models"]) == set(F.STRONG_MODELS)
+
+
+def test_native_visible_capture_is_hash_bound_and_augments_every_unit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(N, "EXPECTED_UNITS", 2)
+    source_rows = [
+        {
+            "case_key": f"case-{index}",
+            "sample_id": f"sample-{index}",
+            "original_source_sha256": "sha256:" + str(index) * 64,
+        }
+        for index in (1, 2)
+    ]
+    freeze = {
+        "confirmatory_eligible": False,
+        "quality_verified": False,
+        "hidden_evaluation_visible_to_runtime": False,
+        "eligible_units": 2,
+        "selected_units": 2,
+        "source_manifest_sha256": "sha256:" + "a" * 64,
+        "selected_source_rows": source_rows,
+    }
+    (tmp_path / "FREEZE.json").write_text(json.dumps(freeze), encoding="utf-8")
+    observations = []
+    for index, source in zip((1, 2), source_rows, strict=True):
+        text = f"native text {index}"
+        observations.append(
+            {
+                "case_key": source["case_key"],
+                "sample_id": source["sample_id"],
+                "source_sha256": source["original_source_sha256"],
+                "route": "native",
+                "confirmatory_eligible": False,
+                "quality_verified": False,
+                "status": "native_text_observed",
+                "text": text,
+                "output_sha256": "sha256:" + hashlib.sha256(text.encode()).hexdigest(),
+                "local_wall_seconds": 0.01 * index,
+            }
+        )
+    raw = "".join(json.dumps(row) + "\n" for row in observations).encode()
+    (tmp_path / "observations.jsonl").write_bytes(raw)
+    (tmp_path / "RESULT.json").write_text(
+        json.dumps(
+            {
+                "selected": 2,
+                "output_rows": 2,
+                "observations_sha256": "sha256:" + hashlib.sha256(raw).hexdigest(),
+            }
+        ),
+        encoding="utf-8",
+    )
+    capture = N.load_capture(tmp_path)
+    units = [
+        replace(make_unit(unit=f"unit-{index}"), case_key=f"case-{index}")
+        for index in (1, 2)
+    ]
+    augmented, texts = N.augment_units(units, {}, capture)
+    assert [unit.outputs["native"].present for unit in augmented] == [True, True]
+    assert texts[("native", "unit-1")] == "native text 1"
+    assert capture.binding["units"] == 2
+
+
+def test_native_hidden_scores_extend_only_the_exact_page_denominator(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(S, "NATIVE_EXPECTED_UNITS", 2)
+    monkeypatch.setattr(S, "NATIVE_EXPECTED_RULES", 3)
+    rows = [
+        {
+            "test_id": "r1",
+            "pdf": "u1",
+            "type": "text",
+            "passed": True,
+            "evaluator_error": None,
+        },
+        {
+            "test_id": "r2",
+            "pdf": "u1",
+            "type": "text",
+            "passed": False,
+            "evaluator_error": None,
+        },
+        {
+            "test_id": "r3",
+            "pdf": "u2",
+            "type": "table",
+            "passed": False,
+            "evaluator_error": None,
+        },
+    ]
+    raw = "".join(json.dumps(row) + "\n" for row in rows).encode()
+    (tmp_path / "rule-results.jsonl").write_bytes(raw)
+    (tmp_path / "FREEZE.json").write_text(
+        json.dumps({"confirmatory_eligible": False, "capture_sha256": "sha256:fixture"}),
+        encoding="utf-8",
+    )
+    (tmp_path / "RESULT.json").write_text(
+        json.dumps(
+            {
+                "status": "DEVELOPMENT_SCORED",
+                "confirmatory_eligible": False,
+                "production_qualified": False,
+                "units": 2,
+                "tests": 3,
+                "evaluator_errors": 0,
+                "rule_results_sha256": "sha256:" + hashlib.sha256(raw).hexdigest(),
+            }
+        ),
+        encoding="utf-8",
+    )
+    surface = _FakeSurface({"model": {"u1": 0.0, "u2": 0.0}})
+    surface.models = ["model"]
+    surface.elements = {}
+    surface.notes = []
+    binding = S.add_native_olmocr_surface(surface, tmp_path)
+    assert surface.loss["native"] == {"u1": 0.5, "u2": 1.0}
+    assert surface.models == ["model", "native"]
+    assert binding["capture_freeze_sha256"] == "sha256:fixture"
+
+
+def test_router_v2_replay_policies_have_distinct_bound_names() -> None:
+    visual = F.planner_adapter(primary=F.PRIMARY_MODEL, strong=F.PEER_MODEL)
+    native = F.planner_adapter(primary="native", strong=F.PRIMARY_MODEL)
+    assert visual is not None and native is not None
+    assert visual.name != native.name
