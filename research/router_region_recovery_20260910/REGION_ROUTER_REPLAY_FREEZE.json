@@ -1,0 +1,31 @@
+{
+  "candidate": "SOURCE_BOUND_REGION_RECOVERY_ROUTER_V1",
+  "corpus": "spent public olmOCR-Bench development matrix only",
+  "denominator_pages": 1403,
+  "primary_model": "mineru_vlm",
+  "primary_manifest_sha256": "sha256:2fe463087233a29cd7bf4d619e534a25727adf99588249b5dd70fa6569118b1d",
+  "native_capture_sha256": "sha256:ac4b4e669eb4b2d09913b77dd0420d779866f4adc00edc69e799cd85c39512a8",
+  "target_manifest_sha256": "sha256:a508297876676ed9fae15fb666a33e8903cbf8cf6ebbea9abfbe7247f1270110",
+  "runtime_disposition_sha256": "sha256:d7e4b7737510128409461026ec5e2a84ec390a583b87f0cc1b219df2ba411a91",
+  "specialist_model": "paddleocr_vl_1_6",
+  "specialist_manifest_sha256": "sha256:0fff25a57c1727905e877a5c9c3d5841cfe0534574701219242ecb9eaeb7692c",
+  "execution_rule": "run Native and MinerU first; invoke Paddle only for the 31 frozen exact-region targets",
+  "verified_region_rule": "retain the MinerU page representation and attach the uniquely bound Paddle region as a supplemental representation only when the runtime-visible source critical-token verifier passed",
+  "unresolved_region_rule": "retain the rest of the MinerU page but mark the exact selected region unresolved; only missing critical-token events with a hash declared by that region count as detected rather than silent",
+  "broad_quality_rule": "carry the fixed MinerU page score unchanged for the primary representation; no page-level score is inferred for the multi-representation bundle",
+  "sclr_rule": "after runtime dispositions are sealed, hidden evaluation may count exact missing critical-token hashes; a verified supplement must actually close the event and a localized refusal can suppress only the exact declared hash",
+  "cost_rule": "charge the historical full-page Paddle provider cost for all 31 invocations; this is conservative for a future crop runtime and is not retail pricing",
+  "latency_rule": "region-runtime p95 is unmeasured because the stored run was full-page execution",
+  "bootstrap": {
+    "replicates": 5000,
+    "seed": "TAVONEL-SOURCE-BOUND-REGION-RECOVERY-20260910-V1"
+  },
+  "output_disclosure": "aggregate metrics and hashes only; no ground-truth, source, model, or literal critical-token text",
+  "hidden_evaluation_visible_to_runtime": false,
+  "quality_claim": false,
+  "confirmatory_eligible": false,
+  "production_promotion": false,
+  "fresh_holdout_opened": false,
+  "new_gpu_budget_usd": 0,
+  "frozen_before_hidden_evaluation": true
+}
