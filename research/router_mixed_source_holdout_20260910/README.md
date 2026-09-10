@@ -1,6 +1,6 @@
 # Mixed-source Router holdout pre-registration
 
-Status: **SOURCE MANIFEST FROZEN; RUNTIME AND PREDICTIONS PENDING; HOLDOUT UNOPENED**
+Status: **LOCAL PRE-OPEN PASSED; EXECUTION INPUT PREFLIGHT PENDING; HOLDOUT UNOPENED**
 
 The SEC target-cell development run established a useful Ovis component but
 did not establish Router superiority. This package defines the next admissible
@@ -75,9 +75,11 @@ The exact 96 selected source byte streams are privately persisted and bound by
 The committed manifest contains metadata and digests only; 600,229,016 original
 bytes remain in the ignored evidence directory. The development inventory binds
 10,203 hashes and 3,848 source families from the exact spent Arena and SEC
-source manifests; source-hash overlap and family overlap are both zero. Runtime
-bindings and truth-free route predictions remain absent, so the pre-open gate
-is closed and no model or GPU execution is authorized.
+source manifests; source-hash overlap and family overlap are both zero. Runtime identities and one truth-free route prediction for every selected unit
+are frozen. The local pre-open gate passes with no blocker. Remote bundle bytes
+and exact source-bound rendered worker inputs still require an execution receipt,
+so no model or GPU execution has started and holdout truth remains sealed.
+ The saved result binds the runtime, candidate, development, prediction and policy digests and records successful rehashing of all 96 source streams and every Native runtime file. Execution must still rerun this live gate immediately before dispatch.
 
 `acquire_selected_sources.py` is the bounded no-replacement acquisition path.
 It accepts only HTTP 200 without redirects, caps each source at 300 MiB, writes

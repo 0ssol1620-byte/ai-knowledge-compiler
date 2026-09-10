@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 from collections import Counter
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -62,6 +63,41 @@ FORBIDDEN_PREDICTION_KEYS = frozenset(
         "truth",
     }
 )
+FORBIDDEN_PREDICTION_KEY_TOKENS = frozenset(
+    {
+        "annotation",
+        "answer",
+        "evaluation",
+        "evaluator",
+        "gold",
+        "label",
+        "score",
+        "truth",
+    }
+)
+FORBIDDEN_PREDICTION_KEY_PHRASES = frozenset(
+    {
+        "document_content",
+        "document_text",
+        "expected_result",
+        "expected_value",
+        "hidden_result",
+        "model_output",
+        "reference_value",
+        "source_content",
+        "source_text",
+        "target_value",
+    }
+)
+BOUND_ARTIFACTS = {
+    "freeze_generator": "freeze_generator_sha256",
+    "native_runtime": "native_runtime_sha256",
+    "source_contract": "source_contract_sha256",
+    "router_policy": "router_policy_sha256",
+    "evaluator": "evaluator_sha256",
+    "statistics": "statistics_sha256",
+    "model_identity_source": "model_identity_source_sha256",
+}
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,6 +108,13 @@ class GateResult:
     class_counts: Mapping[str, int]
     protocol_sha256: str
     manifest_sha256: str | None
+    binding_sha256: str
+    candidate_inventory_sha256: str
+    development_inventory_sha256: str
+    prediction_manifest_sha256: str
+    router_policy_sha256: str | None
+    source_bytes_verified: bool
+    native_runtime_files_verified: bool
 
     def as_dict(self) -> dict[str, object]:
         return {
@@ -82,6 +125,13 @@ class GateResult:
             "class_counts": dict(sorted(self.class_counts.items())),
             "protocol_sha256": self.protocol_sha256,
             "manifest_sha256": self.manifest_sha256,
+            "binding_sha256": self.binding_sha256,
+            "candidate_inventory_sha256": self.candidate_inventory_sha256,
+            "development_inventory_sha256": self.development_inventory_sha256,
+            "prediction_manifest_sha256": self.prediction_manifest_sha256,
+            "router_policy_sha256": self.router_policy_sha256,
+            "source_bytes_verified": self.source_bytes_verified,
+            "native_runtime_files_verified": self.native_runtime_files_verified,
             "holdout_opened": False,
             "model_calls": 0,
             "production_promotion": False,
@@ -172,10 +222,26 @@ def _contains_forbidden_key(value: object) -> bool:
         return any(_contains_forbidden_key(item) for item in value)
     if isinstance(value, dict):
         return any(
-            key.lower() in FORBIDDEN_PREDICTION_KEYS or _contains_forbidden_key(item)
+            _forbidden_prediction_key(key) or _contains_forbidden_key(item)
             for key, item in value.items()
         )
     return False
+
+
+def _forbidden_prediction_key(key: object) -> bool:
+    if not isinstance(key, str):
+        return True
+    normalized = re.sub(r"[^a-z0-9]+", "_", key.lower()).strip("_")
+    if normalized in FORBIDDEN_PREDICTION_KEYS:
+        return True
+    if any(phrase in normalized for phrase in FORBIDDEN_PREDICTION_KEY_PHRASES):
+        return True
+    tokens = normalized.split("_")
+    return any(
+        token in FORBIDDEN_PREDICTION_KEY_TOKENS
+        or token.removesuffix("s") in FORBIDDEN_PREDICTION_KEY_TOKENS
+        for token in tokens
+    )
 
 
 def evaluate_preopen(
@@ -187,12 +253,15 @@ def evaluate_preopen(
     candidate_inventory_path: Path,
     predictions_path: Path,
     truth_root: Path,
+    source_root: Path,
+    repo_root: Path,
 ) -> GateResult:
     blockers: list[str] = []
     protocol_bytes = protocol_path.read_bytes()
     protocol_hash = digest(protocol_bytes)
     protocol = load_json(protocol_path)
     binding = load_json(binding_path)
+    binding_hash = digest(binding_path.read_bytes())
     manifest_bytes = manifest_path.read_bytes()
     manifest_hash = digest(manifest_bytes)
     rows = load_jsonl(manifest_path)
@@ -224,6 +293,28 @@ def evaluate_preopen(
         blockers.append("PREDICTION_MANIFEST_DIGEST_MISMATCH")
     if binding.get("preflight_sha256") != digest(Path(__file__).read_bytes()):
         blockers.append("PREFLIGHT_DIGEST_MISMATCH")
+    artifact_paths = binding.get("artifact_paths")
+    artifact_map = artifact_paths if isinstance(artifact_paths, Mapping) else {}
+    if set(artifact_map) != set(BOUND_ARTIFACTS):
+        blockers.append("BOUND_ARTIFACT_PATHS_INVALID")
+    bound_artifacts: dict[str, Path] = {}
+    for artifact_name, digest_field in BOUND_ARTIFACTS.items():
+        raw_path = artifact_map.get(artifact_name)
+        relative = Path(str(raw_path)) if _nonempty(raw_path) else None
+        if (
+            relative is None
+            or relative.is_absolute()
+            or len(relative.parts) != 1
+            or relative.name != str(raw_path)
+        ):
+            blockers.append(f"BOUND_ARTIFACT_{artifact_name.upper()}_PATH_INVALID")
+            continue
+        path = binding_path.parent / relative
+        bound_artifacts[artifact_name] = path
+        if not path.is_file():
+            blockers.append(f"BOUND_ARTIFACT_{artifact_name.upper()}_MISSING")
+        elif binding.get(digest_field) != digest(path.read_bytes()):
+            blockers.append(f"BOUND_ARTIFACT_{artifact_name.upper()}_DIGEST_MISMATCH")
     if truth_root.exists() and any(truth_root.iterdir()):
         blockers.append("HOLDOUT_TRUTH_ALREADY_PRESENT")
 
@@ -416,6 +507,56 @@ def evaluate_preopen(
         for field in ("runtime_sha256", "bundle_sha256", "inference_config_sha256"):
             if _nonempty(model_row.get(field)) and not _sha(model_row.get(field)):
                 blockers.append(f"MODEL_{model_key}_{field.upper()}_INVALID")
+    model_identity_path = bound_artifacts.get("model_identity_source")
+    if model_identity_path is not None and model_identity_path.is_file():
+        model_identity = load_json(model_identity_path)
+        identity_models = model_identity.get("models")
+        if (
+            model_identity.get("schema")
+            != "tavonel.router_model_identity_source.v1"
+            or not isinstance(identity_models, Mapping)
+            or identity_models != model_map
+        ):
+            blockers.append("MODEL_IDENTITY_SOURCE_MISMATCH")
+    native_runtime_files_verified = True
+    native_runtime_path = bound_artifacts.get("native_runtime")
+    if native_runtime_path is not None and native_runtime_path.is_file():
+        native_runtime = load_json(native_runtime_path)
+        runtime_files = native_runtime.get("files")
+        if not isinstance(runtime_files, list) or not runtime_files:
+            blockers.append("NATIVE_RUNTIME_FILE_MANIFEST_INVALID")
+            native_runtime_files_verified = False
+        else:
+            allowed_runtime_roots = (
+                "packages/cir-python/src/",
+                "packages/contracts/python/",
+                "packages/native-parsers/src/",
+                "packages/router/src/",
+            )
+            for index, runtime_file in enumerate(runtime_files):
+                if not isinstance(runtime_file, Mapping):
+                    blockers.append(f"NATIVE_RUNTIME_FILE_{index:04d}_INVALID")
+                    native_runtime_files_verified = False
+                    continue
+                raw_relative = runtime_file.get("path")
+                relative = Path(str(raw_relative)) if _nonempty(raw_relative) else None
+                portable = str(raw_relative).replace("\\", "/")
+                if (
+                    relative is None
+                    or relative.is_absolute()
+                    or ".." in relative.parts
+                    or not portable.startswith(allowed_runtime_roots)
+                ):
+                    blockers.append(f"NATIVE_RUNTIME_FILE_{index:04d}_PATH_INVALID")
+                    native_runtime_files_verified = False
+                    continue
+                actual = repo_root / relative
+                if not actual.is_file():
+                    blockers.append(f"NATIVE_RUNTIME_FILE_{index:04d}_MISSING")
+                    native_runtime_files_verified = False
+                elif digest(actual.read_bytes()) != runtime_file.get("sha256"):
+                    blockers.append(f"NATIVE_RUNTIME_FILE_{index:04d}_DIGEST_MISMATCH")
+                    native_runtime_files_verified = False
     for field in (
         "native_runtime_sha256",
         "source_contract_sha256",
@@ -458,6 +599,24 @@ def evaluate_preopen(
             if prediction.get("source_sha256") != manifest_by_id[unit_id].get("source_sha256"):
                 blockers.append(f"PREDICTION_{unit_id}_SOURCE_MISMATCH")
 
+    source_bytes_verified = True
+    for unit_id, row in manifest_by_id.items():
+        if not re.fullmatch(r"[A-Za-z0-9._:-]+", unit_id):
+            blockers.append(f"SOURCE_{unit_id}_UNIT_ID_UNSAFE")
+            source_bytes_verified = False
+            continue
+        source_path = source_root / (unit_id.replace(":", "_") + ".source")
+        if not source_path.is_file():
+            blockers.append(f"SOURCE_{unit_id}_BYTES_MISSING")
+            source_bytes_verified = False
+            continue
+        if source_path.stat().st_size != row.get("source_size_bytes"):
+            blockers.append(f"SOURCE_{unit_id}_SIZE_MISMATCH")
+            source_bytes_verified = False
+        if digest(source_path.read_bytes()) != row.get("source_sha256"):
+            blockers.append(f"SOURCE_{unit_id}_DIGEST_MISMATCH")
+            source_bytes_verified = False
+
     ordered = tuple(dict.fromkeys(blockers))
     return GateResult(
         passed=not ordered,
@@ -466,6 +625,17 @@ def evaluate_preopen(
         class_counts=dict(counts),
         protocol_sha256=protocol_hash,
         manifest_sha256=manifest_hash,
+        binding_sha256=binding_hash,
+        candidate_inventory_sha256=digest(candidate_inventory_bytes),
+        development_inventory_sha256=digest(development_bytes),
+        prediction_manifest_sha256=digest(prediction_bytes),
+        router_policy_sha256=(
+            str(binding.get("router_policy_sha256"))
+            if _sha(binding.get("router_policy_sha256"))
+            else None
+        ),
+        source_bytes_verified=source_bytes_verified,
+        native_runtime_files_verified=native_runtime_files_verified,
     )
 
 
@@ -478,6 +648,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--candidate-inventory", type=Path, required=True)
     parser.add_argument("--predictions", type=Path, required=True)
     parser.add_argument("--truth-root", type=Path, required=True)
+    parser.add_argument("--source-root", type=Path, required=True)
+    parser.add_argument("--repo-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args(argv)
     result = evaluate_preopen(
@@ -488,6 +660,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         candidate_inventory_path=args.candidate_inventory,
         predictions_path=args.predictions,
         truth_root=args.truth_root,
+        source_root=args.source_root,
+        repo_root=args.repo_root,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result.as_dict(), indent=2) + "\n", encoding="utf-8")

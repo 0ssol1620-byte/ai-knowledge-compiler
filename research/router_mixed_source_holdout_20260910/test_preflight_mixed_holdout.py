@@ -43,15 +43,19 @@ def valid_world(tmp_path: Path) -> dict[str, Path]:
     protocol_path = tmp_path / "protocol.json"
     write_json(protocol_path, protocol)
     rows = []
+    source_root = tmp_path / "sources"
+    source_root.mkdir(exist_ok=True)
     for class_index, source_class in enumerate(CLASSES):
         for item_index in range(2):
             unit = f"{class_index}-{item_index}"
+            source_bytes = unit.encode()
+            (source_root / f"{unit}.source").write_bytes(source_bytes)
             rows.append(
                 {
                     "unit_id": unit,
                     "source_class": source_class,
                     "source_sha256": "sha256:" + hashlib.sha256(unit.encode()).hexdigest(),
-                    "source_size_bytes": 100 + item_index,
+                    "source_size_bytes": len(source_bytes),
                     "media_type": "application/octet-stream",
                     "source_family_id": f"official-{class_index}-{item_index}",
                     "source_url": (
@@ -87,7 +91,8 @@ def valid_world(tmp_path: Path) -> dict[str, Path]:
             "source_family_ids": [],
         },
     )
-    router_policy_sha256 = "sha256:" + "e" * 64
+    (tmp_path / "policy.json").write_bytes(b"policy")
+    router_policy_sha256 = digest((tmp_path / "policy.json").read_bytes())
     predictions_path = tmp_path / "predictions.jsonl"
     predictions_path.write_text(
         "".join(
@@ -110,6 +115,39 @@ def valid_world(tmp_path: Path) -> dict[str, Path]:
         "bundle_sha256": "sha256:" + "c" * 64,
         "inference_config_sha256": "sha256:" + "d" * 64,
     }
+    runtime_file = tmp_path / "packages/router/src/runtime.py"
+    runtime_file.parent.mkdir(parents=True, exist_ok=True)
+    runtime_file.write_bytes(b"runtime")
+    native_path = tmp_path / "native.json"
+    write_json(
+        native_path,
+        {
+            "schema": "tavonel.router_native_runtime_binding.v1",
+            "files": [
+                {
+                    "path": "packages/router/src/runtime.py",
+                    "sha256": digest(runtime_file.read_bytes()),
+                }
+            ],
+        },
+    )
+    artifacts = {
+        "freeze_generator": ("freeze.py", b"freeze"),
+        "source_contract": ("contract.json", b"contract"),
+        "router_policy": ("policy.json", b"policy"),
+        "evaluator": ("evaluator.json", b"evaluator"),
+        "statistics": ("statistics.json", b"statistics"),
+    }
+    for _, (name, content) in artifacts.items():
+        (tmp_path / name).write_bytes(content)
+    identity_path = tmp_path / "model-identity.json"
+    write_json(
+        identity_path,
+        {
+            "schema": "tavonel.router_model_identity_source.v1",
+            "models": {key: model for key in protocol["model_keys"]},
+        },
+    )
     binding = {
         "schema": "tavonel.router_mixed_source_holdout_binding.v1",
         "state": "FROZEN_PREOPEN",
@@ -122,11 +160,22 @@ def valid_world(tmp_path: Path) -> dict[str, Path]:
         "preflight_sha256": digest(Path(preflight_mixed_holdout.__file__).read_bytes()),
         "models": {key: model for key in protocol["model_keys"]},
         "allowed_source_hosts": [f"official-{index}.example.invalid" for index in range(8)],
-        "native_runtime_sha256": "sha256:" + "2" * 64,
-        "source_contract_sha256": "sha256:" + "3" * 64,
-        "router_policy_sha256": router_policy_sha256,
-        "evaluator_sha256": "sha256:" + "f" * 64,
-        "statistics_sha256": "sha256:" + "1" * 64,
+        "freeze_generator_sha256": digest((tmp_path / "freeze.py").read_bytes()),
+        "native_runtime_sha256": digest(native_path.read_bytes()),
+        "source_contract_sha256": digest((tmp_path / "contract.json").read_bytes()),
+        "router_policy_sha256": digest((tmp_path / "policy.json").read_bytes()),
+        "evaluator_sha256": digest((tmp_path / "evaluator.json").read_bytes()),
+        "statistics_sha256": digest((tmp_path / "statistics.json").read_bytes()),
+        "model_identity_source_sha256": digest(identity_path.read_bytes()),
+        "artifact_paths": {
+            "freeze_generator": "freeze.py",
+            "native_runtime": "native.json",
+            "source_contract": "contract.json",
+            "router_policy": "policy.json",
+            "evaluator": "evaluator.json",
+            "statistics": "statistics.json",
+            "model_identity_source": "model-identity.json",
+        },
         "predictions_frozen": True,
         "input_manifest_contains_truth": False,
     }
@@ -141,6 +190,8 @@ def valid_world(tmp_path: Path) -> dict[str, Path]:
         "candidate_inventory_path": candidate_inventory_path,
         "predictions_path": predictions_path,
         "truth_root": truth_root,
+        "source_root": source_root,
+        "repo_root": tmp_path,
     }
 
 
@@ -315,3 +366,52 @@ def test_prediction_rejects_truth_fields_and_policy_drift(tmp_path: Path) -> Non
         lambda rows: rows[0]["route_plan"].update(expected_answer="secret"),
     )
     assert "PREDICTION_0000_ROUTE_PLAN_TRUTH_FIELD_FORBIDDEN" in evaluate(world).blockers
+
+
+def test_bound_artifact_bytes_cannot_change_after_binding(tmp_path: Path) -> None:
+    world = valid_world(tmp_path)
+    (tmp_path / "policy.json").write_bytes(b"changed")
+    result = evaluate(world)
+    assert not result.passed
+    assert "BOUND_ARTIFACT_ROUTER_POLICY_DIGEST_MISMATCH" in result.blockers
+
+
+def test_model_identity_source_must_equal_bound_models(tmp_path: Path) -> None:
+    world = valid_world(tmp_path)
+    path = tmp_path / "model-identity.json"
+    value = json.loads(path.read_text(encoding="utf-8"))
+    value["models"]["ovisocr2"]["model_revision"] = "9" * 40
+    write_json(path, value)
+    rewrite_binding(
+        world,
+        lambda binding: binding.update(
+            model_identity_source_sha256=digest(path.read_bytes())
+        ),
+    )
+    result = evaluate(world)
+    assert not result.passed
+    assert "MODEL_IDENTITY_SOURCE_MISMATCH" in result.blockers
+
+
+@pytest.mark.parametrize(
+    "forbidden_key",
+    [
+        "annotations",
+        "evaluator_output",
+        "hidden_scores",
+        "model_output_quality",
+        "source_text",
+    ],
+)
+def test_prediction_rejects_leakage_key_variants(
+    tmp_path: Path, forbidden_key: str
+) -> None:
+    world = valid_world(tmp_path)
+    rewrite_predictions(
+        world,
+        lambda rows: rows[0]["route_plan"].update({forbidden_key: "sealed"}),
+    )
+    assert (
+        "PREDICTION_0000_ROUTE_PLAN_TRUTH_FIELD_FORBIDDEN"
+        in evaluate(world).blockers
+    )
