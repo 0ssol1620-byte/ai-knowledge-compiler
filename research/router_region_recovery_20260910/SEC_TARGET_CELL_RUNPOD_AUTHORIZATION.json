@@ -1,0 +1,18 @@
+{
+  "authorized_at": "2026-09-10T06:10:00Z",
+  "authorized_by": "orchestrator-on-founder-instruction",
+  "benchmark_id": "TAVONEL-SEC-TARGET-CELL-DEVELOPMENT-20260910-V1",
+  "development_only": true,
+  "expires_at": "2026-09-17T06:10:00Z",
+  "maximum_model_region_calls": 72,
+  "maximum_new_gpu_spend_usd": 2.0,
+  "model_keys": [
+    "mineru_vlm",
+    "paddleocr_vl_1_6",
+    "ovisocr2"
+  ],
+  "production_promotion": false,
+  "schema": "tavonel.sec_target_cell_runpod_authorization.v1",
+  "source_truth_opened": true,
+  "statement": "Founder authorized continuing Router work and using RunPod GPU as needed. This bounded follow-up uses only the 24 source-bound target crops derived from the completed SEC development holdout, the same three pinned runtimes, an additional aggregate ceiling of USD 2, and mandatory deletion of every created pod."
+}

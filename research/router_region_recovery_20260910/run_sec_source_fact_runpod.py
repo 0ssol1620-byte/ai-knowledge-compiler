@@ -20,7 +20,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-BENCHMARK_ID = "TAVONEL-SEC-SOURCE-FACT-HOLDOUT-20260910-V1"
+DEFAULT_BENCHMARK_ID = "TAVONEL-SEC-SOURCE-FACT-HOLDOUT-20260910-V1"
 LEGACY_TRANSPORT_BENCHMARK = "olmocr"
 PRIMARY_MODELS = ("mineru_vlm", "paddleocr_vl_1_6")
 ADJUDICATOR_MODELS = ("ovisocr2",)
@@ -110,16 +110,23 @@ def load_and_validate_inputs(
 ) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, Any]]:
     binding = read_json(binding_path)
     authorization = read_json(authorization_path)
-    if binding.get("benchmark_id") != BENCHMARK_ID:
-        raise HoldoutRunError("binding benchmark_id mismatch")
-    if authorization.get("benchmark_id") != BENCHMARK_ID:
-        raise HoldoutRunError("authorization benchmark_id mismatch")
+    if binding.get("benchmark_id") != authorization.get("benchmark_id"):
+        raise HoldoutRunError("binding/authorization benchmark_id mismatch")
     if authorization.get("production_promotion") is not False:
         raise HoldoutRunError("authorization must keep production_promotion false")
-    if float(authorization.get("maximum_new_gpu_spend_usd", 0)) != MAX_SPEND_USD:
-        raise HoldoutRunError("authorization spend ceiling drift")
-    if int(authorization.get("maximum_model_region_calls", 0)) != MAX_CALLS:
-        raise HoldoutRunError("authorization call ceiling drift")
+    authorized_spend = float(authorization.get("maximum_new_gpu_spend_usd", 0))
+    authorized_calls = int(authorization.get("maximum_model_region_calls", 0))
+    if not 0 < authorized_spend <= MAX_SPEND_USD:
+        raise HoldoutRunError("authorization spend ceiling exceeds the harness hard cap")
+    if not 0 < authorized_calls <= MAX_CALLS:
+        raise HoldoutRunError("authorization call ceiling exceeds the harness hard cap")
+    if float(binding.get("maximum_new_gpu_spend_usd", 0)) > authorized_spend:
+        raise HoldoutRunError("binding spend ceiling exceeds authorization")
+    if int(binding.get("maximum_model_region_calls", 0)) > authorized_calls:
+        raise HoldoutRunError("binding call ceiling exceeds authorization")
+    source_truth_opened = bool(binding.get("source_truth_opened", False))
+    if bool(authorization.get("source_truth_opened", False)) != source_truth_opened:
+        raise HoldoutRunError("binding/authorization truth-state mismatch")
     expiry = datetime.fromisoformat(str(authorization["expires_at"]).replace("Z", "+00:00"))
     if datetime.now(tz=UTC) >= expiry:
         raise HoldoutRunError("RunPod authorization expired")
@@ -199,9 +206,11 @@ def select_models(choice: str) -> tuple[str, ...]:
     raise HoldoutRunError(f"unknown model set {choice}")
 
 
-def adjudication_rows(here: Path, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def adjudication_rows(
+    here: Path, rows: list[dict[str, Any]], benchmark_id: str
+) -> list[dict[str, Any]]:
     decision = read_json(here / "SEC_SOURCE_FACT_PRIMARY_DECISION_BINDING.json")
-    if decision.get("benchmark_id") != BENCHMARK_ID:
+    if decision.get("benchmark_id") != benchmark_id:
         raise HoldoutRunError("primary decision binding benchmark mismatch")
     if decision.get("sealed_truth_opened") is not False:
         raise HoldoutRunError("primary decision binding crossed the truth boundary")
@@ -225,6 +234,8 @@ def run_model(
     binding: dict[str, Any],
     rows: list[dict[str, Any]],
     model: str,
+    benchmark_id: str,
+    source_truth_opened: bool,
     hourly_rate: float,
     deadline_monotonic: float,
 ) -> dict[str, Any]:
@@ -256,7 +267,8 @@ def run_model(
     signed_url = r2.presign_get(str(model_binding["r2_key"]), expires_seconds=2 * 3600)
     bundle_secret = worker_bearer(signed_url)
     bundle_sha = bare_sha(str(model_binding["bundle_sha256"]))
-    pod_name = f"arena-{model.replace('_', '-')}-sec-w90-20260903v1"
+    name_suffix = hashlib.sha256(benchmark_id.encode("utf-8")).hexdigest()[:8]
+    pod_name = f"arena-{model.replace('_', '-')}-sec-{name_suffix}"
     from arena.provider.runpod_pods import PodSpec
 
     spec = PodSpec(
@@ -277,7 +289,7 @@ def run_model(
         worker_token=token,
         bundle_url=bundle_secret,
         bundle_sha256=bundle_sha,
-        extra_env={"TAVONEL_EXECUTION_LABEL": "sec-source-fact-holdout-20260910-v1"},
+        extra_env={"TAVONEL_EXECUTION_LABEL": benchmark_id.lower()},
     )
     client = RunPodV1Client(
         key=runpod_api_key(), execute=True, campaign_id=CAMPAIGN_ID, receipts_dir=receipt_dir
@@ -344,7 +356,7 @@ def run_model(
             image_path = input_root / str(row["input_relative_path"])
             image_bytes = image_path.read_bytes()
             job_material = "\0".join(
-                (BENCHMARK_ID, model, region_id, str(row["input_png_sha256"]), bundle_sha)
+                (benchmark_id, model, region_id, str(row["input_png_sha256"]), bundle_sha)
             )
             request = RunRequest(
                 campaign_id=CAMPAIGN_ID,
@@ -362,7 +374,7 @@ def run_model(
                 job_kind="recovery",
                 timeout_seconds=min(600, int(runtime["per_page_timeout_seconds"])),
                 metadata={
-                    "benchmark_id": BENCHMARK_ID,
+                    "benchmark_id": benchmark_id,
                     "authority": "SEC EDGAR primary Inline XBRL filing HTML",
                     "ticker": str(row["ticker"]),
                     "cik": str(row["cik"]),
@@ -370,7 +382,8 @@ def run_model(
                     "filing_html_sha256": str(row["filing_html_sha256"]),
                     "fragment_sha256": str(row["fragment_sha256"]),
                     "target_bbox1000": list(row["target_bbox1000"]),
-                    "truth_withheld": True,
+                    "truth_withheld_from_model": True,
+                    "source_truth_opened_by_operator": source_truth_opened,
                 },
             )
             response = worker.run(request)
@@ -388,7 +401,7 @@ def run_model(
             canonical_path.write_text(response.canonical_markdown, encoding="utf-8", newline="\n")
             receipt = {
                 "schema": "tavonel.sec_source_fact_model_output.v1",
-                "benchmark_id": BENCHMARK_ID,
+                "benchmark_id": benchmark_id,
                 "transport_benchmark_enum": LEGACY_TRANSPORT_BENCHMARK,
                 "region_id": region_id,
                 "ticker": row["ticker"],
@@ -406,7 +419,7 @@ def run_model(
                 "peak_vram_mb": response.peak_vram_mb,
                 "output_chars": response.output_chars,
                 "warnings": list(response.warnings),
-                "truth_opened": False,
+                "truth_opened": source_truth_opened,
             }
             append_jsonl(model_dir / "outputs.jsonl", receipt)
             results.append(receipt)
@@ -454,7 +467,7 @@ def run_model(
     elapsed = time.monotonic() - started
     complete = {
         "schema": "tavonel.sec_source_fact_model_run.v1",
-        "benchmark_id": BENCHMARK_ID,
+        "benchmark_id": benchmark_id,
         "model_key": model,
         "started_at": started_at,
         "finished_at": utc_now(),
@@ -471,7 +484,7 @@ def run_model(
         "success_count": sum(row["status"] == "SUCCESS" for row in results),
         "teardown_errors": teardown_errors,
         "pod_deleted": "pod_not_confirmed_gone" not in teardown_errors,
-        "truth_opened": False,
+        "truth_opened": source_truth_opened,
     }
     atomic_json(model_dir / "COMPLETE.json", complete)
     if len(results) != len(rows) or teardown_errors:
@@ -497,6 +510,8 @@ def main() -> int:
         type=Path,
         default=Path(".chatgpt2codex/sec-source-fact-runpod-20260910-v1"),
     )
+    parser.add_argument("--binding", type=Path)
+    parser.add_argument("--authorization", type=Path)
     parser.add_argument("--model-set", choices=("primary", "adjudicator", "all"), default="primary")
     parser.add_argument("--execute", action="store_true")
     args = parser.parse_args()
@@ -504,24 +519,38 @@ def main() -> int:
     arena_root = args.arena_root.resolve()
     input_root = args.input_root.resolve()
     output_root = args.output_root.resolve()
-    binding_path = here / "SEC_SOURCE_FACT_RUNPOD_BINDING.json"
-    authorization_path = here / "SEC_SOURCE_FACT_RUNPOD_AUTHORIZATION.json"
+    binding_path = (
+        args.binding.resolve()
+        if args.binding is not None
+        else here / "SEC_SOURCE_FACT_RUNPOD_BINDING.json"
+    )
+    authorization_path = (
+        args.authorization.resolve()
+        if args.authorization is not None
+        else here / "SEC_SOURCE_FACT_RUNPOD_AUTHORIZATION.json"
+    )
     binding, rows, authorization = load_and_validate_inputs(
         input_root=input_root,
         binding_path=binding_path,
         authorization_path=authorization_path,
     )
+    benchmark_id = str(binding.get("benchmark_id", DEFAULT_BENCHMARK_ID))
+    source_truth_opened = bool(binding.get("source_truth_opened", False))
     models = select_models(args.model_set)
+    authorized_models = {str(value) for value in authorization.get("model_keys", [])}
+    if not set(models).issubset(authorized_models):
+        raise HoldoutRunError("selected model set exceeds authorization")
     if args.model_set == "adjudicator":
-        rows = adjudication_rows(here, rows)
-    if len(rows) * len(models) > MAX_CALLS:
+        rows = adjudication_rows(here, rows, benchmark_id)
+    selected_calls = len(rows) * len(models)
+    if selected_calls > int(authorization["maximum_model_region_calls"]):
         raise HoldoutRunError("selected model set exceeds the frozen call ceiling")
     install_arena(arena_root)
     for model in models:
         validate_model_binding(arena_root, binding, model)
 
     summary = {
-        "benchmark_id": BENCHMARK_ID,
+        "benchmark_id": benchmark_id,
         "mode": "execute" if args.execute else "validation_only",
         "models": list(models),
         "regions": len(rows),
@@ -529,7 +558,7 @@ def main() -> int:
         "binding_sha256": sha256_file(binding_path),
         "authorization_sha256": sha256_file(authorization_path),
         "runtime_manifest_sha256": sha256_file(input_root / "RUNTIME_MANIFEST.jsonl"),
-        "sealed_truth_opened": False,
+        "source_truth_opened": source_truth_opened,
     }
     if not args.execute:
         print(json.dumps(summary, indent=2, sort_keys=True))
@@ -587,6 +616,8 @@ def main() -> int:
                 binding=binding,
                 rows=rows,
                 model=model,
+                benchmark_id=benchmark_id,
+                source_truth_opened=source_truth_opened,
                 hourly_rate=rates[model],
                 deadline_monotonic=deadline,
             ): model
@@ -609,7 +640,7 @@ def main() -> int:
         ),
         "completed_models": sorted(row["model_key"] for row in completed),
         "errors": errors,
-        "sealed_truth_opened": False,
+        "source_truth_opened": source_truth_opened,
     }
     atomic_json(output_root / "EXECUTION_RESULT.json", result)
     print(json.dumps(result, indent=2, sort_keys=True), flush=True)
