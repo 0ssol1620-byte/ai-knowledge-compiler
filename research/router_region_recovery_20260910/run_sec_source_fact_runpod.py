@@ -288,6 +288,7 @@ def run_model(
     results: list[dict[str, Any]] = []
     teardown_errors: list[str] = []
     pod_summary: dict[str, Any] = {}
+    provider_hourly_rate = hourly_rate
     try:
         listed = client.list_pods()
         if isinstance(listed, ProviderReceipt):
@@ -301,6 +302,8 @@ def run_model(
             raise HoldoutRunError(f"{model}: provider returned an unknown pod record")
         pod_id = created.pod_id
         pod_summary = created.to_summary()
+        if created.cost_usd_per_hour > 0:
+            provider_hourly_rate = created.cost_usd_per_hour
         print(f"[{model}] pod {pod_id} created on {created.gpu_type_id or 'pending'}", flush=True)
 
         worker = WorkerClient(
@@ -456,8 +459,11 @@ def run_model(
         "started_at": started_at,
         "finished_at": utc_now(),
         "elapsed_seconds": round(elapsed, 3),
-        "hourly_rate_usd": hourly_rate,
-        "estimated_actual_gpu_cost_usd": round(hourly_rate * elapsed / 3600.0, 6),
+        "conservative_hourly_rate_usd": hourly_rate,
+        "provider_hourly_rate_usd": provider_hourly_rate,
+        "estimated_actual_gpu_cost_usd": round(
+            provider_hourly_rate * elapsed / 3600.0, 6
+        ),
         "reserved_one_hour_ceiling_usd": hourly_rate,
         "pod": pod_summary,
         "pod_id": pod_id,
