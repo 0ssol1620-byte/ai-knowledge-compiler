@@ -15,6 +15,7 @@ from dataclasses import replace
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
 LANE = Path(__file__).resolve().parents[1]
 for _path in (LANE, LANE.parent / "router_oracle_20260908"):
@@ -22,6 +23,7 @@ for _path in (LANE, LANE.parent / "router_oracle_20260908"):
         sys.path.insert(0, str(_path))
 
 import features as F  # noqa: E402
+import layout_visible as L  # noqa: E402
 import native_visible as N  # noqa: E402
 import replay as R  # noqa: E402
 import scorer as S  # noqa: E402
@@ -344,8 +346,129 @@ def test_source_layout_authority_policy_and_builder_are_frozen() -> None:
     policy = freeze["source_layout_authority_verifier_v1"]
     assert policy["authority_rule"].startswith("UNRESOLVED")
     assert policy["agreement_tau"] == F.AGREEMENT_TAU
-    assert F.FEATURE_BUILDER_ID.endswith("V2")
+    measured = freeze["source_layout_authority_verifier_v2"]
+    assert measured["native_limits"]["minimum_locator_coverage"] == 0.99
+    assert measured["layout_probe"]["table_line_density_tau"] == 0.02
+    assert F.FEATURE_BUILDER_ID.endswith("V3")
     assert "native_reading_order_score" in F.UNKNOWN_PAGE_METRIC_FIELDS
+
+
+def test_measured_layout_policy_routes_observed_low_layout_to_text() -> None:
+    unit = replace(
+        make_unit(
+            texts={"mineru_vlm": "alpha beta", "olmocr2": "alpha beta"},
+            media_type="pdf",
+        ),
+        layout_feature_status="measured",
+        layout_column_count=1,
+        layout_table_line_density=0.0,
+        layout_ink_coverage=0.2,
+    )
+    plan = F.SourceLayoutAuthorityMeasured().plan(unit)
+    assert plan.accepted == "olmocr2"
+    assert plan.routes == ("olmocr2", "mineru_vlm")
+    assert "authority:unmeasured" in plan.reason_codes
+    assert "layout:observed_low" in plan.reason_codes
+
+
+def test_measured_layout_policy_routes_observed_structure_to_layout() -> None:
+    unit = replace(
+        make_unit(
+            texts={"mineru_vlm": "alpha beta", "olmocr2": "alpha beta"},
+            media_type="pdf",
+        ),
+        layout_feature_status="measured",
+        layout_column_count=2,
+        layout_table_line_density=0.0,
+        layout_ink_coverage=0.2,
+    )
+    plan = F.SourceLayoutAuthorityMeasured().plan(unit)
+    assert plan.accepted == "mineru_vlm"
+    assert plan.routes == ("mineru_vlm", "olmocr2")
+    assert "layout:observed" in plan.reason_codes
+
+
+def test_measured_layout_policy_uses_locator_coverage_for_native() -> None:
+    unit = replace(
+        make_unit(
+            texts={
+                "native": "alpha beta gamma",
+                "mineru_vlm": "alpha beta gamma",
+            },
+            native_chars=500,
+            media_type="pdf",
+        ),
+        native_locator_coverage=1.0,
+        layout_feature_status="measured",
+        layout_column_count=1,
+        layout_table_line_density=0.0,
+    )
+    plan = F.SourceLayoutAuthorityMeasured().plan(unit)
+    assert plan.accepted == "native"
+    assert plan.routes == ("native", "mineru_vlm")
+    assert "source:native_qualified" in plan.reason_codes
+
+
+def test_layout_probe_measures_two_separated_columns(tmp_path: Path) -> None:
+    image = Image.new("L", (400, 500), 255)
+    pixels = image.load()
+    assert pixels is not None
+    for y in range(50, 450):
+        for x in (*range(30, 160), *range(240, 370)):
+            pixels[x, y] = 0
+    path = tmp_path / "two-columns.png"
+    image.save(path)
+    measured = L.measure_image(path)
+    assert measured["column_count"] >= 2
+    assert 0 < measured["ink_coverage"] < 1
+
+
+def test_layout_capture_binds_every_page_and_preserves_timing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(L, "EXPECTED_UNITS", 2)
+    input_root = tmp_path / "inputs"
+    staged = input_root / "olmocr-bench" / "inputs"
+    staged.mkdir(parents=True)
+    rows = []
+    units = []
+    for index in (1, 2):
+        path = staged / f"case-{index}.png"
+        Image.new("L", (200, 300), 255 - index).save(path)
+        image_sha = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+        source_sha = "sha256:" + str(index) * 64
+        rows.append(
+            {
+                "benchmark": "olmocr",
+                "case_key": f"case-{index}",
+                "input_relative_path": f"olmocr-bench/inputs/case-{index}.png",
+                "input_png_sha256": image_sha,
+                "original_source_sha256": source_sha,
+            }
+        )
+        units.append(
+            replace(
+                make_unit(unit=f"unit-{index}"),
+                case_key=f"case-{index}",
+                input_png_sha256=image_sha,
+                original_source_sha256=source_sha,
+            )
+        )
+    manifest = tmp_path / "source_manifest.jsonl"
+    manifest.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
+    )
+    captured = L.capture(manifest, input_root, tmp_path / "capture")
+    assert captured.coverage == {
+        "layout_measured": 2,
+        "layout_failed": 0,
+        "authority_measured": 0,
+    }
+    assert captured.wall_ms["p95"] is not None
+    augmented = L.augment_units(units, captured)
+    assert all(unit.layout_feature_status == "measured" for unit in augmented)
+    assert all(not unit.authority_checked for unit in augmented)
+    assert all(unit.layout_feature_wall_ms is not None for unit in augmented)
 
 
 def test_core_router_native_units_are_unresolved_not_substituted() -> None:

@@ -166,6 +166,9 @@ def augment_units(
         status = str(row["status"])
         present = status == "native_text_observed" and bool(text.strip())
         chars = len(text)
+        located = int(row.get("located_blocks") or 0)
+        unlocated = int(row.get("unlocated_blocks") or 0)
+        locator_total = located + unlocated
         outputs = dict(unit.outputs)
         outputs[NATIVE_MODEL] = F.OutputFeatures(
             model=NATIVE_MODEL,
@@ -202,6 +205,9 @@ def augment_units(
                     len(_REPLACEMENT.findall(text)) / chars if chars else 0.0
                 ),
                 native_text_available=present,
+                native_locator_coverage=(
+                    located / locator_total if locator_total else None
+                ),
                 outputs=outputs,
                 similarity=similarities,
             )

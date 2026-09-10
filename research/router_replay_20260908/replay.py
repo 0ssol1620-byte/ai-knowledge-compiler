@@ -34,6 +34,7 @@ for _path in (HERE, _ORACLE):
         sys.path.insert(0, str(_path))
 
 import features as F  # noqa: E402
+import layout_visible as L  # noqa: E402
 import native_visible as N  # noqa: E402
 import scorer as S  # noqa: E402
 from bind import load_json, sha256_file  # type: ignore[import-not-found]  # noqa: E402
@@ -91,6 +92,7 @@ def build_arms(models: Sequence[str]) -> list[Any]:
         arms.append(adapter)
     if N.NATIVE_MODEL in models:
         arms.append(F.SourceLayoutAuthorityVerified())
+        arms.append(F.SourceLayoutAuthorityMeasured())
         arms.append(
             F.PeerAgreementVerified(
                 models=(N.NATIVE_MODEL, F.PRIMARY_MODEL, F.PEER_MODEL),
@@ -560,12 +562,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--replicates", type=int, default=BOOTSTRAP_REPLICATES)
     parser.add_argument("--native-capture", type=Path)
     parser.add_argument("--native-score", type=Path)
+    parser.add_argument("--layout-capture", type=Path)
     parser.add_argument("--replay-cache", type=Path, default=HERE / ".cache")
     args = parser.parse_args(argv)
 
     if (args.native_capture is None) != (args.native_score is None):
         raise ValueError("NATIVE_CAPTURE_AND_SCORE_REQUIRED_TOGETHER")
     native_capture = None
+    layout_capture = None
     # ``main`` is importable in tests and notebooks. Reset the process-global
     # route binding on every invocation so a prior Native replay cannot leak
     # into a later replay that did not supply the sealed Native evidence.
@@ -579,11 +583,21 @@ def main(argv: list[str] | None = None) -> int:
         output.mkdir(parents=False, exist_ok=False)
         native_capture = N.load_capture(args.native_capture)
         F.ROUTE_TO_ARENA_MODEL["native"] = N.NATIVE_MODEL
+    if args.layout_capture is not None:
+        if set(args.surfaces) != {"olmocr"}:
+            raise ValueError("LAYOUT_CAPTURE_IS_BOUND_ONLY_TO_OLMOCR")
+        layout_capture = L.load_capture(args.layout_capture)
 
     started = time.time()
     root = F.arena_root()
     bind_path = _ORACLE / "ARENA_BIND.json"
     bind = load_json(bind_path)
+    if (
+        layout_capture is not None
+        and layout_capture.source_manifest_sha256
+        != sha256_file(root / "source_manifest.jsonl")
+    ):
+        raise ValueError("LAYOUT_CAPTURE_SOURCE_MANIFEST_MISMATCH")
     models = sorted(
         model
         for model, entry in bind["models"].items()
@@ -607,6 +621,7 @@ def main(argv: list[str] | None = None) -> int:
         "hard_fail_tau": S.HARD_FAIL_TAU,
         "model_scope": sorted([*models, *([N.NATIVE_MODEL] if native_capture else [])]),
         "native_visible_binding": native_capture.binding if native_capture else None,
+        "layout_visible_binding": layout_capture.binding if layout_capture else None,
     }
     policy_path = args.out / "REPLAY_POLICY_FREEZE.json"
     policy_digest = S.write_json(policy_path, policy_freeze)
@@ -633,6 +648,7 @@ def main(argv: list[str] | None = None) -> int:
         "replay_policy_freeze_sha256": policy_digest,
         "model_scope": sorted([*models, *([N.NATIVE_MODEL] if native_capture else [])]),
         "native_visible_binding": native_capture.binding if native_capture else None,
+        "layout_visible_binding": layout_capture.binding if layout_capture else None,
         "native_hidden_score_binding": native_score_binding,
         "hard_fail_tau": S.HARD_FAIL_TAU,
         "not_measurable_ablations": NOT_MEASURABLE_ABLATIONS,
@@ -649,6 +665,8 @@ def main(argv: list[str] | None = None) -> int:
             built, built_texts = F.load_or_build_units(root, benchmark, models, cache_dir)
             if native_capture is not None and benchmark == "olmocr":
                 built, built_texts = N.augment_units(built, built_texts, native_capture)
+            if layout_capture is not None and benchmark == "olmocr":
+                built = L.augment_units(built, layout_capture)
             unit_cache[benchmark] = built
             text_cache[benchmark] = built_texts
         scored_units = set(surface.all_units())
@@ -854,13 +872,18 @@ def build_manifest(
     }
     native_visible = results.get("native_visible_binding")
     native_hidden = results.get("native_hidden_score_binding")
+    layout_visible = results.get("layout_visible_binding")
     if native_visible is not None:
         inputs["native_visible_binding"] = native_visible
     if native_hidden is not None:
         inputs["native_hidden_score_binding"] = native_hidden
+    if layout_visible is not None:
+        inputs["layout_visible_binding"] = layout_visible
     code_names = ["features.py", "scorer.py", "replay.py"]
     if native_visible is not None:
         code_names.append("native_visible.py")
+    if layout_visible is not None:
+        code_names.append("layout_visible.py")
     replay_command = (
         "ARENA_ROOT=<arena> .venv/Scripts/python.exe "
         "research/router_replay_20260908/replay.py"
@@ -871,6 +894,8 @@ def build_manifest(
             " --native-score <sealed-native-score>"
             " --replay-cache <existing-visible-cache> --out <new-output-dir>"
         )
+    if layout_visible is not None:
+        replay_command += " --layout-capture <sealed-layout-capture>"
     return {
         "schema": "tavonel.router_replay.manifest.v1",
         "replay_id": REPLAY_ID,

@@ -4,6 +4,10 @@ Status: **exploratory spent development evidence**. This is not a fresh
 holdout, public benchmark, qualified portfolio, production promotion, or
 evidence of general superiority.
 
+Follow-up: `MEASURED_LAYOUT_FEATURE_REPLAY_20260910.md` preserves this V1
+result unchanged and evaluates a separately frozen V2 with a route-time raster
+probe. V2 removes the all-unknown layout branch but remains negative.
+
 ## Frozen candidate
 
 `SOURCE_LAYOUT_AUTHORITY_VERIFIER_V1` was specified without opening evaluator

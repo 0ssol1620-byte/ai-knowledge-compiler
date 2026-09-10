@@ -142,7 +142,7 @@ def read_visible_text(path: Path) -> str:
 # frozen feature-construction constants (fixed BEFORE any scoring)
 # ---------------------------------------------------------------------------
 
-FEATURE_BUILDER_ID = "TAVONEL-ROUTER-REPLAY-FEATURES-2026-09-10-V2"
+FEATURE_BUILDER_ID = "TAVONEL-ROUTER-REPLAY-FEATURES-2026-09-10-V3"
 
 # Arena model keys bound to the production Route enum. Bound by identity, not by
 # rank: `hpd_parsing` IS the HPD route's model, `paddleocr_vl_1_6` IS
@@ -258,6 +258,15 @@ class UnitFeatures:
     unknown_fields: tuple[str, ...]
     authority_domain: str | None = None
     authority_available: bool = False
+    authority_checked: bool = False
+    native_locator_coverage: float | None = None
+    layout_column_count: int | None = None
+    layout_table_line_density: float | None = None
+    layout_ink_coverage: float | None = None
+    layout_feature_wall_ms: float | None = None
+    layout_feature_status: str = "unmeasured"
+    input_png_sha256: str | None = None
+    original_source_sha256: str | None = None
 
     def sim(self, left: str, right: str) -> float | None:
         key = "|".join(sorted((left, right)))
@@ -631,6 +640,16 @@ def build_units(
                 critical_token_kinds=kinds,
                 blind_risk=blind,
                 unknown_fields=UNKNOWN_PAGE_METRIC_FIELDS,
+                input_png_sha256=(
+                    str(row["input_png_sha256"])
+                    if isinstance(row.get("input_png_sha256"), str)
+                    else None
+                ),
+                original_source_sha256=(
+                    str(row["original_source_sha256"])
+                    if isinstance(row.get("original_source_sha256"), str)
+                    else None
+                ),
             )
         )
     return units, text_index
@@ -1131,6 +1150,123 @@ class SourceLayoutAuthorityVerified:
 
 
 @dataclass(frozen=True)
+class SourceLayoutAuthorityMeasured:
+    """Use sealed route-time raster and Native locator measurements.
+
+    This spent-development V2 policy keeps the V1 agreement/verifier contract,
+    but replaces the V1 unknown-layout sentinel with a deterministic CPU probe
+    over the already staged input image. Authority remains explicitly unknown
+    unless the source manifest supplies it; an authority-bound source still
+    refuses because this replay has no scored authority arm.
+    """
+
+    native_model: str = "native"
+    layout_model: str = "mineru_vlm"
+    text_model: str = "olmocr2"
+    verifier_model: str = PRIMARY_MODEL
+    name: str = "SOURCE_LAYOUT_AUTHORITY_VERIFIER_V2"
+    table_line_density_tau: float = 0.02
+
+    def _native_qualified(self, unit: UnitFeatures) -> bool:
+        return (
+            unit.media_type != "image"
+            and unit.native_text_available
+            and unit.native_text_chars >= 100
+            and unit.native_invalid_unicode_ratio <= 0.005
+            and unit.native_replacement_ratio <= 0.001
+            and unit.native_locator_coverage is not None
+            and unit.native_locator_coverage >= 0.99
+            and _present(unit, self.native_model)
+        )
+
+    def _primary_and_peer(self, unit: UnitFeatures) -> tuple[str, str, str]:
+        if self._native_qualified(unit):
+            return self.native_model, self.layout_model, "source:native_qualified"
+
+        column_count = unit.layout_column_count
+        table_line_density = unit.layout_table_line_density
+        unknown_layout = (
+            unit.layout_feature_status != "measured"
+            or column_count is None
+            or table_line_density is None
+        )
+        structured = (
+            not unknown_layout
+            and column_count is not None
+            and table_line_density is not None
+            and (
+                column_count >= 2
+                or table_line_density >= self.table_line_density_tau
+            )
+        )
+        if unknown_layout or structured or unit.media_type == "image":
+            return self.layout_model, self.text_model, (
+                "layout:unknown_conservative" if unknown_layout else "layout:observed"
+            )
+        return self.text_model, self.layout_model, "layout:observed_low"
+
+    def plan(self, unit_features: UnitFeatures) -> UnitPlan:
+        if unit_features.authority_domain is not None or unit_features.authority_available:
+            return UnitPlan(
+                routes=(),
+                accepted=None,
+                unresolved_reason="authority-bound source has no scored replay arm",
+                reason_codes=("AUTHORITY_ARM_UNMEASURED",),
+            )
+
+        primary, peer, selection_reason = self._primary_and_peer(unit_features)
+        authority_reason = (
+            "authority:checked_none"
+            if unit_features.authority_checked
+            else "authority:unmeasured"
+        )
+        initial_routes = tuple(dict.fromkeys((primary, peer)))
+        if (
+            _present(unit_features, primary)
+            and _present(unit_features, peer)
+            and (unit_features.sim(primary, peer) or 0.0) >= AGREEMENT_TAU
+        ):
+            return UnitPlan(
+                routes=initial_routes,
+                accepted=primary,
+                escalate=True,
+                reason_codes=(authority_reason, selection_reason, "PRIMARY_PEER_AGREEMENT"),
+            )
+
+        routes = tuple(dict.fromkeys((*initial_routes, self.verifier_model)))
+        corroborated = [
+            model
+            for model in initial_routes
+            if _present(unit_features, model)
+            and _present(unit_features, self.verifier_model)
+            and (unit_features.sim(model, self.verifier_model) or 0.0) >= AGREEMENT_TAU
+        ]
+        if not corroborated:
+            return UnitPlan(
+                routes=routes,
+                accepted=None,
+                escalate=True,
+                unresolved_reason="independent verifier corroborated no candidate",
+                reason_codes=(
+                    authority_reason,
+                    selection_reason,
+                    "INDEPENDENT_VERIFICATION_FAILED",
+                ),
+            )
+        chosen = primary if primary in corroborated else corroborated[0]
+        return UnitPlan(
+            routes=routes,
+            accepted=chosen,
+            escalate=True,
+            reason_codes=(
+                authority_reason,
+                selection_reason,
+                "INDEPENDENT_VERIFICATION_ESTABLISHED",
+            ),
+        )
+
+
+@dataclass(frozen=True)
 class CoreRouter:
     """The current production `akc_router.engine.select_first_route`, replayed.
 
@@ -1328,6 +1464,33 @@ def frozen_policy_parameters() -> dict[str, Any]:
             ),
             "agreement_tau": AGREEMENT_TAU,
         },
+        "source_layout_authority_verifier_v2": {
+            "native_model": "native",
+            "layout_model": "mineru_vlm",
+            "text_model": "olmocr2",
+            "verifier_model": PRIMARY_MODEL,
+            "native_limits": {
+                "minimum_chars": 100,
+                "maximum_invalid_unicode_ratio": 0.005,
+                "maximum_replacement_ratio": 0.001,
+                "minimum_locator_coverage": 0.99,
+            },
+            "layout_probe": {
+                "column_count_source": "thresholded route-time raster projection",
+                "table_line_density_source": "long-run density in route-time raster",
+                "table_line_density_tau": 0.02,
+            },
+            "unknown_layout_rule": "select layout_model",
+            "authority_rule": (
+                "UNRESOLVED for a declared authority source when no scored authority "
+                "arm exists; missing authority metadata remains explicitly unmeasured"
+            ),
+            "acceptance_rule": (
+                "accept source/layout primary on primary-peer agreement; otherwise "
+                "accept only a primary or peer corroborated by verifier_model"
+            ),
+            "agreement_tau": AGREEMENT_TAU,
+        },
         "prediction_tau": PREDICTION_TAU,
         "critical_token_tau": CRITICAL_TOKEN_TAU,
         "route_to_arena_model": dict(ROUTE_TO_ARENA_MODEL),
@@ -1385,6 +1548,7 @@ __all__ = [
     "PeerAgreementVerified",
     "Policy",
     "ReplayComposite",
+    "SourceLayoutAuthorityMeasured",
     "SourceLayoutAuthorityVerified",
     "UnitFeatures",
     "UnitPlan",
