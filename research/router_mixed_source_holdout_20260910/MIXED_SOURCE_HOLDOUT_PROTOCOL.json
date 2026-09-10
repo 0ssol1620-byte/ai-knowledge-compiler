@@ -1,0 +1,94 @@
+{
+  "schema": "tavonel.router_mixed_source_holdout_protocol.v1",
+  "benchmark_id": "TAVONEL-ROUTER-MIXED-SOURCE-HOLDOUT-20260910-V1",
+  "state": "FROZEN_SELECTION_PROTOCOL",
+  "purpose": "test whether source-aware Native, page and source-bound region routing reduces verified information loss without always-all cost",
+  "frozen_before_acquisition": true,
+  "truth_opening": "only after acquisition, deduplication, runtime binding, route predictions and the pre-open gate are immutable",
+  "source_selection": {
+    "authority": "official public publisher or standards body only",
+    "transport": "HTTPS original bytes; landing-page text is metadata, never ground truth",
+    "canonical_url": "exact HTTPS URL after redirects; lowercase ASCII host; no userinfo, fragment or explicit port; path and query preserved byte-for-byte",
+    "order": "manifest grouped by required_classes order, then SHA256(canonical source URL) ascending within each class",
+    "replacement": "none after acquisition begins; an unavailable or ineligible source remains unresolved",
+    "minimum_units_per_class": 12,
+    "maximum_units_per_class": 24,
+    "maximum_total_units": 192,
+    "near_duplicate_rule": "each unit must have a unique source hash, canonical URL and source-family identifier; exclude sibling pages or files from one source package and every family seen in development",
+    "rights_rule": "retain only sources with an HTTPS rights-evidence URL and recorded terms that permit local research evaluation; do not redistribute original bytes",
+    "target_rule": "record one truth-free source-native or bbox1000 locator before inference; no locator may be added or changed after seeing model behavior"
+  },
+  "required_classes": [
+    "native_structured",
+    "born_digital_pdf_table",
+    "scanned_pdf",
+    "layout_heavy_pdf",
+    "office_korean_docx",
+    "office_korean_pptx",
+    "office_korean_xlsx",
+    "target_alignment_failure"
+  ],
+  "arms": [
+    "native_only",
+    "best_fixed_visual",
+    "legacy_router",
+    "source_aware_page_region_router",
+    "always_all_diagnostic",
+    "oracle_diagnostic"
+  ],
+  "model_keys": [
+    "mineru_vlm",
+    "paddleocr_vl_1_6",
+    "ovisocr2"
+  ],
+  "router_policy": {
+    "route_time_truth_access": false,
+    "missing_output": "retained as failure",
+    "source_authority": "may select a native or authority witness only when the source contract supplies it",
+    "visual_recovery": "must be bound to an existing page or region locator; no invented bbox",
+    "agreement": "corroboration only; model agreement is never independent truth",
+    "stop": "accept only verified declared scope; otherwise unresolved"
+  },
+  "preopen_binding": {
+    "required_digests": [
+      "selection protocol",
+      "candidate inventory",
+      "selected source manifest",
+      "development overlap inventory",
+      "truth-free route prediction manifest",
+      "preflight code",
+      "Native runtime",
+      "source contract",
+      "router policy",
+      "evaluator",
+      "statistics",
+      "each model runtime, bundle and inference config"
+    ],
+    "manifest_schema": "strict allowlist; unexpected fields are rejected",
+    "prediction_schema": "one route plan per selected unit; exact source and policy binding; truth, labels, expected answers and evaluator outputs forbidden"
+  },
+  "metrics": {
+    "primary": "silent critical loss rate",
+    "secondary": [
+      "information retention rate",
+      "correct abstention",
+      "unresolved fraction",
+      "route regret",
+      "raw provider cost per 1000 units",
+      "end-to-end p50 and p95 latency"
+    ],
+    "denominator": "every selected target unit in every arm",
+    "statistics": "paired source-cluster bootstrap with 5000 replicates; report all catastrophic failures",
+    "promotion_rule": "no model or router promotion unless the exact frozen primary and guardrail rules pass on the unopened holdout"
+  },
+  "execution_budget": {
+    "maximum_new_gpu_spend_usd": 20,
+    "maximum_model_unit_calls": 600,
+    "maximum_parallel_pods": 3,
+    "per_call_timeout_seconds": 600,
+    "overall_deadline_seconds": 14400,
+    "cleanup": "terminate every created pod and independently verify zero live pods"
+  },
+  "public_claim": false,
+  "production_promotion": false
+}

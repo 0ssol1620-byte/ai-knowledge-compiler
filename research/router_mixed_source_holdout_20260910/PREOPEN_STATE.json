@@ -1,0 +1,24 @@
+{
+  "schema": "tavonel.router_mixed_source_preopen_state.v1",
+  "benchmark_id": "TAVONEL-ROUTER-MIXED-SOURCE-HOLDOUT-20260910-V1",
+  "recorded_at": "2026-09-10T16:20:16+09:00",
+  "state": "BLOCKED_ACQUISITION_AND_BINDING_REQUIRED",
+  "selection_protocol_sha256": "sha256:2cca5f8938ad9ff8c583e788df4625749351fd27755aa58d3f4b56fed2882c89",
+  "source_manifest_exists": false,
+  "runtime_binding_exists": false,
+  "predictions_frozen": false,
+  "truth_opened": false,
+  "model_calls": 0,
+  "new_gpu_spend_usd": 0,
+  "required_next": [
+    "enumerate official candidates and freeze the complete candidate inventory",
+    "acquire official source bytes under the frozen URL-hash selection rule",
+    "record rights evidence and source-family exclusions without reading target truth",
+    "freeze the source manifest and development-overlap inventory",
+    "bind exact preflight, Native, source-contract, model, evaluator, statistics and router-policy bytes",
+    "freeze one truth-free route prediction per selected source unit",
+    "run preflight_mixed_holdout.py and require passed=true before any truth or GPU execution"
+  ],
+  "public_claim": false,
+  "production_promotion": false
+}
