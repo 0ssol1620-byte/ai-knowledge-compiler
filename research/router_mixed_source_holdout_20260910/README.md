@@ -75,6 +75,13 @@ the selected corpus has not been persisted or manifested. Runtime bindings and
 truth-free route predictions are also absent, so the pre-open gate remains
 closed and no model or GPU execution is authorized.
 
+`acquire_selected_sources.py` is the bounded no-replacement acquisition path.
+It accepts only HTTP 200 without redirects, caps each source at 300 MiB, writes
+through a temporary file, validates PDF, OOXML and native structure, and emits
+a manifest only when all 96 selected units succeed. A partial run keeps a named
+failure receipt and emits no manifest. Original bytes remain under the ignored
+private evidence directory and are never committed.
+
 For `born_digital_pdf_table`, the candidate locator rule
 `first_table_or_numeric_dense_page_full_bbox1000_v1` is resolved only after the
 URL-hash selection is frozen. It scans pages in source order using the native
