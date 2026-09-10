@@ -125,6 +125,15 @@ def run(*, output_name: str) -> None:
                     status="native_parser_refused",
                     reason="PDF_DECOMPRESSION_LIMIT_REACHED",
                 )
+            except KeyError as error:
+                record.update(
+                    status="native_parser_refused",
+                    reason=(
+                        "PYPDF_IMAGE_METADATA_MISSING"
+                        if error.args == ("/N",)
+                        else "PDF_OBJECT_REFERENCE_MISSING"
+                    ),
+                )
             except StructuredParseError as error:
                 record.update(status="native_parser_refused", reason=error.code)
             except Exception:
