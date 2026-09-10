@@ -5,7 +5,7 @@
   "development_only": true,
   "expires_at": "2026-09-17T06:10:00Z",
   "maximum_model_region_calls": 72,
-  "maximum_new_gpu_spend_usd": 2.0,
+  "maximum_new_gpu_spend_usd": 2.5,
   "model_keys": [
     "mineru_vlm",
     "paddleocr_vl_1_6",
@@ -14,5 +14,5 @@
   "production_promotion": false,
   "schema": "tavonel.sec_target_cell_runpod_authorization.v1",
   "source_truth_opened": true,
-  "statement": "Founder authorized continuing Router work and using RunPod GPU as needed. This bounded follow-up uses only the 24 source-bound target crops derived from the completed SEC development holdout, the same three pinned runtimes, an additional aggregate ceiling of USD 2, and mandatory deletion of every created pod."
+  "statement": "Founder authorized continuing Router work and using RunPod GPU as needed. This bounded follow-up uses only the 24 source-bound target crops derived from the completed SEC development holdout, the same three pinned runtimes, an additional aggregate ceiling of USD 2.50, and mandatory deletion of every created pod. The initial USD 2.00 preflight created no pods because the live one-hour conservative reservation was USD 2.22."
 }

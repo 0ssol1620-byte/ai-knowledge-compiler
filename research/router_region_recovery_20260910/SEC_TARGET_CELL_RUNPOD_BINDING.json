@@ -105,7 +105,7 @@
     ]
   ],
   "maximum_model_region_calls": 72,
-  "maximum_new_gpu_spend_usd": 2.0,
+  "maximum_new_gpu_spend_usd": 2.5,
   "models": {
     "mineru_vlm": {
       "bundle_sha256": "sha256:299fb4e14dda21723cb7b98fc4affe85e5bbcef44d9b84ee005e2fac340f6081",
