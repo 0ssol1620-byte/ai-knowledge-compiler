@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -91,3 +92,41 @@ def test_truth_or_unknown_metadata_is_rejected(tmp_path: Path) -> None:
     seeds.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
     with pytest.raises(CandidateInventoryError, match="SCHEMA_INVALID"):
         prepare_inventory(protocol_path=protocol, seeds_path=seeds)
+
+
+def test_predeclared_table_locator_is_accepted(tmp_path: Path) -> None:
+    protocol, seeds = _world(tmp_path)
+    rows = [json.loads(line) for line in seeds.read_text(encoding="utf-8").splitlines()]
+    rows[0]["target_locator_rule"] = (
+        "first_table_or_numeric_dense_page_full_bbox1000_v1"
+    )
+    seeds.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+    inventory = prepare_inventory(protocol_path=protocol, seeds_path=seeds)
+    assert any(
+        row["target_locator_rule"]
+        == "first_table_or_numeric_dense_page_full_bbox1000_v1"
+        for row in inventory["candidates"]
+    )
+
+
+def test_checked_in_frozen_candidate_inventory_is_reproducible() -> None:
+    root = Path(__file__).parent
+    actual = json.loads((root / "FROZEN_CANDIDATE_INVENTORY.json").read_text("utf-8"))
+    rebuilt = prepare_inventory(
+        protocol_path=root / "MIXED_SOURCE_HOLDOUT_PROTOCOL.json",
+        seeds_path=root / "OFFICIAL_SOURCE_CANDIDATE_SEEDS.jsonl",
+    )
+    assert rebuilt == actual
+    selected = [
+        row for row in rebuilt["candidates"] if row["selection_state"] == "SELECTED"
+    ]
+    required_classes = json.loads(
+        (root / "MIXED_SOURCE_HOLDOUT_PROTOCOL.json").read_text("utf-8")
+    )["required_classes"]
+    assert len(selected) == 96
+    assert Counter(row["source_class"] for row in selected) == Counter(
+        {source_class: 12 for source_class in required_classes}
+    )
+    assert len({row["candidate_id"] for row in selected}) == 96
+    assert len({row["source_url"] for row in selected}) == 96
+    assert len({row["source_family_id"] for row in selected}) == 96

@@ -43,7 +43,13 @@ EXPECTED_FIELDS = frozenset(
     }
 )
 LOCATOR_RULES = frozenset(
-    {"whole_source", "first_native_object", "first_page_full_bbox1000", "geometry_anomaly_v1"}
+    {
+        "whole_source",
+        "first_native_object",
+        "first_page_full_bbox1000",
+        "first_table_or_numeric_dense_page_full_bbox1000_v1",
+        "geometry_anomaly_v1",
+    }
 )
 
 

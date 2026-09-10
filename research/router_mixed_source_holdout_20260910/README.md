@@ -1,6 +1,6 @@
 # Mixed-source Router holdout pre-registration
 
-Status: **SELECTION PROTOCOL FROZEN; CORPUS UNACQUIRED; HOLDOUT UNOPENED**
+Status: **CANDIDATE INVENTORY FROZEN; CORPUS UNACQUIRED; HOLDOUT UNOPENED**
 
 The SEC target-cell development run established a useful Ovis component but
 did not establish Router superiority. This package defines the next admissible
@@ -58,7 +58,29 @@ requires an exact item title, filename and item-page rights marker, then selects
 exactly 12 rows per class by the frozen URL-hash order. The inventory binds both
 the seed manifest and selector bytes.
 
-`OFFICIAL_SOURCE_ACQUISITION_STATE.json` records the current zero-input state
+`OFFICIAL_SOURCE_ACQUISITION_STATE.json` records the frozen candidate boundary
 and two official rights-policy anchors. A government host alone is not a rights
 receipt: each Korean item needs its own KOGL Type 1 or equivalent record, and
 each U.S. federal item needs item- or agency-specific government-work evidence.
+
+`OFFICIAL_SOURCE_CANDIDATE_SEEDS.jsonl` contains 128 rights-qualified metadata
+rows from independent source packages. Its SHA-256 is
+`sha256:a10873065c498a675fe02509d15b545357c5c5927445ba969667af20c40edf66`.
+`FROZEN_CANDIDATE_INVENTORY.json` applies the preregistered URL-hash order and
+selects exactly 12 units in each of the eight classes, 96 total, with 32 unused
+standby candidates. Its SHA-256 is
+`sha256:c5e1f8ab38958b4c5acc680daeda57bfe5471cd5931f6bd9c3d78517a5baa960`.
+Transport checks touched source bytes to verify direct-file type and magic, but
+the selected corpus has not been persisted or manifested. Runtime bindings and
+truth-free route predictions are also absent, so the pre-open gate remains
+closed and no model or GPU execution is authorized.
+
+For `born_digital_pdf_table`, the candidate locator rule
+`first_table_or_numeric_dense_page_full_bbox1000_v1` is resolved only after the
+URL-hash selection is frozen. It scans pages in source order using the native
+text layer, selects the first page with a line beginning `Table ` followed by
+an ASCII letter or digit, and otherwise selects the first page containing at
+least two lines with at least three numeric tokens each. The target is that
+page's complete bbox1000 rectangle. It reads no annotation, model output or
+evaluation result; failure to resolve the rule leaves the selected unit
+unresolved rather than permitting a replacement.
