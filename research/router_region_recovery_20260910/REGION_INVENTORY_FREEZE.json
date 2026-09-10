@@ -3,7 +3,7 @@
   "corpus": "spent public olmOCR-Bench development source manifest only",
   "expected_campaign_id": "TAVONEL-MODEL-ARENA-PUBLIC-20260903-V1",
   "expected_eligible_units": 1403,
-  "expected_source_manifest_sha256": "sha256:01c76cb680a65001c52938a974eaf16caf438c8afead04d2d5844c299139f457",
+  "expected_source_manifest_sha256": "sha256:2ec00f371db5069216362ee946b084ed0d222474162d7eadcbf717f09ae55e7c",
   "selection": "all eligible PDF units in the frozen source manifest; no labels or evaluator outputs",
   "output": "per-page exact CIR SourceRef region IDs, bbox1000, witness digests and coverage counts; no source text",
   "eligibility": "non-empty text block with one source reference and an explicit positive-area bbox1000",
