@@ -370,6 +370,7 @@ def freeze(
     statistics_path = package_root / "STATISTICS_CONFIG.json"
     native_runtime_path = package_root / "NATIVE_RUNTIME_BINDING.json"
     model_identity_path = package_root / "MODEL_IDENTITY_SOURCE.json"
+    model_snapshot_path = package_root / "MODEL_SNAPSHOT_BINDING.json"
     predictions_path = package_root / "ROUTE_PREDICTIONS.jsonl"
     binding_path = package_root / "RUNTIME_BINDING.json"
 
@@ -418,6 +419,21 @@ def freeze(
             "models": bound_models,
         },
     )
+    model_snapshot = load_json(model_snapshot_path)
+    snapshot_models = model_snapshot.get("models")
+    if (
+        model_snapshot.get("schema")
+        != "tavonel.router_model_snapshot_binding.v1"
+        or not isinstance(snapshot_models, Mapping)
+        or set(snapshot_models) != set(bound_models)
+        or any(
+            not isinstance(snapshot_models[key], Mapping)
+            or snapshot_models[key].get("revision")
+            != bound_models[key]["model_revision"]
+            for key in bound_models
+        )
+    ):
+        raise ValueError("MODEL_SNAPSHOT_BINDING_INVALID")
 
     policy_hash = digest(policy_path.read_bytes())
     prediction_rows = []
@@ -473,6 +489,7 @@ def freeze(
         "evaluator_sha256": digest(evaluator_path.read_bytes()),
         "statistics_sha256": digest(statistics_path.read_bytes()),
         "model_identity_source_sha256": digest(model_binding_path.read_bytes()),
+        "model_snapshot_binding_sha256": digest(model_snapshot_path.read_bytes()),
         "models": bound_models,
         "allowed_source_hosts": allowed_hosts,
         "predictions_frozen": True,
@@ -491,6 +508,7 @@ def freeze(
         "evaluator": evaluator_path.name,
         "statistics": statistics_path.name,
         "model_identity_source": model_identity_path.name,
+        "model_snapshot_binding": model_snapshot_path.name,
     }
     _write_json(binding_path, binding)
     return {

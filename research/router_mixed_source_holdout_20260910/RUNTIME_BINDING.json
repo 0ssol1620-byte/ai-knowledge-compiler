@@ -7,14 +7,15 @@
   "source_manifest_sha256": "sha256:5001577b021a9f93869017e32a613e161ddc6edde95c75fd724f3faf29b1a451",
   "development_inventory_sha256": "sha256:9897eed643781c0ba006219d550eeb9b388a44a785bc249f27c69424aeabb1c5",
   "prediction_manifest_sha256": "sha256:7d1c1a37b54c5527cb2bccc8a3e532335e815760633f5d77232fe38537aa3ed8",
-  "preflight_sha256": "sha256:dbcd4b5a5d2259ef7cc86647181664deba0cfc1458dabfb0603e51b7e6c44105",
-  "freeze_generator_sha256": "sha256:1f88e5b642f3593da8ca40a37c44f6acb890a384305188841cc13759ae8d3343",
+  "preflight_sha256": "sha256:613b0fa949fe6f5e4d4fe095769d31b0798bc7e697114f44d20140a41dc4c0e5",
+  "freeze_generator_sha256": "sha256:8850b6065386c67a0dff9abf09353ce0c6b7026d6ccada49e1975c3176ee7503",
   "native_runtime_sha256": "sha256:3d43a04947c4d585ec3271f67cb29c816279b45ae97953781fbd7ffb5a1557ee",
   "source_contract_sha256": "sha256:8736e3aa38c740c277e6e597fdfee7711650dbd5de0a52fd4d07dce377ef9639",
   "router_policy_sha256": "sha256:84a3b4567e50b103b5266dcc4ae5477a31b50249a68bf4e0f219a9cfc53bbab5",
   "evaluator_sha256": "sha256:9f516b8bd12510d4c786dac2089c5cc657a0d22182e2d2557bcd9aa6df86c96f",
   "statistics_sha256": "sha256:0ed59c5c90ad40206e238a0425704d88f0d047f0e19317525bf2e054d37eb4db",
   "model_identity_source_sha256": "sha256:777c2254b660a405530127852bdc97e367ffdadee4e679429bee00750d63a988",
+  "model_snapshot_binding_sha256": "sha256:685a2e292a12ed0684fe28619362741189c2c6548c0dd8ddcfc9fbd95ee2d91c",
   "models": {
     "mineru_vlm": {
       "model_revision": "bff20d4ae2bf202df9f45284b4d43681555a97ed",
@@ -80,6 +81,7 @@
     "router_policy": "ROUTER_POLICY.json",
     "evaluator": "EVALUATOR_CONFIG.json",
     "statistics": "STATISTICS_CONFIG.json",
-    "model_identity_source": "MODEL_IDENTITY_SOURCE.json"
+    "model_identity_source": "MODEL_IDENTITY_SOURCE.json",
+    "model_snapshot_binding": "MODEL_SNAPSHOT_BINDING.json"
   }
 }

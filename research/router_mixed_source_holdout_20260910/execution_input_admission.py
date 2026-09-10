@@ -50,7 +50,16 @@ MODEL_FIELDS = frozenset(
     }
 )
 WEIGHT_FIELDS = frozenset({"relative_path", "sha256", "size_bytes"})
-SNAPSHOT_FIELDS = frozenset({"repository", "revision", "files"})
+SNAPSHOT_FIELDS = frozenset(
+    {
+        "repository",
+        "revision",
+        "official_api_url",
+        "official_snapshot_descriptor_sha256",
+        "official_file_count",
+        "files",
+    }
+)
 REQUEST_FIELDS = frozenset(
     {
         "request_id",
@@ -267,7 +276,7 @@ def evaluate_admission(
         ("RENDER_PROFILE", load_json(render_profile_path)),
         ("RENDER_RUNTIME", load_json(render_runtime_path)),
         ("MODEL_ARTIFACT_MANIFEST", model_artifacts),
-        ("MODEL_SNAPSHOT_BINDING", snapshot_binding),
+        ("MODEL_SNAPSHOT_BINDING", snapshot_binding.get("models")),
         ("REQUEST_MANIFEST", requests),
         ("EXECUTION_LIMITS", limits),
     ):
@@ -382,6 +391,13 @@ def evaluate_admission(
     model_map = bound_models if isinstance(bound_models, Mapping) else {}
     if snapshot_binding.get("schema") != "tavonel.router_model_snapshot_binding.v1":
         blockers.append("MODEL_SNAPSHOT_SCHEMA_INVALID")
+    if (
+        snapshot_binding.get("state") != "FROZEN_BEFORE_REMOTE_EXECUTION"
+        or snapshot_binding.get("truth_opened") is not False
+        or snapshot_binding.get("model_calls") != 0
+        or snapshot_binding.get("production_promotion") is not False
+    ):
+        blockers.append("MODEL_SNAPSHOT_STATE_INVALID")
     raw_snapshot_models = snapshot_binding.get("models")
     snapshot_models = (
         raw_snapshot_models if isinstance(raw_snapshot_models, Mapping) else {}
@@ -484,6 +500,10 @@ def evaluate_admission(
             blockers.append(f"{prefix}_WEIGHT_SNAPSHOT_MISMATCH")
         if snapshot.get("revision") != row.get("model_revision"):
             blockers.append(f"{prefix}_SNAPSHOT_REVISION_MISMATCH")
+        if not isinstance(snapshot.get("official_file_count"), int) or not SHA.fullmatch(
+            str(snapshot.get("official_snapshot_descriptor_sha256"))
+        ):
+            blockers.append(f"{prefix}_SNAPSHOT_PROVENANCE_INVALID")
     if set(artifact_by_key) != set(model_map) or len(model_artifacts) != len(model_map):
         blockers.append("MODEL_ARTIFACT_DENOMINATOR_MISMATCH")
     actual_model_files: set[str] = set()

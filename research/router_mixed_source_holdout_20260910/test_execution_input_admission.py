@@ -178,14 +178,22 @@ def _world(tmp_path: Path) -> dict[str, Path]:
         snapshot_binding,
         {
             "schema": "tavonel.router_model_snapshot_binding.v1",
+            "state": "FROZEN_BEFORE_REMOTE_EXECUTION",
+            "source": "official_huggingface_revision_api_and_resolve_endpoints",
             "models": {
                 str(row["model_key"]): {
                     "repository": str(row["model_key"]) + "/repository",
                     "revision": row["model_revision"],
+                    "official_api_url": "https://huggingface.co/api/models/test",
+                    "official_snapshot_descriptor_sha256": "sha256:" + "a" * 64,
+                    "official_file_count": 1,
                     "files": row["weight_files"],
                 }
                 for row in model_rows
             },
+            "truth_opened": False,
+            "model_calls": 0,
+            "production_promotion": False,
         },
     )
     for model in model_rows:
@@ -333,6 +341,7 @@ def _world(tmp_path: Path) -> dict[str, Path]:
                 "evaluator": "evaluator.json",
                 "statistics": "statistics.json",
                 "model_identity_source": "model-identity.json",
+                "model_snapshot_binding": "model-snapshots.json",
             },
             "predictions_frozen": True,
             "input_manifest_contains_truth": False,

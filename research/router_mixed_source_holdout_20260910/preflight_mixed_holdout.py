@@ -97,6 +97,7 @@ BOUND_ARTIFACTS = {
     "evaluator": "evaluator_sha256",
     "statistics": "statistics_sha256",
     "model_identity_source": "model_identity_source_sha256",
+    "model_snapshot_binding": "model_snapshot_binding_sha256",
 }
 
 

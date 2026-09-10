@@ -148,6 +148,17 @@ def valid_world(tmp_path: Path) -> dict[str, Path]:
             "models": {key: model for key in protocol["model_keys"]},
         },
     )
+    snapshot_path = tmp_path / "model-snapshot.json"
+    write_json(
+        snapshot_path,
+        {
+            "schema": "tavonel.router_model_snapshot_binding.v1",
+            "models": {
+                key: {"revision": model["model_revision"]}
+                for key in protocol["model_keys"]
+            },
+        },
+    )
     binding = {
         "schema": "tavonel.router_mixed_source_holdout_binding.v1",
         "state": "FROZEN_PREOPEN",
@@ -167,6 +178,7 @@ def valid_world(tmp_path: Path) -> dict[str, Path]:
         "evaluator_sha256": digest((tmp_path / "evaluator.json").read_bytes()),
         "statistics_sha256": digest((tmp_path / "statistics.json").read_bytes()),
         "model_identity_source_sha256": digest(identity_path.read_bytes()),
+        "model_snapshot_binding_sha256": digest(snapshot_path.read_bytes()),
         "artifact_paths": {
             "freeze_generator": "freeze.py",
             "native_runtime": "native.json",
@@ -175,6 +187,7 @@ def valid_world(tmp_path: Path) -> dict[str, Path]:
             "evaluator": "evaluator.json",
             "statistics": "statistics.json",
             "model_identity_source": "model-identity.json",
+            "model_snapshot_binding": "model-snapshot.json",
         },
         "predictions_frozen": True,
         "input_manifest_contains_truth": False,
