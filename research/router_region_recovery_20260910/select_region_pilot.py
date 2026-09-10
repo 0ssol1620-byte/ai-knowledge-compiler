@@ -135,7 +135,11 @@ def run(args: argparse.Namespace) -> None:
             if row.get("status") == "source_regions_available":
                 available.add(str(row["sample_id"]))
 
-    bind = json.loads((ROOT / "research/router_oracle_20260908/ARENA_BIND.json").read_text())
+    bind = json.loads(
+        (ROOT / "research/router_oracle_20260908/ARENA_BIND.json").read_text(
+            encoding="utf-8"
+        )
+    )
     models = sorted(
         model
         for model, entry in bind["models"].items()
