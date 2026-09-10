@@ -47,3 +47,16 @@ the truth, identity, rights, denominator or cleanup gates. All pods must be
 deleted and a separate zero-live-pod inventory receipt must be retained.
 
 This package supports no public performance claim and no production promotion.
+
+## Candidate acquisition boundary
+
+`CANDIDATE_SEED_SCHEMA.json` and `prepare_candidate_inventory.py` define the
+only admissible path from curated official metadata to the frozen candidate
+inventory. The script reads no source content. It rejects unknown fields,
+duplicate source/family identities, unqualified rights and incomplete classes,
+then selects exactly 12 rows per class by the frozen URL-hash order.
+
+`OFFICIAL_SOURCE_ACQUISITION_STATE.json` records the current zero-input state
+and two official rights-policy anchors. A government host alone is not a rights
+receipt: each Korean item needs its own KOGL Type 1 or equivalent record, and
+each U.S. federal item needs item- or agency-specific government-work evidence.

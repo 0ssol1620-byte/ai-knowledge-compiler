@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "tavonel.router_mixed_source_candidate_seed.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "candidate_id",
+    "source_class",
+    "source_url",
+    "source_family_id",
+    "publisher",
+    "language",
+    "rights_status",
+    "rights_evidence_url",
+    "rights_checked_at_utc",
+    "allowed_use_scope",
+    "target_locator_rule"
+  ],
+  "properties": {
+    "candidate_id": {"type": "string", "minLength": 1},
+    "source_class": {"type": "string", "minLength": 1},
+    "source_url": {"type": "string", "format": "uri", "pattern": "^https://"},
+    "source_family_id": {"type": "string", "minLength": 1},
+    "publisher": {"type": "string", "minLength": 1},
+    "language": {"type": "string", "minLength": 2},
+    "rights_status": {
+      "enum": ["public_domain", "public_research_allowed", "open_licence"]
+    },
+    "rights_evidence_url": {"type": "string", "format": "uri", "pattern": "^https://"},
+    "rights_checked_at_utc": {"type": "string", "format": "date-time"},
+    "allowed_use_scope": {"const": "local_research_evaluation_no_redistribution"},
+    "target_locator_rule": {
+      "enum": [
+        "whole_source",
+        "first_native_object",
+        "first_page_full_bbox1000",
+        "geometry_anomaly_v1"
+      ]
+    }
+  }
+}

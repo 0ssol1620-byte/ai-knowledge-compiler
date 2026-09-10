@@ -1,0 +1,23 @@
+{
+  "schema": "tavonel.router_official_source_acquisition_state.v1",
+  "benchmark_id": "TAVONEL-ROUTER-MIXED-SOURCE-HOLDOUT-20260910-V1",
+  "state": "DISCOVERY_OPEN_NO_CANDIDATES_FROZEN",
+  "selection_protocol_sha256": "sha256:342b64ff4d15ac78f2389073ff68d24e0ac58a9a28191268b7db2fd6818f179b",
+  "required_candidates": 96,
+  "rights_policy": {
+    "korean_public_works": "accept an item only when its own official landing page records KOGL Type 1 or an equivalent qualified licence",
+    "us_federal_works": "do not infer public-domain status from a .gov host; require item- or agency-specific evidence that the work is an eligible federal government work",
+    "no_redistribution": true
+  },
+  "verified_policy_anchors": [
+    "https://www.kogl.or.kr/info/licenseType1.do",
+    "https://www.usa.gov/government-copyright"
+  ],
+  "candidate_seed_file_exists": false,
+  "candidate_inventory_frozen": false,
+  "source_bytes_acquired": 0,
+  "truth_opened": false,
+  "model_calls": 0,
+  "new_gpu_spend_usd": 0,
+  "next": "curate at least 12 rights-qualified direct official-file URLs per class, then run prepare_candidate_inventory.py once and freeze its exact bytes"
+}
