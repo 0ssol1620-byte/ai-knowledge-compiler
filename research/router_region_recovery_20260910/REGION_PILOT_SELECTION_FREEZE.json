@@ -1,0 +1,33 @@
+{
+  "candidate": "SOURCE_BOUND_CRITICAL_REGION_PILOT_V1",
+  "corpus": "spent public olmOCR-Bench development matrix only",
+  "source_manifest_sha256": "sha256:2ec00f371db5069216362ee946b084ed0d222474162d7eadcbf717f09ae55e7c",
+  "region_inventory_sha256": "sha256:3de6602ad7ee5894c8e26caf43bf398ed9a558a1fdaac734f41244729239c0e7",
+  "native_capture_sha256": "sha256:ac4b4e669eb4b2d09913b77dd0420d779866f4adc00edc69e799cd85c39512a8",
+  "primary_model": "mineru_vlm",
+  "native_eligibility": {
+    "minimum_chars": 100,
+    "minimum_locator_coverage": 0.99,
+    "maximum_invalid_unicode_ratio": 0.005,
+    "maximum_replacement_ratio": 0.001
+  },
+  "mismatch_eligibility": "all critical-token mismatches must be source-side omissions or count reductions and must resolve to one common exact source region",
+  "maximum_mismatches_per_page": 12,
+  "region_geometry": {
+    "minimum_width_1000": 5,
+    "minimum_height_1000": 5,
+    "maximum_area_1000_squared": 250000,
+    "padding": 0
+  },
+  "selection": "one region per page; SHA256(case_key + region_id) ascending; first up to 8 per highest-risk mismatch kind, then fill globally",
+  "kind_order": ["sign", "currency", "date", "number", "unit"],
+  "maximum_per_kind": 8,
+  "maximum_targets": 32,
+  "output_disclosure": "IDs, bbox, hashes, counts and mismatch kinds only; no source or model text and no literal critical tokens",
+  "hidden_evaluation_visible_to_selector": false,
+  "quality_claim": false,
+  "confirmatory_eligible": false,
+  "fresh_holdout_opened": false,
+  "gpu_budget_usd": 0,
+  "frozen_before_selection": true
+}
