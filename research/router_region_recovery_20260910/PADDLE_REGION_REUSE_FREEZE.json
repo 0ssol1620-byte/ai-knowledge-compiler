@@ -1,0 +1,22 @@
+{
+  "candidate": "PADDLE_REGION_REUSE_V1",
+  "targets_sha256": "sha256:a508297876676ed9fae15fb666a33e8903cbf8cf6ebbea9abfbe7247f1270110",
+  "specialist_model": "paddleocr_vl_1_6",
+  "model_revision": "c5630abae1d940eafe0697512a0325494b02ab42",
+  "runtime_mode": "bootstrap",
+  "runtime_image_digest": "bootstrap:sha256:06849dac601360301ae68d44b4b737c8bb549009579b00b6a04353b86294feda",
+  "frozen_manifest_sha256": "sha256:0fff25a57c1727905e877a5c9c3d5841cfe0534574701219242ecb9eaeb7692c",
+  "runtime_spec_sha256": "sha256:397e69a940d9fa571f833e28ec9e0b5f7c2b866da54b567296f23d31c0eac6bc",
+  "reuse_rule": "use only the selected target's already-spent frozen SUCCESS output and its native parsing_res_list; never call a model",
+  "native_json_binding": "page_markdown must byte-equal the frozen raw output whose SHA-256 is in the frozen manifest",
+  "geometry_conversion": "floor left/top and ceil right/bottom from model pixels to bbox1000, clamped to 0..1000",
+  "region_match": "source bbox center must be inside a non-empty model block; choose the unique smallest containing block; equal-area ties are unresolved",
+  "verification": "every frozen target critical-token hash must have exactly the same multiplicity in the source region and matched model block",
+  "verification_scope": "declared critical tokens in one source-bound region only",
+  "hidden_evaluation_visible": false,
+  "quality_claim": false,
+  "confirmatory_eligible": false,
+  "fresh_holdout_opened": false,
+  "gpu_budget_usd": 0,
+  "frozen_before_evaluation": true
+}
