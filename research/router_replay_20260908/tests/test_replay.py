@@ -290,6 +290,64 @@ def test_peer_agreement_verifier_is_fully_declared_in_the_policy_freeze() -> Non
     assert "UNRESOLVED" in verifier["acceptance_rule"]
 
 
+def test_source_layout_authority_policy_refuses_unscored_authority() -> None:
+    unit = replace(
+        make_unit(texts={"mineru_vlm": "x", "olmocr2": "x"}),
+        authority_domain="sec",
+        authority_available=True,
+    )
+    plan = F.SourceLayoutAuthorityVerified().plan(unit)
+    assert plan.accepted is None
+    assert plan.routes == ()
+    assert plan.reason_codes == ("AUTHORITY_ARM_UNMEASURED",)
+
+
+def test_source_layout_authority_policy_treats_unknown_layout_as_high_risk() -> None:
+    unit = make_unit(
+        texts={"mineru_vlm": "alpha beta gamma", "olmocr2": "alpha beta gamma"}
+    )
+    plan = F.SourceLayoutAuthorityVerified().plan(unit)
+    assert plan.accepted == "mineru_vlm"
+    assert plan.routes == ("mineru_vlm", "olmocr2")
+    assert "layout:unknown_conservative" in plan.reason_codes
+
+
+def test_source_layout_authority_policy_uses_independent_verifier_to_overturn() -> None:
+    unit = make_unit(
+        texts={
+            "mineru_vlm": "layout candidate unrelated",
+            "olmocr2": "alpha beta gamma delta",
+            F.PRIMARY_MODEL: "alpha beta gamma delta",
+        }
+    )
+    plan = F.SourceLayoutAuthorityVerified().plan(unit)
+    assert plan.accepted == "olmocr2"
+    assert plan.routes == ("mineru_vlm", "olmocr2", F.PRIMARY_MODEL)
+    assert "INDEPENDENT_VERIFICATION_ESTABLISHED" in plan.reason_codes
+
+
+def test_source_layout_authority_policy_refuses_three_way_disagreement() -> None:
+    unit = make_unit(
+        texts={
+            "mineru_vlm": "layout candidate",
+            "olmocr2": "text candidate",
+            F.PRIMARY_MODEL: "third opinion",
+        }
+    )
+    plan = F.SourceLayoutAuthorityVerified().plan(unit)
+    assert plan.accepted is None
+    assert plan.unresolved_reason == "independent verifier corroborated no candidate"
+
+
+def test_source_layout_authority_policy_and_builder_are_frozen() -> None:
+    freeze = F.frozen_policy_parameters()
+    policy = freeze["source_layout_authority_verifier_v1"]
+    assert policy["authority_rule"].startswith("UNRESOLVED")
+    assert policy["agreement_tau"] == F.AGREEMENT_TAU
+    assert F.FEATURE_BUILDER_ID.endswith("V2")
+    assert "native_reading_order_score" in F.UNKNOWN_PAGE_METRIC_FIELDS
+
+
 def test_core_router_native_units_are_unresolved_not_substituted() -> None:
     """Route.NATIVE has no Arena arm. The absence is reported, never filled."""
     unit = make_unit(

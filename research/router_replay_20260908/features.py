@@ -41,7 +41,7 @@ from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, ClassVar, Protocol, runtime_checkable
 
 # Reconciler and the loss-weight freeze live in the Phase A lane; both are
 # GT-blind by construction and are reused rather than reimplemented.
@@ -142,7 +142,7 @@ def read_visible_text(path: Path) -> str:
 # frozen feature-construction constants (fixed BEFORE any scoring)
 # ---------------------------------------------------------------------------
 
-FEATURE_BUILDER_ID = "TAVONEL-ROUTER-REPLAY-FEATURES-2026-09-08-V1"
+FEATURE_BUILDER_ID = "TAVONEL-ROUTER-REPLAY-FEATURES-2026-09-10-V2"
 
 # Arena model keys bound to the production Route enum. Bound by identity, not by
 # rank: `hpd_parsing` IS the HPD route's model, `paddleocr_vl_1_6` IS
@@ -256,6 +256,8 @@ class UnitFeatures:
     critical_token_kinds: tuple[str, ...]
     blind_risk: dict[str, float]  # model -> aggregate_evidence_risk of its output
     unknown_fields: tuple[str, ...]
+    authority_domain: str | None = None
+    authority_available: bool = False
 
     def sim(self, left: str, right: str) -> float | None:
         key = "|".join(sorted((left, right)))
@@ -693,7 +695,11 @@ def load_or_build_units(
     texts_cache = cache_dir / f"texts_{benchmark}.jsonl.zst"
     if cache.is_file() and texts_cache.is_file():
         payload = json.loads(cache.read_text(encoding="utf-8"))
-        if payload.get("schema") == CACHE_SCHEMA and payload.get("models") == sorted(models):
+        if (
+            payload.get("schema") == CACHE_SCHEMA
+            and payload.get("feature_builder_id") == FEATURE_BUILDER_ID
+            and payload.get("models") == sorted(models)
+        ):
             return [_from_dict(row) for row in payload["units"]], _read_text_cache(
                 texts_cache
             )
@@ -762,6 +768,7 @@ UNKNOWN_PAGE_METRIC_FIELDS = (
     "blur_score",
     "contrast_score",
     "small_text_score",
+    "native_reading_order_score",
 )
 
 
@@ -1002,6 +1009,128 @@ class PeerAgreementVerified:
 
 
 @dataclass(frozen=True)
+class SourceLayoutAuthorityVerified:
+    """Choose by source qualification, layout observability and authority.
+
+    The policy uses no evaluator outcome and no model score. Native can lead
+    only when every source-fidelity prerequisite is measured and passes the
+    existing production preflight limits. Unknown layout signals select the
+    layout specialist rather than being read as low risk. An authority-bound
+    source is refused because this replay has no scored authority arm.
+
+    The selected primary and its independent peer run first. Agreement accepts
+    the source/layout-selected primary. Disagreement invokes a third provider;
+    exactly one corroborated candidate wins, and no corroboration is
+    UNRESOLVED. This is an exploratory spent-development policy only.
+    """
+
+    native_model: str = "native"
+    layout_model: str = "mineru_vlm"
+    text_model: str = "olmocr2"
+    verifier_model: str = PRIMARY_MODEL
+    name: str = "SOURCE_LAYOUT_AUTHORITY_VERIFIER_V1"
+
+    _LAYOUT_FIELDS: ClassVar[frozenset[str]] = frozenset(
+        {
+            "estimated_columns",
+            "table_density",
+            "formula_density",
+            "chart_probability",
+            "image_coverage",
+        }
+    )
+    _NATIVE_REQUIRED_FIELDS: ClassVar[frozenset[str]] = frozenset(
+        {
+            "native_reading_order_score",
+            "image_coverage",
+            "estimated_columns",
+            "table_density",
+            "formula_density",
+            "chart_probability",
+        }
+    )
+
+    def _native_qualified(self, unit: UnitFeatures) -> bool:
+        unknown = set(unit.unknown_fields)
+        return (
+            unit.media_type != "image"
+            and not (unknown & self._NATIVE_REQUIRED_FIELDS)
+            and unit.native_text_available
+            and unit.native_text_chars >= 100
+            and unit.native_invalid_unicode_ratio <= 0.005
+            and unit.native_replacement_ratio <= 0.001
+            and _present(unit, self.native_model)
+        )
+
+    def _primary_and_peer(self, unit: UnitFeatures) -> tuple[str, str, str]:
+        if self._native_qualified(unit):
+            return self.native_model, self.layout_model, "source:native_qualified"
+
+        unknown_layout = bool(set(unit.unknown_fields) & self._LAYOUT_FIELDS)
+        outputs = unit.outputs
+        structured = False
+        for model in (self.layout_model, self.text_model):
+            output = outputs.get(model)
+            if output is not None and output.table_rows > 0:
+                structured = True
+                break
+        if unknown_layout or structured or unit.media_type == "image":
+            return self.layout_model, self.text_model, (
+                "layout:unknown_conservative" if unknown_layout else "layout:observed"
+            )
+        return self.text_model, self.layout_model, "layout:observed_low"
+
+    def plan(self, unit_features: UnitFeatures) -> UnitPlan:
+        if unit_features.authority_domain is not None or unit_features.authority_available:
+            return UnitPlan(
+                routes=(),
+                accepted=None,
+                unresolved_reason="authority-bound source has no scored replay arm",
+                reason_codes=("AUTHORITY_ARM_UNMEASURED",),
+            )
+
+        primary, peer, selection_reason = self._primary_and_peer(unit_features)
+        initial_routes = tuple(dict.fromkeys((primary, peer)))
+        if (
+            _present(unit_features, primary)
+            and _present(unit_features, peer)
+            and (unit_features.sim(primary, peer) or 0.0) >= AGREEMENT_TAU
+        ):
+            return UnitPlan(
+                routes=initial_routes,
+                accepted=primary,
+                escalate=True,
+                reason_codes=(selection_reason, "PRIMARY_PEER_AGREEMENT"),
+            )
+
+        routes = tuple(dict.fromkeys((*initial_routes, self.verifier_model)))
+        corroborated = [
+            model
+            for model in initial_routes
+            if _present(unit_features, model)
+            and _present(unit_features, self.verifier_model)
+            and (unit_features.sim(model, self.verifier_model) or 0.0) >= AGREEMENT_TAU
+        ]
+        if not corroborated:
+            return UnitPlan(
+                routes=routes,
+                accepted=None,
+                escalate=True,
+                unresolved_reason="independent verifier corroborated no candidate",
+                reason_codes=(selection_reason, "INDEPENDENT_VERIFICATION_FAILED"),
+            )
+        # Primary wins only after corroboration. If just the peer is supported,
+        # the verifier may overturn the initial source/layout selection.
+        chosen = primary if primary in corroborated else corroborated[0]
+        return UnitPlan(
+            routes=routes,
+            accepted=chosen,
+            escalate=True,
+            reason_codes=(selection_reason, "INDEPENDENT_VERIFICATION_ESTABLISHED"),
+        )
+
+
+@dataclass(frozen=True)
 class CoreRouter:
     """The current production `akc_router.engine.select_first_route`, replayed.
 
@@ -1180,6 +1309,25 @@ def frozen_policy_parameters() -> dict[str, Any]:
             ),
             "tie_break": "mean pairwise similarity, then lexical model key",
         },
+        "source_layout_authority_verifier_v1": {
+            "native_model": "native",
+            "layout_model": "mineru_vlm",
+            "text_model": "olmocr2",
+            "verifier_model": PRIMARY_MODEL,
+            "native_limits": {
+                "minimum_chars": 100,
+                "maximum_invalid_unicode_ratio": 0.005,
+                "maximum_replacement_ratio": 0.001,
+                "all_required_fields_must_be_measured": True,
+            },
+            "unknown_layout_rule": "select layout_model",
+            "authority_rule": "UNRESOLVED when no scored authority arm exists",
+            "acceptance_rule": (
+                "accept source/layout primary on primary-peer agreement; otherwise "
+                "accept only a primary or peer corroborated by verifier_model"
+            ),
+            "agreement_tau": AGREEMENT_TAU,
+        },
         "prediction_tau": PREDICTION_TAU,
         "critical_token_tau": CRITICAL_TOKEN_TAU,
         "route_to_arena_model": dict(ROUTE_TO_ARENA_MODEL),
@@ -1237,6 +1385,7 @@ __all__ = [
     "PeerAgreementVerified",
     "Policy",
     "ReplayComposite",
+    "SourceLayoutAuthorityVerified",
     "UnitFeatures",
     "UnitPlan",
     "arena_root",

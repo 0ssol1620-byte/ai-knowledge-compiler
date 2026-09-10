@@ -90,6 +90,7 @@ def build_arms(models: Sequence[str]) -> list[Any]:
     if adapter is not None:
         arms.append(adapter)
     if N.NATIVE_MODEL in models:
+        arms.append(F.SourceLayoutAuthorityVerified())
         arms.append(
             F.PeerAgreementVerified(
                 models=(N.NATIVE_MODEL, F.PRIMARY_MODEL, F.PEER_MODEL),
