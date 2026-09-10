@@ -65,11 +65,11 @@ each U.S. federal item needs item- or agency-specific government-work evidence.
 
 `OFFICIAL_SOURCE_CANDIDATE_SEEDS.jsonl` contains 128 rights-qualified metadata
 rows from independent source packages. Its SHA-256 is
-`sha256:a10873065c498a675fe02509d15b545357c5c5927445ba969667af20c40edf66`.
+`sha256:e0d96eeb2f31acf3abedb57ce94f1d79a124294d2110fa6b6edb87022d31586d`.
 `FROZEN_CANDIDATE_INVENTORY.json` applies the preregistered URL-hash order and
 selects exactly 12 units in each of the eight classes, 96 total, with 32 unused
 standby candidates. Its SHA-256 is
-`sha256:c5e1f8ab38958b4c5acc680daeda57bfe5471cd5931f6bd9c3d78517a5baa960`.
+`sha256:f7da723da18e35300dff774d50c03917eb9a13b7c68e3a5fc537698a5b88a8c0`.
 Transport checks touched source bytes to verify direct-file type and magic, but
 the selected corpus has not been persisted or manifested. Runtime bindings and
 truth-free route predictions are also absent, so the pre-open gate remains

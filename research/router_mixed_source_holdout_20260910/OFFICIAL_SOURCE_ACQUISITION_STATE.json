@@ -4,10 +4,10 @@
   "state": "CANDIDATE_INVENTORY_FROZEN_SOURCE_ACQUISITION_PENDING",
   "selection_protocol_sha256": "sha256:342b64ff4d15ac78f2389073ff68d24e0ac58a9a28191268b7db2fd6818f179b",
   "candidate_seed_file_exists": true,
-  "candidate_seed_sha256": "sha256:a10873065c498a675fe02509d15b545357c5c5927445ba969667af20c40edf66",
+  "candidate_seed_sha256": "sha256:e0d96eeb2f31acf3abedb57ce94f1d79a124294d2110fa6b6edb87022d31586d",
   "candidate_units": 128,
   "candidate_inventory_frozen": true,
-  "candidate_inventory_sha256": "sha256:c5e1f8ab38958b4c5acc680daeda57bfe5471cd5931f6bd9c3d78517a5baa960",
+  "candidate_inventory_sha256": "sha256:f7da723da18e35300dff774d50c03917eb9a13b7c68e3a5fc537698a5b88a8c0",
   "selected_units": 96,
   "selected_class_counts": {
     "native_structured": 12,

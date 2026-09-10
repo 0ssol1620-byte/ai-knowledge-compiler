@@ -21,7 +21,8 @@
   "public_claim": false,
   "production_promotion": false,
   "candidate_inventory_exists": true,
-  "candidate_inventory_sha256": "sha256:c5e1f8ab38958b4c5acc680daeda57bfe5471cd5931f6bd9c3d78517a5baa960",
+  "candidate_inventory_sha256": "sha256:f7da723da18e35300dff774d50c03917eb9a13b7c68e3a5fc537698a5b88a8c0",
   "candidate_units": 128,
-  "selected_units": 96
+  "selected_units": 96,
+  "candidate_seed_sha256": "sha256:e0d96eeb2f31acf3abedb57ce94f1d79a124294d2110fa6b6edb87022d31586d"
 }
