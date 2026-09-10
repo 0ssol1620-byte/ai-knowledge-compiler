@@ -523,7 +523,10 @@ def main() -> int:
         key=runpod_api_key(), execute=True, receipts_dir=receipt_dir, campaign_id=CAMPAIGN_ID
     )
     try:
-        snapshot = price_client.catalog_gpus(cloud="SECURE")
+        # The live v2 catalog currently rejects its former ``cloud`` query
+        # parameter with HTTP 400. Fetch the complete read-only catalog and
+        # select the SECURE rate from each immutable row below.
+        snapshot = price_client.catalog_gpus()
         if isinstance(snapshot, ProviderReceipt) or not isinstance(snapshot, PriceSnapshot):
             raise HoldoutRunError("live catalog request did not return a price snapshot")
     finally:
