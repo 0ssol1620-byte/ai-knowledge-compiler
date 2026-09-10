@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from . import render_selected_inputs
 from .preflight_mixed_holdout import (
     _contains_forbidden_key,
     digest,
@@ -27,13 +28,33 @@ PINNED_IMAGE = re.compile(r"^\S+@sha256:[0-9a-f]{64}$")
 RENDER_FIELDS = frozenset(
     {
         "unit_id",
+        "source_class",
         "source_sha256",
         "target_locator",
+        "resolved_page_number",
+        "intermediate_pdf_sha256",
+        "intermediate_pdf_size_bytes",
+        "intermediate_pdf_relative_path",
         "render_sha256",
         "render_size_bytes",
+        "render_width_px",
+        "render_height_px",
         "render_relative_path",
         "render_profile_sha256",
         "render_runtime_sha256",
+        "generator_sha256",
+        "office_script_sha256",
+        "status",
+        "locator_proof",
+    }
+)
+POST_RENDER_BINDING_FIELDS = frozenset(
+    {
+        "render_manifest_sha256",
+        "render_profile_sha256",
+        "render_runtime_sha256",
+        "render_generator_sha256",
+        "office_script_sha256",
     }
 )
 MODEL_FIELDS = frozenset(
@@ -72,6 +93,7 @@ REQUEST_FIELDS = frozenset(
         "runtime_sha256",
         "bundle_sha256",
         "inference_config_sha256",
+        "base_image",
     }
 )
 HARD_EXECUTION_CAPS: Mapping[str, int | float] = {
@@ -79,6 +101,38 @@ HARD_EXECUTION_CAPS: Mapping[str, int | float] = {
     "maximum_model_unit_calls": 600,
     "maximum_parallel_pods": 3,
 }
+EXECUTION_LIMIT_FIELDS = frozenset(
+    {
+        "schema",
+        "state",
+        "campaign_id",
+        "maximum_new_gpu_spend_usd",
+        "maximum_model_unit_calls",
+        "maximum_parallel_pods",
+    }
+)
+ADMISSION_INPUT_DIGEST_FIELDS = frozenset(
+    {
+        "binding",
+        "preopen_result",
+        "protocol",
+        "source_manifest",
+        "development_inventory",
+        "candidate_inventory",
+        "predictions",
+        "source_contract",
+        "render_manifest",
+        "render_profile",
+        "render_runtime",
+        "render_generator",
+        "office_script",
+        "model_artifact_manifest",
+        "model_snapshot_binding",
+        "request_manifest",
+        "execution_limits",
+        "truth_root_path",
+    }
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -183,6 +237,14 @@ def _request_id(unit_id: str, model_key: str, render_sha256: str) -> str:
     return "sha256:" + hashlib.sha256(value).hexdigest()
 
 
+def _contains_forbidden_control_key(value: object) -> bool:
+    if not isinstance(value, Mapping):
+        return _contains_forbidden_key(value)
+    return _contains_forbidden_key(
+        {key: child for key, child in value.items() if key != "truth_opened"}
+    )
+
+
 def evaluate_admission(
     *,
     binding_path: Path,
@@ -198,6 +260,7 @@ def evaluate_admission(
     render_root: Path,
     render_profile_path: Path,
     render_runtime_path: Path,
+    office_script_path: Path,
     model_manifest_path: Path,
     model_snapshot_binding_path: Path,
     model_root: Path,
@@ -231,11 +294,25 @@ def evaluate_admission(
         "render_manifest": digest(render_manifest_path.read_bytes()),
         "render_profile": digest(render_profile_path.read_bytes()),
         "render_runtime": digest(render_runtime_path.read_bytes()),
+        "render_generator": digest(Path(render_selected_inputs.__file__).read_bytes()),
+        "office_script": digest(office_script_path.read_bytes()),
         "model_artifact_manifest": digest(model_manifest_path.read_bytes()),
         "model_snapshot_binding": digest(model_snapshot_binding_path.read_bytes()),
         "request_manifest": digest(request_manifest_path.read_bytes()),
         "execution_limits": digest(execution_limits_path.read_bytes()),
+        "truth_root_path": digest(str(truth_root.resolve()).encode("utf-8")),
     }
+    frozen_truth_relative = binding.get("truth_root_relative_path")
+    frozen_truth = (
+        repo_root / frozen_truth_relative
+        if isinstance(frozen_truth_relative, str)
+        and frozen_truth_relative
+        and not Path(frozen_truth_relative).is_absolute()
+        and ".." not in Path(frozen_truth_relative).parts
+        else None
+    )
+    if frozen_truth is None or frozen_truth.resolve() != truth_root.resolve():
+        blockers.append("CANONICAL_TRUTH_ROOT_BINDING_MISMATCH")
 
     live_preopen = evaluate_preopen(
         protocol_path=protocol_path,
@@ -272,15 +349,17 @@ def evaluate_admission(
             blockers.append(f"PREOPEN_{key.upper()}_MISMATCH")
     if truth_root.exists() and any(truth_root.iterdir()):
         blockers.append("HOLDOUT_TRUTH_ALREADY_PRESENT")
+    render_profile = load_json(render_profile_path)
+    render_runtime = load_json(render_runtime_path)
     for control_name, control_value in (
-        ("RENDER_PROFILE", load_json(render_profile_path)),
-        ("RENDER_RUNTIME", load_json(render_runtime_path)),
+        ("RENDER_PROFILE", render_profile),
+        ("RENDER_RUNTIME", render_runtime),
         ("MODEL_ARTIFACT_MANIFEST", model_artifacts),
         ("MODEL_SNAPSHOT_BINDING", snapshot_binding.get("models")),
         ("REQUEST_MANIFEST", requests),
         ("EXECUTION_LIMITS", limits),
     ):
-        if _contains_forbidden_key(control_value):
+        if _contains_forbidden_control_key(control_value):
             blockers.append(f"{control_name}_TRUTH_FIELD_FORBIDDEN")
 
     source_by_id: dict[str, Mapping[str, Any]] = {}
@@ -354,6 +433,40 @@ def evaluate_admission(
     }
     profile_hash = input_digests["render_profile"]
     runtime_hash = input_digests["render_runtime"]
+    post_render = binding.get("post_render_artifacts")
+    post_render_map = post_render if isinstance(post_render, Mapping) else {}
+    if set(post_render_map) != POST_RENDER_BINDING_FIELDS:
+        blockers.append("POST_RENDER_BINDING_SCHEMA_INVALID")
+    for binding_field, digest_key in (
+        ("render_manifest_sha256", "render_manifest"),
+        ("render_profile_sha256", "render_profile"),
+        ("render_runtime_sha256", "render_runtime"),
+        ("render_generator_sha256", "render_generator"),
+        ("office_script_sha256", "office_script"),
+    ):
+        if post_render_map.get(binding_field) != input_digests[digest_key]:
+            blockers.append(f"POST_RENDER_{binding_field.upper()}_MISMATCH")
+    if (
+        render_profile.get("schema") != "tavonel.router_render_profile.v1"
+        or render_profile.get("state") != "FROZEN_BEFORE_MODEL_EXECUTION"
+        or render_profile.get("truth_opened") is not False
+        or render_profile.get("model_calls") != 0
+        or render_profile.get("production_promotion") is not False
+    ):
+        blockers.append("RENDER_PROFILE_STATE_INVALID")
+    if (
+        render_runtime.get("schema") != "tavonel.router_render_runtime.v1"
+        or render_runtime.get("state") != "FROZEN_BEFORE_MODEL_EXECUTION"
+        or render_runtime.get("truth_opened") is not False
+        or render_runtime.get("model_calls") != 0
+        or render_runtime.get("production_promotion") is not False
+        or render_runtime.get("profile_sha256") != profile_hash
+        or render_runtime.get("generator_sha256")
+        != input_digests["render_generator"]
+        or render_runtime.get("office_script_sha256")
+        != input_digests["office_script"]
+    ):
+        blockers.append("RENDER_RUNTIME_STATE_OR_DIGEST_INVALID")
     render_by_id: dict[str, Mapping[str, Any]] = {}
     for index, row in enumerate(renders):
         prefix = f"RENDER_{index:04d}"
@@ -368,6 +481,8 @@ def evaluate_admission(
         if source is None:
             blockers.append(f"{prefix}_SOURCE_UNKNOWN")
         else:
+            if row.get("source_class") != source.get("source_class"):
+                blockers.append(f"{prefix}_SOURCE_CLASS_MISMATCH")
             if row.get("source_sha256") != source.get("source_sha256"):
                 blockers.append(f"{prefix}_SOURCE_DIGEST_MISMATCH")
             if row.get("target_locator") != source.get("target_locator"):
@@ -376,6 +491,64 @@ def evaluate_admission(
             blockers.append(f"{prefix}_PROFILE_MISMATCH")
         if row.get("render_runtime_sha256") != runtime_hash:
             blockers.append(f"{prefix}_RUNTIME_MISMATCH")
+        if row.get("generator_sha256") != input_digests["render_generator"]:
+            blockers.append(f"{prefix}_GENERATOR_MISMATCH")
+        if row.get("office_script_sha256") != input_digests["office_script"]:
+            blockers.append(f"{prefix}_OFFICE_SCRIPT_MISMATCH")
+        if row.get("status") != "SUCCEEDED":
+            blockers.append(f"{prefix}_STATUS_INVALID")
+        for dimension_field in (
+            "resolved_page_number",
+            "render_width_px",
+            "render_height_px",
+        ):
+            value = row.get(dimension_field)
+            if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+                blockers.append(f"{prefix}_{dimension_field.upper()}_INVALID")
+        source_class = row.get("source_class")
+        is_office = source_class in {
+            "office_korean_docx",
+            "office_korean_pptx",
+            "office_korean_xlsx",
+        }
+        intermediate_values = (
+            row.get("intermediate_pdf_sha256"),
+            row.get("intermediate_pdf_size_bytes"),
+            row.get("intermediate_pdf_relative_path"),
+        )
+        if is_office:
+            if (
+                not SHA.fullmatch(str(intermediate_values[0]))
+                or isinstance(intermediate_values[1], bool)
+                or not isinstance(intermediate_values[1], int)
+                or intermediate_values[1] <= 0
+                or not isinstance(intermediate_values[2], str)
+            ):
+                blockers.append(f"{prefix}_INTERMEDIATE_RECEIPT_INVALID")
+            else:
+                _verify_file(
+                    root=render_root,
+                    relative=intermediate_values[2],
+                    expected_sha=intermediate_values[0],
+                    expected_size=intermediate_values[1],
+                    prefix=f"{prefix}_INTERMEDIATE",
+                    blockers=blockers,
+                )
+            expected_proof = (
+                "word_body_element_formatted_range_page"
+                if source_class == "office_korean_docx"
+                else (
+                    "slide_export_page_1"
+                    if source_class == "office_korean_pptx"
+                    else "worksheet_export_page_1"
+                )
+            )
+        else:
+            if intermediate_values != (None, None, None):
+                blockers.append(f"{prefix}_UNEXPECTED_INTERMEDIATE_RECEIPT")
+            expected_proof = "pdf_page_bbox"
+        if row.get("locator_proof") != expected_proof:
+            blockers.append(f"{prefix}_LOCATOR_PROOF_INVALID")
         _verify_file(
             root=render_root,
             relative=row.get("render_relative_path"),
@@ -405,6 +578,7 @@ def evaluate_admission(
     if set(snapshot_models) != set(model_map):
         blockers.append("MODEL_SNAPSHOT_DENOMINATOR_MISMATCH")
     artifact_by_key: dict[str, Mapping[str, Any]] = {}
+    base_image_by_key: dict[str, str] = {}
     expected_model_files: set[str] = set()
     for index, row in enumerate(model_artifacts):
         prefix = f"MODEL_{index:04d}"
@@ -469,6 +643,8 @@ def evaluate_admission(
                     base_image
                 ):
                     blockers.append(f"{prefix}_RUNTIME_BASE_IMAGE_NOT_PINNED")
+                else:
+                    base_image_by_key[model_key_value] = base_image
         weights = row.get("weight_files")
         if not isinstance(weights, list) or not weights:
             blockers.append(f"{prefix}_WEIGHTS_REQUIRED")
@@ -546,6 +722,7 @@ def evaluate_admission(
             "runtime_sha256": model.get("runtime_sha256"),
             "bundle_sha256": model.get("bundle_sha256"),
             "inference_config_sha256": model.get("inference_config_sha256"),
+            "base_image": base_image_by_key.get(model_key),
         }
         for field, expected_value in expected.items():
             if row.get(field) != expected_value:
@@ -561,6 +738,13 @@ def evaluate_admission(
     budget_map = budget if isinstance(budget, Mapping) else {}
     if limits.get("state") != "FROZEN_BEFORE_EXECUTION":
         blockers.append("EXECUTION_LIMITS_NOT_FROZEN")
+    if (
+        set(limits) != EXECUTION_LIMIT_FIELDS
+        or limits.get("schema") != "tavonel.router_execution_limits.v1"
+        or not isinstance(limits.get("campaign_id"), str)
+        or not limits.get("campaign_id")
+    ):
+        blockers.append("EXECUTION_LIMITS_SCHEMA_INVALID")
     for limit_field, protocol_field in (
         ("maximum_new_gpu_spend_usd", "maximum_new_gpu_spend_usd"),
         ("maximum_model_unit_calls", "maximum_model_unit_calls"),
@@ -619,6 +803,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "render-root",
         "render-profile",
         "render-runtime",
+        "office-script",
         "model-manifest",
         "model-snapshot-binding",
         "model-root",
@@ -630,28 +815,60 @@ def main(argv: Sequence[str] | None = None) -> int:
     ):
         parser.add_argument(f"--{name}", type=Path, required=True)
     args = parser.parse_args(argv)
-    result = evaluate_admission(
-        binding_path=args.binding,
-        preopen_result_path=args.preopen_result,
-        protocol_path=args.protocol,
-        source_manifest_path=args.source_manifest,
-        development_inventory_path=args.development_inventory,
-        candidate_inventory_path=args.candidate_inventory,
-        predictions_path=args.predictions,
-        source_contract_path=args.source_contract,
-        source_root=args.source_root,
-        render_manifest_path=args.render_manifest,
-        render_root=args.render_root,
-        render_profile_path=args.render_profile,
-        render_runtime_path=args.render_runtime,
-        model_manifest_path=args.model_manifest,
-        model_snapshot_binding_path=args.model_snapshot_binding,
-        model_root=args.model_root,
-        request_manifest_path=args.request_manifest,
-        execution_limits_path=args.execution_limits,
-        truth_root=args.truth_root,
-        repo_root=args.repo_root,
-    )
+    try:
+        for path in (
+            args.binding,
+            args.preopen_result,
+            args.protocol,
+            args.source_manifest,
+            args.development_inventory,
+            args.candidate_inventory,
+            args.predictions,
+            args.source_contract,
+            args.render_manifest,
+            args.render_profile,
+            args.render_runtime,
+            args.office_script,
+            args.model_manifest,
+            args.model_snapshot_binding,
+            args.request_manifest,
+            args.execution_limits,
+        ):
+            if not path.is_file() or path.stat().st_size > 64 * 1024 * 1024:
+                raise ValueError("CONTROL_INPUT_MISSING_OR_OVERSIZED")
+        result = evaluate_admission(
+            binding_path=args.binding,
+            preopen_result_path=args.preopen_result,
+            protocol_path=args.protocol,
+            source_manifest_path=args.source_manifest,
+            development_inventory_path=args.development_inventory,
+            candidate_inventory_path=args.candidate_inventory,
+            predictions_path=args.predictions,
+            source_contract_path=args.source_contract,
+            source_root=args.source_root,
+            render_manifest_path=args.render_manifest,
+            render_root=args.render_root,
+            render_profile_path=args.render_profile,
+            render_runtime_path=args.render_runtime,
+            office_script_path=args.office_script,
+            model_manifest_path=args.model_manifest,
+            model_snapshot_binding_path=args.model_snapshot_binding,
+            model_root=args.model_root,
+            request_manifest_path=args.request_manifest,
+            execution_limits_path=args.execution_limits,
+            truth_root=args.truth_root,
+            repo_root=args.repo_root,
+        )
+    except Exception as error:  # fail closed at immutable worker boundary
+        result = AdmissionResult(
+            passed=False,
+            blockers=(f"ADMISSION_INPUT_{type(error).__name__.upper()}",),
+            units=0,
+            rendered_units=0,
+            models=0,
+            requests=0,
+            input_digests={},
+        )
     payload = (
         json.dumps(result.as_dict(), ensure_ascii=False, indent=2) + "\n"
     ).encode("utf-8")

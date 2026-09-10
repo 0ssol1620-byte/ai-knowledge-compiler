@@ -2,13 +2,14 @@
   "schema": "tavonel.router_mixed_source_holdout_binding.v1",
   "benchmark_id": "TAVONEL-ROUTER-MIXED-SOURCE-HOLDOUT-20260910-V1",
   "state": "FROZEN_PREOPEN",
+  "truth_root_relative_path": ".chatgpt2codex/router-mixed-source-holdout/truth",
   "protocol_sha256": "sha256:342b64ff4d15ac78f2389073ff68d24e0ac58a9a28191268b7db2fd6818f179b",
   "candidate_inventory_sha256": "sha256:f7da723da18e35300dff774d50c03917eb9a13b7c68e3a5fc537698a5b88a8c0",
   "source_manifest_sha256": "sha256:5001577b021a9f93869017e32a613e161ddc6edde95c75fd724f3faf29b1a451",
   "development_inventory_sha256": "sha256:9897eed643781c0ba006219d550eeb9b388a44a785bc249f27c69424aeabb1c5",
   "prediction_manifest_sha256": "sha256:7d1c1a37b54c5527cb2bccc8a3e532335e815760633f5d77232fe38537aa3ed8",
-  "preflight_sha256": "sha256:613b0fa949fe6f5e4d4fe095769d31b0798bc7e697114f44d20140a41dc4c0e5",
-  "freeze_generator_sha256": "sha256:8850b6065386c67a0dff9abf09353ce0c6b7026d6ccada49e1975c3176ee7503",
+  "preflight_sha256": "sha256:3884a28414c0e4780cf1649d9a348507d0f1b62818ddc1613be55b5cad2cf3c4",
+  "freeze_generator_sha256": "sha256:0003d09f2fa0164b9ea5583db8816314c1637c2cdd32fb6d20cf5f5aa8b49fc7",
   "native_runtime_sha256": "sha256:3d43a04947c4d585ec3271f67cb29c816279b45ae97953781fbd7ffb5a1557ee",
   "source_contract_sha256": "sha256:8736e3aa38c740c277e6e597fdfee7711650dbd5de0a52fd4d07dce377ef9639",
   "router_policy_sha256": "sha256:84a3b4567e50b103b5266dcc4ae5477a31b50249a68bf4e0f219a9cfc53bbab5",
@@ -16,6 +17,8 @@
   "statistics_sha256": "sha256:0ed59c5c90ad40206e238a0425704d88f0d047f0e19317525bf2e054d37eb4db",
   "model_identity_source_sha256": "sha256:777c2254b660a405530127852bdc97e367ffdadee4e679429bee00750d63a988",
   "model_snapshot_binding_sha256": "sha256:685a2e292a12ed0684fe28619362741189c2c6548c0dd8ddcfc9fbd95ee2d91c",
+  "render_generator_sha256": "sha256:ed8fcca8620d187ac3e3975af9d39195aa35aec6cdbdf9579c6c12f9a54d2e57",
+  "office_render_script_sha256": "sha256:73d408225954e62dd5990ac68c3ba97af3574902a22aa98c1dcd0ec17f93aeab",
   "models": {
     "mineru_vlm": {
       "model_revision": "bff20d4ae2bf202df9f45284b4d43681555a97ed",
@@ -82,6 +85,8 @@
     "evaluator": "EVALUATOR_CONFIG.json",
     "statistics": "STATISTICS_CONFIG.json",
     "model_identity_source": "MODEL_IDENTITY_SOURCE.json",
-    "model_snapshot_binding": "MODEL_SNAPSHOT_BINDING.json"
+    "model_snapshot_binding": "MODEL_SNAPSHOT_BINDING.json",
+    "render_generator": "render_selected_inputs.py",
+    "office_render_script": "office_render.ps1"
   }
 }

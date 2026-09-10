@@ -476,6 +476,7 @@ def freeze(
         "schema": "tavonel.router_mixed_source_holdout_binding.v1",
         "benchmark_id": "TAVONEL-ROUTER-MIXED-SOURCE-HOLDOUT-20260910-V1",
         "state": "FROZEN_PREOPEN",
+        "truth_root_relative_path": ".chatgpt2codex/router-mixed-source-holdout/truth",
         "protocol_sha256": digest(protocol_path.read_bytes()),
         "candidate_inventory_sha256": digest(candidate_path.read_bytes()),
         "source_manifest_sha256": digest(manifest_path.read_bytes()),
@@ -490,6 +491,12 @@ def freeze(
         "statistics_sha256": digest(statistics_path.read_bytes()),
         "model_identity_source_sha256": digest(model_binding_path.read_bytes()),
         "model_snapshot_binding_sha256": digest(model_snapshot_path.read_bytes()),
+        "render_generator_sha256": digest(
+            (package_root / "render_selected_inputs.py").read_bytes()
+        ),
+        "office_render_script_sha256": digest(
+            (package_root / "office_render.ps1").read_bytes()
+        ),
         "models": bound_models,
         "allowed_source_hosts": allowed_hosts,
         "predictions_frozen": True,
@@ -509,7 +516,33 @@ def freeze(
         "statistics": statistics_path.name,
         "model_identity_source": model_identity_path.name,
         "model_snapshot_binding": model_snapshot_path.name,
+        "render_generator": "render_selected_inputs.py",
+        "office_render_script": "office_render.ps1",
     }
+    post_render_paths = {
+        "render_manifest_sha256": package_root / "RENDER_MANIFEST.jsonl",
+        "render_profile_sha256": package_root / "RENDER_PROFILE.json",
+        "render_runtime_sha256": package_root / "RENDER_RUNTIME.json",
+        "render_generator_sha256": package_root / "render_selected_inputs.py",
+        "office_script_sha256": package_root / "office_render.ps1",
+    }
+    output_fields = {
+        "render_manifest_sha256",
+        "render_profile_sha256",
+        "render_runtime_sha256",
+    }
+    output_present = {
+        name: post_render_paths[name].is_file() for name in output_fields
+    }
+    if any(output_present.values()) and not all(output_present.values()):
+        missing = sorted(
+            name for name, exists in output_present.items() if not exists
+        )
+        raise ValueError(f"POST_RENDER_ARTIFACTS_INCOMPLETE:{','.join(missing)}")
+    if all(output_present.values()):
+        binding["post_render_artifacts"] = {
+            name: digest(path.read_bytes()) for name, path in post_render_paths.items()
+        }
     _write_json(binding_path, binding)
     return {
         "native_runtime_sha256": str(binding["native_runtime_sha256"]),

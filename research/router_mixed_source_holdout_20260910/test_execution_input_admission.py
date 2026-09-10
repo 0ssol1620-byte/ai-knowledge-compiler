@@ -4,15 +4,22 @@ import json
 from pathlib import Path
 
 import pytest
+from PIL import Image
 
 from . import preflight_mixed_holdout
+from . import render_selected_inputs as render_selected_inputs_module
 from .execution_input_admission import (
+    RENDER_FIELDS,
     _request_id,
     _streaming_digest,
     _write_immutable_receipt,
     evaluate_admission,
 )
+from .execution_input_admission import (
+    main as admission_main,
+)
 from .preflight_mixed_holdout import digest, evaluate_preopen
+from .render_selected_inputs import RenderedPng, RenderLimits, render_selected_inputs
 
 MODELS = ("mineru_vlm", "paddleocr_vl_1_6", "ovisocr2")
 
@@ -48,7 +55,11 @@ def _world(tmp_path: Path) -> dict[str, Path]:
                 "source_class": source_class,
                 "source_sha256": digest(content),
                 "source_size_bytes": len(content),
-                "media_type": "application/octet-stream",
+                "media_type": (
+                    "text/csv"
+                    if source_class == "native_structured"
+                    else "application/pdf"
+                ),
                 "source_family_id": f"official-family-{index}",
                 "source_url": f"https://official-{index}.example.invalid/source",
                 "selection_url_sha256": digest(
@@ -72,6 +83,29 @@ def _world(tmp_path: Path) -> dict[str, Path]:
         )
     source_manifest = tmp_path / "sources.jsonl"
     _jsonl(source_manifest, source_rows)
+    protocol = tmp_path / "protocol.json"
+    _json(
+        protocol,
+        {
+            "schema": "tavonel.router_mixed_source_holdout_protocol.v1",
+            "state": "FROZEN_SELECTION_PROTOCOL",
+            "benchmark_id": "TEST-HOLDOUT-V1",
+            "frozen_before_acquisition": True,
+            "source_selection": {
+                "selected_units_per_class": 1,
+                "minimum_units_per_class": 1,
+                "maximum_units_per_class": 1,
+                "maximum_total_units": 2,
+            },
+            "required_classes": ["native_structured", "scanned_pdf"],
+            "model_keys": list(MODELS),
+            "execution_budget": {
+                "maximum_new_gpu_spend_usd": 20,
+                "maximum_model_unit_calls": 600,
+                "maximum_parallel_pods": 3,
+            },
+        },
+    )
     predictions = tmp_path / "predictions.jsonl"
     policy = tmp_path / "policy.json"
     _json(policy, {"schema": "test.policy.v1"})
@@ -99,28 +133,54 @@ def _world(tmp_path: Path) -> dict[str, Path]:
             }
         },
     )
-    profile = tmp_path / "render-profile.json"
-    runtime = tmp_path / "render-runtime.json"
-    _json(profile, {"profile": "test"})
-    _json(runtime, {"runtime": "test"})
-    render = b"png-bytes"
-    (render_root / "scan-1.png").write_bytes(render)
-    render_manifest = tmp_path / "renders.jsonl"
-    _jsonl(
-        render_manifest,
-        [
-            {
-                "unit_id": "scan-1",
-                "source_sha256": source_rows[1]["source_sha256"],
-                "target_locator": source_rows[1]["target_locator"],
-                "render_sha256": digest(render),
-                "render_size_bytes": len(render),
-                "render_relative_path": "scan-1.png",
-                "render_profile_sha256": digest(profile.read_bytes()),
-                "render_runtime_sha256": digest(runtime.read_bytes()),
-            }
-        ],
+    profile = tmp_path / "RENDER_PROFILE.json"
+    runtime = tmp_path / "RENDER_RUNTIME.json"
+    office_script = tmp_path / "office_render.ps1"
+    office_script.write_text("# pinned test office renderer\n", encoding="utf-8")
+    render_manifest = tmp_path / "RENDER_MANIFEST.jsonl"
+    def fake_pdf_renderer(
+        _source: Path,
+        _page_number: int,
+        _bbox: tuple[int, int, int, int],
+        output: Path,
+        _limits: RenderLimits,
+    ) -> RenderedPng:
+        Image.new("RGB", (16, 12), (1, 2, 3)).save(output, format="PNG")
+        return RenderedPng(16, 12)
+
+    def fake_runtime_builder(
+        _script: Path,
+        profile_sha256: str,
+        generator_sha256: str,
+        office_script_sha256: str,
+    ) -> dict[str, object]:
+        return {
+            "schema": "tavonel.router_render_runtime.v1",
+            "state": "FROZEN_BEFORE_MODEL_EXECUTION",
+            "truth_opened": False,
+            "model_calls": 0,
+            "production_promotion": False,
+            "profile_sha256": profile_sha256,
+            "generator_sha256": generator_sha256,
+            "office_script_sha256": office_script_sha256,
+        }
+
+    render_result = render_selected_inputs(
+        protocol_path=protocol,
+        source_manifest_path=source_manifest,
+        source_contract_path=contract,
+        source_root=sources_root,
+        render_root=render_root,
+        manifest_path=render_manifest,
+        attempt_report_path=tmp_path / "render-attempts.jsonl",
+        profile_path=profile,
+        runtime_path=runtime,
+        office_script=office_script,
+        pdf_renderer=fake_pdf_renderer,
+        runtime_builder=fake_runtime_builder,
     )
+    assert render_result.passed
+    render = (render_root / "scan-1.png").read_bytes()
 
     bound_models: dict[str, dict[str, str]] = {}
     model_rows: list[dict[str, object]] = []
@@ -204,9 +264,9 @@ def _world(tmp_path: Path) -> dict[str, Path]:
             json.dumps(runtime_value, separators=(",", ":")), encoding="utf-8"
         )
         model["runtime_sha256"] = digest(runtime_path.read_bytes())
-        bound_models[str(model["model_key"])]["runtime_sha256"] = model[
-            "runtime_sha256"
-        ]
+        bound_models[str(model["model_key"])]["runtime_sha256"] = str(
+            model["runtime_sha256"]
+        )
     _jsonl(model_manifest, model_rows)
 
     request_rows = []
@@ -224,34 +284,14 @@ def _world(tmp_path: Path) -> dict[str, Path]:
                 "runtime_sha256": model["runtime_sha256"],
                 "bundle_sha256": model["bundle_sha256"],
                 "inference_config_sha256": model["inference_config_sha256"],
+                "base_image": (
+                    "registry.example/model@sha256:" + str(MODELS.index(key) + 1) * 64
+                ),
             }
         )
     request_manifest = tmp_path / "requests.jsonl"
     _jsonl(request_manifest, request_rows)
 
-    protocol = tmp_path / "protocol.json"
-    _json(
-        protocol,
-        {
-            "schema": "tavonel.router_mixed_source_holdout_protocol.v1",
-            "state": "FROZEN_SELECTION_PROTOCOL",
-            "benchmark_id": "TEST-HOLDOUT-V1",
-            "frozen_before_acquisition": True,
-            "source_selection": {
-                "selected_units_per_class": 1,
-                "minimum_units_per_class": 1,
-                "maximum_units_per_class": 1,
-                "maximum_total_units": 2,
-            },
-            "required_classes": ["native_structured", "scanned_pdf"],
-            "model_keys": list(MODELS),
-            "execution_budget": {
-                "maximum_new_gpu_spend_usd": 20,
-                "maximum_model_unit_calls": 600,
-                "maximum_parallel_pods": 3,
-            }
-        },
-    )
     candidate_inventory = tmp_path / "candidate-inventory.json"
     _json(candidate_inventory, {"schema": "test.candidate_inventory.v1"})
     development_inventory = tmp_path / "development.json"
@@ -267,7 +307,9 @@ def _world(tmp_path: Path) -> dict[str, Path]:
     _json(
         limits,
         {
+            "schema": "tavonel.router_execution_limits.v1",
             "state": "FROZEN_BEFORE_EXECUTION",
+            "campaign_id": "test-holdout",
             "maximum_new_gpu_spend_usd": 1,
             "maximum_model_unit_calls": 3,
             "maximum_parallel_pods": 1,
@@ -294,6 +336,10 @@ def _world(tmp_path: Path) -> dict[str, Path]:
         ("freeze.py", b"freeze"),
         ("evaluator.json", b"evaluator"),
         ("statistics.json", b"statistics"),
+        (
+            "render_selected_inputs.py",
+            Path(render_selected_inputs_module.__file__).read_bytes(),
+        ),
     ):
         (tmp_path / filename).write_bytes(content)
     model_identity = tmp_path / "model-identity.json"
@@ -307,8 +353,9 @@ def _world(tmp_path: Path) -> dict[str, Path]:
     _json(
         binding,
         {
-            "schema": "tavonel.router_mixed_source_holdout_binding.v1",
-            "state": "FROZEN_PREOPEN",
+                "schema": "tavonel.router_mixed_source_holdout_binding.v1",
+                "state": "FROZEN_PREOPEN",
+                "truth_root_relative_path": "truth",
             "benchmark_id": "TEST-HOLDOUT-V1",
             "protocol_sha256": digest(protocol.read_bytes()),
             "source_manifest_sha256": digest(source_manifest.read_bytes()),
@@ -319,6 +366,10 @@ def _world(tmp_path: Path) -> dict[str, Path]:
             "prediction_manifest_sha256": digest(predictions.read_bytes()),
             "source_contract_sha256": digest(contract.read_bytes()),
             "model_snapshot_binding_sha256": digest(snapshot_binding.read_bytes()),
+            "render_generator_sha256": digest(
+                (tmp_path / "render_selected_inputs.py").read_bytes()
+            ),
+            "office_render_script_sha256": digest(office_script.read_bytes()),
             "router_policy_sha256": policy_hash,
             "preflight_sha256": digest(
                 Path(preflight_mixed_holdout.__file__).read_bytes()
@@ -329,6 +380,15 @@ def _world(tmp_path: Path) -> dict[str, Path]:
             "statistics_sha256": digest((tmp_path / "statistics.json").read_bytes()),
             "model_identity_source_sha256": digest(model_identity.read_bytes()),
             "models": bound_models,
+            "post_render_artifacts": {
+                "render_manifest_sha256": digest(render_manifest.read_bytes()),
+                "render_profile_sha256": digest(profile.read_bytes()),
+                "render_runtime_sha256": digest(runtime.read_bytes()),
+                "render_generator_sha256": digest(
+                    Path(render_selected_inputs_module.__file__).read_bytes()
+                ),
+                "office_script_sha256": digest(office_script.read_bytes()),
+            },
             "allowed_source_hosts": [
                 "official-0.example.invalid",
                 "official-1.example.invalid",
@@ -342,6 +402,8 @@ def _world(tmp_path: Path) -> dict[str, Path]:
                 "statistics": "statistics.json",
                 "model_identity_source": "model-identity.json",
                 "model_snapshot_binding": "model-snapshots.json",
+                "render_generator": "render_selected_inputs.py",
+                "office_render_script": "office_render.ps1",
             },
             "predictions_frozen": True,
             "input_manifest_contains_truth": False,
@@ -375,6 +437,7 @@ def _world(tmp_path: Path) -> dict[str, Path]:
         "render_root": render_root,
         "render_profile_path": profile,
         "render_runtime_path": runtime,
+        "office_script_path": office_script,
         "model_manifest_path": model_manifest,
         "model_snapshot_binding_path": snapshot_binding,
         "model_root": model_root,
@@ -386,9 +449,108 @@ def _world(tmp_path: Path) -> dict[str, Path]:
 
 
 def test_complete_worker_admission_passes(tmp_path: Path) -> None:
-    result = evaluate_admission(**_world(tmp_path))
+    world = _world(tmp_path)
+    render_row = json.loads(
+        world["render_manifest_path"].read_text(encoding="utf-8").strip()
+    )
+    assert set(render_row) == RENDER_FIELDS
+    result = evaluate_admission(**world)
     assert result.passed
     assert result.requests == 3
+
+
+def _admission_argv(world: dict[str, Path], output: Path) -> list[str]:
+    argument_names = {
+        "binding": "binding_path",
+        "preopen-result": "preopen_result_path",
+        "protocol": "protocol_path",
+        "source-manifest": "source_manifest_path",
+        "development-inventory": "development_inventory_path",
+        "candidate-inventory": "candidate_inventory_path",
+        "predictions": "predictions_path",
+        "source-contract": "source_contract_path",
+        "source-root": "source_root",
+        "render-manifest": "render_manifest_path",
+        "render-root": "render_root",
+        "render-profile": "render_profile_path",
+        "render-runtime": "render_runtime_path",
+        "office-script": "office_script_path",
+        "model-manifest": "model_manifest_path",
+        "model-snapshot-binding": "model_snapshot_binding_path",
+        "model-root": "model_root",
+        "request-manifest": "request_manifest_path",
+        "execution-limits": "execution_limits_path",
+        "truth-root": "truth_root",
+        "repo-root": "repo_root",
+    }
+    argv: list[str] = []
+    for argument, key in argument_names.items():
+        argv.extend([f"--{argument}", str(world[key])])
+    argv.extend(["--output", str(output)])
+    return argv
+
+
+def test_admission_cli_malformed_and_oversized_inputs_write_failure_receipts(
+    tmp_path: Path,
+) -> None:
+    malformed = _world(tmp_path / "malformed")
+    malformed["render_profile_path"].write_text("{truncated", encoding="utf-8")
+    malformed_output = tmp_path / "malformed-admission.json"
+    assert admission_main(_admission_argv(malformed, malformed_output)) == 2
+    malformed_receipt = json.loads(malformed_output.read_text(encoding="utf-8"))
+    assert malformed_receipt["passed"] is False
+    assert malformed_receipt["model_call_authorized"] is False
+    assert malformed_receipt["blockers"] == ["ADMISSION_INPUT_JSONDECODEERROR"]
+
+    oversized = _world(tmp_path / "oversized")
+    with oversized["render_profile_path"].open("wb") as handle:
+        handle.seek(64 * 1024 * 1024)
+        handle.write(b"x")
+    oversized_output = tmp_path / "oversized-admission.json"
+    assert admission_main(_admission_argv(oversized, oversized_output)) == 2
+    oversized_receipt = json.loads(oversized_output.read_text(encoding="utf-8"))
+    assert oversized_receipt["passed"] is False
+    assert oversized_receipt["model_call_authorized"] is False
+    assert oversized_receipt["blockers"] == ["ADMISSION_INPUT_VALUEERROR"]
+
+
+def test_canonical_truth_root_is_frozen_before_admission(tmp_path: Path) -> None:
+    world = _world(tmp_path)
+    world["truth_root"] = tmp_path / "alternate-empty-truth"
+    result = evaluate_admission(**world)
+    assert "CANONICAL_TRUTH_ROOT_BINDING_MISMATCH" in result.blockers
+
+
+def test_render_and_request_rebinding_cannot_bypass_frozen_binding(
+    tmp_path: Path,
+) -> None:
+    world = _world(tmp_path)
+    render_path = world["render_root"] / "scan-1.png"
+    Image.new("RGB", (16, 12), (9, 8, 7)).save(render_path, format="PNG")
+    render_rows = [
+        json.loads(line)
+        for line in world["render_manifest_path"].read_text().splitlines()
+    ]
+    render_rows[0]["render_sha256"] = digest(render_path.read_bytes())
+    render_rows[0]["render_size_bytes"] = render_path.stat().st_size
+    _jsonl(world["render_manifest_path"], render_rows)
+    requests = [
+        json.loads(line)
+        for line in world["request_manifest_path"].read_text().splitlines()
+    ]
+    for request in requests:
+        request["render_sha256"] = render_rows[0]["render_sha256"]
+        request["request_id"] = _request_id(
+            str(request["unit_id"]),
+            str(request["model_key"]),
+            str(request["render_sha256"]),
+        )
+    _jsonl(world["request_manifest_path"], requests)
+
+    result = evaluate_admission(**world)
+
+    assert not result.passed
+    assert "POST_RENDER_RENDER_MANIFEST_SHA256_MISMATCH" in result.blockers
 
 
 @pytest.mark.parametrize(

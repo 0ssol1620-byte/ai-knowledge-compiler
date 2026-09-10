@@ -98,6 +98,15 @@ BOUND_ARTIFACTS = {
     "statistics": "statistics_sha256",
     "model_identity_source": "model_identity_source_sha256",
     "model_snapshot_binding": "model_snapshot_binding_sha256",
+    "render_generator": "render_generator_sha256",
+    "office_render_script": "office_render_script_sha256",
+}
+POST_RENDER_ARTIFACTS = {
+    "render_manifest_sha256": "RENDER_MANIFEST.jsonl",
+    "render_profile_sha256": "RENDER_PROFILE.json",
+    "render_runtime_sha256": "RENDER_RUNTIME.json",
+    "render_generator_sha256": "render_selected_inputs.py",
+    "office_script_sha256": "office_render.ps1",
 }
 
 
@@ -282,6 +291,17 @@ def evaluate_preopen(
         blockers.append("BINDING_SCHEMA_MISMATCH")
     if binding.get("state") != "FROZEN_PREOPEN":
         blockers.append("RUNTIME_BINDING_NOT_FROZEN")
+    truth_relative = binding.get("truth_root_relative_path")
+    frozen_truth = (
+        repo_root / truth_relative
+        if isinstance(truth_relative, str)
+        and truth_relative
+        and not Path(truth_relative).is_absolute()
+        and ".." not in Path(truth_relative).parts
+        else None
+    )
+    if frozen_truth is None or frozen_truth.resolve() != truth_root.resolve():
+        blockers.append("CANONICAL_TRUTH_ROOT_BINDING_MISMATCH")
     if binding.get("protocol_sha256") != protocol_hash:
         blockers.append("PROTOCOL_DIGEST_MISMATCH")
     if binding.get("source_manifest_sha256") != manifest_hash:
@@ -316,6 +336,17 @@ def evaluate_preopen(
             blockers.append(f"BOUND_ARTIFACT_{artifact_name.upper()}_MISSING")
         elif binding.get(digest_field) != digest(path.read_bytes()):
             blockers.append(f"BOUND_ARTIFACT_{artifact_name.upper()}_DIGEST_MISMATCH")
+    post_render = binding.get("post_render_artifacts")
+    if post_render is not None:
+        post_render_map = post_render if isinstance(post_render, Mapping) else {}
+        if set(post_render_map) != set(POST_RENDER_ARTIFACTS):
+            blockers.append("POST_RENDER_ARTIFACTS_SCHEMA_INVALID")
+        for digest_field, filename in POST_RENDER_ARTIFACTS.items():
+            artifact = binding_path.parent / filename
+            if not artifact.is_file():
+                blockers.append(f"POST_RENDER_{digest_field.upper()}_MISSING")
+            elif post_render_map.get(digest_field) != digest(artifact.read_bytes()):
+                blockers.append(f"POST_RENDER_{digest_field.upper()}_DIGEST_MISMATCH")
     if truth_root.exists() and any(truth_root.iterdir()):
         blockers.append("HOLDOUT_TRUTH_ALREADY_PRESENT")
 

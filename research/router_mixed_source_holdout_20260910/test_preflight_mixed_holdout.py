@@ -137,6 +137,8 @@ def valid_world(tmp_path: Path) -> dict[str, Path]:
         "router_policy": ("policy.json", b"policy"),
         "evaluator": ("evaluator.json", b"evaluator"),
         "statistics": ("statistics.json", b"statistics"),
+        "render_generator": ("render_selected_inputs.py", b"render"),
+        "office_render_script": ("office_render.ps1", b"office"),
     }
     for _, (name, content) in artifacts.items():
         (tmp_path / name).write_bytes(content)
@@ -162,6 +164,7 @@ def valid_world(tmp_path: Path) -> dict[str, Path]:
     binding = {
         "schema": "tavonel.router_mixed_source_holdout_binding.v1",
         "state": "FROZEN_PREOPEN",
+        "truth_root_relative_path": "truth",
         "benchmark_id": protocol["benchmark_id"],
         "protocol_sha256": digest(protocol_path.read_bytes()),
         "source_manifest_sha256": digest(manifest_path.read_bytes()),
@@ -179,6 +182,12 @@ def valid_world(tmp_path: Path) -> dict[str, Path]:
         "statistics_sha256": digest((tmp_path / "statistics.json").read_bytes()),
         "model_identity_source_sha256": digest(identity_path.read_bytes()),
         "model_snapshot_binding_sha256": digest(snapshot_path.read_bytes()),
+        "render_generator_sha256": digest(
+            (tmp_path / "render_selected_inputs.py").read_bytes()
+        ),
+        "office_render_script_sha256": digest(
+            (tmp_path / "office_render.ps1").read_bytes()
+        ),
         "artifact_paths": {
             "freeze_generator": "freeze.py",
             "native_runtime": "native.json",
@@ -188,6 +197,8 @@ def valid_world(tmp_path: Path) -> dict[str, Path]:
             "statistics": "statistics.json",
             "model_identity_source": "model-identity.json",
             "model_snapshot_binding": "model-snapshot.json",
+            "render_generator": "render_selected_inputs.py",
+            "office_render_script": "office_render.ps1",
         },
         "predictions_frozen": True,
         "input_manifest_contains_truth": False,
