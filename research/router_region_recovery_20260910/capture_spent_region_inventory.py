@@ -18,7 +18,7 @@ from typing import TypedDict, cast
 from akc_native_parsers.models import ParseContext, StructuredParseError
 from akc_native_parsers.pdf_parser import parse_pdf_to_cir
 from akc_router.region_recovery import project_source_bound_text_regions
-from pypdf.errors import DependencyError
+from pypdf.errors import DependencyError, LimitReachedError
 
 ROOT = Path(__file__).resolve().parents[2]
 EXPECTED_UNITS = 1403
@@ -118,38 +118,61 @@ def run(*, output_name: str) -> None:
                         created_at=datetime(2026, 9, 10, tzinfo=UTC),
                     ),
                 )
-                page_index0 = row["page_index"]
-                if type(page_index0) is not int:
-                    raise ValueError("SOURCE_PAGE_INDEX_INVALID")
-                inventory = project_source_bound_text_regions(
-                    document,
-                    expected_source_sha256=str(row["original_source_sha256"]),
-                    representation_sha256=str(row["original_source_sha256"]),
-                )
-                selected: list[RegionRecord] = [
-                    {
-                        "region_id": region.binding.region_id,
-                        "block_id": region.block_id,
-                        "bbox1000": region.binding.bbox1000,
-                        "witness_sha256": region.witness.observation.output_sha256,
-                        "expected_content_sha256": region.expected_content_sha256,
-                    }
-                    for region in inventory.regions
-                    if region.binding.page_index0 == page_index0
-                ]
-                record.update(
-                    status="source_regions_available" if selected else "source_regions_unavailable",
-                    regions=selected,
-                    region_count=len(selected),
-                    overlapping_pair_count=overlap_count(selected),
-                    document_unresolved_region_count=len(inventory.unresolved),
-                )
             except DependencyError:
                 record.update(status="native_runtime_unqualified")
+            except LimitReachedError:
+                record.update(
+                    status="native_parser_refused",
+                    reason="PDF_DECOMPRESSION_LIMIT_REACHED",
+                )
             except StructuredParseError as error:
                 record.update(status="native_parser_refused", reason=error.code)
             except Exception:
-                record.update(status="native_region_projection_failed")
+                record.update(status="native_parser_failed")
+            else:
+                try:
+                    page_index0 = row["page_index"]
+                    if type(page_index0) is not int:
+                        raise ValueError("SOURCE_PAGE_INDEX_INVALID")
+                    inventory = project_source_bound_text_regions(
+                        document,
+                        expected_source_sha256=str(row["original_source_sha256"]),
+                        representation_sha256=str(row["original_source_sha256"]),
+                    )
+                    selected: list[RegionRecord] = [
+                        {
+                            "region_id": region.binding.region_id,
+                            "block_id": region.block_id,
+                            "bbox1000": region.binding.bbox1000,
+                            "witness_sha256": region.witness.observation.output_sha256,
+                            "expected_content_sha256": region.expected_content_sha256,
+                        }
+                        for region in inventory.regions
+                        if region.binding.page_index0 == page_index0
+                    ]
+                    record.update(
+                        status=(
+                            "source_regions_available"
+                            if selected
+                            else "source_regions_unavailable"
+                        ),
+                        regions=selected,
+                        region_count=len(selected),
+                        overlapping_pair_count=overlap_count(selected),
+                        document_unresolved_region_count=len(inventory.unresolved),
+                    )
+                except ValueError as error:
+                    code = str(error)
+                    record.update(
+                        status="native_region_projection_refused",
+                        reason=(
+                            code
+                            if code.isupper() and " " not in code
+                            else "REGION_PROJECTION_CONTRACT_VIOLATION"
+                        ),
+                    )
+                except Exception:
+                    record.update(status="native_region_projection_failed")
             records.append(record)
             stream.write(json.dumps(record, ensure_ascii=False, sort_keys=True) + "\n")
             if len(records) % 100 == 0:
