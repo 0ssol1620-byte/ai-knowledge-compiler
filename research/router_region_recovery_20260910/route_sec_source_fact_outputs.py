@@ -126,7 +126,9 @@ def critical_token_multiset(text: str) -> tuple[str, ...]:
     return tuple(sorted(tokens))
 
 
-def load_model_outputs(root: Path, model: str) -> dict[str, dict[str, Any]]:
+def load_model_outputs(
+    root: Path, model: str, *, expected_regions: int = EXPECTED_REGIONS
+) -> dict[str, dict[str, Any]]:
     model_root = root / model
     complete = read_json(model_root / "COMPLETE.json")
     if complete.get("benchmark_id") != BENCHMARK_ID or complete.get("truth_opened") is not False:
@@ -134,8 +136,10 @@ def load_model_outputs(root: Path, model: str) -> dict[str, dict[str, Any]]:
     if complete.get("pod_deleted") is not True or complete.get("teardown_errors") != []:
         raise RouterDecisionError(f"{model}: pod teardown is not complete")
     receipts = read_jsonl(model_root / "outputs.jsonl")
-    if len(receipts) != EXPECTED_REGIONS:
-        raise RouterDecisionError(f"{model}: output denominator is {len(receipts)}, expected 24")
+    if len(receipts) != expected_regions:
+        raise RouterDecisionError(
+            f"{model}: output denominator is {len(receipts)}, expected {expected_regions}"
+        )
     by_region: dict[str, dict[str, Any]] = {}
     for receipt in receipts:
         region_id = str(receipt["region_id"])
@@ -217,27 +221,39 @@ def final_decisions(
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     mineru = load_model_outputs(primary_root, PRIMARY_MODELS[0])
     paddle = load_model_outputs(primary_root, PRIMARY_MODELS[1])
-    ovis = load_model_outputs(adjudicator_root, ADJUDICATOR_MODEL)
-    if set(mineru) != set(paddle) or set(mineru) != set(ovis):
-        raise RouterDecisionError("model denominators differ")
+    if set(mineru) != set(paddle):
+        raise RouterDecisionError("primary model denominators differ")
+    disagreement_ids = {
+        region_id
+        for region_id in mineru
+        if Counter(mineru[region_id]["tokens"]) != Counter(paddle[region_id]["tokens"])
+    }
+    ovis = load_model_outputs(
+        adjudicator_root, ADJUDICATOR_MODEL, expected_regions=len(disagreement_ids)
+    )
+    if set(ovis) != disagreement_ids:
+        raise RouterDecisionError("Ovis output set differs from the frozen disagreement set")
     decisions: list[dict[str, Any]] = []
     for region_id in sorted(mineru):
         mineru_tokens = mineru[region_id]["tokens"]
         paddle_tokens = paddle[region_id]["tokens"]
-        ovis_tokens = ovis[region_id]["tokens"]
         primary_agrees = Counter(mineru_tokens) == Counter(paddle_tokens)
         selected: str | None
         reason: str
         if primary_agrees:
             selected = CHEAPER_PRIMARY
             reason = "primary_agreement"
-        elif Counter(ovis_tokens) == Counter(paddle_tokens):
+            ovis_hash = None
+        else:
+            ovis_tokens = ovis[region_id]["tokens"]
+            ovis_hash = ovis[region_id]["token_multiset_sha256"]
+        if not primary_agrees and Counter(ovis_tokens) == Counter(paddle_tokens):
             selected = PRIMARY_MODELS[1]
             reason = "ovis_corroborates_paddle"
-        elif Counter(ovis_tokens) == Counter(mineru_tokens):
+        elif not primary_agrees and Counter(ovis_tokens) == Counter(mineru_tokens):
             selected = PRIMARY_MODELS[0]
             reason = "ovis_corroborates_mineru"
-        else:
+        elif not primary_agrees:
             selected = None
             reason = "no_complete_token_multiset_corroboration"
         decisions.append(
@@ -251,7 +267,7 @@ def final_decisions(
                 "model_token_multiset_sha256": {
                     PRIMARY_MODELS[0]: mineru[region_id]["token_multiset_sha256"],
                     PRIMARY_MODELS[1]: paddle[region_id]["token_multiset_sha256"],
-                    ADJUDICATOR_MODEL: ovis[region_id]["token_multiset_sha256"],
+                    ADJUDICATOR_MODEL: ovis_hash,
                 },
                 "truth_opened": False,
             }

@@ -199,6 +199,24 @@ def select_models(choice: str) -> tuple[str, ...]:
     raise HoldoutRunError(f"unknown model set {choice}")
 
 
+def adjudication_rows(here: Path, rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    decision = read_json(here / "SEC_SOURCE_FACT_PRIMARY_DECISION_BINDING.json")
+    if decision.get("benchmark_id") != BENCHMARK_ID:
+        raise HoldoutRunError("primary decision binding benchmark mismatch")
+    if decision.get("sealed_truth_opened") is not False:
+        raise HoldoutRunError("primary decision binding crossed the truth boundary")
+    region_ids = [str(value) for value in decision.get("adjudication_region_ids", [])]
+    if canonical_sha256(region_ids) != decision.get("adjudication_region_ids_sha256"):
+        raise HoldoutRunError("adjudication region-id hash drift")
+    by_id = {str(row["region_id"]): row for row in rows}
+    if len(region_ids) != int(decision.get("adjudication_count", -1)):
+        raise HoldoutRunError("adjudication denominator drift")
+    missing = [region_id for region_id in region_ids if region_id not in by_id]
+    if missing:
+        raise HoldoutRunError(f"adjudication ids missing from input manifest: {missing}")
+    return [by_id[region_id] for region_id in region_ids]
+
+
 def run_model(
     *,
     arena_root: Path,
@@ -488,6 +506,8 @@ def main() -> int:
         authorization_path=authorization_path,
     )
     models = select_models(args.model_set)
+    if args.model_set == "adjudicator":
+        rows = adjudication_rows(here, rows)
     if len(rows) * len(models) > MAX_CALLS:
         raise HoldoutRunError("selected model set exceeds the frozen call ceiling")
     install_arena(arena_root)
