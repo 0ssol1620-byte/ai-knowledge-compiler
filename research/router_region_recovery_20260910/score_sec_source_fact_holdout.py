@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import math
 import os
@@ -14,6 +15,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+from bs4 import BeautifulSoup
 from route_sec_source_fact_outputs import (
     ADJUDICATOR_MODEL,
     BENCHMARK_ID,
@@ -65,7 +67,7 @@ def nearest_rank(values: list[float], percentile: float) -> float:
     return ordered[index]
 
 
-def expected_tokens(fact: dict[str, Any]) -> tuple[str, str]:
+def ix_expected_tokens(fact: dict[str, Any]) -> tuple[str, str]:
     visible = _normal_number(str(fact["normalized_visible_value"]))
     sign = fact.get("sign")
     if sign not in (None, "", "+", "-"):
@@ -77,7 +79,43 @@ def expected_tokens(fact: dict[str, Any]) -> tuple[str, str]:
     return magnitude, signed
 
 
-def validate_facts(facts: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+def displayed_expected_tokens(
+    fact: dict[str, Any], facts_root: Path
+) -> tuple[str, str, bool, bool]:
+    magnitude, ix_signed = ix_expected_tokens(fact)
+    fragment_path = facts_root / str(fact["fragment_relative_path"])
+    if sha256_file(fragment_path) != fact["fragment_sha256"]:
+        raise HoldoutScoringError(f"fragment hash drift for {fact['region_id']}")
+    soup = BeautifulSoup(fragment_path.read_text(encoding="utf-8"), "html.parser")
+    target = soup.select_one(f'[data-tavonel-target="{fact["region_id"]}"]')
+    if target is None:
+        raise HoldoutScoringError(f"target element missing for {fact['region_id']}")
+    cell = target.find_parent(["td", "th"])
+    if cell is None:
+        raise HoldoutScoringError(f"target table cell missing for {fact['region_id']}")
+    target.insert_before("__TAVONEL_TARGET_START__")
+    target.insert_after("__TAVONEL_TARGET_END__")
+    cell_text = html.unescape(cell.get_text(" ", strip=True)).replace("\xa0", " ")
+    if "__TAVONEL_TARGET_START__" not in cell_text or "__TAVONEL_TARGET_END__" not in cell_text:
+        raise HoldoutScoringError(f"target marker binding failed for {fact['region_id']}")
+    before, remainder = cell_text.split("__TAVONEL_TARGET_START__", 1)
+    _, after = remainder.split("__TAVONEL_TARGET_END__", 1)
+    immediate_before = before.rstrip()
+    immediate_after = after.lstrip()
+    presentation_negative = ix_signed.startswith("-") or immediate_before.endswith("(")
+    presentation_percent = immediate_after.startswith("%")
+    displayed_magnitude = magnitude + ("%" if presentation_percent else "")
+    displayed_signed = (
+        "-" + displayed_magnitude
+        if presentation_negative and magnitude != "0"
+        else displayed_magnitude
+    )
+    return displayed_magnitude, displayed_signed, presentation_negative, presentation_percent
+
+
+def validate_facts(
+    facts: list[dict[str, Any]], facts_root: Path
+) -> dict[str, dict[str, Any]]:
     if len(facts) != EXPECTED_REGIONS:
         raise HoldoutScoringError(
             f"sealed fact denominator is {len(facts)}, expected {EXPECTED_REGIONS}"
@@ -90,7 +128,8 @@ def validate_facts(facts: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
             raise HoldoutScoringError(f"duplicate sealed fact: {region_id}")
         ticker = str(fact["ticker"])
         issuer_counts[ticker] += 1
-        expected_tokens(fact)
+        ix_expected_tokens(fact)
+        displayed_expected_tokens(fact, facts_root)
         by_region[region_id] = fact
     if len(issuer_counts) != EXPECTED_ISSUERS or set(issuer_counts.values()) != {
         EXPECTED_FACTS_PER_ISSUER
@@ -124,23 +163,30 @@ def receipt_accepts(output: dict[str, Any]) -> bool:
 
 
 def token_retention(
-    output: dict[str, Any], magnitude: str, signed: str
-) -> tuple[bool, bool]:
+    output: dict[str, Any], magnitude: str, displayed_signed: str, ix_signed: str
+) -> tuple[bool, bool, bool]:
     token_counts = Counter(output["tokens"])
     magnitude_retained = token_counts[magnitude] > 0 or token_counts["-" + magnitude] > 0
-    return magnitude_retained, token_counts[signed] > 0
+    return (
+        magnitude_retained,
+        token_counts[displayed_signed] > 0,
+        token_counts[ix_signed] > 0,
+    )
 
 
 def model_outcome(
-    output: dict[str, Any], magnitude: str, signed: str
+    output: dict[str, Any], magnitude: str, displayed_signed: str, ix_signed: str
 ) -> dict[str, Any]:
-    magnitude_retained, signed_retained = token_retention(output, magnitude, signed)
+    magnitude_retained, signed_retained, ix_signed_retained = token_retention(
+        output, magnitude, displayed_signed, ix_signed
+    )
     accepted = receipt_accepts(output)
     return {
         "accepted": accepted,
         "detected_failure": not accepted,
         "magnitude_retained": magnitude_retained,
         "signed_retained": signed_retained,
+        "ix_signed_retained": ix_signed_retained,
         "silent_critical_loss": accepted and not signed_retained,
         "semantic_error_class": output["receipt"].get("semantic_error_class"),
         "inference_ms": int(output["receipt"]["timings_ms"]["inference_ms"]),
@@ -155,6 +201,7 @@ def summarize_outcomes(outcomes: list[dict[str, Any]]) -> dict[str, Any]:
         "detected_failure": sum(bool(row["detected_failure"]) for row in outcomes),
         "magnitude_retained": sum(bool(row["magnitude_retained"]) for row in outcomes),
         "signed_retained": sum(bool(row["signed_retained"]) for row in outcomes),
+        "ix_signed_retained": sum(bool(row["ix_signed_retained"]) for row in outcomes),
         "silent_critical_loss": sum(bool(row["silent_critical_loss"]) for row in outcomes),
     }
     return {
@@ -271,7 +318,7 @@ def score(
     if re.fullmatch(r"[0-9a-f]{40}", scoring_commit) is None:
         raise HoldoutScoringError("scoring commit must be a full lowercase Git SHA-1")
     facts = read_jsonl(facts_path)
-    fact_by_region = validate_facts(facts)
+    fact_by_region = validate_facts(facts, facts_path.parent)
     models: dict[str, dict[str, dict[str, Any]]] = {
         PRIMARY_MODELS[0]: load_model_outputs(primary_root, PRIMARY_MODELS[0]),
         PRIMARY_MODELS[1]: load_model_outputs(primary_root, PRIMARY_MODELS[1]),
@@ -287,13 +334,20 @@ def score(
     details: list[dict[str, Any]] = []
     for region_id in sorted(fact_by_region):
         fact = fact_by_region[region_id]
-        magnitude, signed = expected_tokens(fact)
+        ix_magnitude, ix_signed = ix_expected_tokens(fact)
+        magnitude, displayed_signed, presentation_negative, presentation_percent = (
+            displayed_expected_tokens(fact, facts_path.parent)
+        )
+        if magnitude.rstrip("%") != ix_magnitude:
+            raise HoldoutScoringError(f"display/IX magnitude mismatch for {region_id}")
         model_results: dict[str, dict[str, Any]] = {}
         for model in PRIMARY_MODELS:
-            model_results[model] = model_outcome(models[model][region_id], magnitude, signed)
+            model_results[model] = model_outcome(
+                models[model][region_id], magnitude, displayed_signed, ix_signed
+            )
         if region_id in models[ADJUDICATOR_MODEL]:
             model_results[ADJUDICATOR_MODEL] = model_outcome(
-                models[ADJUDICATOR_MODEL][region_id], magnitude, signed
+                models[ADJUDICATOR_MODEL][region_id], magnitude, displayed_signed, ix_signed
             )
         route = route_by_region[region_id]
         selected_model = route.get("selected_model")
@@ -302,10 +356,12 @@ def score(
             route_accepted = False
             route_magnitude = False
             route_signed = False
+            route_ix_signed = False
         else:
             route_accepted = bool(selected["accepted"])
             route_magnitude = route_accepted and bool(selected["magnitude_retained"])
             route_signed = route_accepted and bool(selected["signed_retained"])
+            route_ix_signed = route_accepted and bool(selected["ix_signed_retained"])
         diagnostic_correct_models = [
             model
             for model, outcome in model_results.items()
@@ -319,8 +375,11 @@ def score(
                 "ticker": fact["ticker"],
                 "source_fact_sha256": fact["source_fact_sha256"],
                 "expected_magnitude_token": magnitude,
-                "expected_signed_token": signed,
+                "expected_displayed_signed_token": displayed_signed,
+                "expected_ix_signed_token": ix_signed,
                 "ix_sign": fact.get("sign"),
+                "presentation_negative": presentation_negative,
+                "presentation_percent": presentation_percent,
                 "models": model_results,
                 "router": {
                     "selected_model": selected_model,
@@ -330,6 +389,7 @@ def score(
                     "detected_failure": not route_accepted,
                     "magnitude_retained": route_magnitude,
                     "signed_retained": route_signed,
+                    "ix_signed_retained": route_ix_signed,
                     "silent_critical_loss": route_accepted and not route_signed,
                 },
                 "diagnostic_oracle": {
@@ -399,11 +459,17 @@ def score(
                 "sign ignored"
             ),
             "signed_retention": (
-                "the frozen Inline XBRL sign attribute plus normalized visible numeric token occurs"
+                "the rendered table-cell sign or parentheses plus normalized visible numeric "
+                "token occurs"
             ),
             "sclr": (
-                "signed critical token is absent while the candidate is accepted; semantic output "
-                "errors and router refusal are detected failures, not silent losses"
+                "display-signed critical token is absent while the candidate is accepted; "
+                "semantic output errors and router refusal are detected failures, not silent losses"
+            ),
+            "ix_signed_retention": (
+                "the frozen Inline XBRL sign attribute plus normalized visible token occurs; "
+                "reported separately because presentation parentheses can encode statement "
+                "display semantics"
             ),
             "known_limitation": (
                 "row-level crops can contain repeated equal numeric tokens; this endpoint does not "
@@ -465,7 +531,7 @@ def self_test() -> None:
         ),
     ]
     for fact, expected in cases:
-        observed = expected_tokens(fact)
+        observed = ix_expected_tokens(fact)
         if observed != expected:
             raise HoldoutScoringError(f"expected token self-test failed: {observed} != {expected}")
     values = [1.0, 2.0, 3.0, 4.0]
