@@ -11,9 +11,10 @@
     "canonical_url": "exact HTTPS URL after redirects; lowercase ASCII host; no userinfo, fragment or explicit port; path and query preserved byte-for-byte",
     "order": "manifest grouped by required_classes order, then SHA256(canonical source URL) ascending within each class",
     "replacement": "none after acquisition begins; an unavailable or ineligible source remains unresolved",
+    "selected_units_per_class": 12,
     "minimum_units_per_class": 12,
-    "maximum_units_per_class": 24,
-    "maximum_total_units": 192,
+    "maximum_units_per_class": 12,
+    "maximum_total_units": 96,
     "near_duplicate_rule": "each unit must have a unique source hash, canonical URL and source-family identifier; exclude sibling pages or files from one source package and every family seen in development",
     "rights_rule": "retain only sources with an HTTPS rights-evidence URL and recorded terms that permit local research evaluation; do not redistribute original bytes",
     "target_rule": "record one truth-free source-native or bbox1000 locator before inference; no locator may be added or changed after seeing model behavior"

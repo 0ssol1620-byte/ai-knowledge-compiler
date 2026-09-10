@@ -3,7 +3,7 @@
   "benchmark_id": "TAVONEL-ROUTER-MIXED-SOURCE-HOLDOUT-20260910-V1",
   "recorded_at": "2026-09-10T16:20:16+09:00",
   "state": "BLOCKED_ACQUISITION_AND_BINDING_REQUIRED",
-  "selection_protocol_sha256": "sha256:2cca5f8938ad9ff8c583e788df4625749351fd27755aa58d3f4b56fed2882c89",
+  "selection_protocol_sha256": "sha256:342b64ff4d15ac78f2389073ff68d24e0ac58a9a28191268b7db2fd6818f179b",
   "source_manifest_exists": false,
   "runtime_binding_exists": false,
   "predictions_frozen": false,

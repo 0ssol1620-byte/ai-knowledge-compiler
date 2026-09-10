@@ -239,6 +239,7 @@ def evaluate_preopen(
     selection_map = selection if isinstance(selection, Mapping) else {}
     minimum = selection_map.get("minimum_units_per_class")
     maximum = selection_map.get("maximum_units_per_class")
+    selected_per_class = selection_map.get("selected_units_per_class")
     total_maximum = selection_map.get("maximum_total_units")
     if not isinstance(minimum, int) or isinstance(minimum, bool) or minimum < 1:
         blockers.append("MINIMUM_CLASS_SIZE_INVALID")
@@ -249,6 +250,17 @@ def evaluate_preopen(
     if not isinstance(total_maximum, int) or isinstance(total_maximum, bool) or total_maximum < 1:
         blockers.append("TOTAL_SIZE_INVALID")
         total_maximum = 0
+    if (
+        not isinstance(selected_per_class, int)
+        or isinstance(selected_per_class, bool)
+        or selected_per_class < 1
+        or selected_per_class != minimum
+        or selected_per_class != maximum
+    ):
+        blockers.append("SELECTED_CLASS_SIZE_NOT_EXACT")
+        selected_per_class = minimum
+    if total_maximum != selected_per_class * len(required_classes):
+        blockers.append("TOTAL_SIZE_NOT_EXACT")
 
     counts: Counter[str] = Counter()
     ids: set[str] = set()
@@ -366,8 +378,12 @@ def evaluate_preopen(
             blockers.append(f"CLASS_{class_name}_BELOW_MINIMUM")
         if count > maximum:
             blockers.append(f"CLASS_{class_name}_ABOVE_MAXIMUM")
+        if count != selected_per_class:
+            blockers.append(f"CLASS_{class_name}_NOT_EXACT")
     if len(rows) > total_maximum:
         blockers.append("TOTAL_SIZE_EXCEEDED")
+    if len(rows) != total_maximum:
+        blockers.append("TOTAL_SIZE_NOT_MET")
     if len(rows) != len(ids):
         blockers.append("DENOMINATOR_IDENTITY_INCOMPLETE")
 

@@ -9,7 +9,8 @@ source classes that can make a Router economically useful: native structured
 sources, born-digital PDF tables, scans, layout-heavy pages, Korean DOCX/PPTX/
 XLSX, and target-alignment failures.
 
-`MIXED_SOURCE_HOLDOUT_PROTOCOL.json` fixes source ordering, class bounds,
+`MIXED_SOURCE_HOLDOUT_PROTOCOL.json` fixes source ordering, exactly 12 units
+per class and 96 total units,
 missing-output handling, arms, metrics, statistics, cost ceiling and teardown.
 Its current SHA-256 is recorded in `PREOPEN_STATE.json`. Source URLs and bytes
 are intentionally absent at this boundary. Adding convenient documents after

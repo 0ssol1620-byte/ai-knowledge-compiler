@@ -34,9 +34,10 @@ def valid_world(tmp_path: Path) -> dict[str, Path]:
         "required_classes": list(CLASSES),
         "model_keys": ["mineru_vlm", "paddleocr_vl_1_6", "ovisocr2"],
         "source_selection": {
+            "selected_units_per_class": 2,
             "minimum_units_per_class": 2,
-            "maximum_units_per_class": 3,
-            "maximum_total_units": 24,
+            "maximum_units_per_class": 2,
+            "maximum_total_units": 16,
         },
     }
     protocol_path = tmp_path / "protocol.json"
@@ -234,6 +235,8 @@ def test_missing_class_never_shrinks_the_denominator_silently(tmp_path: Path) ->
     result = evaluate(world)
     assert not result.passed
     assert "CLASS_native_structured_BELOW_MINIMUM" in result.blockers
+    assert "CLASS_native_structured_NOT_EXACT" in result.blockers
+    assert "TOTAL_SIZE_NOT_MET" in result.blockers
 
 
 def test_truth_bytes_present_block_preopen(tmp_path: Path) -> None:
