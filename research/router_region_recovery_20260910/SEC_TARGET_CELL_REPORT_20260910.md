@@ -25,6 +25,10 @@ spent-development experiment and cannot serve as a fresh confirmatory result.
   zero live pods.
 - Reconciled RunPod cost: USD 0.372642.
 - Two scoring runs were byte-identical.
+- 241 Router package, unit, and Apple 290-page public-corpus tests passed.
+- 61 replay and Oracle-math tests passed.
+- Ruff passed for the complete region-recovery research directory; strict mypy
+  passed for the five execution, routing, and scoring modules.
 
 ## Result
 

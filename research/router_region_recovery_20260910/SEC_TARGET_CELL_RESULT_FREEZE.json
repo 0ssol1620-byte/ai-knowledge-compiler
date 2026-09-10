@@ -19,6 +19,12 @@
   "model_region_calls_executed": 72,
   "reconciled_gpu_cost_usd": 0.372642,
   "live_runpod_pods_after_run": 0,
+  "validation": {
+    "router_package_unit_and_apple_public_tests": "241 passed",
+    "replay_and_oracle_math_tests": "61 passed",
+    "ruff": "passed for the complete router_region_recovery_20260910 directory",
+    "strict_mypy": "passed for five execution, routing and scoring modules"
+  },
   "results": {
     "ovisocr2": {
       "signed_retention": 1.0,
