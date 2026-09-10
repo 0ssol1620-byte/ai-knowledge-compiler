@@ -3,6 +3,10 @@
 Status: spent-development diagnostic only. This is not a public benchmark,
 production qualification, or evidence of superiority.
 
+Follow-up: `SELECTIVE_PEER_OVERRIDE_REPLAY_20260910.md` evaluates one separately
+frozen election change. It slightly reduces SCLR but remains worse on loss,
+regret and historical cost, so it is retained as another negative result.
+
 ## Question and frozen baseline
 
 PR #63's `SOURCE_LAYOUT_AUTHORITY_VERIFIER_V1` result remains unchanged. Its

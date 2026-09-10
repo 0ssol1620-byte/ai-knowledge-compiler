@@ -1267,6 +1267,80 @@ class SourceLayoutAuthorityMeasured:
 
 
 @dataclass(frozen=True)
+class SelectivePeerOverrideVerified:
+    """Retain a fixed layout primary unless independent evidence overturns it.
+
+    This bounded spent-development election never consults evaluator truth or
+    model scores. The challenger replaces the primary only when a third-provider
+    verifier corroborates the challenger and not the primary. Failed verification
+    remains explicit while the present fixed primary stays the accepted baseline.
+    """
+
+    primary_model: str = "mineru_vlm"
+    challenger_model: str = "olmocr2"
+    verifier_model: str = PRIMARY_MODEL
+    name: str = "SELECTIVE_PEER_OVERRIDE_VERIFIER_V1"
+
+    def plan(self, unit_features: UnitFeatures) -> UnitPlan:
+        primary = self.primary_model
+        challenger = self.challenger_model
+        initial_routes = tuple(dict.fromkeys((primary, challenger)))
+        primary_present = _present(unit_features, primary)
+        challenger_present = _present(unit_features, challenger)
+        if (
+            primary_present
+            and challenger_present
+            and (unit_features.sim(primary, challenger) or 0.0) >= AGREEMENT_TAU
+        ):
+            return UnitPlan(
+                routes=initial_routes,
+                accepted=primary,
+                reason_codes=("PRIMARY_CHALLENGER_AGREEMENT",),
+            )
+
+        routes = tuple(dict.fromkeys((*initial_routes, self.verifier_model)))
+        verifier_present = _present(unit_features, self.verifier_model)
+        primary_supported = (
+            primary_present
+            and verifier_present
+            and (unit_features.sim(primary, self.verifier_model) or 0.0)
+            >= AGREEMENT_TAU
+        )
+        challenger_supported = (
+            challenger_present
+            and verifier_present
+            and (unit_features.sim(challenger, self.verifier_model) or 0.0)
+            >= AGREEMENT_TAU
+        )
+        if challenger_supported and not primary_supported:
+            return UnitPlan(
+                routes=routes,
+                accepted=challenger,
+                escalate=True,
+                reason_codes=("PEER_ONLY_CORROBORATED_OVERRIDE",),
+            )
+        if primary_present:
+            reason = (
+                "PRIMARY_CORROBORATED_RETAINED"
+                if primary_supported
+                else "PRIMARY_RETAINED_WITHOUT_CORROBORATION"
+            )
+            return UnitPlan(
+                routes=routes,
+                accepted=primary,
+                escalate=True,
+                reason_codes=(reason,),
+            )
+        return UnitPlan(
+            routes=routes,
+            accepted=None,
+            escalate=True,
+            unresolved_reason="primary missing and challenger lacks independent corroboration",
+            reason_codes=("MISSING_PRIMARY_NOT_SUBSTITUTED",),
+        )
+
+
+@dataclass(frozen=True)
 class CoreRouter:
     """The current production `akc_router.engine.select_first_route`, replayed.
 
@@ -1491,6 +1565,20 @@ def frozen_policy_parameters() -> dict[str, Any]:
             ),
             "agreement_tau": AGREEMENT_TAU,
         },
+        "selective_peer_override_verifier_v1": {
+            "primary_model": "mineru_vlm",
+            "challenger_model": "olmocr2",
+            "verifier_model": PRIMARY_MODEL,
+            "override_rule": (
+                "accept challenger only when verifier corroborates challenger at or "
+                "above agreement_tau and does not corroborate primary"
+            ),
+            "fallback_rule": (
+                "retain a present primary with an explicit uncorroborated reason; "
+                "if primary is missing, refuse unless challenger is corroborated"
+            ),
+            "agreement_tau": AGREEMENT_TAU,
+        },
         "prediction_tau": PREDICTION_TAU,
         "critical_token_tau": CRITICAL_TOKEN_TAU,
         "route_to_arena_model": dict(ROUTE_TO_ARENA_MODEL),
@@ -1548,6 +1636,7 @@ __all__ = [
     "PeerAgreementVerified",
     "Policy",
     "ReplayComposite",
+    "SelectivePeerOverrideVerified",
     "SourceLayoutAuthorityMeasured",
     "SourceLayoutAuthorityVerified",
     "UnitFeatures",

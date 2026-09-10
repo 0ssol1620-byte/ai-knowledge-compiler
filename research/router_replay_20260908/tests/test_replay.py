@@ -349,6 +349,9 @@ def test_source_layout_authority_policy_and_builder_are_frozen() -> None:
     measured = freeze["source_layout_authority_verifier_v2"]
     assert measured["native_limits"]["minimum_locator_coverage"] == 0.99
     assert measured["layout_probe"]["table_line_density_tau"] == 0.02
+    override = freeze["selective_peer_override_verifier_v1"]
+    assert override["primary_model"] == "mineru_vlm"
+    assert override["agreement_tau"] == F.AGREEMENT_TAU
     assert F.FEATURE_BUILDER_ID.endswith("V3")
     assert "native_reading_order_score" in F.UNKNOWN_PAGE_METRIC_FIELDS
 
@@ -407,6 +410,52 @@ def test_measured_layout_policy_uses_locator_coverage_for_native() -> None:
     assert plan.accepted == "native"
     assert plan.routes == ("native", "mineru_vlm")
     assert "source:native_qualified" in plan.reason_codes
+
+
+def test_selective_override_keeps_primary_on_direct_agreement() -> None:
+    unit = make_unit(
+        texts={"mineru_vlm": "alpha beta", "olmocr2": "alpha beta"}
+    )
+    plan = F.SelectivePeerOverrideVerified().plan(unit)
+    assert plan.accepted == "mineru_vlm"
+    assert plan.routes == ("mineru_vlm", "olmocr2")
+    assert plan.reason_codes == ("PRIMARY_CHALLENGER_AGREEMENT",)
+
+
+def test_selective_override_requires_exclusive_peer_corroboration() -> None:
+    unit = make_unit(
+        texts={
+            "mineru_vlm": "layout candidate unrelated",
+            "olmocr2": "alpha beta gamma delta",
+            F.PRIMARY_MODEL: "alpha beta gamma delta",
+        }
+    )
+    plan = F.SelectivePeerOverrideVerified().plan(unit)
+    assert plan.accepted == "olmocr2"
+    assert plan.routes == ("mineru_vlm", "olmocr2", F.PRIMARY_MODEL)
+    assert plan.reason_codes == ("PEER_ONLY_CORROBORATED_OVERRIDE",)
+
+
+def test_selective_override_retains_primary_without_false_verification() -> None:
+    unit = make_unit(
+        texts={
+            "mineru_vlm": "layout candidate",
+            "olmocr2": "text candidate",
+            F.PRIMARY_MODEL: "third opinion",
+        }
+    )
+    plan = F.SelectivePeerOverrideVerified().plan(unit)
+    assert plan.accepted == "mineru_vlm"
+    assert plan.reason_codes == ("PRIMARY_RETAINED_WITHOUT_CORROBORATION",)
+
+
+def test_selective_override_does_not_substitute_uncorroborated_missing_primary() -> None:
+    unit = make_unit(
+        texts={"olmocr2": "text candidate", F.PRIMARY_MODEL: "third opinion"}
+    )
+    plan = F.SelectivePeerOverrideVerified().plan(unit)
+    assert plan.accepted is None
+    assert plan.reason_codes == ("MISSING_PRIMARY_NOT_SUBSTITUTED",)
 
 
 def test_layout_probe_measures_two_separated_columns(tmp_path: Path) -> None:

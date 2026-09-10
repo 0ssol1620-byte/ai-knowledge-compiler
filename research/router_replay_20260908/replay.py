@@ -93,6 +93,7 @@ def build_arms(models: Sequence[str]) -> list[Any]:
     if N.NATIVE_MODEL in models:
         arms.append(F.SourceLayoutAuthorityVerified())
         arms.append(F.SourceLayoutAuthorityMeasured())
+        arms.append(F.SelectivePeerOverrideVerified())
         arms.append(
             F.PeerAgreementVerified(
                 models=(N.NATIVE_MODEL, F.PRIMARY_MODEL, F.PEER_MODEL),
