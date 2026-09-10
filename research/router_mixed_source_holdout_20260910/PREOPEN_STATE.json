@@ -1,20 +1,17 @@
 {
   "schema": "tavonel.router_mixed_source_preopen_state.v1",
   "benchmark_id": "TAVONEL-ROUTER-MIXED-SOURCE-HOLDOUT-20260910-V1",
-  "recorded_at": "2026-09-10T16:20:16+09:00",
-  "state": "BLOCKED_SOURCE_ACQUISITION_RUNTIME_AND_PREDICTIONS_REQUIRED",
+  "recorded_at": "2026-09-10T18:45:32+09:00",
+  "state": "BLOCKED_RUNTIME_AND_PREDICTIONS_REQUIRED",
   "selection_protocol_sha256": "sha256:342b64ff4d15ac78f2389073ff68d24e0ac58a9a28191268b7db2fd6818f179b",
-  "source_manifest_exists": false,
+  "source_manifest_exists": true,
   "runtime_binding_exists": false,
   "predictions_frozen": false,
   "truth_opened": false,
   "model_calls": 0,
   "new_gpu_spend_usd": 0,
   "required_next": [
-    "acquire the exact 96 selected official-source URLs without replacement and persist byte digests, media types and sizes",
-    "resolve each predeclared truth-free source-native or bbox1000 target locator",
-    "freeze the source manifest and development-overlap inventory",
-    "bind exact preflight, Native, source-contract, model, evaluator, statistics and router-policy bytes",
+    "bind exact preflight, Native, source-contract, render, model, evaluator, statistics and router-policy bytes",
     "freeze one truth-free route prediction per selected source unit",
     "run preflight_mixed_holdout.py and require passed=true before any truth or GPU execution"
   ],
@@ -24,5 +21,8 @@
   "candidate_inventory_sha256": "sha256:f7da723da18e35300dff774d50c03917eb9a13b7c68e3a5fc537698a5b88a8c0",
   "candidate_units": 128,
   "selected_units": 96,
-  "candidate_seed_sha256": "sha256:e0d96eeb2f31acf3abedb57ce94f1d79a124294d2110fa6b6edb87022d31586d"
+  "candidate_seed_sha256": "sha256:e0d96eeb2f31acf3abedb57ce94f1d79a124294d2110fa6b6edb87022d31586d",
+  "source_manifest_sha256": "sha256:5001577b021a9f93869017e32a613e161ddc6edde95c75fd724f3faf29b1a451",
+  "development_overlap_inventory_exists": true,
+  "development_overlap_inventory_sha256": "sha256:9897eed643781c0ba006219d550eeb9b388a44a785bc249f27c69424aeabb1c5"
 }

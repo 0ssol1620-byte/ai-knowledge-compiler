@@ -1,7 +1,7 @@
 {
   "schema": "tavonel.router_official_source_acquisition_state.v1",
   "benchmark_id": "TAVONEL-ROUTER-MIXED-SOURCE-HOLDOUT-20260910-V1",
-  "state": "CANDIDATE_INVENTORY_FROZEN_SOURCE_ACQUISITION_PENDING",
+  "state": "SOURCE_MANIFEST_FROZEN_RUNTIME_AND_PREDICTIONS_PENDING",
   "selection_protocol_sha256": "sha256:342b64ff4d15ac78f2389073ff68d24e0ac58a9a28191268b7db2fd6818f179b",
   "candidate_seed_file_exists": true,
   "candidate_seed_sha256": "sha256:e0d96eeb2f31acf3abedb57ce94f1d79a124294d2110fa6b6edb87022d31586d",
@@ -30,10 +30,19 @@
     "https://www.usa.gov/government-copyright"
   ],
   "transport_validation_accessed_source_bytes": true,
-  "frozen_selected_source_manifest_exists": false,
-  "persisted_frozen_source_units": 0,
+  "frozen_selected_source_manifest_exists": true,
+  "persisted_frozen_source_units": 96,
   "truth_opened": false,
   "model_calls": 0,
   "new_gpu_spend_usd": 0,
-  "next": "acquire the exact 96 selected URLs without replacement, bind byte hashes/media/size/locators and development overlap, then freeze runtime and truth-free route predictions before preflight"
+  "next": "bind exact runtime/code/model identities and freeze truth-free route predictions, then require preflight passed=true before truth or GPU execution",
+  "frozen_selected_source_manifest_sha256": "sha256:5001577b021a9f93869017e32a613e161ddc6edde95c75fd724f3faf29b1a451",
+  "private_source_bytes": 600229016,
+  "original_source_bytes_committed": false,
+  "development_overlap_inventory_exists": true,
+  "development_overlap_inventory_sha256": "sha256:9897eed643781c0ba006219d550eeb9b388a44a785bc249f27c69424aeabb1c5",
+  "development_source_hashes": 10203,
+  "development_source_families": 3848,
+  "source_hash_overlap": 0,
+  "source_family_overlap": 0
 }

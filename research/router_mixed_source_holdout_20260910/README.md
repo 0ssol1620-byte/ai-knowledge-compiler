@@ -1,6 +1,6 @@
 # Mixed-source Router holdout pre-registration
 
-Status: **CANDIDATE INVENTORY FROZEN; CORPUS UNACQUIRED; HOLDOUT UNOPENED**
+Status: **SOURCE MANIFEST FROZEN; RUNTIME AND PREDICTIONS PENDING; HOLDOUT UNOPENED**
 
 The SEC target-cell development run established a useful Ovis component but
 did not establish Router superiority. This package defines the next admissible
@@ -70,10 +70,14 @@ rows from independent source packages. Its SHA-256 is
 selects exactly 12 units in each of the eight classes, 96 total, with 32 unused
 standby candidates. Its SHA-256 is
 `sha256:f7da723da18e35300dff774d50c03917eb9a13b7c68e3a5fc537698a5b88a8c0`.
-Transport checks touched source bytes to verify direct-file type and magic, but
-the selected corpus has not been persisted or manifested. Runtime bindings and
-truth-free route predictions are also absent, so the pre-open gate remains
-closed and no model or GPU execution is authorized.
+The exact 96 selected source byte streams are privately persisted and bound by
+`SELECTED_SOURCE_MANIFEST.jsonl` (`sha256:5001577b021a9f93869017e32a613e161ddc6edde95c75fd724f3faf29b1a451`).
+The committed manifest contains metadata and digests only; 600,229,016 original
+bytes remain in the ignored evidence directory. The development inventory binds
+10,203 hashes and 3,848 source families from the exact spent Arena and SEC
+source manifests; source-hash overlap and family overlap are both zero. Runtime
+bindings and truth-free route predictions remain absent, so the pre-open gate
+is closed and no model or GPU execution is authorized.
 
 `acquire_selected_sources.py` is the bounded no-replacement acquisition path.
 It accepts only HTTP 200 without redirects, caps each source at 300 MiB, writes
