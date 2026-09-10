@@ -2,6 +2,16 @@
 
 Status: IMPLEMENTED / LOCALLY TESTED CANDIDATE. No production routing authority, model promotion, fresh-holdout result or public benchmark claim. Base is the existing Router v2 PR #59 (2fcdf1a), not a replacement for its parent integration ladder.
 
+## Confirmatory promotion boundary
+
+`ModelEvidence` now requires an exact confirmatory receipt digest, the closed
+evidence class `fresh_holdout`, and an explicit evaluated scope before a model
+binding can become `QUALIFIED`. Spent-development, retrospective, proxy and
+shadow results remain `CANDIDATE` even when their runtime, latency, licence and
+failure-mode receipts are complete. The evidence fingerprint is included in
+the portfolio revision, so replacing the receipt changes every bound execution
+plan instead of silently reusing the old plan identity.
+
 ## 1. Research synthesis and deliberate limits
 
 AdaParse (https://arxiv.org/html/2505.01435v1) studies document-to-parser allocation, preference-aligned quality prediction and parallel resource scheduling. It supports measuring dispatch and compute allocation as system components. It does not supply a trusted per-region proof that a financial sign, source version or exact citation survived.

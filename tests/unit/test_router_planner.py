@@ -81,6 +81,9 @@ _QUALIFIED = ModelEvidence(
     failure_modes=("none_observed",),
     page_class_evidence=("old_scans",),
     data_policy="in_tenant_gpu_only",
+    confirmatory_receipt_sha256="sha256:" + "d" * 64,
+    confirmatory_evidence_class="fresh_holdout",
+    confirmatory_scope=("old_scans",),
 )
 
 

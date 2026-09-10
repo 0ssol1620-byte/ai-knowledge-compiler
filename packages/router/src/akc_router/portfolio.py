@@ -11,7 +11,8 @@ Three rules it exists to enforce:
   and every one of them is copied from a registry artifact, never guessed.
 * **Missing evidence is `CANDIDATE`, not "probably fine".** WP-R4 says an
   unqualified model is a candidate; `missing_evidence` names exactly which
-  receipts are absent, so the gap is a work item and not a vibe.
+  receipts are absent. Development or spent-corpus evidence can never satisfy
+  the confirmatory gate.
 * **An unapproved licence is `EXCLUDED`.** Code, weights, dataset and hosted-API
   terms are four separate licences; this checks the one the registry recorded
   and claims nothing about the other three.
@@ -26,7 +27,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from enum import StrEnum
 
 from .execution_plan import ExecutionLane
@@ -62,6 +63,8 @@ CAPABILITY_CLAIM_LANES: frozenset[ExecutionLane] = frozenset(
 )
 
 #: WP-R4 (§5) evidence a model needs before it can be a champion for a lane.
+#: The final three fields keep measured development evidence useful without
+#: allowing it to masquerade as a fresh confirmatory result.
 REQUIRED_EVIDENCE: tuple[str, ...] = (
     "weights_repo",
     "weights_revision",
@@ -78,6 +81,9 @@ REQUIRED_EVIDENCE: tuple[str, ...] = (
     "failure_modes",
     "page_class_evidence",
     "data_policy",
+    "confirmatory_receipt_sha256",
+    "confirmatory_evidence_class",
+    "confirmatory_scope",
 )
 
 
@@ -89,7 +95,12 @@ class Qualification(StrEnum):
 
 @dataclass(frozen=True, slots=True)
 class ModelEvidence:
-    """What is actually known about one model. `None` means "no receipt"."""
+    """What is actually known about one model. `None` means "no receipt".
+
+    `confirmatory_evidence_class` is intentionally a closed promotion gate:
+    only ``fresh_holdout`` qualifies. Spent-development, retrospective, proxy,
+    or shadow results remain inspectable candidates.
+    """
 
     model_key: str
     weights_repo: str | None = None
@@ -110,12 +121,19 @@ class ModelEvidence:
     failure_modes: tuple[str, ...] = ()
     page_class_evidence: tuple[str, ...] = ()
     data_policy: str | None = None
+    confirmatory_receipt_sha256: str | None = None
+    confirmatory_evidence_class: str | None = None
+    confirmatory_scope: tuple[str, ...] = ()
     founder_excluded: bool = False
     exclusion_reason: str | None = None
 
     def __post_init__(self) -> None:
         if not self.model_key:
             raise ValueError("model evidence requires a model key")
+        if self.confirmatory_receipt_sha256 is not None and not _valid_sha256(
+            self.confirmatory_receipt_sha256
+        ):
+            raise ValueError("confirmatory receipt must be an exact sha256 digest")
 
     @property
     def missing_evidence(self) -> tuple[str, ...]:
@@ -125,6 +143,12 @@ class ModelEvidence:
             value = getattr(self, name)
             if value is None or (isinstance(value, tuple) and not value):
                 missing.append(name)
+        if (
+            self.confirmatory_evidence_class is not None
+            and self.confirmatory_evidence_class != "fresh_holdout"
+            and "confirmatory_evidence_class" not in missing
+        ):
+            missing.append("confirmatory_evidence_class")
         if self.licence_status is not None and self.licence_status not in APPROVED_LICENCE_STATUS:
             missing.append("licence_status")
         return tuple(missing)
@@ -149,11 +173,13 @@ def evidence_from_runtime_manifest(
     failure_modes: Sequence[str] = (),
     page_class_evidence: Sequence[str] = (),
     data_policy: str | None = None,
+    confirmatory_receipt_sha256: str | None = None,
+    confirmatory_evidence_class: str | None = None,
+    confirmatory_scope: Sequence[str] = (),
 ) -> ModelEvidence:
     """Read one Arena `runtimes/<model>/runtime.json` mapping into evidence.
 
-    The measured fields the manifest does not carry -- latency, throughput,
-    observed failure modes, per-page-class evidence, data policy -- are keyword
+    The measured and promotion fields the manifest does not carry are keyword
     arguments precisely so that leaving them out leaves the model a CANDIDATE
     rather than silently qualifying it.
     """
@@ -184,6 +210,9 @@ def evidence_from_runtime_manifest(
         failure_modes=tuple(failure_modes),
         page_class_evidence=tuple(page_class_evidence),
         data_policy=data_policy,
+        confirmatory_receipt_sha256=confirmatory_receipt_sha256,
+        confirmatory_evidence_class=confirmatory_evidence_class,
+        confirmatory_scope=tuple(confirmatory_scope),
         founder_excluded=founder_excluded,
         exclusion_reason=exclusion_reason,
     )
@@ -215,6 +244,7 @@ class LaneBinding:
     model_key: str | None
     qualification: Qualification
     missing_evidence: tuple[str, ...] = ()
+    evidence_revision: str | None = None
 
     @property
     def is_promotable(self) -> bool:
@@ -309,6 +339,7 @@ def build_portfolio(
                 model_key=model_key,
                 qualification=known.qualification,
                 missing_evidence=known.missing_evidence,
+                evidence_revision=model_evidence_revision(known),
             )
         )
     ordered = tuple(bindings)
@@ -329,6 +360,7 @@ def portfolio_revision(bindings: Sequence[LaneBinding]) -> str:
                 binding.model_key,
                 binding.qualification.value,
                 list(binding.missing_evidence),
+                binding.evidence_revision,
             ]
             for binding in bindings
         ],
@@ -344,6 +376,23 @@ def _as_str(value: object) -> str | None:
 
 def _as_int(value: object) -> int | None:
     return value if isinstance(value, int) and not isinstance(value, bool) else None
+
+
+def _valid_sha256(value: str) -> bool:
+    body = value.removeprefix("sha256:")
+    return value.startswith("sha256:") and len(body) == 64 and all(
+        character in "0123456789abcdef" for character in body
+    )
+
+
+def model_evidence_revision(evidence: ModelEvidence) -> str:
+    """Bind a portfolio revision to the exact model and promotion receipts."""
+    payload = json.dumps(
+        asdict(evidence),
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode()
+    return "evidence_" + hashlib.sha256(payload).hexdigest()[:16]
 
 
 def _inference_args_sha256(config: object) -> str | None:
@@ -368,5 +417,6 @@ __all__ = [
     "build_portfolio",
     "container_digest",
     "evidence_from_runtime_manifest",
+    "model_evidence_revision",
     "portfolio_revision",
 ]

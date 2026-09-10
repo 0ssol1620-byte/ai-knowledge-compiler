@@ -131,6 +131,9 @@ def test_ovis_stays_candidate_until_the_measured_evidence_is_bound() -> None:
         "failure_modes",
         "page_class_evidence",
         "data_policy",
+        "confirmatory_receipt_sha256",
+        "confirmatory_evidence_class",
+        "confirmatory_scope",
     }
 
 
@@ -143,6 +146,9 @@ def test_complete_evidence_qualifies() -> None:
         failure_modes=("tensor_shape_error_at_concurrency_3",),
         page_class_evidence=("old_scans",),
         data_policy="in_tenant_gpu_only",
+        confirmatory_receipt_sha256="sha256:" + "d" * 64,
+        confirmatory_evidence_class="fresh_holdout",
+        confirmatory_scope=("old_scans",),
     )
     assert evidence.missing_evidence == ()
     assert evidence.qualification is Qualification.QUALIFIED
@@ -162,6 +168,9 @@ def test_a_founder_exclusion_beats_complete_evidence() -> None:
         failure_modes=("none_observed",),
         page_class_evidence=("tables",),
         data_policy="in_tenant_gpu_only",
+        confirmatory_receipt_sha256="sha256:" + "d" * 64,
+        confirmatory_evidence_class="fresh_holdout",
+        confirmatory_scope=("tables",),
         founder_excluded=True,
         exclusion_reason="founder decision 2026-09-03",
     )
@@ -212,6 +221,9 @@ def test_the_revision_moves_when_a_binding_changes() -> None:
         failure_modes=("none",),
         page_class_evidence=("old_scans",),
         data_policy="in_tenant_gpu_only",
+        confirmatory_receipt_sha256="sha256:" + "d" * 64,
+        confirmatory_evidence_class="fresh_holdout",
+        confirmatory_scope=("old_scans",),
     )
     proposals = {ExecutionLane.PEER_VISUAL: (Route.PADDLE_VL, "ovisocr2")}
     unqualified = build_portfolio(proposals, {"ovisocr2": ModelEvidence(model_key="ovisocr2")})
@@ -219,6 +231,54 @@ def test_the_revision_moves_when_a_binding_changes() -> None:
     assert unqualified.revision != promoted.revision
     assert promoted.revision == portfolio_revision(promoted.bindings)
     assert unqualified.revision.startswith("portfolio_")
+
+
+def test_spent_development_receipt_cannot_qualify_a_model() -> None:
+    evidence = evidence_from_runtime_manifest(
+        _OVIS_MANIFEST,
+        warm_latency_seconds=0.156,
+        cold_start_seconds=90.0,
+        throughput_pages_per_gpu_hour=1000.0,
+        failure_modes=("empty_zero_cell_output",),
+        page_class_evidence=("source_bound_sec_target_cells",),
+        data_policy="private_runpod_worker",
+        confirmatory_receipt_sha256="sha256:" + "e" * 64,
+        confirmatory_evidence_class="spent_development",
+        confirmatory_scope=("source_bound_sec_target_cells",),
+    )
+    assert evidence.qualification is Qualification.CANDIDATE
+    assert "confirmatory_evidence_class" in evidence.missing_evidence
+
+
+@pytest.mark.parametrize(
+    "receipt",
+    ["not-a-digest", "sha256:" + "a" * 63, "sha256:" + "G" * 64],
+)
+def test_confirmatory_receipt_requires_an_exact_digest(receipt: str) -> None:
+    with pytest.raises(ValueError, match="exact sha256"):
+        ModelEvidence(model_key="candidate", confirmatory_receipt_sha256=receipt)
+
+
+def test_portfolio_revision_binds_the_confirmatory_receipt() -> None:
+    def qualified(receipt: str) -> ModelEvidence:
+        return evidence_from_runtime_manifest(
+            _OVIS_MANIFEST,
+            warm_latency_seconds=3.1,
+            cold_start_seconds=91.0,
+            throughput_pages_per_gpu_hour=940.0,
+            failure_modes=("none_observed",),
+            page_class_evidence=("old_scans",),
+            data_policy="in_tenant_gpu_only",
+            confirmatory_receipt_sha256="sha256:" + receipt * 64,
+            confirmatory_evidence_class="fresh_holdout",
+            confirmatory_scope=("old_scans",),
+        )
+
+    proposals = {ExecutionLane.PEER_VISUAL: (Route.PADDLE_VL, "ovisocr2")}
+    first = build_portfolio(proposals, {"ovisocr2": qualified("1")})
+    second = build_portfolio(proposals, {"ovisocr2": qualified("2")})
+    assert first.promotable_lanes == second.promotable_lanes
+    assert first.revision != second.revision
 
 
 def test_a_model_key_is_never_read_as_a_capability() -> None:
