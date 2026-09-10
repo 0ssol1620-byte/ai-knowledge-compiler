@@ -215,8 +215,18 @@ try {
         $application.AutomationSecurity = 3
         Write-OfficeProcessReceipt $beforeProcessIds $creationStartedUtc "EXCEL" $ProcessReceiptPath
         $document = $application.Workbooks.Open($resolvedInput, 0, $true)
+        $application.Calculation = -4135
         $worksheet = $document.Worksheets.Item(1)
-        $worksheet.ExportAsFixedFormat(0, $resolvedOutput)
+        $worksheet.DisplayPageBreaks = $false
+        $worksheet.ExportAsFixedFormat(
+            0,
+            $resolvedOutput,
+            0,
+            $true,
+            $true,
+            1,
+            1
+        )
     }
     if (-not (Test-Path -LiteralPath $resolvedOutput -PathType Leaf)) {
         throw "OFFICE_PDF_NOT_CREATED"

@@ -42,6 +42,7 @@ PDF_LOCATOR = re.compile(
 DOCX_LOCATOR = re.compile(r"^ooxml:word/document\.xml#body/\*\[[1-9][0-9]*\]$")
 PPTX_LOCATOR = re.compile(r"^ooxml:ppt/slides/slide(?P<index>[1-9][0-9]*)\.xml$")
 XLSX_LOCATOR = re.compile(r"^ooxml:xl/worksheets/sheet(?P<index>[1-9][0-9]*)\.xml$")
+MAXIMUM_OOXML_TARGET_MEMBER_BYTES = 64 * 1024 * 1024
 
 SOURCE_REQUIRED_FIELDS = frozenset(
     {
@@ -279,8 +280,10 @@ def _validate_office_locator(
     try:
         with zipfile.ZipFile(source) as archive:
             info = archive.getinfo(member)
-            if info.is_dir() or info.file_size <= 0 or info.file_size > 16 * 1024 * 1024:
+            if info.is_dir() or info.file_size <= 0:
                 raise RenderFailure("OOXML_TARGET_EMPTY")
+            if info.file_size > MAXIMUM_OOXML_TARGET_MEMBER_BYTES:
+                raise RenderFailure("OOXML_TARGET_TOO_LARGE")
             if source_class == "office_korean_docx":
                 document = safe_xml_fromstring(archive.read(info))
                 body = next(

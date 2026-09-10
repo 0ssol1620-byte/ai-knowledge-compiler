@@ -18,6 +18,7 @@ from .render_selected_inputs import (
     _digest_file,
     _run_bounded_capture,
     _run_bounded_pdf_render,
+    _validate_office_locator,
     render_selected_inputs,
 )
 
@@ -435,6 +436,26 @@ def test_docx_locator_must_resolve_existing_body_child(tmp_path: Path) -> None:
     assert not world["manifest_path"].exists()
 
 
+def test_xlsx_target_member_between_16_and_64_mib_is_admitted(tmp_path: Path) -> None:
+    source = tmp_path / "large-target.xlsx"
+    payload = b"<worksheet>" + (b" " * (17 * 1024 * 1024)) + b"</worksheet>"
+    with zipfile.ZipFile(source, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("xl/worksheets/sheet1.xml", payload)
+
+    member, index, kind, ordinal = _validate_office_locator(
+        source,
+        "office_korean_xlsx",
+        "ooxml:xl/worksheets/sheet1.xml",
+    )
+
+    assert (member, index, kind, ordinal) == (
+        "xl/worksheets/sheet1.xml",
+        1,
+        "worksheet",
+        1,
+    )
+
+
 def test_existing_different_runtime_receipt_cannot_be_replaced(tmp_path: Path) -> None:
     world = _world(tmp_path)
     world["runtime_path"].write_text('{"different":true}\n', encoding="utf-8")
@@ -495,3 +516,11 @@ def test_subprocess_output_is_spooled_and_bounded() -> None:
             stderr_limit=1024,
             timeout_error="TEST_TIMEOUT",
         )
+
+
+def test_office_script_bounds_xlsx_to_first_print_page() -> None:
+    script = Path(__file__).with_name("office_render.ps1").read_text(encoding="utf-8")
+    assert "$worksheet.DisplayPageBreaks = $false" in script
+    assert "$application.Calculation = -4135" in script
+    export = script.split("$worksheet.ExportAsFixedFormat(", 1)[1].split(")", 1)[0]
+    assert export.rstrip().endswith("1,\n            1")
