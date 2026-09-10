@@ -1,0 +1,16 @@
+{
+  "candidate": "SOURCE_BOUND_REGION_INVENTORY_V1",
+  "corpus": "spent public olmOCR-Bench development source manifest only",
+  "expected_campaign_id": "TAVONEL-MODEL-ARENA-PUBLIC-20260903-V1",
+  "expected_eligible_units": 1403,
+  "expected_source_manifest_sha256": "sha256:01c76cb680a65001c52938a974eaf16caf438c8afead04d2d5844c299139f457",
+  "selection": "all eligible PDF units in the frozen source manifest; no labels or evaluator outputs",
+  "output": "per-page exact CIR SourceRef region IDs, bbox1000, witness digests and coverage counts; no source text",
+  "eligibility": "non-empty text block with one source reference and an explicit positive-area bbox1000",
+  "unsupported": "missing geometry, multi-source blocks, structured tables, images and visual semantics",
+  "quality_claim": false,
+  "confirmatory_eligible": false,
+  "fresh_holdout_opened": false,
+  "gpu_budget_usd": 0,
+  "frozen_before_capture": true
+}
