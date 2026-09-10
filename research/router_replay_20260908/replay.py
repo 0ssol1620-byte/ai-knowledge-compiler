@@ -94,6 +94,8 @@ def build_arms(models: Sequence[str]) -> list[Any]:
         arms.append(F.SourceLayoutAuthorityVerified())
         arms.append(F.SourceLayoutAuthorityMeasured())
         arms.append(F.SelectivePeerOverrideVerified())
+        arms.append(F.NativeCriticalTokenGuard(strict=False))
+        arms.append(F.NativeCriticalTokenGuard(strict=True))
         arms.append(
             F.PeerAgreementVerified(
                 models=(N.NATIVE_MODEL, F.PRIMARY_MODEL, F.PEER_MODEL),

@@ -352,6 +352,9 @@ def test_source_layout_authority_policy_and_builder_are_frozen() -> None:
     override = freeze["selective_peer_override_verifier_v1"]
     assert override["primary_model"] == "mineru_vlm"
     assert override["agreement_tau"] == F.AGREEMENT_TAU
+    token_guard = freeze["native_critical_token_guard_v1"]
+    assert token_guard["native_limits"]["minimum_locator_coverage"] == 0.99
+    assert token_guard["primary_model"] == "mineru_vlm"
     assert F.FEATURE_BUILDER_ID.endswith("V3")
     assert "native_reading_order_score" in F.UNKNOWN_PAGE_METRIC_FIELDS
 
@@ -456,6 +459,60 @@ def test_selective_override_does_not_substitute_uncorroborated_missing_primary()
     plan = F.SelectivePeerOverrideVerified().plan(unit)
     assert plan.accepted is None
     assert plan.reason_codes == ("MISSING_PRIMARY_NOT_SUBSTITUTED",)
+
+
+def _token_guard_unit(primary: int, challenger: int) -> F.UnitFeatures:
+    return replace(
+        make_unit(
+            texts={
+                "native": "Revenue was USD 1,250 on 2026-09-10.",
+                "mineru_vlm": "primary",
+                "olmocr2": "challenger",
+            },
+            native_chars=500,
+            media_type="pdf",
+        ),
+        native_locator_coverage=1.0,
+        native_critical_mismatch_count={
+            "mineru_vlm": primary,
+            "olmocr2": challenger,
+        },
+        native_critical_max_risk={"mineru_vlm": 0.92, "olmocr2": 0.0},
+    )
+
+
+def test_native_token_guard_skips_challenger_when_primary_preserves_tokens() -> None:
+    plan = F.NativeCriticalTokenGuard().plan(_token_guard_unit(0, 0))
+    assert plan.accepted == "mineru_vlm"
+    assert plan.routes == ("native", "mineru_vlm")
+    assert not plan.escalate
+
+
+def test_native_token_guard_overrides_only_for_zero_mismatch_challenger() -> None:
+    plan = F.NativeCriticalTokenGuard().plan(_token_guard_unit(2, 0))
+    assert plan.accepted == "olmocr2"
+    assert plan.routes == ("native", "mineru_vlm", "olmocr2")
+    assert plan.reason_codes == ("CHALLENGER_SOURCE_TOKENS_PRESERVED",)
+
+
+def test_native_token_guard_strict_refuses_when_neither_candidate_passes() -> None:
+    plan = F.NativeCriticalTokenGuard(strict=True).plan(_token_guard_unit(2, 1))
+    assert plan.accepted is None
+    assert plan.reason_codes == ("SOURCE_CRITICAL_TOKEN_VERIFICATION_FAILED",)
+
+
+def test_native_token_guard_retains_baseline_with_review_reason() -> None:
+    plan = F.NativeCriticalTokenGuard(strict=False).plan(_token_guard_unit(2, 1))
+    assert plan.accepted == "mineru_vlm"
+    assert plan.reason_codes == ("PRIMARY_RETAINED_TOKEN_REVIEW_REQUIRED",)
+
+
+def test_native_token_guard_requires_locator_coverage() -> None:
+    unit = replace(_token_guard_unit(2, 0), native_locator_coverage=0.98)
+    plan = F.NativeCriticalTokenGuard().plan(unit)
+    assert plan.accepted == "mineru_vlm"
+    assert plan.routes == ("native", "mineru_vlm")
+    assert plan.reason_codes == ("NATIVE_CRITICAL_REFERENCE_UNAVAILABLE",)
 
 
 def test_layout_probe_measures_two_separated_columns(tmp_path: Path) -> None:
@@ -691,7 +748,7 @@ def test_native_visible_capture_is_hash_bound_and_augments_every_unit(
     (tmp_path / "FREEZE.json").write_text(json.dumps(freeze), encoding="utf-8")
     observations = []
     for index, source in zip((1, 2), source_rows, strict=True):
-        text = f"native text {index}"
+        text = f"native text USD {index * 10}"
         observations.append(
             {
                 "case_key": source["case_key"],
@@ -719,13 +776,25 @@ def test_native_visible_capture_is_hash_bound_and_augments_every_unit(
         encoding="utf-8",
     )
     capture = N.load_capture(tmp_path)
+    model_texts = {
+        ("mineru_vlm", "unit-1"): "native text USD 10",
+        ("mineru_vlm", "unit-2"): "native text USD 99",
+    }
     units = [
-        replace(make_unit(unit=f"unit-{index}"), case_key=f"case-{index}")
+        replace(
+            make_unit(
+                unit=f"unit-{index}",
+                texts={"mineru_vlm": model_texts[("mineru_vlm", f"unit-{index}")]},
+            ),
+            case_key=f"case-{index}",
+        )
         for index in (1, 2)
     ]
-    augmented, texts = N.augment_units(units, {}, capture)
+    augmented, texts = N.augment_units(units, model_texts, capture)
     assert [unit.outputs["native"].present for unit in augmented] == [True, True]
-    assert texts[("native", "unit-1")] == "native text 1"
+    assert texts[("native", "unit-1")] == "native text USD 10"
+    assert augmented[0].native_critical_mismatch_count == {"mineru_vlm": 0}
+    assert augmented[1].native_critical_mismatch_count == {"mineru_vlm": 2}
     assert capture.binding["units"] == 2
 
 

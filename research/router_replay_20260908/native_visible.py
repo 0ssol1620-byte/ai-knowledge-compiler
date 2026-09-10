@@ -152,6 +152,8 @@ def augment_units(
     capture: NativeCapture,
 ) -> tuple[list[F.UnitFeatures], dict[tuple[str, str], str]]:
     """Attach Native output and measured local latency to every replay unit."""
+    from akc_cir.critical_tokens import verify_critical_tokens
+
     if len(units) != EXPECTED_UNITS:
         raise ValueError("NATIVE_REPLAY_UNIT_DENOMINATOR_MISMATCH")
     updated_texts = dict(text_index)
@@ -186,12 +188,17 @@ def augment_units(
             peak_vram_mb=None,
         )
         similarities = dict(unit.similarity)
+        native_critical_mismatch_count: dict[str, int] = {}
+        native_critical_max_risk: dict[str, float] = {}
         native_tokens = F.normalize(text)
         for model, output in unit.outputs.items():
             other = text_index.get((model, unit.unit_key))
             if output.present and other is not None:
                 key = "|".join(sorted((NATIVE_MODEL, model)))
                 similarities[key] = F.similarity(native_tokens, F.normalize(other))
+                report = verify_critical_tokens(text, other)
+                native_critical_mismatch_count[model] = len(report.mismatches)
+                native_critical_max_risk[model] = report.risk
         updated_texts[(NATIVE_MODEL, unit.unit_key)] = text
         updated_units.append(
             replace(
@@ -210,6 +217,8 @@ def augment_units(
                 ),
                 outputs=outputs,
                 similarity=similarities,
+                native_critical_mismatch_count=native_critical_mismatch_count,
+                native_critical_max_risk=native_critical_max_risk,
             )
         )
     if consumed != set(capture.records):

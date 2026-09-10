@@ -1,0 +1,20 @@
+{
+  "candidate": "NATIVE_CRITICAL_TOKEN_GUARD_V1",
+  "challenger_model": "olmocr2",
+  "corpus": "spent olmOCR-Bench development matrix only",
+  "evidence_contract": "Exact number, sign, unit, date and currency multiplicity from source-native text. This does not establish reading order or semantic completeness.",
+  "frozen_before_hidden_scoring": true,
+  "native_limits": {
+    "maximum_invalid_unicode_ratio": 0.005,
+    "maximum_replacement_ratio": 0.001,
+    "minimum_chars": 100,
+    "minimum_locator_coverage": 0.99
+  },
+  "primary_model": "mineru_vlm",
+  "routing": "Run Native and MinerU first. Run olmOCR2 only when MinerU has at least one source-critical-token mismatch.",
+  "strict_disposition": "UNRESOLVED when neither model has zero mismatches.",
+  "baseline_retaining_disposition": "Retain MinerU with REVIEW_REQUIRED when neither model has zero mismatches.",
+  "override": "Accept olmOCR2 only when MinerU has one or more mismatches and olmOCR2 has zero mismatches.",
+  "gpu_budget_usd": 0,
+  "fresh_holdout_opened": false
+}

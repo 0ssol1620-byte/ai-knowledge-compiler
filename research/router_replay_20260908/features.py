@@ -267,6 +267,8 @@ class UnitFeatures:
     layout_feature_status: str = "unmeasured"
     input_png_sha256: str | None = None
     original_source_sha256: str | None = None
+    native_critical_mismatch_count: Mapping[str, int] | None = None
+    native_critical_max_risk: Mapping[str, float] | None = None
 
     def sim(self, left: str, right: str) -> float | None:
         key = "|".join(sorted((left, right)))
@@ -1341,6 +1343,100 @@ class SelectivePeerOverrideVerified:
 
 
 @dataclass(frozen=True)
+class NativeCriticalTokenGuard:
+    """Use source-native critical tokens as an order-independent verifier.
+
+    Native extraction is never accepted as the final output here. It only
+    checks exact number, sign, unit, date and currency multiplicities against
+    the visual model output. Reading order is therefore outside this narrow
+    evidence contract. The challenger runs only after the fixed primary fails
+    that source-derived check.
+    """
+
+    primary_model: str = "mineru_vlm"
+    challenger_model: str = "olmocr2"
+    native_model: str = "native"
+    strict: bool = False
+    name: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.name:
+            suffix = "STRICT" if self.strict else "BASELINE_RETAINING"
+            object.__setattr__(self, "name", f"NATIVE_CRITICAL_TOKEN_GUARD_V1@{suffix}")
+
+    def _native_reference_eligible(self, unit: UnitFeatures) -> bool:
+        return (
+            unit.media_type != "image"
+            and unit.native_text_available
+            and unit.native_text_chars >= 100
+            and unit.native_invalid_unicode_ratio <= 0.005
+            and unit.native_replacement_ratio <= 0.001
+            and unit.native_locator_coverage is not None
+            and unit.native_locator_coverage >= 0.99
+            and _present(unit, self.native_model)
+            and unit.native_critical_mismatch_count is not None
+        )
+
+    def plan(self, unit_features: UnitFeatures) -> UnitPlan:
+        primary = self.primary_model
+        challenger = self.challenger_model
+        native = self.native_model
+        primary_routes = tuple(dict.fromkeys((native, primary)))
+        if not _present(unit_features, primary):
+            return UnitPlan(
+                routes=primary_routes,
+                accepted=None,
+                unresolved_reason="fixed primary output missing",
+                reason_codes=("MISSING_PRIMARY",),
+            )
+        if not self._native_reference_eligible(unit_features):
+            return UnitPlan(
+                routes=primary_routes,
+                accepted=primary,
+                reason_codes=("NATIVE_CRITICAL_REFERENCE_UNAVAILABLE",),
+            )
+
+        counts = unit_features.native_critical_mismatch_count or {}
+        primary_mismatches = counts.get(primary)
+        if primary_mismatches is None:
+            return UnitPlan(
+                routes=primary_routes,
+                accepted=primary,
+                reason_codes=("PRIMARY_TOKEN_CHECK_UNAVAILABLE",),
+            )
+        if primary_mismatches == 0:
+            return UnitPlan(
+                routes=primary_routes,
+                accepted=primary,
+                reason_codes=("PRIMARY_SOURCE_TOKENS_PRESERVED",),
+            )
+
+        routes = tuple(dict.fromkeys((*primary_routes, challenger)))
+        challenger_mismatches = counts.get(challenger)
+        if _present(unit_features, challenger) and challenger_mismatches == 0:
+            return UnitPlan(
+                routes=routes,
+                accepted=challenger,
+                escalate=True,
+                reason_codes=("CHALLENGER_SOURCE_TOKENS_PRESERVED",),
+            )
+        if self.strict:
+            return UnitPlan(
+                routes=routes,
+                accepted=None,
+                escalate=True,
+                unresolved_reason="no candidate preserved source-native critical tokens",
+                reason_codes=("SOURCE_CRITICAL_TOKEN_VERIFICATION_FAILED",),
+            )
+        return UnitPlan(
+            routes=routes,
+            accepted=primary,
+            escalate=True,
+            reason_codes=("PRIMARY_RETAINED_TOKEN_REVIEW_REQUIRED",),
+        )
+
+
+@dataclass(frozen=True)
 class CoreRouter:
     """The current production `akc_router.engine.select_first_route`, replayed.
 
@@ -1579,6 +1675,33 @@ def frozen_policy_parameters() -> dict[str, Any]:
             ),
             "agreement_tau": AGREEMENT_TAU,
         },
+        "native_critical_token_guard_v1": {
+            "primary_model": "mineru_vlm",
+            "challenger_model": "olmocr2",
+            "native_model": "native",
+            "native_limits": {
+                "minimum_chars": 100,
+                "maximum_invalid_unicode_ratio": 0.005,
+                "maximum_replacement_ratio": 0.001,
+                "minimum_locator_coverage": 0.99,
+            },
+            "evidence_contract": (
+                "exact number, sign, unit, date and currency multiplicity from "
+                "source-native text; no reading-order or semantic-completeness claim"
+            ),
+            "execution_rule": (
+                "run Native and fixed MinerU primary first; run olmOCR2 only when "
+                "the primary has at least one source-critical-token mismatch"
+            ),
+            "override_rule": (
+                "accept olmOCR2 only when MinerU has at least one mismatch and "
+                "olmOCR2 has zero mismatches against the eligible Native reference"
+            ),
+            "strict_disposition": "UNRESOLVED when neither candidate passes",
+            "baseline_retaining_disposition": (
+                "retain MinerU with REVIEW_REQUIRED reason when neither candidate passes"
+            ),
+        },
         "prediction_tau": PREDICTION_TAU,
         "critical_token_tau": CRITICAL_TOKEN_TAU,
         "route_to_arena_model": dict(ROUTE_TO_ARENA_MODEL),
@@ -1632,6 +1755,7 @@ __all__ = [
     "Escalating",
     "FixedModel",
     "LeakageRefusal",
+    "NativeCriticalTokenGuard",
     "OutputFeatures",
     "PeerAgreementVerified",
     "Policy",
