@@ -7,11 +7,14 @@
     "candidate_id",
     "source_class",
     "source_url",
+    "source_filename",
+    "item_title",
     "source_family_id",
     "publisher",
     "language",
     "rights_status",
     "rights_evidence_url",
+    "rights_evidence_marker",
     "rights_checked_at_utc",
     "allowed_use_scope",
     "target_locator_rule"
@@ -20,6 +23,8 @@
     "candidate_id": {"type": "string", "minLength": 1},
     "source_class": {"type": "string", "minLength": 1},
     "source_url": {"type": "string", "format": "uri", "pattern": "^https://"},
+    "source_filename": {"type": "string", "minLength": 3},
+    "item_title": {"type": "string", "minLength": 1},
     "source_family_id": {"type": "string", "minLength": 1},
     "publisher": {"type": "string", "minLength": 1},
     "language": {"type": "string", "minLength": 2},
@@ -27,6 +32,7 @@
       "enum": ["public_domain", "public_research_allowed", "open_licence"]
     },
     "rights_evidence_url": {"type": "string", "format": "uri", "pattern": "^https://"},
+    "rights_evidence_marker": {"type": "string", "minLength": 4},
     "rights_checked_at_utc": {"type": "string", "format": "date-time"},
     "allowed_use_scope": {"const": "local_research_evaluation_no_redistribution"},
     "target_locator_rule": {

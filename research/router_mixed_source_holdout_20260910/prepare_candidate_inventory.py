@@ -29,11 +29,14 @@ EXPECTED_FIELDS = frozenset(
         "candidate_id",
         "source_class",
         "source_url",
+        "source_filename",
+        "item_title",
         "source_family_id",
         "publisher",
         "language",
         "rights_status",
         "rights_evidence_url",
+        "rights_evidence_marker",
         "rights_checked_at_utc",
         "allowed_use_scope",
         "target_locator_rule",
@@ -96,7 +99,13 @@ def prepare_inventory(*, protocol_path: Path, seeds_path: Path) -> dict[str, Any
             blockers.append(f"{prefix}_USE_SCOPE_INVALID")
         if seed.get("target_locator_rule") not in LOCATOR_RULES:
             blockers.append(f"{prefix}_LOCATOR_RULE_INVALID")
-        for field in ("publisher", "language"):
+        for field in (
+            "publisher",
+            "language",
+            "source_filename",
+            "item_title",
+            "rights_evidence_marker",
+        ):
             if not _nonempty(seed.get(field)):
                 blockers.append(f"{prefix}_{field.upper()}_REQUIRED")
         row = dict(seed)
@@ -128,6 +137,8 @@ def prepare_inventory(*, protocol_path: Path, seeds_path: Path) -> dict[str, Any
         "schema": "tavonel.router_mixed_source_candidate_inventory.v1",
         "benchmark_id": protocol.get("benchmark_id"),
         "protocol_sha256": digest(protocol_bytes),
+        "candidate_seed_sha256": digest(seeds_path.read_bytes()),
+        "selector_sha256": digest(Path(__file__).read_bytes()),
         "selection": "required class order then SHA256(canonical source URL) ascending",
         "selected_units_per_class": target,
         "selected_units": sum(selected_counts.values()),

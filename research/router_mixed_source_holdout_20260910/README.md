@@ -54,7 +54,9 @@ This package supports no public performance claim and no production promotion.
 only admissible path from curated official metadata to the frozen candidate
 inventory. The script reads no source content. It rejects unknown fields,
 duplicate source/family identities, unqualified rights and incomplete classes,
-then selects exactly 12 rows per class by the frozen URL-hash order.
+requires an exact item title, filename and item-page rights marker, then selects
+exactly 12 rows per class by the frozen URL-hash order. The inventory binds both
+the seed manifest and selector bytes.
 
 `OFFICIAL_SOURCE_ACQUISITION_STATE.json` records the current zero-input state
 and two official rights-policy anchors. A government host alone is not a rights
