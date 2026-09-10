@@ -17,8 +17,8 @@
   "statistics_sha256": "sha256:0ed59c5c90ad40206e238a0425704d88f0d047f0e19317525bf2e054d37eb4db",
   "model_identity_source_sha256": "sha256:777c2254b660a405530127852bdc97e367ffdadee4e679429bee00750d63a988",
   "model_snapshot_binding_sha256": "sha256:685a2e292a12ed0684fe28619362741189c2c6548c0dd8ddcfc9fbd95ee2d91c",
-  "render_generator_sha256": "sha256:ed8fcca8620d187ac3e3975af9d39195aa35aec6cdbdf9579c6c12f9a54d2e57",
-  "office_render_script_sha256": "sha256:73d408225954e62dd5990ac68c3ba97af3574902a22aa98c1dcd0ec17f93aeab",
+  "render_generator_sha256": "sha256:88e7e39520ff279b405ba1a23bd5128a362e5ff0a11e811a50be75084cd538a6",
+  "office_render_script_sha256": "sha256:a43fcbeae0613ad23342ee48bdde6b487ef59ac2f58a5461c82d12c9aa232242",
   "models": {
     "mineru_vlm": {
       "model_revision": "bff20d4ae2bf202df9f45284b4d43681555a97ed",
@@ -88,5 +88,12 @@
     "model_snapshot_binding": "MODEL_SNAPSHOT_BINDING.json",
     "render_generator": "render_selected_inputs.py",
     "office_render_script": "office_render.ps1"
+  },
+  "post_render_artifacts": {
+    "render_manifest_sha256": "sha256:f950b9ede2f1c6f138644a0004a628eb6c35ebbc18cda86106bc13f5874228de",
+    "render_profile_sha256": "sha256:2456bc23117dee3c004b6b0bf4491f6c437f51eaec1a2c37870032864497a59a",
+    "render_runtime_sha256": "sha256:9ab9e8097add8a2f78cba48eb07df591b9f7675d79713917ef4ab32fa0e67872",
+    "render_generator_sha256": "sha256:88e7e39520ff279b405ba1a23bd5128a362e5ff0a11e811a50be75084cd538a6",
+    "office_script_sha256": "sha256:a43fcbeae0613ad23342ee48bdde6b487ef59ac2f58a5461c82d12c9aa232242"
   }
 }
