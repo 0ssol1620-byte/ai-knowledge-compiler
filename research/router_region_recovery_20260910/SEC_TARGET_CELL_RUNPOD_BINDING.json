@@ -1,0 +1,148 @@
+{
+  "arena_root": "D:/CodexProjects/ai-knowledge-compiler/research/model_arena_20260903",
+  "benchmark_id": "TAVONEL-SEC-TARGET-CELL-DEVELOPMENT-20260910-V1",
+  "bound_before_paid_execution": true,
+  "capture_runtime_manifest_sha256": "sha256:179f8de18dc98d09f48b15aadf299cce4849374543cd035b519741cf010b76c6",
+  "cloud": "SECURE",
+  "evidence_class": "spent_development_target_crop",
+  "input_manifest_contains_truth": false,
+  "input_pngs": [
+    [
+      "sec-fact-0137b68fc6a093d40724f370",
+      "sha256:e20b6c3530aa437297adc5f6a7030e5bdc72d0f37a794fc96183d2a95b031f8c"
+    ],
+    [
+      "sec-fact-074325e82627194dcd66c77f",
+      "sha256:ed999c5f310bdb6b9301d21526b600103405ed20d321d0d31d86e1e73d538471"
+    ],
+    [
+      "sec-fact-343cc1f0e57cd23c141ee271",
+      "sha256:52837fe2aa62b60167e116dee48816ee7244a7c956d2e3e2cc608062052d1ef5"
+    ],
+    [
+      "sec-fact-38473b045d32eb90aed1b6bb",
+      "sha256:2e5d300bf953c16f9f48f43edf86db90b7248bf4e8a9fea294f61cbf96486173"
+    ],
+    [
+      "sec-fact-4a47d786bb1aa5f7e9c00c9b",
+      "sha256:a0fd76309a44565c4b6504e958f7d2568d6b66c439e7edf5201fd4b4b3b8a067"
+    ],
+    [
+      "sec-fact-4fd28aa83e1ba6315221da02",
+      "sha256:ea9bc027adbe471b0c2366d1981e0ee97c20fc6457962e290bc8f5604c74f85c"
+    ],
+    [
+      "sec-fact-56d05a23681e7c1ea3c44709",
+      "sha256:0860f1e307745b6df668b89a44a931f2a401bc7f94fe44218f1bf01d06c897c5"
+    ],
+    [
+      "sec-fact-606b9893a8b1fb586305d90b",
+      "sha256:47946b83bb4b4951c21cbf941dfd81d68838b475e0686d67c9372283c26bbbad"
+    ],
+    [
+      "sec-fact-68aaeff9672d81a5a3915bbd",
+      "sha256:ae98dae07dd87208f958fafd277756625001d95738ac510d32eb0c477ce5b59f"
+    ],
+    [
+      "sec-fact-6e661813f1e89ef2d462c895",
+      "sha256:5a0105be3e462dd90c708fdae080fd9191a2ffeb995659ad3d3aaa591e19595f"
+    ],
+    [
+      "sec-fact-7822fd6f5f60e401265343ad",
+      "sha256:459ad4b000308caebb718015ec7319d5a884e0c18f843df126553e7b6f86cd24"
+    ],
+    [
+      "sec-fact-7eb4fd5cf8d808f350301ae7",
+      "sha256:5ef4b807e7d8401cb4ac1fe4c6ef010b50cd3c52c018d1ca6c8cb4e7b73d2983"
+    ],
+    [
+      "sec-fact-9205ba5f1503c950c2d850ae",
+      "sha256:47389e843e2521261a7fadf5e050c84a53a188c45d91ecc873a7eb9a0c3b5a6c"
+    ],
+    [
+      "sec-fact-92b0ca5e81a55ab7042489a9",
+      "sha256:74540ca1a3e79a8ece7215b1efbf818ad51e5c69e994684d61ac068c158ff25b"
+    ],
+    [
+      "sec-fact-942be634f2d57a6438b11f9e",
+      "sha256:60766df13fd05de8dc5fd8df0bdd51091e50289e6870b30cb12ee18c44abec14"
+    ],
+    [
+      "sec-fact-a2234ffd3fd7598419a5aadb",
+      "sha256:1a04bbd37966567e7c48570d848d1f3c3107cdd991f1e762651496d6e56b8c56"
+    ],
+    [
+      "sec-fact-b33e3e6215056b9d4990401f",
+      "sha256:2d0f5ae561e3f412d311b3fef9a958fb2f09d939eb1fc1b7da0b15429f43f134"
+    ],
+    [
+      "sec-fact-b966bfeb789dc6428bb55181",
+      "sha256:e4e19c1479e76800eb576f8d6598772d9f916c146c979bc9b4db829dba2cf5cf"
+    ],
+    [
+      "sec-fact-b9e709a9338a1ea25f8e1a47",
+      "sha256:9fdb462dc329cb9a5dbd20b106d5fff5bd7ddf453450e64e6b7c0b92b2d863bc"
+    ],
+    [
+      "sec-fact-d1a83738a9139b8a8105a35b",
+      "sha256:0f96e20d94fb814e658a7c5c1bc86a62d0cd99d16deedc991e59742c95b2258d"
+    ],
+    [
+      "sec-fact-e2c17979af7ffbfc8f7a8dd0",
+      "sha256:a5baa202c5dab4e89dec716d2d5ec0a9b9f10596483d5ff2e1ac5f978ae97168"
+    ],
+    [
+      "sec-fact-efa73cb681d69d7d4ebe8328",
+      "sha256:165f2cd796880d562a11cfde65638d277ef7ac7a16337b08dd762cf48a758ac7"
+    ],
+    [
+      "sec-fact-f1baaa1a63aa899be99fe181",
+      "sha256:1fa5392e2ff8c4fce5bcf9088baaf2439b5dc73a4669befb6a47bf7e829937c1"
+    ],
+    [
+      "sec-fact-fa571520b3f3482486b3889a",
+      "sha256:97855bceae80af4a4b0689feb116a1623559fe7d0d8328461e096fedb0bb6a83"
+    ]
+  ],
+  "maximum_model_region_calls": 72,
+  "maximum_new_gpu_spend_usd": 2.5,
+  "models": {
+    "mineru_vlm": {
+      "bundle_sha256": "sha256:299fb4e14dda21723cb7b98fc4affe85e5bbcef44d9b84ee005e2fac340f6081",
+      "inference_config_sha256": "sha256:ef9f5e60ef5373f03207f2f3a8daf464660b62fc13319b9265a32277d1b5c705",
+      "model_revision": "bff20d4ae2bf202df9f45284b4d43681555a97ed",
+      "prompt_id": "mineru_vlm_no_prompt",
+      "prompt_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "r2_key": "bundles/TAVONEL-MODEL-ARENA-PUBLIC-20260903-V1/mineru_vlm/arena-bundle.tar.gz",
+      "runtime_json_sha256": "sha256:7dbd9a12e04563b9cb8ca2a5551eddabb24535aee8e1404fc60c3ca5e698523b"
+    },
+    "ovisocr2": {
+      "bundle_sha256": "sha256:d81e851e5783ce32cae03af9e4de12e491b17f9212cee5c2d1ecb35fdc820f6b",
+      "inference_config_sha256": "sha256:8a75f05dac58061962ec0a3b2b740d34f75083441987959d5be41e6343dfcd1d",
+      "model_revision": "1fc9221b7823a371d6e97f92d527cc847e24e107",
+      "prompt_id": "ovisocr2_page_markdown_v1",
+      "prompt_sha256": "sha256:de9617f877f6110d22adf1a6ba2a96221189dc246fb1fef161e408d37bff5267",
+      "r2_key": "bundles/TAVONEL-MODEL-ARENA-PUBLIC-20260903-V1/ovisocr2/arena-bundle.tar.gz",
+      "runtime_json_sha256": "sha256:e37d5c9919e6deb47db85c50f0547646c516f18a05f1782fbcbee6e54bbe2fcd"
+    },
+    "paddleocr_vl_1_6": {
+      "bundle_sha256": "sha256:06849dac601360301ae68d44b4b737c8bb549009579b00b6a04353b86294feda",
+      "inference_config_sha256": "sha256:9a44c6a46de0640999f9045df5048c867fc6f51c7170e74fa757bf78f778d05e",
+      "model_revision": "c5630abae1d940eafe0697512a0325494b02ab42",
+      "prompt_id": "paddleocr_vl_1_6_pipeline_internal",
+      "prompt_sha256": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "r2_key": "bundles/TAVONEL-MODEL-ARENA-PUBLIC-20260903-V1/paddleocr_vl_1_6/arena-bundle.tar.gz",
+      "runtime_json_sha256": "sha256:397e69a940d9fa571f833e28ec9e0b5f7c2b866da54b567296f23d31c0eac6bc"
+    }
+  },
+  "overall_deadline_seconds": 7200,
+  "pod_lifetime_hours": 1,
+  "production_promotion": false,
+  "runtime_mode": "bootstrap",
+  "schema": "tavonel.sec_target_cell_runpod_binding.v1",
+  "selected_regions": 24,
+  "source_row_runtime_manifest_sha256": "sha256:c68d2842dec9a983d27b1226f00fee29148d0afe191fd1228ffac19826ce92f1",
+  "source_truth_opened": true,
+  "transport_benchmark_enum": "olmocr",
+  "transport_benchmark_note": "The frozen 2026-09-03 worker accepts only its three public-corpus transport enums. Requests use olmocr solely as a legacy wire enum; benchmark_id and source authority remain bound in request metadata and every output receipt."
+}

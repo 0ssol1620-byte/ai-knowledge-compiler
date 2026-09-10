@@ -1,0 +1,21 @@
+{
+  "schema": "tavonel.router_mixed_source_statistics.v1",
+  "state": "FROZEN_PREOPEN",
+  "bootstrap": "paired source-family cluster bootstrap",
+  "replicates": 5000,
+  "seed": 20260910,
+  "interval": "percentile_95",
+  "comparisons": [
+    "source_aware_page_region_router_vs_best_fixed_visual",
+    "source_aware_page_region_router_vs_legacy_router",
+    "source_aware_page_region_router_vs_native_only",
+    "source_aware_page_region_router_vs_always_all_diagnostic"
+  ],
+  "promotion_primary": "upper confidence bound for SCLR difference versus best fixed visual is < 0",
+  "promotion_guardrails": [
+    "no class has higher observed SCLR than best fixed visual",
+    "all missing outputs remain in denominators",
+    "cost and p95 are reported from exact execution receipts",
+    "no production authority without a separate promotion decision"
+  ]
+}

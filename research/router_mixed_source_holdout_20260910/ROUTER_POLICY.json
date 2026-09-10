@@ -1,0 +1,128 @@
+{
+  "schema": "tavonel.router_mixed_source_policy.v1",
+  "state": "FROZEN_RESEARCH_CANDIDATE",
+  "revision": "mixed-source-page-region-v1",
+  "calibrated": false,
+  "route_time_inputs": [
+    "source class",
+    "media type",
+    "source size",
+    "frozen locator",
+    "native structural features"
+  ],
+  "forbidden_route_time_inputs": [
+    "annotations",
+    "expected values",
+    "evaluator outputs",
+    "model output quality"
+  ],
+  "acceptance": "accept only a source-authority witness or independently corroborated declared scope; otherwise unresolved",
+  "recovery": "source-bound target only; no inferred page or bbox",
+  "parallelism": "only the primary and declared peer wave may run together",
+  "class_routes": {
+    "native_structured": {
+      "primary": [
+        "native"
+      ],
+      "peer": [],
+      "recovery": []
+    },
+    "born_digital_pdf_table": {
+      "primary": [
+        "native",
+        "paddleocr_vl_1_6"
+      ],
+      "peer": [
+        "mineru_vlm"
+      ],
+      "recovery": [
+        "ovisocr2"
+      ]
+    },
+    "scanned_pdf": {
+      "primary": [
+        "ovisocr2",
+        "paddleocr_vl_1_6"
+      ],
+      "peer": [],
+      "recovery": [
+        "mineru_vlm"
+      ]
+    },
+    "layout_heavy_pdf": {
+      "primary": [
+        "native",
+        "ovisocr2"
+      ],
+      "peer": [],
+      "recovery": [
+        "mineru_vlm",
+        "paddleocr_vl_1_6"
+      ]
+    },
+    "office_korean_docx": {
+      "primary": [
+        "native",
+        "ovisocr2"
+      ],
+      "peer": [],
+      "recovery": [
+        "mineru_vlm",
+        "paddleocr_vl_1_6"
+      ]
+    },
+    "office_korean_pptx": {
+      "primary": [
+        "native",
+        "ovisocr2"
+      ],
+      "peer": [
+        "mineru_vlm"
+      ],
+      "recovery": [
+        "paddleocr_vl_1_6"
+      ]
+    },
+    "office_korean_xlsx": {
+      "primary": [
+        "native",
+        "paddleocr_vl_1_6"
+      ],
+      "peer": [],
+      "recovery": [
+        "mineru_vlm",
+        "ovisocr2"
+      ]
+    },
+    "target_alignment_failure": {
+      "primary": [
+        "ovisocr2",
+        "paddleocr_vl_1_6"
+      ],
+      "peer": [],
+      "recovery": [
+        "mineru_vlm"
+      ]
+    }
+  },
+  "dynamic_rules": [
+    {
+      "when": "PDF selected page embedded_text_chars < 50",
+      "action": "remove native from the acceptance set"
+    },
+    {
+      "when": "PDF selected page rotation is nonzero or aspect ratio >= 1.8",
+      "action": "require two visual candidates before acceptance"
+    },
+    {
+      "when": "OOXML package contains charts, drawings, media or embeddings",
+      "action": "retain the declared visual peer or recovery lane"
+    },
+    {
+      "when": "primary candidates disagree or any required output is missing",
+      "action": "run declared recovery; unresolved if no independent corroboration"
+    }
+  ],
+  "public_claim": false,
+  "production_authority": false
+}

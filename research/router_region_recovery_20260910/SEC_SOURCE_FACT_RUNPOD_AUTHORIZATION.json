@@ -1,0 +1,16 @@
+{
+  "schema": "tavonel.sec_source_fact_runpod_authorization.v1",
+  "benchmark_id": "TAVONEL-SEC-SOURCE-FACT-HOLDOUT-20260910-V1",
+  "authorized_by": "orchestrator-on-founder-instruction",
+  "authorized_at": "2026-09-10T04:31:32Z",
+  "expires_at": "2026-09-17T04:31:32Z",
+  "maximum_new_gpu_spend_usd": 5.0,
+  "maximum_model_region_calls": 72,
+  "model_keys": [
+    "mineru_vlm",
+    "paddleocr_vl_1_6",
+    "ovisocr2"
+  ],
+  "statement": "Founder instruction in the active task: 'Router 도 같이 진행하면되잖아. runpod gpu 필요하면 사용하면되지.' This follows the earlier explicit authorization to complete every remaining TAVONEL task. It authorizes only the frozen 24-region SEC source-fact holdout, the three pinned runtimes, an aggregate new RunPod ceiling of USD 5, and mandatory deletion of every pod created for this run.",
+  "production_promotion": false
+}

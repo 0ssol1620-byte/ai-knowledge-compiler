@@ -1,0 +1,21 @@
+{
+  "attempt_rows": 84,
+  "docx_word16_all12_proof_sha256": "sha256:38d239ce0b5bbcd78cf6a3709cfda87701ff3776e5e71fc10c00a3ed55b46fed",
+  "expected_visual_units": 84,
+  "failed_units": 0,
+  "gpu_pods": 0,
+  "manifest_rows": 84,
+  "model_calls": 0,
+  "new_gpu_spend_usd": 0,
+  "production_promotion": false,
+  "render_attempts_sha256": "sha256:99d1ec68a711c598989902b2ef545019363d4652407e03f8640d55d910614a87",
+  "render_bytes": 41627104,
+  "render_manifest_sha256": "sha256:f950b9ede2f1c6f138644a0004a628eb6c35ebbc18cda86106bc13f5874228de",
+  "render_profile_sha256": "sha256:2456bc23117dee3c004b6b0bf4491f6c437f51eaec1a2c37870032864497a59a",
+  "render_runtime_sha256": "sha256:9ab9e8097add8a2f78cba48eb07df591b9f7675d79713917ef4ab32fa0e67872",
+  "replacement_units": 0,
+  "schema": "tavonel.router_render_batch_receipt.v1",
+  "state": "FROZEN_BEFORE_MODEL_EXECUTION",
+  "successful_units": 84,
+  "truth_opened": false
+}

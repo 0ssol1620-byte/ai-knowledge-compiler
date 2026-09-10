@@ -1,0 +1,21 @@
+{
+  "schema": "tavonel.router_mixed_source_evaluator.v1",
+  "state": "FROZEN_PREOPEN",
+  "primary": "silent_critical_loss_rate",
+  "secondary": [
+    "information_retention_rate",
+    "correct_abstention",
+    "unresolved_fraction",
+    "route_regret",
+    "raw_provider_cost_per_1000_units",
+    "end_to_end_p50_ms",
+    "end_to_end_p95_ms"
+  ],
+  "denominator": "all 96 selected units retained in every applicable arm",
+  "missing_output": "failure",
+  "accepted_wrong_or_missing_critical_item": "silent critical loss",
+  "unresolved": "reported separately and never counted correct",
+  "oracle": "diagnostic upper bound selected only after sealed evaluation",
+  "catastrophic_failures": "reported individually",
+  "public_claim": false
+}

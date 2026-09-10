@@ -1,0 +1,94 @@
+{
+  "agreement_tau": 0.8,
+  "bootstrap": {
+    "replicates": 2000,
+    "seed": "TAVONEL-ROUTER-REPLAY-CLUSTER-BOOTSTRAP-2026-09-08"
+  },
+  "core_router_context": {
+    "dominant_language": "en",
+    "dominant_language_note": "The corpus carries no per-page language signal a runtime could read before parsing. 'en' is declared, not measured. It matters only for the HPD gate, which admits en/zh/zh-cn/zh-tw -- the two language families this corpus is built from -- so the gate is effectively open either way.",
+    "feature_flags": [
+      "hpd_enabled",
+      "paddle_fast_enabled",
+      "unlimited_long_enabled"
+    ],
+    "modes_replayed": [
+      "balanced",
+      "speed"
+    ],
+    "ready_routes": [
+      "native",
+      "hpd_fast",
+      "paddle_fast",
+      "paddle_vl"
+    ]
+  },
+  "critical_token_tau": 0.9,
+  "feature_builder_id": "TAVONEL-ROUTER-REPLAY-FEATURES-2026-09-08-V1",
+  "frozen_before_scoring": true,
+  "hard_fail_tau": 0.05,
+  "model_scope": [
+    "deepseek_ocr2",
+    "glm_ocr",
+    "hpd_parsing",
+    "infinity_parser2_flash",
+    "mineru_pipeline",
+    "mineru_vlm",
+    "monkeyocrv2_b",
+    "olmocr2",
+    "opus5_subscription",
+    "ovisocr2",
+    "paddleocr_vl_1_6",
+    "unlimited_ocr"
+  ],
+  "notes": [
+    "Every threshold above was written down before any score file was opened. None was moved after a result was seen.",
+    "Route.NATIVE has no Arena arm; units routed there are UNRESOLVED, never substituted.",
+    "native_reading_order_score is unmeasurable on this corpus and is swept over its whole range instead of guessed."
+  ],
+  "peer_model": "ovisocr2",
+  "prediction_tau": 0.5,
+  "primary_model": "paddleocr_vl_1_6",
+  "replay_id": "TAVONEL-ROUTER-REPLAY-2026-09-08-V1",
+  "route_to_arena_model": {
+    "authority_reconstruction": null,
+    "hpd_fast": "hpd_parsing",
+    "mistral_fallback": null,
+    "native": null,
+    "paddle_fast": "paddleocr_vl_1_6",
+    "paddle_vl": "paddleocr_vl_1_6",
+    "quarantine": null,
+    "region_recovery": null,
+    "unlimited_long": "unlimited_ocr",
+    "unresolved": null
+  },
+  "schema": "tavonel.router_replay.policy_freeze.v1",
+  "strong_models": [
+    "opus5_subscription",
+    "unlimited_ocr"
+  ],
+  "unknown_page_metric_fields": [
+    "image_coverage",
+    "native_block_count",
+    "whitespace_anomaly_score",
+    "estimated_columns",
+    "table_density",
+    "formula_density",
+    "chart_probability",
+    "handwriting_probability",
+    "rotation_degrees",
+    "skew_degrees",
+    "blur_score",
+    "contrast_score",
+    "small_text_score"
+  ],
+  "visible_roots_relative": [
+    "source_manifest.jsonl",
+    "frozen_outputs/",
+    "runs/",
+    "cost/",
+    "<source_root>/olmocr-bench/bench_data/pdfs",
+    "<source_root>/omnidocbench/images",
+    "<source_root>/parsebench/docs"
+  ]
+}

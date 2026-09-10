@@ -1,0 +1,62 @@
+{
+  "schema": "tavonel.sec_source_fact_model_output_freeze.v1",
+  "benchmark_id": "TAVONEL-SEC-SOURCE-FACT-HOLDOUT-20260910-V1",
+  "execution_code_commit": "d064c0c",
+  "primary_execution_result_sha256": "sha256:c638315610e8663bde0d7e56bdd820ed7eb057f7bfae9d7926c0585b1d5a7b99",
+  "adjudicator_execution_result_sha256": "sha256:be598bab59e96c28679edce4d6528e1631fdcb9b94177d6eabb452e7fffd2629",
+  "models": {
+    "mineru_vlm": {
+      "regions": 24,
+      "success": 24,
+      "semantic_empty": 1,
+      "outputs_manifest_sha256": "sha256:d1ef100019c02a77ac40442683b5d257ea5809f742fde5c59b5cd997cd251852",
+      "canonical_set_sha256": "sha256:63bfd3d6b3ed4680a86db40e97d013abe3e03a22f1ab663b106c06d7ae4034da",
+      "complete_receipt_sha256": "sha256:ce2d120bfbb5cc827d70415035ee1b49b162abca9ddeaf73beefa0335cca88a4",
+      "provenance_sha256": "sha256:5c542d6b7e5e3b51e36750b0079330c2c21fe8fd1fdb0a1c0a82771edfb629f4",
+      "provider_hourly_rate_usd": 0.49,
+      "elapsed_seconds": 684.891,
+      "reconciled_estimated_gpu_cost_usd": 0.093221,
+      "inference_p50_ms": 1063.5,
+      "inference_p95_nearest_rank_ms": 1476.0,
+      "pod_deleted": true
+    },
+    "paddleocr_vl_1_6": {
+      "regions": 24,
+      "success": 24,
+      "semantic_empty": 7,
+      "outputs_manifest_sha256": "sha256:52355503e4802544b02c6f38ea63031fb0614c6b5c3bed1454114316ede917d5",
+      "canonical_set_sha256": "sha256:275bbb4dc54c833b86219ab140518825c5caf6a15f5c338b92a9fd828eaf2b0a",
+      "complete_receipt_sha256": "sha256:c2d013a7bb851f9444bc6fd27eb7a29be914e80521b7663f94df7965cdaf62dc",
+      "provenance_sha256": "sha256:89a82f39222eeda5552c0c559201921a731698be16af72bab67706e5f14b5538",
+      "provider_hourly_rate_usd": 0.74,
+      "elapsed_seconds": 618.485,
+      "reconciled_estimated_gpu_cost_usd": 0.127133,
+      "inference_p50_ms": 695.0,
+      "inference_p95_nearest_rank_ms": 797.0,
+      "pod_deleted": true
+    },
+    "ovisocr2": {
+      "regions": 17,
+      "success": 17,
+      "semantic_empty": 0,
+      "outputs_manifest_sha256": "sha256:5679347dba2bd60cb5b0c718981946aaa5e637c922cef0691117d75208602abe",
+      "canonical_set_sha256": "sha256:52ab6f624973f51bfbd65594091e956815ee85af3057a5ebea65140024026f87",
+      "complete_receipt_sha256": "sha256:499d7f5f722841f7d32d6e99d291f127d9a499a5f75573918f3624f116b9b642",
+      "provenance_sha256": "sha256:b4fd7765fd850d4783c84e6ce9b521c06b7551795fd67c12b4a3f284769c5c33",
+      "provider_hourly_rate_usd": 0.74,
+      "elapsed_seconds": 471.094,
+      "reconciled_estimated_gpu_cost_usd": 0.096836,
+      "inference_p50_ms": 221.0,
+      "inference_p95_nearest_rank_ms": 1211.0,
+      "pod_deleted": true
+    }
+  },
+  "model_region_calls": 65,
+  "all_worker_responses_checksum_verified": true,
+  "live_pods_after_run": 0,
+  "total_reconciled_estimated_gpu_cost_usd": 0.317190,
+  "cost_reconciliation_note": "The pre-fix COMPLETE receipt used the most expensive pool rate for MinerU's estimated_actual field. The provider pod record shows A40 at USD 0.49/h; this freeze preserves the original receipt hash and computes elapsed cost from that observed rate. Commit after this run separates conservative and provider rates.",
+  "sealed_truth_opened": false,
+  "frozen_before_scoring": true,
+  "production_promotion": false
+}
