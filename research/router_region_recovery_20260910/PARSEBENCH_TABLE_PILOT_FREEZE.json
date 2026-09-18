@@ -1,0 +1,34 @@
+{
+  "candidate": "PARSEBENCH_TABLE_CRITICAL_REGION_PILOT_V1",
+  "corpus": "spent public ParseBench table development surface only",
+  "source_region_inventory_sha256": "sha256:8893428d6d26824491027a8a4972cf2fe2fdb2fcd3e1dccc19fec8e1ae1293c4",
+  "primary_model": "mineru_vlm",
+  "native_eligibility": {
+    "minimum_chars": 100,
+    "complete_projected_text_inventory": true,
+    "primary_output_required": true
+  },
+  "mismatch_eligibility": "all critical-token mismatches must be source-side omissions or count reductions and must resolve to one common exact source region",
+  "maximum_mismatches_per_page": 16,
+  "minimum_source_critical_token_observations_in_region": 2,
+  "region_geometry": {
+    "minimum_width_1000": 5,
+    "minimum_height_1000": 5,
+    "maximum_area_1000_squared": 300000,
+    "minimum_top_1000": 70,
+    "maximum_bottom_1000": 970,
+    "padding": 0
+  },
+  "selection": "one region per page; risk kind first, then more source critical-token observations, then SHA256(case_key + region_id); first up to 8 per kind, then fill globally",
+  "kind_order": ["sign", "currency", "date", "unit", "number"],
+  "maximum_per_kind": 8,
+  "maximum_targets": 32,
+  "output_disclosure": "IDs, bbox, hashes, counts and mismatch kinds only; no source or model text and no literal critical tokens",
+  "hidden_table_truth_visible_to_selector": false,
+  "quality_claim": false,
+  "confirmatory_eligible": false,
+  "production_promotion": false,
+  "fresh_holdout_opened": false,
+  "gpu_budget_usd": 0,
+  "frozen_before_selection": true
+}

@@ -1,0 +1,25 @@
+{
+  "candidate": "PARSEBENCH_TABLE_LOCAL_REFUSAL_ROUTER_V1",
+  "corpus": "spent public ParseBench table development surface only",
+  "denominator_pages": 503,
+  "primary_model": "mineru_vlm",
+  "target_manifest_sha256": "sha256:1c55470e8a21c96e583dc3289a332c18125faf63115d5bec85b96c0e3c14bb79",
+  "runtime_disposition_sha256": "sha256:19d8dfc4136ceaed3c58f2b51f625473bafe404a505dea9d33ace74a050dce5a",
+  "specialist_model": "paddleocr_vl_1_6",
+  "execution_rule": "invoke Paddle only for four frozen exact regions; all four frozen runtime-visible verification failures remain localized unresolved regions",
+  "unresolved_region_rule": "retain the MinerU page representation and mark only the exact source-bound region unresolved; suppress only a hidden missing-token event with the same kind-and-token hash",
+  "broad_quality_rule": "carry the fixed MinerU table score unchanged; no quality gain is inferred from refusal",
+  "cost_rule": "charge historical full-page Paddle provider cost for all four invocations",
+  "latency_rule": "region crop p95 is unmeasured",
+  "bootstrap": {
+    "replicates": 5000,
+    "seed": "TAVONEL-PARSEBENCH-TABLE-LOCAL-REFUSAL-20260910-V1"
+  },
+  "hidden_table_truth_visible_to_runtime": false,
+  "quality_claim": false,
+  "confirmatory_eligible": false,
+  "production_promotion": false,
+  "fresh_holdout_opened": false,
+  "new_gpu_budget_usd": 0,
+  "frozen_before_hidden_evaluation": true
+}

@@ -108,6 +108,8 @@ norecursedirs = [
   "node_modules",
   "benchmark/cache",
   "benchmark/public-runs",
+  # Opt-in: needs TAVONEL_PUBLIC_SAMPLE_ROOT. Run it by naming the path.
+  "tests/research",
   "benchmark/datasets/private",
 ]
 pythonpath = [

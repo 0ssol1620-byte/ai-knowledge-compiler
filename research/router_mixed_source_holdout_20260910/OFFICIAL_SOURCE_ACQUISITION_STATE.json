@@ -1,0 +1,51 @@
+{
+  "schema": "tavonel.router_official_source_acquisition_state.v1",
+  "benchmark_id": "TAVONEL-ROUTER-MIXED-SOURCE-HOLDOUT-20260910-V1",
+  "state": "LOCAL_PREOPEN_PASSED_EXECUTION_INPUT_PREFLIGHT_PENDING",
+  "selection_protocol_sha256": "sha256:342b64ff4d15ac78f2389073ff68d24e0ac58a9a28191268b7db2fd6818f179b",
+  "candidate_seed_file_exists": true,
+  "candidate_seed_sha256": "sha256:e0d96eeb2f31acf3abedb57ce94f1d79a124294d2110fa6b6edb87022d31586d",
+  "candidate_units": 128,
+  "candidate_inventory_frozen": true,
+  "candidate_inventory_sha256": "sha256:f7da723da18e35300dff774d50c03917eb9a13b7c68e3a5fc537698a5b88a8c0",
+  "selected_units": 96,
+  "selected_class_counts": {
+    "native_structured": 12,
+    "born_digital_pdf_table": 12,
+    "scanned_pdf": 12,
+    "layout_heavy_pdf": 12,
+    "office_korean_docx": 12,
+    "office_korean_pptx": 12,
+    "office_korean_xlsx": 12,
+    "target_alignment_failure": 12
+  },
+  "selection": "required class order then SHA256(canonical source URL) ascending",
+  "rights_policy": {
+    "korean_public_works": "accept an item only when its own official landing page records KOGL Type 1 or an equivalent qualified licence",
+    "us_federal_works": "do not infer public-domain status from a .gov host; require item- or agency-specific evidence that the work is an eligible federal government work",
+    "no_redistribution": true
+  },
+  "verified_policy_anchors": [
+    "https://www.kogl.or.kr/info/licenseType1.do",
+    "https://www.usa.gov/government-copyright"
+  ],
+  "transport_validation_accessed_source_bytes": true,
+  "frozen_selected_source_manifest_exists": true,
+  "persisted_frozen_source_units": 96,
+  "truth_opened": false,
+  "model_calls": 0,
+  "new_gpu_spend_usd": 0,
+  "next": "verify remote bundle bytes and freeze exact rendered worker inputs before bounded RunPod inference; keep truth sealed",
+  "frozen_selected_source_manifest_sha256": "sha256:5001577b021a9f93869017e32a613e161ddc6edde95c75fd724f3faf29b1a451",
+  "private_source_bytes": 600229016,
+  "original_source_bytes_committed": false,
+  "development_overlap_inventory_exists": true,
+  "development_overlap_inventory_sha256": "sha256:9897eed643781c0ba006219d550eeb9b388a44a785bc249f27c69424aeabb1c5",
+  "development_source_hashes": 10203,
+  "development_source_families": 3848,
+  "source_hash_overlap": 0,
+  "source_family_overlap": 0,
+  "runtime_binding_sha256": "sha256:bac840cd62c3e299557df7b5465b70bd8bcab731d8ab4623cb9ef72fe8009713",
+  "prediction_manifest_sha256": "sha256:7d1c1a37b54c5527cb2bccc8a3e532335e815760633f5d77232fe38537aa3ed8",
+  "preopen_passed": true
+}

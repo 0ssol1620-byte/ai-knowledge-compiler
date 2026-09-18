@@ -1,0 +1,70 @@
+{
+  "schema": "tavonel.sec_target_cell_result_freeze.v1",
+  "benchmark_id": "TAVONEL-SEC-TARGET-CELL-DEVELOPMENT-20260910-V1",
+  "input_runtime_manifest_sha256": "sha256:179f8de18dc98d09f48b15aadf299cce4849374543cd035b519741cf010b76c6",
+  "binding_sha256": "sha256:69a4f46921b0a425b0d1e4ce5ce29e1410e42ab86b16822bab9b2d54fadd0b4a",
+  "authorization_sha256": "sha256:09feb5cee31fd25e30c1893eda47cc2f80cb31f7cf4739520e4804eeba33217c",
+  "execution_result_sha256": "sha256:f3afbb685ab86e8929229d3f61af4c9eedc6fb97d5a5c2b66918b220df36a4dd",
+  "score_result_sha256": "sha256:7def0c62effd72397c659a450a7da5f3179f78201026600b8ba5dfe419513c3b",
+  "scored_regions_sha256": "sha256:ceaabebba36e93a96993b47e48f6a898ed02214df0b842b3ce7259cbeee66c4f",
+  "model_output_manifests": {
+    "mineru_vlm": "sha256:8c65f597cbe22e87cc8e18ee274bdc757f024a4dbbb1566f81f93c99ad081a10",
+    "paddleocr_vl_1_6": "sha256:53d1b6d49a0b149232749f020c4f3d40ef998429a94d0c78665ea66f2aaa674b",
+    "ovisocr2": "sha256:eb87c95c20ae848228387fe20145a0520e075020b92c300b65d4e01d6bb55493"
+  },
+  "scoring_commit": "a389d2e122c4e450205cb4b3361e3e5697336fad",
+  "reproduction_count": 2,
+  "reproductions_byte_identical": true,
+  "regions": 24,
+  "model_region_calls_executed": 72,
+  "reconciled_gpu_cost_usd": 0.372642,
+  "live_runpod_pods_after_run": 0,
+  "validation": {
+    "router_package_unit_and_apple_public_tests": "241 passed",
+    "replay_and_oracle_math_tests": "61 passed",
+    "ruff": "passed for the complete router_region_recovery_20260910 directory",
+    "strict_mypy": "passed for five execution, routing and scoring modules"
+  },
+  "results": {
+    "ovisocr2": {
+      "signed_retention": 1.0,
+      "sclr": 0.0,
+      "detected_failure": 0.0,
+      "warm_inference_cost_per_1000_regions_usd": 0.019725,
+      "processing_p50_ms": 156.0,
+      "processing_p95_ms": 280.0
+    },
+    "mineru_vlm": {
+      "signed_retention": 0.958333,
+      "sclr": 0.0,
+      "detected_failure": 0.041667,
+      "warm_inference_cost_per_1000_regions_usd": 0.096367,
+      "processing_p50_ms": 765.0,
+      "processing_p95_ms": 842.0
+    },
+    "paddleocr_vl_1_6": {
+      "signed_retention": 0.791667,
+      "sclr": 0.0,
+      "detected_failure": 0.208333,
+      "warm_inference_cost_per_1000_regions_usd": 0.121518,
+      "processing_p50_ms": 669.0,
+      "processing_p95_ms": 696.0
+    },
+    "adaptive_router": {
+      "signed_retention": 0.958333,
+      "sclr": 0.0,
+      "detected_failure": 0.041667,
+      "model_region_calls": 53,
+      "recovery_regions": 5,
+      "warm_inference_cost_per_1000_regions_usd": 0.161013,
+      "processing_p50_ms": 678.0,
+      "processing_p95_ms": 1447.0
+    }
+  },
+  "conclusion": "TARGET_CELL_EXECUTION_IMPROVES_RETENTION_BUT_ADAPTIVE_ROUTER_DOES_NOT_BEAT_OVIS_FIXED",
+  "evidence_class": "spent_development_target_crop",
+  "source_truth_opened_before_crop_and_policy": true,
+  "model_inputs_contained_truth": false,
+  "public_claim": false,
+  "production_promotion": false
+}

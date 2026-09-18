@@ -1,0 +1,86 @@
+{
+  "benchmark_id": "TAVONEL-SEC-SOURCE-FACT-HOLDOUT-20260910-V1",
+  "purpose": "measure source-origin critical-fact retention, localized recovery and refusal on previously unopened public filings",
+  "authority": "SEC EDGAR primary Inline XBRL filing HTML",
+  "acquisition_cutoff_utc": "2026-09-10T00:00:00Z",
+  "issuer_order": [
+    {"ticker": "MSFT", "cik": "0000789019"},
+    {"ticker": "NVDA", "cik": "0001045810"},
+    {"ticker": "COST", "cik": "0000909832"},
+    {"ticker": "ADBE", "cik": "0000796343"},
+    {"ticker": "CRM", "cik": "0001108524"},
+    {"ticker": "ORCL", "cik": "0001341439"}
+  ],
+  "filing_selection": "for each fixed CIK, choose the most recent non-amended 10-Q filed on or before the cutoff; if unavailable, record the issuer unresolved and do not replace it",
+  "existing_data_exclusion": "exclude a filing when its accession or primary-document SHA-256 already occurs in a repository benchmark or research manifest; do not replace it",
+  "fact_eligibility": {
+    "element": "visible ix:nonfraction inside a table cell",
+    "nil": false,
+    "visible_text": "must contain at least one digit",
+    "geometry": "finite visible bounding box at least 4 by 4 CSS pixels",
+    "semantic_binding": "record name, contextRef, unitRef, decimals, scale, sign and normalized visible value",
+    "duplicate_rule": "the exact tuple name/contextRef/unitRef/normalized visible value must be unique in the filing"
+  },
+  "fact_selection": "SHA256(CIK + accession + name + contextRef + unitRef + normalized visible value) ascending; take the first four eligible facts per filing",
+  "maximum_filings": 6,
+  "maximum_regions_per_filing": 4,
+  "maximum_regions": 24,
+  "render": {
+    "browser": "one installed Playwright Chromium revision recorded in the acquisition receipt",
+    "viewport_css": [1440, 1200],
+    "device_scale_factor": 2,
+    "target": "nearest table row containing the selected fact",
+    "padding_css_px": 24,
+    "maximum_crop_css": [1400, 512],
+    "screenshot_format": "PNG",
+    "color_scheme": "light",
+    "animations": "disabled"
+  },
+  "input_contract": "each crop binds filing URL, accession, filing HTML SHA-256, DOM fact identity, row bbox, fact bbox, PNG SHA-256 and source fact hash",
+  "model_portfolio": {
+    "mineru_vlm": {
+      "runtime_sha256": "sha256:7dbd9a12e04563b9cb8ca2a5551eddabb24535aee8e1404fc60c3ca5e698523b",
+      "model_revision": "bff20d4ae2bf202df9f45284b4d43681555a97ed"
+    },
+    "paddleocr_vl_1_6": {
+      "runtime_sha256": "sha256:397e69a940d9fa571f833e28ec9e0b5f7c2b866da54b567296f23d31c0eac6bc",
+      "model_revision": "c5630abae1d940eafe0697512a0325494b02ab42"
+    },
+    "ovisocr2": {
+      "runtime_sha256": "sha256:e37d5c9919e6deb47db85c50f0547646c516f18a05f1782fbcbee6e54bbe2fcd",
+      "model_revision": "1fc9221b7823a371d6e97f92d527cc847e24e107"
+    }
+  },
+  "router_policy": "run MinerU and Paddle in parallel; if their normalized critical-token multisets agree, accept the lower historical-cost candidate; otherwise run Ovis and accept only a candidate corroborated by another model on the complete critical-token multiset; otherwise unresolved",
+  "scoring": {
+    "primary_endpoint": "silent critical fact loss rate over selected SEC facts",
+    "secondary": [
+      "exact displayed fact retention",
+      "correct abstention",
+      "unresolved fraction",
+      "raw provider cost per 1000 regions",
+      "end-to-end p50/p95 latency",
+      "route regret against best fixed and diagnostic Oracle"
+    ],
+    "missing_or_failed_output": "failure retained in every denominator",
+    "confidence_interval": "paired issuer-cluster bootstrap, 5000 replicates",
+    "no_ground_truth_at_route_time": true
+  },
+  "runpod": {
+    "maximum_new_gpu_spend_usd": 5,
+    "maximum_model_region_calls": 72,
+    "per_call_timeout_seconds": 600,
+    "overall_deadline_seconds": 7200,
+    "stop_rule": "stop and terminate all new pods on spend ceiling, identity mismatch, denominator drift, repeated runtime failure or completed fixed call budget",
+    "cleanup": "terminate every created pod and record a zero-live-pod receipt"
+  },
+  "sec_access": {
+    "user_agent": "TAVONEL Research hello@tavonel.com",
+    "maximum_requests_per_second": 2,
+    "source_domains": ["data.sec.gov", "www.sec.gov"]
+  },
+  "public_claim": false,
+  "confirmatory_eligible": true,
+  "production_promotion": false,
+  "frozen_before_acquisition": true
+}

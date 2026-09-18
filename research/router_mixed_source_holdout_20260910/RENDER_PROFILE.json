@@ -1,0 +1,20 @@
+{
+  "bbox_coordinate_space": "top_left_bbox1000",
+  "dpi": 144,
+  "maximum_dimension_px": 12000,
+  "maximum_intermediate_pdf_bytes": 1073741824,
+  "maximum_pixels": 40000000,
+  "maximum_render_bytes": 52428800,
+  "maximum_source_bytes": 314572800,
+  "model_calls": 0,
+  "office_export": "Office16_COM_read_only_macro_disabled;DOCX_exact_body_element_formatted_range_reflowed_to_single_PDF_then_PDFium_page_1;PPTX_XLSX_first_exported_page_then_PDFium_page_1",
+  "output_format": "PNG",
+  "per_unit_timeout_seconds": 600,
+  "pixel_format": "RGB",
+  "png_compress_level": 9,
+  "png_optimize": false,
+  "production_promotion": false,
+  "schema": "tavonel.router_render_profile.v1",
+  "state": "FROZEN_BEFORE_MODEL_EXECUTION",
+  "truth_opened": false
+}

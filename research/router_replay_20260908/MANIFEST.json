@@ -1,0 +1,47 @@
+{
+  "claim_status": "diagnostic research on spent development evidence; NOT a public benchmark result",
+  "code_sha256": {
+    "features.py": "sha256:97efed8149cbaa732e6aef2f3ba11f1ce57c515d2a6264ed4c0becb41ba9e2c2",
+    "replay.py": "sha256:dbc39fb7940691d8c7196d1ea9997d6c42a48222b70217c47b349cecf2d9807e",
+    "scorer.py": "sha256:a991c218b30841a97b48c228356092c4e3f7aa27974915456e6b4842ebb8e259"
+  },
+  "commands": [
+    "uv sync",
+    "ARENA_ROOT=<arena> .venv/Scripts/python.exe research/router_replay_20260908/replay.py",
+    "pytest research/router_replay_20260908/tests -q"
+  ],
+  "generated_by": "research/router_replay_20260908/replay.py",
+  "gpu_spend_usd": 0,
+  "inputs": {
+    "arena_bind": "sha256:2043db650e6f5d0018532b3751de202ed718745b4c4435737563e228b5b52d76",
+    "arena_root": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903",
+    "frozen_manifests": {
+      "deepseek_ocr2": "sha256:fca99e254cd4be5d754a79b29d48a2673edbceaf9bdaf5f875efbc29a10980b8",
+      "glm_ocr": "sha256:018d19ae746ff083d3f5e1b582130c39c87ddfcf244c90465c06dacc001951aa",
+      "hpd_parsing": "sha256:84e020d56c2471fcda7b593bce406ef60c948bebffb358497dd04ada9f5fcfc4",
+      "infinity_parser2_flash": "sha256:abddfecb21a7ac3b60569927a1c05a2b97a1d1f68272566dc94d5cde3825f6c3",
+      "mineru_pipeline": "sha256:5aa9a2753ec089c6accc6b3b3c2c1f83a35f1d58aecc361de9920b2d90551c8a",
+      "mineru_vlm": "sha256:2fe463087233a29cd7bf4d619e534a25727adf99588249b5dd70fa6569118b1d",
+      "monkeyocrv2_b": "sha256:a50700cab65cf6bb1d8f499b00697601dd5c07b924e443ec4f94dc73361a86d1",
+      "olmocr2": "sha256:9385e23b8f0ab99dbf335635b1ff606a17a75bc5040f0c433ca3bbdeae254495",
+      "opus5_subscription": "sha256:98206e3fda7d3b19afae923580d9c18ecb3a72f1f7c9f8f3cfd7c226714d5aac",
+      "ovisocr2": "sha256:2c6b82f25777b7e084dd7d35a9534e66f3b6cd747a1b792576fcaff699c2704f",
+      "paddleocr_vl_1_6": "sha256:0fff25a57c1727905e877a5c9c3d5841cfe0534574701219242ecb9eaeb7692c",
+      "unlimited_ocr": "sha256:d690dc8c6e8fa027debef44b21271d6aa839ed024d601ae52cf2d0259333609d"
+    },
+    "loss_vector_freeze": "sha256:3efe23857653e95eaa6663dc83441c4ddee21f1fb90f168601ece2e761640d62",
+    "oracle_results": "sha256:b16799b15fd02acc45c5886d5b9085e87863d74b4ac8c9706c7e77dc1e67ea42",
+    "reconciler_source": "sha256:3b663fd0d347bf0be47842917235cebb3d337e219af38bead83faa00d86798e8",
+    "source_manifest": "sha256:2ec00f371db5069216362ee946b084ed0d222474162d7eadcbf717f09ae55e7c"
+  },
+  "outputs": {
+    "REPLAY_POLICY_FREEZE.json": "sha256:2283dfb003a7a693b371a2f123a08b58ec5b61f12c0c52d0ddcbf496c64d0ff6",
+    "REPLAY_RESULTS.json": "sha256:cdbaac1c3680840d324a90b0d5532c518370d51ed166489e1af8257ba4ff4ffc",
+    "REPLAY_TABLES.md": "sha256:71ce16d4dfdeba620ec61330a2dfe9665530ab33f85155bd0e159327e707772b",
+    "SCLR_OPPORTUNITY_FREEZE.json": "sha256:9db34935cbf54f88a4691f5ae5baf299c5aaca8f9b395e4d9a179496c3724f7b"
+  },
+  "paid_actions": "none - stored outputs only, CPU only, no network",
+  "replay_id": "TAVONEL-ROUTER-REPLAY-2026-09-08-V1",
+  "runtime_seconds": 132.4,
+  "schema": "tavonel.router_replay.manifest.v1"
+}

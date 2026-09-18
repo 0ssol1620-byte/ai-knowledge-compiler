@@ -1,0 +1,18 @@
+{
+  "schema": "tavonel.sec_source_fact_final_decision_binding.v1",
+  "benchmark_id": "TAVONEL-SEC-SOURCE-FACT-HOLDOUT-20260910-V1",
+  "router_code_commit": "d064c0c",
+  "primary_agreement_count": 7,
+  "adjudicator_regions": 17,
+  "resolved_count": 13,
+  "unresolved_count": 11,
+  "decision_manifest_sha256": "sha256:8b061a5a181764b2a27a74d9af054b6844d75af3fb03e5ccf1b2403ef13d8cbc",
+  "routing_manifest_sha256": "sha256:b1a14a1d0ed1b61181a68631b0d4042cccf00fad1e653d132afc60817232a100",
+  "final_decision_receipt_sha256": "sha256:e9119306a95071c84be857ac8b8c2ceead2eca866101b1c1fbbf5c794cebb2c3",
+  "unresolved_region_ids_sha256": "sha256:1587136796dd049af67d1cd45367bc48a631d522320f2748b9c786f87e4d4d50",
+  "reproduction_count": 2,
+  "reproductions_byte_identical": true,
+  "sealed_truth_opened": false,
+  "frozen_before_scoring": true,
+  "production_promotion": false
+}

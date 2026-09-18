@@ -1,0 +1,13 @@
+{
+  "benchmark_id": "TAVONEL-SEC-SOURCE-FACT-HOLDOUT-20260910-V1",
+  "filings_manifest_sha256": "sha256:e66c483ff52b1259218f8984a24579694812c5a42204a61ae4e0c8fe085a0682",
+  "fragment_manifest_sha256": "sha256:8e98dcffe460969e10bbafe16f25598e8ebd048294c8b34a20bb71e234315b7d",
+  "sealed_facts_sha256": "sha256:fa97c846a6127819d617f9f43c39d7ef13fffe830d5d281c12a43b49b4c231fa",
+  "filings": 6,
+  "selected_regions": 24,
+  "runtime_manifest_contains_truth": false,
+  "render_code_commit": "66465f8",
+  "model_output_opened": false,
+  "gpu_cost_usd": 0,
+  "bound_before_render": true
+}
