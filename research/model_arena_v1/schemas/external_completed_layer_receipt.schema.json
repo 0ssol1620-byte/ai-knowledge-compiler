@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tavonel.com/schemas/arena/external-completed-layer-receipt-v1.json",
+  "title": "Frozen external Arena layer receipt",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schema", "frozen", "record_id", "layer", "case_id", "arm", "metrics"],
+  "properties": {
+    "schema": {"const": "tavonel.arena.external_completed_layer_receipt.v1"},
+    "frozen": {"const": true},
+    "record_id": {"type": "string", "minLength": 1},
+    "layer": {"enum": ["A", "B", "C", "D", "E"]},
+    "case_id": {"type": "string", "minLength": 1},
+    "arm": {"type": "string", "minLength": 1},
+    "metrics": {"type": "object", "minProperties": 1}
+  }
+}

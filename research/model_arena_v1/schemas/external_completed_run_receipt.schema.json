@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tavonel.com/schemas/arena/external-completed-run-receipt-v1.json",
+  "title": "Frozen external Arena run receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "frozen", "run_id", "case_id", "arm_id", "repeat", "status",
+    "input_artifact_sha256", "raw_output_sha256", "normalized_output_sha256",
+    "latency_ms", "actual_cost_usd", "error_class"
+  ],
+  "properties": {
+    "schema": {"const": "tavonel.arena.external_completed_run_receipt.v1"},
+    "frozen": {"const": true},
+    "run_id": {"type": "string", "minLength": 1},
+    "case_id": {"type": "string", "minLength": 1},
+    "arm_id": {"type": "string", "minLength": 1},
+    "repeat": {"type": "integer", "minimum": 1},
+    "status": {
+      "enum": [
+        "SUCCESS", "PROVIDER_ERROR", "TIMEOUT", "UNSUPPORTED", "INVALID_OUTPUT",
+        "TRUNCATED", "FAILED"
+      ]
+    },
+    "input_artifact_sha256": {"$ref": "#/$defs/sha"},
+    "raw_output_sha256": {"anyOf": [{"$ref": "#/$defs/sha"}, {"type": "null"}]},
+    "normalized_output_sha256": {"anyOf": [{"$ref": "#/$defs/sha"}, {"type": "null"}]},
+    "latency_ms": {"type": "number", "minimum": 0},
+    "actual_cost_usd": {"type": "number", "minimum": 0},
+    "error_class": {"type": ["string", "null"]}
+  },
+  "$defs": {
+    "sha": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+  }
+}

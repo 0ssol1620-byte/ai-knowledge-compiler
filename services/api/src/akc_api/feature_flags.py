@@ -15,6 +15,8 @@ from akc_api.models import FeatureFlag
 ONTOLOGY_EXPORT_FLAG = "ontology_export"
 EXISTING_VAULT_MERGE_FLAG = "existing_vault_merge"
 CHART_DESCRIPTION_FLAG = "chart_description"
+V5_ROUTER_SHADOW_FLAG = "V5_ROUTER_SHADOW"
+V5_ROUTER_CANARY_FLAG = "V5_ROUTER_CANARY"
 
 
 def cohort_enabled(

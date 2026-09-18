@@ -19,9 +19,12 @@ from typing import Any
 import pytest
 import pytest_asyncio
 from akc_api.database import Base
-from akc_api.models import Collection, Document, ProcessingJob, Project, Tenant, User
+from akc_api.feature_flags import V5_ROUTER_CANARY_FLAG, V5_ROUTER_SHADOW_FLAG
+from akc_api.models import Collection, Document, FeatureFlag, ProcessingJob, Project, Tenant, User
 from akc_parallel_runtime import (
+    AdaptiveRouter,
     AttemptKind,
+    AuthorizedRouteDecision,
     BackpressureSnapshot,
     BlockKind,
     CandidateObservation,
@@ -45,7 +48,10 @@ from akc_parallel_runtime import (
     RegionLevel,
     RouteCandidate,
     RouteDecision,
+    RouteRequest,
     RouteTier,
+    RoutingAuthorityMode,
+    RoutingAuthorityRouter,
     RuntimeStack,
     ShardOutput,
     ShardPlan,
@@ -60,6 +66,7 @@ from akc_scheduler.autonomous_v6_pipeline import (
     AdmissionEvidenceKind,
     AdmittedProviderCandidate,
     AutonomousV6PipelineCoordinator,
+    PersistedRouterRuntimeFlagResolver,
     PipelineCheckpoint,
     PipelineContractError,
     PipelineExecutionMode,
@@ -68,11 +75,15 @@ from akc_scheduler.autonomous_v6_pipeline import (
     ProviderPoll,
     ProviderPollState,
     RouteEstimateBinding,
+    RouterRuntimeFlags,
+    ShardCheckpoint,
+    ShardPhase,
     SqlAlchemyProcessingJobCheckpointStore,
     SubmissionReceipt,
     V6PipelineJobSpec,
     _default_recovery_scopes,
     _merge_recovery_scopes,
+    resolve_router_runtime_flags,
 )
 from akc_scheduler.trusted_v6_admission import (
     PersistedEd25519AdmissionVerifier,
@@ -129,6 +140,7 @@ def test_recovery_scope_ladder_is_preserved_and_identity_conflicts_fail() -> Non
             merged,
             (RecoveryScope(RegionLevel.ROW, "row-1", ("source://different",)),),
         )
+
 
 NOW = datetime(2026, 8, 1, 12, 0, tzinfo=UTC)
 RELEASE_MANIFEST_SHA256 = "9" * 64
@@ -344,6 +356,7 @@ class FakeAutonomousRuntime:
         ] = {}
         self.poll_counts: dict[str, int] = {}
         self.submission_calls: list[SubmissionReceipt] = []
+        self.submission_authorities: list[AuthorizedRouteDecision] = []
         self.rejections: list[tuple[str, tuple[str, ...]]] = []
         self.settlements: list[str] = []
         self.recovery_settlements: list[str] = []
@@ -356,6 +369,7 @@ class FakeAutonomousRuntime:
         self.infrastructure_health: list[
             tuple[str, InfrastructureObservation, HealthTransition]
         ] = []
+        self.route_outcomes: list[AuthorizedRouteDecision] = []
 
     def _record(self, operation_key: str, value: object) -> None:
         digest = canonical_sha256(value)
@@ -376,12 +390,13 @@ class FakeAutonomousRuntime:
         self,
         spec: V6PipelineJobSpec,
         shard: ParseShard,
-        decision: RouteDecision,
+        decision: AuthorizedRouteDecision,
         *,
         pool_id: str,
         operation_key: str,
     ) -> None:
         self._record(operation_key, (spec.processing_job_id, shard, decision, pool_id))
+        self.route_outcomes.append(decision)
 
     async def submit_attempt(
         self,
@@ -392,6 +407,7 @@ class FakeAutonomousRuntime:
         attempt_kind: AttemptKind,
         parent_attempt_id: str | None,
         recovery_task: RecoveryTask | None,
+        authority: AuthorizedRouteDecision,
         operation_key: str,
     ) -> SubmissionReceipt:
         content = (
@@ -401,6 +417,7 @@ class FakeAutonomousRuntime:
             attempt_kind,
             parent_attempt_id,
             recovery_task,
+            authority,
         )
         self._record(operation_key, content)
         receipt = self.receipts.get(operation_key)
@@ -423,6 +440,7 @@ class FakeAutonomousRuntime:
                 attempt_kind,
             )
             self.submission_calls.append(receipt)
+            self.submission_authorities.append(authority)
         return receipt
 
     async def poll_output(self, receipt: SubmissionReceipt) -> ProviderPoll:
@@ -942,6 +960,7 @@ def _spec(
         ),
         orchestration_started_at=NOW,
         production_canary=production_canary,
+        router_canary_cohort_id=("test-low-risk-cohort" if production_canary else None),
         speculative_dispatch=speculative_dispatch,
         max_recovery_attempts=max_recovery_attempts,
     )
@@ -954,15 +973,143 @@ def _coordinator(
     mode: PipelineExecutionMode = PipelineExecutionMode.TEST,
     store: SqlAlchemyProcessingJobCheckpointStore | None = None,
     trusted_admission_verifier: object | None = None,
+    inventory: PipelineInventory | None = None,
+    router_flags: RouterRuntimeFlags | None = None,
+    router_runtime_flag_resolver: object | None = None,
+    router_authority_evaluator: object | None = None,
+    router_policy_artifact: object | None = None,
+    router_canary_receipt: object | None = None,
+    router_canary_verifier: object | None = None,
+    routing_authority_router: RoutingAuthorityRouter | None = None,
 ) -> AutonomousV6PipelineCoordinator:
     return AutonomousV6PipelineCoordinator(
         store=store or SqlAlchemyProcessingJobCheckpointStore(harness.sessions),
         runtime=runtime,
-        inventory=_inventory(),
+        inventory=inventory or _inventory(),
         mode=mode,
         trusted_admission_verifier=trusted_admission_verifier,  # type: ignore[arg-type]
+        router_flags=router_flags,
+        router_runtime_flag_resolver=router_runtime_flag_resolver,  # type: ignore[arg-type]
+        router_authority_evaluator=router_authority_evaluator,  # type: ignore[arg-type]
+        router_policy_artifact=router_policy_artifact,
+        router_canary_receipt=router_canary_receipt,
+        router_canary_verifier=router_canary_verifier,
+        routing_authority_router=routing_authority_router,
         clock=lambda: NOW,
     )
+
+
+def _challenger_inventory() -> PipelineInventory:
+    inventory = _inventory()
+    estimates = tuple(
+        replace(
+            binding,
+            estimate=replace(
+                binding.estimate,
+                pass_hard_gate=(0.99 if binding.recipe_id == "paddle-challenger" else 0.10),
+                numeric_exact=(0.99 if binding.recipe_id == "paddle-challenger" else 0.10),
+                row_complete=(0.99 if binding.recipe_id == "paddle-challenger" else 0.10),
+            ),
+        )
+        for binding in inventory.estimates
+    )
+    return replace(inventory, estimates=estimates)
+
+
+@dataclass(frozen=True, slots=True)
+class _GrantedCanaryAuthority:
+    effective_mode: str = "canary"
+    reason_codes: tuple[str, ...] = ()
+    policy_artifact_sha256: str = "a" * 64
+    canary_receipt_sha256: str = "b" * 64
+    calibration_table_sha256: str = "c" * 64
+    model_identities_sha256: str = "d" * 64
+
+
+def _grant_test_canary(**_: object) -> _GrantedCanaryAuthority:
+    return _GrantedCanaryAuthority()
+
+
+class _TestCalibratedPolicy:
+    policy_artifact_sha256 = "a" * 64
+    calibration_table_sha256 = "c" * 64
+    model_identities_sha256 = "d" * 64
+
+    def route(
+        self,
+        request: RouteRequest,
+        *,
+        recipes: tuple[RecipeProfile, ...],
+        workers: tuple[WorkerSnapshot, ...],
+        estimates: dict[tuple[str, str], QualityEstimate],
+    ) -> RouteDecision:
+        return AdaptiveRouter(policy_version="calibrated-router-v1").route(
+            request,
+            recipes=recipes,
+            workers=workers,
+            estimates=estimates,
+        )
+
+
+def _bound_canary_router() -> RoutingAuthorityRouter:
+    return RoutingAuthorityRouter(calibrated=_TestCalibratedPolicy())
+
+
+class _PassThroughCheckpointStore:
+    async def load(self, *, tenant_id: str, job_id: str) -> PipelineCheckpoint | None:
+        del tenant_id, job_id
+        return None
+
+    async def save(
+        self,
+        *,
+        tenant_id: str,
+        checkpoint: PipelineCheckpoint,
+        expected_revision: int | None,
+        occurred_at: datetime,
+    ) -> PipelineCheckpoint:
+        del tenant_id, expected_revision, occurred_at
+        return checkpoint
+
+
+class _SequencedRouterFlags:
+    def __init__(self, *values: RouterRuntimeFlags) -> None:
+        self._values = values
+        self.calls = 0
+
+    async def __call__(self, spec: V6PipelineJobSpec) -> RouterRuntimeFlags:
+        del spec
+        value = self._values[min(self.calls, len(self._values) - 1)]
+        self.calls += 1
+        return value
+
+
+def test_canary_job_requires_exact_cohort_identity(sqlite_harness: SqliteHarness) -> None:
+    with pytest.raises(ValueError, match="exact router cohort id"):
+        replace(
+            _spec(sqlite_harness),
+            production_canary=True,
+            router_canary_cohort_id=None,
+        )
+
+
+def test_production_canary_authority_ignores_an_injected_stale_clock(
+    sqlite_harness: SqliteHarness,
+) -> None:
+    stale = datetime(2000, 1, 1, tzinfo=UTC)
+    before = datetime.now(UTC)
+    coordinator = AutonomousV6PipelineCoordinator(
+        store=_PassThroughCheckpointStore(),
+        runtime=FakeAutonomousRuntime(Scenario.SUCCESS),
+        inventory=_inventory(),
+        mode=PipelineExecutionMode.PRODUCTION,
+        clock=lambda: stale,
+    )
+    observed = coordinator._authority_now()
+    after = datetime.now(UTC)
+
+    assert before <= observed <= after
+    assert observed != stale
 
 
 async def _job(harness: SqliteHarness) -> ProcessingJob:
@@ -1145,6 +1292,367 @@ async def test_restart_resumes_checkpoint_without_duplicate_submit_or_charge(
     assert len(runtime.submission_calls) == 1
     assert len(runtime.settlements) == 1
     assert len(runtime.finalization_results) == 1
+
+
+@pytest.mark.asyncio
+async def test_router_runtime_flags_resolve_default_off_and_stable_subject_cohort(
+    sqlite_harness: SqliteHarness,
+) -> None:
+    subject_id = uuid.uuid4()
+    async with sqlite_harness.sessions() as session:
+        flags = await resolve_router_runtime_flags(
+            session,
+            tenant_id=sqlite_harness.tenant_id,
+            subject_id=subject_id,
+            document_type="pdf",
+        )
+    assert flags == RouterRuntimeFlags()
+
+    async with sqlite_harness.sessions.begin() as session:
+        session.add_all(
+            (
+                FeatureFlag(
+                    tenant_id=sqlite_harness.tenant_id,
+                    key=V5_ROUTER_SHADOW_FLAG,
+                    enabled=True,
+                    rollout_percent=100,
+                ),
+                FeatureFlag(
+                    tenant_id=sqlite_harness.tenant_id,
+                    key=V5_ROUTER_CANARY_FLAG,
+                    enabled=True,
+                    rollout_percent=100,
+                    conditions={"document_types": ["pdf"]},
+                ),
+            )
+        )
+    async with sqlite_harness.sessions() as session:
+        flags = await resolve_router_runtime_flags(
+            session,
+            tenant_id=sqlite_harness.tenant_id,
+            subject_id=subject_id,
+            document_type="pdf",
+        )
+    assert flags == RouterRuntimeFlags(shadow_enabled=True, canary_enabled=True)
+
+
+@pytest.mark.asyncio
+async def test_router_flags_default_to_deterministic_authority(
+    sqlite_harness: SqliteHarness,
+) -> None:
+    runtime = FakeAutonomousRuntime(Scenario.SUCCESS)
+
+    await _coordinator(
+        sqlite_harness,
+        runtime,
+        inventory=_challenger_inventory(),
+    ).run(_spec(sqlite_harness, max_recovery_attempts=0))
+
+    outcome = runtime.route_outcomes[0]
+    assert outcome.authority.requested_mode is RoutingAuthorityMode.DETERMINISTIC
+    assert outcome.authority.effective_mode is RoutingAuthorityMode.DETERMINISTIC
+    assert outcome.executable.primary.recipe.recipe_id == "mineru-primary"
+    assert outcome.counterfactual is None
+
+
+@pytest.mark.asyncio
+async def test_shadow_persists_counterfactual_but_never_dispatches_it(
+    sqlite_harness: SqliteHarness,
+) -> None:
+    runtime = FakeAutonomousRuntime(Scenario.SUCCESS)
+
+    await _coordinator(
+        sqlite_harness,
+        runtime,
+        inventory=_challenger_inventory(),
+        router_flags=RouterRuntimeFlags(shadow_enabled=True),
+    ).run(_spec(sqlite_harness, max_recovery_attempts=0))
+
+    outcome = runtime.route_outcomes[0]
+    assert outcome.authority.effective_mode is RoutingAuthorityMode.SHADOW
+    assert outcome.executable.primary.recipe.recipe_id == "mineru-primary"
+    assert outcome.counterfactual is not None
+    assert outcome.counterfactual.primary.recipe.recipe_id == "paddle-challenger"
+    assert runtime.submission_calls[0].recipe_id == "mineru-primary"
+
+
+@pytest.mark.asyncio
+async def test_canary_flag_without_authenticated_evidence_fails_closed(
+    sqlite_harness: SqliteHarness,
+) -> None:
+    runtime = FakeAutonomousRuntime(Scenario.SUCCESS)
+
+    await _coordinator(
+        sqlite_harness,
+        runtime,
+        inventory=_challenger_inventory(),
+        router_flags=RouterRuntimeFlags(canary_enabled=True),
+    ).run(
+        _spec(
+            sqlite_harness,
+            production_canary=True,
+            max_recovery_attempts=0,
+        )
+    )
+
+    outcome = runtime.route_outcomes[0]
+    assert outcome.authority.requested_mode is RoutingAuthorityMode.CANARY
+    assert outcome.authority.effective_mode is RoutingAuthorityMode.DETERMINISTIC
+    assert "canary_policy_missing" in outcome.authority.reason_codes
+    assert runtime.submission_calls[0].recipe_id == "mineru-primary"
+
+
+@pytest.mark.asyncio
+async def test_canary_authority_executes_only_explicit_low_risk_cohort(
+    sqlite_harness: SqliteHarness,
+) -> None:
+    runtime = FakeAutonomousRuntime(Scenario.SUCCESS)
+    opaque = object()
+
+    await _coordinator(
+        sqlite_harness,
+        runtime,
+        inventory=_challenger_inventory(),
+        router_flags=RouterRuntimeFlags(canary_enabled=True),
+        router_authority_evaluator=_grant_test_canary,
+        router_policy_artifact=opaque,
+        router_canary_receipt=opaque,
+        router_canary_verifier=opaque,
+        routing_authority_router=_bound_canary_router(),
+    ).run(
+        _spec(
+            sqlite_harness,
+            production_canary=True,
+            max_recovery_attempts=0,
+        )
+    )
+
+    outcome = runtime.route_outcomes[0]
+    assert outcome.authority.effective_mode is RoutingAuthorityMode.CANARY
+    assert outcome.executable.primary.recipe.recipe_id == "paddle-challenger"
+    assert runtime.submission_calls[0].recipe_id == "paddle-challenger"
+
+
+@pytest.mark.asyncio
+async def test_production_ignores_injected_test_authority_evaluator(
+    sqlite_harness: SqliteHarness,
+) -> None:
+    runtime = FakeAutonomousRuntime(Scenario.SUCCESS)
+    opaque = object()
+    async with sqlite_harness.sessions.begin() as session:
+        session.add(
+            FeatureFlag(
+                tenant_id=sqlite_harness.tenant_id,
+                key=V5_ROUTER_CANARY_FLAG,
+                enabled=True,
+                rollout_percent=100,
+            )
+        )
+
+    await _coordinator(
+        sqlite_harness,
+        runtime,
+        mode=PipelineExecutionMode.PRODUCTION,
+        inventory=_challenger_inventory(),
+        router_flags=RouterRuntimeFlags(canary_enabled=True),
+        router_runtime_flag_resolver=PersistedRouterRuntimeFlagResolver(
+            sqlite_harness.sessions
+        ),
+        router_authority_evaluator=_grant_test_canary,
+        router_policy_artifact=opaque,
+        router_canary_receipt=opaque,
+        router_canary_verifier=opaque,
+        routing_authority_router=_bound_canary_router(),
+    ).run(
+        _spec(
+            sqlite_harness,
+            production_canary=True,
+            max_recovery_attempts=0,
+        )
+    )
+
+    outcome = runtime.route_outcomes[0]
+    assert outcome.authority.effective_mode is RoutingAuthorityMode.DETERMINISTIC
+    assert "canary_verifier_untrusted" in outcome.authority.reason_codes
+    assert runtime.submission_calls[0].recipe_id == "mineru-primary"
+
+
+@pytest.mark.asyncio
+async def test_live_canary_rollback_is_rechecked_after_route_record_before_submit(
+    sqlite_harness: SqliteHarness,
+) -> None:
+    runtime = FakeAutonomousRuntime(Scenario.SUCCESS)
+    opaque = object()
+    flags = _SequencedRouterFlags(
+        RouterRuntimeFlags(canary_enabled=True),
+        RouterRuntimeFlags(canary_enabled=True),
+        RouterRuntimeFlags(),
+    )
+
+    await _coordinator(
+        sqlite_harness,
+        runtime,
+        inventory=_challenger_inventory(),
+        router_flags=RouterRuntimeFlags(canary_enabled=True),
+        router_runtime_flag_resolver=flags,
+        router_authority_evaluator=_grant_test_canary,
+        router_policy_artifact=opaque,
+        router_canary_receipt=opaque,
+        router_canary_verifier=opaque,
+        routing_authority_router=_bound_canary_router(),
+    ).run(_spec(sqlite_harness, production_canary=True, max_recovery_attempts=0))
+
+    assert flags.calls >= 3
+    assert runtime.submission_calls[0].recipe_id == "mineru-primary"
+    assert (
+        runtime.submission_authorities[0].authority.effective_mode
+        is RoutingAuthorityMode.DETERMINISTIC
+    )
+
+
+@pytest.mark.asyncio
+async def test_canary_high_risk_scope_uses_deterministic(
+    sqlite_harness: SqliteHarness,
+) -> None:
+    runtime = FakeAutonomousRuntime(Scenario.SUCCESS)
+    opaque = object()
+
+    await _coordinator(
+        sqlite_harness,
+        runtime,
+        inventory=_challenger_inventory(),
+        router_flags=RouterRuntimeFlags(canary_enabled=True),
+        router_authority_evaluator=_grant_test_canary,
+        router_policy_artifact=opaque,
+        router_canary_receipt=opaque,
+        router_canary_verifier=opaque,
+        routing_authority_router=_bound_canary_router(),
+    ).run(
+        _spec(
+            sqlite_harness,
+            complex_page=True,
+            production_canary=True,
+            max_recovery_attempts=0,
+        )
+    )
+
+    outcome = runtime.route_outcomes[0]
+    assert outcome.authority.effective_mode is RoutingAuthorityMode.DETERMINISTIC
+    assert outcome.authority.reason_codes == ("canary_scope_not_low_risk",)
+    assert runtime.submission_calls[0].recipe_id == "mineru-primary"
+
+
+@pytest.mark.asyncio
+async def test_disabling_canary_flag_reroutes_to_deterministic_before_dispatch(
+    sqlite_harness: SqliteHarness,
+) -> None:
+    runtime = FakeAutonomousRuntime(Scenario.SUCCESS)
+    spec = _spec(sqlite_harness, production_canary=True)
+    inventory = _challenger_inventory()
+    opaque = object()
+    canary = _coordinator(
+        sqlite_harness,
+        runtime,
+        inventory=inventory,
+        router_flags=RouterRuntimeFlags(canary_enabled=True),
+        router_authority_evaluator=_grant_test_canary,
+        router_policy_artifact=opaque,
+        router_canary_receipt=opaque,
+        router_canary_verifier=opaque,
+        routing_authority_router=_bound_canary_router(),
+    )
+    plan = canary._plan(spec)
+    shard = plan.shards[0]
+    assert canary._decision(spec, shard).executable.primary.recipe.recipe_id == "paddle-challenger"
+
+    canary_outcome = canary._decision(spec, shard)
+    canary_route = canary_outcome.executable
+    routed = PipelineCheckpoint(
+        job_id=spec.processing_job_id,
+        document_id=spec.document_id,
+        document_version_id=spec.document_version_id,
+        spec_sha256=canonical_sha256(spec),
+        revision=0,
+        phase=PipelinePhase.ROUTED,
+        plan_sha256=canonical_sha256(plan),
+        shards=(
+            ShardCheckpoint(
+                shard_id=shard.shard_id,
+                phase=ShardPhase.ROUTED,
+                primary_recipe_id=canary_route.primary.recipe.recipe_id,
+                primary_worker_id=canary_route.primary.worker.worker_id,
+                primary_pool_id="pool-2",
+                secondary_recipe_id=(
+                    canary_route.secondary.recipe.recipe_id if canary_route.secondary else None
+                ),
+                secondary_worker_id=(
+                    canary_route.secondary.worker.worker_id if canary_route.secondary else None
+                ),
+            ),
+        ),
+    )
+    rolled_back = AutonomousV6PipelineCoordinator(
+        store=_PassThroughCheckpointStore(),
+        runtime=runtime,
+        inventory=inventory,
+        mode=PipelineExecutionMode.TEST,
+        router_flags=RouterRuntimeFlags(),
+        clock=lambda: NOW,
+    )
+    waiting = await rolled_back._dispatch_all(spec, plan, routed)
+
+    assert waiting.phase is PipelinePhase.WAITING_OUTPUTS
+    assert runtime.submission_calls[0].recipe_id == "mineru-primary"
+    assert runtime.route_outcomes[-1].authority.effective_mode is RoutingAuthorityMode.DETERMINISTIC
+
+
+@pytest.mark.asyncio
+async def test_authority_change_refreshes_route_when_selected_ids_are_unchanged(
+    sqlite_harness: SqliteHarness,
+) -> None:
+    runtime = FakeAutonomousRuntime(Scenario.SUCCESS)
+    coordinator = AutonomousV6PipelineCoordinator(
+        store=_PassThroughCheckpointStore(),
+        runtime=runtime,
+        inventory=_inventory(),
+        mode=PipelineExecutionMode.TEST,
+        router_flags=RouterRuntimeFlags(),
+        clock=lambda: NOW,
+    )
+    spec = _spec(sqlite_harness)
+    plan = coordinator._plan(spec)
+    shard = plan.shards[0]
+    current = coordinator._decision(spec, shard)
+    route = current.executable
+    routed = PipelineCheckpoint(
+        job_id=spec.processing_job_id,
+        document_id=spec.document_id,
+        document_version_id=spec.document_version_id,
+        spec_sha256=canonical_sha256(spec),
+        revision=0,
+        phase=PipelinePhase.ROUTED,
+        plan_sha256=canonical_sha256(plan),
+        shards=(
+            ShardCheckpoint(
+                shard_id=shard.shard_id,
+                phase=ShardPhase.ROUTED,
+                primary_recipe_id=route.primary.recipe.recipe_id,
+                primary_worker_id=route.primary.worker.worker_id,
+                primary_pool_id="pool-1",
+                secondary_recipe_id=(route.secondary.recipe.recipe_id if route.secondary else None),
+                secondary_worker_id=(route.secondary.worker.worker_id if route.secondary else None),
+                route_authority_sha256="f" * 64,
+            ),
+        ),
+    )
+
+    waiting = await coordinator._dispatch_all(spec, plan, routed)
+
+    expected_authority_sha256 = canonical_sha256(current)
+    assert waiting.shards[0].route_authority_sha256 == expected_authority_sha256
+    assert len(runtime.route_outcomes) == 1
+    assert runtime.route_outcomes[0] == current
+    assert runtime.submission_calls[0].recipe_id == route.primary.recipe.recipe_id
 
 
 @pytest.mark.asyncio

@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 from logging.config import fileConfig
 
+from akc_api.arena_models import *  # noqa: F403
 from akc_api.database import Base
 from akc_api.models import *  # noqa: F403
 from akc_api.parallel_models import *  # noqa: F403

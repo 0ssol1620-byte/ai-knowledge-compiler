@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tavonel.com/schemas/arena/external-approval-receipt-v1.json",
+  "title": "Independent TAVONEL Arena publication approval receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "decision", "approval_subject_sha256", "manifest_sha256",
+    "approved_at", "founder_identity_ref", "signature", "review_receipts"
+  ],
+  "properties": {
+    "schema": {"const": "tavonel.arena.external_approval_receipt.v1"},
+    "decision": {"const": "APPROVED_FOR_PUBLICATION"},
+    "approval_subject_sha256": {
+      "type": "string", "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "manifest_sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "approved_at": {"type": "string", "format": "date-time"},
+    "founder_identity_ref": {"type": "string", "minLength": 1},
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "key_id", "value"],
+      "properties": {
+        "algorithm": {"type": "string", "minLength": 1},
+        "key_id": {"type": "string", "minLength": 1},
+        "value": {"type": "string", "minLength": 1}
+      }
+    },
+    "review_receipts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rights", "ip", "statistical", "claim"],
+      "properties": {
+        "rights": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "ip": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "statistical": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "claim": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    }
+  }
+}
