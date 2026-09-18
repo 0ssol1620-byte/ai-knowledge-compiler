@@ -299,10 +299,20 @@ def test_classify_lag_names_the_tightest_covering_tier() -> None:
 # -- migration graph -----------------------------------------------------------
 
 
-def test_source_cursor_migration_is_the_single_head() -> None:
+def test_source_cursor_migration_is_on_the_single_head_chain() -> None:
+    """The cursor migrations sit on the one head, wherever that head has moved to.
+
+    Pinning the head revision by name made every later migration fail this test
+    for no reason of its own. What this file cares about is that the two source
+    cursor revisions are still reachable from a single head.
+    """
+
     from alembic.config import Config
     from alembic.script import ScriptDirectory
 
     repository = Path(__file__).resolve().parents[2]
     script = ScriptDirectory.from_config(Config(str(repository / "alembic.ini")))
-    assert script.get_heads() == ["0040_source_cursor_tenancy"]
+    heads = script.get_heads()
+    assert len(heads) == 1
+    chain = {revision.revision for revision in script.walk_revisions("base", heads[0])}
+    assert {"0039_source_adapter_cursors", "0040_source_cursor_tenancy"} <= chain

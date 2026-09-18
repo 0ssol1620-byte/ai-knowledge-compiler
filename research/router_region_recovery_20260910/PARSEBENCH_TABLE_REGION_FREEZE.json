@@ -1,0 +1,32 @@
+{
+  "candidate": "PARSEBENCH_TABLE_SOURCE_REGION_INVENTORY_V1",
+  "corpus": "spent public ParseBench table development surface only",
+  "campaign_id": "TAVONEL-MODEL-ARENA-PUBLIC-20260903-V1",
+  "source_manifest_sha256": "sha256:2ec00f371db5069216362ee946b084ed0d222474162d7eadcbf717f09ae55e7c",
+  "row_filter": "benchmark=parsebench, media_type=pdf, original_source_relative_path under docs/table",
+  "expected_units": 503,
+  "parser": "akc_native_parsers.pdf_parser.parse_pdf_to_cir",
+  "projection": "akc_router.region_recovery.project_source_bound_text_regions",
+  "record_fields": [
+    "sample_id",
+    "case_key",
+    "unit_key",
+    "page_index0",
+    "source_sha256",
+    "status",
+    "reason",
+    "region_id",
+    "block_id",
+    "bbox1000",
+    "witness_sha256",
+    "expected_content_sha256"
+  ],
+  "text_disclosure": false,
+  "hidden_table_truth_visible": false,
+  "quality_claim": false,
+  "confirmatory_eligible": false,
+  "production_promotion": false,
+  "fresh_holdout_opened": false,
+  "gpu_budget_usd": 0,
+  "frozen_before_capture": true
+}

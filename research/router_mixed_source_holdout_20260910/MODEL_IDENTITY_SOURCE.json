@@ -1,0 +1,25 @@
+{
+  "schema": "tavonel.router_model_identity_source.v1",
+  "state": "FROZEN_PREOPEN",
+  "provenance_sha256": "sha256:4cf106dbeb73d753703b80ac555c8b92a69a028083873ccfb4e555f7c50867dd",
+  "models": {
+    "mineru_vlm": {
+      "model_revision": "bff20d4ae2bf202df9f45284b4d43681555a97ed",
+      "runtime_sha256": "sha256:7dbd9a12e04563b9cb8ca2a5551eddabb24535aee8e1404fc60c3ca5e698523b",
+      "bundle_sha256": "sha256:299fb4e14dda21723cb7b98fc4affe85e5bbcef44d9b84ee005e2fac340f6081",
+      "inference_config_sha256": "sha256:ef9f5e60ef5373f03207f2f3a8daf464660b62fc13319b9265a32277d1b5c705"
+    },
+    "paddleocr_vl_1_6": {
+      "model_revision": "c5630abae1d940eafe0697512a0325494b02ab42",
+      "runtime_sha256": "sha256:397e69a940d9fa571f833e28ec9e0b5f7c2b866da54b567296f23d31c0eac6bc",
+      "bundle_sha256": "sha256:06849dac601360301ae68d44b4b737c8bb549009579b00b6a04353b86294feda",
+      "inference_config_sha256": "sha256:9a44c6a46de0640999f9045df5048c867fc6f51c7170e74fa757bf78f778d05e"
+    },
+    "ovisocr2": {
+      "model_revision": "1fc9221b7823a371d6e97f92d527cc847e24e107",
+      "runtime_sha256": "sha256:e37d5c9919e6deb47db85c50f0547646c516f18a05f1782fbcbee6e54bbe2fcd",
+      "bundle_sha256": "sha256:d81e851e5783ce32cae03af9e4de12e491b17f9212cee5c2d1ecb35fdc820f6b",
+      "inference_config_sha256": "sha256:8a75f05dac58061962ec0a3b2b740d34f75083441987959d5be41e6343dfcd1d"
+    }
+  }
+}

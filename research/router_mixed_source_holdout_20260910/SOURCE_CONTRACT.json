@@ -1,0 +1,51 @@
+{
+  "schema": "tavonel.router_mixed_source_contract.v1",
+  "state": "FROZEN_PREOPEN",
+  "unit_scope": "one selected source-bound target per manifest row",
+  "authority": "official source bytes; model agreement is corroboration only",
+  "failure": "missing, corrupt, unrenderable, unauthorized or unverified stays unresolved",
+  "representations": {
+    "native_structured": {
+      "native_authority": true,
+      "target": "whole source",
+      "visual_required": false
+    },
+    "born_digital_pdf_table": {
+      "native_authority": true,
+      "target": "frozen page full bbox1000",
+      "visual_required": true
+    },
+    "scanned_pdf": {
+      "native_authority": false,
+      "target": "frozen page full bbox1000",
+      "visual_required": true
+    },
+    "layout_heavy_pdf": {
+      "native_authority": true,
+      "target": "frozen page full bbox1000",
+      "visual_required": true
+    },
+    "office_korean_docx": {
+      "native_authority": true,
+      "target": "first meaningful document body child",
+      "visual_required": true
+    },
+    "office_korean_pptx": {
+      "native_authority": true,
+      "target": "first slide resolved through package relationships",
+      "visual_required": true
+    },
+    "office_korean_xlsx": {
+      "native_authority": true,
+      "target": "first worksheet resolved through package relationships",
+      "visual_required": true
+    },
+    "target_alignment_failure": {
+      "native_authority": false,
+      "target": "frozen geometry-selected page full bbox1000",
+      "visual_required": true
+    }
+  },
+  "visual_execution_boundary": "derive a raster from the frozen source and locator under an immutable render receipt; bind its digest in every worker request before model execution",
+  "data_policy": "local_research_evaluation_no_redistribution"
+}

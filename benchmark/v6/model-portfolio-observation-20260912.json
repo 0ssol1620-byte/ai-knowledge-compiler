@@ -1,0 +1,664 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-09-12T09:26:00.034707+00:00",
+  "registry_sha256": "4a22d8c5797c8e65056c0a69a64c9e1b900a0f15ccfae2840aefb9fbed9404ba",
+  "scope": "Read-only upstream metadata; no weights downloaded, no paid inference, no benchmark pins changed. Latest upstream is not an evaluated winner. Licenses are separate code/weights/data/API reviews; metadata is not approval.",
+  "candidates": [
+    {
+      "candidate_id": "mineru-3.4.4-pipeline",
+      "repository": "opendatalab/MinerU",
+      "frozen_revision": "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7",
+      "observation": {
+        "source_url": "https://api.github.com/repos/opendatalab/MinerU/commits/HEAD",
+        "upstream_revision": "4fe4bde114a23ee5dd637eae99b767f4669bf58c",
+        "last_modified": "2026-08-14T07:53:06Z",
+        "weights_license_metadata": null,
+        "code_license_review": "separate review required",
+        "gated": null,
+        "response_sha256": "3e8c1ae984c8a3fadfae196db595b4ed05edd96a6b7483b162b2459f91af3735",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": true,
+      "next_action": "requalify if adopting changed upstream; keep frozen benchmark untouched",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "mineru-3.4.4-hybrid-medium",
+      "repository": "opendatalab/MinerU",
+      "frozen_revision": "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7",
+      "observation": {
+        "source_url": "https://api.github.com/repos/opendatalab/MinerU/commits/HEAD",
+        "upstream_revision": "4fe4bde114a23ee5dd637eae99b767f4669bf58c",
+        "last_modified": "2026-08-14T07:53:06Z",
+        "weights_license_metadata": null,
+        "code_license_review": "separate review required",
+        "gated": null,
+        "response_sha256": "3e8c1ae984c8a3fadfae196db595b4ed05edd96a6b7483b162b2459f91af3735",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": true,
+      "next_action": "requalify if adopting changed upstream; keep frozen benchmark untouched",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "mineru-3.4.4-hybrid-high",
+      "repository": "opendatalab/MinerU",
+      "frozen_revision": "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7",
+      "observation": {
+        "source_url": "https://api.github.com/repos/opendatalab/MinerU/commits/HEAD",
+        "upstream_revision": "4fe4bde114a23ee5dd637eae99b767f4669bf58c",
+        "last_modified": "2026-08-14T07:53:06Z",
+        "weights_license_metadata": null,
+        "code_license_review": "separate review required",
+        "gated": null,
+        "response_sha256": "3e8c1ae984c8a3fadfae196db595b4ed05edd96a6b7483b162b2459f91af3735",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": true,
+      "next_action": "requalify if adopting changed upstream; keep frozen benchmark untouched",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "mineru-3.4.4-vlm",
+      "repository": "opendatalab/MinerU",
+      "frozen_revision": "79d6d8d79fb8f3ddba5cc34c07a16f0ec36f56c7",
+      "observation": {
+        "source_url": "https://api.github.com/repos/opendatalab/MinerU/commits/HEAD",
+        "upstream_revision": "4fe4bde114a23ee5dd637eae99b767f4669bf58c",
+        "last_modified": "2026-08-14T07:53:06Z",
+        "weights_license_metadata": null,
+        "code_license_review": "separate review required",
+        "gated": null,
+        "response_sha256": "3e8c1ae984c8a3fadfae196db595b4ed05edd96a6b7483b162b2459f91af3735",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": true,
+      "next_action": "requalify if adopting changed upstream; keep frozen benchmark untouched",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "paddleocr-vl-1.6",
+      "repository": "PaddlePaddle/PaddleOCR-VL-1.6",
+      "frozen_revision": "66317acc4c9fc17bd154591ce650735cd2855f3e",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/PaddlePaddle/PaddleOCR-VL-1.6",
+        "upstream_revision": "c5630abae1d940eafe0697512a0325494b02ab42",
+        "last_modified": "2026-08-08T14:32:21.000Z",
+        "weights_license_metadata": "apache-2.0",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "ac646d13806bd9e495bb64d53dcaf39529a12b667992fcb6dcd0380579c8d33b",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": true,
+      "next_action": "requalify if adopting changed upstream; keep frozen benchmark untouched",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "deepseek-ocr-2",
+      "repository": "deepseek-ai/DeepSeek-OCR-2",
+      "frozen_revision": "aaa02f3811945a91062062994c5c4a3f4c0af2b0",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/deepseek-ai/DeepSeek-OCR-2",
+        "upstream_revision": "aaa02f3811945a91062062994c5c4a3f4c0af2b0",
+        "last_modified": "2026-02-03T00:33:19.000Z",
+        "weights_license_metadata": "apache-2.0",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "40082caf8d9b3f68b50c0fafb2d9c7a9cdc61a20981b116b52aae88ba14a1edd",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": false,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "infinity-parser2-pro",
+      "repository": "infly/Infinity-Parser2-Pro",
+      "frozen_revision": "b27d470100514329fc6439aada8f16ccea5f9e2a",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/infly/Infinity-Parser2-Pro",
+        "upstream_revision": "b27d470100514329fc6439aada8f16ccea5f9e2a",
+        "last_modified": "2026-07-20T08:46:43.000Z",
+        "weights_license_metadata": "apache-2.0",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "6f4295ce23e718b3ead1cb235eed3a160372f170b34a0fbfc13155cd118b6f44",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": false,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "infinity-parser2-flash",
+      "repository": "infly/Infinity-Parser2-Flash",
+      "frozen_revision": "cfddc4106b0abc4706f05575a164f7dd35d09c46",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/infly/Infinity-Parser2-Flash",
+        "upstream_revision": "cfddc4106b0abc4706f05575a164f7dd35d09c46",
+        "last_modified": "2026-07-20T08:47:19.000Z",
+        "weights_license_metadata": "apache-2.0",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "78379873e9a8e53ef457811a3387b7bf8d36fb341bc3c26cf25f269c688a347a",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": false,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "ovisocr2",
+      "repository": "ATH-MaaS/OvisOCR2",
+      "frozen_revision": "65c619d374b55d4152e85150fc1b003700bc1f0c",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/ATH-MaaS/OvisOCR2",
+        "upstream_revision": "1fc9221b7823a371d6e97f92d527cc847e24e107",
+        "last_modified": "2026-08-28T08:46:00.000Z",
+        "weights_license_metadata": "apache-2.0",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "db25504f1e6c5e0c75e35e09ded4a19cb6e2b225de9a32887d8a6aa3facd6503",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": true,
+      "next_action": "requalify if adopting changed upstream; keep frozen benchmark untouched",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "hunyuanocr-1.5",
+      "repository": "tencent/HunyuanOCR",
+      "frozen_revision": "449e7d471a8a1ef5bd5d652e4881183d7252cbc7",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/tencent/HunyuanOCR",
+        "upstream_revision": "47644ecc4fc854efa4f505155158831f36773ee4",
+        "last_modified": "2026-08-28T16:20:03.000Z",
+        "weights_license_metadata": "other",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "c44270c2253187cf84fdc9e7a7e54afbda6390886777ce2c19f47023887c691d",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": true,
+      "next_action": "requalify if adopting changed upstream; keep frozen benchmark untouched",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "monkeyocrv2-b-parsing",
+      "repository": "zenosai/MonkeyOCRv2-B-Parsing",
+      "frozen_revision": "de7a993bd0f39a97b122dac767e82ae04935bce4",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/zenosai/MonkeyOCRv2-B-Parsing",
+        "upstream_revision": "e8871a0057c98378219b369f924a25ba10f392bf",
+        "last_modified": "2026-09-08T07:21:20.000Z",
+        "weights_license_metadata": "apache-2.0",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "ed9700aa3d0719c1cf496c9424047008f8a2b85cc3c0cb65882d6a1c31358b6e",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": true,
+      "next_action": "requalify if adopting changed upstream; keep frozen benchmark untouched",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "glm-ocr",
+      "repository": "zai-org/GLM-OCR",
+      "frozen_revision": "ca5d8b3e287e52589e37c28385d9655ee4372f9d",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/zai-org/GLM-OCR",
+        "upstream_revision": "2e85a62840ccac27daa451df36c736c4636b8628",
+        "last_modified": "2026-09-11T11:59:14.000Z",
+        "weights_license_metadata": "mit",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "f3ec49a23da63b062bb776d506bfc154cbc6a7f6110c55190137a5a8ca1c9b6a",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": true,
+      "next_action": "requalify if adopting changed upstream; keep frozen benchmark untouched",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "qianfan-ocr",
+      "repository": "baidu/Qianfan-OCR",
+      "frozen_revision": "623bf5d20d446abdb36606aa4547cd0c18886fe5",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/baidu/Qianfan-OCR",
+        "upstream_revision": "623bf5d20d446abdb36606aa4547cd0c18886fe5",
+        "last_modified": "2026-04-29T04:55:52.000Z",
+        "weights_license_metadata": "apache-2.0",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "561fb550a01f96cbdf496f60f6819aa29c52816ef0065900f285efb839f7ea66",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": false,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "chandra-ocr-2",
+      "repository": "datalab-to/chandra-ocr-2",
+      "frozen_revision": "af93b47dba1b47b6640c86ccf487ed2260ab9a09",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/datalab-to/chandra-ocr-2",
+        "upstream_revision": "af93b47dba1b47b6640c86ccf487ed2260ab9a09",
+        "last_modified": "2026-06-26T10:30:43.000Z",
+        "weights_license_metadata": "openrail",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "6424ef082784509a341c3322bb07a0b01ffcfb380d962bc880513c1f8d419eb0",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": false,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "olmocr-2-7b-1025-fp8",
+      "repository": "allenai/olmOCR-2-7B-1025-FP8",
+      "frozen_revision": "40bd7202494b8264ee17ada08b401b5aab7a9ce1",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/allenai/olmOCR-2-7B-1025-FP8",
+        "upstream_revision": "40bd7202494b8264ee17ada08b401b5aab7a9ce1",
+        "last_modified": "2026-02-19T17:30:13.000Z",
+        "weights_license_metadata": "apache-2.0",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "0a3cea7a33399a8ba0e32c020e47a7c798daca0bb97d5ef9c534f3100ea0aba7",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": false,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "lightonocr-2-1b",
+      "repository": "lightonai/LightOnOCR-2-1B",
+      "frozen_revision": "c97bd377f04481830395218fa8951df9deaba756",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/lightonai/LightOnOCR-2-1B",
+        "upstream_revision": "c97bd377f04481830395218fa8951df9deaba756",
+        "last_modified": "2026-07-08T13:58:37.000Z",
+        "weights_license_metadata": "apache-2.0",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "2aeb549ead65dde3cfa6cbf3105e932a03ed15ee3a5578a545562e33974bc0a1",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": false,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "dots-ocr-1.5",
+      "repository": null,
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "native-authority-lane",
+      "repository": "local://packages/native-parsers",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "docling-2.115.0",
+      "repository": "docling-project/docling",
+      "frozen_revision": null,
+      "observation": {
+        "source_url": "https://api.github.com/repos/docling-project/docling/commits/HEAD",
+        "upstream_revision": "5ea6490ffdc57b2fd7de5cc436f2d0a22f2214d4",
+        "last_modified": "2026-09-11T15:42:20Z",
+        "weights_license_metadata": null,
+        "code_license_review": "separate review required",
+        "gated": null,
+        "response_sha256": "ac92a5c45521cb64eaf6f34850da1618fd2cba6d68ad8eea9cc4ee354a84d732",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "pp-structure-v3-ppocrv6",
+      "repository": "PaddlePaddle/PaddleOCR",
+      "frozen_revision": null,
+      "observation": {
+        "source_url": "https://api.github.com/repos/PaddlePaddle/PaddleOCR/commits/HEAD",
+        "upstream_revision": "2661c7c0ef5c613e8f93c6e93b2e052399f0f854",
+        "last_modified": "2026-07-22T11:58:12Z",
+        "weights_license_metadata": null,
+        "code_license_review": "separate review required",
+        "gated": null,
+        "response_sha256": "e989579ffd687df9fac6b27c9d4dc69a5b7614b47e5a1109626aa8d4773d6e6c",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "marker-1.10.2",
+      "repository": "datalab-to/marker",
+      "frozen_revision": null,
+      "observation": {
+        "source_url": "https://api.github.com/repos/datalab-to/marker/commits/HEAD",
+        "upstream_revision": "f6b072ad46a79026ee75d1777c4e3e798a2712a5",
+        "last_modified": "2026-09-09T21:27:52Z",
+        "weights_license_metadata": null,
+        "code_license_review": "separate review required",
+        "gated": null,
+        "response_sha256": "a344f6c70ae238c40fedd13da8e30ca9943fe3fa32333929078033f5c4f35ae3",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "current-structara-native-parser",
+      "repository": "local://packages/native-parsers",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "llamaparse-agentic",
+      "repository": "api://llamaparse",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "llamaparse-cost-effective",
+      "repository": "api://llamaparse",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "reducto-agentic",
+      "repository": "api://reducto",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "reducto-standard",
+      "repository": "api://reducto",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "google-gemini-3-flash-thinking-high",
+      "repository": "api://google-gemini",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "google-gemini-3-flash-thinking-minimal",
+      "repository": "api://google-gemini",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "google-gemini-3.1-pro",
+      "repository": "api://google-gemini",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "mistral-ocr-api",
+      "repository": "api://mistral-ocr",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "azure-document-intelligence",
+      "repository": "api://azure-document-intelligence",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "google-document-ai",
+      "repository": "api://google-document-ai",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "aws-textract",
+      "repository": "api://aws-textract",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "landingai",
+      "repository": "api://landingai",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "extend-parse",
+      "repository": "api://extend-parse",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "qwen3.5-4b",
+      "repository": null,
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "qwen3.5-9b-page-parse",
+      "repository": null,
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "gemma-4-12b-it-page-parse",
+      "repository": "google/gemma-4-12B-it",
+      "frozen_revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/google/gemma-4-12B-it",
+        "upstream_revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+        "last_modified": "2026-07-20T16:42:08.000Z",
+        "weights_license_metadata": "apache-2.0",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "a59a36fa5631d2608f2c79abd6e60b75c2cc6ce9051ea64b33cce9318861b46a",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": false,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "qwen3.6-27b-page-parse",
+      "repository": "Qwen/Qwen3.6-27B",
+      "frozen_revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/Qwen/Qwen3.6-27B",
+        "upstream_revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+        "last_modified": "2026-04-24T02:39:16.000Z",
+        "weights_license_metadata": "apache-2.0",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "de3babee59e6ff689baf87d31989d998ac7e4f98ae57328e81f75e3a85f815ae",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": false,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "qwen3.5-9b",
+      "repository": null,
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "qwen3.6-27b",
+      "repository": "Qwen/Qwen3.6-27B",
+      "frozen_revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/Qwen/Qwen3.6-27B",
+        "upstream_revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+        "last_modified": "2026-04-24T02:39:16.000Z",
+        "weights_license_metadata": "apache-2.0",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "de3babee59e6ff689baf87d31989d998ac7e4f98ae57328e81f75e3a85f815ae",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": false,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "gemma-4-12b-it",
+      "repository": "google/gemma-4-12B-it",
+      "frozen_revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+      "observation": {
+        "source_url": "https://huggingface.co/api/models/google/gemma-4-12B-it",
+        "upstream_revision": "707f0a3b8a3c7ad586ed01e27eafbad8a27dd0f7",
+        "last_modified": "2026-07-20T16:42:08.000Z",
+        "weights_license_metadata": "apache-2.0",
+        "code_license_review": "separate review required",
+        "gated": false,
+        "response_sha256": "a59a36fa5631d2608f2c79abd6e60b75c2cc6ce9051ea64b33cce9318861b46a",
+        "observation": "resolved_metadata_only"
+      },
+      "revision_changed": false,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "deepseek-v4-flash",
+      "repository": "api://deepseek-v4-flash",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "deepseek-v4-pro",
+      "repository": "api://deepseek-v4-pro",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    },
+    {
+      "candidate_id": "codex-gpt-5.6-sol",
+      "repository": "service://codex",
+      "frozen_revision": null,
+      "observation": {
+        "observation": "local_or_provider_snapshot_required"
+      },
+      "revision_changed": null,
+      "next_action": "complete runtime, weight, price and evaluation receipts before promotion",
+      "promotion_eligible": false
+    }
+  ]
+}

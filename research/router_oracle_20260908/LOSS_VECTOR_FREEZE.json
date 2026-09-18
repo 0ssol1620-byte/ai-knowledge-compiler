@@ -1,0 +1,270 @@
+{
+  "benchmark_rules": {
+    "olmocr": {
+      "cluster": "pdf",
+      "composite": "the primary olmOCR loss is the unweighted mean of per-test loss, which is the benchmark's own aggregation. The frozen WEIGHTS are NOT re-applied across test types: the class mix is fixed by the benchmark, and reweighting it would silently invent a different benchmark. The per-class breakdown is reported separately.",
+      "page_class_labels": "source_jsonl (arxiv_math, multi_column, old_scans, old_scans_math, table_tests, headers_footers, long_tiny_text, baseline)",
+      "per_class_loss": {
+        "L1": "1 - passed for type in {present, absent, baseline}",
+        "L3": "1 - passed for type == order",
+        "L4": "1 - passed for type == table",
+        "L5": "1 - passed for type == math"
+      },
+      "unit": "test (olmOCR-Bench per-test row)"
+    },
+    "omnidoc": {
+      "cluster": "document family = image_path prefix before the trailing page number",
+      "composite": "weighted mean of the classes PRESENT on that page, with WEIGHTS renormalized over the present classes. A page with no table has no table term; it is not scored 0 and it is not scored 1.",
+      "page_class_labels": "OmniDocBench page_attribute: data_source, language, layout, subset, special_issue",
+      "per_class_loss": {
+        "L1": "text_block edit, clipped to [0, 1]",
+        "L3": "reading_order edit, clipped to [0, 1]",
+        "L4": "table edit, clipped to [0, 1]",
+        "L5": "display_formula edit, clipped to [0, 1]"
+      },
+      "unit": "page (OmniDocBench image_path)"
+    },
+    "parsebench": {
+      "cluster": "document directory of test_id",
+      "composite": "reported per facet only. ParseBench layout is EXCLUDED: the leaderboard records layout N/A for every model (empty layout predictions), so a layout term would score the harness, not the model.",
+      "page_class_labels": "tags column (easy/hard, facet)",
+      "per_class_loss": {
+        "L1": "1 - text_content record pass",
+        "L3": "1 - text_formatting record pass",
+        "L4": "1 - teds",
+        "L6": "1 - chart record pass"
+      },
+      "unit": "example (test_id in _evaluation_results.csv)"
+    }
+  },
+  "consequences": [
+    "SCLR (section 32) is NOT computable in Phase A: it needs L2 critical token opportunities and an accept/refuse decision, and stored outputs carry neither.",
+    "IRR (section 33) is reported here as an IRR PROXY over L1/L3/L4/L5 only. It is not the IRR of the blueprint, which spans L0-L8.",
+    "Any headline that needs L2, L7 or L8 is out of reach until a critical-token detector and an evidence/temporal cohort exist."
+  ],
+  "freeze_id": "TAVONEL-ROUTER-ORACLE-LOSSVEC-2026-09-08-V1",
+  "frozen_before": "any oracle computation in this lane (section 33 rule 1)",
+  "holdout": "none — Phase A is an oracle ceiling on stored outputs, not a holdout evaluation. The freeze is recorded so Phase B/C cannot retune it.",
+  "no_signal_classes": [
+    "L2",
+    "L7",
+    "L8"
+  ],
+  "partial_signal_classes": [
+    "L6"
+  ],
+  "schema": "tavonel.router_oracle.loss_vector_freeze.v1",
+  "self_sha256": "sha256:9c2f4c40ffcf5d2a459f5afeeaffd31f3dab5f017b9f01dad298e0b6a629448f",
+  "taxonomy": {
+    "L0": {
+      "application": "hard override: a missing unit scores loss 1.0 in the missing-as-failure cohort and is excluded from the intersection cohort",
+      "covered": [
+        "missing file/page"
+      ],
+      "name": "File/Page",
+      "no_signal_rows": [
+        "duplicate page"
+      ],
+      "section_31_rows": [
+        "missing file/page",
+        "duplicate page"
+      ],
+      "signals": {
+        "frozen_outputs": "manifest.jsonl status FAILED per sample",
+        "olmocr": "official_result.json candidate_errors + absent test rows",
+        "omnidoc": "page absent from a model's per-page edit JSON",
+        "parsebench": "example absent from a model's evaluation CSV"
+      }
+    },
+    "L1": {
+      "covered": [
+        "CER/WER/edit",
+        "missing/hallucinated text (partially, via edit)"
+      ],
+      "name": "Text",
+      "no_signal_rows": [
+        "truncation vs repetition as separate labelled failure modes"
+      ],
+      "section_31_rows": [
+        "missing/hallucinated text",
+        "CER/WER/edit",
+        "truncation/repetition"
+      ],
+      "signals": {
+        "olmocr": "per-test passed where type in {present, absent, baseline}",
+        "omnidoc": "text_block_per_page_edit.json (normalized edit distance)",
+        "parsebench": "text_content _evaluation_results.csv record-pass rate"
+      }
+    },
+    "L2": {
+      "covered": [],
+      "name": "Critical Token",
+      "no_signal_rows": [
+        "number",
+        "sign",
+        "date",
+        "unit",
+        "currency",
+        "identifier"
+      ],
+      "section_31_rows": [
+        "number",
+        "sign",
+        "date",
+        "unit",
+        "currency",
+        "identifier"
+      ],
+      "signals": {},
+      "status": "NO_SIGNAL",
+      "why": "No evaluator in this campaign annotates typed critical tokens. olmOCR present/absent tests check literal string presence and are NOT a substitute: they are untyped and their anchors were not selected for numeric/date/unit consequence. SCLR (section 32) therefore cannot be computed from stored outputs and needs a critical-token detector."
+    },
+    "L3": {
+      "covered": [
+        "reading order",
+        "columns (indirectly, via multi_column slice)"
+      ],
+      "name": "Structure",
+      "no_signal_rows": [
+        "heading",
+        "paragraph",
+        "list"
+      ],
+      "section_31_rows": [
+        "heading",
+        "paragraph",
+        "list",
+        "columns",
+        "reading order"
+      ],
+      "signals": {
+        "olmocr": "per-test passed where type == order",
+        "omnidoc": "reading_order_per_page_edit.json",
+        "parsebench": "text_formatting _evaluation_results.csv"
+      }
+    },
+    "L4": {
+      "covered": [
+        "row/column",
+        "cell",
+        "headers (inside TEDS structure)"
+      ],
+      "name": "Table",
+      "no_signal_rows": [
+        "merged cell",
+        "continuation",
+        "footnote"
+      ],
+      "section_31_rows": [
+        "row/column",
+        "cell",
+        "merged cell",
+        "headers",
+        "continuation",
+        "footnote"
+      ],
+      "signals": {
+        "olmocr": "per-test passed where type == table",
+        "omnidoc": "table_per_page_edit.json; table_per_table_TEDS.json",
+        "parsebench": "table _evaluation_results.csv (teds, grits)"
+      }
+    },
+    "L5": {
+      "covered": [
+        "token/operator",
+        "superscript/subscript (inside the edit)"
+      ],
+      "name": "Formula",
+      "no_signal_rows": [
+        "layout/semantic equivalence as a separate judgement"
+      ],
+      "section_31_rows": [
+        "token/operator",
+        "superscript/subscript",
+        "layout/semantic equivalence"
+      ],
+      "signals": {
+        "olmocr": "per-test passed where type == math",
+        "omnidoc": "display_formula_per_page_edit.json"
+      }
+    },
+    "L6": {
+      "covered": [
+        "chart"
+      ],
+      "name": "Visual",
+      "no_signal_rows": [
+        "figure",
+        "diagram",
+        "caption",
+        "labels",
+        "relationships"
+      ],
+      "section_31_rows": [
+        "chart",
+        "figure",
+        "diagram",
+        "caption",
+        "labels",
+        "relationships"
+      ],
+      "signals": {
+        "parsebench": "chart _evaluation_results.csv record-pass rate"
+      },
+      "status": "PARTIAL",
+      "why": "Only ParseBench chart has a per-example signal, and the leaderboard records ParseBench layout as N/A for every model (empty layout predictions), so figure/diagram geometry is unmeasurable here."
+    },
+    "L7": {
+      "covered": [],
+      "name": "Evidence/Provenance",
+      "no_signal_rows": [
+        "source locator",
+        "SourceVersion",
+        "representation",
+        "hash/lineage"
+      ],
+      "section_31_rows": [
+        "source locator",
+        "SourceVersion",
+        "representation",
+        "hash/lineage"
+      ],
+      "signals": {},
+      "status": "NO_SIGNAL",
+      "why": "The three public evaluators score parsed content only. No provenance or evidence-locator field is emitted per unit."
+    },
+    "L8": {
+      "covered": [],
+      "name": "Temporal/Identity",
+      "no_signal_rows": [
+        "wrong version",
+        "stale fact",
+        "false merge",
+        "missed change",
+        "false change"
+      ],
+      "section_31_rows": [
+        "wrong version",
+        "stale fact",
+        "false merge",
+        "missed change",
+        "false change"
+      ],
+      "signals": {},
+      "status": "NO_SIGNAL",
+      "why": "Single-shot page parsing. No temporal cohort, no identity graph, no second version of any source in this campaign."
+    }
+  },
+  "weights": {
+    "L0": 0.0,
+    "L1": 0.4,
+    "L2": 0.0,
+    "L3": 0.15,
+    "L4": 0.3,
+    "L5": 0.15,
+    "L6": 0.0,
+    "L7": 0.0,
+    "L8": 0.0
+  },
+  "weights_basis": "structural: chosen from the section 31 taxonomy, not from any observed per-model score. Zero weight means NO_SIGNAL in the stored artifacts, never 'unimportant'."
+}

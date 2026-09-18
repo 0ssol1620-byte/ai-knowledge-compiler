@@ -1,0 +1,20 @@
+{
+  "candidate": "PARSEBENCH_TABLE_PADDLE_REGION_REUSE_V1",
+  "targets_sha256": "sha256:1c55470e8a21c96e583dc3289a332c18125faf63115d5bec85b96c0e3c14bb79",
+  "target_count": 4,
+  "specialist_model": "paddleocr_vl_1_6",
+  "model_revision": "c5630abae1d940eafe0697512a0325494b02ab42",
+  "runtime_image_digest": "bootstrap:sha256:06849dac601360301ae68d44b4b737c8bb549009579b00b6a04353b86294feda",
+  "frozen_manifest_sha256": "sha256:0fff25a57c1727905e877a5c9c3d5841cfe0534574701219242ecb9eaeb7692c",
+  "reuse_rule": "use only each target's already-spent frozen SUCCESS output and native parsing_res_list; never call a model",
+  "native_json_binding": "page_markdown must byte-equal the frozen raw output",
+  "region_match": "source bbox center must be inside a non-empty Paddle block; choose the unique smallest containing block; equal-area ties are unresolved",
+  "verification": "every target critical-token hash must have equal multiplicity in the source region and matched Paddle block",
+  "hidden_table_truth_visible": false,
+  "quality_claim": false,
+  "confirmatory_eligible": false,
+  "production_promotion": false,
+  "fresh_holdout_opened": false,
+  "gpu_budget_usd": 0,
+  "frozen_before_evaluation": true
+}

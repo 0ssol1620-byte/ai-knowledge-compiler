@@ -9,16 +9,22 @@ from akc_parallel_runtime import (
     CascadeController,
     CascadeStage,
     ContinuitySignal,
+    DeterministicRouter,
     DeterministicShardPlanner,
     PageClass,
     PageDescriptor,
     QualityEstimate,
     RecipeProfile,
+    RouteDecision,
     RouteRequest,
     RouterPromotionEvidence,
     RouterStage,
     RouteTier,
+    RoutingAuthorityGrant,
+    RoutingAuthorityMode,
+    RoutingAuthorityRouter,
     RoutingUnavailable,
+    WorkerSnapshot,
     WorkerState,
     deterministic_benchmark_assignments,
     evaluate_router_promotion,
@@ -76,12 +82,13 @@ def recipe(
     external: bool = False,
     model_revision: str = "model@abc123",
     image: str = "sha256:image-a",
+    tier: RouteTier = RouteTier.PRECISION,
 ) -> RecipeProfile:
     return RecipeProfile(
         recipe_id=recipe_id,
         model_revision=model_revision,
         runtime_image_digest=image,
-        tier=RouteTier.PRECISION,
+        tier=tier,
         capabilities=frozenset({"scan", "table"}),
         supported_languages=frozenset({"ko"}),
         external_provider=external,
@@ -102,6 +109,27 @@ def request(**overrides: object) -> RouteRequest:
     return RouteRequest(**values)  # type: ignore[arg-type]
 
 
+class _TestCalibratedPolicy:
+    policy_artifact_sha256 = "a" * 64
+    calibration_table_sha256 = "c" * 64
+    model_identities_sha256 = "d" * 64
+
+    def route(
+        self,
+        route_request: RouteRequest,
+        *,
+        recipes: tuple[RecipeProfile, ...],
+        workers: tuple[WorkerSnapshot, ...],
+        estimates: dict[tuple[str, str], QualityEstimate],
+    ) -> RouteDecision:
+        return AdaptiveRouter(policy_version="calibrated-router-v1").route(
+            route_request,
+            recipes=recipes,
+            workers=workers,
+            estimates=estimates,
+        )
+
+
 def test_adaptive_predictor_respects_complexity_and_oom() -> None:
     predictor = AdaptiveShardPredictor(model_context_tokens=32_768, vram_gib=24)
     normal = predictor.predict(page(0))
@@ -118,9 +146,7 @@ def test_shard_planner_preserves_continuity_group_even_above_target() -> None:
             index,
             page_class=PageClass.FORMULA_HEAVY,
             continuity=(
-                frozenset({ContinuitySignal.REPEATED_TABLE_HEADER})
-                if index < 3
-                else frozenset()
+                frozenset({ContinuitySignal.REPEATED_TABLE_HEADER}) if index < 3 else frozenset()
             ),
         )
         for index in range(4)
@@ -149,8 +175,7 @@ def test_shard_plan_has_exactly_one_owner_and_context_only_overlap() -> None:
     assert len(plan.shards) > 1
     assert any(shard.context_page_ids for shard in plan.shards)
     assert all(
-        not set(shard.primary_page_ids) & set(shard.context_page_ids)
-        for shard in plan.shards
+        not set(shard.primary_page_ids) & set(shard.context_page_ids) for shard in plan.shards
     )
     page_positions = {item.page_id: item.index0 for item in pages}
     assert all(
@@ -213,24 +238,30 @@ def test_benchmark_assignment_preserves_document_groups_and_is_deterministic() -
 
 
 def test_dynamic_worker_target_obeys_every_capacity_limit() -> None:
-    assert ideal_worker_target(
-        1_000,
-        100,
-        provider_limit=20,
-        account_limit=8,
-        queue_limit=12,
-        evaluator_limit=6,
-        database_limit=9,
-    ) == 6
-    assert ideal_worker_target(
-        0,
-        100,
-        provider_limit=20,
-        account_limit=8,
-        queue_limit=12,
-        evaluator_limit=6,
-        database_limit=9,
-    ) == 0
+    assert (
+        ideal_worker_target(
+            1_000,
+            100,
+            provider_limit=20,
+            account_limit=8,
+            queue_limit=12,
+            evaluator_limit=6,
+            database_limit=9,
+        )
+        == 6
+    )
+    assert (
+        ideal_worker_target(
+            0,
+            100,
+            provider_limit=20,
+            account_limit=8,
+            queue_limit=12,
+            evaluator_limit=6,
+            database_limit=9,
+        )
+        == 0
+    )
 
 
 def test_router_selects_highest_verified_quality_objective() -> None:
@@ -243,6 +274,125 @@ def test_router_selects_highest_verified_quality_objective() -> None:
     }
     decision = router.route(request(), recipes=recipes, workers=workers, estimates=estimates)
     assert decision.primary.recipe.recipe_id == "strong"
+
+
+def test_deterministic_router_uses_registry_order_not_uncalibrated_estimates() -> None:
+    recipes = (recipe("baseline", family="a"), recipe("challenger", family="b"))
+    workers = (worker("w1"), worker("w2"))
+    estimates = {
+        ("baseline", "w1"): estimate(passed=0.10, numeric=0.10),
+        ("challenger", "w2"): estimate(passed=0.99, numeric=0.99),
+    }
+
+    decision = DeterministicRouter().route(
+        request(), recipes=recipes, workers=workers, estimates=estimates
+    )
+
+    assert decision.primary.recipe.recipe_id == "baseline"
+    assert decision.secondary is not None
+    assert decision.secondary.recipe.recipe_id == "challenger"
+    assert decision.speculative is False
+
+
+def test_deterministic_router_is_native_first_even_when_recipes_are_shuffled() -> None:
+    recipes = (
+        recipe("precision-first", family="p", tier=RouteTier.PRECISION),
+        recipe("native-later", family="n", tier=RouteTier.NATIVE),
+    )
+    workers = (worker("w1"), worker("w2"))
+    estimates = {
+        ("precision-first", "w1"): estimate(passed=0.99),
+        ("native-later", "w2"): estimate(passed=0.01),
+    }
+
+    decision = DeterministicRouter().route(
+        request(), recipes=recipes, workers=workers, estimates=estimates
+    )
+
+    assert decision.primary.recipe.recipe_id == "native-later"
+
+
+def test_shadow_records_adaptive_counterfactual_but_executes_deterministic() -> None:
+    recipes = (recipe("baseline", family="a"), recipe("challenger", family="b"))
+    workers = (worker("w1"), worker("w2"))
+    estimates = {
+        ("baseline", "w1"): estimate(passed=0.10, numeric=0.10),
+        ("challenger", "w2"): estimate(passed=0.99, numeric=0.99),
+    }
+
+    decision = RoutingAuthorityRouter().route(
+        request(),
+        recipes=recipes,
+        workers=workers,
+        estimates=estimates,
+        authority=RoutingAuthorityGrant(
+            requested_mode=RoutingAuthorityMode.SHADOW,
+            effective_mode=RoutingAuthorityMode.SHADOW,
+            reason_codes=("shadow_zero_authority",),
+        ),
+    )
+
+    assert decision.executable.primary.recipe.recipe_id == "baseline"
+    assert decision.counterfactual is not None
+    assert decision.counterfactual.primary.recipe.recipe_id == "challenger"
+
+
+def test_canary_executes_adaptive_only_with_content_bound_authority() -> None:
+    recipes = (recipe("baseline", family="a"), recipe("challenger", family="b"))
+    workers = (worker("w1"), worker("w2"))
+    estimates = {
+        ("baseline", "w1"): estimate(passed=0.10, numeric=0.10),
+        ("challenger", "w2"): estimate(passed=0.99, numeric=0.99),
+    }
+
+    decision = RoutingAuthorityRouter(calibrated=_TestCalibratedPolicy()).route(
+        request(),
+        recipes=recipes,
+        workers=workers,
+        estimates=estimates,
+        authority=RoutingAuthorityGrant(
+            requested_mode=RoutingAuthorityMode.CANARY,
+            effective_mode=RoutingAuthorityMode.CANARY,
+            reason_codes=(),
+            policy_artifact_sha256="a" * 64,
+            canary_receipt_sha256="b" * 64,
+            calibration_table_sha256="c" * 64,
+            model_identities_sha256="d" * 64,
+        ),
+    )
+
+    assert decision.executable.primary.recipe.recipe_id == "challenger"
+    assert decision.counterfactual is None
+
+
+def test_canary_evidence_cannot_authorize_unbound_bootstrap_router() -> None:
+    recipes = (recipe("baseline", family="a"), recipe("challenger", family="b"))
+    workers = (worker("w1"), worker("w2"))
+    estimates = {
+        ("baseline", "w1"): estimate(passed=0.10),
+        ("challenger", "w2"): estimate(passed=0.99),
+    }
+
+    decision = RoutingAuthorityRouter().route(
+        request(),
+        recipes=recipes,
+        workers=workers,
+        estimates=estimates,
+        authority=RoutingAuthorityGrant(
+            requested_mode=RoutingAuthorityMode.CANARY,
+            effective_mode=RoutingAuthorityMode.CANARY,
+            reason_codes=(),
+            policy_artifact_sha256="a" * 64,
+            canary_receipt_sha256="b" * 64,
+            calibration_table_sha256="c" * 64,
+            model_identities_sha256="d" * 64,
+        ),
+    )
+
+    assert decision.authority.effective_mode is RoutingAuthorityMode.DETERMINISTIC
+    assert "calibrated_router_not_bound" in decision.authority.reason_codes
+    assert decision.executable.primary.recipe.recipe_id == "baseline"
+    assert decision.counterfactual is not None
 
 
 @pytest.mark.parametrize(

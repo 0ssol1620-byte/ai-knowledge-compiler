@@ -5,10 +5,16 @@ from __future__ import annotations
 import asyncio
 from logging.config import fileConfig
 
+from akc_api.arena_models import *  # noqa: F403
 from akc_api.database import Base
 from akc_api.models import *  # noqa: F403
 from akc_api.parallel_models import *  # noqa: F403
 from akc_api.project_access_models import *  # noqa: F403
+
+# `SourceCursor` lives beside the freshness dashboard rather than in a models
+# module, so the star-imports above miss it and `alembic check` could not see
+# drift on `source_cursors`. Imported for its mapper registration only.
+from akc_api.source_freshness import SourceCursor as SourceCursor
 from akc_api.team_models import *  # noqa: F403
 from akc_url_fetcher.models import *  # noqa: F403
 from alembic import context

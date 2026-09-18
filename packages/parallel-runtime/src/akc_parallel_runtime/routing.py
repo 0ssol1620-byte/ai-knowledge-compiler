@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import ClassVar
+from typing import ClassVar, Protocol
 
 from .models import WorkerSnapshot, WorkerState
 
@@ -120,8 +120,97 @@ class RouteDecision:
     policy_version: str
 
 
+class RoutingAuthorityMode(StrEnum):
+    """Execution authority for an adaptive routing decision."""
+
+    DETERMINISTIC = "deterministic"
+    SHADOW = "shadow"
+    CANARY = "canary"
+
+
+@dataclass(frozen=True, slots=True)
+class RoutingAuthorityGrant:
+    """Fail-closed result of evaluating policy and canary evidence.
+
+    Authentication and calibration live outside this routing primitive.  A
+    caller may grant canary authority only after both checks have completed.
+    Content digests make the exact evidence visible in the route outcome.
+    """
+
+    requested_mode: RoutingAuthorityMode
+    effective_mode: RoutingAuthorityMode
+    reason_codes: tuple[str, ...]
+    policy_artifact_sha256: str | None = None
+    canary_receipt_sha256: str | None = None
+    calibration_table_sha256: str | None = None
+    model_identities_sha256: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.effective_mode is RoutingAuthorityMode.CANARY:
+            if self.requested_mode is not RoutingAuthorityMode.CANARY:
+                raise ValueError("canary authority must be explicitly requested")
+            if not all(
+                (
+                    self.policy_artifact_sha256,
+                    self.canary_receipt_sha256,
+                    self.calibration_table_sha256,
+                    self.model_identities_sha256,
+                )
+            ):
+                raise ValueError("canary authority requires complete policy identities")
+        for field_name in (
+            "policy_artifact_sha256",
+            "canary_receipt_sha256",
+            "calibration_table_sha256",
+            "model_identities_sha256",
+        ):
+            value = getattr(self, field_name)
+            if value is not None and (
+                len(value) != 64 or any(c not in "0123456789abcdef" for c in value)
+            ):
+                raise ValueError(f"{field_name} must be a lowercase SHA-256 digest")
+
+
+@dataclass(frozen=True, slots=True)
+class AuthorizedRouteDecision:
+    """The sole executable route plus an optional zero-authority comparison."""
+
+    authority: RoutingAuthorityGrant
+    executable: RouteDecision
+    counterfactual: RouteDecision | None
+
+    def __post_init__(self) -> None:
+        if self.authority.effective_mode is RoutingAuthorityMode.SHADOW:
+            if self.counterfactual is None:
+                raise ValueError("shadow routing requires a counterfactual decision")
+            if self.executable.policy_version == self.counterfactual.policy_version:
+                raise ValueError("shadow and executable decisions must use distinct policies")
+        if self.authority.effective_mode is RoutingAuthorityMode.CANARY:
+            if self.executable.policy_version.startswith("deterministic-"):
+                raise ValueError("canary authority must execute the adaptive decision")
+        elif not self.executable.policy_version.startswith("deterministic-"):
+            raise ValueError("adaptive routing cannot execute without canary authority")
+
+
 class RoutingUnavailable(RuntimeError):
     pass
+
+
+class CalibratedRoutingPolicy(Protocol):
+    """Verified policy consumer accepted by the canary authority boundary."""
+
+    policy_artifact_sha256: str
+    calibration_table_sha256: str
+    model_identities_sha256: str
+
+    def route(
+        self,
+        request: RouteRequest,
+        *,
+        recipes: tuple[RecipeProfile, ...],
+        workers: tuple[WorkerSnapshot, ...],
+        estimates: dict[tuple[str, str], QualityEstimate],
+    ) -> RouteDecision: ...
 
 
 @dataclass(frozen=True, slots=True)
@@ -170,11 +259,7 @@ class CascadeController:
             )
         current_index = self._ORDER.index(current)
         next_stage = next(
-            (
-                stage
-                for stage in self._ORDER[current_index + 1 :]
-                if stage in available_stages
-            ),
+            (stage for stage in self._ORDER[current_index + 1 :] if stage in available_stages),
             None,
         )
         if next_stage is None:
@@ -271,9 +356,7 @@ class AdaptiveRouter:
         self.policy_version = policy_version
 
     @staticmethod
-    def _compatible(
-        request: RouteRequest, recipe: RecipeProfile, worker: WorkerSnapshot
-    ) -> bool:
+    def _compatible(request: RouteRequest, recipe: RecipeProfile, worker: WorkerSnapshot) -> bool:
         if (
             recipe.recipe_id in request.excluded_recipe_ids
             or worker.worker_id in request.excluded_worker_ids
@@ -310,7 +393,8 @@ class AdaptiveRouter:
         cost_weight = 0.15 if request.high_risk else 0.6
         latency_weight = 0.002 if request.high_risk else 0.008
         failure_risk = (
-            1 - estimate.pass_hard_gate
+            1
+            - estimate.pass_hard_gate
             + estimate.repetition_probability
             + estimate.timeout_probability
             + estimate.oom_probability
@@ -412,11 +496,179 @@ class AdaptiveRouter:
         )
 
 
+class DeterministicRouter:
+    """Native-first configured-order fallback with no learned execution authority."""
+
+    _TIER_ORDER: ClassVar[dict[RouteTier, int]] = AdaptiveRouter._TIER_ORDER
+
+    def __init__(self, *, policy_version: str = "deterministic-router-v1") -> None:
+        self.policy_version = policy_version
+
+    def route(
+        self,
+        request: RouteRequest,
+        *,
+        recipes: tuple[RecipeProfile, ...],
+        workers: tuple[WorkerSnapshot, ...],
+        estimates: dict[tuple[str, str], QualityEstimate],
+    ) -> RouteDecision:
+        candidates: list[RouteCandidate] = []
+        for recipe in recipes:
+            for worker in workers:
+                if not AdaptiveRouter._compatible(request, recipe, worker):
+                    continue
+                estimate = estimates.get((recipe.recipe_id, worker.worker_id))
+                if estimate is None:
+                    continue
+                candidates.append(
+                    RouteCandidate(
+                        recipe=recipe,
+                        worker=worker,
+                        estimate=estimate,
+                        objective_score=0.0,
+                    )
+                )
+        if not candidates:
+            raise RoutingUnavailable("no compatible healthy worker with a quality estimate")
+        configured_order = {
+            (recipe.recipe_id, worker.worker_id): (recipe_index, worker_index)
+            for recipe_index, recipe in enumerate(recipes)
+            for worker_index, worker in enumerate(workers)
+        }
+        candidates.sort(
+            key=lambda candidate: (
+                self._TIER_ORDER[candidate.recipe.tier],
+                *configured_order[(candidate.recipe.recipe_id, candidate.worker.worker_id)],
+            )
+        )
+        primary = candidates[0]
+        secondary = next(
+            (
+                candidate
+                for candidate in candidates[1:]
+                if candidate.recipe.independent_family != primary.recipe.independent_family
+                and candidate.worker.worker_id != primary.worker.worker_id
+            ),
+            None,
+        )
+        return RouteDecision(
+            primary=primary,
+            secondary=secondary,
+            speculative=False,
+            reason_codes=("deterministic_fallback",),
+            policy_version=self.policy_version,
+        )
+
+
+class RoutingAuthorityRouter:
+    """Keep one executable authority across deterministic, shadow, and canary modes."""
+
+    def __init__(
+        self,
+        *,
+        deterministic: DeterministicRouter | None = None,
+        adaptive: AdaptiveRouter | None = None,
+        calibrated: CalibratedRoutingPolicy | None = None,
+    ) -> None:
+        self._deterministic = deterministic or DeterministicRouter()
+        self._adaptive = adaptive or AdaptiveRouter()
+        self._calibrated = calibrated
+
+    def route(
+        self,
+        request: RouteRequest,
+        *,
+        recipes: tuple[RecipeProfile, ...],
+        workers: tuple[WorkerSnapshot, ...],
+        estimates: dict[tuple[str, str], QualityEstimate],
+        authority: RoutingAuthorityGrant,
+    ) -> AuthorizedRouteDecision:
+        deterministic = self._deterministic.route(
+            request,
+            recipes=recipes,
+            workers=workers,
+            estimates=estimates,
+        )
+        adaptive: RouteDecision | None = None
+        if authority.requested_mode is not RoutingAuthorityMode.DETERMINISTIC:
+            adaptive = self._adaptive.route(
+                request,
+                recipes=recipes,
+                workers=workers,
+                estimates=estimates,
+            )
+        if authority.effective_mode is RoutingAuthorityMode.CANARY:
+            if (
+                self._calibrated is None
+                or self._calibrated.policy_artifact_sha256 != authority.policy_artifact_sha256
+                or self._calibrated.calibration_table_sha256 != authority.calibration_table_sha256
+                or self._calibrated.model_identities_sha256 != authority.model_identities_sha256
+            ):
+                failed_closed = RoutingAuthorityGrant(
+                    requested_mode=authority.requested_mode,
+                    effective_mode=RoutingAuthorityMode.DETERMINISTIC,
+                    reason_codes=tuple(
+                        sorted({*authority.reason_codes, "calibrated_router_not_bound"})
+                    ),
+                    policy_artifact_sha256=authority.policy_artifact_sha256,
+                    canary_receipt_sha256=authority.canary_receipt_sha256,
+                    calibration_table_sha256=authority.calibration_table_sha256,
+                    model_identities_sha256=authority.model_identities_sha256,
+                )
+                return AuthorizedRouteDecision(
+                    authority=failed_closed,
+                    executable=deterministic,
+                    counterfactual=adaptive,
+                )
+            try:
+                calibrated = self._calibrated.route(
+                    request,
+                    recipes=recipes,
+                    workers=workers,
+                    estimates=estimates,
+                )
+            except (RoutingUnavailable, ValueError):
+                failed_closed = RoutingAuthorityGrant(
+                    requested_mode=authority.requested_mode,
+                    effective_mode=RoutingAuthorityMode.DETERMINISTIC,
+                    reason_codes=tuple(
+                        sorted(
+                            {
+                                *authority.reason_codes,
+                                "calibrated_router_runtime_binding_invalid",
+                            }
+                        )
+                    ),
+                    policy_artifact_sha256=authority.policy_artifact_sha256,
+                    canary_receipt_sha256=authority.canary_receipt_sha256,
+                    calibration_table_sha256=authority.calibration_table_sha256,
+                    model_identities_sha256=authority.model_identities_sha256,
+                )
+                return AuthorizedRouteDecision(
+                    authority=failed_closed,
+                    executable=deterministic,
+                    counterfactual=adaptive,
+                )
+            return AuthorizedRouteDecision(
+                authority=authority,
+                executable=calibrated,
+                counterfactual=None,
+            )
+        return AuthorizedRouteDecision(
+            authority=authority,
+            executable=deterministic,
+            counterfactual=adaptive,
+        )
+
+
 __all__ = [
     "AdaptiveRouter",
+    "AuthorizedRouteDecision",
+    "CalibratedRoutingPolicy",
     "CascadeController",
     "CascadeDecision",
     "CascadeStage",
+    "DeterministicRouter",
     "QualityEstimate",
     "RecipeProfile",
     "RouteCandidate",
@@ -426,6 +678,9 @@ __all__ = [
     "RouterPromotionDecision",
     "RouterPromotionEvidence",
     "RouterStage",
+    "RoutingAuthorityGrant",
+    "RoutingAuthorityMode",
+    "RoutingAuthorityRouter",
     "RoutingUnavailable",
     "evaluate_router_promotion",
 ]

@@ -1,0 +1,33 @@
+{
+  "schema": "tavonel.router_mixed_source_preopen_state.v1",
+  "benchmark_id": "TAVONEL-ROUTER-MIXED-SOURCE-HOLDOUT-20260910-V1",
+  "recorded_at": "2026-09-10T19:00:39+09:00",
+  "state": "PREOPEN_PASSED_REMOTE_BUNDLE_AND_RENDER_INPUT_PREFLIGHT_REQUIRED",
+  "selection_protocol_sha256": "sha256:342b64ff4d15ac78f2389073ff68d24e0ac58a9a28191268b7db2fd6818f179b",
+  "source_manifest_exists": true,
+  "runtime_binding_exists": true,
+  "predictions_frozen": true,
+  "truth_opened": false,
+  "model_calls": 0,
+  "new_gpu_spend_usd": 0,
+  "required_next": [
+    "verify each remote model bundle object against the pinned bundle digest without starting inference",
+    "derive exact source-bound raster inputs under an immutable render receipt and bind every worker request digest",
+    "run the execution preflight and only then start bounded RunPod inference",
+    "terminate every created pod and verify zero live pods before any evaluation or truth opening"
+  ],
+  "public_claim": false,
+  "production_promotion": false,
+  "candidate_inventory_exists": true,
+  "candidate_inventory_sha256": "sha256:f7da723da18e35300dff774d50c03917eb9a13b7c68e3a5fc537698a5b88a8c0",
+  "candidate_units": 128,
+  "selected_units": 96,
+  "candidate_seed_sha256": "sha256:e0d96eeb2f31acf3abedb57ce94f1d79a124294d2110fa6b6edb87022d31586d",
+  "source_manifest_sha256": "sha256:5001577b021a9f93869017e32a613e161ddc6edde95c75fd724f3faf29b1a451",
+  "development_overlap_inventory_exists": true,
+  "development_overlap_inventory_sha256": "sha256:9897eed643781c0ba006219d550eeb9b388a44a785bc249f27c69424aeabb1c5",
+  "runtime_binding_sha256": "sha256:bac840cd62c3e299557df7b5465b70bd8bcab731d8ab4623cb9ef72fe8009713",
+  "prediction_manifest_sha256": "sha256:7d1c1a37b54c5527cb2bccc8a3e532335e815760633f5d77232fe38537aa3ed8",
+  "preopen_passed": true,
+  "preopen_blockers": []
+}

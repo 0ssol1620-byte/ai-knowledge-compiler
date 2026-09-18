@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tavonel.com/schemas/arena/public-manifest-v1.json",
+  "title": "TAVONEL Arena public manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "study_id", "study_kind", "evidence_class", "release_state", "release_reasons",
+    "claims_approved", "founder_release_decision_required", "publication_contract",
+    "artifacts", "counts", "public_summary"
+  ],
+  "properties": {
+    "schema": {"const": "tavonel.arena.public_manifest.v1"},
+    "study_id": {"type": "string", "minLength": 1},
+    "study_kind": {"enum": ["FIXTURE", "SCREENING", "FINAL_ARENA"]},
+    "evidence_class": {"enum": ["SYNTHETIC_FIXTURE", "MEASURED_RESEARCH"]},
+    "release_state": {"enum": ["WITHHELD", "ELIGIBLE_FOR_FOUNDER_RELEASE_REVIEW"]},
+    "release_reasons": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "claims_approved": {"const": false},
+    "founder_release_decision_required": {"const": true},
+    "publication_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "approval_subject_sha256", "approval_subject_payload", "external_approval_schema",
+        "signature_payload", "rule"
+      ],
+      "properties": {
+        "approval_subject_sha256": {
+          "type": "string", "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "approval_subject_payload": {"const": "arena artifact hash lines v1"},
+        "external_approval_schema": {
+          "const": "https://tavonel.com/schemas/arena/external-approval-receipt-v1.json"
+        },
+        "signature_payload": {"const": "arena approval signature lines v1"},
+        "rule": {"type": "string", "minLength": 1}
+      }
+    },
+    "artifacts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["preregistration", "corpus", "runs", "layers", "results", "results_csv"],
+      "properties": {
+        "preregistration": {"$ref": "#/$defs/artifact"},
+        "corpus": {"$ref": "#/$defs/artifact"},
+        "runs": {"$ref": "#/$defs/artifact"},
+        "layers": {"$ref": "#/$defs/artifact"},
+        "results": {"$ref": "#/$defs/artifact"},
+        "results_csv": {"$ref": "#/$defs/artifact"}
+      }
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["corpus_rows", "run_receipts", "layer_receipts"],
+      "properties": {
+        "corpus_rows": {"type": "integer", "minimum": 0},
+        "run_receipts": {"type": "integer", "minimum": 0},
+        "layer_receipts": {"type": "integer", "minimum": 0}
+      }
+    },
+    "public_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["headline_metric", "arms", "caveats"],
+      "properties": {
+        "headline_metric": {"const": "end_to_end_effective_score"},
+        "arms": {"type": "array", "items": {"$ref": "#/$defs/aggregateArm"}},
+        "caveats": {"type": "array", "items": {"type": "string"}}
+      }
+    }
+  },
+  "$defs": {
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "nullableNumber": {"type": ["number", "null"], "minimum": 0},
+    "aggregateArm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "arm_id", "planned_pages", "observed_receipts", "missing_receipts",
+        "success_pages", "failure_pages", "coverage", "quality_success_only",
+        "end_to_end_effective_score", "actual_cost_total_usd",
+        "cost_per_planned_page_usd", "cost_per_page_p50_usd", "cost_per_page_p95_usd",
+        "latency_p50_ms", "latency_p95_ms", "status_counts", "pareto_frontier",
+        "dominated_by"
+      ],
+      "properties": {
+        "arm_id": {"type": "string", "minLength": 1},
+        "planned_pages": {"type": "integer", "minimum": 0},
+        "observed_receipts": {"type": "integer", "minimum": 0},
+        "missing_receipts": {"type": "integer", "minimum": 0},
+        "success_pages": {"type": "integer", "minimum": 0},
+        "failure_pages": {"type": "integer", "minimum": 0},
+        "coverage": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "quality_success_only": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "end_to_end_effective_score": {
+          "type": ["number", "null"], "minimum": 0, "maximum": 1
+        },
+        "actual_cost_total_usd": {"type": "number", "minimum": 0},
+        "cost_per_planned_page_usd": {"$ref": "#/$defs/nullableNumber"},
+        "cost_per_page_p50_usd": {"$ref": "#/$defs/nullableNumber"},
+        "cost_per_page_p95_usd": {"$ref": "#/$defs/nullableNumber"},
+        "latency_p50_ms": {"$ref": "#/$defs/nullableNumber"},
+        "latency_p95_ms": {"$ref": "#/$defs/nullableNumber"},
+        "status_counts": {
+          "type": "object",
+          "additionalProperties": {"type": "integer", "minimum": 0}
+        },
+        "pareto_frontier": {"type": "boolean"},
+        "dominated_by": {
+          "type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true
+        }
+      }
+    }
+  }
+}

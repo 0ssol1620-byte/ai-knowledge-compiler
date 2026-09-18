@@ -55,6 +55,15 @@ ADAPTER_LENGTH = 64
 
 
 def upgrade() -> None:
+    """Create the table only when 0001's ``create_all`` has not already made it.
+
+    ``SourceCursor`` is in ``Base.metadata``, so a database built from 0001
+    already carries the full ORM shape -- see 0040's note. The same idiom as
+    0023_trial_ingest.
+    """
+
+    if TABLE in set(sa.inspect(op.get_bind()).get_table_names()):
+        return
     op.create_table(
         TABLE,
         sa.Column("source_id", sa.String(length=SOURCE_ID_LENGTH), primary_key=True),

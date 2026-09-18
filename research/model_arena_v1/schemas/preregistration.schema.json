@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tavonel.com/schemas/arena/preregistration-v1.json",
+  "title": "TAVONEL Arena preregistration v1",
+  "type": "object",
+  "required": [
+    "schema", "study_id", "study_kind", "evidence_class", "preregistered_at", "evaluation_commit",
+    "corpus_requirements", "frozen_protocol", "models", "arms", "required_layers",
+    "public_release"
+  ],
+  "properties": {
+    "schema": {"const": "tavonel.arena.preregistration.v1"},
+    "study_kind": {"enum": ["FIXTURE", "SCREENING", "FINAL_ARENA"]},
+    "evidence_class": {"enum": ["SYNTHETIC_FIXTURE", "MEASURED_RESEARCH"]},
+    "evaluation_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "corpus_requirements": {
+      "type": "object",
+      "required": ["arena_total", "calibration_total", "origin_counts", "slice_counts"]
+    },
+    "frozen_protocol": {"type": "object"},
+    "models": {"type": "array", "minItems": 1},
+    "arms": {"type": "array", "minItems": 1},
+    "required_layers": {
+      "type": "array", "items": {"enum": ["A", "B", "C", "D", "E"]}, "uniqueItems": true
+    },
+    "public_release": {"type": "object", "required": ["required_repeats", "current_actual_prices"]}
+  }
+}

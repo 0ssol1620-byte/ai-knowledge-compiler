@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.aiknowledgecompiler.dev/page-execution-plan/1.0.0",
+  "title": "PageExecutionPlan",
+  "description": "Blueprint 2026-09-08 §18. Pages are executed by risk and dependency, not in 1..N order (§19).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "pageId",
+    "technicalClass",
+    "riskVector",
+    "authoritySources",
+    "candidateRoutes",
+    "primaryRoute",
+    "speculativeRoutes",
+    "verificationPolicy",
+    "escalationPolicy",
+    "priority",
+    "dependencies"
+  ],
+  "properties": {
+    "pageId": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "technicalClass": {
+      "enum": [
+        "NATIVE_CLEAN",
+        "NATIVE_COMPLEX",
+        "SCAN_TEXT",
+        "SCAN_COMPLEX",
+        "TABLE_HEAVY",
+        "FORMULA_HEAVY",
+        "CHART_HEAVY",
+        "PHOTO_DOCUMENT",
+        "ROTATED_OR_WARPED",
+        "HANDWRITTEN",
+        "MIXED",
+        "UNKNOWN"
+      ]
+    },
+    "riskVector": { "$ref": "https://schemas.aiknowledgecompiler.dev/risk-vector/1.0.0" },
+    "authoritySources": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+    },
+    "candidateRoutes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/route" }
+    },
+    "primaryRoute": { "$ref": "#/$defs/executableRoute" },
+    "speculativeRoutes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/route" }
+    },
+    "verificationPolicy": { "$ref": "#/$defs/verificationPolicy" },
+    "escalationPolicy": {
+      "enum": [
+        "bounded_retry",
+        "peer_escalation",
+        "region_recovery",
+        "authority_lane",
+        "fail_closed"
+      ]
+    },
+    "batchGroup": { "type": ["string", "null"], "maxLength": 256 },
+    "priority": { "type": "integer", "minimum": 0, "maximum": 1000 },
+    "dependencies": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/dependencyEdge" }
+    }
+  },
+  "$defs": {
+    "route": {
+      "enum": [
+        "native",
+        "paddle_vl",
+        "paddle_fast",
+        "hpd_fast",
+        "unlimited_long",
+        "mistral_fallback",
+        "region_recovery",
+        "authority_reconstruction",
+        "unresolved",
+        "quarantine"
+      ]
+    },
+    "executableRoute": {
+      "description": "A terminal isolation state is not an executable route.",
+      "enum": [
+        "native",
+        "paddle_vl",
+        "paddle_fast",
+        "hpd_fast",
+        "unlimited_long",
+        "mistral_fallback",
+        "region_recovery",
+        "authority_reconstruction"
+      ]
+    },
+    "verificationPolicy": {
+      "enum": [
+        "none",
+        "peer_agreement",
+        "authority_match",
+        "independent_verifier",
+        "human_review"
+      ]
+    },
+    "dependencyEdge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fromUnitId", "toUnitId", "kind", "blocking"],
+      "properties": {
+        "fromUnitId": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "toUnitId": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "kind": {
+          "enum": [
+            "continued_table",
+            "figure_caption",
+            "footnote",
+            "slide_notes",
+            "sheet_formula",
+            "image_callout",
+            "email_attachment",
+            "xbrl_context"
+          ]
+        },
+        "blocking": { "type": "boolean" }
+      }
+    }
+  }
+}

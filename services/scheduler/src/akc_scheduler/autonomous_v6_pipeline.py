@@ -20,16 +20,21 @@ from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from decimal import Decimal
 from enum import StrEnum
-from typing import Any, Protocol
+from typing import Any, Protocol, cast, final
 
+from akc_api.feature_flags import (
+    V5_ROUTER_CANARY_FLAG,
+    V5_ROUTER_SHADOW_FLAG,
+    feature_enabled,
+)
 from akc_api.models import ProcessingJob
 from akc_parallel_runtime import (
-    AdaptiveRouter,
     AdaptiveShardPredictor,
     ArbitrationCandidate,
     ArbitrationDecision,
     Arbitrator,
     AttemptKind,
+    AuthorizedRouteDecision,
     BackpressureSnapshot,
     CandidateObservation,
     ContinuityEdge,
@@ -62,6 +67,9 @@ from akc_parallel_runtime import (
     RouteDecision,
     RouteRequest,
     RouterStage,
+    RoutingAuthorityGrant,
+    RoutingAuthorityMode,
+    RoutingAuthorityRouter,
     RoutingUnavailable,
     ShardOutput,
     ShardPlan,
@@ -74,6 +82,10 @@ from akc_parallel_runtime import (
     canonical_sha256,
     evaluate_backpressure,
     require_sha256,
+)
+from akc_parallel_runtime.calibration import (
+    Ed25519CanaryReceiptVerifier,
+    evaluate_policy_authority,
 )
 from akc_security.tenant_context import enter_tenant_context
 from sqlalchemy import select
@@ -138,6 +150,100 @@ class PipelineContractError(RuntimeError):
 
 
 @dataclass(frozen=True, slots=True)
+class RouterRuntimeFlags:
+    """Default-off routing flags resolved before constructing the coordinator."""
+
+    shadow_enabled: bool = False
+    canary_enabled: bool = False
+
+    @property
+    def requested_mode(self) -> RoutingAuthorityMode:
+        if self.canary_enabled:
+            return RoutingAuthorityMode.CANARY
+        if self.shadow_enabled:
+            return RoutingAuthorityMode.SHADOW
+        return RoutingAuthorityMode.DETERMINISTIC
+
+
+class RouterAuthorityEvaluation(Protocol):
+    effective_mode: str
+    reason_codes: tuple[str, ...]
+    policy_artifact_sha256: str | None
+    canary_receipt_sha256: str | None
+    calibration_table_sha256: str | None
+    model_identities_sha256: str | None
+
+
+class RouterAuthorityEvaluator(Protocol):
+    """Boundary that authenticates a calibrated policy and its canary receipt."""
+
+    def __call__(
+        self,
+        *,
+        requested_mode: str,
+        policy_artifact: object | None,
+        canary_receipt: object | None,
+        verifier: object | None,
+        now: datetime,
+        low_risk_cohort: bool,
+        expected_cohort_id: str | None,
+    ) -> RouterAuthorityEvaluation: ...
+
+
+class RouterRuntimeFlagResolver(Protocol):
+    async def __call__(self, spec: V6PipelineJobSpec) -> RouterRuntimeFlags: ...
+
+
+async def resolve_router_runtime_flags(
+    session: AsyncSession,
+    *,
+    tenant_id: uuid.UUID,
+    subject_id: uuid.UUID,
+    document_type: str | None = None,
+) -> RouterRuntimeFlags:
+    """Resolve the two default-off v5 flags for one stable rollout subject."""
+
+    shadow_enabled = await feature_enabled(
+        session,
+        tenant_id=tenant_id,
+        key=V5_ROUTER_SHADOW_FLAG,
+        user_id=subject_id,
+        document_type=document_type,
+    )
+    canary_enabled = await feature_enabled(
+        session,
+        tenant_id=tenant_id,
+        key=V5_ROUTER_CANARY_FLAG,
+        user_id=subject_id,
+        document_type=document_type,
+    )
+    return RouterRuntimeFlags(
+        shadow_enabled=shadow_enabled,
+        canary_enabled=canary_enabled,
+    )
+
+
+@final
+class PersistedRouterRuntimeFlagResolver:
+    """Production flag reader that opens a fresh tenant-scoped DB snapshot per check."""
+
+    __slots__ = ("_sessions",)
+
+    def __init__(self, sessions: async_sessionmaker[AsyncSession]) -> None:
+        self._sessions = sessions
+
+    async def __call__(self, spec: V6PipelineJobSpec) -> RouterRuntimeFlags:
+        tenant_id = uuid.UUID(spec.tenant_id)
+        async with self._sessions() as session:
+            await enter_tenant_context(session, tenant_id=tenant_id)
+            return await resolve_router_runtime_flags(
+                session,
+                tenant_id=tenant_id,
+                subject_id=uuid.UUID(spec.processing_job_id),
+            )
+
+
+@dataclass(frozen=True, slots=True)
 class RouteEstimateBinding:
     recipe_id: str
     worker_id: str
@@ -193,6 +299,7 @@ class V6PipelineJobSpec:
     private_processing: bool = True
     external_api_allowed: bool = False
     production_canary: bool = False
+    router_canary_cohort_id: str | None = None
     native_comparison_required: bool = False
     authority_required: bool = False
     differential_required: bool = False
@@ -229,6 +336,10 @@ class V6PipelineJobSpec:
             raise ValueError("orchestration_started_at must be timezone-aware")
         if self.private_processing and self.external_api_allowed:
             raise ValueError("private processing cannot allow external APIs")
+        if self.production_canary and not (
+            self.router_canary_cohort_id and self.router_canary_cohort_id.strip()
+        ):
+            raise ValueError("production canary requires an exact router cohort id")
         if self.credit_per_shard <= 0:
             raise ValueError("credit_per_shard must be positive")
         if self.max_recovery_attempts not in {0, 1, 2}:
@@ -370,7 +481,8 @@ class AutonomousV6RuntimePort(Protocol):
     ``poll_output`` MUST return ``COMPLETED`` only after the existing signed
     output-admission callback has persisted and content-bound the provider
     result.  All methods MUST implement content-bound idempotency by
-    ``operation_key``.
+    ``operation_key``. ``submit_attempt`` MUST atomically bind the supplied
+    freshly evaluated authority envelope to the provider submission receipt.
     """
 
     async def persist_plan(
@@ -381,7 +493,7 @@ class AutonomousV6RuntimePort(Protocol):
         self,
         spec: V6PipelineJobSpec,
         shard: ParseShard,
-        decision: RouteDecision,
+        decision: AuthorizedRouteDecision,
         *,
         pool_id: str,
         operation_key: str,
@@ -396,6 +508,7 @@ class AutonomousV6RuntimePort(Protocol):
         attempt_kind: AttemptKind,
         parent_attempt_id: str | None,
         recovery_task: RecoveryTask | None,
+        authority: AuthorizedRouteDecision,
         operation_key: str,
     ) -> SubmissionReceipt: ...
 
@@ -514,6 +627,7 @@ class ShardCheckpoint:
     primary_pool_id: str | None = None
     secondary_recipe_id: str | None = None
     secondary_worker_id: str | None = None
+    route_authority_sha256: str | None = None
     submissions: tuple[SubmissionReceipt, ...] = ()
     winner: AcceptedCandidateSummary | None = None
     base_attempt_id: str | None = None
@@ -541,6 +655,11 @@ class ShardCheckpoint:
             raise ValueError("checkpoint winner is not one of its submitted attempts")
         if self.phase is ShardPhase.UNRESOLVED and self.winner is not None:
             raise ValueError("unresolved shard checkpoint cannot carry a winner")
+        if self.route_authority_sha256 is not None:
+            require_sha256(
+                self.route_authority_sha256,
+                field_name="route_authority_sha256",
+            )
 
 
 @dataclass(frozen=True, slots=True)
@@ -581,6 +700,12 @@ class PipelineCheckpoint:
         serialized = _jsonable(dataclasses.asdict(self))
         if not isinstance(serialized, dict):
             raise PipelineContractError("checkpoint serialization did not produce an object")
+        # Preserve checkpoint digests written before route authority was persisted.
+        shards = serialized.get("shards")
+        if isinstance(shards, list):
+            for shard in shards:
+                if isinstance(shard, dict) and shard.get("route_authority_sha256") is None:
+                    shard.pop("route_authority_sha256")
         return {str(key): item for key, item in serialized.items()}
 
     @property
@@ -782,6 +907,13 @@ class AutonomousV6PipelineCoordinator:
         clock: Callable[[], datetime] | None = None,
         shard_predictor: AdaptiveShardPredictor | None = None,
         health_registry: WorkerHealthRegistry | None = None,
+        router_flags: RouterRuntimeFlags | None = None,
+        router_runtime_flag_resolver: RouterRuntimeFlagResolver | None = None,
+        router_authority_evaluator: RouterAuthorityEvaluator | None = None,
+        router_policy_artifact: object | None = None,
+        router_canary_receipt: object | None = None,
+        router_canary_verifier: object | None = None,
+        routing_authority_router: RoutingAuthorityRouter | None = None,
     ) -> None:
         self._store = store
         self._runtime = runtime
@@ -789,8 +921,18 @@ class AutonomousV6PipelineCoordinator:
         self._mode = mode
         self._trusted_admission_verifier = trusted_admission_verifier
         self._clock = clock or (lambda: datetime.now(UTC))
+        self._router_flags = router_flags or RouterRuntimeFlags()
+        self._router_runtime_flag_resolver = router_runtime_flag_resolver
+        self._router_authority_evaluator: RouterAuthorityEvaluator = (
+            cast(RouterAuthorityEvaluator, evaluate_policy_authority)
+            if mode is PipelineExecutionMode.PRODUCTION or router_authority_evaluator is None
+            else router_authority_evaluator
+        )
+        self._router_policy_artifact = router_policy_artifact
+        self._router_canary_receipt = router_canary_receipt
+        self._router_canary_verifier = router_canary_verifier
         self._planner = DeterministicShardPlanner(shard_predictor or AdaptiveShardPredictor())
-        self._router = AdaptiveRouter()
+        self._router = routing_authority_router or RoutingAuthorityRouter()
         self._validator = ValidatorPipeline()
         self._arbitrator = Arbitrator()
         self._recovery = RecoveryPlanner()
@@ -901,22 +1043,152 @@ class AutonomousV6PipelineCoordinator:
             production_canary=spec.production_canary,
         )
 
-    def _decision(self, spec: V6PipelineJobSpec, shard: ParseShard) -> RouteDecision:
+    def _authority_grant(
+        self,
+        spec: V6PipelineJobSpec,
+        request: RouteRequest,
+        *,
+        router_flags: RouterRuntimeFlags | None = None,
+    ) -> RoutingAuthorityGrant:
+        requested = (router_flags or self._router_flags).requested_mode
+        if requested is RoutingAuthorityMode.DETERMINISTIC:
+            return RoutingAuthorityGrant(
+                requested_mode=requested,
+                effective_mode=RoutingAuthorityMode.DETERMINISTIC,
+                reason_codes=("router_flags_disabled",),
+            )
+        if requested is RoutingAuthorityMode.SHADOW:
+            return RoutingAuthorityGrant(
+                requested_mode=requested,
+                effective_mode=RoutingAuthorityMode.SHADOW,
+                reason_codes=("shadow_zero_authority",),
+            )
+        low_risk_cohort = bool(
+            spec.production_canary and spec.router_canary_cohort_id and not request.high_risk
+        )
+        missing = tuple(
+            name
+            for name, value in (
+                ("policy", self._router_policy_artifact),
+                ("receipt", self._router_canary_receipt),
+                ("verifier", self._router_canary_verifier),
+            )
+            if value is None
+        )
+        if missing or not low_risk_cohort:
+            reasons = [f"canary_{name}_missing" for name in missing]
+            if not spec.production_canary:
+                reasons.append("canary_cohort_not_selected")
+            elif request.high_risk:
+                reasons.append("canary_scope_not_low_risk")
+            return RoutingAuthorityGrant(
+                requested_mode=requested,
+                effective_mode=RoutingAuthorityMode.DETERMINISTIC,
+                reason_codes=tuple(sorted(reasons)),
+            )
+        if self._mode is PipelineExecutionMode.PRODUCTION and type(
+            self._router_canary_verifier
+        ) is not Ed25519CanaryReceiptVerifier:
+            return RoutingAuthorityGrant(
+                requested_mode=requested,
+                effective_mode=RoutingAuthorityMode.DETERMINISTIC,
+                reason_codes=("canary_verifier_untrusted",),
+            )
+        try:
+            evaluated = self._router_authority_evaluator(
+                requested_mode=requested.value,
+                policy_artifact=self._router_policy_artifact,
+                canary_receipt=self._router_canary_receipt,
+                verifier=self._router_canary_verifier,
+                now=self._authority_now(),
+                low_risk_cohort=low_risk_cohort,
+                expected_cohort_id=spec.router_canary_cohort_id,
+            )
+            effective = RoutingAuthorityMode(str(evaluated.effective_mode))
+            reason_codes = tuple(str(code) for code in evaluated.reason_codes)
+            policy_sha256 = evaluated.policy_artifact_sha256
+            receipt_sha256 = evaluated.canary_receipt_sha256
+            calibration_table_sha256 = evaluated.calibration_table_sha256
+            model_identities_sha256 = evaluated.model_identities_sha256
+            grant = RoutingAuthorityGrant(
+                requested_mode=requested,
+                effective_mode=effective,
+                reason_codes=reason_codes,
+                policy_artifact_sha256=policy_sha256,
+                canary_receipt_sha256=receipt_sha256,
+                calibration_table_sha256=calibration_table_sha256,
+                model_identities_sha256=model_identities_sha256,
+            )
+        except (AttributeError, TypeError, ValueError):
+            return RoutingAuthorityGrant(
+                requested_mode=requested,
+                effective_mode=RoutingAuthorityMode.DETERMINISTIC,
+                reason_codes=("canary_authority_evaluation_invalid",),
+            )
+        if grant.effective_mode is not RoutingAuthorityMode.CANARY:
+            return RoutingAuthorityGrant(
+                requested_mode=requested,
+                effective_mode=RoutingAuthorityMode.DETERMINISTIC,
+                reason_codes=grant.reason_codes or ("canary_authority_denied",),
+                policy_artifact_sha256=grant.policy_artifact_sha256,
+                canary_receipt_sha256=grant.canary_receipt_sha256,
+                calibration_table_sha256=grant.calibration_table_sha256,
+                model_identities_sha256=grant.model_identities_sha256,
+            )
+        return grant
+
+    def _authority_now(self) -> datetime:
+        if self._mode is PipelineExecutionMode.PRODUCTION:
+            return datetime.now(UTC)
+        return self._clock()
+
+    def _decision(self, spec: V6PipelineJobSpec, shard: ParseShard) -> AuthorizedRouteDecision:
+        request = self._route_request(spec, shard)
         return self._router.route(
-            self._route_request(spec, shard),
+            request,
             recipes=self._inventory.recipes,
             workers=self._inventory.workers,
             estimates=self._inventory.estimate_map,
+            authority=self._authority_grant(spec, request),
         )
 
-    def _recovery_decision(
+    async def _fresh_router_flags(self, spec: V6PipelineJobSpec) -> RouterRuntimeFlags:
+        resolver = self._router_runtime_flag_resolver
+        if resolver is None:
+            if self._mode is PipelineExecutionMode.PRODUCTION:
+                return RouterRuntimeFlags()
+            return self._router_flags
+        if self._mode is PipelineExecutionMode.PRODUCTION and type(
+            resolver
+        ) is not PersistedRouterRuntimeFlagResolver:
+            return RouterRuntimeFlags()
+        try:
+            resolved = await resolver(spec)
+        except Exception:
+            return RouterRuntimeFlags()
+        return resolved if type(resolved) is RouterRuntimeFlags else RouterRuntimeFlags()
+
+    async def _fresh_decision(
+        self, spec: V6PipelineJobSpec, shard: ParseShard
+    ) -> AuthorizedRouteDecision:
+        request = self._route_request(spec, shard)
+        flags = await self._fresh_router_flags(spec)
+        return self._router.route(
+            request,
+            recipes=self._inventory.recipes,
+            workers=self._inventory.workers,
+            estimates=self._inventory.estimate_map,
+            authority=self._authority_grant(spec, request, router_flags=flags),
+        )
+
+    async def _recovery_decision(
         self,
         spec: V6PipelineJobSpec,
         shard: ParseShard,
         *,
         excluded_families: frozenset[str],
         excluded_workers: frozenset[str] = frozenset(),
-    ) -> RouteDecision:
+    ) -> AuthorizedRouteDecision:
         request = replace(
             self._route_request(spec, shard),
             stage=RouterStage.RECOVERY,
@@ -924,15 +1196,17 @@ class AutonomousV6PipelineCoordinator:
             excluded_worker_ids=excluded_workers,
             excluded_independent_families=excluded_families,
         )
-        return self._router.route(
+        flags = await self._fresh_router_flags(spec)
+        authorized = self._router.route(
             request,
             recipes=self._inventory.recipes,
             workers=tuple(
-                self._health.snapshot(worker.worker_id)
-                for worker in self._inventory.workers
+                self._health.snapshot(worker.worker_id) for worker in self._inventory.workers
             ),
             estimates=self._inventory.estimate_map,
+            authority=self._authority_grant(spec, request, router_flags=flags),
         )
+        return authorized
 
     async def _record_provider_health(
         self,
@@ -1212,13 +1486,15 @@ class AutonomousV6PipelineCoordinator:
         by_id = {item.shard_id: item for item in checkpoint.shards}
         for shard in plan.shards:
             current = by_id[shard.shard_id]
-            decision = self._decision(spec, shard)
+            authorized = await self._fresh_decision(spec, shard)
+            decision = authorized.executable
+            authority_sha256 = canonical_sha256(authorized)
             pool_id = self._pool_for(decision.primary)
-            operation = self._operation(spec, "route", shard.shard_id, canonical_sha256(decision))
+            operation = self._operation(spec, "route", shard.shard_id, authority_sha256)
             await self._runtime.record_route(
                 spec,
                 shard,
-                decision,
+                authorized,
                 pool_id=pool_id,
                 operation_key=operation,
             )
@@ -1235,6 +1511,7 @@ class AutonomousV6PipelineCoordinator:
                     secondary_worker_id=(
                         decision.secondary.worker.worker_id if decision.secondary else None
                     ),
+                    route_authority_sha256=authority_sha256,
                 )
             )
         return await self._save(
@@ -1264,12 +1541,53 @@ class AutonomousV6PipelineCoordinator:
         by_id = {item.shard_id: item for item in checkpoint.shards}
         for shard in plan.shards:
             current = by_id[shard.shard_id]
-            decision = self._decision(spec, shard)
-            primary = self._route_by_ids(
-                decision, current.primary_recipe_id, current.primary_worker_id
+            authorized = await self._fresh_decision(spec, shard)
+            decision = authorized.executable
+            authority_sha256 = canonical_sha256(authorized)
+            expected_route_ids = (
+                decision.primary.recipe.recipe_id,
+                decision.primary.worker.worker_id,
+                decision.secondary.recipe.recipe_id if decision.secondary else None,
+                decision.secondary.worker.worker_id if decision.secondary else None,
             )
-            if primary is None:
-                raise PipelineContractError("checkpoint lost its primary route")
+            checkpoint_route_ids = (
+                current.primary_recipe_id,
+                current.primary_worker_id,
+                current.secondary_recipe_id,
+                current.secondary_worker_id,
+            )
+            if (
+                checkpoint_route_ids != expected_route_ids
+                or current.route_authority_sha256 != authority_sha256
+            ):
+                pool_id = self._pool_for(decision.primary)
+                route_operation = self._operation(
+                    spec,
+                    "route-authority-refresh",
+                    shard.shard_id,
+                    authority_sha256,
+                )
+                await self._runtime.record_route(
+                    spec,
+                    shard,
+                    authorized,
+                    pool_id=pool_id,
+                    operation_key=route_operation,
+                )
+                current = replace(
+                    current,
+                    primary_recipe_id=expected_route_ids[0],
+                    primary_worker_id=expected_route_ids[1],
+                    primary_pool_id=pool_id,
+                    secondary_recipe_id=expected_route_ids[2],
+                    secondary_worker_id=expected_route_ids[3],
+                    route_authority_sha256=authority_sha256,
+                )
+            # Re-read the kill switch and revalidate receipt time/signature after
+            # every preceding await. The exact authority travels with the submit.
+            dispatch_authorized = await self._fresh_decision(spec, shard)
+            dispatch_decision = dispatch_authorized.executable
+            primary = dispatch_decision.primary
             submissions = list(current.submissions)
             operation = self._operation(spec, "dispatch", shard.shard_id, "primary")
             primary_receipt = await self._runtime.submit_attempt(
@@ -1279,6 +1597,7 @@ class AutonomousV6PipelineCoordinator:
                 attempt_kind=AttemptKind.PRIMARY,
                 parent_attempt_id=None,
                 recovery_task=None,
+                authority=dispatch_authorized,
                 operation_key=operation,
             )
             self._assert_submission_receipt(
@@ -1289,32 +1608,39 @@ class AutonomousV6PipelineCoordinator:
                 primary_receipt,
             )
             submissions.append(primary_receipt)
-            if decision.speculative and spec.speculative_dispatch and decision.secondary:
-                secondary = self._route_by_ids(
-                    decision,
-                    current.secondary_recipe_id,
-                    current.secondary_worker_id,
+            if (
+                dispatch_decision.speculative
+                and spec.speculative_dispatch
+                and dispatch_decision.secondary
+            ):
+                challenger_authorized = await self._fresh_decision(spec, shard)
+                challenger_decision = challenger_authorized.executable
+                secondary = (
+                    challenger_decision.secondary
+                    if challenger_decision.speculative
+                    and challenger_decision.secondary is not None
+                    else None
                 )
-                if secondary is None:
-                    raise PipelineContractError("speculative route lost its independent candidate")
-                operation = self._operation(spec, "dispatch", shard.shard_id, "challenger")
-                secondary_receipt = await self._runtime.submit_attempt(
-                    spec,
-                    shard,
-                    secondary,
-                    attempt_kind=AttemptKind.CHALLENGER,
-                    parent_attempt_id=submissions[0].attempt_id,
-                    recovery_task=None,
-                    operation_key=operation,
-                )
-                self._assert_submission_receipt(
-                    shard,
-                    secondary,
-                    AttemptKind.CHALLENGER,
-                    operation,
-                    secondary_receipt,
-                )
-                submissions.append(secondary_receipt)
+                if secondary is not None:
+                    operation = self._operation(spec, "dispatch", shard.shard_id, "challenger")
+                    secondary_receipt = await self._runtime.submit_attempt(
+                        spec,
+                        shard,
+                        secondary,
+                        attempt_kind=AttemptKind.CHALLENGER,
+                        parent_attempt_id=submissions[0].attempt_id,
+                        recovery_task=None,
+                        authority=challenger_authorized,
+                        operation_key=operation,
+                    )
+                    self._assert_submission_receipt(
+                        shard,
+                        secondary,
+                        AttemptKind.CHALLENGER,
+                        operation,
+                        secondary_receipt,
+                    )
+                    submissions.append(secondary_receipt)
             updated.append(
                 replace(
                     current,
@@ -1530,7 +1856,8 @@ class AutonomousV6PipelineCoordinator:
             (receipt, poll) for receipt, poll in polls if poll.state is ProviderPollState.STRAGGLER
         ]
         if stragglers and len(active) == 1 and current.secondary_recipe_id:
-            route_decision = self._decision(spec, shard)
+            hedge_authorized = await self._fresh_decision(spec, shard)
+            route_decision = hedge_authorized.executable
             secondary = self._route_by_ids(
                 route_decision,
                 current.secondary_recipe_id,
@@ -1557,6 +1884,7 @@ class AutonomousV6PipelineCoordinator:
                         attempt_kind=AttemptKind.HEDGE,
                         parent_attempt_id=receipt.attempt_id,
                         recovery_task=None,
+                        authority=hedge_authorized,
                         operation_key=operation,
                     )
                     self._assert_submission_receipt(
@@ -1598,7 +1926,7 @@ class AutonomousV6PipelineCoordinator:
             return replace(current, phase=ShardPhase.UNRESOLVED, failure_codes=failure_codes)
         excluded_workers = frozenset(receipt.worker_id for receipt in failed_receipts)
         try:
-            decision = self._recovery_decision(
+            authorized = await self._recovery_decision(
                 spec,
                 shard,
                 excluded_families=frozenset(current.recovery_family_ids),
@@ -1606,7 +1934,15 @@ class AutonomousV6PipelineCoordinator:
             )
         except RoutingUnavailable:
             return replace(current, phase=ShardPhase.UNRESOLVED, failure_codes=failure_codes)
+        decision = authorized.executable
         route = decision.primary
+        retry_authorized = await self._recovery_decision(
+            spec,
+            shard,
+            excluded_families=frozenset(current.recovery_family_ids),
+            excluded_workers=excluded_workers,
+        )
+        route = retry_authorized.executable.primary
         operation = self._operation(
             spec,
             "dispatch-provider-retry",
@@ -1620,6 +1956,7 @@ class AutonomousV6PipelineCoordinator:
             attempt_kind=AttemptKind.RETRY,
             parent_attempt_id=failed_receipts[0].attempt_id,
             recovery_task=None,
+            authority=retry_authorized,
             operation_key=operation,
         )
         self._assert_submission_receipt(shard, route, AttemptKind.RETRY, operation, receipt)
@@ -1677,7 +2014,7 @@ class AutonomousV6PipelineCoordinator:
         failed_family = self._recipe_family(receipt.recipe_id)
         excluded_families = frozenset((*current.recovery_family_ids, failed_family))
         try:
-            route_decision = self._recovery_decision(
+            recovery_plan_authorized = await self._recovery_decision(
                 spec,
                 shard,
                 excluded_families=excluded_families,
@@ -1690,6 +2027,7 @@ class AutonomousV6PipelineCoordinator:
                 base_prediction_sha256=candidate.prediction_sha256,
                 failure_codes=failure_codes,
             )
+        route_decision = recovery_plan_authorized.executable
         route = route_decision.primary
         operation = self._operation(
             spec,
@@ -1716,6 +2054,12 @@ class AutonomousV6PipelineCoordinator:
                 failure_codes=(*failure_codes, "minimum_recovery_scope_unavailable"),
             )
         await self._runtime.record_recovery(spec, shard, task, operation_key=operation)
+        recovery_authorized = await self._recovery_decision(
+            spec,
+            shard,
+            excluded_families=excluded_families,
+        )
+        route = recovery_authorized.executable.primary
         dispatch_operation = self._operation(
             spec,
             "dispatch-recovery",
@@ -1729,6 +2073,7 @@ class AutonomousV6PipelineCoordinator:
             attempt_kind=AttemptKind.RECOVERY,
             parent_attempt_id=receipt.attempt_id,
             recovery_task=task,
+            authority=recovery_authorized,
             operation_key=dispatch_operation,
         )
         self._assert_submission_receipt(
@@ -1786,11 +2131,7 @@ class AutonomousV6PipelineCoordinator:
             for receipt_item in receipts
         )
         base_receipt = next(
-            (
-                item
-                for item in current.submissions
-                if item.attempt_id == current.base_attempt_id
-            ),
+            (item for item in current.submissions if item.attempt_id == current.base_attempt_id),
             None,
         )
         if base_receipt is None:
@@ -2123,6 +2464,7 @@ def _shard_checkpoint_from_dict(value: object) -> ShardCheckpoint:
         primary_pool_id=_optional_string(value.get("primary_pool_id")),
         secondary_recipe_id=_optional_string(value.get("secondary_recipe_id")),
         secondary_worker_id=_optional_string(value.get("secondary_worker_id")),
+        route_authority_sha256=_optional_string(value.get("route_authority_sha256")),
         submissions=tuple(_submission_from_dict(item) for item in value["submissions"]),
         winner=(_summary_from_dict(winner_raw) if isinstance(winner_raw, Mapping) else None),
         base_attempt_id=_optional_string(value.get("base_attempt_id")),
@@ -2134,9 +2476,7 @@ def _shard_checkpoint_from_dict(value: object) -> ShardCheckpoint:
         ),
         failure_codes=tuple(str(item) for item in value["failure_codes"]),
         recovery_attempts=int(value["recovery_attempts"]),
-        recovery_family_ids=tuple(
-            str(item) for item in value.get("recovery_family_ids", ())
-        ),
+        recovery_family_ids=tuple(str(item) for item in value.get("recovery_family_ids", ())),
     )
 
 
@@ -2146,6 +2486,7 @@ __all__ = [
     "AdmittedProviderCandidate",
     "AutonomousV6PipelineCoordinator",
     "AutonomousV6RuntimePort",
+    "PersistedRouterRuntimeFlagResolver",
     "PipelineCheckpoint",
     "PipelineCheckpointConflict",
     "PipelineCheckpointStore",
@@ -2157,9 +2498,12 @@ __all__ = [
     "ProviderPoll",
     "ProviderPollState",
     "RouteEstimateBinding",
+    "RouterRuntimeFlagResolver",
+    "RouterRuntimeFlags",
     "ShardCheckpoint",
     "ShardPhase",
     "SqlAlchemyProcessingJobCheckpointStore",
     "SubmissionReceipt",
     "V6PipelineJobSpec",
+    "resolve_router_runtime_flags",
 ]

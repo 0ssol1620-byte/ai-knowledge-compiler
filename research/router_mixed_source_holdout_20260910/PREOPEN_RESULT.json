@@ -1,0 +1,28 @@
+{
+  "schema": "tavonel.router_mixed_source_preflight_result.v1",
+  "passed": true,
+  "blockers": [],
+  "units": 96,
+  "class_counts": {
+    "born_digital_pdf_table": 12,
+    "layout_heavy_pdf": 12,
+    "native_structured": 12,
+    "office_korean_docx": 12,
+    "office_korean_pptx": 12,
+    "office_korean_xlsx": 12,
+    "scanned_pdf": 12,
+    "target_alignment_failure": 12
+  },
+  "protocol_sha256": "sha256:342b64ff4d15ac78f2389073ff68d24e0ac58a9a28191268b7db2fd6818f179b",
+  "manifest_sha256": "sha256:5001577b021a9f93869017e32a613e161ddc6edde95c75fd724f3faf29b1a451",
+  "binding_sha256": "sha256:f2abffd9c86e69a964fefae22bf4b901d5e4f1447a2d7a4d74881a0607227128",
+  "candidate_inventory_sha256": "sha256:f7da723da18e35300dff774d50c03917eb9a13b7c68e3a5fc537698a5b88a8c0",
+  "development_inventory_sha256": "sha256:9897eed643781c0ba006219d550eeb9b388a44a785bc249f27c69424aeabb1c5",
+  "prediction_manifest_sha256": "sha256:7d1c1a37b54c5527cb2bccc8a3e532335e815760633f5d77232fe38537aa3ed8",
+  "router_policy_sha256": "sha256:84a3b4567e50b103b5266dcc4ae5477a31b50249a68bf4e0f219a9cfc53bbab5",
+  "source_bytes_verified": true,
+  "native_runtime_files_verified": true,
+  "holdout_opened": false,
+  "model_calls": 0,
+  "production_promotion": false
+}

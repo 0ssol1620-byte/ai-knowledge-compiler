@@ -1,0 +1,64 @@
+{
+  "schema": "tavonel.router_oracle_dataset.freeze.v1",
+  "dataset_id": "ROD-v1-omnidoc-20260918",
+  "campaign_id": "TAVONEL-MODEL-ARENA-PUBLIC-20260903-V1",
+  "surface": "omnidocbench text_block per-page edit (primary); formula/table/reading_order carried as extra fields",
+  "trusted_tau": 0.05,
+  "catastrophic_tau": 0.5,
+  "required_trust_grid": [
+    0.8,
+    0.85,
+    0.9,
+    0.95
+  ],
+  "min_cell_pages_train": 20,
+  "split_seed": "ROD-v1-split-2026-09-18",
+  "split_fractions": {
+    "ROUTER_TRAIN": 0.6,
+    "ROUTER_CALIBRATION": 0.2,
+    "ROUTER_HOLDOUT": 0.2
+  },
+  "family_rule": "image stem with a trailing _page_NNN or .pdf_NNN page suffix removed (same source document = same family); a page without such a suffix is its own family",
+  "utility_policy": {
+    "quality_reward": "1",
+    "cost_penalty": "10",
+    "latency_penalty": "0",
+    "untrusted_penalty": "0.2",
+    "catastrophic_penalty": "0.5"
+  },
+  "bootstrap": {
+    "replicates": 2000,
+    "seed": "ROD-v1-cluster-bootstrap-2026-09-18",
+    "cluster": "family_id"
+  },
+  "permitted_sets": {
+    "PRODUCTION_BOUND": [
+      "paddleocr_vl_1_6",
+      "hpd_parsing"
+    ],
+    "OSS_PORTFOLIO": [
+      "deepseek_ocr2",
+      "glm_ocr",
+      "hpd_parsing",
+      "infinity_parser2_flash",
+      "mineru_pipeline",
+      "mineru_vlm",
+      "monkeyocrv2_b",
+      "ovisocr2",
+      "paddleocr_vl_1_6"
+    ]
+  },
+  "excluded_paths": {
+    "olmocr2": "no per-page OmniDoc edit file in the campaign (aggregate only)",
+    "unlimited_ocr": "no per-page OmniDoc edit file in the campaign (aggregate only)",
+    "opus5_subscription": "closed API on a subscription surface: cost unmeasured (never zero), external egress not permitted by default",
+    "infinity_parser2_pro": "FOUNDER_EXCLUDED 2026-09-04"
+  },
+  "feature_source": "OmniDocBench page_attribute (ground truth) = PERFECT page classifier; upper bound only",
+  "notes": [
+    "Thresholds and weights above were written before any score was read.",
+    "Cost = job seconds x listed pod USD/h x gpu_count / 3600 from the campaign queue ledger; hpd_parsing ran on H100 ($3.49/h), most others on RTX 4090 ($0.74/h), mineru_vlm on A40 ($0.49/h). Cost reflects the campaign's GPU choice, not a price.",
+    "Latency = per-job seconds (started_at to finished_at) from the campaign queue; queue wait and cold start excluded.",
+    "This is a spent corpus already used by earlier research; it is development evidence, never a public benchmark result."
+  ]
+}

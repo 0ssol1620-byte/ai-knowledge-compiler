@@ -1,0 +1,133 @@
+{
+  "generator_sha256": "sha256:88e7e39520ff279b405ba1a23bd5128a362e5ff0a11e811a50be75084cd538a6",
+  "model_calls": 0,
+  "office16": {
+    "applications": [
+      {
+        "executable_name": "EXCEL.EXE",
+        "executable_path": "C:\\Program Files\\Microsoft Office\\root\\Office16\\EXCEL.EXE",
+        "executable_sha256": "sha256:5819d322f18dd8d1de86919baf735da82f78966a385b46be95e7e55cfdb03ffb",
+        "executable_size_bytes": 78406456,
+        "file_version": "16.0.20326.20132",
+        "name": "excel",
+        "product_version": "16.0.20326.20132"
+      },
+      {
+        "executable_name": "POWERPNT.EXE",
+        "executable_path": "C:\\Program Files\\Microsoft Office\\root\\Office16\\POWERPNT.EXE",
+        "executable_sha256": "sha256:90fa931172c507b763ba92a82b19d5bc70816e008c5bb87577e1838e8a92e9f9",
+        "executable_size_bytes": 1917184,
+        "file_version": "16.0.20326.20132",
+        "name": "powerpoint",
+        "product_version": "16.0.20326.20132"
+      },
+      {
+        "executable_name": "WINWORD.EXE",
+        "executable_path": "C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE",
+        "executable_sha256": "sha256:0260184a0f49583c75f56437c1fea3cfe3cc1c8cf4054e6cd817c8484aa9b70b",
+        "executable_size_bytes": 1557232,
+        "file_version": "16.0.20326.20132",
+        "name": "word",
+        "product_version": "16.0.20326.20132"
+      }
+    ],
+    "automation_security": "msoAutomationSecurityForceDisable",
+    "open_mode": "read_only_no_recent_files_no_visible_window"
+  },
+  "office_script_sha256": "sha256:a43fcbeae0613ad23342ee48bdde6b487ef59ac2f58a5461c82d12c9aa232242",
+  "pillow": {
+    "module_file": {
+      "module": "PIL",
+      "path": "D:\\trouter-int-0910\\.venv\\Lib\\site-packages\\PIL\\__init__.py",
+      "sha256": "sha256:3fffff8502f4b59ca61d39cce713d55ffef046954262fce1abac3e97f3803734",
+      "size_bytes": 2122
+    },
+    "native_binaries": [
+      {
+        "relative_path": "_avif.cp312-win_amd64.pyd",
+        "sha256": "sha256:6731dce52baab0b96b0eeb3c664844b5b42c2168ea8668af2430e2fbdd2dfbd8",
+        "size_bytes": 7893504
+      },
+      {
+        "relative_path": "_imaging.cp312-win_amd64.pyd",
+        "sha256": "sha256:c8c519ec72bf75b2945b4fc4afa854af2fca8b970a403134f9ddda3e164d85e9",
+        "size_bytes": 2632704
+      },
+      {
+        "relative_path": "_imagingcms.cp312-win_amd64.pyd",
+        "sha256": "sha256:c89c633ae1bf3f26a327d14ff688db66628e19c9866ab925479f27dcb60a2d6f",
+        "size_bytes": 272384
+      },
+      {
+        "relative_path": "_imagingft.cp312-win_amd64.pyd",
+        "sha256": "sha256:77c6d37de41733df40fb36d9af47644989ac17da036515e759303969edb22c48",
+        "size_bytes": 2174976
+      },
+      {
+        "relative_path": "_imagingmath.cp312-win_amd64.pyd",
+        "sha256": "sha256:82ac45c41a008854d05f67deda298b65a7bed850d0d79a3af861ed583f6e7d62",
+        "size_bytes": 21504
+      },
+      {
+        "relative_path": "_imagingmorph.cp312-win_amd64.pyd",
+        "sha256": "sha256:b8523bbce8b322b4b931863c61b8107156b3f23fe1bbbfe0bc3fa318ea662fb0",
+        "size_bytes": 12288
+      },
+      {
+        "relative_path": "_imagingtk.cp312-win_amd64.pyd",
+        "sha256": "sha256:690cc1cae4a2dc8594a342b9241e691dcc89d81dad4cddcefdf285275365a2b1",
+        "size_bytes": 14848
+      },
+      {
+        "relative_path": "_webp.cp312-win_amd64.pyd",
+        "sha256": "sha256:9823cebb84f425af3ac1e7437259bc176e7ad7e25d7fa829b0e1a3e55c11be70",
+        "size_bytes": 416256
+      }
+    ],
+    "version": "12.3.0"
+  },
+  "production_promotion": false,
+  "profile_sha256": "sha256:2456bc23117dee3c004b6b0bf4491f6c437f51eaec1a2c37870032864497a59a",
+  "pypdfium2": {
+    "module_files": [
+      {
+        "module": "pypdfium2",
+        "path": "D:\\trouter-int-0910\\.venv\\Lib\\site-packages\\pypdfium2\\__init__.py",
+        "sha256": "sha256:a733ba7d95da52fe890d8823245eeb36c7da04d4524632e2efc8ce6b9036a3eb",
+        "size_bytes": 251
+      },
+      {
+        "module": "pypdfium2_raw",
+        "path": "D:\\trouter-int-0910\\.venv\\Lib\\site-packages\\pypdfium2_raw\\__init__.py",
+        "sha256": "sha256:01863185536c5a285a24daab64dfac8cf76e65fc0c0e5c00efb18ab3362f2aae",
+        "size_bytes": 323
+      }
+    ],
+    "native_binaries": [
+      {
+        "relative_path": "pdfium.dll",
+        "sha256": "sha256:b2c15cd4537d8efaf23b85b3353abe7a0b863e9c52b2f017dd87bb86a55f9c72",
+        "size_bytes": 5446656
+      }
+    ],
+    "version": "4.30.0"
+  },
+  "python": {
+    "executable_path": "D:\\trouter-int-0910\\.venv\\Scripts\\python.exe",
+    "executable_sha256": "sha256:546bab843eb82d552ef443b71bda006d9f2501b890aa273e1805bedb2d2a3e4e",
+    "executable_size_bytes": 45568,
+    "implementation": "CPython",
+    "version": "3.12.13"
+  },
+  "schema": "tavonel.router_render_runtime.v1",
+  "state": "FROZEN_BEFORE_MODEL_EXECUTION",
+  "truth_opened": false,
+  "worker": {
+    "hostname": "DESKTOP-M0277B9",
+    "machine": "AMD64",
+    "processor": "AMD64 Family 25 Model 33 Stepping 2, AuthenticAMD",
+    "release": "10",
+    "system": "Windows",
+    "version": "10.0.19045"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "campaign_id": "TAVONEL-ROUTER-MIXED-SOURCE-HOLDOUT-20260910-V1",
+  "maximum_model_unit_calls": 252,
+  "maximum_new_gpu_spend_usd": 20,
+  "maximum_parallel_pods": 3,
+  "schema": "tavonel.router_execution_limits.v1",
+  "state": "FROZEN_BEFORE_EXECUTION"
+}

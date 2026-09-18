@@ -2014,10 +2014,14 @@ class AnalysisWorker:
                 if preprocessing_transform is not None:
                     unknown_metrics = metrics.get("unknown_visual_metrics")
                     if isinstance(unknown_metrics, list):
+                        # C-09: the transform manifest measures orientation and
+                        # deskew. Its contrast entry records whether bounded
+                        # autocontrast was applied, which is not a contrast
+                        # score, so `contrast_score` stays unmeasured.
                         metrics["unknown_visual_metrics"] = [
                             value
                             for value in unknown_metrics
-                            if value not in {"rotation_degrees", "skew_degrees", "contrast_score"}
+                            if value not in {"rotation_degrees", "skew_degrees"}
                         ]
                 native_block_count = (
                     len(canonical_page_blocks)
@@ -2050,23 +2054,26 @@ class AnalysisWorker:
                         sum(block.type.value == "figure" for block in canonical_page_blocks)
                         / max(1, native_block_count)
                     ),
-                    # The native manifest has no visual estimator for these
-                    # fields. Neutral conservative sentinels are persisted with
-                    # an explicit unknown-metric list rather than fake 1.0s.
-                    handwriting_probability=0.5,
+                    # C-09. The native manifest has no visual estimator for
+                    # these fields, so they are persisted as null -- unmeasured
+                    # -- and named in `unknown_visual_metrics`. The former 0.5
+                    # sentinel was read by `classify_page` as a confident
+                    # handwriting observation, which made every natively parsed
+                    # page `HANDWRITTEN` and left `HPD_FAST` unreachable.
+                    handwriting_probability=None,
                     rotation_degrees=(
                         preprocessing_transform.orientation.angle_degrees
                         if preprocessing_transform is not None
-                        else 0
+                        else None
                     ),
                     skew_degrees=(
                         abs(preprocessing_transform.deskew.angle_degrees)
                         if preprocessing_transform is not None
-                        else 0.0
+                        else None
                     ),
-                    blur_score=0.5,
-                    contrast_score=0.5,
-                    small_text_score=0.5,
+                    blur_score=None,
+                    contrast_score=None,
+                    small_text_score=None,
                     script_distribution=dict(metrics["script_distribution"]),
                     suspected_prompt_injection=injection.suspected,
                 )

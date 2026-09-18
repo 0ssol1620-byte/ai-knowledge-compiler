@@ -48,9 +48,9 @@ ip_items:
     summary: "Selects an execution path by minimum expected cost to reach a required trust level, rather than by best average model quality."
     masterplan_ref: "PART 8"
     implementation:
-      current: "packages/parallel-runtime/src/akc_parallel_runtime/routing.py, packages/router/"
+      current: "packages/parallel-runtime/src/akc_parallel_runtime/{routing,calibrated_router,calibration,evaluation,policy_artifact,policy_loader}.py, packages/router/ (v2 contracts, preflight, planner, shadow hook)"
       status: PARTIAL
-      note: "Legacy routing exists. The v4 objective function and route receipt do not."
+      note: "Legacy routing stays authoritative. Shadow software (zero authority), route receipt, expected-verified-cost planner and calibrated-policy artifact contract exist since 2026-09-18; no policy is calibrated and nothing shadows in production. See docs/audit/V5_ROUTER_PHASE6_REPORT_2026-09-18.md."
     patent_candidate: true
     filing_status: NOT_FILED
     founder_decision_required: true
@@ -235,9 +235,9 @@ ip_items:
     summary: "Accumulated per-document-class performance and route outcomes. The data moat, not a method."
     masterplan_ref: "v5 PART 8, PART 10.2; v4 PART 16, PART 19.3"
     implementation:
-      current: "none"
-      status: MISSING
-      note: "v5 Phase 5. v4 placed this at Phase 7 as a benchmark artifact; v5 promotes it to core moat and puts it BEFORE the active router."
+      current: "research/router_oracle_dataset_20260918/ (ROD-v1: builder, frozen policy, family split manifest, holdout results; the row-level dataset is git-ignored and hash-bound)"
+      status: PARTIAL
+      note: "v5 Phase 5. ROD-v1 exists on the spent 2026-09-03 OmniDoc corpus only; a fresh, repeated campaign is still required before it is a calibration source. v5 promotes it to core moat and puts it BEFORE the active router."
     patent_candidate: false
     filing_status: NOT_APPLICABLE
     founder_decision_required: false

@@ -84,18 +84,23 @@ class PageMetrics(ContractModel):
     table_density: Ratio
     formula_density: Ratio
     chart_probability: Ratio
-    handwriting_probability: Ratio
-    rotation_degrees: int
-    skew_degrees: Annotated[float, Field(ge=-45.0, le=45.0)]
-    blur_score: Ratio
-    contrast_score: Ratio
-    small_text_score: Ratio
+    # C-09. These six need a visual estimator. A producer that has none states
+    # `None` -- "not measured" -- and never a neutral-looking 0.5, which the
+    # thresholds below would read as a confident observation.
+    handwriting_probability: Ratio | None
+    rotation_degrees: int | None
+    skew_degrees: Annotated[float, Field(ge=-45.0, le=45.0)] | None
+    blur_score: Ratio | None
+    contrast_score: Ratio | None
+    small_text_score: Ratio | None
     script_distribution: dict[str, Ratio]
     suspected_prompt_injection: bool
 
     @field_validator("rotation_degrees")
     @classmethod
-    def validate_rotation(cls, value: int) -> int:
+    def validate_rotation(cls, value: int | None) -> int | None:
+        if value is None:
+            return None
         normalized = value % 360
         if normalized not in {0, 90, 180, 270}:
             raise ValueError("rotationDegrees must normalize to 0, 90, 180, or 270")
@@ -176,16 +181,25 @@ def native_requires_visual_cross_check(metrics: PageMetrics) -> bool:
 
 
 def preflight_difficulty(metrics: PageMetrics) -> float:
+    """Sum the measured difficulty terms. An unmeasured term contributes nothing.
+
+    Skipping an unknown term is not the same as scoring it 0: the term is absent
+    from the sum, and `unmeasured_visual_signals` reports which ones (§11).
+    """
     score = 0.0
     score += 22 if metrics.native_text_chars < 30 else 0
     score += 12 * min(1.0, metrics.image_coverage)
     score += 12 * min(1.0, metrics.table_density)
     score += 10 * min(1.0, metrics.formula_density * 4)
     score += 8 * min(1.0, metrics.chart_probability)
-    score += 10 * min(1.0, abs(metrics.skew_degrees) / 8)
-    score += 6 if metrics.rotation_degrees % 360 != 0 else 0
-    score += 8 * min(1.0, metrics.blur_score)
-    score += 6 * min(1.0, metrics.small_text_score)
+    if metrics.skew_degrees is not None:
+        score += 10 * min(1.0, abs(metrics.skew_degrees) / 8)
+    if metrics.rotation_degrees:
+        score += 6
+    if metrics.blur_score is not None:
+        score += 8 * min(1.0, metrics.blur_score)
+    if metrics.small_text_score is not None:
+        score += 6 * min(1.0, metrics.small_text_score)
     score += (
         6
         if len([value for value in metrics.script_distribution.values() if value > 0.1]) >= 2
@@ -194,10 +208,29 @@ def preflight_difficulty(metrics: PageMetrics) -> float:
     return min(100.0, score)
 
 
+#: C-09. The `PageMetrics` fields that need a visual estimator. `None` on any of
+#: them means "not measured"; a classifier branch on it is skipped, never taken.
+VISUAL_ESTIMATOR_FIELDS: tuple[str, ...] = (
+    "handwriting_probability",
+    "rotation_degrees",
+    "skew_degrees",
+    "blur_score",
+    "contrast_score",
+    "small_text_score",
+)
+
+
+def unmeasured_visual_signals(metrics: PageMetrics) -> tuple[str, ...]:
+    """Names of the visual signals this page carries no observation for."""
+    return tuple(name for name in VISUAL_ESTIMATOR_FIELDS if getattr(metrics, name) is None)
+
+
 def classify_page(metrics: PageMetrics) -> PageTechnicalClass:
-    if metrics.handwriting_probability >= 0.50:
+    if metrics.handwriting_probability is not None and metrics.handwriting_probability >= 0.50:
         return PageTechnicalClass.HANDWRITTEN
-    if metrics.rotation_degrees or abs(metrics.skew_degrees) >= 3.0:
+    if metrics.rotation_degrees or (
+        metrics.skew_degrees is not None and abs(metrics.skew_degrees) >= 3.0
+    ):
         return PageTechnicalClass.ROTATED_OR_WARPED
     if metrics.table_density >= 0.20:
         return PageTechnicalClass.TABLE_HEAVY

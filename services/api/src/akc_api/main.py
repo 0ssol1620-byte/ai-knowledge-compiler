@@ -209,6 +209,7 @@ from akc_api.quarantine_screening import (
     QuarantineUnavailable,
     screen_quarantined_object,
 )
+from akc_api.route_outcome_api import router as route_outcome_router
 from akc_api.routing_runtime import validate_registry_binding
 from akc_api.schemas import (
     AnalyzeResponse,
@@ -9083,6 +9084,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(collection_router)
     app.include_router(collection_integrity_router)
     app.include_router(collection_retrieval_router)
+    app.include_router(route_outcome_router)
     app.include_router(parallel_runtime_router)
     app.include_router(trust_router)
     # Connector freshness dashboard: reads source_cursors, tenant-scoped by the

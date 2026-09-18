@@ -9,6 +9,7 @@ if TYPE_CHECKING:
         AdmittedProviderCandidate,
         AutonomousV6PipelineCoordinator,
         AutonomousV6RuntimePort,
+        PersistedRouterRuntimeFlagResolver,
         PipelineCheckpoint,
         PipelineCheckpointConflict,
         PipelineCheckpointStore,
@@ -20,11 +21,23 @@ if TYPE_CHECKING:
         ProviderPoll,
         ProviderPollState,
         RouteEstimateBinding,
+        RouterAuthorityEvaluation,
+        RouterAuthorityEvaluator,
+        RouterRuntimeFlagResolver,
+        RouterRuntimeFlags,
         ShardCheckpoint,
         ShardPhase,
         SqlAlchemyProcessingJobCheckpointStore,
         SubmissionReceipt,
         V6PipelineJobSpec,
+        resolve_router_runtime_flags,
+    )
+    from .production_route_outcomes import (
+        ProductionOutcomeStatus,
+        ProductionRouteOutcomeBindingError,
+        TerminalProviderRouteEvidence,
+        build_production_route_outcome_spec,
+        persist_terminal_production_route_outcome,
     )
     from .trusted_v6_admission import (
         PersistedAdmissionEnvelopeReader,
@@ -96,9 +109,15 @@ _AUTONOMOUS_V6_EXPORTS = frozenset(
         "PipelineInventory",
         "PipelinePhase",
         "PipelineRunResult",
+        "PersistedRouterRuntimeFlagResolver",
         "ProviderPoll",
         "ProviderPollState",
         "RouteEstimateBinding",
+        "RouterAuthorityEvaluation",
+        "RouterAuthorityEvaluator",
+        "RouterRuntimeFlags",
+        "RouterRuntimeFlagResolver",
+        "resolve_router_runtime_flags",
         "ShardCheckpoint",
         "ShardPhase",
         "SqlAlchemyProcessingJobCheckpointStore",
@@ -118,6 +137,15 @@ _TRUSTED_V6_EXPORTS = frozenset(
         "sign_trusted_admission_envelope",
     }
 )
+_PRODUCTION_ROUTE_OUTCOME_EXPORTS = frozenset(
+    {
+        "ProductionOutcomeStatus",
+        "ProductionRouteOutcomeBindingError",
+        "TerminalProviderRouteEvidence",
+        "build_production_route_outcome_spec",
+        "persist_terminal_production_route_outcome",
+    }
+)
 
 
 def __getattr__(name: str) -> Any:
@@ -130,6 +158,11 @@ def __getattr__(name: str) -> Any:
         return value
     if name in _TRUSTED_V6_EXPORTS:
         module = import_module(".trusted_v6_admission", __name__)
+        value = getattr(module, name)
+        globals()[name] = value
+        return value
+    if name in _PRODUCTION_ROUTE_OUTCOME_EXPORTS:
+        module = import_module(".production_route_outcomes", __name__)
         value = getattr(module, name)
         globals()[name] = value
         return value
@@ -149,6 +182,7 @@ __all__ = [
     "HostAllowlist",
     "PersistedAdmissionEnvelopeReader",
     "PersistedEd25519AdmissionVerifier",
+    "PersistedRouterRuntimeFlagResolver",
     "PipelineCheckpoint",
     "PipelineCheckpointConflict",
     "PipelineCheckpointStore",
@@ -157,9 +191,15 @@ __all__ = [
     "PipelineInventory",
     "PipelinePhase",
     "PipelineRunResult",
+    "ProductionOutcomeStatus",
+    "ProductionRouteOutcomeBindingError",
     "ProviderPoll",
     "ProviderPollState",
     "RouteEstimateBinding",
+    "RouterAuthorityEvaluation",
+    "RouterAuthorityEvaluator",
+    "RouterRuntimeFlagResolver",
+    "RouterRuntimeFlags",
     "SchedulerDatabaseCapability",
     "SchedulerDatabasePrivilegeError",
     "SchedulerSettings",
@@ -168,6 +208,7 @@ __all__ = [
     "ShardPhase",
     "SqlAlchemyProcessingJobCheckpointStore",
     "SubmissionReceipt",
+    "TerminalProviderRouteEvidence",
     "TrustedAdmissionContext",
     "TrustedAdmissionError",
     "TrustedAdmissionVerifier",
@@ -182,6 +223,7 @@ __all__ = [
     "WebhookSecretIntegrityError",
     "WebhookTargetError",
     "admission_receipt_sha256",
+    "build_production_route_outcome_spec",
     "build_trusted_admission_payload",
     "canonical_webhook_body",
     "create_dispatch_engine",
@@ -198,6 +240,8 @@ __all__ = [
     "generate_webhook_secret",
     "outbox_claim_statement",
     "parse_retry_after",
+    "persist_terminal_production_route_outcome",
+    "resolve_router_runtime_flags",
     "sign_trusted_admission_envelope",
     "sign_webhook_payload",
     "validate_webhook_url",

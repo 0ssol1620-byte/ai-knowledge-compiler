@@ -1830,6 +1830,16 @@ def _persisted_router_metrics(page: Page) -> PageMetrics:
             value = default
         return min(1.0, max(0.0, value))
 
+    def optional_ratio(key: str) -> float | None:
+        """C-09: a metric nobody measured is None, never a neutral 0.5."""
+        raw = page.preflight_metrics.get(key)
+        if raw is None:
+            return None
+        try:
+            return min(1.0, max(0.0, float(raw)))
+        except (TypeError, ValueError):
+            return None
+
     scripts = page.preflight_metrics.get("script_distribution", {})
     if not isinstance(scripts, dict):
         scripts = {}
@@ -1873,12 +1883,12 @@ def _persisted_router_metrics(page: Page) -> PageMetrics:
         table_density=ratio("table_density", 0.0),
         formula_density=ratio("formula_density", 0.0),
         chart_probability=ratio("chart_probability", 0.0),
-        handwriting_probability=ratio("handwriting_probability", 0.5),
+        handwriting_probability=optional_ratio("handwriting_probability"),
         rotation_degrees=int(page.rotation or 0),
-        skew_degrees=0.0,
-        blur_score=ratio("blur_score", 0.5),
-        contrast_score=ratio("contrast_score", 0.5),
-        small_text_score=ratio("small_text_score", 0.5),
+        skew_degrees=None,
+        blur_score=optional_ratio("blur_score"),
+        contrast_score=optional_ratio("contrast_score"),
+        small_text_score=optional_ratio("small_text_score"),
         script_distribution=normalized_scripts,
         suspected_prompt_injection=bool(
             page.preflight_metrics.get("suspected_prompt_injection", False)
@@ -2119,10 +2129,17 @@ def _select_inference_raster(
     mode: ProcessingMode,
 ) -> PageAsset | None:
     router_metrics = _persisted_router_metrics(page)
+    # C-09: an unmeasured small-text signal contributes nothing to this
+    # decision -- it neither forces the precision raster nor votes against it --
+    # so the choice rests on the terms that were actually observed. That leaves
+    # a real gap: a small-text page with no visual estimator can still be
+    # rastered at the lower DPI. Wiring `source_preflight.estimate_page_visual`
+    # into the worker closes it, and that is its own production change.
+    small_text = router_metrics.small_text_score
     precision = (
         route == Route.PADDLE_VL
         or mode == ProcessingMode.PRECISION
-        or router_metrics.small_text_score >= 0.60
+        or (small_text is not None and small_text >= 0.60)
         or router_metrics.table_density >= 0.20
     )
     candidates: list[tuple[int, PageAsset]] = []

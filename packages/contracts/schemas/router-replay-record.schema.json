@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.aiknowledgecompiler.dev/router-replay-record/1.0.0",
+  "title": "RouterReplayRecord",
+  "description": "Blueprint 2026-09-08 Appendix D. One offline replay unit. Hidden evaluation truth is never visible to the runtime that produced the record (§45 leakage control).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "unitId",
+    "featuresRevision",
+    "routerRevision",
+    "allowedRoutes",
+    "selectedPlan",
+    "speculativePlans",
+    "escalations",
+    "verification",
+    "finalDisposition",
+    "hiddenEvaluationVisibleToRuntime"
+  ],
+  "properties": {
+    "unitId": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "featuresRevision": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "routerRevision": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "allowedRoutes": {
+      "type": "array",
+      "items": {
+        "$ref": "https://schemas.aiknowledgecompiler.dev/page-execution-plan/1.0.0#/$defs/route"
+      }
+    },
+    "selectedPlan": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "speculativePlans": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1, "maxLength": 256 }
+    },
+    "escalations": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "verification": {
+      "$ref": "https://schemas.aiknowledgecompiler.dev/page-execution-plan/1.0.0#/$defs/verificationPolicy"
+    },
+    "finalDisposition": { "enum": ["accepted", "unresolved", "quarantined"] },
+    "hiddenEvaluationVisibleToRuntime": {
+      "const": false,
+      "description": "Structurally false. A replay whose runtime could see hidden truth is not a valid replay record."
+    }
+  }
+}
