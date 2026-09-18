@@ -115,22 +115,36 @@ def _grant_planes() -> None:
     _grant_if_role_exists(_CONTROL_PLANE_ROLE, "SELECT, INSERT, UPDATE")
 
 
+def _existing_indexes() -> set[str]:
+    return {index["name"] for index in sa.inspect(op.get_bind()).get_indexes(TABLE)}
+
+
 def upgrade() -> None:
+    # The columns and the model's own tenant index apply on every dialect. The
+    # docstring above assumed SQLite only ever gets this table from 0001's
+    # ``create_all``, but 0039 creates it too -- on a downgrade/upgrade cycle
+    # that left the SQLite shape one migration behind the ORM, which
+    # ``alembic check`` reports as drift. Both steps are guarded, so on a
+    # create_all-built database they are no-ops.
+    _add_columns()
+    if "ix_source_cursors_tenant_id" not in _existing_indexes():
+        op.create_index("ix_source_cursors_tenant_id", TABLE, ["tenant_id"])
     if op.get_bind().dialect.name != "postgresql":
         return
-    _add_columns()
-    op.create_index(
-        "source_cursors_tenant_idx",
-        TABLE,
-        ["tenant_id", "updated_at"],
-        unique=False,
-    )
+    if "source_cursors_tenant_idx" not in _existing_indexes():
+        op.create_index(
+            "source_cursors_tenant_idx",
+            TABLE,
+            ["tenant_id", "updated_at"],
+            unique=False,
+        )
     _enable_rls()
     _grant_planes()
 
 
 def downgrade() -> None:
     if op.get_bind().dialect.name != "postgresql":
+        _drop_tenancy_columns()
         return
     for operation in ("select", "insert", "update", "delete"):
         op.execute(f'DROP POLICY IF EXISTS "{TABLE}_tenant_{operation}" ON "{TABLE}"')
@@ -141,6 +155,12 @@ def downgrade() -> None:
     }
     if "source_cursors_tenant_idx" in existing_indexes:
         op.drop_index("source_cursors_tenant_idx", table_name=TABLE)
+    _drop_tenancy_columns()
+
+
+def _drop_tenancy_columns() -> None:
+    if "ix_source_cursors_tenant_id" in _existing_indexes():
+        op.drop_index("ix_source_cursors_tenant_id", table_name=TABLE)
     existing_columns = _column_names()
     for name in ("next_retry_at", "failure_streak", "tenant_id"):
         if name in existing_columns:

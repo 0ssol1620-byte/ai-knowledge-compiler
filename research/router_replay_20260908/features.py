@@ -476,12 +476,8 @@ def _text_features(
 
 def _blind_risk(text: str, blank_probability: float | None) -> float:
     """GT-blind quality risk from the repo's own detectors. No ground truth."""
-    from akc_cir.inspection import (
-        aggregate_evidence_risk,
-        detect_duplication,
-        detect_garble,
-    )
     from akc_cir.inspection import detect_completeness as _completeness
+    from akc_cir.inspection import detect_duplication, detect_garble
 
     signals = []
     signal, _unknown = _completeness(
@@ -492,7 +488,18 @@ def _blind_risk(text: str, blank_probability: float | None) -> float:
     for detector in (detect_duplication(text), detect_garble(text)):
         if detector is not None:
             signals.append(detector)
-    return float(aggregate_evidence_risk(signals)) if signals else 0.0
+    if not signals:
+        return 0.0
+    # The research branch aggregated through `akc_cir.inspection`'s
+    # correlation-aware noisy-or, which needs a `DetectorSignal.independence_group`
+    # this tree's inspection module does not carry. Adding it would modify a
+    # protected core module, so the plain noisy-or is used instead -- identical
+    # whenever every detector is its own independence group, which is the case
+    # for the three detectors used here.
+    product = 1.0
+    for signal in signals:
+        product *= 1.0 - max(0.0, min(1.0, signal.score))
+    return 1.0 - product
 
 
 def build_units(
