@@ -1,0 +1,820 @@
+{
+  "freeze": {
+    "schema": "tavonel.router_oracle_dataset.freeze.v1",
+    "dataset_id": "ROD-v1-omnidoc-20260918",
+    "campaign_id": "TAVONEL-MODEL-ARENA-PUBLIC-20260903-V1",
+    "surface": "omnidocbench text_block per-page edit (primary); formula/table/reading_order carried as extra fields",
+    "trusted_tau": 0.05,
+    "catastrophic_tau": 0.5,
+    "required_trust_grid": [
+      0.8,
+      0.85,
+      0.9,
+      0.95
+    ],
+    "min_cell_pages_train": 20,
+    "split_seed": "ROD-v1-split-2026-09-18",
+    "split_fractions": {
+      "ROUTER_TRAIN": 0.6,
+      "ROUTER_CALIBRATION": 0.2,
+      "ROUTER_HOLDOUT": 0.2
+    },
+    "family_rule": "image stem with a trailing _page_NNN or .pdf_NNN page suffix removed (same source document = same family); a page without such a suffix is its own family",
+    "utility_policy": {
+      "quality_reward": "1",
+      "cost_penalty": "10",
+      "latency_penalty": "0",
+      "untrusted_penalty": "0.2",
+      "catastrophic_penalty": "0.5"
+    },
+    "bootstrap": {
+      "replicates": 2000,
+      "seed": "ROD-v1-cluster-bootstrap-2026-09-18",
+      "cluster": "family_id"
+    },
+    "permitted_sets": {
+      "PRODUCTION_BOUND": [
+        "paddleocr_vl_1_6",
+        "hpd_parsing"
+      ],
+      "OSS_PORTFOLIO": [
+        "deepseek_ocr2",
+        "glm_ocr",
+        "hpd_parsing",
+        "infinity_parser2_flash",
+        "mineru_pipeline",
+        "mineru_vlm",
+        "monkeyocrv2_b",
+        "ovisocr2",
+        "paddleocr_vl_1_6"
+      ]
+    },
+    "excluded_paths": {
+      "olmocr2": "no per-page OmniDoc edit file in the campaign (aggregate only)",
+      "unlimited_ocr": "no per-page OmniDoc edit file in the campaign (aggregate only)",
+      "opus5_subscription": "closed API on a subscription surface: cost unmeasured (never zero), external egress not permitted by default",
+      "infinity_parser2_pro": "FOUNDER_EXCLUDED 2026-09-04"
+    },
+    "feature_source": "OmniDocBench page_attribute (ground truth) = PERFECT page classifier; upper bound only",
+    "notes": [
+      "Thresholds and weights above were written before any score was read.",
+      "Cost = job seconds x listed pod USD/h x gpu_count / 3600 from the campaign queue ledger; hpd_parsing ran on H100 ($3.49/h), most others on RTX 4090 ($0.74/h), mineru_vlm on A40 ($0.49/h). Cost reflects the campaign's GPU choice, not a price.",
+      "Latency = per-job seconds (started_at to finished_at) from the campaign queue; queue wait and cold start excluded.",
+      "This is a spent corpus already used by earlier research; it is development evidence, never a public benchmark result."
+    ]
+  },
+  "split_manifest_sha256": "50ee2d6c6bbfe89f2c5f6762b226edf1ee072e8ad29d902663afe3adff02e1d7",
+  "permitted_sets": {
+    "PRODUCTION_BOUND": {
+      "permitted": [
+        "paddleocr_vl_1_6",
+        "hpd_parsing"
+      ],
+      "calibration_regret_by_required_trust": {
+        "0.8": 0.0346339590625,
+        "0.85": 0.0657724028125,
+        "0.9": 0.064916043125,
+        "0.95": 0.064916043125
+      },
+      "selected_required_trust": 0.8,
+      "policy": {
+        "default": "paddleocr_vl_1_6",
+        "table": {
+          "DEGRADED|han": "paddleocr_vl_1_6",
+          "DEGRADED|latin": "paddleocr_vl_1_6",
+          "DEGRADED|mixed": "paddleocr_vl_1_6",
+          "FORMULA|han": "paddleocr_vl_1_6",
+          "FORMULA|latin": "paddleocr_vl_1_6",
+          "MULTI_COLUMN|han": "hpd_parsing",
+          "MULTI_COLUMN|latin": "paddleocr_vl_1_6",
+          "MULTI_COLUMN|mixed": "paddleocr_vl_1_6",
+          "SIMPLE|han": "paddleocr_vl_1_6",
+          "SIMPLE|latin": "paddleocr_vl_1_6",
+          "SIMPLE|mixed": "paddleocr_vl_1_6",
+          "TABLE|han": "paddleocr_vl_1_6",
+          "TABLE|latin": "paddleocr_vl_1_6",
+          "TABLE|mixed": "paddleocr_vl_1_6"
+        }
+      },
+      "holdout_arms": {
+        "BOOTSTRAP_MCTO": {
+          "arm": "BOOTSTRAP_MCTO",
+          "n_pages": 317,
+          "mean_quality": 0.9629580985885338,
+          "trusted_rate": 0.7917981072555205,
+          "trust_violation_rate": 0.2082018927444795,
+          "catastrophic_rate": 0.0031545741324921135,
+          "provider_or_operational_failure_rate": 0.0,
+          "mean_cost_usd": 0.0017374078498136733,
+          "usd_per_1000_pages": 1.7374078498136734,
+          "latency_p50_s": 4.000018537044525,
+          "latency_p95_s": 11.000020802021027,
+          "mean_oracle_regret_utility": 0.028446492429022082,
+          "route_mix": {
+            "paddleocr_vl_1_6": 273,
+            "hpd_parsing": 44
+          }
+        },
+        "ALWAYS:paddleocr_vl_1_6": {
+          "arm": "ALWAYS:paddleocr_vl_1_6",
+          "n_pages": 317,
+          "mean_quality": 0.9610594018037867,
+          "trusted_rate": 0.7917981072555205,
+          "trust_violation_rate": 0.2082018927444795,
+          "catastrophic_rate": 0.0031545741324921135,
+          "provider_or_operational_failure_rate": 0.0,
+          "mean_cost_usd": 0.0012125830082017164,
+          "usd_per_1000_pages": 1.2125830082017164,
+          "latency_p50_s": 4.999972879886627,
+          "latency_p95_s": 14.000004529953003,
+          "mean_oracle_regret_utility": 0.025096941955835964,
+          "route_mix": {
+            "paddleocr_vl_1_6": 317
+          }
+        },
+        "ALWAYS:hpd_parsing": {
+          "arm": "ALWAYS:hpd_parsing",
+          "n_pages": 317,
+          "mean_quality": 0.9618755242037669,
+          "trusted_rate": 0.7854889589905363,
+          "trust_violation_rate": 0.21451104100946372,
+          "catastrophic_rate": 0.0031545741324921135,
+          "provider_or_operational_failure_rate": 0.0,
+          "mean_cost_usd": 0.00365147226146343,
+          "usd_per_1000_pages": 3.65147226146343,
+          "latency_p50_s": 3.0000239610671997,
+          "latency_p95_s": 8.999995440244675,
+          "mean_oracle_regret_utility": 0.04993158706624606,
+          "route_mix": {
+            "hpd_parsing": 317
+          }
+        },
+        "ORACLE_DIAGNOSTIC": {
+          "arm": "ORACLE_DIAGNOSTIC",
+          "n_pages": 317,
+          "mean_quality": 0.9749039646431534,
+          "trusted_rate": 0.8548895899053628,
+          "trust_violation_rate": 0.14511041009463724,
+          "catastrophic_rate": 0.0,
+          "provider_or_operational_failure_rate": 0.0,
+          "mean_cost_usd": 0.0015069046216996311,
+          "usd_per_1000_pages": 1.5069046216996311,
+          "latency_p50_s": 4.000018537044525,
+          "latency_p95_s": 14.000004529953003,
+          "mean_oracle_regret_utility": 0.0,
+          "route_mix": {
+            "paddleocr_vl_1_6": 274,
+            "hpd_parsing": 43
+          }
+        }
+      },
+      "comparisons": {
+        "best_single_arm": "ALWAYS:hpd_parsing",
+        "quality_delta_vs_best_single": {
+          "point": 0.0010825743847668037,
+          "ci95": [
+            -0.0069427865182219725,
+            0.009347114490755452
+          ]
+        },
+        "cost_delta_usd_vs_current_champion_paddle": {
+          "point": 0.000524824841611957,
+          "ci95": [
+            0.0003156014258362736,
+            0.0007764928000715544
+          ]
+        },
+        "cost_ratio_vs_always_champion": 1.4328155994782428,
+        "cost_ratio_vs_always_cheapest": 1.4328155994782428,
+        "cost_ratio_vs_always_best_quality": 0.4758102281509208,
+        "oracle_headroom_quality": 0.013028440439386557,
+        "oracle_capture_ratio": 0.0830931675823711
+      }
+    },
+    "OSS_PORTFOLIO": {
+      "permitted": [
+        "deepseek_ocr2",
+        "glm_ocr",
+        "hpd_parsing",
+        "infinity_parser2_flash",
+        "mineru_pipeline",
+        "mineru_vlm",
+        "monkeyocrv2_b",
+        "ovisocr2",
+        "paddleocr_vl_1_6"
+      ],
+      "calibration_regret_by_required_trust": {
+        "0.8": 0.049341489375,
+        "0.85": 0.0335697984375,
+        "0.9": 0.02769541375,
+        "0.95": 0.02769541375
+      },
+      "selected_required_trust": 0.95,
+      "policy": {
+        "default": "ovisocr2",
+        "table": {
+          "DEGRADED|han": "ovisocr2",
+          "DEGRADED|latin": "ovisocr2",
+          "DEGRADED|mixed": "ovisocr2",
+          "FORMULA|han": "ovisocr2",
+          "FORMULA|latin": "ovisocr2",
+          "MULTI_COLUMN|han": "ovisocr2",
+          "MULTI_COLUMN|latin": "ovisocr2",
+          "MULTI_COLUMN|mixed": "ovisocr2",
+          "SIMPLE|han": "ovisocr2",
+          "SIMPLE|latin": "ovisocr2",
+          "SIMPLE|mixed": "glm_ocr",
+          "TABLE|han": "ovisocr2",
+          "TABLE|latin": "ovisocr2",
+          "TABLE|mixed": "ovisocr2"
+        }
+      },
+      "holdout_arms": {
+        "BOOTSTRAP_MCTO": {
+          "arm": "BOOTSTRAP_MCTO",
+          "n_pages": 317,
+          "mean_quality": 0.9684075292134354,
+          "trusted_rate": 0.861198738170347,
+          "trust_violation_rate": 0.138801261829653,
+          "catastrophic_rate": 0.0031545741324921135,
+          "provider_or_operational_failure_rate": 0.0031545741324921135,
+          "mean_cost_usd": 0.001110129667099342,
+          "usd_per_1000_pages": 1.110129667099342,
+          "latency_p50_s": 3.9999783039093018,
+          "latency_p95_s": 16.000033915042877,
+          "mean_oracle_regret_utility": 0.02918566813880126,
+          "route_mix": {
+            "ovisocr2": 303,
+            "glm_ocr": 14
+          }
+        },
+        "ALWAYS:deepseek_ocr2": {
+          "arm": "ALWAYS:deepseek_ocr2",
+          "n_pages": 317,
+          "mean_quality": 0.9454886510164116,
+          "trusted_rate": 0.7476340694006309,
+          "trust_violation_rate": 0.25236593059936907,
+          "catastrophic_rate": 0.015772870662460567,
+          "provider_or_operational_failure_rate": 0.0,
+          "mean_cost_usd": 0.005988345887711748,
+          "usd_per_1000_pages": 5.9883458877117475,
+          "latency_p50_s": 23.99999052286148,
+          "latency_p95_s": 71.99997559189796,
+          "mean_oracle_regret_utility": 0.12990878706624606,
+          "route_mix": {
+            "deepseek_ocr2": 317
+          }
+        },
+        "ALWAYS:glm_ocr": {
+          "arm": "ALWAYS:glm_ocr",
+          "n_pages": 317,
+          "mean_quality": 0.923828568188281,
+          "trusted_rate": 0.7476340694006309,
+          "trust_violation_rate": 0.25236593059936907,
+          "catastrophic_rate": 0.03470031545741325,
+          "provider_or_operational_failure_rate": 0.031545741324921134,
+          "mean_cost_usd": 0.0013189272826966427,
+          "usd_per_1000_pages": 1.3189272826966427,
+          "latency_p50_s": 4.000018537044525,
+          "latency_p95_s": 19.100013077259064,
+          "mean_oracle_regret_utility": 0.11433840157728707,
+          "route_mix": {
+            "glm_ocr": 317
+          }
+        },
+        "ALWAYS:hpd_parsing": {
+          "arm": "ALWAYS:hpd_parsing",
+          "n_pages": 317,
+          "mean_quality": 0.9618755242037669,
+          "trusted_rate": 0.7854889589905363,
+          "trust_violation_rate": 0.21451104100946372,
+          "catastrophic_rate": 0.0031545741324921135,
+          "provider_or_operational_failure_rate": 0.0,
+          "mean_cost_usd": 0.00365147226146343,
+          "usd_per_1000_pages": 3.65147226146343,
+          "latency_p50_s": 3.0000239610671997,
+          "latency_p95_s": 8.999995440244675,
+          "mean_oracle_regret_utility": 0.07627309589905362,
+          "route_mix": {
+            "hpd_parsing": 317
+          }
+        },
+        "ALWAYS:infinity_parser2_flash": {
+          "arm": "ALWAYS:infinity_parser2_flash",
+          "n_pages": 317,
+          "mean_quality": 0.9485261183465928,
+          "trusted_rate": 0.7728706624605678,
+          "trust_violation_rate": 0.22712933753943218,
+          "catastrophic_rate": 0.012618296529968454,
+          "provider_or_operational_failure_rate": 0.0,
+          "mean_cost_usd": 0.0024601824341888307,
+          "usd_per_1000_pages": 2.4601824341888308,
+          "latency_p50_s": 9.000031650066376,
+          "latency_p95_s": 34.20001566410065,
+          "mean_oracle_regret_utility": 0.08496508012618297,
+          "route_mix": {
+            "infinity_parser2_flash": 317
+          }
+        },
+        "ALWAYS:mineru_pipeline": {
+          "arm": "ALWAYS:mineru_pipeline",
+          "n_pages": 317,
+          "mean_quality": 0.9312147618832237,
+          "trusted_rate": 0.7413249211356467,
+          "trust_violation_rate": 0.2586750788643533,
+          "catastrophic_rate": 0.03470031545741325,
+          "provider_or_operational_failure_rate": 0.0,
+          "mean_cost_usd": 0.0012599192801804196,
+          "usd_per_1000_pages": 1.2599192801804195,
+          "latency_p50_s": 4.999972879886627,
+          "latency_p95_s": 14.100003987550735,
+          "mean_oracle_regret_utility": 0.10762397318611987,
+          "route_mix": {
+            "mineru_pipeline": 317
+          }
+        },
+        "ALWAYS:mineru_vlm": {
+          "arm": "ALWAYS:mineru_vlm",
+          "n_pages": 317,
+          "mean_quality": 0.9550673338687221,
+          "trusted_rate": 0.7791798107255521,
+          "trust_violation_rate": 0.22082018927444794,
+          "catastrophic_rate": 0.015772870662460567,
+          "provider_or_operational_failure_rate": 0.0,
+          "mean_cost_usd": 0.0007428144562507653,
+          "usd_per_1000_pages": 0.7428144562507654,
+          "latency_p50_s": 5.000013113021851,
+          "latency_p95_s": 11.999975144863129,
+          "mean_oracle_regret_utility": 0.06156564794952681,
+          "route_mix": {
+            "mineru_vlm": 317
+          }
+        },
+        "ALWAYS:monkeyocrv2_b": {
+          "arm": "ALWAYS:monkeyocrv2_b",
+          "n_pages": 317,
+          "mean_quality": 0.931987739072905,
+          "trusted_rate": 0.722397476340694,
+          "trust_violation_rate": 0.277602523659306,
+          "catastrophic_rate": 0.031545741324921134,
+          "provider_or_operational_failure_rate": 0.0,
+          "mean_cost_usd": 0.0018415701758316262,
+          "usd_per_1000_pages": 1.8415701758316263,
+          "latency_p50_s": 6.000007688999176,
+          "latency_p95_s": 23.999994546175003,
+          "mean_oracle_regret_utility": 0.11487567444794952,
+          "route_mix": {
+            "monkeyocrv2_b": 317
+          }
+        },
+        "ALWAYS:ovisocr2": {
+          "arm": "ALWAYS:ovisocr2",
+          "n_pages": 317,
+          "mean_quality": 0.9706089642226131,
+          "trusted_rate": 0.8580441640378549,
+          "trust_violation_rate": 0.14195583596214512,
+          "catastrophic_rate": 0.0,
+          "provider_or_operational_failure_rate": 0.0,
+          "mean_cost_usd": 0.0011107781299093168,
+          "usd_per_1000_pages": 1.110778129909317,
+          "latency_p50_s": 3.9999783039093018,
+          "latency_p95_s": 16.000033915042877,
+          "mean_oracle_regret_utility": 0.02604433911671924,
+          "route_mix": {
+            "ovisocr2": 317
+          }
+        },
+        "ALWAYS:paddleocr_vl_1_6": {
+          "arm": "ALWAYS:paddleocr_vl_1_6",
+          "n_pages": 317,
+          "mean_quality": 0.9610594018037867,
+          "trusted_rate": 0.7917981072555205,
+          "trust_violation_rate": 0.2082018927444795,
+          "catastrophic_rate": 0.0031545741324921135,
+          "provider_or_operational_failure_rate": 0.0,
+          "mean_cost_usd": 0.0012125830082017164,
+          "usd_per_1000_pages": 1.2125830082017164,
+          "latency_p50_s": 4.999972879886627,
+          "latency_p95_s": 14.000004529953003,
+          "mean_oracle_regret_utility": 0.051438450788643536,
+          "route_mix": {
+            "paddleocr_vl_1_6": 317
+          }
+        },
+        "ORACLE_DIAGNOSTIC": {
+          "arm": "ORACLE_DIAGNOSTIC",
+          "n_pages": 317,
+          "mean_quality": 0.9834921577520014,
+          "trusted_rate": 0.9085173501577287,
+          "trust_violation_rate": 0.0914826498422713,
+          "catastrophic_rate": 0.0,
+          "provider_or_operational_failure_rate": 0.0,
+          "mean_cost_usd": 0.0008041267417817837,
+          "usd_per_1000_pages": 0.8041267417817838,
+          "latency_p50_s": 3.9999783039093018,
+          "latency_p95_s": 10.999984592199326,
+          "mean_oracle_regret_utility": 0.0,
+          "route_mix": {
+            "glm_ocr": 47,
+            "mineru_pipeline": 34,
+            "ovisocr2": 86,
+            "mineru_vlm": 121,
+            "paddleocr_vl_1_6": 13,
+            "hpd_parsing": 5,
+            "infinity_parser2_flash": 2,
+            "monkeyocrv2_b": 7,
+            "deepseek_ocr2": 2
+          }
+        }
+      },
+      "comparisons": {
+        "best_single_arm": "ALWAYS:ovisocr2",
+        "quality_delta_vs_best_single": {
+          "point": -0.002201435009177727,
+          "ci95": [
+            -0.00934433534205459,
+            0.0022910815300706652
+          ]
+        },
+        "cost_delta_usd_vs_current_champion_paddle": {
+          "point": -0.00010245334110237444,
+          "ci95": [
+            -0.00026531767516661754,
+            5.717493174289238e-05
+          ]
+        },
+        "cost_ratio_vs_always_champion": 0.9155081834320649,
+        "cost_ratio_vs_always_cheapest": 1.4944911986534837,
+        "cost_ratio_vs_always_best_quality": 0.9994162085185925,
+        "oracle_headroom_quality": 0.01288319352938827,
+        "oracle_capture_ratio": -0.17087649922792228
+      }
+    }
+  },
+  "dpm_holdout": [
+    {
+      "path_id": "deepseek_ocr2",
+      "sample_count": 317,
+      "trusted_count": 237,
+      "semantic_failure_count": 80,
+      "provider_failure_count": 0,
+      "operational_failure_count": 0,
+      "untrusted_count": 0,
+      "catastrophic_count": 5,
+      "mean_quality": "0.9454886403785488958990536278",
+      "mean_actual_cost": "0.005988345678233438485804416404",
+      "mean_latency_seconds": "29.13249211356466876971608833"
+    },
+    {
+      "path_id": "glm_ocr",
+      "sample_count": 317,
+      "trusted_count": 237,
+      "semantic_failure_count": 70,
+      "provider_failure_count": 8,
+      "operational_failure_count": 2,
+      "untrusted_count": 0,
+      "catastrophic_count": 11,
+      "mean_quality": "0.9238285615141955835962145110",
+      "mean_actual_cost": "0.001318927003154574132492113565",
+      "mean_latency_seconds": "6.416403785488958990536277603"
+    },
+    {
+      "path_id": "hpd_parsing",
+      "sample_count": 317,
+      "trusted_count": 249,
+      "semantic_failure_count": 68,
+      "provider_failure_count": 0,
+      "operational_failure_count": 0,
+      "untrusted_count": 0,
+      "catastrophic_count": 1,
+      "mean_quality": "0.9618754921135646687697160883",
+      "mean_actual_cost": "0.003651474353312302839116719243",
+      "mean_latency_seconds": "3.766561514195583596214511041"
+    },
+    {
+      "path_id": "infinity_parser2_flash",
+      "sample_count": 317,
+      "trusted_count": 245,
+      "semantic_failure_count": 72,
+      "provider_failure_count": 0,
+      "operational_failure_count": 0,
+      "untrusted_count": 0,
+      "catastrophic_count": 4,
+      "mean_quality": "0.9485261072555205047318611987",
+      "mean_actual_cost": "0.002460182239747634069400630915",
+      "mean_latency_seconds": "11.96845425867507886435331230"
+    },
+    {
+      "path_id": "mineru_pipeline",
+      "sample_count": 317,
+      "trusted_count": 235,
+      "semantic_failure_count": 82,
+      "provider_failure_count": 0,
+      "operational_failure_count": 0,
+      "untrusted_count": 0,
+      "catastrophic_count": 11,
+      "mean_quality": "0.9312147413249211356466876972",
+      "mean_actual_cost": "0.001259919179810725552050473186",
+      "mean_latency_seconds": "6.129337539432176656151419558"
+    },
+    {
+      "path_id": "mineru_vlm",
+      "sample_count": 317,
+      "trusted_count": 247,
+      "semantic_failure_count": 70,
+      "provider_failure_count": 0,
+      "operational_failure_count": 0,
+      "untrusted_count": 0,
+      "catastrophic_count": 5,
+      "mean_quality": "0.9550673280757097791798107256",
+      "mean_actual_cost": "0.0007428153627760252365930599369",
+      "mean_latency_seconds": "5.457413249211356466876971609"
+    },
+    {
+      "path_id": "monkeyocrv2_b",
+      "sample_count": 317,
+      "trusted_count": 229,
+      "semantic_failure_count": 88,
+      "provider_failure_count": 0,
+      "operational_failure_count": 0,
+      "untrusted_count": 0,
+      "catastrophic_count": 10,
+      "mean_quality": "0.9319877476340694006309148265",
+      "mean_actual_cost": "0.001841569747634069400630914826",
+      "mean_latency_seconds": "8.958990536277602523659305994"
+    },
+    {
+      "path_id": "ovisocr2",
+      "sample_count": 317,
+      "trusted_count": 272,
+      "semantic_failure_count": 45,
+      "provider_failure_count": 0,
+      "operational_failure_count": 0,
+      "untrusted_count": 0,
+      "catastrophic_count": 0,
+      "mean_quality": "0.9706089558359621451104100946",
+      "mean_actual_cost": "0.001110777854889589905362776025",
+      "mean_latency_seconds": "5.403785488958990536277602524"
+    },
+    {
+      "path_id": "paddleocr_vl_1_6",
+      "sample_count": 317,
+      "trusted_count": 251,
+      "semantic_failure_count": 66,
+      "provider_failure_count": 0,
+      "operational_failure_count": 0,
+      "untrusted_count": 0,
+      "catastrophic_count": 1,
+      "mean_quality": "0.9610593943217665615141955836",
+      "mean_actual_cost": "0.001212583028391167192429022082",
+      "mean_latency_seconds": "5.899053627760252365930599369"
+    }
+  ],
+  "dpm_holdout_by_cell": {
+    "DEGRADED|han": {
+      "n_pages": 12,
+      "trusted_rate": {
+        "deepseek_ocr2": 0.5,
+        "glm_ocr": 0.75,
+        "hpd_parsing": 0.6666666666666666,
+        "infinity_parser2_flash": 0.75,
+        "mineru_pipeline": 0.5,
+        "mineru_vlm": 0.6666666666666666,
+        "monkeyocrv2_b": 0.75,
+        "ovisocr2": 0.9166666666666666,
+        "paddleocr_vl_1_6": 0.6666666666666666
+      }
+    },
+    "DEGRADED|latin": {
+      "n_pages": 5,
+      "trusted_rate": {
+        "deepseek_ocr2": 0.8,
+        "glm_ocr": 0.6,
+        "hpd_parsing": 0.8,
+        "infinity_parser2_flash": 0.8,
+        "mineru_pipeline": 0.4,
+        "mineru_vlm": 0.8,
+        "monkeyocrv2_b": 0.6,
+        "ovisocr2": 0.8,
+        "paddleocr_vl_1_6": 0.4
+      }
+    },
+    "FORMULA|han": {
+      "n_pages": 6,
+      "trusted_rate": {
+        "deepseek_ocr2": 0.0,
+        "glm_ocr": 0.0,
+        "hpd_parsing": 0.0,
+        "infinity_parser2_flash": 0.0,
+        "mineru_pipeline": 0.16666666666666666,
+        "mineru_vlm": 0.0,
+        "monkeyocrv2_b": 0.0,
+        "ovisocr2": 0.3333333333333333,
+        "paddleocr_vl_1_6": 0.16666666666666666
+      }
+    },
+    "FORMULA|latin": {
+      "n_pages": 13,
+      "trusted_rate": {
+        "deepseek_ocr2": 0.38461538461538464,
+        "glm_ocr": 0.46153846153846156,
+        "hpd_parsing": 0.38461538461538464,
+        "infinity_parser2_flash": 0.46153846153846156,
+        "mineru_pipeline": 0.23076923076923078,
+        "mineru_vlm": 0.46153846153846156,
+        "monkeyocrv2_b": 0.3076923076923077,
+        "ovisocr2": 0.38461538461538464,
+        "paddleocr_vl_1_6": 0.46153846153846156
+      }
+    },
+    "MULTI_COLUMN|han": {
+      "n_pages": 44,
+      "trusted_rate": {
+        "deepseek_ocr2": 0.5454545454545454,
+        "glm_ocr": 0.5681818181818182,
+        "hpd_parsing": 0.6818181818181818,
+        "infinity_parser2_flash": 0.5681818181818182,
+        "mineru_pipeline": 0.6818181818181818,
+        "mineru_vlm": 0.6590909090909091,
+        "monkeyocrv2_b": 0.5227272727272727,
+        "ovisocr2": 0.8181818181818182,
+        "paddleocr_vl_1_6": 0.6818181818181818
+      }
+    },
+    "MULTI_COLUMN|latin": {
+      "n_pages": 57,
+      "trusted_rate": {
+        "deepseek_ocr2": 0.8070175438596491,
+        "glm_ocr": 0.8070175438596491,
+        "hpd_parsing": 0.8421052631578947,
+        "infinity_parser2_flash": 0.8245614035087719,
+        "mineru_pipeline": 0.8070175438596491,
+        "mineru_vlm": 0.8245614035087719,
+        "monkeyocrv2_b": 0.8070175438596491,
+        "ovisocr2": 0.9122807017543859,
+        "paddleocr_vl_1_6": 0.8596491228070176
+      }
+    },
+    "MULTI_COLUMN|mixed": {
+      "n_pages": 3,
+      "trusted_rate": {
+        "deepseek_ocr2": 1.0,
+        "glm_ocr": 1.0,
+        "hpd_parsing": 0.6666666666666666,
+        "infinity_parser2_flash": 1.0,
+        "mineru_pipeline": 1.0,
+        "mineru_vlm": 1.0,
+        "monkeyocrv2_b": 1.0,
+        "ovisocr2": 1.0,
+        "paddleocr_vl_1_6": 1.0
+      }
+    },
+    "SIMPLE|han": {
+      "n_pages": 45,
+      "trusted_rate": {
+        "deepseek_ocr2": 0.8222222222222222,
+        "glm_ocr": 0.7333333333333333,
+        "hpd_parsing": 0.7777777777777778,
+        "infinity_parser2_flash": 0.7555555555555555,
+        "mineru_pipeline": 0.7555555555555555,
+        "mineru_vlm": 0.8,
+        "monkeyocrv2_b": 0.6666666666666666,
+        "ovisocr2": 0.8222222222222222,
+        "paddleocr_vl_1_6": 0.8
+      }
+    },
+    "SIMPLE|latin": {
+      "n_pages": 50,
+      "trusted_rate": {
+        "deepseek_ocr2": 0.92,
+        "glm_ocr": 0.86,
+        "hpd_parsing": 0.92,
+        "infinity_parser2_flash": 0.96,
+        "mineru_pipeline": 0.82,
+        "mineru_vlm": 0.92,
+        "monkeyocrv2_b": 0.82,
+        "ovisocr2": 0.98,
+        "paddleocr_vl_1_6": 0.92
+      }
+    },
+    "SIMPLE|mixed": {
+      "n_pages": 14,
+      "trusted_rate": {
+        "deepseek_ocr2": 0.7142857142857143,
+        "glm_ocr": 0.9285714285714286,
+        "hpd_parsing": 0.8571428571428571,
+        "infinity_parser2_flash": 0.9285714285714286,
+        "mineru_pipeline": 0.9285714285714286,
+        "mineru_vlm": 0.7857142857142857,
+        "monkeyocrv2_b": 0.8571428571428571,
+        "ovisocr2": 0.8571428571428571,
+        "paddleocr_vl_1_6": 0.8571428571428571
+      }
+    },
+    "TABLE|han": {
+      "n_pages": 42,
+      "trusted_rate": {
+        "deepseek_ocr2": 0.7619047619047619,
+        "glm_ocr": 0.7857142857142857,
+        "hpd_parsing": 0.8333333333333334,
+        "infinity_parser2_flash": 0.7619047619047619,
+        "mineru_pipeline": 0.7142857142857143,
+        "mineru_vlm": 0.7857142857142857,
+        "monkeyocrv2_b": 0.7857142857142857,
+        "ovisocr2": 0.8571428571428571,
+        "paddleocr_vl_1_6": 0.7857142857142857
+      }
+    },
+    "TABLE|latin": {
+      "n_pages": 21,
+      "trusted_rate": {
+        "deepseek_ocr2": 0.9047619047619048,
+        "glm_ocr": 0.8571428571428571,
+        "hpd_parsing": 0.9047619047619048,
+        "infinity_parser2_flash": 0.9047619047619048,
+        "mineru_pipeline": 1.0,
+        "mineru_vlm": 0.9047619047619048,
+        "monkeyocrv2_b": 0.9523809523809523,
+        "ovisocr2": 0.9523809523809523,
+        "paddleocr_vl_1_6": 0.9523809523809523
+      }
+    },
+    "TABLE|mixed": {
+      "n_pages": 5,
+      "trusted_rate": {
+        "deepseek_ocr2": 1.0,
+        "glm_ocr": 1.0,
+        "hpd_parsing": 1.0,
+        "infinity_parser2_flash": 1.0,
+        "mineru_pipeline": 1.0,
+        "mineru_vlm": 1.0,
+        "monkeyocrv2_b": 1.0,
+        "ovisocr2": 1.0,
+        "paddleocr_vl_1_6": 1.0
+      }
+    }
+  },
+  "inputs_sha256": {
+    "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\acquired\\public-core\\omnidocbench\\OmniDocBench.json": "a45cd84b04ad8b793e775089640e6b681209abea33ead54c1828ddca35fae496",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\deepseek_ocr2\\markdown_quick_match_text_block_per_page_edit.json": "d507e4fb25d53ceecfe509e38b81abe76e3a02fc23c64acae6556060c65fcbef",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\deepseek_ocr2\\markdown_quick_match_display_formula_per_page_edit.json": "a68f4b4dd70f9d899cd24fd80a5d22ccf2d310719776641543a02ca026ccc0ca",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\deepseek_ocr2\\markdown_quick_match_table_per_page_edit.json": "7cb0eeda92dac038f7ae7db2f19352dc8aa8da990c4c0e104ea57182c7a63b76",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\deepseek_ocr2\\markdown_quick_match_reading_order_per_page_edit.json": "da9dc5290af33bee37bc8754289cef235287834d599979bb17526e08350d8a83",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\glm_ocr\\md_glm_ocr_quick_match_text_block_per_page_edit.json": "1ea4e5d1a442a8cc460d8bd115ae6f67ae4bb2b6a0f133c7379e66d089236bdd",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\glm_ocr\\md_glm_ocr_quick_match_display_formula_per_page_edit.json": "4fb678017092f8008c8f25050c2f37d992eca5cd584309ce3394410f9ee8748f",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\glm_ocr\\md_glm_ocr_quick_match_table_per_page_edit.json": "90a7b7e3bae7acc4360900fa0a29b9298f40936d51396a3a44d9d61335f8c21a",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\glm_ocr\\md_glm_ocr_quick_match_reading_order_per_page_edit.json": "1f8792892699e06944cc3577ed5261a877e725a425cba5f5ac2245b7cff0509c",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\hpd_parsing\\md_hpd_parsing_quick_match_text_block_per_page_edit.json": "1c3abe3870d9909b7f1caaa2bcbea0a9b6ba8b00bf0476f63fd966ccca649549",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\hpd_parsing\\md_hpd_parsing_quick_match_display_formula_per_page_edit.json": "c3fe3147f31b7946e12ceaecf5cf5b0bc702391a1f31300ad0a98fdb2a950e0e",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\hpd_parsing\\md_hpd_parsing_quick_match_table_per_page_edit.json": "f32b4f4426d3fff7190c6a1f910444a8bed701afe258385ecf29e58474ba86e8",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\hpd_parsing\\md_hpd_parsing_quick_match_reading_order_per_page_edit.json": "eb8e169edc76a8b039de4739b6a790e1788e5848ebe5b9286f736153d1215a86",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\infinity_parser2_flash\\md_infinity_parser2_flash_quick_match_text_block_per_page_edit.json": "b1d1be73919755c23d81b23d01d390c6857c378f9d3383fe10dec2ffa48b41f8",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\infinity_parser2_flash\\md_infinity_parser2_flash_quick_match_display_formula_per_page_edit.json": "5fda1ac94e86084d712f006dfe55121adefd68426977f6478e168fe960553c9a",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\infinity_parser2_flash\\md_infinity_parser2_flash_quick_match_table_per_page_edit.json": "6e978b8680564528ac051fb95b8f3dc06ed5b707365aef22959b2d856a3ef5a3",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\infinity_parser2_flash\\md_infinity_parser2_flash_quick_match_reading_order_per_page_edit.json": "af60fceb23b7c303ac9f13da4cd91684bfcaf11c16914371c5a2d678252ad03b",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\mineru_pipeline\\md_mineru_pipeline_quick_match_text_block_per_page_edit.json": "9601f651abaca1ef91d2920d66ec078b0bd7ef6d23459a37ea2bc802d3f053a5",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\mineru_pipeline\\md_mineru_pipeline_quick_match_display_formula_per_page_edit.json": "314c1574be93fa0ee28e9fafea63d3abbfd9edd4ffdb9a4c83877062a857a854",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\mineru_pipeline\\md_mineru_pipeline_quick_match_table_per_page_edit.json": "a69a3aca57deae4842c8f6a427cead84afcec41d8df39b1b7840e932b4bea83e",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\mineru_pipeline\\md_mineru_pipeline_quick_match_reading_order_per_page_edit.json": "99e6124ef5ec4248aa6230e3b27c655f2303b402c182b34cba757fe18ca5e7b5",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\mineru_vlm\\md_mineru_vlm_quick_match_text_block_per_page_edit.json": "bfa28b93ec331e35b7493422dee7977fbb70aae337b922fd6c6cb7879ba9fb84",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\mineru_vlm\\md_mineru_vlm_quick_match_display_formula_per_page_edit.json": "3d346e7eaa956d82f1b730e32c4222f308d2480d442b0a36dab6f2d3b61dc05c",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\mineru_vlm\\md_mineru_vlm_quick_match_table_per_page_edit.json": "012431cae1207ca6c52cf125659f06f02dccb01763cff0610a26a60f64307dba",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\mineru_vlm\\md_mineru_vlm_quick_match_reading_order_per_page_edit.json": "64891f855389cfd83c8c27e8a8d234e9adc3cdd3a8bfb179f7253e9105a83afd",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\monkeyocrv2_b\\md_monkeyocrv2_b_quick_match_text_block_per_page_edit.json": "7836d30628321f27c73abad21dd79d0c5e02d45f6b47cfd1986d86ba52a2ad41",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\monkeyocrv2_b\\md_monkeyocrv2_b_quick_match_display_formula_per_page_edit.json": "12f220ff9d4f118c2ba5c04bb95d1490d1b21daac4afd0b9fccf0539819dffbb",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\monkeyocrv2_b\\md_monkeyocrv2_b_quick_match_table_per_page_edit.json": "001879ed356522a551bb1535e98f6924e89b4ded208000938f447bd56ad15e85",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\monkeyocrv2_b\\md_monkeyocrv2_b_quick_match_reading_order_per_page_edit.json": "a4c289596554c06d3c65f8a154f267132fcf546df71f58307ef824490de8dd60",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\ovisocr2\\md_ovisocr2_quick_match_text_block_per_page_edit.json": "529772fd8ee851854a0191610967339eed0a1300dc9d05d7491514e9b7e4ec2f",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\ovisocr2\\md_ovisocr2_quick_match_display_formula_per_page_edit.json": "25b07619f45ef91d822689e54c1e85b9f634b33ec8d09fdf7424c84002c39c4d",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\ovisocr2\\md_ovisocr2_quick_match_table_per_page_edit.json": "4783b0e3df0f29d7fc375a9a856078f98802086677621a1c863316abcb09ecf9",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\ovisocr2\\md_ovisocr2_quick_match_reading_order_per_page_edit.json": "cc3c537c7c63f57177f2f74682591f43a378dd913c674a053c603d0dbe2f4eb5",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\paddleocr_vl_1_6\\markdown_quick_match_text_block_per_page_edit.json": "d3eb815b15f833709123e41765d2a5939ec492097636cbd601cb53c268b575e2",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\paddleocr_vl_1_6\\markdown_quick_match_display_formula_per_page_edit.json": "ef49329795b643846c76e111f6388457b2898a4e0abbf4e9c656825450c723ba",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\paddleocr_vl_1_6\\markdown_quick_match_table_per_page_edit.json": "a1d6cb6592b66d3d67383894e41f6e90380b4886cbe8dcc41c00f6677c58950c",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\paddleocr_vl_1_6\\markdown_quick_match_reading_order_per_page_edit.json": "f2047de305669991283e7f0bc6086caba874ad9fd8ebe1407275b007fc4c8a4d",
+    "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\queue\\campaign.sqlite": "9f0f6d4de55fadf2553178e65b8fc4dfd4ec5d60ecf152c6f44c9c3a62e09fd8"
+  },
+  "cost_imputed_pages_by_model": {},
+  "median_cost_usd_by_model": {
+    "deepseek_ocr2": 0.0051388940960168834,
+    "glm_ocr": 0.0008222260326147079,
+    "hpd_parsing": 0.002908356562256813,
+    "infinity_parser2_flash": 0.0020555609464645384,
+    "mineru_pipeline": 0.0010277804732322692,
+    "mineru_vlm": 0.0006805573403835297,
+    "monkeyocrv2_b": 0.001438889354467392,
+    "ovisocr2": 0.0008222260326147079,
+    "paddleocr_vl_1_6": 0.0010277804732322692
+  },
+  "median_latency_s_by_model": {
+    "deepseek_ocr2": 25.00002533197403,
+    "glm_ocr": 4.000018537044525,
+    "hpd_parsing": 3.0000239610671997,
+    "infinity_parser2_flash": 10.000026226043701,
+    "mineru_pipeline": 5.000013113021851,
+    "mineru_vlm": 5.000013113021851,
+    "monkeyocrv2_b": 7.0000022649765015,
+    "ovisocr2": 4.000018537044525,
+    "paddleocr_vl_1_6": 5.000013113021851
+  }
+}

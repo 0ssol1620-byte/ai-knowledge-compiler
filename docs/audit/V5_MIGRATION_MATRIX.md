@@ -32,8 +32,8 @@ Representative Documents → Same-condition Model Arena
 | Module | v4 | v5 | Status |
 |---|---|---|---|
 | Model Arena / Evaluation OS | not a named system | **BUILD BEFORE ACTIVE ROUTER** | MISSING |
-| Document Performance Map | Phase 7 artifact | promoted to core moat | MISSING |
-| Router Oracle Dataset | Phase 7 artifact | promoted to core moat | MISSING |
+| Document Performance Map | Phase 7 artifact | promoted to core moat | BUILT v1 (spent OmniDoc corpus, holdout only) — `research/router_oracle_dataset_20260918/` |
+| Router Oracle Dataset | Phase 7 artifact | promoted to core moat | BUILT v1 (1,557 pages × 9 paths, family split 920/320/317; rows git-ignored, sha256 in `SPLIT_MANIFEST.json`) |
 
 ### 2. Phase order
 

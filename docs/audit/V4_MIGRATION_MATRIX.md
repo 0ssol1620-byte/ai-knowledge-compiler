@@ -74,7 +74,7 @@ PART 20.2's rows, resolved to paths and given a status.
 | 5 | entity / authority / temporal | `entity.py` `authority.py` `temporal.py` `trust.py` | ADAPT | PARTIAL | review queue, API and world-state integration absent |
 | 6 | semantic_diff / dependency | `semantic_diff.py` `dependency.py` | KEEP/ADAPT | IMPLEMENTED_NOT_PROVEN | typed event + impact reason path to add |
 | 7 | recompilation / world_state | `recompilation.py` `world_state.py` | KEEP/ADAPT | IMPLEMENTED_NOT_PROVEN | atomic publish + rollback gates to add |
-| 8 | legacy routing | `packages/parallel-runtime/.../routing.py`, `packages/router/` | KEEP LEGACY → REPLACE | PARTIAL | v4 shadow router, 0→5→25→50→100 rollout |
+| 8 | legacy routing | `packages/parallel-runtime/.../routing.py`, `packages/router/` | KEEP LEGACY → REPLACE | PARTIAL (shadow software complete, NOT calibrated, not running) | Router v2 contracts/preflight/planner + `ROUTER_V2_SHADOW` zero-authority hook and `RoutingAuthorityRouter` landed 2026-09-18; ROD-v1 holdout shows no per-class routing gain; calibration needs 3 repeated runs + fresh holdout — `docs/audit/V5_ROUTER_PHASE6_REPORT_2026-09-18.md` |
 | 9 | campaign parser harness | `benchmark/runners/`, `benchmark/runpod_eval/` | ADAPT | PARTIAL | to production adapter + registry contract |
 | 10 | evidence page | `apps/web/src/data/claims/`, `apps/web/src/lib/claims.ts` | KEEP DATA / REPLACE UX | PROVEN (data) / PARTIAL (UX) | claims-pack renderer |
 | 11 | landing | `apps/web/src/app/(marketing)/` | REPLACE | PARTIAL | cinematic narrative, PART 15 |
