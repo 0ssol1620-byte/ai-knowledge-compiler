@@ -1,0 +1,131 @@
+{
+  "runs": {
+    "pilot10/compiled_context_pdf/e1": {
+      "arm": "compiled_context_pdf",
+      "dataset_revision": "8d1efb32cb57baec2265bb84da03b30654761373",
+      "epoch": 1,
+      "judge": "claude-opus-5 (non-official; the official protocol names gemini-3.5-flash)",
+      "official_comparable": false,
+      "prompt_template_digests": {
+        "compiled_context_pdf": "fa7ff751335f658511c6b96d3544be41658e83c4449bb5c39abe289b2aea7840",
+        "judge": "b6ceadd9df489b880bcfc62a5a1cbd5761503527b2a506a9b0d6de63f0e150de",
+        "native_pdf": "5f78f2b58fb2441a9b067bf8ce395c204c81deddf50d408a92398db127a566ec"
+      },
+      "raw_store": "D:\\CodexData\\gdp-pdf-cache\\8d1efb32cb57baec2265bb84da03b30654761373\\runs\\pilot10\\compiled_context_pdf\\e1",
+      "sealed_revision": "400e411fc344b1b8dd2a51e70a7ecdf469c05b3c",
+      "sealed_revision_unreachable": "Sealed revision 400e411fc344b1b8dd2a51e70a7ecdf469c05b3c resolves (HTTP 302, x-linked-etag=2ba18b4f...) but its data.parquet blob is hosted on cdn-lfs-us-1.hf.co, which returns 403 AccessDenied for the signed URL via requests, huggingface_hub and curl alike. PDFs at the same revision redirect to us.aws.cdn.hf.co and download fine; only the parquet blob is stranded. Run pinned to head 8d1efb32... instead. This run is NOT official-comparable for that reason as well as the surface and judge deviations.",
+      "seed": "gdp-pdf-20260921",
+      "surface": {
+        "allowed_tools": [
+          "Read"
+        ],
+        "declared_model": "claude-opus-5",
+        "disable_slash_commands": true,
+        "effort": "high",
+        "model_alias": "opus",
+        "no_session_persistence": true,
+        "official_comparable": false,
+        "official_comparable_reason": "The official condition disables tools; here the Read tool is enabled so the model can page through the PDF. Judge is Opus, not gemini-3.5-flash.",
+        "output_format": "json",
+        "permission_mode": "dontAsk",
+        "prompt_delivery": "stdin",
+        "setting_sources": [],
+        "strict_mcp_config": true,
+        "surface": "claude-code-read-tool",
+        "timeout_seconds": 900,
+        "tools": [
+          "Read"
+        ]
+      },
+      "task_count_in_catalog": 100,
+      "task_set_digest": "002416ec3b2b51083d74b403f8bba300ba85aca622efddb38c6b1b346b4c9381",
+      "tasks_attempted": 10,
+      "wall_seconds": 1085.5031416416168
+    },
+    "pilot10/native_pdf/e1": {
+      "arm": "native_pdf",
+      "dataset_revision": "8d1efb32cb57baec2265bb84da03b30654761373",
+      "epoch": 1,
+      "judge": "claude-opus-5 (non-official; the official protocol names gemini-3.5-flash)",
+      "official_comparable": false,
+      "prompt_template_digests": {
+        "compiled_context_pdf": "fa7ff751335f658511c6b96d3544be41658e83c4449bb5c39abe289b2aea7840",
+        "judge": "b6ceadd9df489b880bcfc62a5a1cbd5761503527b2a506a9b0d6de63f0e150de",
+        "native_pdf": "5f78f2b58fb2441a9b067bf8ce395c204c81deddf50d408a92398db127a566ec"
+      },
+      "raw_store": "D:\\CodexData\\gdp-pdf-cache\\8d1efb32cb57baec2265bb84da03b30654761373\\runs\\pilot10\\native_pdf\\e1",
+      "sealed_revision": "400e411fc344b1b8dd2a51e70a7ecdf469c05b3c",
+      "sealed_revision_unreachable": "Sealed revision 400e411fc344b1b8dd2a51e70a7ecdf469c05b3c resolves (HTTP 302, x-linked-etag=2ba18b4f...) but its data.parquet blob is hosted on cdn-lfs-us-1.hf.co, which returns 403 AccessDenied for the signed URL via requests, huggingface_hub and curl alike. PDFs at the same revision redirect to us.aws.cdn.hf.co and download fine; only the parquet blob is stranded. Run pinned to head 8d1efb32... instead. This run is NOT official-comparable for that reason as well as the surface and judge deviations.",
+      "seed": "gdp-pdf-20260921",
+      "surface": {
+        "allowed_tools": [
+          "Read"
+        ],
+        "declared_model": "claude-opus-5",
+        "disable_slash_commands": true,
+        "effort": "high",
+        "model_alias": "opus",
+        "no_session_persistence": true,
+        "official_comparable": false,
+        "official_comparable_reason": "The official condition disables tools; here the Read tool is enabled so the model can page through the PDF. Judge is Opus, not gemini-3.5-flash.",
+        "output_format": "json",
+        "permission_mode": "dontAsk",
+        "prompt_delivery": "stdin",
+        "setting_sources": [],
+        "strict_mcp_config": true,
+        "surface": "claude-code-read-tool",
+        "timeout_seconds": 900,
+        "tools": [
+          "Read"
+        ]
+      },
+      "task_count_in_catalog": 100,
+      "task_set_digest": "002416ec3b2b51083d74b403f8bba300ba85aca622efddb38c6b1b346b4c9381",
+      "tasks_attempted": 10,
+      "wall_seconds": 1208.4653692245483
+    },
+    "pilot10v2/compiled_context_pdf/e1": {
+      "arm": "compiled_context_pdf",
+      "cells_path": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\gdp_pdf_20260921\\evidence\\cells.jsonl",
+      "dataset_revision": "8d1efb32cb57baec2265bb84da03b30654761373",
+      "epoch": 1,
+      "judge": "claude-opus-5 (non-official; the official protocol names gemini-3.5-flash)",
+      "official_comparable": false,
+      "prompt_template_digests": {
+        "compiled_context_pdf": "fa7ff751335f658511c6b96d3544be41658e83c4449bb5c39abe289b2aea7840",
+        "judge": "b6ceadd9df489b880bcfc62a5a1cbd5761503527b2a506a9b0d6de63f0e150de",
+        "native_pdf": "5f78f2b58fb2441a9b067bf8ce395c204c81deddf50d408a92398db127a566ec"
+      },
+      "raw_store": "D:\\CodexData\\gdp-pdf-cache\\8d1efb32cb57baec2265bb84da03b30654761373\\runs\\pilot10v2\\compiled_context_pdf\\e1",
+      "sealed_revision": "400e411fc344b1b8dd2a51e70a7ecdf469c05b3c",
+      "sealed_revision_unreachable": "Sealed revision 400e411fc344b1b8dd2a51e70a7ecdf469c05b3c resolves (HTTP 302, x-linked-etag=2ba18b4f...) but its data.parquet blob is hosted on cdn-lfs-us-1.hf.co, which returns 403 AccessDenied for the signed URL via requests, huggingface_hub and curl alike. PDFs at the same revision redirect to us.aws.cdn.hf.co and download fine; only the parquet blob is stranded. Run pinned to head 8d1efb32... instead. This run is NOT official-comparable for that reason as well as the surface and judge deviations.",
+      "seed": "gdp-pdf-20260921",
+      "surface": {
+        "allowed_tools": [
+          "Read"
+        ],
+        "declared_model": "claude-opus-5",
+        "disable_slash_commands": true,
+        "effort": "high",
+        "model_alias": "opus",
+        "no_session_persistence": true,
+        "official_comparable": false,
+        "official_comparable_reason": "The official condition disables tools; here the Read tool is enabled so the model can page through the PDF. Judge is Opus, not gemini-3.5-flash.",
+        "output_format": "json",
+        "permission_mode": "dontAsk",
+        "prompt_delivery": "stdin",
+        "setting_sources": [],
+        "strict_mcp_config": true,
+        "surface": "claude-code-read-tool",
+        "timeout_seconds": 900,
+        "tools": [
+          "Read"
+        ]
+      },
+      "task_count_in_catalog": 100,
+      "task_set_digest": "002416ec3b2b51083d74b403f8bba300ba85aca622efddb38c6b1b346b4c9381",
+      "tasks_attempted": 10,
+      "wall_seconds": 1308.7209696769714
+    }
+  }
+}

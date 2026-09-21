@@ -1,0 +1,9 @@
+{
+  "run_id": "full100",
+  "arm": "compiled_context_pdf",
+  "epoch": 1,
+  "task_id": "31fddf6a-85cd-4461-8126-78546c3e5cae",
+  "stopped_at": 1790021985.3649702,
+  "attempts": 6,
+  "detail": "You've hit your session limit \u00b7 resets 6:50am (Asia/Seoul)"
+}
