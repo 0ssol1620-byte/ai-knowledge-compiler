@@ -31,7 +31,18 @@ releases:
       fallback_recipe: native_v1
   - provider_key: paddleocr_vl_1_6
     upstream_id: PaddlePaddle/PaddleOCR-VL-1.6
-    upstream_revision: null
+    # Resolved read-only from the Hugging Face API during the Model Arena
+    # campaign; see revision_source below. Recording it does not make the route
+    # eligible: rollout stays at 0 and the licence, image digest and internal
+    # validation below are still open.
+    upstream_revision: "c5630abae1d940eafe0697512a0325494b02ab42"
+    revision_source:
+      registry: research/model_arena_20260903/model_registry.json
+      registry_sha256: "sha256:83152ef92e2792a7ab3b2ef25fa9774115adfea2ebcd45363f7207764f8ee693"
+      method: official_huggingface_and_github_api_read_only
+      resolved_at: "2026-09-05T03:01:01Z"
+      weights_largest_file_sha256: "sha256:85a479d506a11e724e7285d395c551be69f41dbc16b6342d3cacfb189aed71db"
+      code_repository_revision: "2661c7c0ef5c613e8f93c6e93b2e052399f0f854"
     model_size: "0.9B"
     weight_dtype: bf16
     quantization: null
@@ -43,7 +54,9 @@ releases:
       license_snapshot_sha256: null
     runtime:
       engine: paddle_or_vllm
-      version: null
+      version: 'paddlepaddle-gpu==3.2.1 (cu126) + "paddleocr[doc-parser]>=3.6.0", pipeline_version=v1.6'
+      # The published image carries a floating tag, so no immutable digest
+      # exists yet. Route eligibility requires one.
       image_digest: null
     claimed_languages: [multilingual, ko, en, zh]
     internal_validation:
