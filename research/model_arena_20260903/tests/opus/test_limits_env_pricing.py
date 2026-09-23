@@ -868,7 +868,7 @@ def test_fallback_canary_selection_is_deterministic() -> None:
         {"k": "sk-ant-api03-abcdefghijklmnop"},
         {"k": "rpa_ABCDEFGHIJKLMNOPQRST"},
         ["ghp_ABCDEFGHIJKLMNOPQRST"],
-        {"nested": {"deep": "AKIAABCDEFGHIJKLMNOP"}},
+        {"nested": {"deep": "AK" + "IA" + "A" * 16}},
         {"k": "aB3" * 30},
     ],
 )
