@@ -179,6 +179,9 @@ jobs:
       - name: Scan the tracked tree
         run: python scripts/ip_privilege_guard.py
       - name: Install guard test dependency
-        run: python -m pip install "pytest==9.1.1"
+        # The root pytest config enables asyncio_mode with --strict-config.
+        # Install its plugin even for this focused guard test so collection
+        # uses the same configuration as the full locked development suite.
+        run: python -m pip install "pytest==9.1.1" "pytest-asyncio==1.4.0"
       - name: Guard's own tests
         run: python -m pytest tests/security/test_ip_privilege_guard.py -q

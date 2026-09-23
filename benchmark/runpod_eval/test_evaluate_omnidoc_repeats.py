@@ -65,12 +65,14 @@ def test_page_count_includes_pages_beyond_the_windows_max_path_limit(
     prediction.mkdir(parents=True)
     (prediction / "short.md").write_text("short", encoding="utf-8")
 
-    # OmniDocBench ships CJK source names; the longest frozen page in the public
-    # core run resolves to 291 characters, past the Windows MAX_PATH limit of 260.
-    long_name = "book_en_国外数学教材-" + ("漫游" * 60) + "_0035.md"
+    # Keep the component below Linux's 255-byte NAME_MAX while the complete
+    # path still exceeds Windows' 260-character legacy limit. CJK characters
+    # occupy three UTF-8 bytes on Linux, so a 60-repeat component is invalid.
+    long_name = "book_en_国外数学教材-" + ("漫游" * 30) + "_0035.md"
     long_page = prediction / long_name
     target = str(long_page.resolve())
     assert len(long_name) < 255, "NTFS caps a single path component at 255"
+    assert len(long_name.encode("utf-8")) < 255, "Linux caps a component at 255 bytes"
     assert len(target) > 260
     if os.name == "nt":
         target = "\\\\?\\" + target

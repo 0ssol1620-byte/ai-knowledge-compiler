@@ -1200,7 +1200,7 @@ a {
   gap: 8px;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .pdf-password-actions {
     flex-direction: column-reverse;
   }
@@ -3067,7 +3067,7 @@ a {
   margin: 17px 20px 20px;
 }
 
-@media (max-width: 620px) {
+@media (max-width: 768px) {
   .vault-merge-inputs,
   .vault-preview-metrics {
     grid-template-columns: 1fr 1fr;
@@ -4402,7 +4402,7 @@ a {
   gap: 6px;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 768px) {
   .dlq-recovery-preview,
   .dlq-preview-evidence {
     grid-template-columns: 1fr;
@@ -5602,7 +5602,7 @@ a {
   font-size: 10px;
 }
 
-@media (max-width: 1180px) {
+@media (max-width: 1280px) {
   .marketing-nav > nav {
     display: none;
   }
@@ -5955,7 +5955,7 @@ a {
 .knowledge-layout {
   display: grid;
   min-height: 0;
-  grid-template-columns: 230px minmax(520px, 1fr) 340px;
+  grid-template-columns: 200px minmax(480px, 1fr) 300px;
 }
 
 .knowledge-explorer,
@@ -6282,7 +6282,7 @@ a {
     align-items: center;
     gap: 12px;
     color: var(--text-secondary);
-    font-size: 11px;
+    font-size: 12px;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
   }
@@ -6340,7 +6340,7 @@ a {
     display: grid;
     min-height: 0;
     grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
-    align-content: center;
+    align-content: start;
     gap: 16px;
     overflow: auto;
     padding: 16px;
@@ -6354,7 +6354,7 @@ a {
 
   .knowledge-neighborhood-core > span {
     color: var(--text-tertiary);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.04em;
   }
@@ -6392,7 +6392,7 @@ a {
   .knowledge-neighborhood button span,
   .knowledge-neighborhood button small {
     color: var(--text-tertiary);
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.35;
   }
 
@@ -6491,7 +6491,7 @@ a {
     gap: 8px;
     margin-bottom: 10px;
     color: var(--evidence-700);
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .knowledge-evidence-ledger dl,
@@ -6506,13 +6506,13 @@ a {
 
   .knowledge-evidence-ledger dt {
     color: var(--text-tertiary);
-    font-size: 10px;
+    font-size: 12px;
   }
 
   .knowledge-evidence-ledger dd {
     overflow-wrap: anywhere;
     color: var(--text);
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .knowledge-evidence-panel > section {
@@ -6524,7 +6524,7 @@ a {
 
   .knowledge-evidence-panel > section > span {
     color: var(--text-tertiary);
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 650;
   }
 
@@ -6559,7 +6559,7 @@ a {
   .knowledge-evidence-panel > section ul code {
     overflow-wrap: anywhere;
     color: var(--text-tertiary);
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .knowledge-evidence-panel > section ul span {
@@ -6580,7 +6580,7 @@ a {
   .knowledge-proof-card small,
   .knowledge-proof-card code {
     overflow-wrap: anywhere;
-    font-size: 11px;
+    font-size: 12px;
   }
 
   .knowledge-evidence-panel > a {
@@ -6588,7 +6588,7 @@ a {
     margin: 14px;
   }
 
-  @media (max-width: 1399px) {
+  @media (max-width: 1280px) {
     .knowledge-studio-page {
       --studio-rows: auto 42px minmax(0, 1fr);
     }
@@ -6612,7 +6612,7 @@ a {
     }
   }
 
-  @media (max-width: 767px) {
+  @media (max-width: 768px) {
     .knowledge-layout {
       grid-template-rows: auto minmax(0, 1fr);
     }
@@ -6641,7 +6641,7 @@ a {
       justify-content: center;
       gap: 2px;
       padding: 4px;
-      font-size: 10px;
+      font-size: 12px;
       text-align: center;
     }
 
@@ -7119,7 +7119,7 @@ a {
   text-align: right;
 }
 
-@media (max-width: 1399px) {
+@media (max-width: 1280px) {
   .knowledge-layout {
     grid-template-columns: 64px minmax(0, 1fr);
   }
@@ -7159,7 +7159,7 @@ a {
   }
 }
 
-@media (max-width: 1023px) {
+@media (max-width: 1024px) {
   .knowledge-layout {
     grid-template-columns: 64px minmax(0, 1fr);
   }

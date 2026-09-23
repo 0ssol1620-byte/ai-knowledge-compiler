@@ -11,10 +11,10 @@ captures do not constitute founder visual acceptance.
 
 | Width | File | SHA-256 |
 | ---: | --- | --- |
-| 1920 | `knowledge-studio-1920.png` | `44925cad4f48f9c2be579236875970f037c52010f6f67eba88cae3eee6155458` |
-| 1440 | `knowledge-studio-1440.png` | `a1e8f672e11e2d52a1d7e12dce3e83b118aef3fa56cf6b73e2ad4655d5e630c5` |
-| 1280 | `knowledge-studio-1280.png` | `39031ebd004e75f6080705ce7bc141b99bd4fd3dcf972e6d1cf9964df088c668` |
-| 1024 | `knowledge-studio-1024.png` | `c5fcef413c04e4a440b3a6038f9d0acaab1174de9620d2c5905ead8c05f7f1d2` |
-| 768 | `knowledge-studio-768.png` | `889b135368c7142a11477aa562030c601ff68c1f5daaa860c9b9e140b34c4431` |
-| 390 | `knowledge-studio-390.png` | `5090b85bd13d04f757ac60b46c9ed9c44a965b23434df05506db985fae835511` |
-| 360 | `knowledge-studio-360.png` | `e566b105a2cb24eb707a56012ba93c798bf5d83386b1ecd6854258395032385d` |
+| 1920 | `knowledge-studio-1920.png` | `38f993d4df9911ebf0a8d536d8c3df34e5a1a5ba79b3e4a7857d0a47b5656f89` |
+| 1440 | `knowledge-studio-1440.png` | `2e921eb19c5ceafacc8b60f28e750b7e2b983f1a21a026bf501572d8393e8735` |
+| 1280 | `knowledge-studio-1280.png` | `8783d5b594a16998f49b7adfca5de3eaf15d9637cd8b62b8dc964eb8773c24d1` |
+| 1024 | `knowledge-studio-1024.png` | `ce1ca6ed9d8f3a0621ef09434d6ea660a12eb40d7040ce37b013fbad9b634be6` |
+| 768 | `knowledge-studio-768.png` | `ea9f71d1e938817aaeb95c19cfd71dd0585651b746e9a8edf97157b39310f680` |
+| 390 | `knowledge-studio-390.png` | `5cd9b4970e9b351d611b2bead00d2e60edce3380928d2aba8a3e9be2bca74ea5` |
+| 360 | `knowledge-studio-360.png` | `205444fbd3e096cdc6f01ee1d5fc0c754871abf5254ef4ef981d24044557676d` |

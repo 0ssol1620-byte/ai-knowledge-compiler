@@ -3315,7 +3315,7 @@ body.tv-menu-open {
   color: #25292f;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   .app-frame .sidebar {
     width: 100%;
   }

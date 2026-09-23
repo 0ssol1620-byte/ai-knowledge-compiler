@@ -35,13 +35,22 @@ Automated local evidence:
   capture exposed the sidebar overlap; the recapture shows the header and
   workspace fully inside the viewport. See
   `docs/audit/visual/2026-09-23/README.md` for source and SHA-256 provenance.
+- After the first remote CI run, the Knowledge Studio CSS was brought back
+  within the V3 blueprint ratchet (422/422 legacy small-font findings and
+  39/39 legacy breakpoint findings). The seven-width Chromium plus Firefox
+  and WebKit matrix passed again (9/9), and all seven screenshots were
+  recaptured from the changed production build. The relationship cards now
+  start below the canvas header rather than floating midway down the view.
 
 Release blockers remain:
 
 - The desktop visual-regression suite has six screenshot mismatches, including
-  the homepage and Knowledge Studio. The approved baselines have not been
-  overwritten to conceal the drift. **FOUNDER VISUAL REVIEW REQUIRED** before
-  approving new baselines or treating the composition as accepted.
+  the homepage and Knowledge Studio on Windows. The Linux CI runner does not
+  have the default Playwright snapshot files and fails all eleven desktop
+  comparisons before a visual judgement is possible. The approved baselines
+  have not been overwritten to conceal either problem. **FOUNDER VISUAL REVIEW
+  REQUIRED** before approving new baselines or treating the composition as
+  accepted.
 - The accessibility matrix fails its visible-text minimum (12px) and core
   control minimum (14px) on multiple marketing and product routes. Forced
   colors and desktop 200% scaling passed, but the small-text findings remain
