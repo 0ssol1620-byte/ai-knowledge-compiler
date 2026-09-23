@@ -7,7 +7,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 from typing import Any, Protocol
 
 MAX_ATTEMPTS = 5
@@ -70,7 +70,9 @@ def get_json(
                     f"GET {urllib.parse.urlsplit(url).path} failed (HTTP {exc.code})",
                     status=exc.code,
                 ) from exc
-            wait = float(retry_after) if (retry_after or "").isdigit() else delay
+            wait = delay
+            if retry_after is not None and retry_after.isdigit():
+                wait = float(retry_after)
             sleep(min(wait, MAX_BACKOFF_SECONDS))
             delay = min(delay * 2, MAX_BACKOFF_SECONDS)
         except urllib.error.URLError as exc:

@@ -12,6 +12,7 @@ by the CLI as they happen; :mod:`akc_desktop_app.ttfw` does the arithmetic.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import TextIO
 
 from .config import DesktopAppConfig, WorkspaceEntry
 from .ttfw import (
@@ -22,7 +23,9 @@ from .ttfw import (
 )
 
 
-def print_next_steps(out, config: DesktopAppConfig, entry: WorkspaceEntry, slug: str) -> None:
+def print_next_steps(
+    out: TextIO, config: DesktopAppConfig, entry: WorkspaceEntry, slug: str
+) -> None:
     """Print the three-step onboarding guide after a successful init."""
     home = config.home
     watcher_json = home / "workspaces" / slug / "watcher.json"

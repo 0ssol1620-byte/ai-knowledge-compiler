@@ -27,6 +27,7 @@ from __future__ import annotations
 import re
 import uuid
 from datetime import UTC, datetime
+from typing import Any
 
 EVENT_TYPE_FILE_DISCOVERED = "file.discovered.v1"
 SCHEMA_VERSION = "1.0"
@@ -117,9 +118,9 @@ def build_discovery_envelope(
     sequence: int,
     occurred_at: datetime,
     event_key: str,
-) -> dict:
+) -> dict[str, Any]:
     """Build and self-validate one ``file.discovered.v1`` envelope."""
-    envelope = {
+    envelope: dict[str, Any] = {
         "event_id": deterministic_event_id(event_key),
         "collection_id": collection_id,
         "job_id": job_id,

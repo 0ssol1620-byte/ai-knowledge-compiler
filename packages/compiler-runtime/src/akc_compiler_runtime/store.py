@@ -57,7 +57,8 @@ def _write_json_atomic(path: Path, payload: object) -> None:
 def _read_json(path: Path) -> object | None:
     if not path.exists():
         return None
-    return json.loads(path.read_text(encoding="utf-8"))
+    parsed: object = json.loads(path.read_text(encoding="utf-8"))
+    return parsed
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,7 +107,10 @@ class WorldStore:
         if pointer is None:
             return None
         assert isinstance(pointer, dict)
-        return pointer.get("active_world_state_id")  # type: ignore[return-value]
+        active: object = pointer.get("active_world_state_id")
+        if active is None or isinstance(active, str):
+            return active
+        raise ValueError(f"pointer.json names a non-string world: {active!r}")
 
     def load_world(self, world_state_id: str | None = None) -> StoredWorld | None:
         """Load the pointed-at world, or a specific one by id."""
@@ -205,7 +209,11 @@ class WorldStore:
         state = result.world_state
         _write_json_atomic(
             self.base / "meta.json",
-            {"version": _STORE_VERSION, "sequence": self._sequence, "workspace_id": self.workspace_id},
+            {
+                "version": _STORE_VERSION,
+                "sequence": self._sequence,
+                "workspace_id": self.workspace_id,
+            },
         )
         _write_json_atomic(
             self.base / "worlds" / f"{world_state_id}.json",

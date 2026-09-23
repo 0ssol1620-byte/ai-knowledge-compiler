@@ -201,6 +201,7 @@ def test_a_clean_builder_flags_nothing(tmp_path: Path) -> None:
 
 def test_an_import_during_the_build_is_recorded(tmp_path: Path) -> None:
     module_name = "_akc_tbc_probe_module_under_test"
+    original_datetime_class = datetime_module.datetime
     (tmp_path / f"{module_name}.py").write_text("VALUE = 41\n", encoding="utf-8")
     sys.path.insert(0, str(tmp_path))
     try:
@@ -212,6 +213,7 @@ def test_an_import_during_the_build_is_recorded(tmp_path: Path) -> None:
         sys.modules.pop(module_name, None)
 
     assert module_name in tracked.observation().imported_modules
+    assert datetime_module.datetime is original_datetime_class
 
 
 # --------------------------------------------------------------------------

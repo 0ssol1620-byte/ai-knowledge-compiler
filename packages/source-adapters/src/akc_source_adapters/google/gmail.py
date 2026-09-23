@@ -6,11 +6,12 @@ Freshness tier F0 (mail is near-real-time by nature).
 from __future__ import annotations
 
 import urllib.parse
-from datetime import datetime, UTC
+from collections.abc import Mapping
+from datetime import UTC, datetime
 from typing import Any
 
 from akc_source_adapters.envelope import ChangeEvent, Cursor, FetchResult
-from akc_source_adapters.google._common import GoogleTokenProvider, get_json
+from akc_source_adapters.google._common import GoogleAdapterError, GoogleTokenProvider, get_json
 
 PROVIDER = "gmail"
 FRESHNESS_TIER = "F0"
@@ -41,9 +42,10 @@ class GmailAdapter:
     def _message(self, message_id: str) -> dict[str, Any]:
         params = {"format": "metadata", "metadataHeaders": "Subject"}
         query = urllib.parse.urlencode(params)
-        return get_json(
-            f"{self.api_base}/messages/{message_id}?{query}", self.token_provider
-        )
+        message = get_json(f"{self.api_base}/messages/{message_id}?{query}", self.token_provider)
+        if not isinstance(message, dict):
+            raise GoogleAdapterError(f"message {message_id} response is not a JSON object")
+        return message
 
     @staticmethod
     def _subject(message: dict[str, Any]) -> str:
@@ -52,7 +54,9 @@ class GmailAdapter:
                 return str(header.get("value", ""))
         return ""
 
-    def _emit_message(self, message_id: str, removed: bool, observed_at, history_id: Any = "") -> ChangeEvent:
+    def _emit_message(
+        self, message_id: str, removed: bool, observed_at: datetime, history_id: Any = ""
+    ) -> ChangeEvent:
         revision = f"{message_id}@{history_id}"
         if removed:
             payload: dict[str, object] = {"message_id": message_id}
@@ -121,7 +125,9 @@ class GmailAdapter:
             for removed in record.get("messagesDeleted", []):
                 mid = (removed.get("message") or {}).get("id", "")
                 if mid and mid not in seen:
-                    events.append(self._emit_message(mid, True, observed_at, state.get("history_id", "")))
+                    events.append(
+                        self._emit_message(mid, True, observed_at, state.get("history_id", ""))
+                    )
                     seen.add(mid)
             for change in record.get("labelsChanged", []):
                 mid = (change.get("message") or {}).get("id", "")

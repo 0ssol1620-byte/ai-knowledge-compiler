@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -173,11 +174,17 @@ def test_world_change_rewrites_only_the_changed_entity(tmp_path: Path) -> None:
     assert isinstance(changed_world["entities"], list)
     changed_world["entities"][0]["authority_state"] = "REVISED"
 
+    # Some filesystems coalesce rapid writes into the same timestamp tick.
+    # Age this file explicitly so the assertion still detects a real rewrite.
+    changed = out_dir / "People" / "ent_ada.md"
+    old_time_ns = before[changed] - 1_000_000_000
+    os.utime(changed, ns=(old_time_ns, old_time_ns))
+    before[changed] = changed.stat().st_mtime_ns
+
     rerun = generate(changed_world, ProjectionProfile(), out_dir)
 
     assert rerun.files_written == 1
     assert rerun.files_unchanged == 5
-    changed = out_dir / "People" / "ent_ada.md"
     assert changed.stat().st_mtime_ns > before[changed]
     assert 'authority_state: "REVISED"' in changed.read_text(encoding="utf-8")
     after = _mtimes(out_dir)
