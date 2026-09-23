@@ -95,7 +95,12 @@ export default defineConfig({
       : []),
   ],
   webServer: {
-    command: "pnpm build && pnpm start:e2e:standalone",
+    // Next's standalone output contains pnpm symlinks that Windows cannot stat
+    // in this worktree. CI runs on Linux and still exercises the standalone
+    // server; local Windows uses the same production build via next start.
+    command: process.platform === "win32"
+      ? "pnpm build && pnpm start"
+      : "pnpm build && pnpm start:e2e:standalone",
     url: "http://127.0.0.1:3000",
     env: {
       NEXT_PUBLIC_AKC_DEMO_MODE: "true",
