@@ -7,7 +7,6 @@ import {
   DEMO_ENTITIES,
   DEMO_INITIAL_WORLD,
   DEMO_RELATIONS,
-  DEMO_UNITS,
   nextWorldState,
 } from "@/lib/demo-workspace";
 import { reduceProductEvents } from "@/lib/world-projection";
