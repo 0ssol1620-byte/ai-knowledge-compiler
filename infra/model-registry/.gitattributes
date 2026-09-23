@@ -1,0 +1,4 @@
+# Licence snapshots are evidence: stored as the host served them, byte for
+# byte. Any end-of-line normalisation would change their digests.
+license-snapshots/** -text
+license-snapshots/MANIFEST.json -text

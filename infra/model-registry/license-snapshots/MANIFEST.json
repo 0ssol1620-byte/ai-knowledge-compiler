@@ -1,0 +1,47 @@
+{
+  "captured_at": "2026-09-23T01:31:30Z",
+  "method": "read_only_https_get_at_pinned_revision",
+  "note": "The bytes each pinned revision serves, stored verbatim. A digest here attests what the licence text WAS at that revision. It is not a legal opinion, and code, weights, dataset and hosted-API terms remain four separate licences.",
+  "snapshots": [
+    {
+      "bytes": 21424,
+      "file": "infra/model-registry/license-snapshots/paddleocr_vl_1_6.model-card.md",
+      "http_status": 200,
+      "provider_key": "paddleocr_vl_1_6",
+      "sha256": "sha256:d6c5b77a660577f6e18021defccd835bdc93a8c6538f5a479d597f3e94288abf",
+      "url": "https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6/raw/c5630abae1d940eafe0697512a0325494b02ab42/README.md"
+    },
+    {
+      "bytes": 7915,
+      "file": "infra/model-registry/license-snapshots/ovisocr2.model-card.md",
+      "http_status": 200,
+      "provider_key": "ovisocr2",
+      "sha256": "sha256:03c876522bb7be5e8410eed758854dbb933204935afa898758d929c10725945d",
+      "url": "https://huggingface.co/ATH-MaaS/OvisOCR2/raw/1fc9221b7823a371d6e97f92d527cc847e24e107/README.md"
+    },
+    {
+      "bytes": 15571,
+      "file": "infra/model-registry/license-snapshots/mineru_vlm.model-card.md",
+      "http_status": 200,
+      "provider_key": "mineru_vlm",
+      "sha256": "sha256:8f829b69be518375b02023f795b3898adec98f5ac37208239884ad88e9a21cb7",
+      "url": "https://huggingface.co/opendatalab/MinerU2.5-Pro-2605-1.2B/raw/bff20d4ae2bf202df9f45284b4d43681555a97ed/README.md"
+    },
+    {
+      "bytes": 3301,
+      "file": "infra/model-registry/license-snapshots/mineru_vlm.runtime-LICENSE.md",
+      "http_status": 200,
+      "provider_key": "mineru_vlm",
+      "sha256": "sha256:2d9aeb5d15159329a20dd804f251c64860ba954fbd26ec02f802220e6d71cf5c",
+      "url": "https://raw.githubusercontent.com/opendatalab/MinerU/mineru-3.4.5-released/LICENSE.md"
+    },
+    {
+      "bytes": 835,
+      "file": "infra/model-registry/license-snapshots/mineru.model-card.md",
+      "http_status": 200,
+      "provider_key": "mineru",
+      "sha256": "sha256:96da5ddde73c3f578b9eab235ac59cbb5f512755090779a14461863767b70f34",
+      "url": "https://huggingface.co/opendatalab/PDF-Extract-Kit-1.0/raw/ed6b654c018d742e65a17671e379c5e6ecc87ec9/README.md"
+    }
+  ]
+}
