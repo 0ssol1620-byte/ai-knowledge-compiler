@@ -122,6 +122,14 @@ def _registry_route(row: ModelRegistry) -> Route | None:
         return Route.PADDLE_FAST
     if "paddle" in identity and ("vl" in identity or "ocr" in identity):
         return Route.PADDLE_VL
+    # Added 2026-09-23 with the complementarity table. These two are second
+    # readers rather than first ones: `select_cross_check_peer` names them, and
+    # they only become selectable once a registry row carries a revision and an
+    # image digest like any other route.
+    if "ovis" in identity:
+        return Route.OVIS_VL
+    if "infinity" in identity and "flash" in identity:
+        return Route.INFINITY_FLASH
     return None
 
 
