@@ -58,6 +58,8 @@ class Route(StrEnum):
 class FeatureFlags(ContractModel):
     hpd_enabled: bool = False
     paddle_fast_enabled: bool = False
+    ovis_vl_enabled: bool = False
+    infinity_flash_enabled: bool = False
     unlimited_long_enabled: bool = False
     external_fallback_enabled: bool = False
     region_recovery_enabled: bool = False

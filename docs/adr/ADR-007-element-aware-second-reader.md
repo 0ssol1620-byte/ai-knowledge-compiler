@@ -227,7 +227,12 @@ runtime those weights have never been run in.
 
 **Still open.** Item 3 (`model_registry` rows, production database writes) and
 item 4 (the no-regression benchmark). Item 4 has not moved at all: the rescue
-table remains an oracle ceiling.
+table remains an oracle ceiling. A registry row alone cannot make either new
+reader ready: tenant flags `ovis_vl_second_reader` and
+`infinity_flash_second_reader` default to off. The selected second reader is not
+yet dispatched by a production caller, and no merge or execution receipt exists.
+Keep both flags off until that path, exact served revision/digest matching and
+same-condition shadow evidence are verified.
 
 ### Order, when the founder chooses to proceed
 
@@ -241,8 +246,9 @@ worse.
 
 ## Consequences
 
-- A cross-check that runs now says which reader ran it and which element chose
-  them, in the decision and in the reason codes. It was previously unattributed.
+- A routing *decision* can now name the measured second reader and the element
+  that chose it. This does not attest that a second read ran: production has no
+  dispatcher or execution receipt for it yet.
 - The rescue numbers live in one generated module bound to two artifact digests.
   `test_complementarity.py` re-reads both files and fails if a digit drifts, so
   the table cannot quietly stop matching the campaign.
