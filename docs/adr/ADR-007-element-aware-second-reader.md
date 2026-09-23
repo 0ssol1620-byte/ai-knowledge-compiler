@@ -145,8 +145,9 @@ get wrong.
 
 ## Activation — what is not an agent's call
 
-This record can be accepted and the code can ship without any of the following.
-None of it may be done by an implementation session.
+This record can be accepted and the decision code can ship without the following
+activation evidence. Delegated founder authority does not supply a licence,
+served-image, production-registry, or same-condition benchmark receipt.
 
 1. **Licence review** for `ovisocr2`, `mineru_vlm` and `paddleocr_vl_1_6` —
    weights, dataset and runtime are three separate licences and all three sit at
@@ -162,6 +163,11 @@ None of it may be done by an implementation session.
    router does not know which one is better; it has to decide. What this table
    bounds is how much there is to win, not how much a shipped router wins.
 
+Tenant flags `ovis_vl_second_reader` and `infinity_flash_second_reader` default
+to off. The production caller does not dispatch the selected second reader, and
+there is no execution receipt. Keep both flags off until the serving revision
+and digest match the registry and the pair passes a same-condition shadow run.
+
 ### Order, when the founder chooses to proceed
 
     licence review  →  serve one model, pin its digest  →  registry row at
@@ -174,8 +180,9 @@ worse.
 
 ## Consequences
 
-- A cross-check that runs now says which reader ran it and which element chose
-  them, in the decision and in the reason codes. It was previously unattributed.
+- A routing *decision* can now name the selected second reader and the element
+  that chose it. This does not attest that a second read ran: production has no
+  dispatcher or execution receipt for it yet.
 - The rescue numbers live in one generated module bound to two artifact digests.
   `test_complementarity.py` re-reads both files and fails if a digit drifts, so
   the table cannot quietly stop matching the campaign.
