@@ -1,0 +1,422 @@
+{
+  "chainASummary": [
+    {
+      "artifacts": 77,
+      "initialCompile": true,
+      "pages": 80,
+      "publish": "ACTIVE",
+      "rebuildFraction": 1.0,
+      "step": "w0",
+      "units": 36
+    },
+    {
+      "artifacts": 112,
+      "challenger": {
+        "equivalent": true,
+        "rebuildFraction": 0.348214,
+        "rebuilt": 39,
+        "staleLeftBehind": 0
+      },
+      "legacy_default": {
+        "equivalent": false,
+        "rebuildFraction": 0.339286,
+        "rebuilt": 38,
+        "staleLeftBehind": 1
+      },
+      "legacy_precise": {
+        "equivalent": true,
+        "rebuildFraction": 0.348214,
+        "rebuilt": 39,
+        "staleLeftBehind": 0
+      },
+      "pages": 110,
+      "publish": "ACTIVE",
+      "step": "w1",
+      "units": 53
+    },
+    {
+      "artifacts": 123,
+      "challenger": {
+        "equivalent": true,
+        "rebuildFraction": 0.121951,
+        "rebuilt": 15,
+        "staleLeftBehind": 0
+      },
+      "legacy_default": {
+        "equivalent": false,
+        "rebuildFraction": 0.113821,
+        "rebuilt": 14,
+        "staleLeftBehind": 1
+      },
+      "legacy_precise": {
+        "equivalent": true,
+        "rebuildFraction": 0.121951,
+        "rebuilt": 15,
+        "staleLeftBehind": 0
+      },
+      "pages": 213,
+      "publish": "ACTIVE",
+      "step": "w2",
+      "units": 58
+    },
+    {
+      "artifacts": 158,
+      "challenger": {
+        "equivalent": true,
+        "rebuildFraction": 0.246835,
+        "rebuilt": 39,
+        "staleLeftBehind": 0
+      },
+      "legacy_default": {
+        "equivalent": false,
+        "rebuildFraction": 0.240506,
+        "rebuilt": 38,
+        "staleLeftBehind": 1
+      },
+      "legacy_precise": {
+        "equivalent": true,
+        "rebuildFraction": 0.246835,
+        "rebuilt": 39,
+        "staleLeftBehind": 0
+      },
+      "pages": 250,
+      "publish": "ACTIVE",
+      "step": "w3",
+      "units": 75
+    },
+    {
+      "artifacts": 193,
+      "challenger": {
+        "equivalent": true,
+        "rebuildFraction": 0.202073,
+        "rebuilt": 39,
+        "staleLeftBehind": 0
+      },
+      "legacy_default": {
+        "equivalent": false,
+        "rebuildFraction": 0.196891,
+        "rebuilt": 38,
+        "staleLeftBehind": 1
+      },
+      "legacy_precise": {
+        "equivalent": true,
+        "rebuildFraction": 0.202073,
+        "rebuilt": 39,
+        "staleLeftBehind": 0
+      },
+      "pages": 290,
+      "publish": "ACTIVE",
+      "step": "w4",
+      "units": 92
+    }
+  ],
+  "chainBSummary": [
+    {
+      "artifacts": 39,
+      "initialCompile": true,
+      "pages": 30,
+      "publish": "ACTIVE",
+      "rebuildFraction": 1.0,
+      "step": "r0",
+      "units": 17
+    },
+    {
+      "artifacts": 39,
+      "challenger": {
+        "equivalent": true,
+        "rebuildFraction": 1.0,
+        "rebuilt": 39,
+        "staleLeftBehind": 0
+      },
+      "legacy_default": {
+        "equivalent": true,
+        "rebuildFraction": 0.974359,
+        "rebuilt": 38,
+        "staleLeftBehind": 0
+      },
+      "legacy_precise": {
+        "equivalent": true,
+        "rebuildFraction": 0.974359,
+        "rebuilt": 38,
+        "staleLeftBehind": 0
+      },
+      "pages": 37,
+      "publish": "ACTIVE",
+      "step": "r1",
+      "units": 17
+    },
+    {
+      "artifacts": 39,
+      "challenger": {
+        "equivalent": false,
+        "rebuildFraction": 0.948718,
+        "rebuilt": 37,
+        "staleLeftBehind": 2
+      },
+      "legacy_default": {
+        "equivalent": false,
+        "rebuildFraction": 0.948718,
+        "rebuilt": 37,
+        "staleLeftBehind": 1
+      },
+      "legacy_precise": {
+        "equivalent": false,
+        "rebuildFraction": 0.948718,
+        "rebuilt": 37,
+        "staleLeftBehind": 1
+      },
+      "pages": 40,
+      "publish": "REFUSED",
+      "step": "r2",
+      "units": 17
+    }
+  ],
+  "declaredConstants": {
+    "anchorMaxChars": 140,
+    "collectionLineage": "collection:apple-temporal-world-2026",
+    "decorativeGraphicPolicy": "policy.decorative-rule.out-of-scope.v1",
+    "nativeTextLayerConfidence": 1.0,
+    "nativeTextLayerConfidenceNote": "declared, not measured: no recogniser ran, so there is no score"
+  },
+  "disclosure": "INTERNAL. No number here is a public claim.",
+  "experiment": "APPLE-TEMPORAL-WORLD-20260908",
+  "inputs": [
+    {
+      "accession": "0000320193-25-000079",
+      "authority": "official",
+      "cirBlocks": 10418,
+      "documentVersionId": "dv_f231ae4ce277c26094cc29d7295076fbc28d8800a34dc4c92e0a17f615ace6d1",
+      "encryptedEmptyUserPassword": true,
+      "filing": "apple-form-10-k",
+      "filingDate": "2025-10-31",
+      "form": "10-K",
+      "originalSha256": null,
+      "pages": 80,
+      "pdfSha256": "sha256:108590052c3ba5400c63660d787fe7ed4e43868292946d7a7facebe9ab7d1aab",
+      "regions": 3732,
+      "renderProfile": null,
+      "reportDate": "2025-09-27",
+      "representationKind": "original",
+      "sourceId": "src_db01d3f13eda8e3fcf84f719b94a862307c8ec7915961704894eba2146c7c814"
+    },
+    {
+      "accession": "0000320193-26-000006",
+      "authority": "official",
+      "cirBlocks": 5340,
+      "documentVersionId": "dv_f19866004ee935188257c50c405c3eb5c1ea9d6d08eb629d482949586909bf24",
+      "encryptedEmptyUserPassword": false,
+      "filing": "apple-2026-q1-10-q",
+      "filingDate": "2026-01-30",
+      "form": "10-Q",
+      "originalSha256": "sha256:52d955e28dcd11351814607d748217babc68cdf364387c1ff05ed62c3842c7cc",
+      "pages": 30,
+      "pdfSha256": "sha256:7fe2683c59e0b48f6c112bc17b3900d907f64236c138d1dd32f40d544b1ba89f",
+      "regions": 1733,
+      "renderProfile": "chromium-print-letter-v1; scripts/links/iframes/images removed; inline filing content retained",
+      "reportDate": "2025-12-27",
+      "representationKind": "render",
+      "sourceId": "src_7c96a48e72936c79fe86b55619de29abfe1f33ae83f02f0d187088ed7ad8a0ed"
+    },
+    {
+      "accession": "0001308179-26-000008",
+      "authority": "official",
+      "cirBlocks": 7744,
+      "documentVersionId": "dv_46f2a67639f26677b1bd319c6aa3ffcef65cf75a654b1b1d8c6968c729ce202d",
+      "encryptedEmptyUserPassword": false,
+      "filing": "apple-2026-proxy-def14a",
+      "filingDate": "2026-01-08",
+      "form": "DEF 14A",
+      "originalSha256": "sha256:9729235a5b43825067b0ea1dd8d6dd54db36097b4a0073da33db7e41f2b358b1",
+      "pages": 103,
+      "pdfSha256": "sha256:aa84ce73eb0f181844ccd0bb8a4a53f670fae6a007c086ccdb55f705f8d7a0c2",
+      "regions": 4688,
+      "renderProfile": "chromium-print-letter-v1; scripts/links/iframes/images removed; inline filing content retained",
+      "reportDate": "2026-02-24",
+      "representationKind": "render",
+      "sourceId": "src_a94de262010ca0cb05b61be4803179b4dc89bd7483ca37359c8157d9ac8e0dff"
+    },
+    {
+      "accession": "0000320193-26-000013",
+      "authority": "official",
+      "cirBlocks": 7605,
+      "documentVersionId": "dv_d38e7b87cfd009bedc06471887032718cb02e54ead9dec2b5c7f86a14b515cb3",
+      "encryptedEmptyUserPassword": false,
+      "filing": "apple-2026-q2-10-q",
+      "filingDate": "2026-05-01",
+      "form": "10-Q",
+      "originalSha256": "sha256:94db39194b69cc43aed0fdecc1d4b4a99a72808bea4a1971e7fba1a11c270e0f",
+      "pages": 37,
+      "pdfSha256": "sha256:054bff6adefda8601bc6a253181448d708ea78e93f936d9b0cff6e97e4f2a9d7",
+      "regions": 2374,
+      "renderProfile": "chromium-print-letter-v1; scripts/links/iframes/images removed; inline filing content retained",
+      "reportDate": "2026-03-28",
+      "representationKind": "render",
+      "sourceId": "src_69e85521e5abdad1a459455bf87db821981e947911196582671ed12cd79ad7d7"
+    },
+    {
+      "accession": "0000320193-26-000020",
+      "authority": "official",
+      "cirBlocks": 7709,
+      "documentVersionId": "dv_2e2dd1e3444a2892ce6aeba3bd7c7816a14c06bb798a215e3158acfec71887db",
+      "encryptedEmptyUserPassword": false,
+      "filing": "apple-2026-q3-10-q",
+      "filingDate": "2026-07-31",
+      "form": "10-Q",
+      "originalSha256": "sha256:13696fb8f3374db66784c17852b1c9d56dec2664991022d8a9d8651e797e0c53",
+      "pages": 40,
+      "pdfSha256": "sha256:6a9e1c4bbaaed622299d4e6db70d2672fe04512c1ccde72ded20ee9d05a7a0c5",
+      "regions": 2350,
+      "renderProfile": "chromium-print-letter-v1; scripts/links/iframes/images removed; inline filing content retained",
+      "reportDate": "2026-06-27",
+      "representationKind": "render",
+      "sourceId": "src_b57059a97409b36517e6cc5b3d7c3d4f97eb181f153fc9b2d21ae107bb70d5f2"
+    }
+  ],
+  "program": "TAVONEL master program §24, §26",
+  "receipts": {
+    "steps/chain-a.json": "sha256:75b10964cfbedf75da71d4648b0bc39ca3c75f720ac51659ae72fed0246b357f",
+    "steps/chain-b.json": "sha256:47bb13a3af9226e26d93a6d9b0b2a783b6d34535d44e58b340652426c84b12ff",
+    "steps/stock-core-arm.json": "sha256:7cef7d7afdb766b6166ffa237a2953123f379291da7236da2d921d0f3c3f622a"
+  },
+  "runtime": {
+    "akcCir": "D:\\CodexProjects\\uskc-lanes\\apple-core-proof-wt\\packages\\cir-python\\src\\akc_cir\\__init__.py",
+    "akcCoreV3": "D:\\CodexProjects\\uskc-lanes\\apple-core-proof-wt\\services\\core-v3\\src\\akc_core_v3\\__init__.py",
+    "akcNativeParsers": "D:\\CodexProjects\\uskc-lanes\\apple-core-proof-wt\\packages\\native-parsers\\src\\akc_native_parsers\\__init__.py",
+    "platform": "Windows-10-10.0.19045-SP0",
+    "pypdf": "6.15.0",
+    "python": "3.12.13 (main, Jun 23 2026, 15:23:43) [MSC v.1944 64 bit (AMD64)]",
+    "seconds": 42.3
+  },
+  "stages": [
+    {
+      "disposition": "RUN",
+      "note": "five committed PDFs, sha256 verified against the manifest",
+      "stage": "SOURCE"
+    },
+    {
+      "disposition": "NOT_RUN",
+      "note": "no malware scanner or CDR pipeline is available in this lane; the bytes are the repository's own committed corpus",
+      "stage": "SECURITY"
+    },
+    {
+      "disposition": "RUN",
+      "note": "recorded per filing; for the four 2026 filings the committed PDF is a render and the SEC HTML is the original, and both digests are carried",
+      "stage": "ORIGINAL REPRESENTATION"
+    },
+    {
+      "disposition": "NOT_RUN",
+      "note": "CDR is not available in this lane; no sanitized representation exists, and the render is never labelled one",
+      "stage": "SANITIZED REPRESENTATION"
+    },
+    {
+      "disposition": "RUN",
+      "note": "akc_native_parsers.pdf_parser.parse_pdf_to_cir",
+      "stage": "NATIVE"
+    },
+    {
+      "disposition": "NOT_RUN",
+      "note": "no rasteriser or vision model in this lane",
+      "stage": "VISUAL"
+    },
+    {
+      "disposition": "NOT_RUN",
+      "note": "no GPU and no OCR model; native text layer only",
+      "stage": "OCR"
+    },
+    {
+      "disposition": "NOT_RUN",
+      "note": "one representation per filing, so there is no second result to reconcile against; akc_cir.reconciler was not exercised",
+      "stage": "RECONCILE"
+    },
+    {
+      "disposition": "NOT_RUN",
+      "note": "no loss detector exists (WP-R7); the source-fact ledger below is an accounting of representation, not a detector",
+      "stage": "LOSS DETECTION"
+    },
+    {
+      "disposition": "NOT_RUN",
+      "note": "no stage failed, so no recovery was invoked",
+      "stage": "RECOVERY"
+    },
+    {
+      "disposition": "PARTIAL",
+      "note": "selective-vs-full rebuild equivalence runs on every step; no independent model verifier ran",
+      "stage": "VERIFICATION"
+    },
+    {
+      "disposition": "RUN",
+      "note": "page + bbox1000 per unit, from the parser",
+      "stage": "EXACT EVIDENCE"
+    },
+    {
+      "disposition": "RUN",
+      "note": "akc_cir CanonicalDocument per filing",
+      "stage": "CANONICAL IR"
+    },
+    {
+      "disposition": "RUN",
+      "note": "akc_cir.identity via akc_cir.semantic_diff",
+      "stage": "IDENTITY"
+    },
+    {
+      "disposition": "RUN",
+      "note": "one canonical unit per anchored disclosure section",
+      "stage": "CLAIM"
+    },
+    {
+      "disposition": "PARTIAL",
+      "note": "structural relations only (the artifact dependency graph and entity bindings); no semantic relation extractor ran and none was faked",
+      "stage": "RELATION"
+    },
+    {
+      "disposition": "PARTIAL",
+      "note": "every region carries the filing's declared authority; the corpus is uniformly 'official', so no authority conflict can arise and none did",
+      "stage": "AUTHORITY"
+    },
+    {
+      "disposition": "PARTIAL",
+      "note": "filing and report dates are carried per filing; akc_cir.temporal's valid-time resolution was not exercised",
+      "stage": "TIME"
+    },
+    {
+      "disposition": "NOT_RUN",
+      "note": "no tenant runtime or permission store in this lane",
+      "stage": "ACL"
+    },
+    {
+      "disposition": "RUN",
+      "note": "collection:ontology projection",
+      "stage": "ONTOLOGY"
+    },
+    {
+      "disposition": "RUN",
+      "note": "akc_core_v3.projections.plan_artifacts",
+      "stage": "DEPENDENCY"
+    },
+    {
+      "disposition": "RUN",
+      "note": "akc_cir.world_state registry, one per chain",
+      "stage": "TEMPORAL WORLD"
+    },
+    {
+      "disposition": "RUN",
+      "note": "ValidationReceipt per publish",
+      "stage": "REVIEW"
+    },
+    {
+      "disposition": "RUN",
+      "note": "atomic publish, with the two refusal controls below",
+      "stage": "ACTIVATE"
+    },
+    {
+      "disposition": "NOT_RUN",
+      "note": "no model call; no paid API in this lane",
+      "stage": "ASK"
+    },
+    {
+      "disposition": "NOT_RUN",
+      "note": "out of scope for this lane",
+      "stage": "MCP/API/EXPORT"
+    }
+  ]
+}

@@ -1,0 +1,758 @@
+[
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        315,
+        161,
+        329
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_3142e19603d6ab90583f77aad091401eb1a5afb4841d2a205e6d4db412be9d50",
+      "pageNumber1": 4,
+      "regionId": "blk_4714d7133d89f41f977f282647df7b12"
+    },
+    "identifier": "Item 1",
+    "logicalId": "ku_b5040e357308e71d5503612b6305e1fbba5516d6c14bc82fbf13cd8b8955892a",
+    "section": "PART I",
+    "textChars": 15926,
+    "textSha256": "sha256:305f448d01e09a9ea27efca4192e2d456d35c47a98b25f4ee4ed03f63d769a45"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        96,
+        195,
+        110
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_ae4c1d6981374c1f6d9ea4287871805bb4bce2f10fb5553ab97f2fed00e1ddde",
+      "pageNumber1": 8,
+      "regionId": "blk_f318d067fe3345278f231f2876b2f883"
+    },
+    "identifier": "Item 1A",
+    "logicalId": "ku_bdd145b6c920268607a1c7008f64e599c423aabc092123d8e41332b3be23e5d3",
+    "section": "PART I",
+    "textChars": 68023,
+    "textSha256": "sha256:84051c69032694d4802a6610f5966e3371102cd9fd4361c4ec495c00ccc91b6e"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        268,
+        284,
+        282
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_7882e7048c1748153fcd1bf54e0e19e2faa0f9691b1aff5fe122ac0d397213a7",
+      "pageNumber1": 20,
+      "regionId": "blk_01e263cd87c09b9102267906ebf462b6"
+    },
+    "identifier": "Item 1B",
+    "logicalId": "ku_9d13dfe26b5751b78456e8b7505d2c54f3ef07ec45172a790e22a66f8233e173",
+    "section": "PART I",
+    "textChars": 5,
+    "textSha256": "sha256:903ea500e7ccf842c1312b6c2f964e3e98ff146456cecec717e9a0e122bf735f"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        323,
+        202,
+        338
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_2bf057760ab7fd6b12f321e865b3a3db8cfb0689ab1ef9834ccabfb46e80c3b9",
+      "pageNumber1": 20,
+      "regionId": "blk_fbdc5dde7a1cd148fa2760ecdf60aed9"
+    },
+    "identifier": "Item 1C",
+    "logicalId": "ku_ae3baa76cd247596354364ae585b99fbf558f40c1cf345edcefd5c268f2eb2cf",
+    "section": "PART I",
+    "textChars": 2676,
+    "textSha256": "sha256:ca5cd24a5888ff25d662bed6d3ae5cfa82a40572619b9cd23ba217cfc629df7c"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        640,
+        174,
+        655
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_3b889ba36aa0ee38447e1b6d54aa0a0238bdae77ba49fb97cb9ceea1c12f6dd6",
+      "pageNumber1": 20,
+      "regionId": "blk_ddca3f30efa221a82ef43d80dd00b0fa"
+    },
+    "identifier": "Item 2",
+    "logicalId": "ku_2a8379ac1d0505633d077fa04959a06f0b7859ebbb791bec93e510c8b5293f6d",
+    "section": "PART I",
+    "textChars": 497,
+    "textSha256": "sha256:45147b5b2986137dd6a2f80df0f71f29bb6a779840f04dd0b0943808af020c9d"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        95,
+        222,
+        109
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_cb70fe79a4693c56ad7ab4e45e4429a3ce3781c9885cdb553af41e7a1e02e88c",
+      "pageNumber1": 21,
+      "regionId": "blk_507a81cb70d32f8cae012c8181e61914"
+    },
+    "identifier": "Item 3",
+    "logicalId": "ku_279d276ed049810790b97799b81163b5bc125a961099a95d1dfcf5395e0f39b2",
+    "section": "PART I",
+    "textChars": 5372,
+    "textSha256": "sha256:87e3883b703ec0a5d4fa3fa932d2099a427881be40fbd5bd1852ba3e67ca6ebe"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        705,
+        264,
+        719
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_033a2784e2d240f1d968fafd6ef93f5c52a6fd4c43a12f9ed8c743f7c76fab4a",
+      "pageNumber1": 21,
+      "regionId": "blk_04eb3fe28456076b35afb3b79bd7989e"
+    },
+    "identifier": "Item 4",
+    "logicalId": "ku_16b7130dfe56c5da83380e983183b68ace00d098dc5d447726cf9694d94cecfb",
+    "section": "PART I",
+    "textChars": 48,
+    "textSha256": "sha256:2357f1a7dd5f083f35484ac01741c100fe684d8fb81c78c0feb5e4adc9b8785e"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        121,
+        849,
+        136
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_c799ccb98ce50262d3a445744d5ed18738214ee6edfbdaf2ccaab61a12f9de9d",
+      "pageNumber1": 22,
+      "regionId": "blk_4c02431532c9bfab8b5e7ac9fa0dd16d"
+    },
+    "identifier": "Item 5",
+    "logicalId": "ku_d9bb25bfdd0005dbdb1ca1aa5faa27db1c0fd41e7768619ad56c560b59fe0fd5",
+    "section": "PART II",
+    "textChars": 2182,
+    "textSha256": "sha256:9f4d906c001a2e0f8a9e2707518e9ad792ea60a21ceaa304198054178a3e39aa"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        673,
+        174,
+        687
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_dd20fed6844fec4aeaa77b33b44d832a860eb6bee2b928dbe88c7ce57cb11643",
+      "pageNumber1": 23,
+      "regionId": "blk_78fddd8523f6ac88500413e79408928a"
+    },
+    "identifier": "Item 6",
+    "logicalId": "ku_cf8b07daa6060159bbb7843115f2aee6a2063de56bd01c54512bd50c28e54722",
+    "section": "PART II",
+    "textChars": 32,
+    "textSha256": "sha256:02e29de829c2dd838a9f2cf641d5efba97d9e9ae26334a117c08ef5d0b931989"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        75,
+        690,
+        89
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_26a36070d649657b63b2c85530b2b7ac5ec2aaccefc8ab6abc650b87a387cd6b",
+      "pageNumber1": 24,
+      "regionId": "blk_ee822e221fa0c7a4fabea859e8327ea5"
+    },
+    "identifier": "Item 7",
+    "logicalId": "ku_24c5a19f265aeaa0ae02cc4afde2167be9b7d0b26a8a392eff32e27dc8e63031",
+    "section": "PART II",
+    "textChars": 16883,
+    "textSha256": "sha256:11630579a7c6a082e85974cf28bde2529beea525070a6a04afa3a825b746ba3c"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        184,
+        512,
+        199
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_8dc3e970434a883b96d1ab0ecb11d6d4ff199529ec0375269c9803027827a835",
+      "pageNumber1": 30,
+      "regionId": "blk_57b032e21d6ba628f48f04c222e4a08a"
+    },
+    "identifier": "Item 7A",
+    "logicalId": "ku_38ed4847fdfa895a9d4f0d6595be28fbd19acb1d730881c7f93531390f3f8cdb",
+    "section": "PART II",
+    "textChars": 2823,
+    "textSha256": "sha256:f6c1cceb9e2dcbf9638a0d6a986f65b9d2c286507347b5218bea4e9d2fd7c655"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        75,
+        401,
+        89
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_58dcc40d5179ebb39c2e24df4bb795bdfa2f9a95d007afdffd70ee9545dc3878",
+      "pageNumber1": 31,
+      "regionId": "blk_f69bf33257b8d122e85ef191898c0f04"
+    },
+    "identifier": "Item 8",
+    "logicalId": "ku_7dd9c62b92b3acb27b2f8202b72a1d2f127bbd2e9ee91baaf180547d21c0b35c",
+    "section": "PART II",
+    "textChars": 7098,
+    "textSha256": "sha256:cbe93ac5b90cd884533dbc0309ba8b89eb3fb5bef7da46eb6f1f7d3b5881ce89"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        123,
+        381,
+        137
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_d51886bf07f681aee8bfb5f2a122afd21431b82c574108280cbe9fbe81657a95",
+      "pageNumber1": 37,
+      "regionId": "blk_23d8939b83ddac0655a1de135263f2d1"
+    },
+    "identifier": "Note 1",
+    "logicalId": "ku_455c9eeb4bfed5a2282db28fb2a556700e10f833f2fd48d5fb8aa65a02fcd22f",
+    "section": "PART II",
+    "textChars": 3103,
+    "textSha256": "sha256:b57e08539133e894e290ed85e1367525d6f83d6c458a23f72354b55b8759440d"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        251,
+        140,
+        265
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_f065a40d34141d2d96d62f20a2810184f29b46edfa506a6d3b918c8cc34e60ac",
+      "pageNumber1": 38,
+      "regionId": "blk_3d271f9b892ea11596ad5eeee1221aa9"
+    },
+    "identifier": "Note 2",
+    "logicalId": "ku_476c7f9de7d232bac7303c4971aeb813b7f1ff80b2d24b896ce081255b509566",
+    "section": "PART II",
+    "textChars": 5332,
+    "textSha256": "sha256:5de991132f50b72296c18b4ee2cc0a00cc4eb7b290d24ac6b2c8e6d36061c48d"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        414,
+        216,
+        429
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_4bbeb654f292babb86aa5a40162bd4a0dc93a68cf05ca3a4d24641893a68f472",
+      "pageNumber1": 39,
+      "regionId": "blk_abcf8c7fa7cb198a1c98bb5b05e21449"
+    },
+    "identifier": "Note 3",
+    "logicalId": "ku_8c41ad1562a818b46a170840a48d296f0b739a32f779e942284e457169ec73df",
+    "section": "PART II",
+    "textChars": 644,
+    "textSha256": "sha256:066cff583e1af1ce0d3a0d8c467294870594674b8a16abee3d436cff7199efa7"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        96,
+        236,
+        110
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_4ec13a17ab9dea6f3cc8c3bad7fec3f368f30841a657f8812bb5b984d4dc5789",
+      "pageNumber1": 40,
+      "regionId": "blk_feebf38a4475f4ecd78db63c37a65354"
+    },
+    "identifier": "Note 4",
+    "logicalId": "ku_257dbf8b2714ba0716b0e64873a4b4be4646e29c662b6184aa02ee4dabea7ed9",
+    "section": "PART II",
+    "textChars": 8397,
+    "textSha256": "sha256:e887efe0dcfea8cc57d03f041b22719402fbb60a8cbda31c264589eba810c8a1"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        499,
+        291,
+        513
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_bf67d8a7301ebd2aa8c05e3627d09aecee56fe0c7dceb5d566a8e599c344ac41",
+      "pageNumber1": 42,
+      "regionId": "blk_5c829c87990813a32e58b16a44f12938"
+    },
+    "identifier": "Note 5",
+    "logicalId": "ku_0241a4d55ee4144c470dbeeb008f7af39f287793871e2276e30802636d4a82a0",
+    "section": "PART II",
+    "textChars": 587,
+    "textSha256": "sha256:3cb03c9d2a46a86cbf8c27c4cac17b5047bbb8f78b8f36e9b7ed8b2a09e328d5"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        96,
+        367,
+        110
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_afb2c59663f03d64b4874ed0cd75949fd8652f11488122d12930e11f7c4c5e6c",
+      "pageNumber1": 43,
+      "regionId": "blk_7463bc3b87967c337b7e493d5b9b5125"
+    },
+    "identifier": "Note 6",
+    "logicalId": "ku_e9d50ca5a70a336481f3b9c78822b20eca623fbc082c20aa0be7853c4196ca41",
+    "section": "PART II",
+    "textChars": 422,
+    "textSha256": "sha256:f1ab91d74277f297325e72f05443d4b5ffe477fc00a9aab1d0bf5e85bb7f5104"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        375,
+        174,
+        389
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_9b0e7957225170fcdbd5e9c27226bd6f7ebdf02f176cf3555ebf9080f634ba99",
+      "pageNumber1": 43,
+      "regionId": "blk_b90b64a96427f78ebaf9f01d9ec81f8b"
+    },
+    "identifier": "Note 7",
+    "logicalId": "ku_80ec57316c34fa371389bcf711c7250819178ccd3473cc1a18092016634046c1",
+    "section": "PART II",
+    "textChars": 4889,
+    "textSha256": "sha256:44e8f35f5611ef03d3bf507658d0e736c9476aa1365a2c8979e73a09f2fe2f2c"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        405,
+        133,
+        419
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_59bc681124270b3a6d98297704b126dfd0713a43807c2d7d0f80b127aa2292f9",
+      "pageNumber1": 45,
+      "regionId": "blk_cf9ef3ae7bd7804173a42316c9a9bd64"
+    },
+    "identifier": "Note 8",
+    "logicalId": "ku_c0e006e228ace330d3396f1f893cb8afcfe02d04c884c9906e7272dd19faa024",
+    "section": "PART II",
+    "textChars": 2724,
+    "textSha256": "sha256:04d62630dc337df17c833747948eaf9e0e123b91a05aa56a6b01e55b2aa28b0a"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        395,
+        119,
+        409
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_50838ac9b0d61474f985437e97bddd69cfafd6be0c0738135d6f9d1318b74f60",
+      "pageNumber1": 46,
+      "regionId": "blk_180293739b92662eb279e8a12bc84d4a"
+    },
+    "identifier": "Note 9",
+    "logicalId": "ku_87425f8e315ab675a7fd0d7202e5974b15e227b9105758f426f89ad1e95ac731",
+    "section": "PART II",
+    "textChars": 2734,
+    "textSha256": "sha256:beabd9c848dc34804bc3fc1d2b678792dc3f95b01aa271c404d3311c54a1d1ca"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        650,
+        236,
+        665
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_115977fcde617c93f001ebe6d193d47b4431bc4afd79c5b3844327dfe69994f3",
+      "pageNumber1": 47,
+      "regionId": "blk_8a2e100ee11d892632a1227effc3e372"
+    },
+    "identifier": "Note 10",
+    "logicalId": "ku_2884c2e6255cb5914b42e74fe71441a13bd654a5f260ef80dc40d548dc142c76",
+    "section": "PART II",
+    "textChars": 796,
+    "textSha256": "sha256:064a422711b5f2e0704e70886b6b980b5c1ab23765fb90ccb4491f058e4fdfcd"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        235,
+        264,
+        250
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_8d9d002e73e10bab8660cdd3f031c859881d4caa30082ed341bce82b7fc005e7",
+      "pageNumber1": 48,
+      "regionId": "blk_4da4eae889f0e904748871613ab5f709"
+    },
+    "identifier": "Note 11",
+    "logicalId": "ku_4e2a4f34574e73f4e399e808e571c1fae8f5392f1685163a5daf6aaa627444d3",
+    "section": "PART II",
+    "textChars": 2481,
+    "textSha256": "sha256:2902e7ecd36d7ed8b8e6cf33ca763fc58be93463f90ced36b849b701f41e8b42"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        96,
+        456,
+        110
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_5ae672be509720ae60572f2d50549896ef28919f571bdcf2842025cd7ed7e88c",
+      "pageNumber1": 49,
+      "regionId": "blk_e5fbf482c56f3e9978fe10720858dbde"
+    },
+    "identifier": "Note 12",
+    "logicalId": "ku_02f30be6e78b1e51992709ee6183aad12d639068f5276202d50d778a52793cf1",
+    "section": "PART II",
+    "textChars": 3170,
+    "textSha256": "sha256:9dec37562e495800ea555be32ea4f20635907ae29a574c6734bbafca542ffc30"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        96,
+        367,
+        110
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_207674c6cbeb2bc1cf1ca476593ae3e18221ed550978063631a0b3ae41efce1c",
+      "pageNumber1": 50,
+      "regionId": "blk_28c42f5a3df5c9f84a87cfae08f4ef8e"
+    },
+    "identifier": "Note 13",
+    "logicalId": "ku_0cdd1304f2e9bae94958e56eb7ddd0605038cc2a3d18f318e576a9c111441cb2",
+    "section": "PART II",
+    "textChars": 12449,
+    "textSha256": "sha256:93e12a5182af84e2c96eb1a0a8d2b7c51edf8ffe9f8efaec82ff9a842bfcd126"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        75,
+        684,
+        89
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_7a79da7b1128ac9adad834e0aa083689a064812ee44d70a828d44e76750a9dd2",
+      "pageNumber1": 55,
+      "regionId": "blk_676c3d6f43bbc069d8d07ef9fa4d8843"
+    },
+    "identifier": "Item 9",
+    "logicalId": "ku_8de2e198abf7eeb095e7503daa854e7991216ea4338e21e87b2b8464fed3880a",
+    "section": "PART II",
+    "textChars": 5,
+    "textSha256": "sha256:903ea500e7ccf842c1312b6c2f964e3e98ff146456cecec717e9a0e122bf735f"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        131,
+        271,
+        145
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_c62dbcf1ea99e0f750d000b8a791fa9505b48776b647eea8c0c716440041aa00",
+      "pageNumber1": 55,
+      "regionId": "blk_0b32bd248ec8a7bb02a9ee71db3003ae"
+    },
+    "identifier": "Item 9A",
+    "logicalId": "ku_25702b8fcbf216caf92140994399f11e27722654fe70e00b2f473cf7053a93ec",
+    "section": "PART II",
+    "textChars": 4038,
+    "textSha256": "sha256:9484ecbc7193b532514e06be1b4b39bed968ae4d35224d5f55091d352197af89"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        96,
+        229,
+        110
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_953687fce9018ebf4542c44aee8bd654516e56dcb53646bcc62a1ffbce324879",
+      "pageNumber1": 56,
+      "regionId": "blk_2204ee60fdeaccda22566c3a566205eb"
+    },
+    "identifier": "Item 9B",
+    "logicalId": "ku_348a1237145f1209a7fe04ff9d7f28b01a03f5019e5dcaf1434af1559d3433c0",
+    "section": "PART II",
+    "textChars": 542,
+    "textSha256": "sha256:93b8c4f21a4105c6c7f15240731e2c72048ccf9db00c287bdb29afca7b1ef934"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        240,
+        573,
+        254
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_ec40c9412000a15dc5d69ed904fa16101bf46196438e325eb81f251d9cc6cdb9",
+      "pageNumber1": 56,
+      "regionId": "blk_07c607d6566711468568aa1d440bdd90"
+    },
+    "identifier": "Item 9C",
+    "logicalId": "ku_cb424a203292ea6786e9a1bb2d536b3b9cf14bdba26a94c04706df7f5160276f",
+    "section": "PART II",
+    "textChars": 15,
+    "textSha256": "sha256:a3014a36534d5612e7e04f74fc455b30bd0101d370991d349923efd6cc69ebc0"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        321,
+        484,
+        335
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_844e7ed05b40eb4653ccd00a9372b7e526bda738bc5a17d007011fde2dd208f0",
+      "pageNumber1": 56,
+      "regionId": "blk_f7a61fa54d653bbbc953df56b2f09f5a"
+    },
+    "identifier": "Item 10",
+    "logicalId": "ku_1880aab45e1362b1a765e938a178ef2d7c213920aaf5b9fac9e73d1d06cdf5d9",
+    "section": "PART III",
+    "textChars": 333,
+    "textSha256": "sha256:dc6273551963be549682e41894a3ff1ae3283f4a571ef5bb8258cfe23490284e"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        400,
+        264,
+        414
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_6b1cf5cb111e8e119a3db14405242b639b893d990c80cafc7ecb9ad1b0bc8899",
+      "pageNumber1": 56,
+      "regionId": "blk_bd8d88498f83de56f098a3381f4981cf"
+    },
+    "identifier": "Item 11",
+    "logicalId": "ku_d2409f8c5b05aa3bd521f42724f0b7387442ae7200c52e3db8cd6e315cea4717",
+    "section": "PART III",
+    "textChars": 124,
+    "textSha256": "sha256:0c71689aebf85c54f67f864050496d9dd5af0b69ace5b83398a4daa9ce9304aa"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        455,
+        759,
+        470
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_c8563a0214a7c04a80797845663f5fa2e8545244f2cb9417a871b8861f46fbe5",
+      "pageNumber1": 56,
+      "regionId": "blk_8a22727116bbc29b4b323a0e958af163"
+    },
+    "identifier": "Item 12",
+    "logicalId": "ku_31472a63aca8dcccbd4b04a33980cdbe0ad2bbd08f8d70aa1ad583ea3c188b98",
+    "section": "PART III",
+    "textChars": 124,
+    "textSha256": "sha256:0c71689aebf85c54f67f864050496d9dd5af0b69ace5b83398a4daa9ce9304aa"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        511,
+        615,
+        525
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_53fced38cd432cc0affad623380bd004c75154ebc9d9d16e32368b817af85b4a",
+      "pageNumber1": 56,
+      "regionId": "blk_fc0796e378b445ff372a50185b19ab2a"
+    },
+    "identifier": "Item 13",
+    "logicalId": "ku_423a9d1fe8e469ab8faf1fe66adbbb846160aad4a3d52a6f41b7a391cba70e82",
+    "section": "PART III",
+    "textChars": 124,
+    "textSha256": "sha256:0c71689aebf85c54f67f864050496d9dd5af0b69ace5b83398a4daa9ce9304aa"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        566,
+        374,
+        580
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_c35a463c79dcfef026ca50849a5ff0781c071e628e66044ecf55dd83bd1d76bd",
+      "pageNumber1": 56,
+      "regionId": "blk_1ba23d4d0cedf63a339ab153450bb313"
+    },
+    "identifier": "Item 14",
+    "logicalId": "ku_f2521935d279bd4d945ec627a76e1afdd6bb08e549296548b83b9fcae52ec011",
+    "section": "PART III",
+    "textChars": 157,
+    "textSha256": "sha256:2726659206db9757800c41702dccc42c9b7ac09a7bde45bf4f1ba3d4acf4d6f3"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        121,
+        395,
+        136
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_2021d69dfd677d2ecd4964657b259bdd7c15c906413f59befc26056c468407f2",
+      "pageNumber1": 57,
+      "regionId": "blk_1ae8023772b7f1cb37048b3dc8f0dd65"
+    },
+    "identifier": "Item 15",
+    "logicalId": "ku_2c35825d6fd0240e9e5c09e4b14b88aeca507a8f3bdaaf09aff5ca1358201831",
+    "section": "PART IV",
+    "textChars": 5699,
+    "textSha256": "sha256:b724aa8a957832a6064626efee9ecc77f866c63afc2a7c2d2b5b6cd16b4b939d"
+  },
+  {
+    "authority": "official",
+    "documentId": "apple-form-10-k",
+    "evidence": {
+      "bbox1000": [
+        30,
+        281,
+        229,
+        296
+      ],
+      "documentId": "apple-form-10-k",
+      "evidenceId": "ev_e3639b3fcb39db365bb91e4fec462e6db77e7a58e10c895f111f2061066785a7",
+      "pageNumber1": 60,
+      "regionId": "blk_8975e37bef539af2e229daa4747ffe2b"
+    },
+    "identifier": "Item 16",
+    "logicalId": "ku_0607f46c7c96c4dca45ed9377e07193e85fe1af92e85021ac99f1d44e9d1d045",
+    "section": "PART IV",
+    "textChars": 59171,
+    "textSha256": "sha256:c6a1b864683fb4fb0b96f65ff67fb887339c71c49587aec1ba0c2f11f94b5927"
+  }
+]

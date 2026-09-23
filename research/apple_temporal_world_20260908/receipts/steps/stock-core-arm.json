@@ -1,0 +1,28 @@
+{
+  "facts": {
+    "coveragePermille": 6,
+    "failClosedByKind": {
+      "BLOCK_HEADING": 93,
+      "BLOCK_TITLE": 5,
+      "UNNUMBERED_PARAGRAPH": 14212
+    },
+    "failClosedCount": 14310,
+    "failClosedStates": [
+      "RECOGNIZED_BUT_UNREPRESENTED",
+      "UNRESOLVED_SOURCE_FACT"
+    ],
+    "ignoredPolicies": [
+      "policy.page-furniture.out-of-scope.v1"
+    ],
+    "sourceFaithful": false,
+    "tally": {
+      "IGNORED_BY_PREDECLARED_POLICY": 487,
+      "RECOGNIZED_BUT_UNREPRESENTED": 98,
+      "REPRESENTED_IN_COMPILED_STATE": 81,
+      "UNRESOLVED_SOURCE_FACT": 14212
+    },
+    "total": 14878
+  },
+  "outcome": "RESOLVED",
+  "units": 1
+}

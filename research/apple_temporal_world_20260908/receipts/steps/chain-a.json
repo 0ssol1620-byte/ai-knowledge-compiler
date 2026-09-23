@@ -1,0 +1,791 @@
+{
+  "activeCount": 1,
+  "activeStatus": "ACTIVE",
+  "onlyOneActive": true,
+  "steps": [
+    {
+      "arms": {
+        "note": "initial compile: there is no predecessor, so every artifact is built and the fraction is 1.0 by definition, not by measurement",
+        "rebuildFraction": 1.0,
+        "rebuilt": 77,
+        "totalArtifacts": 77
+      },
+      "artifacts": 77,
+      "chain": "A",
+      "change": null,
+      "dependencyEdges": 252,
+      "entities": {
+        "decisions": [
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_58f6c89e324d20182151ff6a7d45c12d749db723a32ca2077fa0c632b7e1c4a9",
+            "filing": "apple-form-10-k",
+            "reason": "no tier produced a match",
+            "tier": null,
+            "verdict": "NEW_ENTITY"
+          }
+        ],
+        "entities": [
+          "entity:registrant:0000320193"
+        ],
+        "needsReview": [],
+        "verdicts": {
+          "NEW_ENTITY": 1
+        }
+      },
+      "evidenceLocators": 36,
+      "label": "2025 Form 10-K",
+      "members": [
+        "apple-form-10-k"
+      ],
+      "pages": 80,
+      "publish": {
+        "manifestHash": "sha256:1be9b0b0b55ae0c2204eeaa98e5ce46bb6e402d4f681a5f79f50488c9bac9090",
+        "parent": null,
+        "receiptPassed": true,
+        "status": "ACTIVE",
+        "worldStateId": "world-a-w0"
+      },
+      "regions": 3732,
+      "sourceFacts": {
+        "coveragePermille": 957,
+        "failClosedByKind": {
+          "BLOCK_FIGURE_NO_TEXT": 1,
+          "OUTSIDE_ANCHORED_SECTION": 158
+        },
+        "failClosedCount": 159,
+        "failClosedStates": [
+          "RECOGNIZED_BUT_UNREPRESENTED",
+          "UNRESOLVED_SOURCE_FACT"
+        ],
+        "ignoredPolicies": [
+          "policy.decorative-rule.out-of-scope.v1"
+        ],
+        "sourceFaithful": false,
+        "tally": {
+          "IGNORED_BY_PREDECLARED_POLICY": 6685,
+          "RECOGNIZED_BUT_UNREPRESENTED": 1,
+          "REPRESENTED_IN_COMPILED_STATE": 3574,
+          "UNRESOLVED_SOURCE_FACT": 158
+        },
+        "total": 10418
+      },
+      "sourceSha256": "sha256:3cd946d793dae87b712cedf45d1584bbaa225b391688628e7776100b904ae07b",
+      "step": "w0",
+      "unitIndexSha256": "sha256:a21eefc6ec7f17347907ffe77526bb910532fca929016439a82e13906d21686e",
+      "units": 36
+    },
+    {
+      "arms": {
+        "challenger": {
+          "changeId": "chg_e2cc459882b46ad4da149d7c1c13a4e2",
+          "equivalence": {
+            "compared": 112,
+            "diverged": [],
+            "equivalent": true,
+            "missing_from_selective": [],
+            "stale_left_behind": [],
+            "unexpectedly_rebuilt": []
+          },
+          "rebuildFraction": 0.348214,
+          "rebuilt": 39,
+          "states": {
+            "current": 73,
+            "stale": 39
+          },
+          "totalArtifacts": 112,
+          "unresolvedArtifacts": [],
+          "unresolvedFacetChannels": []
+        },
+        "legacy_default": {
+          "changeId": "chg_e2cc459882b46ad4da149d7c1c13a4e2",
+          "equivalence": {
+            "compared": 112,
+            "diverged": [
+              "collection:directory"
+            ],
+            "equivalent": false,
+            "missing_from_selective": [],
+            "stale_left_behind": [
+              "collection:directory"
+            ],
+            "unexpectedly_rebuilt": []
+          },
+          "rebuildFraction": 0.339286,
+          "rebuilt": 38,
+          "states": {
+            "current": 74,
+            "stale": 38
+          },
+          "totalArtifacts": 112,
+          "unresolvedArtifacts": [],
+          "unresolvedFacetChannels": []
+        },
+        "legacy_precise": {
+          "changeId": "chg_e2cc459882b46ad4da149d7c1c13a4e2",
+          "equivalence": {
+            "compared": 112,
+            "diverged": [],
+            "equivalent": true,
+            "missing_from_selective": [],
+            "stale_left_behind": [],
+            "unexpectedly_rebuilt": []
+          },
+          "rebuildFraction": 0.348214,
+          "rebuilt": 39,
+          "states": {
+            "current": 73,
+            "stale": 39
+          },
+          "totalArtifacts": 112,
+          "unresolvedArtifacts": [],
+          "unresolvedFacetChannels": []
+        }
+      },
+      "artifacts": 112,
+      "chain": "A",
+      "change": {
+        "changeId": "chg_e2cc459882b46ad4da149d7c1c13a4e2",
+        "channels": {
+          "semantic": 17,
+          "structural": 2
+        },
+        "contentChanged": true,
+        "kinds": {
+          "structure_changed": 2,
+          "unit_added": 17
+        },
+        "level": "L3",
+        "locatorSeeds": 0,
+        "semanticSeeds": 17,
+        "structuralScope": 53,
+        "total": 19,
+        "unresolvedIdentities": 0
+      },
+      "dependencyEdges": 371,
+      "entities": {
+        "decisions": [
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_58f6c89e324d20182151ff6a7d45c12d749db723a32ca2077fa0c632b7e1c4a9",
+            "filing": "apple-form-10-k",
+            "reason": "no tier produced a match",
+            "tier": null,
+            "verdict": "NEW_ENTITY"
+          },
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_75a5cf2cc4d28143458ee7ffc1a4e83bafe1ea07f15bd37436bff4fe86f02b0e",
+            "filing": "apple-2026-q1-10-q",
+            "reason": "an external system identifier matched exactly",
+            "tier": "SYSTEM_OF_RECORD",
+            "verdict": "AUTO_MERGE"
+          }
+        ],
+        "entities": [
+          "entity:registrant:0000320193"
+        ],
+        "needsReview": [],
+        "verdicts": {
+          "AUTO_MERGE": 1,
+          "NEW_ENTITY": 1
+        }
+      },
+      "evidenceLocators": 53,
+      "label": "+ 2026 Q1 10-Q",
+      "members": [
+        "apple-form-10-k",
+        "apple-2026-q1-10-q"
+      ],
+      "pages": 110,
+      "publish": {
+        "manifestHash": "sha256:bb385be361cf14003a36404e3721f71129dd253addef5e28a01a3aad1d253667",
+        "parent": "world-a-w0",
+        "receiptPassed": true,
+        "status": "ACTIVE",
+        "worldStateId": "world-a-w1"
+      },
+      "regions": 5465,
+      "sourceFacts": {
+        "coveragePermille": 933,
+        "failClosedByKind": {
+          "BLOCK_FIGURE_NO_TEXT": 1,
+          "DUPLICATE_ANCHOR_OCCURRENCE": 97,
+          "OUTSIDE_ANCHORED_SECTION": 268
+        },
+        "failClosedCount": 366,
+        "failClosedStates": [
+          "RECOGNIZED_BUT_UNREPRESENTED",
+          "UNRESOLVED_SOURCE_FACT"
+        ],
+        "ignoredPolicies": [
+          "policy.decorative-rule.out-of-scope.v1"
+        ],
+        "sourceFaithful": false,
+        "tally": {
+          "IGNORED_BY_PREDECLARED_POLICY": 10292,
+          "RECOGNIZED_BUT_UNREPRESENTED": 1,
+          "REPRESENTED_IN_COMPILED_STATE": 5100,
+          "UNRESOLVED_SOURCE_FACT": 365
+        },
+        "total": 15758
+      },
+      "sourceSha256": "sha256:cbd259dbebd0c424a6b7f59c169ef98bc618742091d1dc280f0fb6c64c268eaa",
+      "step": "w1",
+      "unitIndexSha256": "sha256:0647b69561718ab311e4cb9a4a531a03d0b2e3183c17d1f9214db299284fd9f3",
+      "units": 53
+    },
+    {
+      "arms": {
+        "challenger": {
+          "changeId": "chg_1e745b8b55bc44aa3e29db9da541379d",
+          "equivalence": {
+            "compared": 123,
+            "diverged": [],
+            "equivalent": true,
+            "missing_from_selective": [],
+            "stale_left_behind": [],
+            "unexpectedly_rebuilt": []
+          },
+          "rebuildFraction": 0.121951,
+          "rebuilt": 15,
+          "states": {
+            "current": 108,
+            "stale": 15
+          },
+          "totalArtifacts": 123,
+          "unresolvedArtifacts": [],
+          "unresolvedFacetChannels": []
+        },
+        "legacy_default": {
+          "changeId": "chg_1e745b8b55bc44aa3e29db9da541379d",
+          "equivalence": {
+            "compared": 123,
+            "diverged": [
+              "collection:directory"
+            ],
+            "equivalent": false,
+            "missing_from_selective": [],
+            "stale_left_behind": [
+              "collection:directory"
+            ],
+            "unexpectedly_rebuilt": []
+          },
+          "rebuildFraction": 0.113821,
+          "rebuilt": 14,
+          "states": {
+            "current": 109,
+            "stale": 14
+          },
+          "totalArtifacts": 123,
+          "unresolvedArtifacts": [],
+          "unresolvedFacetChannels": []
+        },
+        "legacy_precise": {
+          "changeId": "chg_1e745b8b55bc44aa3e29db9da541379d",
+          "equivalence": {
+            "compared": 123,
+            "diverged": [],
+            "equivalent": true,
+            "missing_from_selective": [],
+            "stale_left_behind": [],
+            "unexpectedly_rebuilt": []
+          },
+          "rebuildFraction": 0.121951,
+          "rebuilt": 15,
+          "states": {
+            "current": 108,
+            "stale": 15
+          },
+          "totalArtifacts": 123,
+          "unresolvedArtifacts": [],
+          "unresolvedFacetChannels": []
+        }
+      },
+      "artifacts": 123,
+      "chain": "A",
+      "change": {
+        "changeId": "chg_1e745b8b55bc44aa3e29db9da541379d",
+        "channels": {
+          "semantic": 5,
+          "structural": 2
+        },
+        "contentChanged": true,
+        "kinds": {
+          "structure_changed": 2,
+          "unit_added": 5
+        },
+        "level": "L3",
+        "locatorSeeds": 0,
+        "semanticSeeds": 5,
+        "structuralScope": 58,
+        "total": 7,
+        "unresolvedIdentities": 0
+      },
+      "dependencyEdges": 406,
+      "entities": {
+        "decisions": [
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_58f6c89e324d20182151ff6a7d45c12d749db723a32ca2077fa0c632b7e1c4a9",
+            "filing": "apple-form-10-k",
+            "reason": "no tier produced a match",
+            "tier": null,
+            "verdict": "NEW_ENTITY"
+          },
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_75a5cf2cc4d28143458ee7ffc1a4e83bafe1ea07f15bd37436bff4fe86f02b0e",
+            "filing": "apple-2026-q1-10-q",
+            "reason": "an external system identifier matched exactly",
+            "tier": "SYSTEM_OF_RECORD",
+            "verdict": "AUTO_MERGE"
+          },
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_fef846c867c2da83d57d5425d70d2cc09bdd7d5ee9f6752df8f1d4a4820c166c",
+            "filing": "apple-2026-proxy-def14a",
+            "reason": "an external system identifier matched exactly",
+            "tier": "SYSTEM_OF_RECORD",
+            "verdict": "AUTO_MERGE"
+          }
+        ],
+        "entities": [
+          "entity:registrant:0000320193"
+        ],
+        "needsReview": [],
+        "verdicts": {
+          "AUTO_MERGE": 2,
+          "NEW_ENTITY": 1
+        }
+      },
+      "evidenceLocators": 58,
+      "label": "+ 2026 DEF 14A",
+      "members": [
+        "apple-form-10-k",
+        "apple-2026-q1-10-q",
+        "apple-2026-proxy-def14a"
+      ],
+      "pages": 213,
+      "publish": {
+        "manifestHash": "sha256:3c6f6b4ecd0fe8bba3df6c43908bb1320f7e95e0b3a17e7c728f2218ef5bdafa",
+        "parent": "world-a-w1",
+        "receiptPassed": true,
+        "status": "ACTIVE",
+        "worldStateId": "world-a-w2"
+      },
+      "regions": 10153,
+      "sourceFacts": {
+        "coveragePermille": 823,
+        "failClosedByKind": {
+          "BLOCK_FIGURE_NO_TEXT": 1,
+          "DUPLICATE_ANCHOR_OCCURRENCE": 1445,
+          "OUTSIDE_ANCHORED_SECTION": 353
+        },
+        "failClosedCount": 1799,
+        "failClosedStates": [
+          "RECOGNIZED_BUT_UNREPRESENTED",
+          "UNRESOLVED_SOURCE_FACT"
+        ],
+        "ignoredPolicies": [
+          "policy.decorative-rule.out-of-scope.v1"
+        ],
+        "sourceFaithful": false,
+        "tally": {
+          "IGNORED_BY_PREDECLARED_POLICY": 13348,
+          "RECOGNIZED_BUT_UNREPRESENTED": 1,
+          "REPRESENTED_IN_COMPILED_STATE": 8349,
+          "UNRESOLVED_SOURCE_FACT": 1798
+        },
+        "total": 23496
+      },
+      "sourceSha256": "sha256:e9398991c28188554fd79eb7cef70b005fb24b3e260eb27b81c1a994c9251ca2",
+      "step": "w2",
+      "unitIndexSha256": "sha256:428944d0325afe49cccf9d69994c8970327362465b0eea6bbc9e9c286151a02e",
+      "units": 58
+    },
+    {
+      "arms": {
+        "challenger": {
+          "changeId": "chg_0891f722869d1c9ff0288de9d35b194b",
+          "equivalence": {
+            "compared": 158,
+            "diverged": [],
+            "equivalent": true,
+            "missing_from_selective": [],
+            "stale_left_behind": [],
+            "unexpectedly_rebuilt": []
+          },
+          "rebuildFraction": 0.246835,
+          "rebuilt": 39,
+          "states": {
+            "current": 119,
+            "stale": 39
+          },
+          "totalArtifacts": 158,
+          "unresolvedArtifacts": [],
+          "unresolvedFacetChannels": []
+        },
+        "legacy_default": {
+          "changeId": "chg_0891f722869d1c9ff0288de9d35b194b",
+          "equivalence": {
+            "compared": 158,
+            "diverged": [
+              "collection:directory"
+            ],
+            "equivalent": false,
+            "missing_from_selective": [],
+            "stale_left_behind": [
+              "collection:directory"
+            ],
+            "unexpectedly_rebuilt": []
+          },
+          "rebuildFraction": 0.240506,
+          "rebuilt": 38,
+          "states": {
+            "current": 120,
+            "stale": 38
+          },
+          "totalArtifacts": 158,
+          "unresolvedArtifacts": [],
+          "unresolvedFacetChannels": []
+        },
+        "legacy_precise": {
+          "changeId": "chg_0891f722869d1c9ff0288de9d35b194b",
+          "equivalence": {
+            "compared": 158,
+            "diverged": [],
+            "equivalent": true,
+            "missing_from_selective": [],
+            "stale_left_behind": [],
+            "unexpectedly_rebuilt": []
+          },
+          "rebuildFraction": 0.246835,
+          "rebuilt": 39,
+          "states": {
+            "current": 119,
+            "stale": 39
+          },
+          "totalArtifacts": 158,
+          "unresolvedArtifacts": [],
+          "unresolvedFacetChannels": []
+        }
+      },
+      "artifacts": 158,
+      "chain": "A",
+      "change": {
+        "changeId": "chg_0891f722869d1c9ff0288de9d35b194b",
+        "channels": {
+          "semantic": 17,
+          "structural": 2
+        },
+        "contentChanged": true,
+        "kinds": {
+          "structure_changed": 2,
+          "unit_added": 17
+        },
+        "level": "L3",
+        "locatorSeeds": 0,
+        "semanticSeeds": 17,
+        "structuralScope": 75,
+        "total": 19,
+        "unresolvedIdentities": 0
+      },
+      "dependencyEdges": 525,
+      "entities": {
+        "decisions": [
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_58f6c89e324d20182151ff6a7d45c12d749db723a32ca2077fa0c632b7e1c4a9",
+            "filing": "apple-form-10-k",
+            "reason": "no tier produced a match",
+            "tier": null,
+            "verdict": "NEW_ENTITY"
+          },
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_75a5cf2cc4d28143458ee7ffc1a4e83bafe1ea07f15bd37436bff4fe86f02b0e",
+            "filing": "apple-2026-q1-10-q",
+            "reason": "an external system identifier matched exactly",
+            "tier": "SYSTEM_OF_RECORD",
+            "verdict": "AUTO_MERGE"
+          },
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_fef846c867c2da83d57d5425d70d2cc09bdd7d5ee9f6752df8f1d4a4820c166c",
+            "filing": "apple-2026-proxy-def14a",
+            "reason": "an external system identifier matched exactly",
+            "tier": "SYSTEM_OF_RECORD",
+            "verdict": "AUTO_MERGE"
+          },
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_694a0d1c65a0f2d87f681fff1051bce93a9b261b938f3f17d230522fe085c902",
+            "filing": "apple-2026-q2-10-q",
+            "reason": "an external system identifier matched exactly",
+            "tier": "SYSTEM_OF_RECORD",
+            "verdict": "AUTO_MERGE"
+          }
+        ],
+        "entities": [
+          "entity:registrant:0000320193"
+        ],
+        "needsReview": [],
+        "verdicts": {
+          "AUTO_MERGE": 3,
+          "NEW_ENTITY": 1
+        }
+      },
+      "evidenceLocators": 75,
+      "label": "+ 2026 Q2 10-Q",
+      "members": [
+        "apple-form-10-k",
+        "apple-2026-q1-10-q",
+        "apple-2026-proxy-def14a",
+        "apple-2026-q2-10-q"
+      ],
+      "pages": 250,
+      "publish": {
+        "manifestHash": "sha256:7c8d4206cea06d5beb79abde3cc99e4fcc51c0fa72ef443d953efa2e51c7d9c3",
+        "parent": "world-a-w2",
+        "receiptPassed": true,
+        "status": "ACTIVE",
+        "worldStateId": "world-a-w3"
+      },
+      "regions": 12527,
+      "sourceFacts": {
+        "coveragePermille": 840,
+        "failClosedByKind": {
+          "BLOCK_FIGURE_NO_TEXT": 1,
+          "DUPLICATE_ANCHOR_OCCURRENCE": 1542,
+          "OUTSIDE_ANCHORED_SECTION": 463
+        },
+        "failClosedCount": 2006,
+        "failClosedStates": [
+          "RECOGNIZED_BUT_UNREPRESENTED",
+          "UNRESOLVED_SOURCE_FACT"
+        ],
+        "ignoredPolicies": [
+          "policy.decorative-rule.out-of-scope.v1"
+        ],
+        "sourceFaithful": false,
+        "tally": {
+          "IGNORED_BY_PREDECLARED_POLICY": 18579,
+          "RECOGNIZED_BUT_UNREPRESENTED": 1,
+          "REPRESENTED_IN_COMPILED_STATE": 10516,
+          "UNRESOLVED_SOURCE_FACT": 2005
+        },
+        "total": 31101
+      },
+      "sourceSha256": "sha256:202719ed0c72f148d90a5da2e1c6c24caa55261be85a3d6497a8c8da9386afde",
+      "step": "w3",
+      "unitIndexSha256": "sha256:93b663069d4ca3bbd9d4489bb19fb33c1266f9f4d3480f560530470eb3843204",
+      "units": 75
+    },
+    {
+      "arms": {
+        "challenger": {
+          "changeId": "chg_afeeb945503e128e41445c5da1d3b228",
+          "equivalence": {
+            "compared": 193,
+            "diverged": [],
+            "equivalent": true,
+            "missing_from_selective": [],
+            "stale_left_behind": [],
+            "unexpectedly_rebuilt": []
+          },
+          "rebuildFraction": 0.202073,
+          "rebuilt": 39,
+          "states": {
+            "current": 154,
+            "stale": 39
+          },
+          "totalArtifacts": 193,
+          "unresolvedArtifacts": [],
+          "unresolvedFacetChannels": []
+        },
+        "legacy_default": {
+          "changeId": "chg_afeeb945503e128e41445c5da1d3b228",
+          "equivalence": {
+            "compared": 193,
+            "diverged": [
+              "collection:directory"
+            ],
+            "equivalent": false,
+            "missing_from_selective": [],
+            "stale_left_behind": [
+              "collection:directory"
+            ],
+            "unexpectedly_rebuilt": []
+          },
+          "rebuildFraction": 0.196891,
+          "rebuilt": 38,
+          "states": {
+            "current": 155,
+            "stale": 38
+          },
+          "totalArtifacts": 193,
+          "unresolvedArtifacts": [],
+          "unresolvedFacetChannels": []
+        },
+        "legacy_precise": {
+          "changeId": "chg_afeeb945503e128e41445c5da1d3b228",
+          "equivalence": {
+            "compared": 193,
+            "diverged": [],
+            "equivalent": true,
+            "missing_from_selective": [],
+            "stale_left_behind": [],
+            "unexpectedly_rebuilt": []
+          },
+          "rebuildFraction": 0.202073,
+          "rebuilt": 39,
+          "states": {
+            "current": 154,
+            "stale": 39
+          },
+          "totalArtifacts": 193,
+          "unresolvedArtifacts": [],
+          "unresolvedFacetChannels": []
+        }
+      },
+      "artifacts": 193,
+      "chain": "A",
+      "change": {
+        "changeId": "chg_afeeb945503e128e41445c5da1d3b228",
+        "channels": {
+          "semantic": 17,
+          "structural": 2
+        },
+        "contentChanged": true,
+        "kinds": {
+          "structure_changed": 2,
+          "unit_added": 17
+        },
+        "level": "L3",
+        "locatorSeeds": 0,
+        "semanticSeeds": 17,
+        "structuralScope": 92,
+        "total": 19,
+        "unresolvedIdentities": 0
+      },
+      "dependencyEdges": 644,
+      "entities": {
+        "decisions": [
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_58f6c89e324d20182151ff6a7d45c12d749db723a32ca2077fa0c632b7e1c4a9",
+            "filing": "apple-form-10-k",
+            "reason": "no tier produced a match",
+            "tier": null,
+            "verdict": "NEW_ENTITY"
+          },
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_75a5cf2cc4d28143458ee7ffc1a4e83bafe1ea07f15bd37436bff4fe86f02b0e",
+            "filing": "apple-2026-q1-10-q",
+            "reason": "an external system identifier matched exactly",
+            "tier": "SYSTEM_OF_RECORD",
+            "verdict": "AUTO_MERGE"
+          },
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_fef846c867c2da83d57d5425d70d2cc09bdd7d5ee9f6752df8f1d4a4820c166c",
+            "filing": "apple-2026-proxy-def14a",
+            "reason": "an external system identifier matched exactly",
+            "tier": "SYSTEM_OF_RECORD",
+            "verdict": "AUTO_MERGE"
+          },
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_694a0d1c65a0f2d87f681fff1051bce93a9b261b938f3f17d230522fe085c902",
+            "filing": "apple-2026-q2-10-q",
+            "reason": "an external system identifier matched exactly",
+            "tier": "SYSTEM_OF_RECORD",
+            "verdict": "AUTO_MERGE"
+          },
+          {
+            "entityId": "entity:registrant:0000320193",
+            "evidenceId": "ev_edfd753f7fb06d99ec68f11fb2a4563e3eb92201a5b0af648bed73af1e9b5abb",
+            "filing": "apple-2026-q3-10-q",
+            "reason": "an external system identifier matched exactly",
+            "tier": "SYSTEM_OF_RECORD",
+            "verdict": "AUTO_MERGE"
+          }
+        ],
+        "entities": [
+          "entity:registrant:0000320193"
+        ],
+        "needsReview": [],
+        "verdicts": {
+          "AUTO_MERGE": 4,
+          "NEW_ENTITY": 1
+        }
+      },
+      "evidenceLocators": 92,
+      "failClosedControls": {
+        "partialWorldRefused": {
+          "activeCount": 0,
+          "droppedArtifact": "claim:ku_0241a4d55ee4144c470dbeeb008f7af39f287793871e2276e30802636d4a82a0",
+          "refusal": "artifact checksum mismatch for claim:ku_0241a4d55ee4144c470dbeeb008f7af39f287793871e2276e30802636d4a82a0; publishing would serve content the manifest does not describe"
+        },
+        "selectiveWithoutEquivalenceRefused": {
+          "activeCount": 0,
+          "refusal": "a selective build has no equivalence check. A missing check is not a passing one -- it is the absence of what would have caught a stale artifact."
+        }
+      },
+      "label": "+ 2026 Q3 10-Q",
+      "members": [
+        "apple-form-10-k",
+        "apple-2026-q1-10-q",
+        "apple-2026-proxy-def14a",
+        "apple-2026-q2-10-q",
+        "apple-2026-q3-10-q"
+      ],
+      "pages": 290,
+      "publish": {
+        "manifestHash": "sha256:76047b09da6d01cdf16a54f37b1d4f089a130711b9ae3809563debb4674123b1",
+        "parent": "world-a-w3",
+        "receiptPassed": true,
+        "status": "ACTIVE",
+        "worldStateId": "world-a-w4"
+      },
+      "regions": 14877,
+      "sourceFacts": {
+        "coveragePermille": 850,
+        "failClosedByKind": {
+          "BLOCK_FIGURE_NO_TEXT": 1,
+          "DUPLICATE_ANCHOR_OCCURRENCE": 1652,
+          "OUTSIDE_ANCHORED_SECTION": 573
+        },
+        "failClosedCount": 2226,
+        "failClosedStates": [
+          "RECOGNIZED_BUT_UNREPRESENTED",
+          "UNRESOLVED_SOURCE_FACT"
+        ],
+        "ignoredPolicies": [
+          "policy.decorative-rule.out-of-scope.v1"
+        ],
+        "sourceFaithful": false,
+        "tally": {
+          "IGNORED_BY_PREDECLARED_POLICY": 23938,
+          "RECOGNIZED_BUT_UNREPRESENTED": 1,
+          "REPRESENTED_IN_COMPILED_STATE": 12646,
+          "UNRESOLVED_SOURCE_FACT": 2225
+        },
+        "total": 38810
+      },
+      "sourceSha256": "sha256:67946b4d21394907e5c93b17f47c24b0200d5621d340f06d5af8478bdbdcab80",
+      "step": "w4",
+      "unitIndexSha256": "sha256:f9387a1ceefb5325bd66bfaee6afa9169e2a43614f7778acfa1995cd888985fd",
+      "units": 92
+    }
+  ],
+  "worldHistory": [
+    "world-a-w0",
+    "world-a-w1",
+    "world-a-w2",
+    "world-a-w3",
+    "world-a-w4"
+  ]
+}
