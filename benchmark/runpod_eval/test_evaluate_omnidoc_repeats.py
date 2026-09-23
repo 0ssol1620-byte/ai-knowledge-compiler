@@ -58,17 +58,17 @@ def test_page_count_must_match_frozen_prediction_directory(tmp_path: Path) -> No
 def test_page_count_includes_pages_beyond_the_windows_max_path_limit(
     tmp_path: Path,
 ) -> None:
+    # Keep the component below Linux's 255-byte NAME_MAX while the complete
+    # path still exceeds Windows' 260-character legacy limit. CJK characters
+    # occupy three UTF-8 bytes on Linux, so a 60-repeat component is invalid.
+    long_name = "book_en_国外数学教材-" + ("漫游" * 30) + "_0035.md"
     prediction = tmp_path
-    while len(str(prediction.resolve())) < 150:
+    while len(str((prediction / "markdown-repeat-1" / long_name).resolve())) <= 260:
         prediction = prediction / "nested-evidence-segment"
     prediction = prediction / "markdown-repeat-1"
     prediction.mkdir(parents=True)
     (prediction / "short.md").write_text("short", encoding="utf-8")
 
-    # Keep the component below Linux's 255-byte NAME_MAX while the complete
-    # path still exceeds Windows' 260-character legacy limit. CJK characters
-    # occupy three UTF-8 bytes on Linux, so a 60-repeat component is invalid.
-    long_name = "book_en_国外数学教材-" + ("漫游" * 30) + "_0035.md"
     long_page = prediction / long_name
     target = str(long_page.resolve())
     assert len(long_name) < 255, "NTFS caps a single path component at 255"
