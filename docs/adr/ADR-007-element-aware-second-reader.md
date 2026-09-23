@@ -234,6 +234,93 @@ yet dispatched by a production caller, and no merge or execution receipt exists.
 Keep both flags off until that path, exact served revision/digest matching and
 same-condition shadow evidence are verified.
 
+### Pre-registration — SRP-1 agreement / abstention rule (2026-09-23)
+
+Item 4 needs a rule a real router can run without knowing which reader is
+right. This section fixes that rule, its metrics and its test protocol
+**before** any held-out data is replayed against it. It is appended, not
+edited into the items above, and it activates nothing: no tenant flag, no
+registry row, no traffic, no GPU.
+
+**Implementation.** `research/model_arena_20260903/arena/tavonel/second_reader_policy.py`
+(`POLICY_VERSION = tavonel-second-reader-policy.srp1.v1`), a pure function with
+no file, network, score or answer-key access. It sits inside the package the
+GT-blindness source scan already covers. Tests:
+`research/model_arena_20260903/tests/tavonel/test_tavonel_second_reader_policy.py`.
+
+**The rule.** Input: the primary's and the second reader's canonical text for
+one page, each with a pinned `(reader_id, revision)`. Same reader model even at
+a different revision, or an
+empty id or revision, is refused with an error. Otherwise, on
+`features.normalize_text` of each side (NFKC, case-folded, whitespace
+collapsed):
+
+1. **Abstain** if either side is empty; shows a structural truncation signal
+   (`unclosed_code_fence`, `unclosed_html_table`, `ends_mid_table_row`,
+   `output_tokens_at_max`; `ends_mid_sentence` is deliberately excluded); matches
+   the hallucinated-boilerplate list; or exceeds 20,000 normalised characters.
+   An oversized page is refused, never compared on a prefix.
+2. Otherwise let `d` be the Levenshtein distance and `L = max(len)`.
+   **Accept the primary on agreement** iff `d <= floor(L / 10)`, decided in
+   integers. Else **abstain** with `readers_disagree`.
+
+There are two outcomes only. The rule never substitutes the second reader's
+text: at decision time nothing says which reader is right.
+
+**What 0.10 is.** An uncalibrated heuristic (`calibrated: false`), chosen as
+twice the study's `tau = 0.05` wrong-page line. **No guarantee is derived from
+it.** No triangle-inequality argument is made for `d / max(len)`. Even for a
+true metric, bounding one reader's error from agreement needs the other
+reader's error, which is unobservable when the decision is made. The measured
+both-wrong floors (11.4% text, 44.7% formula) show that the readers' errors are
+correlated. Agreement is a signal to be measured, not a proof.
+
+**Why `official_result.json` alone cannot implement or evaluate it.** That
+file is evaluator output against the benchmark's answer key; its granularity
+depends on the evaluator (OmniDoc element/page results versus olmOCR checks).
+It carries neither reader's transcription, so `d` between two readers cannot
+be computed from it. Deciding on those scores would also make the rule
+answer-key-dependent, which is the oracle, not the policy. Replay therefore
+needs both readers' frozen canonical outputs. The existing
+`disagreement/pairs.jsonl` does not substitute either: its `text_similarity`
+is `difflib` ratio on a 20,000-character prefix, not this distance.
+
+**Metrics.** All are computed per element on the page set where both readers
+produced a frozen output. Each rate carries its denominator. "Wrong" means
+evaluator edit `> 0.05`, the study's line, joined **only after** decisions
+are frozen.
+
+- *coverage* = accepted / eligible pages
+- *abstention rate* = abstained / eligible, broken down by reason
+- *selective error* = P(primary wrong | accepted)
+- *baseline error* = P(primary wrong) on the same eligible pages
+- *abstention recall* = P(abstained | primary wrong)
+- *agreed-and-wrong* = P(both readers wrong | accepted), the correlated-error
+  count this rule cannot see
+
+**Test protocol.**
+
+1. Freeze `policy_parameters()` and `POLICY_VERSION` with a hash before replay.
+   Compute every decision from canonical outputs alone and freeze those with a
+   hash too, in the same order `freeze-routes` enforces: decisions before
+   scores.
+2. Join scores once. The threshold, gates and normaliser are **not** tuned on
+   the held-out set. Any change is a new `POLICY_VERSION` and needs a fresh
+   held-out set.
+3. SRP-1 is *supported* on an element only if the accepted set has at least 30
+   pages **and** the upper 95% Wilson bound of selective error is below the
+   lower 95% Wilson bound of baseline error. Otherwise it is published as *not
+   supported*, like the blind-quality result. Coverage is reported with no pass
+   bar. The coverage a product needs is a founder decision.
+4. Report every element, including failures. No pooled headline.
+
+A *supported* result makes SRP-1 a candidate for item 4's shadow comparison.
+It is not rollout, and it does not replace the no-regression benchmark.
+
+**Not done in this change.** No held-out replay, no score join, no per-page
+outcome viewed, no benchmark run, no production or registry change. The unit
+tests exercise the rule on synthetic text only.
+
 ### Order, when the founder chooses to proceed
 
     licence review  →  serve one model, pin its digest  →  registry row at
