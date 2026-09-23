@@ -51,6 +51,11 @@ Release blockers remain:
   have not been overwritten to conceal either problem. **FOUNDER VISUAL REVIEW
   REQUIRED** before approving new baselines or treating the composition as
   accepted.
+- The Linux CI artifact for run `35850962952` shows the 1280px marketing
+  homepage at 15,882px tall. The visual review also shows long stretches of
+  whitespace and repeated text-led sections on the product pages. A green
+  screenshot test made by copying these captures into the baseline would
+  certify the current composition, not solve the buyer-journey problem.
 - The accessibility matrix fails its visible-text minimum (12px) and core
   control minimum (14px) on multiple marketing and product routes. Forced
   colors and desktop 200% scaling passed, but the small-text findings remain
