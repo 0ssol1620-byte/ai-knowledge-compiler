@@ -26,6 +26,7 @@ export default defineConfig([
     "coverage/**",
     "playwright-report/**",
     "test-results/**",
+    "storybook-static/**",
     // The PDF.js worker is a vendored, minified third-party bundle served as a
     // static asset. It is not ours to change, and linting it produced 1,576 of
     // the 1,578 findings in this app.

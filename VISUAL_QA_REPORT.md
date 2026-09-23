@@ -1,5 +1,76 @@
 # TAVONEL visual QA report
 
+## 2026-09-23 CI repair and Knowledge Studio review
+
+This section is the latest local assessment for `codex/ci-repair-20260923`.
+The 2026-07-31 baseline below is historical; its "no critical findings" and
+"all gates pass" conclusions do not describe this branch. The local product
+was run in explicit demo mode, so fixture content is not customer proof.
+
+The Knowledge Studio previously had no usable relationship-card styling, and
+its fixed 240px sidebar overlaid the 72px navigation track at 768px. At 1024
+and 1280px, the three-column studio exceeded the available content width while
+the document itself reported no horizontal overflow. The branch now sizes the
+sidebar to its grid track, switches the studio to two panes before its columns
+stop fitting, restores search and perspective controls on mobile, and uses a
+source/evidence card composition with an accessible table alternative. The
+browser matrix now asserts that the sidebar cannot overlap the content.
+
+Automated local evidence:
+
+- Web ESLint, strict TypeScript, Next.js production build, 67 Vitest files / 383
+  tests, interaction contracts (169 files, 72 routes, zero blocking findings),
+  and Impeccable detection: pass.
+- Browser matrix: 9/9 projects pass across 360, 390, 768, 1024, 1280, 1440,
+  and 1920px, plus desktop Firefox and WebKit. A 360px processing-tab failure
+  was traced to clicking before client hydration and fixed in the test's
+  navigation readiness boundary.
+- The public-route evidence suite passes 80/80 checks across the same seven
+  widths and a 1440px reduced-motion project, including horizontal overflow,
+  200% homepage zoom, and console-error assertions.
+- Lighthouse: four public routes, three mobile runs each, pass all configured
+  blocking assertions. The unused-JavaScript advisory remains on each route.
+- Knowledge Studio screenshots were captured at all seven required widths
+  with reduced motion in a demo-mode production build. The earlier 768px
+  capture exposed the sidebar overlap; the recapture shows the header and
+  workspace fully inside the viewport. See
+  `docs/audit/visual/2026-09-23/README.md` for source and SHA-256 provenance.
+- After the first remote CI run, the Knowledge Studio CSS was brought back
+  within the V3 blueprint ratchet (422/422 legacy small-font findings and
+  39/39 legacy breakpoint findings). The seven-width Chromium plus Firefox
+  and WebKit matrix passed again (9/9), and all seven screenshots were
+  recaptured from the changed production build. The relationship cards now
+  start below the canvas header rather than floating midway down the view.
+
+Release blockers remain:
+
+- The desktop visual-regression suite has six screenshot mismatches, including
+  the homepage and Knowledge Studio on Windows. The eleven approved Linux
+  images were present but Playwright looked in its default snapshot folder;
+  this branch now points the test at the checked-in platform-specific baselines
+  and captures at their 1440px width. A local rerun compares the real files and
+  fails on the homepage: current 1440 × 16,587px versus approved 1440 ×
+  7,791px, with 52% of pixels different. The approved baselines have not been
+  overwritten. **FOUNDER VISUAL REVIEW REQUIRED** before approving a new
+  composition or its baselines.
+- The Linux CI artifact for run `35850962952` shows the 1280px marketing
+  homepage at 15,882px tall. The visual review also shows long stretches of
+  whitespace and repeated text-led sections on the product pages. A green
+  screenshot test made by copying these captures into the baseline would
+  certify the current composition, not solve the buyer-journey problem.
+- The accessibility matrix fails its visible-text minimum (12px) and core
+  control minimum (14px) on multiple marketing and product routes. The home
+  sample document contains visible 5–11px text; some processing controls are
+  8–11px and marketing calls to action are 13px. Forced colors and desktop
+  200% scaling passed, but the small-text findings remain release work. The
+  Knowledge Studio search field was raised to 14px in this branch; the
+  cross-route typography debt is not resolved.
+- Browser and screenshot checks used the local demo fixture. They cannot
+  establish production readiness, paid-checkout eligibility, legal approval,
+  or customer-data authorization.
+
+These passing checks do not grant visual or release approval.
+
 ## Release baseline
 
 The 2026-07-31 remediation treats TAVONEL as one connected, source-verifiable

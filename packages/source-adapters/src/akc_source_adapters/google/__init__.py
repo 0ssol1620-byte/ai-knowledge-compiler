@@ -7,8 +7,8 @@ base URL (the real Google API or a local stub in tests), and a
 human-gated deployment step, never done here).
 """
 
+from akc_source_adapters.google.calendar import CalendarAdapter
 from akc_source_adapters.google.drive import DriveAdapter
 from akc_source_adapters.google.gmail import GmailAdapter
-from akc_source_adapters.google.calendar import CalendarAdapter
 
-__all__ = ["DriveAdapter", "GmailAdapter", "CalendarAdapter"]
+__all__ = ["CalendarAdapter", "DriveAdapter", "GmailAdapter"]

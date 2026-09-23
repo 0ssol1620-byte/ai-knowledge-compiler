@@ -160,6 +160,8 @@ function checkFocusOnly(attributes, sourceFile, openingElement, tagName) {
   // focus stop. A scrollable table region, for one, has to be tabbable to
   // satisfy WCAG 2.1.1 even though it has no handler of its own.
   if (attributes.strings.role && attributes.names.has("aria-label")) return;
+  // A labelled tab panel is a keyboard scroll region, not a dead control.
+  if (attributes.strings.role === "tabpanel" && attributes.names.has("aria-labelledby")) return;
   const interactive =
     tagName === "button" ||
     tagName === "a" ||

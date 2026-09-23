@@ -59,6 +59,14 @@ const projects: Project[] = [
 
 export default defineConfig({
   testDir: "./e2e",
+  // Compare the checked-in, platform-specific visual baselines. The default
+  // Playwright snapshot directory is not where the approved images live.
+  updateSnapshots: "none",
+  expect: {
+    toHaveScreenshot: {
+      pathTemplate: "{testDir}/visual-baselines/{projectName}/{platform}/{testFilePath}/{arg}{ext}",
+    },
+  },
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,

@@ -29,12 +29,57 @@ __all__ = [
 #: Words that say *how* something is asked, never *what* it is about.
 STOPWORDS = frozenset(
     {
-        "a", "an", "the", "is", "are", "was", "were", "be", "been", "what",
-        "which", "who", "when", "where", "why", "how", "does", "do", "did",
-        "of", "for", "to", "in", "on", "at", "by", "with", "about", "tell",
-        "me", "our", "we", "us", "my", "i", "it", "its", "and", "or",
-        "current", "currently", "latest", "today", "now", "please",
-        "현재", "최신", "지금", "알려줘", "뭐야", "무엇",
+        "a",
+        "an",
+        "the",
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "what",
+        "which",
+        "who",
+        "when",
+        "where",
+        "why",
+        "how",
+        "does",
+        "do",
+        "did",
+        "of",
+        "for",
+        "to",
+        "in",
+        "on",
+        "at",
+        "by",
+        "with",
+        "about",
+        "tell",
+        "me",
+        "our",
+        "we",
+        "us",
+        "my",
+        "i",
+        "it",
+        "its",
+        "and",
+        "or",
+        "current",
+        "currently",
+        "latest",
+        "today",
+        "now",
+        "please",
+        "현재",
+        "최신",
+        "지금",
+        "알려줘",
+        "뭐야",
+        "무엇",
     }
 )
 
@@ -73,7 +118,14 @@ def _claim_is_answerable(row: Mapping[str, object]) -> bool:
         # A pointer is not a statement of fact: ``Depends on: x`` records an
         # edge, and edges never answer questions (cf. REFERENCES being inert).
         return False
-    return int(row["source_status"]) != int(SourceStatus.WITHDRAWN)
+    return _int_field(row, "source_status") != int(SourceStatus.WITHDRAWN)
+
+
+def _int_field(row: Mapping[str, object], key: str) -> int:
+    value = row[key]
+    if not isinstance(value, int | str):
+        raise TypeError(f"claim field {key!r} is not an int: {type(value).__name__}")
+    return int(value)
 
 
 def select_drafts(
@@ -99,12 +151,10 @@ def select_drafts(
         if not _claim_is_answerable(row):
             continue
         subject_tokens = {
-            _fold_token(token)
-            for token in normalize_text_for_identity(str(row["subject"])).split()
+            _fold_token(token) for token in normalize_text_for_identity(str(row["subject"])).split()
         }
         text_tokens = {
-            _fold_token(token)
-            for token in normalize_text_for_identity(str(row["value"])).split()
+            _fold_token(token) for token in normalize_text_for_identity(str(row["value"])).split()
         }
         if not all(token in subject_tokens or token in text_tokens for token in wanted):
             continue
@@ -125,13 +175,18 @@ def select_drafts(
 
 def _scoped_claim(row: Mapping[str, object]) -> ScopedClaim:
     recorded_at = row.get("recorded_at")
+    scope = row["scope"]
+    if not isinstance(scope, Mapping):
+        raise TypeError(f"claim field 'scope' is not a mapping: {type(scope).__name__}")
+    if any(not isinstance(key, str) or not isinstance(value, str) for key, value in scope.items()):
+        raise TypeError("claim field 'scope' contains a non-string key or value")
     return ScopedClaim(
         claim_id=str(row["logical_id"]),
         subject=str(row["subject"]),
         value=str(row["value"]),
-        authority=AuthorityClass(int(row["authority"])),
-        source_status=SourceStatus(int(row["source_status"])),
-        scope=dict(row["scope"]),  # type: ignore[arg-type]
+        authority=AuthorityClass(_int_field(row, "authority")),
+        source_status=SourceStatus(_int_field(row, "source_status")),
+        scope=dict(scope),
         valid_from=_parse(row.get("valid_from")),
         valid_to=_parse(row.get("valid_to")),
         recorded_at=_parse(recorded_at),

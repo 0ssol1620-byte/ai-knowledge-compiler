@@ -117,6 +117,16 @@ class ReviewItem:
             "text": self.text,
         }
 
+    @classmethod
+    def from_record(cls, record: Mapping[str, object]) -> ReviewItem:
+        return cls(
+            subject=str(record["subject"]),
+            reason=str(record["reason"]),
+            candidates=_str_tuple(record, "candidates"),
+            rel_path=str(record["rel_path"]),
+            text=str(record["text"]),
+        )
+
 
 class OracleRefused(RuntimeError):
     """A selective rebuild failed to match a full rebuild; nothing published."""
@@ -139,7 +149,18 @@ def _from_iso(raw: object) -> datetime | None:
 
 
 def _jsonable(row: Mapping[str, object]) -> dict[str, object]:
-    return json.loads(json.dumps(dict(row), ensure_ascii=False))
+    roundtrip: dict[str, object] = json.loads(json.dumps(dict(row), ensure_ascii=False))
+    return roundtrip
+
+
+def _str_tuple(row: Mapping[str, object], key: str) -> tuple[str, ...]:
+    """A stored list field as a tuple of strings; anything else is corruption."""
+    raw = row[key]
+    if not isinstance(raw, list | tuple):
+        raise TypeError(f"field {key!r} is not a list: {type(raw).__name__}")
+    if any(not isinstance(item, str) for item in raw):
+        raise TypeError(f"field {key!r} contains a non-string item")
+    return tuple(raw)
 
 
 class Pipeline:
@@ -152,9 +173,7 @@ class Pipeline:
         options: CompileOptions | None = None,
     ) -> None:
         self.options = options or CompileOptions()
-        self.store = WorldStore(
-            Path(world_store_root), workspace_id=self.options.workspace_id
-        )
+        self.store = WorldStore(Path(world_store_root), workspace_id=self.options.workspace_id)
         self.registry: WorldStateRegistry = self.store.load_registry()
 
     # ------------------------------------------------------------------
@@ -197,7 +216,9 @@ class Pipeline:
                 no_op=True,
                 claims=dict(previous.claims),
                 evidence_index=dict(previous.evidence_index),
-                review_queue=tuple(previous.review_queue),
+                review_queue=tuple(
+                    ReviewItem.from_record(record) for record in previous.review_queue
+                ),
                 invalidated=(),
                 renames=(),
                 plan=None,
@@ -267,9 +288,7 @@ class Pipeline:
     # identity resolution
     # ------------------------------------------------------------------
 
-    def _previous_by_path(
-        self, previous: StoredWorld
-    ) -> dict[str, list[dict[str, object]]]:
+    def _previous_by_path(self, previous: StoredWorld) -> dict[str, list[dict[str, object]]]:
         grouped: defaultdict[str, list[dict[str, object]]] = defaultdict(list)
         for row in previous.claims.values():
             grouped[str(row["rel_path"])].append(row)
@@ -281,12 +300,10 @@ class Pipeline:
         return UnitSnapshot(
             logical_id=str(row["logical_id"]),
             text=str(row["value"]),
-            document_path=tuple(row["section_path"]),  # type: ignore[arg-type]
+            document_path=_str_tuple(row, "section_path"),
             anchor=str(row["anchor"]),
             neighbour_anchors=(
-                (previous_anchor, next_anchor)
-                if previous_anchor or next_anchor
-                else ()
+                (previous_anchor, next_anchor) if previous_anchor or next_anchor else ()
             ),
         )
 
@@ -322,22 +339,23 @@ class Pipeline:
             )
             for index in range(len(anchors))
         ]
-        seeds = [
-            seed_logical_id(source=lineage_source, draft=draft)
-            for draft in document.claims
-        ]
+        seeds = [seed_logical_id(source=lineage_source, draft=draft) for draft in document.claims]
         after_snapshots = [
             self._snapshot_from_draft(draft, seed, neighbours)
-            for draft, seed, neighbours in zip(
-                document.claims, seeds, neighbour_pairs, strict=True
-            )
+            for draft, seed, neighbours in zip(document.claims, seeds, neighbour_pairs, strict=True)
         ]
         before_snapshots = [self._snapshot_from_record(row) for row in previous_rows]
 
         decisions = (
             assign_one_to_one(
-                [snapshot.fingerprint(source_lineage=lineage_source) for snapshot in after_snapshots],
-                [snapshot.fingerprint(source_lineage=lineage_source) for snapshot in before_snapshots],
+                [
+                    snapshot.fingerprint(source_lineage=lineage_source)
+                    for snapshot in after_snapshots
+                ],
+                [
+                    snapshot.fingerprint(source_lineage=lineage_source)
+                    for snapshot in before_snapshots
+                ],
             )
             if (after_snapshots or before_snapshots)
             else []
@@ -453,17 +471,13 @@ class Pipeline:
         resolved_row_ids: set[str] = set()
         renames: list[tuple[str, str]] = []
 
-        def absorb(
-            resolution: _DocumentResolution, *, lineage_path: str, rel_path: str
-        ) -> None:
+        def absorb(resolution: _DocumentResolution, *, lineage_path: str, rel_path: str) -> None:
             for row in resolution.rows:
                 if lineage_path != rel_path:
                     row["moved_from"] = lineage_path
             rows.extend(resolution.rows)
             reviews.extend(resolution.review)
-            removed_units.extend(
-                (unit_id, lineage_path) for unit_id in resolution.retired
-            )
+            removed_units.extend((unit_id, lineage_path) for unit_id in resolution.retired)
             resolved_paths.add(rel_path)
             resolved_row_ids.update(str(row["logical_id"]) for row in resolution.rows)
 
@@ -523,9 +537,7 @@ class Pipeline:
         merged_diff = self._merged_diff(classification, by_path, prev_rows_by_path, rows)
         graph = self._dependency_graph(rows, removed_units)
         inventory = [str(row["logical_id"]) for row in rows]
-        plan = plan_recompilation(
-            diff=merged_diff, graph=graph, artifacts=inventory
-        )
+        plan = plan_recompilation(diff=merged_diff, graph=graph, artifacts=inventory)
         return _Build(
             rows=rows,
             reviews=reviews,
@@ -581,8 +593,7 @@ class Pipeline:
             return f"doc:{self._source_of(ref)}"
 
         for row in rows:
-            refs = row["dep_refs"]  # type: ignore[union-attr]
-            targets = {resolve(ref) for ref in refs}
+            targets = {resolve(ref) for ref in _str_tuple(row, "dep_refs")}
             targets.discard(str(row["doc_node"]))
             row["dependencies"] = sorted(targets)
         return rows
@@ -610,7 +621,8 @@ class Pipeline:
             stamps = sorted(
                 cause
                 for cause in causes
-                if cause != logical_id and cause in graph.nodes
+                if cause != logical_id
+                and cause in graph.nodes
                 and logical_id in graph.impact_of([cause]).affected_ids
             )
             row["invalidated_by"] = stamps
@@ -641,9 +653,7 @@ class Pipeline:
                 return
             seen_edges.add(key)
             edges.append(
-                DependencyEdge(
-                    source_id=source_id, target_id=target_id, edge_type=edge_type
-                )
+                DependencyEdge(source_id=source_id, target_id=target_id, edge_type=edge_type)
             )
 
         for row in rows:
@@ -651,8 +661,8 @@ class Pipeline:
             doc_node = str(row["doc_node"])
             add(logical_id, doc_node, EdgeType.CONSUMED_BY)
             add(doc_node, logical_id, EdgeType.INVALIDATES)
-            for target in row["dependencies"]:  # type: ignore[union-attr]
-                add(doc_node, str(target), EdgeType.DEPENDS_ON)
+            for target in _str_tuple(row, "dependencies"):
+                add(doc_node, target, EdgeType.DEPENDS_ON)
         for unit_id, lineage_path in removed_units:
             add(unit_id, f"doc:{self._source_of(lineage_path)}", EdgeType.CONSUMED_BY)
         return DependencyGraph(edges)
@@ -667,9 +677,7 @@ class Pipeline:
         """One aggregate SemanticDiff over every dirty or removed document."""
         changes: list[SemanticChange] = []
         dirty = (
-            set(classification.changed)
-            | set(classification.added)
-            | set(classification.renamed)
+            set(classification.changed) | set(classification.added) | set(classification.renamed)
         )
         new_rows_by_path: defaultdict[str, list[Mapping[str, object]]] = defaultdict(list)
         for row in new_rows:
@@ -682,9 +690,7 @@ class Pipeline:
             old_path = classification.renamed.get(path, path)
             before_rows = prev_rows_by_path.get(old_path, [])
             after_rows = new_rows_by_path.get(path, [])
-            before_sha = (
-                str(before_rows[0]["sha256"]) if before_rows else f"absent:{old_path}"
-            )
+            before_sha = str(before_rows[0]["sha256"]) if before_rows else f"absent:{old_path}"
             changes.extend(
                 change
                 for change in diff_documents(
@@ -693,14 +699,12 @@ class Pipeline:
                     level=DiffLevel.SEMANTIC,
                     before_shape=_shape_of(before_rows),
                     after_shape=_shape_of(after_rows),
-                    before_units=[
-                        self._snapshot_from_record(row) for row in before_rows
-                    ],
+                    before_units=[self._snapshot_from_record(row) for row in before_rows],
                     after_units=[
                         UnitSnapshot(
                             logical_id=str(row["logical_id"]),
                             text=str(row["value"]),
-                            document_path=tuple(row["section_path"]),  # type: ignore[arg-type]
+                            document_path=_str_tuple(row, "section_path"),
                             anchor=str(row["anchor"]),
                         )
                         for row in after_rows
@@ -773,8 +777,7 @@ class Pipeline:
         cursor = {doc.file.rel_path: doc.file.sha256 for doc in documents}
         artifacts = {
             **{
-                f"claim/{logical_id}": content_hash(row)
-                for logical_id, row in claims_table.items()
+                f"claim/{logical_id}": content_hash(row) for logical_id, row in claims_table.items()
             },
             "evidence/index": content_hash(_jsonable(evidence_index)),
             "cursor": content_hash(_jsonable(cursor)),
@@ -782,9 +785,7 @@ class Pipeline:
 
         equivalence_report: EquivalenceReport | None = None
         if selective:
-            equivalence_report = self._verify_oracle(
-                documents, build, claims_table, artifacts
-            )
+            equivalence_report = self._verify_oracle(documents, build, claims_table, artifacts)
 
         receipt = ValidationReceipt(
             receipt_id=f"rcpt-{build.diff.change_id[:16]}",
@@ -820,9 +821,7 @@ class Pipeline:
         )
         return WorldResult(
             world_state_id=world_state_id,
-            previous_world_state_id=(
-                previous.world_state_id if previous else None
-            ),
+            previous_world_state_id=(previous.world_state_id if previous else None),
             manifest_hash=manifest.manifest_hash,
             published=True,
             no_op=False,
@@ -830,9 +829,7 @@ class Pipeline:
             evidence_index=evidence_index,
             review_queue=tuple(build.reviews),
             invalidated=tuple(
-                logical_id
-                for logical_id, row in claims_table.items()
-                if row["invalidated_by"]
+                logical_id for logical_id, row in claims_table.items() if row["invalidated_by"]
             ),
             renames=tuple(build.renames),
             plan=build.plan,
@@ -861,9 +858,7 @@ class Pipeline:
         )
         full_artifacts = {
             f"claim/{logical_id}": content_hash(_jsonable(row))
-            for logical_id, row in (
-                (str(row["logical_id"]), row) for row in full_build.rows
-            )
+            for logical_id, row in ((str(row["logical_id"]), row) for row in full_build.rows)
         }
         rebuilt: dict[str, str] = {}
         carried: dict[str, str] = {}
@@ -899,9 +894,7 @@ def _lineage_path(row: Mapping[str, object]) -> str:
 
 def _shape_of(rows: Sequence[Mapping[str, object]]) -> DocumentShape:
     return DocumentShape(
-        heading_path_set=frozenset(
-            tuple(row["section_path"]) for row in rows  # type: ignore[arg-type]
-        ),
+        heading_path_set=frozenset(_str_tuple(row, "section_path") for row in rows),
         block_count=len(rows),
     )
 
@@ -973,9 +966,7 @@ class WorldResult:
     def active_claim_ids(self) -> tuple[str, ...]:
         """Claims that may serve an answer: present and not invalidated."""
         return tuple(
-            logical_id
-            for logical_id, row in self.claims.items()
-            if not row.get("invalidated_by")
+            logical_id for logical_id, row in self.claims.items() if not row.get("invalidated_by")
         )
 
     def answer(self, question: str, *, as_of: datetime | None = None) -> CompiledAnswer:

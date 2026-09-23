@@ -23,6 +23,9 @@ const visualRoutes = [
 
 for (const route of visualRoutes) {
   test(`${route.name} visual baseline`, async ({ page }) => {
+    // The checked-in desktop baselines are 1440px wide; Desktop Chrome's
+    // default 1280px viewport would compare a different responsive layout.
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "light" });
     const response = await page.goto(route.path, { waitUntil: "networkidle" });
     expect(response?.status()).toBeLessThan(400);
