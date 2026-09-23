@@ -11,10 +11,42 @@ credentials. Nothing below is blocked on code.
 
 ---
 
+## 0. Stop the line — CI has not run since 2026-09-22
+
+**GitHub Actions is refusing to start any job on this repository.** Every check
+on every branch fails in one to five seconds with the same annotation:
+
+> The job was not started because recent account payments have failed or your
+> spending limit needs to be increased. Please check the 'Billing & plans'
+> section in your settings.
+
+This is not specific to a branch. `main`'s own run on 2026-09-22 failed the
+same way, and the Vercel check reports `Deployment was blocked` alongside it.
+
+What that means in practice, and why nothing else in this file matters more:
+
+- **No pull request can be verified.** A green tick is unavailable, and a red
+  one currently says nothing about the code. PR #76's checks are red for this
+  reason and this reason only; its tests pass locally.
+- **Nothing can be merged on evidence.** `CLAUDE.md` makes a phase done only
+  when the repository is green. There is no green to be had.
+- **Nothing deploys.** `main` auto-deploys production, and the deploy path runs
+  through the same account.
+
+Fix it in **Billing & plans** on the `0ssol1620-byte` account: settle the
+failed payment or raise the Actions spending limit. It is a payment credential,
+which is why no agent can touch it.
+
+Until it is fixed, treat every check result in this repository as *unknown*,
+not as *failing*.
+
+---
+
 ## 1. Blocked on a click or a credential — nothing else moves these
 
 | # | Action | Where | Why it is yours |
 |---|---|---|---|
+| **F-0** | Settle GitHub Actions billing | account **Billing & plans** | §0 — blocks all CI and all deploys |
 | **F-1** | Reset the `0ssol1620@gmail.com` workspace to empty | `https://tavonel.com/workspace/settings/usage` → "Start this workspace from empty" → type `DELETE TEST DATA` | Irreversible destructive action on live data |
 | **F-2** | Insert the missing migration-ledger row | production SQL, below | Production database write |
 | **F-3** | Decide whether `/benchmarks` publishes a TAVONEL result | §3 | What a public claim says |
