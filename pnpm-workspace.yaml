@@ -19,6 +19,12 @@ overrides:
   sharp: 0.35.4
   qs: 6.16.0
   image-size: 2.0.4
+  # Lighthouse CI's older Puppeteer 24 tree pulls vulnerable extract-zip.
+  # Share the Puppeteer 25 core already used by impeccable. LHCI collection
+  # and assertions pass for four routes and twelve runs with this override.
+  puppeteer-core: 25.5.0
+  # Puppeteer 25's browser helper requires proxy-agent 8 as a peer.
+  proxy-agent: 8.0.2
 
 patchedDependencies:
   minimatch@3.1.5: patches/minimatch@3.1.5.patch
