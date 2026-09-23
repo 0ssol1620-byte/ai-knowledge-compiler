@@ -4,6 +4,10 @@
 budget and credential record from 2026-08-11 and is not rewritten; this file is
 the current open list and supersedes it where the two disagree.*
 
+The fuller record behind this list — what was discussed, what was built, what
+was measured and what went wrong — is
+[`SESSION_RECORD_2026-09-23_ROUTER_AND_COPY.md`](SESSION_RECORD_2026-09-23_ROUTER_AND_COPY.md).
+
 Every item here is one of the things `CLAUDE.md` reserves: what a public claim
 says, irreversible production or destructive actions, customer data consent,
 pricing, patent and publication timing, missing secrets and payment
