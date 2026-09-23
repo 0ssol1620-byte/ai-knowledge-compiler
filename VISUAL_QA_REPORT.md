@@ -45,22 +45,26 @@ Automated local evidence:
 Release blockers remain:
 
 - The desktop visual-regression suite has six screenshot mismatches, including
-  the homepage and Knowledge Studio on Windows. The Linux CI runner does not
-  have the default Playwright snapshot files and fails all eleven desktop
-  comparisons before a visual judgement is possible. The approved baselines
-  have not been overwritten to conceal either problem. **FOUNDER VISUAL REVIEW
-  REQUIRED** before approving new baselines or treating the composition as
-  accepted.
+  the homepage and Knowledge Studio on Windows. The eleven approved Linux
+  images were present but Playwright looked in its default snapshot folder;
+  this branch now points the test at the checked-in platform-specific baselines
+  and captures at their 1440px width. A local rerun compares the real files and
+  fails on the homepage: current 1440 × 16,587px versus approved 1440 ×
+  7,791px, with 52% of pixels different. The approved baselines have not been
+  overwritten. **FOUNDER VISUAL REVIEW REQUIRED** before approving a new
+  composition or its baselines.
 - The Linux CI artifact for run `35850962952` shows the 1280px marketing
   homepage at 15,882px tall. The visual review also shows long stretches of
   whitespace and repeated text-led sections on the product pages. A green
   screenshot test made by copying these captures into the baseline would
   certify the current composition, not solve the buyer-journey problem.
 - The accessibility matrix fails its visible-text minimum (12px) and core
-  control minimum (14px) on multiple marketing and product routes. Forced
-  colors and desktop 200% scaling passed, but the small-text findings remain
-  release work. The Knowledge Studio search field was raised to 14px in this
-  branch; the cross-route typography debt is not resolved.
+  control minimum (14px) on multiple marketing and product routes. The home
+  sample document contains visible 5–11px text; some processing controls are
+  8–11px and marketing calls to action are 13px. Forced colors and desktop
+  200% scaling passed, but the small-text findings remain release work. The
+  Knowledge Studio search field was raised to 14px in this branch; the
+  cross-route typography debt is not resolved.
 - Browser and screenshot checks used the local demo fixture. They cannot
   establish production readiness, paid-checkout eligibility, legal approval,
   or customer-data authorization.
