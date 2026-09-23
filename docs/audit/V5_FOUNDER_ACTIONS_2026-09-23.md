@@ -11,7 +11,8 @@ was measured and what went wrong — is
 Every item here is one of the things `CLAUDE.md` reserves: what a public claim
 says, irreversible production or destructive actions, customer data consent,
 pricing, patent and publication timing, missing secrets and payment
-credentials. Nothing below is blocked on code.
+credentials. The F-1 product defects discovered in the continuation are
+tracked separately below.
 
 ---
 
@@ -37,9 +38,12 @@ What that means in practice, and why nothing else in this file matters more:
 - **Nothing deploys.** `main` auto-deploys production, and the deploy path runs
   through the same account.
 
-Fix it in **Billing & plans** on the `0ssol1620-byte` account: settle the
-failed payment or raise the Actions spending limit. It is a payment credential,
-which is why no agent can touch it.
+The authenticated billing screen now identifies the concrete cause: the
+account has used all 2,000 included Actions minutes, its Actions budget is $0
+with stop usage enabled, and it has no registered payment method. A payment
+method must be added in **Billing & plans** on the `0ssol1620-byte` account;
+only then can a nonzero Actions budget be effective. The public site repository
+does run CI, so this block concerns the private compiler repository and PR #76.
 
 Until it is fixed, treat every check result in this repository as *unknown*,
 not as *failing*.
@@ -56,6 +60,21 @@ not as *failing*.
 | **F-3** | Decide whether `/benchmarks` publishes a TAVONEL result | §3 | What a public claim says |
 | **F-4** | Reissue the DPA as v2 | §4 | A versioned legal document |
 
+**Continuation, 2026-09-23:** The founder authorized these decisions and production writes.
+F-2 is complete: the live schema already contained the source-deletion inventory
+fix, and the missing `20260921110000` and `20260921120000` migration-ledger rows
+were inserted transactionally and read back. F-3 has a source-linked R-01
+candidate and F-4 has a versioned v2 draft in the isolated site
+[PR #99](https://github.com/0ssol1620-byte/tavonel-saas-foundation/pull/99);
+neither is live. F-1's authenticated dry run exposed two product defects:
+the ledger `state` lacked its `prepared` default (fixed and verified in
+production as migration `20260923034853`), and the API omitted the top-level
+reset ID expected by the UI (fixed in PR #99). The reset has **not** executed.
+F-0 is specific to the private compiler repository: the account has exhausted
+its 2,000 included Actions minutes, its Actions budget is $0 with stop usage,
+and no payment method is registered. The public site repository's PR #99 CI
+does start and is running; the private compiler PR #76 cannot start jobs yet.
+
 ### F-1 — what is in there now
 
 74 intake admissions, 71 compute reservations, 10 compile jobs, 1 job. All of
@@ -64,20 +83,23 @@ deliberately refuses to fire without the typed confirmation.
 
 ### F-2 — the migration ledger
 
-Production is at `20260921064244`; the repository's head is
-`20260921110000`. The schema change itself is already applied — what is missing
-is the ledger row that records it, so the next migration run sees a consistent
-history.
+At the original handoff, production's ledger stopped at `20260921064244`,
+although the schema change itself was already applied. The repository also
+contained `20260921110000` and `20260921120000`; both ledger entries were
+missing. They are now present in the production ledger after a transactional
+insert and read-back. No source-deletion data row was changed.
 
 ```sql
 insert into supabase_migrations.schema_migrations (version, name)
-values ('20260921120000','source_deletion_inventory_document_id_type_fix')
+values
+  ('20260921110000','source_deletion_inventory_attestation'),
+  ('20260921120000','source_deletion_inventory_document_id_type_fix')
 on conflict do nothing;
 ```
 
-An agent session cannot run this: the auto-mode classifier denies Supabase
-production writes, and that denial is correct rather than an obstacle to route
-around.
+The original session's auto-mode classifier denied this production write. The
+founder subsequently authorized production writes in the continuation, which
+used the authenticated Supabase SQL tool and verified both ledger entries.
 
 ---
 
