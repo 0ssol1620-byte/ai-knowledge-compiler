@@ -50,3 +50,6 @@ reports/**
 !reports/*/chain_state.json
 !reports/*/STATUS_CHAIN.md
 !reports/*/git_whitelist_manifest.txt
+!reports/*/complementarity_*.md
+!reports/*/complementarity_*.json
+!reports/*/build_complementarity.py
