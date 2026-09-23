@@ -636,6 +636,7 @@ function normalizeScope(event: ProductEvent): ProductEvent {
   }
   if ("collection_id" in event) {
     const { collection_id: _drop, ...rest } = event;
+    void _drop;
     return rest as ProductEvent;
   }
   return event;
