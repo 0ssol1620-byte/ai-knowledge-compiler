@@ -28,6 +28,7 @@ EVERY NEGATIVE TEST HERE HAS A POSITIVE CONTROL
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import subprocess
@@ -79,9 +80,19 @@ red:
 
 
 def git(*args: str, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
+    # The throwaway repository's commit hook starts its own Python process.
+    # Keep pytest-cov's subprocess hooks out of it: they otherwise write
+    # statement-only data alongside the branch data from this test run.
+    env = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith("COV_CORE_")
+        and key not in {"COVERAGE_PROCESS_START", "COVERAGE_FILE"}
+    }
     return subprocess.run(  # noqa: S603 - fixed invocation, paths from tmp_path
         ["git", *args],  # noqa: S607 - git from PATH
         cwd=cwd,
+        env=env,
         capture_output=True,
         text=True,
         check=check,
