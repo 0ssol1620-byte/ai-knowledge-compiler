@@ -15,6 +15,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import TextIO
 
 from . import __version__
 from .config import (
@@ -113,7 +114,7 @@ def _resolve_home(args: argparse.Namespace) -> Path:
     return default_home()
 
 
-def cmd_init(args: argparse.Namespace, out, err) -> int:
+def cmd_init(args: argparse.Namespace, out: TextIO, err: TextIO) -> int:
     root = Path(args.path).expanduser()
     if not root.exists() or not root.is_dir():
         print(f"오류: 워크스페이스 디렉터리가 아닙니다: {root}", file=err)
@@ -172,7 +173,7 @@ def cmd_init(args: argparse.Namespace, out, err) -> int:
 
 
 def _run_health_scan_inline(
-    entry: WorkspaceEntry, slug: str, config: DesktopAppConfig, out, err
+    entry: WorkspaceEntry, slug: str, config: DesktopAppConfig, out: TextIO, err: TextIO
 ) -> int:
     try:
         from akc_health_scan.config import HealthScanConfig
@@ -198,7 +199,7 @@ def _run_health_scan_inline(
     return EXIT_OK
 
 
-def _print_health_summary(payload: dict[str, object], out) -> None:
+def _print_health_summary(payload: dict[str, object], out: TextIO) -> None:
     def section(key: str, sub_key: str) -> object:
         block = payload.get(key)
         if isinstance(block, dict):
@@ -218,7 +219,7 @@ def _print_health_summary(payload: dict[str, object], out) -> None:
         print(f"  컴파일 추정   : {tokens:,} tokens", file=out)
 
 
-def cmd_serve(args: argparse.Namespace, out, err) -> int:
+def cmd_serve(args: argparse.Namespace, out: TextIO, err: TextIO) -> int:
     config = load_config(_resolve_home(args))
     if not config.workspaces:
         print(
@@ -239,7 +240,7 @@ def cmd_serve(args: argparse.Namespace, out, err) -> int:
         return EXIT_USAGE
 
 
-def cmd_status(args: argparse.Namespace, out, err) -> int:
+def cmd_status(args: argparse.Namespace, out: TextIO, err: TextIO) -> int:
     config = load_config(_resolve_home(args))
 
     worlds = find_worlds(config.world_store)
@@ -302,7 +303,7 @@ def cmd_status(args: argparse.Namespace, out, err) -> int:
     return EXIT_OK
 
 
-def cmd_uninstall(args: argparse.Namespace, out, err) -> int:
+def cmd_uninstall(args: argparse.Namespace, out: TextIO, err: TextIO) -> int:
     config = load_config(_resolve_home(args))
     plan = plan_uninstall(config, purge_config=args.purge_config)
 

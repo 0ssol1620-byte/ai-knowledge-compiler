@@ -15,6 +15,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 .coverage
+.coverage.*
 coverage.xml
 htmlcov/
 .venv/
@@ -103,3 +104,4 @@ crash.log
 # eslint/vitest JSON reports written during gate runs
 .eslint.json
 .vitest.json
+.lighthouseci/

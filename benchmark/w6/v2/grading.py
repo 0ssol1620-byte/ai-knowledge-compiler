@@ -11,7 +11,8 @@ from typing import Any
 
 from .llm import OpenRouterClient
 
-JUDGE_PROMPT = """You are a strict grader for a retrieval benchmark. Grade each arm's answer INDEPENDENTLY.
+JUDGE_PROMPT = """You are a strict grader for a retrieval benchmark. \
+Grade each arm's answer INDEPENDENTLY.
 
 Gold answer: {gold_answer}
 Key facts that a correct answer must state: {key_facts}
@@ -21,7 +22,8 @@ Scoring per arm:
 - 0 otherwise (missing fact, wrong value, hedging without the fact, or refusal)
 
 Return ONLY JSON:
-{{"raw": {{"score": 0, "reason": "..."}}, "rag": {{"score": 0, "reason": "..."}}, "tavonel": {{"score": 0, "reason": "..."}}}}
+{{"raw": {{"score": 0, "reason": "..."}}, "rag": {{"score": 0, "reason": "..."}}, \
+"tavonel": {{"score": 0, "reason": "..."}}}}
 
 QUESTION: {question}
 RAW ANSWER: {raw}
@@ -62,7 +64,9 @@ def judge_all_arms(
         rag=answers.get("rag", "") or "(execution failure)",
         tavonel=answers.get("tavonel", "") or "(execution failure)",
     )
-    parsed = client.complete_json([{"role": "user", "content": prompt}], max_tokens=320, phase="judging")
+    parsed = client.complete_json(
+        [{"role": "user", "content": prompt}], max_tokens=320, phase="judging"
+    )
     verdicts: dict[str, Any] = {}
     for arm in _ARMS:
         entry = parsed.get(arm, {}) if isinstance(parsed, dict) else {}
@@ -70,7 +74,10 @@ def judge_all_arms(
             score = int(entry.get("score", 0))
         except (TypeError, ValueError):
             score = 0
-        verdicts[arm] = {"score": 1 if score == 1 else 0, "reason": str(entry.get("reason", ""))[:300]}
+        verdicts[arm] = {
+            "score": 1 if score == 1 else 0,
+            "reason": str(entry.get("reason", ""))[:300],
+        }
     return verdicts
 
 
@@ -97,8 +104,16 @@ def grade_run(
 
     grades: list[dict[str, Any]] = []
     aggregates: dict[str, dict[str, float]] = {
-        arm: {"correct": 0.0, "critical": 0.0, "judged": 0.0, "provenance_hits": 0.0, "provenance_seen": 0.0,
-              "failures": 0.0, "latency_sum": 0.0, "n_executed": 0.0}
+        arm: {
+            "correct": 0.0,
+            "critical": 0.0,
+            "judged": 0.0,
+            "provenance_hits": 0.0,
+            "provenance_seen": 0.0,
+            "failures": 0.0,
+            "latency_sum": 0.0,
+            "n_executed": 0.0,
+        }
         for arm in _ARMS
     }
 
@@ -156,10 +171,13 @@ def grade_run(
             "judge_only_rate": round(bucket["judged"] / total, 4),
             "provenance_hit_rate": (
                 round(bucket["provenance_hits"] / bucket["provenance_seen"], 4)
-                if bucket["provenance_seen"] else None
+                if bucket["provenance_seen"]
+                else None
             ),
             "api_failure_rate": round(bucket["failures"] / total, 4),
-            "mean_latency_seconds": round(bucket["latency_sum"] / executed, 2) if executed else None,
+            "mean_latency_seconds": round(bucket["latency_sum"] / executed, 2)
+            if executed
+            else None,
             "executed": int(executed),
             "wilson_ci_accuracy": wilson_interval(bucket["correct"], total),
         }

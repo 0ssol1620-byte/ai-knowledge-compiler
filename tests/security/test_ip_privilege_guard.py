@@ -28,6 +28,7 @@ EVERY NEGATIVE TEST HERE HAS A POSITIVE CONTROL
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import subprocess
@@ -78,10 +79,24 @@ red:
 """
 
 
+def subprocess_env() -> dict[str, str]:
+    # These tests launch the guard and the throwaway repository's commit hook
+    # in child Python processes. Keep pytest-cov's subprocess hooks out of
+    # both: a child started outside the source root can emit statement-only
+    # data alongside this run's branch coverage data.
+    return {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith("COV_CORE_")
+        and key not in {"COVERAGE_PROCESS_START", "COVERAGE_FILE"}
+    }
+
+
 def git(*args: str, cwd: Path, check: bool = True) -> subprocess.CompletedProcess[str]:
     return subprocess.run(  # noqa: S603 - fixed invocation, paths from tmp_path
         ["git", *args],  # noqa: S607 - git from PATH
         cwd=cwd,
+        env=subprocess_env(),
         capture_output=True,
         text=True,
         check=check,
@@ -293,6 +308,7 @@ def test_guard_inspects_the_tree_it_is_run_in_not_the_one_it_lives_in(
     result = subprocess.run(  # noqa: S603 - the guard, run the way CI runs it
         ["python", str(GUARD), "--staged"],  # noqa: S607 - the interpreter from PATH
         cwd=sandbox,
+        env=subprocess_env(),
         capture_output=True,
         text=True,
     )
@@ -320,6 +336,7 @@ def test_staged_scan_reads_non_ascii_content(sandbox: Path) -> None:
     result = subprocess.run(  # noqa: S603 - the guard, run the way CI runs it
         ["python", str(GUARD), "--staged"],  # noqa: S607 - the interpreter from PATH
         cwd=sandbox,
+        env=subprocess_env(),
         capture_output=True,
         text=True,
     )
@@ -346,6 +363,7 @@ def test_history_scan_finds_a_planted_commit(sandbox: Path) -> None:
     result = subprocess.run(  # noqa: S603 - the guard, run the way CI runs it
         ["python", str(GUARD), "--history"],  # noqa: S607 - the interpreter from PATH
         cwd=sandbox,
+        env=subprocess_env(),
         capture_output=True,
         text=True,
     )
@@ -375,6 +393,7 @@ def test_live_repository_is_clean() -> None:
     result = subprocess.run(  # noqa: S603 - the guard, run the way CI runs it
         ["python", str(GUARD)],  # noqa: S607 - the interpreter from PATH
         cwd=REPO_ROOT,
+        env=subprocess_env(),
         capture_output=True,
         text=True,
     )

@@ -130,7 +130,7 @@ def plan_uninstall(config: DesktopAppConfig, *, purge_config: bool) -> Uninstall
 
 def execute_uninstall(config: DesktopAppConfig, plan: UninstallPlan) -> UninstallResult:
     before: dict[Path, tuple[str, int]] = {}
-    result = UninstallResult(kept_outside_home=list(plan.outside_home))
+    result = UninstallResult(kept_outside_home=plan.outside_home)
 
     for ws in config.workspaces:
         root = Path(ws.path).expanduser().resolve()

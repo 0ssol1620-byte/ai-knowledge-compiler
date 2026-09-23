@@ -1,0 +1,193 @@
+name: Baked confirmatory images
+
+# SAFETY: workflow_dispatch is the ONLY trigger. Do not add push, pull_request,
+# schedule, or any other automatic trigger to this file. A future accidental
+# commit+push of this file to any branch must not be able to build or publish
+# an image by itself — only an explicit human dispatch plus the exact
+# confirm_ghcr_push arming string below can do that. See the in-workflow
+# arming gate step for the second, independent layer of that protection.
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Confirmatory image to build. No default — selection must be explicit."
+        required: true
+        type: choice
+        options:
+          - paddleocr-vl-1.6-fastdeploy-c8
+          - mineru-3.4.4-vlm-c1
+      confirm_ghcr_push:
+        description: >-
+          Type PUBLISH-IMMUTABLE-IMAGE exactly to arm the build+push+scan+receipt
+          steps. Any other value (including empty or a near-miss) skips them —
+          it does not fail the job.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  baked-confirmatory-image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Free ephemeral runner space for the confirmatory model image
+        shell: bash
+        run: |
+          set -euo pipefail
+          df -h /
+          readonly targets=(
+            /usr/local/lib/android
+            /usr/share/dotnet
+            /opt/ghc
+            /opt/hostedtoolcache/CodeQL
+          )
+          for target in "${targets[@]}"; do
+            case "$target" in
+              /usr/local/lib/android|/usr/share/dotnet|/opt/ghc|/opt/hostedtoolcache/CodeQL) ;;
+              *) echo "refusing unexpected cleanup target: $target" >&2; exit 64 ;;
+            esac
+            sudo rm -rf -- "$target"
+          done
+          docker system prune --all --force
+          df -h /
+      - name: Resolve target-specific model identity
+        id: model_identity
+        shell: bash
+        env:
+          TARGET: ${{ inputs.target }}
+        run: |
+          set -euo pipefail
+          case "$TARGET" in
+            paddleocr-vl-1.6-fastdeploy-c8)
+              echo "MODEL_REVISION=66317acc4c9fc17bd154591ce650735cd2855f3e" >> "$GITHUB_ENV"
+              echo "MODEL_ARTIFACT_SHA256=sha256:40ca2a90af83f79a9adf2d5ddb7e32187e6956e45e5730119595be7305e06a53" >> "$GITHUB_ENV"
+              ;;
+            mineru-3.4.4-vlm-c1)
+              # bff20d4a... is the WEIGHTS revision (opendatalab/MinerU2.5-Pro-2605-1.2B,
+              # snapshot_download), not the source revision (opendatalab/MinerU,
+              # 79d6d8d7..., git clone/checkout). image_build_receipt.py bakes this
+              # value into model_revision, which build_runtime_qualification.py
+              # compares against lineage.json targets["mineru-3.4.4-vlm-c1"].weights_revision.
+              echo "MODEL_REVISION=bff20d4ae2bf202df9f45284b4d43681555a97ed" >> "$GITHUB_ENV"
+              echo "MODEL_ARTIFACT_SHA256=sha256:1611a8892cc0e7e287d31c4a1b5af87652f0f6e4a3f80276b92b4c71f982de84" >> "$GITHUB_ENV"
+              ;;
+            *)
+              echo "refusing unrecognized target: $TARGET" >&2
+              exit 64
+              ;;
+          esac
+          echo "DOCKERFILE_PATH=infra/runpod/v6/images/${TARGET}/Dockerfile" >> "$GITHUB_ENV"
+      - name: Check confirmation arming string
+        id: arming_gate
+        shell: bash
+        env:
+          CONFIRM_GHCR_PUSH: ${{ inputs.confirm_ghcr_push }}
+        run: |
+          set -euo pipefail
+          # A case-sensitive, exact-match bash string comparison, deliberately
+          # NOT expressed as a workflow `if:` string equality: GitHub Actions
+          # expression `==` compares strings case-INSENSITIVELY, which would
+          # silently accept near-miss casing (e.g. publish-immutable-image) as
+          # a valid arming string. This step is the single source of truth for
+          # whether the build+push+scan+receipt+upload steps below are armed.
+          if [ "$CONFIRM_GHCR_PUSH" = "PUBLISH-IMMUTABLE-IMAGE" ]; then
+            echo "armed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "armed=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Authenticate to GHCR
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+      - name: Bind source tree and immutable image tag
+        shell: bash
+        env:
+          TARGET: ${{ inputs.target }}
+        run: |
+          set -euo pipefail
+          git ls-files -s -z | sha256sum | awk '{print "sha256:" $1}' > "${RUNNER_TEMP}/source-tree.sha256"
+          image_repository="ghcr.io/${GITHUB_REPOSITORY,,}/${TARGET}"
+          echo "IMAGE_TAG=${image_repository}:${GITHUB_SHA}" >> "$GITHUB_ENV"
+          echo "IMAGE_REPOSITORY=${image_repository}" >> "$GITHUB_ENV"
+      - name: Bootstrap attestation-capable Buildx builder
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx create \
+            --driver docker-container \
+            --name folynta-confirmatory-builder \
+            --use
+          docker buildx inspect --bootstrap
+      - name: Build and push confirmatory image
+        if: steps.arming_gate.outputs.armed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker buildx build \
+            --file "$DOCKERFILE_PATH" \
+            --tag "$IMAGE_TAG" \
+            --provenance=false \
+            --sbom=false \
+            --metadata-file "${RUNNER_TEMP}/build-metadata.json" \
+            --push .
+          image_digest="$(jq -r '.["containerimage.digest"]' "${RUNNER_TEMP}/build-metadata.json")"
+          [[ "$image_digest" =~ ^sha256:[0-9a-f]{64}$ ]]
+          echo "IMAGE_DIGEST=${IMAGE_REPOSITORY}@${image_digest}" >> "$GITHUB_ENV"
+          docker buildx rm folynta-confirmatory-builder
+          docker system prune --all --force --volumes
+          df -h /
+      - name: Generate independently downloadable SBOM
+        if: steps.arming_gate.outputs.armed == 'true'
+        uses: anchore/sbom-action@df80a981bc6edbc4e220a492d3cbe9f5547a6e75 # v0.17.9
+        with:
+          image: ${{ env.IMAGE_TAG }}
+          format: spdx-json
+          output-file: ${{ runner.temp }}/confirmatory-image.spdx.json
+      - name: Scan immutable image digest
+        if: steps.arming_gate.outputs.armed == 'true'
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ env.IMAGE_DIGEST }}
+          format: json
+          output: ${{ runner.temp }}/confirmatory-image.trivy.json
+          severity: CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      - name: Create build-only integrity receipt
+        if: steps.arming_gate.outputs.armed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m infra.runpod.v6.image_build_receipt \
+            --source-commit "$GITHUB_SHA" \
+            --source-tree-sha256 "$(cat "${RUNNER_TEMP}/source-tree.sha256")" \
+            --dockerfile "$DOCKERFILE_PATH" \
+            --image-digest "$IMAGE_DIGEST" \
+            --image-tag "$IMAGE_TAG" \
+            --model-revision "$MODEL_REVISION" \
+            --model-artifact-sha256 "$MODEL_ARTIFACT_SHA256" \
+            --sbom "${RUNNER_TEMP}/confirmatory-image.spdx.json" \
+            --vulnerability-scan "${RUNNER_TEMP}/confirmatory-image.trivy.json" \
+            --output "${RUNNER_TEMP}/confirmatory-image.build-receipt.json"
+      - name: Upload build integrity artifacts
+        if: steps.arming_gate.outputs.armed == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: confirmatory-image-build-integrity-${{ inputs.target }}-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/source-tree.sha256
+            ${{ runner.temp }}/build-metadata.json
+            ${{ runner.temp }}/confirmatory-image.spdx.json
+            ${{ runner.temp }}/confirmatory-image.trivy.json
+            ${{ runner.temp }}/confirmatory-image.build-receipt.json
+          retention-days: 30
+          if-no-files-found: error

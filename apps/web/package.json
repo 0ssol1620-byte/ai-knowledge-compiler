@@ -11,7 +11,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:visual": "playwright test e2e/visual-regression.spec.ts --project=desktop",
+    "test:e2e:matrix": "playwright test --config=playwright.matrix.config.ts",
     "test:e2e:live": "playwright test --config=playwright.live.config.ts",
+    "storybook:build": "storybook build",
+    "start:e2e:standalone": "node scripts/start-e2e-standalone.mjs",
     "interactions:check": "node scripts/verify-button-contracts.mjs",
     "blueprint:check": "node scripts/verify-blueprint.mjs",
     "claims:check": "node scripts/verify-claims.mjs",
@@ -27,7 +31,7 @@
     "clsx": "2.1.1",
     "date-fns": "4.4.0",
     "hash-wasm": "4.12.0",
-    "next": "16.2.12",
+    "next": "16.3.3",
     "pdfjs-dist": "6.2.108",
     "react": "19.2.8",
     "react-dom": "19.2.8",
@@ -56,11 +60,11 @@
     "@types/react-dom": "19.2.2",
     "@vitejs/plugin-react": "5.0.4",
     "eslint": "9.39.5",
-    "eslint-config-next": "16.2.12",
+    "eslint-config-next": "16.3.3",
     "impeccable": "3.5.0",
     "jsdom": "30.0.1",
     "storybook": "10.5.5",
     "typescript": "5.9.3",
-    "vitest": "4.1.10"
+    "vitest": "4.1.11"
   }
 }

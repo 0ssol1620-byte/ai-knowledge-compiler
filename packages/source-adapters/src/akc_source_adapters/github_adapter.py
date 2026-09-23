@@ -166,9 +166,10 @@ class GitHubAdapter:
         new_commits.reverse()  # oldest first so consumers apply history order
 
         events: list[ChangeEvent] = []
-        files: dict[str, str] = {
-            str(path): str(sha) for path, sha in dict(state.get("files") or {}).items()
-        }
+        prior_files = state.get("files") or {}
+        if not isinstance(prior_files, Mapping):
+            raise GitHubCursorInvalid("cursor 'files' must be a mapping of path to blob sha")
+        files: dict[str, str] = {str(path): str(sha) for path, sha in prior_files.items()}
         for summary in new_commits:
             detail = self._request_json(f"/repos/{self.repo}/commits/{summary.sha}", {})
             added, modified, removed = _split_files(detail.get("files"))
@@ -272,40 +273,38 @@ class GitHubAdapter:
             return None  # unparsable anchor date: widen to a fuller listing instead
         return (moment.astimezone(UTC) - _SINCE_BACKSTEP).isoformat().replace("+00:00", "Z")
 
-
-
     def _request_json(self, path: str, params: Mapping[str, str | int]) -> Any:
-            query = urllib.parse.urlencode(params, doseq=True)
-            url = f"{self.api_base}{path}{'?' + query if query else ''}"
-            for attempt in (1, 2):
-                request = urllib.request.Request(url, method="GET")  # noqa: S310 -- api_base is operator-configured
-                request.add_header("Accept", "application/vnd.github+json")
-                request.add_header("User-Agent", f"akc-source-adapters/{PROVIDER}")
-                request.add_header("X-GitHub-Api-Version", API_VERSION)
-                token = self.token_provider() if self.token_provider is not None else None
-                if token:
-                    request.add_header("Authorization", f"Bearer {token}")
-                try:
-                    with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as response:  # noqa: S310 -- same operator-configured base
-                        body = response.read()
-                        self._respect_rate_limit(dict(response.headers))
-                        return json.loads(body.decode("utf-8"))
-                except urllib.error.HTTPError as exc:
-                    headers = dict(exc.headers or {})
-                    retry_after = headers.get("Retry-After")
-                    rate_limited = exc.code in (403, 429) and (
-                        retry_after is not None or headers.get("X-RateLimit-Remaining") == "0"
-                    )
-                    if attempt == 1 and rate_limited and retry_after is not None:
-                        self._sleep(min(float(retry_after), RATE_LIMIT_MAX_WAIT_SECONDS))
-                        continue  # secondary rate limit: one patient retry, then give up
-                    raise GitHubAdapterError(
-                        f"GET {path} failed (HTTP {exc.code}): {_body_hint(exc.read())}",
-                        status=exc.code,
-                    ) from exc
-                except urllib.error.URLError as exc:
-                    raise GitHubAdapterError(f"GET {path} failed: {exc.reason}") from exc
-            raise GitHubAdapterError(f"GET {path} failed: retries exhausted")  # pragma: no cover
+        query = urllib.parse.urlencode(params, doseq=True)
+        url = f"{self.api_base}{path}{'?' + query if query else ''}"
+        for attempt in (1, 2):
+            request = urllib.request.Request(url, method="GET")  # noqa: S310 -- api_base is operator-configured
+            request.add_header("Accept", "application/vnd.github+json")
+            request.add_header("User-Agent", f"akc-source-adapters/{PROVIDER}")
+            request.add_header("X-GitHub-Api-Version", API_VERSION)
+            token = self.token_provider() if self.token_provider is not None else None
+            if token:
+                request.add_header("Authorization", f"Bearer {token}")
+            try:
+                with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as response:  # noqa: S310 -- same operator-configured base
+                    body = response.read()
+                    self._respect_rate_limit(dict(response.headers))
+                    return json.loads(body.decode("utf-8"))
+            except urllib.error.HTTPError as exc:
+                headers = dict(exc.headers or {})
+                retry_after = headers.get("Retry-After")
+                rate_limited = exc.code in (403, 429) and (
+                    retry_after is not None or headers.get("X-RateLimit-Remaining") == "0"
+                )
+                if attempt == 1 and rate_limited and retry_after is not None:
+                    self._sleep(min(float(retry_after), RATE_LIMIT_MAX_WAIT_SECONDS))
+                    continue  # secondary rate limit: one patient retry, then give up
+                raise GitHubAdapterError(
+                    f"GET {path} failed (HTTP {exc.code}): {_body_hint(exc.read())}",
+                    status=exc.code,
+                ) from exc
+            except urllib.error.URLError as exc:
+                raise GitHubAdapterError(f"GET {path} failed: {exc.reason}") from exc
+        raise GitHubAdapterError(f"GET {path} failed: retries exhausted")  # pragma: no cover
 
     def _respect_rate_limit(self, headers: Mapping[str, str]) -> None:
         remaining = headers.get("X-RateLimit-Remaining")
@@ -390,8 +389,6 @@ def _body_hint(raw: bytes | str, limit: int = 120) -> str:
     except Exception:  # pragma: no cover - decode with replace cannot raise
         return ""
     return " ".join(text.split())[:limit]
-
-
 
 
 def _next_state(
