@@ -162,6 +162,73 @@ None of it may be done by an implementation session.
    router does not know which one is better; it has to decide. What this table
    bounds is how much there is to win, not how much a shipped router wins.
 
+### Activation log
+
+Items are not edited above; what happened to them is recorded here.
+
+**2026-09-23 — items 1 and 2 answered by the founder.**
+
+*Item 1, licence.* Cleared. A clearance is not what the gate reads, so the
+licence each pinned revision actually ships was captured read-only and stored
+byte for byte under `infra/model-registry/license-snapshots/`, with a manifest
+`validate_registry.py` re-hashes rather than trusts. `license_snapshot_sha256`
+is now a digest that resolves to a file; a snapshot edited after capture fails
+the build. Three things the snapshots say that "approved" does not:
+
+- `mineru_vlm`'s weights are apache-2.0 but **its runtime is not plain
+  Apache-2.0**. MinerU adds a commercial-licence threshold at 100M MAU or
+  USD 20M monthly revenue, an online-service attribution obligation, and
+  automatic termination on breach. Below the thresholds no separate licence is
+  needed; crossing either one needs one before use continues. That is a
+  business trigger, not an engineering one, and nothing in this repository
+  watches for it.
+- `mineru`'s card declares **no licence at all**. Readable is not reusable, so
+  its `weight_license` stays open and the row is not a traffic candidate.
+- **No dataset licence is published for any of them.** They stay
+  `review_required`. Code, weights, dataset and hosted-API terms are four
+  separate licences and clearing one clears none of the others.
+
+`ovisocr2`'s card also names `base_model: Qwen/Qwen3.5-0.8B`, whose terms the
+snapshot does not cover.
+
+*Item 2, GPU serving.* Approved. Two things were separated that the original
+item ran together:
+
+- **Resolving an image digest needs no GPU.** Both were read from the
+  registries for nothing: `paddleocr-genai-vllm-server:latest-nvidia-gpu` is
+  `sha256:5713fd30…` and `vllm/vllm-openai:v0.22.1` is `sha256:953d3a06…`.
+- **Qualifying an image does.** A digest says which bytes; it does not say the
+  bytes serve the pinned weights. The PaddleOCR image was built 2026-05-28,
+  months before the 2026-09-05 revision pinned on that row, so the two are not
+  known to agree until something runs.
+
+So the image was served rather than assumed. On an RTX 4090 at $0.34/hour with
+min 0 workers, the host pulled it and **independently reported the same
+digest**, then answered all four page classes put to it — multi-column text,
+table, mathematics, and a low-quality historical scan. The endpoint was deleted
+immediately afterwards; about ten minutes ran, roughly $0.06 at the quoted
+rate. Receipt:
+`infra/model-registry/serving-receipts/paddleocr_vl_1_6.serving-qualification.json`.
+
+`paddleocr_vl_1_6.runtime.image_digest` is therefore pinned. Two things that
+pin does **not** say, both recorded beside it:
+
+- The image was built 2026-05-28; the revision on that row was resolved
+  2026-09-05. Nothing yet compares the weights baked into the image against
+  `upstream_revision`, so that field still describes what the Arena measured
+  rather than what this image serves. Reconciling them belongs to item 4.
+- Four pages is a smoke test, not a score. The low-quality scan came back
+  visibly degraded, which is consistent with the campaign's published 36.9%
+  low-quality-scan weakness and is not evidence about it.
+
+`ovisocr2` and `infinity_parser2_flash` keep `image_digest: null`. Neither
+publishes an image, and the resolved `vllm/vllm-openai:v0.22.1` digest names a
+runtime those weights have never been run in.
+
+**Still open.** Item 3 (`model_registry` rows, production database writes) and
+item 4 (the no-regression benchmark). Item 4 has not moved at all: the rescue
+table remains an oracle ceiling.
+
 ### Order, when the founder chooses to proceed
 
     licence review  →  serve one model, pin its digest  →  registry row at

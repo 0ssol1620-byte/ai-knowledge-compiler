@@ -64,9 +64,18 @@ releases:
     runtime:
       engine: paddle_or_vllm
       version: 'paddlepaddle-gpu==3.2.1 (cu126) + "paddleocr[doc-parser]>=3.6.0", pipeline_version=v1.6'
-      # The published image carries a floating tag, so no immutable digest
-      # exists yet. Route eligibility requires one.
-      image_digest: null
+      image: ccr-2vdh3abv-pub.cnc.bj.baidubce.com/paddlepaddle/paddleocr-genai-vllm-server
+      # Resolved from the floating `latest-nvidia-gpu` tag on 2026-09-23 and
+      # then served: the host reported this same digest on pull, and the image
+      # answered four page classes (multi-column, table, mathematics, a
+      # low-quality historical scan). Receipt:
+      # serving-receipts/paddleocr_vl_1_6.serving-qualification.json
+      #
+      # It pins which bytes run. It does NOT establish that the weights baked
+      # into them are upstream_revision c5630ab... -- that revision was
+      # resolved 2026-09-05 and this image was built 2026-05-28. Reconciling
+      # the two is part of the no-regression benchmark, not of this pin.
+      image_digest: "sha256:5713fd30ab76094b7b6a20d95fd8e26fa9dc452bcc90ccb16f1fb056bd2a0f4d"
     claimed_languages: [multilingual, ko, en, zh]
     internal_validation:
       corpus: akc-golden-2026q3-v1
