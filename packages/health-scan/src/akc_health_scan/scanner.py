@@ -27,7 +27,7 @@ def scan(root_path: str | Path, config: HealthScanConfig | None = None) -> Healt
         raise NotADirectoryError(f"health scan root is not a directory: {root}")
 
     started = time.perf_counter()
-    records = iter_files(root, cfg)
+    records, outside_root = iter_files(root, cfg)
     digests, skipped_hashing = compute_digests(records, cfg)
 
     sources = {
@@ -40,6 +40,7 @@ def scan(root_path: str | Path, config: HealthScanConfig | None = None) -> Healt
         ),
         "excluded_dir_names": sorted(cfg.excluded_dir_names),
         "skipped_hashing": skipped_hashing,
+        "skipped_outside_root": outside_root,
         "note": "filesystem-derived counts; classification by file extension only",
     }
 
