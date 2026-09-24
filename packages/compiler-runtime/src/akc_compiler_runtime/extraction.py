@@ -98,7 +98,10 @@ _FRONTMATTER_RE = re.compile(r"\A---\s*\n.*?\n---\s*\n?", re.DOTALL)
 
 _MD_COMMENT_RE = re.compile(r"<!--\s*(.*?)\s*-->", re.DOTALL)
 _PY_COMMENT_RE = re.compile(r"^\s*#\s?(.*)$")
-_C_COMMENT_RE = re.compile(r"^\s*(?://|/?\*|<!--)\s?(.*?)(?:\*/|-->)?\s*$")
+# Captures the whole comment tail; ``_c_comment_body`` drops one trailing
+# ``*/`` or ``-->``. This only extracts comment text for claims — it is not an
+# HTML filter, and markup safety lives in akc_security.markup.
+_C_COMMENT_RE = re.compile(r"^\s*(?://|/?\*|<!--)(.*)$")
 _DEF_RE = re.compile(r"^\s*(?:async\s+)?def\s+(\w+)|^\s*class\s+(\w+)|^\s*function\s+(\w+)")
 
 _CLAIM_VERB_RE = re.compile(
@@ -423,6 +426,13 @@ def _parse_markdown(
     return claims, effective_authority
 
 
+def _c_comment_body(stripped_tail: str) -> str:
+    for closer in ("*/", "-->"):
+        if stripped_tail.endswith(closer):
+            return stripped_tail[: -len(closer)].strip()
+    return stripped_tail
+
+
 def _parse_code(lines: list[str], rel_path: str, doc_authority: AuthorityClass) -> list[ClaimDraft]:
     """Rule extraction over code comments: dates, deadlines and status words."""
     claims: list[ClaimDraft] = []
@@ -436,6 +446,8 @@ def _parse_code(lines: list[str], rel_path: str, doc_authority: AuthorityClass) 
                 section = next(group for group in def_match.groups() if group)
             continue
         body = match.group(1).strip()
+        if comment_re is _C_COMMENT_RE:
+            body = _c_comment_body(body)
         if not body or len(body) < 12:
             continue
         has_date = _first_date(body) is not None

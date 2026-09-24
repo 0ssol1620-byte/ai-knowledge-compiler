@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import itertools
 import json
 import re
 from functools import lru_cache
@@ -171,6 +172,23 @@ def _walk_schema(value: Any, *, depth: int = 1) -> tuple[int, int]:
     return nodes, maximum_depth
 
 
+def _has_quantified_group_with_inner_quantifier(value: str) -> bool:
+    r"""Whether ``\([^)]*[*+][^)]*\)[*+{]`` matches anywhere in ``value``.
+
+    Split on ``)`` instead of searching: that regex rescans from every ``(``.
+    The widest window for a given ``)`` opens at the first ``(`` after the
+    previous ``)``, so checking that window alone gives the same answer.
+    """
+
+    for piece, following in itertools.pairwise(value.split(")")):
+        opened = piece.find("(")
+        if opened >= 0 and following[:1] in {"*", "+", "{"}:
+            inner = piece[opened + 1 :]
+            if "*" in inner or "+" in inner:
+                return True
+    return False
+
+
 def _validate_pattern(value: Any) -> None:
     if not isinstance(value, str) or len(value) > 200:
         raise SchemaPolicyError("custom schema pattern is invalid")
@@ -178,7 +196,7 @@ def _validate_pattern(value: Any) -> None:
         "(?" in value
         or re.search(r"\\[1-9]", value)
         or re.search(r"[*+?}][*+?{]", value)
-        or re.search(r"\([^)]*[*+][^)]*\)[*+{]", value)
+        or _has_quantified_group_with_inner_quantifier(value)
     ):
         raise SchemaPolicyError("custom schema pattern uses a forbidden backtracking construct")
     try:
