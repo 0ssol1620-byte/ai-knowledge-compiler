@@ -8,6 +8,20 @@ The fuller record behind this list — what was discussed, what was built, what
 was measured and what went wrong — is
 [`SESSION_RECORD_2026-09-23_ROUTER_AND_COPY.md`](SESSION_RECORD_2026-09-23_ROUTER_AND_COPY.md).
 
+**2026-09-24 continuation (supersedes the F-0/F-1 status below):** The founder
+authorized a temporary public repository to get Actions running without adding
+a payment method. PR #80 ran exact-head CI while public; the repository was
+returned to private after the first completed evidence run, with zero forks
+reported by GitHub. Return it to private after the final run as well. This is a
+one-run workaround, not a repair of the account's private
+Actions billing limit. A future private push can still fail to start jobs.
+The founder-test reset is complete: production ledger reset
+`7a04db65-8f01-49e3-b2d7-ba24d6980cbd` is `completed`, recording 134
+target database rows and 349 storage keys. The selected customer-data tables
+are now empty. Login, workspace ownership and billing records were preserved.
+An empty later `prepared` ledger row is not a second deletion; do not rerun the
+reset on its account.
+
 Every item here is one of the things `CLAUDE.md` reserves: what a public claim
 says, irreversible production or destructive actions, customer data consent,
 pricing, patent and publication timing, missing secrets and payment
