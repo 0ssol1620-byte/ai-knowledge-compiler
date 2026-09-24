@@ -35,7 +35,6 @@ FROM vllm/vllm-openai:v0.19.0-ubuntu2404@sha256:69234fc31ff1d5e1687b2f06bba39e0f
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/opt/arena \
-    ARENA_MODEL_KEY=glm_ocr \
     ARENA_WEIGHTS_DIR=/opt/arena/weights/glm_ocr \
     ARENA_LAYOUT_DIR=/opt/arena/weights/pp_doclayoutv3_safetensors \
     ARENA_VLLM_PORT=8080 \

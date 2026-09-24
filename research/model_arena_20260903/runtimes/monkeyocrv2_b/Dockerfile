@@ -20,7 +20,6 @@ ARG MONKEYOCRV2_REVISION=d46699fb6a4c71d61588e4a71fce03bff4f1ba33
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/opt/arena:/opt/monkeyocrv2/parsing \
-    ARENA_MODEL_KEY=monkeyocrv2_b \
     ARENA_WEIGHTS_DIR=/opt/arena/weights/monkeyocrv2_b \
     ARENA_MONKEYOCRV2_DIR=/opt/monkeyocrv2 \
     ARENA_VLLM_PORT=8888 \

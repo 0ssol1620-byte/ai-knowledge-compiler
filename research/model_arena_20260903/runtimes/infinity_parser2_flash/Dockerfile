@@ -26,7 +26,6 @@ FROM vllm/vllm-openai:v0.19.0-ubuntu2404@sha256:69234fc31ff1d5e1687b2f06bba39e0f
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONPATH=/opt/arena \
-    ARENA_MODEL_KEY=infinity_parser2_flash \
     ARENA_WEIGHTS_DIR=/opt/arena/weights/infinity_parser2_flash \
     ARENA_VLLM_PORT=8100 \
     HF_HUB_ENABLE_HF_TRANSFER=0

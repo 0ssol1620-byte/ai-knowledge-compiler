@@ -30,7 +30,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     OMP_NUM_THREADS=1 \
     MINERU_MODEL_SOURCE=local \
     MINERU_TOOLS_CONFIG_JSON=/opt/arena/mineru.json \
-    ARENA_MODEL_KEY=mineru_pipeline \
     ARENA_WEIGHTS_DIR=/opt/arena/weights/mineru_pipeline \
     ARENA_BASE_IMAGE=${BASE_IMAGE} \
     ARENA_BASE_IMAGE_DIGEST=${BASE_IMAGE_DIGEST}

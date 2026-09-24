@@ -2376,7 +2376,15 @@ or §11.6, this section wins.
      bootstrap pods do not, and D67 still sets `ARENA_STATE_DIR` for them).
      An explicit `ARENA_STATE_DIR` is never second-guessed. The choice is
      printed on the pod log and published as `state_dir` in the worker's
-     public environment, so it is not silent.
+  public environment, so it is not silent.
+
+  The controller already supplies `ARENA_MODEL_KEY` to each pod (see the pod
+  environment contract above). The 12 Dockerfiles no longer duplicate that
+  public model identifier in `ENV`; Trivy classified the word `KEY` as a
+  possible secret (DS-0031). A direct image run without the required runtime
+  identity now fails closed, except vendor entrypoints that set their fixed
+  model identity themselves. This change does not alter model weights or the
+  controller's identity check.
 
   Not yet proven: no image was rebuilt and no pod was started. A rebuild gives
   new image digests, which need new build and canary receipts; the old ones

@@ -17,7 +17,11 @@ from types import ModuleType
 
 import pytest
 from arena.worker.config import resolve_state_dir
-from conftest import RUNTIMES_ROOT, load_runtime_module
+
+from research.model_arena_20260903.tests.runtimes.conftest import (
+    RUNTIMES_ROOT,
+    load_runtime_module,
+)
 
 MODEL_KEYS = sorted(p.parent.name for p in RUNTIMES_ROOT.glob("*/Dockerfile"))
 MUTABLE_ENV = {
@@ -65,6 +69,13 @@ def env_values(stage: list[tuple[str, str]]) -> dict[str, str]:
 
 def test_all_twelve_runtimes_are_checked() -> None:
     assert len(MODEL_KEYS) == 12, MODEL_KEYS
+
+
+@pytest.mark.parametrize("model_key", MODEL_KEYS)
+def test_model_key_is_supplied_by_pod_runtime_not_baked_in_image(model_key: str) -> None:
+    # The controller supplies this public identifier at pod creation. Baking it
+    # into ENV is redundant and Trivy mistakes the word KEY for a secret.
+    assert "ARENA_MODEL_KEY" not in env_values(final_stage(model_key))
 
 
 @pytest.mark.parametrize("model_key", MODEL_KEYS)
