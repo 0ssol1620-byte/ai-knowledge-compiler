@@ -50,6 +50,22 @@ def require_allowed_host(url: str) -> str:
     return host
 
 
+class _SameHostHttpsRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Keep redirects inside the already approved HTTPS origin."""
+
+    def redirect_request(
+        self, request: urllib.request.Request, fp: Any, code: int, msg: str,
+        headers: Any, newurl: str,
+    ) -> urllib.request.Request | None:
+        source = urllib.parse.urlsplit(request.full_url)
+        target = urllib.parse.urlsplit(newurl)
+        if target.scheme != "https" or target.netloc != source.netloc:
+            if fp is not None:
+                fp.close()
+            raise SourceUnavailableError("registry redirect left its approved HTTPS host")
+        return super().redirect_request(request, fp, code, msg, headers, newurl)
+
+
 class FixtureStore:
     """Records and replays JSON payloads keyed by request URL."""
 
@@ -137,15 +153,16 @@ class HttpFetcher:
         headers = {"User-Agent": USER_AGENT, "Accept": "application/json"}
         if token:
             headers["Authorization"] = f"Bearer {token}"
-        # S310 is suppressed because the scheme is checked to be https by the caller
-        # and the host is checked against ALLOWED_HOSTS before either line runs.
+        # S310 is suppressed because the caller checks HTTPS and the allow list,
+        # and the redirect handler refuses any hop outside that HTTPS origin.
         request = urllib.request.Request(url, headers=headers, method="GET")  # noqa: S310
-        with urllib.request.urlopen(request, timeout=_TIMEOUT_SECONDS) as response:  # noqa: S310
+        opener = urllib.request.build_opener(_SameHostHttpsRedirectHandler())
+        with opener.open(request, timeout=_TIMEOUT_SECONDS) as response:
             body: bytes = response.read()
         return body
 
     def get_json(self, url: str) -> Any:
-        require_allowed_host(url)
+        host = require_allowed_host(url)
         if not url.startswith("https://"):
             raise SourceUnavailableError(f"registry fetches are https-only, got {url!r}")
         try:
@@ -155,11 +172,15 @@ class HttpFetcher:
                 raise SourceUnavailableError(
                     f"GET {url} failed with HTTP {first_error.code}"
                 ) from first_error
-            token = os.environ.get("HF_TOKEN") if "huggingface.co" in url else None
+            token = os.environ.get("HF_TOKEN") if host == "huggingface.co" else None
             if not token:
+                reason = (
+                    "HF_TOKEN is not set" if host == "huggingface.co"
+                    else "this host cannot receive HF_TOKEN"
+                )
                 raise SourceUnavailableError(
-                    f"GET {url} failed with HTTP {first_error.code} and no anonymous retry "
-                    "is possible (HF_TOKEN is not set)"
+                    f"GET {url} failed with HTTP {first_error.code} and no authenticated "
+                    f"retry is possible ({reason})"
                 ) from first_error
             try:
                 body = self._open(url, token)
