@@ -32,7 +32,6 @@ from benchmark.w6.v2 import grading
 from benchmark.w6.v2 import questions as questions_mod
 from benchmark.w6.v2.acquisition import acquire_corpus
 from benchmark.w6.v2.compile_world import WorldRetriever, compile_world, save_world
-from benchmark.w6.v2.credentials import load_openrouter_key, redact
 from benchmark.w6.v2.llm import OpenRouterClient
 from benchmark.w6.v2.retrieval import RagIndex
 
@@ -168,8 +167,9 @@ def main(argv: list[str] | None = None) -> int:
         environment=dict(os.environ),
         credential_file=None,
     )
-    key_preview = redact(load_openrouter_key())
-    print(f"[model] pinned={pinned_model} key={key_preview}")
+    # The probe above already loaded and used the key. Log only that it is
+    # configured: no prefix, no length, nothing derived from the value.
+    print(f"[model] pinned={pinned_model} key=configured")
     run_manifest["pinned_model"] = pinned_model
 
     # ---- phase 2: question generation + freeze -----------------------------

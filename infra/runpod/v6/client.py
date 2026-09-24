@@ -945,11 +945,16 @@ class RunPodV2Client:
         return job
 
     def billing_history(self, query: BillingQuery) -> BillingHistory | DryRunReceipt:
-        url = f"{MANAGEMENT_BASE_URL}/billing/serverless"
         if not self.execute:
-            return self._dry("billing.serverless", "GET", url, query.to_params())
+            return self.plan_billing_history(query)
+        url = f"{MANAGEMENT_BASE_URL}/billing/serverless"
         raw = self._request_json("GET", url, expected_status=200, params=query.to_params())
         return _parse_billing_history(raw)
+
+    def plan_billing_history(self, query: BillingQuery) -> DryRunReceipt:
+        """Dry-run receipt for a billing read; never carries provider billing data."""
+        url = f"{MANAGEMENT_BASE_URL}/billing/serverless"
+        return self._dry("billing.serverless", "GET", url, query.to_params())
 
     def _dry(
         self,

@@ -30,6 +30,38 @@ from infra.runpod.v6.client import (
 RUN_TAG = "v6-cohort-client-test"
 IMAGE = "registry.example/worker@sha256:" + ("a" * 64)
 
+_BILLING_PAYLOAD: dict[str, Any] = {
+    "records": [
+        {
+            "serverlessId": "ep-test",
+            "startTime": "2026-08-01T00:00:00Z",
+            "endTime": "2026-08-02T00:00:00Z",
+            "totalAmount": 3.25,
+            "gpuAmount": 3,
+            "cpuAmount": 0,
+            "diskAmount": 0.2,
+            "feeAmount": 0.05,
+        }
+    ],
+    "metadata": {
+        "query": {
+            "startTime": "2026-08-01T00:00:00Z",
+            "endTime": "2026-08-02T00:00:00Z",
+            "bucketSize": "day",
+            "serverlessId": "ep-test",
+        },
+        "recordCount": 1,
+        "uniqueServerlessCount": 1,
+        "totals": {
+            "totalAmount": 3.25,
+            "gpuAmount": 3,
+            "cpuAmount": 0,
+            "diskAmount": 0.2,
+            "feeAmount": 0.05,
+        },
+    },
+}
+
 
 def _endpoint(
     endpoint_id: str = "ep-test",
@@ -184,37 +216,7 @@ def test_management_queue_and_billing_operations_follow_documented_v2_contract(
         if request.method == "GET" and request.url.path == "/v2/billing/serverless":
             return httpx.Response(
                 200,
-                json={
-                    "records": [
-                        {
-                            "serverlessId": "ep-test",
-                            "startTime": "2026-08-01T00:00:00Z",
-                            "endTime": "2026-08-02T00:00:00Z",
-                            "totalAmount": 3.25,
-                            "gpuAmount": 3,
-                            "cpuAmount": 0,
-                            "diskAmount": 0.2,
-                            "feeAmount": 0.05,
-                        }
-                    ],
-                    "metadata": {
-                        "query": {
-                            "startTime": "2026-08-01T00:00:00Z",
-                            "endTime": "2026-08-02T00:00:00Z",
-                            "bucketSize": "day",
-                            "serverlessId": "ep-test",
-                        },
-                        "recordCount": 1,
-                        "uniqueServerlessCount": 1,
-                        "totals": {
-                            "totalAmount": 3.25,
-                            "gpuAmount": 3,
-                            "cpuAmount": 0,
-                            "diskAmount": 0.2,
-                            "feeAmount": 0.05,
-                        },
-                    },
-                },
+                json=_BILLING_PAYLOAD,
                 headers={"content-type": "application/json"},
             )
         raise AssertionError(f"unexpected request: {request.method} {request.url}")
@@ -404,3 +406,62 @@ def test_cli_defaults_to_dry_run_without_reading_a_secret(
     assert '"mode": "dry-run"' in captured.out
     assert "RUNPOD_API_KEY" not in captured.out
     assert captured.err == ""
+
+
+def test_cli_live_billing_writes_records_to_receipt_and_only_structure_to_stdout(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setenv("RUNPOD_API_KEY", "provider-key-must-never-appear")
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.path == "/v2/billing/serverless"
+        return httpx.Response(
+            200, json=_BILLING_PAYLOAD, headers={"content-type": "application/json"}
+        )
+
+    def client_factory(*, execute: bool) -> RunPodV2Client:
+        return RunPodV2Client(execute=execute, transport=httpx.MockTransport(handler))
+
+    monkeypatch.setattr("infra.runpod.v6.cli.RunPodV2Client", client_factory)
+    receipt = tmp_path / "billing.json"
+
+    exit_code = runpod_cli(["--receipt-out", str(receipt), "billing", "--execute"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0 and captured.err == ""
+    assert json.loads(captured.out) == {
+        "billing_record_count": 1,
+        "billing_records_written_to": str(receipt),
+        "records_withheld_from_stdout": True,
+    }
+    assert "3.25" not in captured.out and "ep-test" not in captured.out
+    written = json.loads(receipt.read_text(encoding="utf-8"))
+    assert written["provider_total_usd"] == "3.25"
+    assert written["records"][0]["endpoint_id"] == "ep-test"
+
+
+def test_cli_live_billing_without_receipt_fails_before_provider_access(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.delenv("RUNPOD_API_KEY", raising=False)
+
+    def forbidden(**_: object) -> RunPodV2Client:
+        raise AssertionError("provider client must not be constructed")
+
+    monkeypatch.setattr("infra.runpod.v6.cli.RunPodV2Client", forbidden)
+
+    exit_code = runpod_cli(["billing", "--execute"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 2 and captured.out == ""
+    error = json.loads(captured.err)
+    assert error["error_type"] == "ContractError"
+    assert "--receipt-out" in error["message"]
+
+
+def test_cli_dry_run_billing_output_is_unchanged(capsys: pytest.CaptureFixture[str]) -> None:
+    assert runpod_cli(["billing"]) == 0
+    assert json.loads(capsys.readouterr().out)["mode"] == "dry-run"

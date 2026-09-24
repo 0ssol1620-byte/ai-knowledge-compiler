@@ -157,6 +157,50 @@ def test_load_key_prefers_env_and_redacts():
     assert "a" * 10 not in preview and "chars" in preview
 
 
+def test_pilot_model_log_never_prints_key_material(tmp_path, monkeypatch, capsys):
+    import hashlib
+
+    import yaml
+
+    from benchmark.w6.v2 import run_pilot
+
+    class _StopAfterModelLine(Exception):
+        pass
+
+    def _stop(*_args, **_kwargs):
+        raise _StopAfterModelLine
+
+    secret = "sk-or-v1-" + "c" * 64
+    monkeypatch.setenv("OPENROUTER_API_KEY", secret)
+    prereg_path = tmp_path / "benchmark/w6/v2/preregistration.yaml"
+    prereg_path.parent.mkdir(parents=True)
+    prereg_path.write_text(
+        yaml.safe_dump(
+            {
+                "source_registry": {"pilot_size": 1, "blocked_threshold_usable_documents": 1},
+                "frozen_source_list_head_60": {"items": ["Doc"]},
+                "model": {"primary": "m/primary", "fallback_order": []},
+            }
+        ),
+        encoding="utf-8",
+    )
+    cache_dir = tmp_path / "benchmark/results/w6-v2-pilot/cache"
+    cache_dir.mkdir(parents=True)
+    cache_key = hashlib.sha1(b"Doc", usedforsecurity=False).hexdigest()
+    (cache_dir / f"{cache_key}.json").write_text(json.dumps({"text": "body"}), encoding="utf-8")
+    monkeypatch.setattr(run_pilot.OpenRouterClient, "probe", lambda **_: (object(), "m/primary"))
+    monkeypatch.setattr(run_pilot.questions_mod, "generate_question", _stop)
+    monkeypatch.setattr(run_pilot.questions_mod, "freeze_questions", _stop)
+
+    with pytest.raises(_StopAfterModelLine):
+        run_pilot.main(["--worktree-root", str(tmp_path), "--skip-acquire"])
+
+    out = capsys.readouterr().out
+    assert "[model] pinned=m/primary key=configured" in out
+    # Neither the value, its prefix, nor the old "(N chars)" length preview.
+    assert secret[:3] not in out and "chars)" not in out
+
+
 def test_load_key_parses_labelled_file(tmp_path):
     secret = "sk-or-v1-" + "b" * 64
     cred = tmp_path / "api.txt"

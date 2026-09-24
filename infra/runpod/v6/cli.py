@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Any
 from benchmark.v6.contracts import ContractError
 
 from .client import (
+    BillingHistory,
     BillingQuery,
     EndpointCreateSpec,
     EndpointPatch,
@@ -152,16 +153,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(values)
     reservation: Path | None = None
     try:
+        if args.command == "billing" and args.execute and args.receipt_out is None:
+            # Provider billing records are account data: they go to a receipt
+            # file, never to stdout, so refuse before spending a provider call.
+            raise ContractError("billing --execute requires --receipt-out for the billing records")
         if args.receipt_out is not None:
             reservation = _reserve_receipt(args.receipt_out)
         with RunPodV2Client(execute=bool(args.execute)) as client:
-            result = _dispatch(args, client)
-        rendered = (
-            json.dumps(_json_safe(result), ensure_ascii=False, sort_keys=True, indent=2)
-            + "\n"
-        )
-        if args.receipt_out is not None:
-            _write_receipt(args.receipt_out, rendered)
+            if args.command == "billing" and args.execute:
+                # Separate path: live billing records can reach the receipt
+                # file but have no route to the stdout render below.
+                rendered = _redacted_live_billing(client, _billing_query(args), args.receipt_out)
+            else:
+                rendered = _render(_dispatch(args, client))
+                if args.receipt_out is not None:
+                    _write_receipt(args.receipt_out, rendered)
     except (ContractError, RunPodClientError, OSError, json.JSONDecodeError) as exc:
         error = {
             "ok": False,
@@ -237,16 +243,9 @@ def _dispatch(args: argparse.Namespace, client: RunPodV2Client) -> object:
             idempotency_key=args.idempotency_key,
         )
     if args.command == "billing":
-        explicit = args.start_time is not None or args.end_time is not None
-        return client.billing_history(
-            BillingQuery(
-                bucket_size=args.bucket_size,
-                start_time=args.start_time,
-                end_time=args.end_time,
-                last_n=None if explicit else args.last_n,
-                endpoint_id=args.endpoint_id,
-            )
-        )
+        # Live billing is handled by _redacted_live_billing; only the dry-run
+        # receipt is rendered here.
+        return client.plan_billing_history(_billing_query(args))
     if args.command in {
         "cohort-dispatch",
         "cohort-status",
@@ -313,6 +312,36 @@ def _json_safe(value: object) -> object:
     if value is None or isinstance(value, (str, int, float, bool)):
         return value
     raise ContractError(f"CLI result type is not serializable: {type(value).__name__}")
+
+
+def _billing_query(args: argparse.Namespace) -> BillingQuery:
+    explicit = args.start_time is not None or args.end_time is not None
+    return BillingQuery(
+        bucket_size=args.bucket_size,
+        start_time=args.start_time,
+        end_time=args.end_time,
+        last_n=None if explicit else args.last_n,
+        endpoint_id=args.endpoint_id,
+    )
+
+
+def _redacted_live_billing(client: RunPodV2Client, query: BillingQuery, receipt: Path) -> str:
+    """Write live billing records to the receipt; return structure-only stdout."""
+    history = client.billing_history(query)
+    if not isinstance(history, BillingHistory):
+        raise ContractError("live billing must return provider billing records")
+    _write_receipt(receipt, _render(history))
+    return _render(
+        {
+            "billing_record_count": len(history.records),
+            "billing_records_written_to": str(receipt),
+            "records_withheld_from_stdout": True,
+        }
+    )
+
+
+def _render(value: object) -> str:
+    return json.dumps(_json_safe(value), ensure_ascii=False, sort_keys=True, indent=2) + "\n"
 
 
 def _write_receipt(path: Path, rendered: str) -> None:
