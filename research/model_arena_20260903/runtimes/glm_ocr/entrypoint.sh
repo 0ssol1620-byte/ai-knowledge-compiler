@@ -29,7 +29,7 @@ READY_POLL_INTERVAL_S="${ARENA_MODEL_SERVER_POLL_INTERVAL_S:-5}"
 READY_TIMEOUT_FLOOR_S=1200
 READINESS_URL="http://127.0.0.1:${VLLM_PORT}/v1/models"
 SERVER_LOG="${ARENA_MODEL_SERVER_LOG:-/opt/arena/model-server.log}"
-FATAL_FILE=/opt/arena/FATAL
+FATAL_FILE="${ARENA_FATAL_FILE:-/opt/arena/FATAL}"
 FATAL_LOG_TAIL_LINES=200
 
 # --- sticky failure --------------------------------------------------------

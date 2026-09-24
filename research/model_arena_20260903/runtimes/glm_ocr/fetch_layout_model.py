@@ -76,6 +76,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{largest} hashes to {observed}, runtime.json pinned {expected}", file=sys.stderr)
         return 4
 
+    if cache_hit:
+        # Verify only; see fetch_weights.py. The baked layout dir is read-only at runtime.
+        print(f"layout model verified, sidecar unchanged: {repo}@{revision}", file=sys.stderr)
+        return 0
+
     payload = {
         "repo": repo,
         "revision": revision,

@@ -2337,3 +2337,48 @@ or §11.6, this section wins.
   Drivers already running keep the old module, so a `SecretLeak` in a slice
   log after this landed means a pre-D88 driver is still alive; restarting the
   supervisor is what replaces it.
+
+- **D89 the baked images run as a non-root user (Trivy DS-0002,
+  2026-09-24).**
+
+  All 12 `runtimes/*/Dockerfile` ended as root. Each final stage now ends on
+  `USER`: uid/gid 10001 `arena` (HOME `/home/arena`, the uid `services/api`
+  uses) for ten images, and the vendor's own `hpd` / `paddleocr` for
+  hpd_parsing and paddleocr_vl_1_6, whose HOME holds what the vendor image was
+  tested with (paddle's `~/.paddlex/official_models`). Every existing build
+  step, including the Section 38 receipt steps, runs unchanged and as root
+  before the switch, so weights, receipts and code stay root-owned and
+  read-only to the runtime; nothing under `/opt/arena` is chowned. Only
+  `/var/lib/arena`, `/var/lib/arena/state` and `/workspace/arena` belong to the
+  runtime user, and the image points `ARENA_FATAL_FILE` and
+  `ARENA_MODEL_SERVER_LOG` into `/var/lib/arena`. glm_ocr's entrypoint
+  hard-coded `FATAL_FILE=/opt/arena/FATAL`; it now reads `ARENA_FATAL_FILE`
+  like the other seven.
+
+  Two things a root runtime had hidden:
+
+  1. `fetch_weights.py` (glm_ocr, infinity_parser2_flash/pro, monkeyocrv2_b,
+     olmocr2) and glm_ocr's `fetch_layout_model.py` rewrote the weights
+     sidecar on every boot. As non-root that is a `PermissionError` under
+     `set -e`. It was also wrong as root: boot runs without `--manifest`, so
+     the rewrite replaced the build-time `files_manifest_sha256` with `null`
+     -- the value infinity_parser2_pro's `hash_weights_on_load: false` relies
+     on. A cache hit now verifies revision and largest-file hash and leaves the
+     sidecar alone. Consequence: the load receipt's `cache_hit` on a baked pod
+     is the build-time value (`false`), the same as deepseek_ocr2, ovisocr2
+     and unlimited_ocr already report.
+  2. D67 kept the worker strict and let the bootstrap shell choose the state
+     dir. A baked image has no bootstrap shell, and D67's own evidence is that
+     the RunPod volume at `/workspace` is root-owned and masks the image's
+     `/workspace/arena`. `arena.worker.config.resolve_state_dir` therefore
+     falls back to `ARENA_STATE_FALLBACK_DIR` when `/workspace/arena` cannot
+     be written -- only when the image names one (all 12 baked images do;
+     bootstrap pods do not, and D67 still sets `ARENA_STATE_DIR` for them).
+     An explicit `ARENA_STATE_DIR` is never second-guessed. The choice is
+     printed on the pod log and published as `state_dir` in the worker's
+     public environment, so it is not silent.
+
+  Not yet proven: no image was rebuilt and no pod was started. A rebuild gives
+  new image digests, which need new build and canary receipts; the old ones
+  are history and are not rewritten. Test
+  `tests/runtimes/test_nonroot_runtime.py`.

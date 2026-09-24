@@ -92,6 +92,22 @@ RUN mkdir -p /opt/arena/receipts \
 # to know which mode it is running in.
 RUN chmod +x /opt/arena/runtime/entrypoint.sh /opt/arena/runtime/bootstrap.sh
 
+# ---------------------------------------------------------------- non-root ----
+# Trivy DS-0002. Everything above ran as root and stays root-owned, so weights,
+# receipts and code are read-only to the runtime: a boot can verify them but never
+# rewrite them. No chown of /opt/arena -- that would copy the weight layer and hand
+# the receipts to the process they constrain. Only the three directories below are
+# writable. /workspace/arena is used when nothing is mounted over it; a root-owned
+# RunPod volume masks it, and arena.worker.config.resolve_state_dir then falls back
+# to ARENA_STATE_FALLBACK_DIR and says so on the pod log and in /v1/ready.
+# Back to the vendor's own USER paddleocr: the image's layout and VLM models live
+# in its HOME (~/.paddlex/official_models, provenance.json), not in root's.
+RUN install -d -o paddleocr -g "$(id -g paddleocr)" -m 0750 /var/lib/arena /var/lib/arena/state /workspace/arena
+ENV ARENA_FATAL_FILE=/var/lib/arena/FATAL \
+    ARENA_MODEL_SERVER_LOG=/var/lib/arena/model-server.log \
+    ARENA_STATE_FALLBACK_DIR=/var/lib/arena/state
+USER paddleocr
+
 EXPOSE 8000
 WORKDIR /opt/arena
 ENTRYPOINT ["/opt/arena/runtime/entrypoint.sh"]

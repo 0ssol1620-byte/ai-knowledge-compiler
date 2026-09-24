@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import json
 import os
+import sys
+import tempfile
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -67,6 +69,35 @@ _FALSY: Final = frozenset({"0", "false", "no", "off"})
 
 class WorkerConfigError(RuntimeError):
     """Startup configuration is missing, malformed or internally inconsistent."""
+
+
+def resolve_state_dir(env: Mapping[str, str], *, default: Path = DEFAULT_STATE_DIR) -> Path:
+    """``ARENA_STATE_DIR``, else ``default`` if writable, else ``ARENA_STATE_FALLBACK_DIR``.
+
+    The baked images run as a non-root user, and a RunPod volume mounted over
+    ``/workspace`` is root-owned, masking the ``/workspace/arena`` the image
+    created for that user (D67 is the same probe for bootstrap pods). Only an
+    image that names a fallback gets one; without it the default is returned
+    unprobed and an unwritable volume still fails loudly in ``WorkerCore``. The
+    chosen path is printed here and published as ``state_dir`` in ``public()``.
+    """
+    explicit = (env.get("ARENA_STATE_DIR") or "").strip()
+    if explicit:
+        return Path(explicit)
+    fallback = (env.get("ARENA_STATE_FALLBACK_DIR") or "").strip()
+    if not fallback:
+        return default
+    try:
+        default.mkdir(parents=True, exist_ok=True)
+        with tempfile.TemporaryFile(dir=default):
+            return default
+    except OSError as exc:
+        reason = f"{type(exc).__name__}: {exc}"
+    print(
+        f"[arena] {default} is not writable ({reason}); ARENA_STATE_DIR={fallback}",
+        file=sys.stderr,
+    )
+    return Path(fallback)
 
 
 def _required(env: Mapping[str, str], name: str) -> str:
@@ -176,7 +207,7 @@ class WorkerEnv:
             runtime_dir=Path(
                 (source.get("ARENA_RUNTIME_DIR") or "").strip() or DEFAULT_RUNTIME_DIR
             ),
-            state_dir=Path((source.get("ARENA_STATE_DIR") or "").strip() or DEFAULT_STATE_DIR),
+            state_dir=resolve_state_dir(source),
             prompt_file=Path(prompt_file_raw) if prompt_file_raw else None,
             prompt_registry_dir=Path(prompt_registry_raw or DEFAULT_PROMPT_REGISTRY_DIR),
             weights_dir=Path(weights_dir_raw) if weights_dir_raw else None,

@@ -65,5 +65,24 @@ PY
 RUN python3 -c "import arena.constants as c; assert 'olmocr2' in c.MODEL_KEYS" \
  && chmod +x /opt/arena/runtime/entrypoint.sh /opt/arena/runtime/bootstrap.sh
 
+# ---------------------------------------------------------------- non-root ----
+# Trivy DS-0002. Everything above ran as root and stays root-owned, so weights,
+# receipts and code are read-only to the runtime: a boot can verify them but never
+# rewrite them. No chown of /opt/arena -- that would copy the weight layer and hand
+# the receipts to the process they constrain. Only the three directories below are
+# writable. /workspace/arena is used when nothing is mounted over it; a root-owned
+# RunPod volume masks it, and arena.worker.config.resolve_state_dir then falls back
+# to ARENA_STATE_FALLBACK_DIR and says so on the pod log and in /v1/ready.
+# uid/gid 10001 is the one services/api uses.
+RUN groupadd --system --gid 10001 arena \
+ && useradd --system --uid 10001 --gid arena --home-dir /home/arena --create-home \
+      --shell /usr/sbin/nologin arena \
+ && install -d -o arena -g arena -m 0750 /var/lib/arena /var/lib/arena/state /workspace/arena
+ENV HOME=/home/arena \
+    ARENA_FATAL_FILE=/var/lib/arena/FATAL \
+    ARENA_MODEL_SERVER_LOG=/var/lib/arena/model-server.log \
+    ARENA_STATE_FALLBACK_DIR=/var/lib/arena/state
+USER 10001:10001
+
 EXPOSE 8000
 ENTRYPOINT ["/opt/arena/runtime/entrypoint.sh"]

@@ -97,6 +97,13 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{largest} hashes to {observed}, runtime.json pinned {expected}", file=sys.stderr)
         return 4
 
+    if cache_hit:
+        # Verify only. The sidecar is the build-time receipt: rewriting it at boot
+        # would drop its files_manifest_sha256 (boot runs without --manifest) and
+        # needs write access to a weights dir the non-root runtime cannot write.
+        print(f"weights verified, sidecar unchanged: {repo}@{revision}", file=sys.stderr)
+        return 0
+
     payload = {
         "repo": repo,
         "revision": revision,
