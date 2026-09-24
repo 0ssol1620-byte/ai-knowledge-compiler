@@ -6,6 +6,7 @@ import copy
 import json
 import pickle
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import pytest
 from arena.provider.safety import SecretLeak, assert_secret_free
@@ -104,7 +105,9 @@ def test_r2_user_block_is_a_different_block(credential_file: Path) -> None:
     account = r2_credentials(block="account", path=credential_file)
     user = r2_credentials(block="user", path=credential_file)
     assert user.access_key_id.reveal() != account.access_key_id.reveal()
-    assert user.endpoint_url.endswith("us.r2.cloudflarestorage.com")
+    endpoint = urlsplit(user.endpoint_url)
+    assert endpoint.scheme == "https"
+    assert endpoint.hostname == "fakeaccount.us.r2.cloudflarestorage.com"
 
 
 def test_r2_credentials_repr_hides_the_keys(credential_file: Path) -> None:

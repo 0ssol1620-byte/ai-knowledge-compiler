@@ -1,9 +1,12 @@
 """ReDoS regressions for the CodeQL py/redos, py/polynomial-redos and
 py/bad-tag-filter alerts of 2026-09-24.
 
-Each replaced pattern is kept here verbatim as the oracle. The replacement must
-agree with it on every short string over the characters that drive the
-pattern, and must stay linear on inputs built to make the old pattern backtrack.
+Where the old pattern is safe to keep, it stays here verbatim as the oracle:
+the replacement must agree with it on every short string over the characters
+that drive the pattern. The old WebVTT speaker and C-comment patterns are
+themselves CodeQL findings (py/redos, py/bad-tag-filter), so their oracles are
+explicit case tables recorded from the old patterns instead. Every replacement
+must stay linear on inputs built to make the old pattern backtrack.
 """
 
 from __future__ import annotations
@@ -26,8 +29,6 @@ OLD_HTML_TAG = re.compile(r"</?[A-Za-z][^>]*>")
 OLD_MARKDOWN_LINK = re.compile(r"!?\[[^\]]*]\(([^)\s]+)(?:\s+['\"][^'\"]*['\"])?\)")
 OLD_WIKILINK = re.compile(r"\[\[([^|\]]+)(?:\|[^\]]*)?]]")
 OLD_NESTED_QUANTIFIER = re.compile(r"\([^)]*[*+][^)]*\)[*+{]")
-OLD_VTT_SPEAKER = re.compile(r"^<v(?:\.[^ >]+)*\s+([^>]+)>(.*)$", re.DOTALL)
-OLD_C_COMMENT = re.compile(r"^\s*(?://|/?\*|<!--)\s?(.*?)(?:\*/|-->)?\s*$")
 
 # Linear work on these sizes is milliseconds; the old patterns take seconds to
 # hours. The bound is loose so a slow CI runner cannot flake it.
@@ -146,20 +147,37 @@ def test_nested_quantifier_check_is_linear() -> None:
 # --- akc_native_parsers.subtitle_parser ---------------------------------------
 
 
-def _speaker(pattern: re.Pattern[str], text: str) -> tuple[str, str] | None:
-    match = pattern.match(text)
-    return None if match is None else (match.group(1), match.group(2))
-
-
-def test_vtt_speaker_matches_old_regex_on_space_separated_tags() -> None:
-    # WebVTT separates the voice annotation with a space, tab or line feed. The
-    # old pattern let a tab or line feed sit inside a class name; the new one
-    # ends the class there, as the spec does. Outside that, they must agree.
-    for tail in _corpus(".a >x", 8):
-        text = "<v" + tail
-        assert _speaker(subtitle_parser._VTT_SPEAKER, text) == _speaker(OLD_VTT_SPEAKER, text), (
-            repr(text)
-        )
+# Recorded from the pre-2026-09-24 pattern ``^<v(?:\.[^ >]+)*\s+([^>]+)>(.*)$``
+# on space-separated tags. WebVTT separates the voice annotation with a space,
+# tab or line feed; the old pattern let a tab or line feed sit inside a class
+# name, the new one ends the class there, as the spec does.
+@pytest.mark.parametrize(
+    ("text", "expected"),
+    [
+        ("<v Bob>hi", ("Bob", "hi")),
+        ("<v.loud Ana Lee>hey", ("Ana Lee", "hey")),
+        ("<v.a.b Bob>hi", ("Bob", "hi")),
+        ("<v  Bob>x", ("Bob", "x")),
+        ("<v   >x", (" ", "x")),
+        ("<v Bob>", ("Bob", "")),
+        ("<v Bob>a>b", ("Bob", "a>b")),
+        ("<v.x.y Ann Lee>line\nnext", ("Ann Lee", "line\nnext")),
+        ("<v .a>x", (".a", "x")),
+        ("<v.a Bob> x ", ("Bob", " x ")),
+        ("<v >x", None),
+        ("<v>x", None),
+        ("<vBob>x", None),
+        ("<v.a>x", None),
+        ("<v. >x", None),
+        ("<v.a.b>x", None),
+        ("<v Bob", None),
+        ("x<v Bob>hi", None),
+    ],
+    ids=_short_id,
+)
+def test_vtt_speaker_pattern_keeps_old_results(text: str, expected: tuple[str, str] | None) -> None:
+    match = subtitle_parser._VTT_SPEAKER.match(text)
+    assert (None if match is None else (match.group(1), match.group(2))) == expected
 
 
 @pytest.mark.parametrize(
@@ -194,19 +212,39 @@ def test_vtt_speaker_is_linear(hostile: str) -> None:
 # --- akc_compiler_runtime.extraction ------------------------------------------
 
 
-def _new_c_comment_body(line: str) -> str | None:
-    match = extraction._C_COMMENT_RE.match(line)
-    return None if match is None else extraction._c_comment_body(match.group(1).strip())
-
-
-def _old_c_comment_body(line: str) -> str | None:
-    match = OLD_C_COMMENT.match(line)
-    return None if match is None else match.group(1).strip()
-
-
-def test_c_comment_body_matches_old_regex() -> None:
-    for text in _corpus("/*<!-> a", 7):
-        assert _new_c_comment_body(text) == _old_c_comment_body(text), repr(text)
+# Recorded from the pre-2026-09-24 pattern
+# ``^\s*(?://|/?\*|<!--)\s?(.*?)(?:\*/|-->)?\s*$`` (group 1, stripped).
+@pytest.mark.parametrize(
+    ("line", "expected"),
+    [
+        ("// hello", "hello"),
+        ("//hello", "hello"),
+        ("   // indented */", "indented"),
+        ("/* block */", "block"),
+        ("/** doc */", "* doc"),
+        (" * star line", "star line"),
+        ("*/", "/"),
+        ("<!-- html -->", "html"),
+        ("<!--x-->", "x"),
+        ("<!-- open", "open"),
+        ("// a */ -->", "a */"),
+        ("// trailing */   ", "trailing"),
+        ("//", ""),
+        ("/*/", "/"),
+        ("<!---->", ""),
+        ("*-->", ""),
+        ("// x*/*/", "x*/"),
+        ("/", None),
+        ("<!-", None),
+        ("code // not at start", None),
+        ("x", None),
+        ("", None),
+        ("   ", None),
+    ],
+    ids=_short_id,
+)
+def test_c_comment_body_keeps_old_results(line: str, expected: str | None) -> None:
+    assert extraction._c_comment_body(line) == expected
 
 
 def test_c_comment_extraction_keeps_claim_text() -> None:
@@ -225,4 +263,4 @@ def test_c_comment_extraction_keeps_claim_text() -> None:
 
 def test_c_comment_extraction_is_linear() -> None:
     hostile = "//" + " " * 100_000 + "x"
-    assert _elapsed(lambda: _new_c_comment_body(hostile)) < BUDGET_SECONDS
+    assert _elapsed(lambda: extraction._c_comment_body(hostile)) < BUDGET_SECONDS
