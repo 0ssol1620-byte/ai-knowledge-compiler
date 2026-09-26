@@ -242,3 +242,26 @@ replacement nonce design is not an acceptable performance optimization.
 The locally executable visual, trust, interaction, accessibility, contract, and
 asset gates pass. Production release still depends on the external gates above.
 No status label should be interpreted as replacing those missing artifacts.
+
+## 2026-09-27 PR #80 visual baseline repair
+
+The CI visual job was finally able to start after the repository's temporary
+public visibility enabled GitHub-hosted Actions. Its first production-build
+screenshots showed that the checked-in Linux references described an older
+FOLYNTA interface. The Playwright web server now runs `pnpm build && pnpm start`
+so development-only Next indicators do not contaminate the comparison.
+
+The production capture also exposed a real omission: `/projects` and
+`/integrity?reference=1` had no scoped page styling, so status labels, table
+rows, and the evidence inspector collapsed into overlapping text. The new
+`operations-surfaces.css` supplies readable spacing, grid and table structure,
+status differentiation, long-name wrapping, and compact layouts. The final
+1440px captures show the two pages without overlap; their source artifact is
+GitHub Actions run `36251535560`, `visual-and-browser-matrix-evidence`.
+
+Eleven desktop/Linux reference images were refreshed from production-build
+captures: nine from run `36250798453` and the repaired two from run
+`36251535560`. These images are regression references, not proof of founder
+visual acceptance. The repository's 1920, 1440, 1280, 1024, 768, 390, and
+360px browser matrix and reduced-motion checks remain the required gate. The
+final rerun and founder visual review are recorded separately when complete.
