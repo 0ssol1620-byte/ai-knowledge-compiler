@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from .complementarity import (
     ARENA_MODEL_ROUTES,
+    ROUTE_ARENA_MODELS,
     dominant_element,
     select_cross_check_peer,
 )
@@ -74,6 +75,10 @@ def _name_cross_check(
     substitute a reader the campaign never paired with this one.
     """
     if not decision.require_cross_check:
+        return decision
+    # Legacy/native routes have no measured rescue baseline. Preserve their
+    # existing cross-check policy instead of marking a peer unavailable.
+    if decision.route not in ROUTE_ARENA_MODELS:
         return decision
     element = dominant_element(page)
     measurement = select_cross_check_peer(

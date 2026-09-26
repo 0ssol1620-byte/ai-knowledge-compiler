@@ -281,6 +281,23 @@ class TestEngine:
         assert decision.cross_check_route is None
         assert "cross_check_peer_unavailable" in decision.reason_codes
 
+    def test_unmeasured_native_cross_check_keeps_existing_policy(self) -> None:
+        decision = select_first_route(
+            _context(frozenset({Route.NATIVE, Route.PADDLE_VL})),
+            _page(
+                native_text_chars=500,
+                native_text_coverage=0.35,
+                native_reading_order_score=0.95,
+                image_coverage=0.2,
+                table_density=0.3,
+            ),
+        )
+        assert decision.route is Route.NATIVE
+        assert decision.require_cross_check is True
+        assert decision.requires_visual_parse is True
+        assert decision.cross_check_route is None
+        assert "cross_check_peer_unavailable" not in decision.reason_codes
+
     def test_names_no_peer_when_no_cross_check_was_asked_for(self) -> None:
         context = RouterContext(
             mode=ProcessingMode.BALANCED,

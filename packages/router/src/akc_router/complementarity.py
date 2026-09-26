@@ -19,10 +19,11 @@ Two properties of the data matter more than any single number.
     infinity_parser2_flash on formula. A router that picks one partner for
     everything throws away the difference.
 
-2.  **There is a floor no router reaches.** Both readers are wrong together on
+2.  **Each measured pair has a floor.** Paddle and Ovis are wrong together on
     11.4% of text pages, 22.9% of table pages, 35.7% of reading-order pages and
-    44.7% of formula pages. That is the ceiling of any two-model arrangement,
-    and it is why a second read is a recovery step rather than a guarantee.
+    44.7% of formula pages. The selected Paddle and Flash formula pair is wrong
+    together on 42.8%. These campaign-specific pair limits do not bound every
+    possible two-model arrangement. A second read is a recovery step, not a guarantee.
 
 Every rate here carries its denominator, because a rescue rate is measured over
 the pages the baseline got wrong, never over the corpus.

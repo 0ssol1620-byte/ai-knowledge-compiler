@@ -43,9 +43,11 @@ ranking in disguise. Where `ovisocr2` is wrong, `paddleocr_vl_1_6` recovers
 19.8% of table pages and 14.6% of formula pages — but only 12.8% of text pages,
 which is worse than `glm_ocr` and `opus5` at 16.3%.
 
-There is also a floor. Both readers are wrong together on 11.4% of text pages,
-22.9% of table pages, 35.7% of reading-order pages and 44.7% of formula pages.
-That is the ceiling of any two-model arrangement, and it is why a second read is
+There is also a measured floor for each named pair. Paddle and Ovis are both
+wrong on 11.4% of text pages, 22.9% of table pages, 35.7% of reading-order
+pages and 44.7% of formula pages. For the selected Paddle and Flash formula
+pair, the both-wrong rate is 42.8%. These are campaign-specific limits on those
+pairs, not a ceiling for every possible two-model arrangement. A second read is
 a recovery step and never a guarantee.
 
 ## Decision
@@ -59,14 +61,18 @@ through — by asking the page which element dominates it and asking the rescue
 table who recovers that element for the route that was chosen.
 
 `require_cross_check` keeps its meaning and its type. Both new fields default to
-`None`, so a decision serialized before this record still validates.
+`None`, so a decision serialized before this record still validates. They are
+in-process advisory fields and are deliberately excluded from serialized DTOs;
+no worker or persisted decision may assume they survived a process boundary.
 
 ### 2. No measurement, no second read
 
 `select_cross_check_peer` returns `None` when the baseline was never measured,
 when no measured peer has a route, when every measured peer is unservable, or
-when the measured rescue rate is zero. The decision then keeps
-`require_cross_check` and gains the reason code `cross_check_peer_unavailable`.
+when the measured rescue rate is zero. A measured baseline without a servable
+peer keeps `require_cross_check` and gains the internal reason code
+`cross_check_peer_unavailable`. An unmeasured baseline keeps its existing
+cross-check policy and does not claim this measured-peer failure.
 
 The caller must treat that as *the check is unavailable*, not as *pick
 something*. A second reader chosen without evidence is a guess wearing the word

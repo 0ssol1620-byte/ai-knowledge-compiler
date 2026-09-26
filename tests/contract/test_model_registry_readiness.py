@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 import re
 import runpy
 from pathlib import Path
@@ -40,6 +41,31 @@ def test_revision_source_digest_is_checked_against_committed_bytes(tmp_path: Pat
     assert "digest mismatch" in verify_revision_source(source, tmp_path)
     source["registry"] = "../outside.json"
     assert "outside the repository" in verify_revision_source(source, tmp_path)
+
+
+def test_revision_source_checks_identity_and_weights(tmp_path: Path) -> None:
+    registry = tmp_path / "registry.json"
+    registry.write_text(
+        json.dumps({"models": {"sample": {
+            "repo": "owner/model",
+            "revision": "a" * 40,
+            "weights": {"largest_file_sha256": "sha256:" + "b" * 64, "file_count": 2},
+        }}}),
+        encoding="utf-8",
+    )
+    source = {
+        "registry": "registry.json",
+        "registry_sha256": "sha256:" + hashlib.sha256(registry.read_bytes()).hexdigest(),
+        "weights_largest_file_sha256": "sha256:" + "b" * 64,
+        "weights_file_count": 2,
+    }
+    release = {"upstream_id": "owner/model", "upstream_revision": "a" * 40}
+    assert verify_revision_source(source, tmp_path, release) is None
+    release["upstream_revision"] = "c" * 40
+    assert "revision mismatch" in verify_revision_source(source, tmp_path, release)
+    release["upstream_revision"] = "a" * 40
+    source["weights_file_count"] = 3
+    assert "file count mismatch" in verify_revision_source(source, tmp_path, release)
 
 
 def test_second_reader_adr_evidence_paths_and_digests_are_real() -> None:

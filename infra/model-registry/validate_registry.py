@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 import re
 from pathlib import Path
 from typing import Any
@@ -50,7 +51,9 @@ def load_yaml(path: Path) -> dict[str, Any]:
     return value
 
 
-def verify_revision_source(source: dict[str, Any], repo_root: Path) -> str | None:
+def verify_revision_source(
+    source: dict[str, Any], repo_root: Path, release: dict[str, Any] | None = None
+) -> str | None:
     """Bind a claimed model identity to the exact committed registry bytes."""
     relative = source.get("registry")
     declared = source.get("registry_sha256")
@@ -63,6 +66,25 @@ def verify_revision_source(source: dict[str, Any], repo_root: Path) -> str | Non
     actual = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
     if declared != actual:
         return f"revision source registry digest mismatch: expected {actual}"
+    if release is not None:
+        registry = json.loads(path.read_text(encoding="utf-8"))
+        models = registry.get("models")
+        if not isinstance(models, dict):
+            return "revision source registry has no model records"
+        matches = [
+            model for model in models.values()
+            if isinstance(model, dict) and model.get("repo") == release.get("upstream_id")
+        ]
+        if len(matches) != 1:
+            return "revision source upstream repository is missing or ambiguous"
+        model = matches[0]
+        if model.get("revision") != release.get("upstream_revision"):
+            return "revision source upstream revision mismatch"
+        weights = model.get("weights") or {}
+        if weights.get("largest_file_sha256") != source.get("weights_largest_file_sha256"):
+            return "revision source weights digest mismatch"
+        if weights.get("file_count") != source.get("weights_file_count"):
+            return "revision source weights file count mismatch"
     return None
 
 
@@ -103,7 +125,7 @@ def validate(strict: bool = False) -> list[str]:
             if not isinstance(revision_source, dict):
                 errors.append(f"{prefix}: revision source must be an object")
             else:
-                source_error = verify_revision_source(revision_source, ROOT.parents[1])
+                source_error = verify_revision_source(revision_source, ROOT.parents[1], release)
                 if source_error:
                     errors.append(f"{prefix}: {source_error}")
         licenses = release.get("licenses") or {}
