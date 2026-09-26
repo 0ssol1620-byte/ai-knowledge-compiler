@@ -252,10 +252,15 @@
     outline-offset: 3px;
   }
 
-  @media (max-width: 820px) {
+  .film-scroll-hint {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
     .film-scene {
       grid-template-columns: minmax(0, 1fr);
       align-content: center;
+      padding-block: 24px;
     }
 
     .film-copy h1 {
@@ -265,12 +270,11 @@
     .film-stage-nav > span {
       max-width: 170px;
       text-align: right;
-      font-size: 11px;
+      font-size: 12px;
     }
 
     .film-proof-chip {
-      right: 12px;
-      bottom: 12px;
+      display: none;
     }
 
     .film-metrics {
@@ -278,26 +282,11 @@
     }
 
     .film-scroll-hint {
+      display: block;
       margin: -14px 0 0;
       color: #31674c;
       font-size: 12px;
       font-weight: 700;
-    }
-  }
-
-  @media (min-width: 821px) {
-    .film-scroll-hint {
-      display: none;
-    }
-  }
-
-  @media (max-width: 390px) {
-    .film-scene {
-      padding-block: 24px;
-    }
-
-    .film-proof-chip {
-      display: none;
     }
 
     .film-controls {
