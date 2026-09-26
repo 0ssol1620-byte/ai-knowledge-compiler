@@ -91,7 +91,7 @@ def _name_cross_check(
             "cross_check_element": element.value,
             "reason_codes": (
                 *decision.reason_codes,
-                f"cross_check_measured:{element.value}:{measurement.peer}",
+                "cross_check_peer_measured",
             ),
         }
     )

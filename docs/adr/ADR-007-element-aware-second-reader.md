@@ -13,20 +13,13 @@ performs it. In practice that left the choice to whatever the caller had
 available, which on this deployment is one model, so the "cross-check" was a
 second opinion from the same opinion.
 
-The Model Arena of 2026-09-05 ran thirteen open-weights readers over the whole
-of OmniDocBench — 1,651 pages each, scored by the benchmark's own end2end
-quick_match evaluator. The leaderboard it produced answers "who is best". That
-turns out to be the wrong question to build a router on, for two reasons the
-campaign measured rather than argued.
-
-**The ranking is not stable across benchmarks.** On OmniDocBench text edit
-distance, `ovisocr2` leads at 0.0290 and `paddleocr_vl_1_6` follows at 0.0426.
-On olmOCR-Bench — 1,403 documents, 8,413 checks, same campaign — `mineru_vlm`
-leads at 0.806, `olmocr2` is second at 0.799, `paddleocr_vl_1_6` is third at
-0.781, and `ovisocr2` is **ninth at 0.679**. The model that leads one benchmark
-sits in the bottom third of the other. On ParseBench chart extraction,
-`mineru_vlm` scores 0.605 while nine of the twelve rows sit near 0.01: chart
-reading is effectively a capability one model has and the others do not.
+The 2026-09-06 complementarity study records same-page comparisons against a
+PaddleOCR-VL baseline. The committed full-compare summary contains a settled
+1,651-page PaddleOCR-VL result but has null score fields for OvisOCR2. The
+olmOCR-Bench and ParseBench score artifact cited in the earlier draft is not
+committed. This decision therefore does not adopt cross-benchmark rankings or
+an industry-leading claim. It uses only the committed overlapping-page matrices
+below to describe a possible second reader, and keeps execution disabled.
 
 **Where a reader fails is more useful than how often.** The 2026-09-06
 complementarity study re-used the per-page edit distances the campaign had
@@ -109,22 +102,20 @@ caller that wants it must ask for it by name.
   from `opendatalab/PDF-Extract-Kit-1.0`.
 - The existing `mineru` row is pinned to the pipeline it always was. It had
   `engine: mineru_pipeline` while `upstream_id` named the umbrella repository
-  and `upstream_revision` was null. **The registry carried the variant that
-  lost** — olmOCR-Bench 0.713 against `mineru_vlm`'s 0.806, and ParseBench chart
-  0.008 against 0.605.
+  and `upstream_revision` was null. This corrects identity; it does not establish
+  a production quality ranking.
 
 Every revision comes from `research/model_arena_20260903/model_registry.json`
-(sha256 `83152ef9…`), resolved read-only from the Hugging Face and GitHub APIs
+(sha256 `292fd6f6…`), resolved read-only from the Hugging Face and GitHub APIs
 on 2026-09-05, and each entry carries a `revision_source` block naming it.
 
 ### 6. Chart extraction is recorded here and not routed on
 
-`mineru_vlm`'s ParseBench chart result is the most lopsided finding of the
-campaign and it is deliberately **not** wired into the router. ParseBench is a
-different benchmark from the one the rescue table was built on, and mixing them
-in one selector would compare across conditions. Routing on it needs its own
-complementarity measurement first. `PageMetrics.chart_probability` exists and is
-untouched by this record.
+Chart routing is deliberately **not** wired into this selector. ParseBench is a
+different benchmark from the one the committed rescue table was built on, and
+the relevant score artifact is absent from this release. Routing on chart
+probability needs its own same-condition complementarity measurement first.
+`PageMetrics.chart_probability` exists and is untouched by this record.
 
 ## What this does not change
 
@@ -135,13 +126,9 @@ licence field is altered. `ready_routes` is still computed per request from the
 a revision, a runtime image digest, a model id and an adapter version —
 `validate_registry_binding` additionally refuses one with no benchmark report.
 
-On the current deployment `ready_routes` is `{native}`, so every decision this
-record touches resolves to `cross_check_peer_unavailable`. That is the intended
-state until activation.
-
-No new feature flag is introduced. The registry row plus its `canary_percent`
-already gate this, and a second gate with no measured need is a second thing to
-get wrong.
+The selected peer remains unavailable unless an exact registry binding and a
+tenant opt-in flag both exist. Both new flags default off. A production caller
+does not dispatch the peer yet, so this remains decision logic in shadow.
 
 ## Activation — what is not an agent's call
 
@@ -198,13 +185,13 @@ worse.
 | --- | --- |
 | `research/model_arena_20260903/reports/complementarity_20260906/complementarity_rescue_matrix.json` | `5528b7ec9afde1fd450bd82563360cf884d5c6d85998232171bc97dfdac3d174` |
 | `research/model_arena_20260903/reports/complementarity_20260906/complementarity_oracle_matrix.json` | `2efa03bc44824542c310a8fc10d0935b51317780240be4e4dc9717a0745bfaaf` |
-| `research/model_arena_20260903/model_registry.json` | `83152ef92e2792a7ab3b2ef25fa9774115adfea2ebcd45363f7207764f8ee693` |
+| `research/model_arena_20260903/model_registry.json` | `292fd6f6176b017b0288dd6634d77f2be58c9c118d9a01bd3c91799a1570aa48` |
+| `research/model_arena_20260903/reports/full_compare_20260905/comparison_omnidoc_full.json` | `80c5ae44bc27cbe7de98c9a1830a66a399a2dbb81c6a5176270977497cf979ad` |
 
-The OmniDocBench and olmOCR-Bench figures quoted in Context come from
-`reports/full_compare_20260905/comparison_omnidoc_full.json` and
-`reports/full_compare_20260905/LEADERBOARD_QUALITY_SPEED.json`, which are the
-campaign's own runs of open-weights models on public benchmarks. They are ours,
-not quoted leaderboard rows. No competitor's published row appears here.
+The overlap measurements come from the two committed complementarity matrices.
+The full-compare summary is included to show its incomplete score fields rather
+than to claim a full-benchmark OvisOCR2 win. No competitor's published row is
+treated as a same-condition result.
 
 `tau = 0.05` is the study's discrete threshold for calling a page wrong. **It is
 not calibrated against a TAVONEL corpus.** Neither is any rate in the table a

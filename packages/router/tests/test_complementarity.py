@@ -262,7 +262,9 @@ class TestEngine:
         assert decision.require_cross_check is True
         assert decision.cross_check_route is Route.OVIS_VL
         assert decision.cross_check_element == "text"
-        assert "cross_check_measured:text:ovis" in decision.reason_codes
+        assert "cross_check_peer_measured" in decision.reason_codes
+        assert "cross_check_route" not in decision.model_dump()
+        assert "cross_check_element" not in decision.model_dump()
 
     def test_a_formula_page_gets_the_formula_winner_not_the_text_one(self) -> None:
         decision = select_first_route(

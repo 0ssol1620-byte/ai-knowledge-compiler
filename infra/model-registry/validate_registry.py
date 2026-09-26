@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import re
 from pathlib import Path
 from typing import Any
@@ -49,6 +50,22 @@ def load_yaml(path: Path) -> dict[str, Any]:
     return value
 
 
+def verify_revision_source(source: dict[str, Any], repo_root: Path) -> str | None:
+    """Bind a claimed model identity to the exact committed registry bytes."""
+    relative = source.get("registry")
+    declared = source.get("registry_sha256")
+    if not isinstance(relative, str) or not relative or not isinstance(declared, str):
+        return "revision source requires a registry path and sha256 digest"
+    root = repo_root.resolve()
+    path = (root / relative).resolve()
+    if not path.is_relative_to(root) or not path.is_file():
+        return "revision source registry is missing or outside the repository"
+    actual = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+    if declared != actual:
+        return f"revision source registry digest mismatch: expected {actual}"
+    return None
+
+
 def validate(strict: bool = False) -> list[str]:
     models = load_yaml(ROOT / "models.yaml")
     recipe_data = load_yaml(ROOT / "recipes.yaml")
@@ -81,6 +98,14 @@ def validate(strict: bool = False) -> list[str]:
             errors.append(f"{prefix}: floating revision is forbidden")
         if requires_pin and not (isinstance(revision, str) and HEX_REVISION.fullmatch(revision)):
             errors.append(f"{prefix}: exact 40-64 hex revision required")
+        revision_source = release.get("revision_source")
+        if revision_source is not None:
+            if not isinstance(revision_source, dict):
+                errors.append(f"{prefix}: revision source must be an object")
+            else:
+                source_error = verify_revision_source(revision_source, ROOT.parents[1])
+                if source_error:
+                    errors.append(f"{prefix}: {source_error}")
         licenses = release.get("licenses") or {}
         missing = LICENSE_FIELDS.difference(licenses)
         if missing:

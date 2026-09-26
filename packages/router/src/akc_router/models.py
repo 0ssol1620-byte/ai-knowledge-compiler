@@ -113,8 +113,8 @@ class RouteDecision(ContractModel):
     # decision built before this field existed still validates. None while
     # `require_cross_check` is true means no measured peer is servable: that is a
     # second read the router cannot justify, and it is not run.
-    cross_check_route: Route | None = None
-    cross_check_element: str | None = None
+    cross_check_route: Route | None = Field(default=None, exclude=True)
+    cross_check_element: str | None = Field(default=None, exclude=True)
 
     @model_validator(mode="after")
     def enforce_cross_check_pair(self) -> RouteDecision:
