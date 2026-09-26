@@ -9,7 +9,8 @@ Phases (each gated on the previous, all failures ledgered):
   report    -> SUMMARY.md
 
 Usage:
-  python -m benchmark.w6.v2.run_pilot --worktree-root D:/CodexProjects/ai-knowledge-compiler-w6v2 [--skip-acquire]
+  python -m benchmark.w6.v2.run_pilot \
+--worktree-root D:/CodexProjects/ai-knowledge-compiler-w6v2 [--skip-acquire]
 """
 
 from __future__ import annotations
@@ -27,10 +28,10 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from benchmark.w6.v2 import arms as arms_mod
-from benchmark.w6.v2 import grading, questions as questions_mod
+from benchmark.w6.v2 import grading
+from benchmark.w6.v2 import questions as questions_mod
 from benchmark.w6.v2.acquisition import acquire_corpus
 from benchmark.w6.v2.compile_world import WorldRetriever, compile_world, save_world
-from benchmark.w6.v2.credentials import load_openrouter_key, redact
 from benchmark.w6.v2.llm import OpenRouterClient
 from benchmark.w6.v2.retrieval import RagIndex
 
@@ -106,7 +107,8 @@ def main(argv: list[str] | None = None) -> int:
     documents: dict[str, dict] = {}
     index = 0
     for title in titles:
-        cache_path = cache_dir / f"{hashlib.sha1(title.encode('utf-8')).hexdigest()}.json"
+        cache_key = hashlib.sha1(title.encode("utf-8"), usedforsecurity=False).hexdigest()
+        cache_path = cache_dir / f"{cache_key}.json"
         if not cache_path.exists():
             continue
         entry = json.loads(cache_path.read_text(encoding="utf-8"))
@@ -122,7 +124,10 @@ def main(argv: list[str] | None = None) -> int:
     usable = len(documents)
     blocked = usable < int(registry["blocked_threshold_usable_documents"])
     if blocked:
-        print(f"[gate] BLOCKED_ACQUISITION candidate: usable={usable} < {registry['blocked_threshold_usable_documents']}")
+        print(
+            "[gate] BLOCKED_ACQUISITION candidate: "
+            f"usable={usable} < {registry['blocked_threshold_usable_documents']}"
+        )
     else:
         print(f"[acquire] usable documents rebuilt from cache: {usable}")
 
@@ -134,10 +139,21 @@ def main(argv: list[str] | None = None) -> int:
         summary_payload = {
             "verdict": verdict,
             "usable_documents": usable,
-            "diagnosis": "acquisition yielded fewer usable documents than the preregistered gate; see acquisition-report.json item ledger",
+            "diagnosis": (
+                "acquisition yielded fewer usable documents than the preregistered gate; "
+                "see acquisition-report.json item ledger"
+            ),
         }
-        write_json(results_dir / "evaluation.json", {"verdict": verdict, "metrics": {}, "grades": []})
-        write_summary_md(results_dir / "SUMMARY.md", prereg, run_manifest | summary_payload, metrics={}, pairwise=[])
+        write_json(
+            results_dir / "evaluation.json", {"verdict": verdict, "metrics": {}, "grades": []}
+        )
+        write_summary_md(
+            results_dir / "SUMMARY.md",
+            prereg,
+            run_manifest | summary_payload,
+            metrics={},
+            pairwise=[],
+        )
         print(f"[done] verdict={verdict}")
         return 0
 
@@ -151,8 +167,9 @@ def main(argv: list[str] | None = None) -> int:
         environment=dict(os.environ),
         credential_file=None,
     )
-    key_preview = redact(load_openrouter_key())
-    print(f"[model] pinned={pinned_model} key={key_preview}")
+    # The probe above already loaded and used the key. Log only that it is
+    # configured: no prefix, no length, nothing derived from the value.
+    print(f"[model] pinned={pinned_model} key=configured")
     run_manifest["pinned_model"] = pinned_model
 
     # ---- phase 2: question generation + freeze -----------------------------
@@ -162,9 +179,11 @@ def main(argv: list[str] | None = None) -> int:
         document = documents[source_id]
         try:
             question_rows.append(
-                questions_mod.generate_question(client, source_id=source_id, title=document["title"], text=document["text"])
+                questions_mod.generate_question(
+                    client, source_id=source_id, title=document["title"], text=document["text"]
+                )
             )
-        except Exception as exc:  # noqa: BLE001 — ledgered deliberately
+        except Exception as exc:
             question_failures.append({"source_id": source_id, "error_class": type(exc).__name__})
     frozen_hash = questions_mod.freeze_questions(
         [
@@ -176,7 +195,10 @@ def main(argv: list[str] | None = None) -> int:
         ],
         results_dir / "questions.frozen.json",
     )
-    print(f"[questions] frozen n={len(question_rows)} failures={len(question_failures)} sha256={frozen_hash[:16]}...")
+    print(
+        f"[questions] frozen n={len(question_rows)} failures={len(question_failures)} "
+        f"sha256={frozen_hash[:16]}..."
+    )
     run_manifest["question_count"] = len(question_rows)
     run_manifest["question_failures"] = len(question_failures)
     run_manifest["questions_frozen_sha256"] = frozen_hash
@@ -225,7 +247,9 @@ def main(argv: list[str] | None = None) -> int:
         "llm_usage": client.usage.as_dict(),
     }
     write_json(results_dir / "evaluation.json", evaluation_payload)
-    write_summary_md(results_dir / "SUMMARY.md", prereg, run_manifest | {"verdict": verdict}, metrics, pairwise)
+    write_summary_md(
+        results_dir / "SUMMARY.md", prereg, run_manifest | {"verdict": verdict}, metrics, pairwise
+    )
     print(f"[done] verdict={verdict}")
     return 0
 
@@ -238,7 +262,9 @@ def pairwise_table(metrics: dict) -> list[dict]:
             if a == b:
                 continue
             diff = round(metrics[a]["accuracy"] - metrics[b]["accuracy"], 4)
-            table.append({"a": a, "b": b, "accuracy_diff": diff, "directional_signal": abs(diff) >= 0.10})
+            table.append(
+                {"a": a, "b": b, "accuracy_diff": diff, "directional_signal": abs(diff) >= 0.10}
+            )
     return table
 
 
@@ -246,8 +272,10 @@ def decide_verdict(metrics: dict, pairwise: list[dict]) -> str:
     for arm in ("raw", "rag", "tavonel"):
         if metrics[arm]["api_failure_rate"] > 0.20:
             return "INVALID_EXECUTION"
+
     def acc(name):
         return metrics[name]["accuracy"]
+
     tav_beats_both = acc("tavonel") - max(acc("raw"), acc("rag")) >= 0.10
     rag_leads = acc("rag") - max(acc("raw"), acc("tavonel")) >= 0.10
     raw_leads = acc("raw") - max(acc("rag"), acc("tavonel")) >= 0.10
@@ -260,29 +288,56 @@ def decide_verdict(metrics: dict, pairwise: list[dict]) -> str:
     return "INCONCLUSIVE_PILOT"
 
 
-def write_summary_md(path: Path, prereg: dict, manifest: dict, metrics: dict, pairwise: list[dict]) -> None:
+def write_summary_md(
+    path: Path, prereg: dict, manifest: dict, metrics: dict, pairwise: list[dict]
+) -> None:
     lines: list[str] = []
     lines.append("# W6 v2 pilot — Raw vs Basic RAG vs TAVONEL compiled world\n")
     lines.append("## Evidence header\n")
-    lines.append(f"- experiment_id: {prereg['experiment_id']} (protocol v{prereg['protocol_version']})")
+    lines.append(
+        f"- experiment_id: {prereg['experiment_id']} (protocol v{prereg['protocol_version']})"
+    )
     lines.append(f"- branch: {prereg['worktree_branch']} cut from {prereg['git_commit_at_freeze']}")
-    lines.append("- preregistration sha256: see preregistration.snapshot.json (frozen before any result existed)")
-    lines.append(f"- pinned model: `{manifest.get('pinned_model', 'n/a')}` (temperature 0, single-model rule)")
+    lines.append(
+        "- preregistration sha256: see preregistration.snapshot.json "
+        "(frozen before any result existed)"
+    )
+    lines.append(
+        f"- pinned model: `{manifest.get('pinned_model', 'n/a')}` "
+        "(temperature 0, single-model rule)"
+    )
     lines.append(f"- verdict: **{manifest.get('verdict', 'PENDING')}**")
-    lines.append(f"- role: PILOT ONLY — harness validation and directional signal only\n")
+    lines.append("- role: PILOT ONLY — harness validation and directional signal only\n")
     lines.append("## Executive status\n")
     lines.append("| Area | Status | Evidence boundary |")
     lines.append("| --- | --- | --- |")
-    lines.append("| Preregistration freeze | DONE | manifest + snapshot hash written before acquisition |")
+    lines.append(
+        "| Preregistration freeze | DONE | manifest + snapshot hash written before acquisition |"
+    )
     blocked_now = manifest.get("verdict") == "BLOCKED_ACQUISITION"
-    lines.append(f"| Acquisition | {'BLOCKED' if blocked_now else 'DONE'} | acquisition-report.json item ledger; no silent drops |")
-    lines.append(f"| Question freeze | {'DONE' if manifest.get('question_count') else 'NOT REACHED'} | questions.frozen.json hash in run-manifest.json |")
-    lines.append(f"| Arm execution | {'DONE' if metrics else 'NOT REACHED'} | runs/*.jsonl include per-row api_failure flags |")
-    lines.append(f"| Grading | {'DONE' if metrics else 'NOT REACHED'} | evaluation.json per-question grades + Wilson CIs |")
+    lines.append(
+        f"| Acquisition | {'BLOCKED' if blocked_now else 'DONE'} "
+        "| acquisition-report.json item ledger; no silent drops |"
+    )
+    lines.append(
+        f"| Question freeze | {'DONE' if manifest.get('question_count') else 'NOT REACHED'} "
+        "| questions.frozen.json hash in run-manifest.json |"
+    )
+    lines.append(
+        f"| Arm execution | {'DONE' if metrics else 'NOT REACHED'} "
+        "| runs/*.jsonl include per-row api_failure flags |"
+    )
+    lines.append(
+        f"| Grading | {'DONE' if metrics else 'NOT REACHED'} "
+        "| evaluation.json per-question grades + Wilson CIs |"
+    )
     lines.append("")
     if metrics:
         lines.append("## Metrics (primary: accuracy over identical frozen questions)\n")
-        lines.append("| arm | accuracy | Wilson 95% CI | critical-only | provenance hit | mean latency s | api-failure rate |")
+        lines.append(
+            "| arm | accuracy | Wilson 95% CI | critical-only | provenance hit "
+            "| mean latency s | api-failure rate |"
+        )
         lines.append("| --- | --- | --- | --- | --- | --- | --- |")
         for arm in ("raw", "rag", "tavonel"):
             m = metrics[arm]
@@ -298,7 +353,10 @@ def write_summary_md(path: Path, prereg: dict, manifest: dict, metrics: dict, pa
         lines.append("| a | b | diff | directional signal (>=0.10) |")
         lines.append("| --- | --- | --- | --- |")
         for row in pairwise:
-            lines.append(f"| {row['a']} | {row['b']} | {row['accuracy_diff']:+.3f} | {row['directional_signal']} |")
+            lines.append(
+                f"| {row['a']} | {row['b']} | {row['accuracy_diff']:+.3f} "
+                f"| {row['directional_signal']} |"
+            )
         lines.append("")
         lines.append(
             "At pilot sample size these intervals are wide; per the frozen decision rules any "
@@ -314,10 +372,14 @@ def write_summary_md(path: Path, prereg: dict, manifest: dict, metrics: dict, pa
         "policy). Questions, evaluation criteria and success judgment rules are unchanged, so "
         "preregistration validity holds. Protocol unchanged."
     )
-    lines.append("- **BLOCKER-GIT-WORKTREE**: worktree checkout could not complete on this host "
-                 "(per-file multi-second disk; interrupted resets left the index partial). Harness and results live as "
-                 "untracked files under benchmark/w6/v2/ and benchmark/results/w6-v2-pilot/, ready to commit once the "
-                 "worktree index is repaired with a single `git reset --hard HEAD`.")
+    lines.append(
+        "- **BLOCKER-GIT-WORKTREE**: worktree checkout could not complete on this host "
+        "(per-file multi-second disk; interrupted resets left the index partial). "
+        "Harness and results live as "
+        "untracked files under benchmark/w6/v2/ and benchmark/results/w6-v2-pilot/, "
+        "ready to commit once the "
+        "worktree index is repaired with a single `git reset --hard HEAD`."
+    )
     lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
 

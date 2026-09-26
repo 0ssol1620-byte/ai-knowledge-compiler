@@ -543,7 +543,6 @@ export function IntegrityConsole({
               <Icon size={18} aria-hidden="true" />
               <span>
                 <strong>{copy.states[status]}</strong>
-                <code>{status}</code>
               </span>
               <b>{formatLocaleNumber(locale, count)}</b>
             </div>

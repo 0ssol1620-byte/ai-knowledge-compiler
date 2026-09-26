@@ -26,7 +26,10 @@ test("representative public and product surfaces remain usable across the releas
   });
 
   for (const route of representativeRoutes) {
-    const response = await page.goto(route, { waitUntil: "domcontentloaded" });
+    const response = await page.goto(route, {
+      // The processing view buttons are interactive only after hydration.
+      waitUntil: route === "/workspace" ? "networkidle" : "domcontentloaded",
+    });
     expect(
       response?.status(),
       `${route} response on ${testInfo.project.name}`,
@@ -40,7 +43,25 @@ test("representative public and product surfaces remain usable across the releas
       `${route} H1 must be visible on ${testInfo.project.name}`,
     ).toBeVisible();
 
-    if (route === "/workspace" && (page.viewportSize()?.width ?? 1280) < 1280) {
+    if (route === "/knowledge-bases" && (page.viewportSize()?.width ?? 0) > 700) {
+      const shell = await page.evaluate(() => {
+        const sidebar = document.querySelector(".app-frame .sidebar");
+        const appBody = document.querySelector(".app-frame .app-body");
+        if (!sidebar || !appBody) return null;
+        return {
+          sidebarRight: sidebar.getBoundingClientRect().right,
+          contentLeft: appBody.getBoundingClientRect().left,
+        };
+      });
+      expect(shell, "Knowledge Studio must expose the product shell").not.toBeNull();
+      expect(
+        shell!.sidebarRight,
+        `Sidebar overlaps Knowledge Studio content on ${testInfo.project.name}`,
+      ).toBeLessThanOrEqual(shell!.contentLeft + 1);
+    }
+
+    // The processing view switcher is rendered at the <=700px product breakpoint.
+    if (route === "/workspace" && (page.viewportSize()?.width ?? 1280) <= 700) {
       const views = page.getByRole("navigation", {
         name: "Mobile processing views",
       });

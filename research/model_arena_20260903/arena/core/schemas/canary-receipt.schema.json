@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tavonel:arena:canary-receipt:v1",
+  "title": "TAVONEL arena canary receipt",
+  "description": "Masterplan sections 17 and 18. PASS means runtime correctness and a computable full-run projection; it is never a statement about output quality. Extension-open (ARENA_CONTRACT 11.5 D26): the driver that runs a canary may add detail without a schema round-trip, but the core keys below stay required and no consumer may depend on a non-core key.",
+  "type": "object",
+  "additionalProperties": true,
+  "$defs": {
+    "ts": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$"
+    },
+    "mb_or_null": { "type": ["integer", "null"], "minimum": 0 },
+    "num_or_null": { "type": ["number", "null"], "minimum": 0 },
+    "quantiles": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "p50_ms": { "type": "number", "minimum": 0 },
+        "p90_ms": { "type": "number", "minimum": 0 },
+        "p95_ms": { "type": "number", "minimum": 0 }
+      },
+      "required": ["p50_ms", "p90_ms", "p95_ms"]
+    },
+    "criterion": {
+      "type": "object",
+      "description": "One masterplan section 17 PASS condition. Section 17 states the conditions as a bullet list without ids; these snake_case ids are derived from that list in its order and are stable (ARENA_CONTRACT 11.6 D37): process_start = \"process start normal\"; correct_model_revision = \"correct model revision\"; output_non_empty_on_nonblank = \"output non-empty on nonblank samples\"; output_schema_valid = \"output schema valid\"; evaluator_adapter_accepts_output = \"evaluator adapter accepts output\"; zero_hard_crash = \"hard crash 0\"; zero_deterministic_runtime_bug = \"deterministic runtime bug 0\"; measured_sec_per_page = \"measured sec/page obtained\"; vram_headroom = \"VRAM headroom obtained\"; full_run_projection_computable = \"full-run projected cost computable\".",
+      "additionalProperties": false,
+      "properties": {
+        "criterion": {
+          "enum": [
+            "process_start",
+            "correct_model_revision",
+            "output_non_empty_on_nonblank",
+            "output_schema_valid",
+            "evaluator_adapter_accepts_output",
+            "zero_hard_crash",
+            "zero_deterministic_runtime_bug",
+            "measured_sec_per_page",
+            "vram_headroom",
+            "full_run_projection_computable"
+          ]
+        },
+        "passed": { "type": "boolean" },
+        "detail": { "type": "string", "minLength": 1 }
+      },
+      "required": ["criterion", "detail", "passed"]
+    }
+  },
+  "properties": {
+    "schema": { "const": "tavonel.arena.canary-receipt.v1" },
+    "campaign_id": { "type": "string", "minLength": 1 },
+    "model_key": {
+      "enum": [
+        "paddleocr_vl_1_6", "mineru_pipeline", "mineru_vlm", "deepseek_ocr2",
+        "ovisocr2", "unlimited_ocr", "infinity_parser2_pro",
+        "infinity_parser2_flash", "monkeyocrv2_b",
+        "olmocr2", "hpd_parsing", "glm_ocr", "opus5_subscription"
+      ]
+    },
+    "model_revision": { "type": "string", "minLength": 1 },
+    "runtime_image_digest": { "type": "string", "minLength": 1 },
+    "runtime_mode": { "enum": ["baked", "bootstrap", "subscription"] },
+    "base_image": { "type": ["string", "null"], "minLength": 1 },
+    "gpu_type": { "type": ["string", "null"], "minLength": 1 },
+    "gpu_compute_capability": { "type": ["string", "null"], "minLength": 1 },
+    "pod_id": { "type": ["string", "null"], "minLength": 1 },
+    "authorization_receipt_path": { "type": ["string", "null"], "minLength": 1 },
+    "authorization_receipt_sha256": {
+      "type": ["string", "null"],
+      "pattern": "^(?:sha256:)?[0-9a-f]{64}$"
+    },
+    "pod_ledger_path": { "type": ["string", "null"], "minLength": 1 },
+    "started_at": { "$ref": "#/$defs/ts" },
+    "finished_at": { "$ref": "#/$defs/ts" },
+    "page_count": { "type": "integer", "minimum": 1 },
+    "success_count": { "type": "integer", "minimum": 0 },
+    "failed_count": { "type": "integer", "minimum": 0 },
+
+    "stage_latency_ms": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/quantiles" }
+    },
+    "peak_vram_mb": { "$ref": "#/$defs/mb_or_null" },
+    "gpu_total_vram_mb": { "$ref": "#/$defs/mb_or_null" },
+    "vram_headroom_mb": { "$ref": "#/$defs/mb_or_null" },
+
+    "warm_sec_per_page": { "$ref": "#/$defs/num_or_null" },
+    "total_samples": { "type": "integer", "minimum": 1 },
+    "replica_count": { "type": "integer", "minimum": 1 },
+    "overhead_factor": { "type": "number", "minimum": 0 },
+    "selected_gpu_hourly_rate_usd": { "$ref": "#/$defs/num_or_null" },
+    "price_snapshot_sha256": {
+      "type": ["string", "null"],
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "gpu_hours_projected": { "$ref": "#/$defs/num_or_null" },
+    "raw_gpu_cost_projected_usd": { "$ref": "#/$defs/num_or_null" },
+    "wall_time_hours_projected": { "$ref": "#/$defs/num_or_null" },
+
+    "status": { "enum": ["PASS", "FAIL"] },
+    "criteria": {
+      "type": "array",
+      "description": "Every masterplan section 17 criterion, each as a named object with a PASS/FAIL result. All ten ids must be present (ARENA_CONTRACT 11.6 D37); this replaces the earlier bare minItems rule, which counted entries without naming them.",
+      "items": { "$ref": "#/$defs/criterion" },
+      "allOf": [
+        { "contains": { "properties": { "criterion": { "const": "process_start" } }, "required": ["criterion"] } },
+        { "contains": { "properties": { "criterion": { "const": "correct_model_revision" } }, "required": ["criterion"] } },
+        { "contains": { "properties": { "criterion": { "const": "output_non_empty_on_nonblank" } }, "required": ["criterion"] } },
+        { "contains": { "properties": { "criterion": { "const": "output_schema_valid" } }, "required": ["criterion"] } },
+        { "contains": { "properties": { "criterion": { "const": "evaluator_adapter_accepts_output" } }, "required": ["criterion"] } },
+        { "contains": { "properties": { "criterion": { "const": "zero_hard_crash" } }, "required": ["criterion"] } },
+        { "contains": { "properties": { "criterion": { "const": "zero_deterministic_runtime_bug" } }, "required": ["criterion"] } },
+        { "contains": { "properties": { "criterion": { "const": "measured_sec_per_page" } }, "required": ["criterion"] } },
+        { "contains": { "properties": { "criterion": { "const": "vram_headroom" } }, "required": ["criterion"] } },
+        { "contains": { "properties": { "criterion": { "const": "full_run_projection_computable" } }, "required": ["criterion"] } }
+      ]
+    },
+    "fail_reasons": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+  },
+  "required": [
+    "campaign_id", "criteria", "failed_count", "finished_at", "gpu_type",
+    "model_key", "model_revision", "page_count", "runtime_image_digest",
+    "runtime_mode", "schema", "stage_latency_ms", "started_at", "status",
+    "success_count"
+  ],
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "PASS" } }, "required": ["status"] },
+      "then": {
+        "required": [
+          "gpu_hours_projected", "raw_gpu_cost_projected_usd",
+          "wall_time_hours_projected", "warm_sec_per_page"
+        ],
+        "properties": {
+          "gpu_hours_projected": { "type": "number" },
+          "raw_gpu_cost_projected_usd": { "type": "number" },
+          "wall_time_hours_projected": { "type": "number" },
+          "warm_sec_per_page": { "type": "number" },
+          "fail_reasons": { "maxItems": 0 }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "FAIL" } }, "required": ["status"] },
+      "then": { "required": ["fail_reasons"], "properties": { "fail_reasons": { "minItems": 1 } } }
+    },
+    {
+      "if": {
+        "properties": { "runtime_mode": { "enum": ["baked", "bootstrap"] } },
+        "required": ["runtime_mode"]
+      },
+      "then": {
+        "required": ["gpu_type", "pod_id"],
+        "properties": {
+          "gpu_type": { "type": "string", "minLength": 1 },
+          "pod_id": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  ]
+}

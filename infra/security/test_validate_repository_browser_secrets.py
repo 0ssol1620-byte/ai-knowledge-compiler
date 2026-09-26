@@ -52,3 +52,13 @@ def test_secret_scan_tolerates_a_file_removed_during_walk(
     errors: list[str] = []
     scan_secrets(errors, root=tmp_path)
     assert errors == []
+
+
+def test_secret_scan_reports_location_without_echoing_the_match(tmp_path: Path) -> None:
+    # Built at runtime so this test file never matches the scanner itself.
+    synthetic_key = "AK" + "IA" + "Q" * 16
+    (tmp_path / "config.txt").write_text(f"region = eu\nkey = {synthetic_key}\n", encoding="utf-8")
+    errors: list[str] = []
+    scan_secrets(errors, root=tmp_path)
+    assert errors == ["possible committed credential in config.txt:2"]
+    assert synthetic_key not in errors[0]

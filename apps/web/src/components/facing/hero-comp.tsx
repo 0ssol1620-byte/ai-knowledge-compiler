@@ -181,7 +181,7 @@ export function HeroComp({
 function VersoPage() {
   return (
     <div className="tv-hero-comp-page">
-      <article className="tv-hero-comp-paper">
+      <article className="tv-hero-comp-paper" aria-hidden="true">
         <div className="tv-hero-comp-paper-head">
           SAMPLE · JOURNAL OF RELIABLE AI SYSTEMS
           <span>Demo document · not an actual source</span>
@@ -255,21 +255,21 @@ const PAGE_BLOCKS = [
         <caption>Table 3. Sample comparison</caption>
         <thead>
           <tr>
-            <th>Configuration</th>
-            <th>Evidence fidelity</th>
-            <th>Unsupported claim</th>
+            <th>Section</th>
+            <th>Pages</th>
+            <th>Evidence blocks</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>Baseline</td>
-            <td>0.86</td>
-            <td>3.8%</td>
+            <td>Methods</td>
+            <td>2</td>
+            <td>4</td>
           </tr>
           <tr>
-            <td>Verification enabled</td>
-            <td>0.94</td>
-            <td>1.1%</td>
+            <td>Results</td>
+            <td>3</td>
+            <td>6</td>
           </tr>
         </tbody>
       </table>
@@ -301,21 +301,21 @@ function RectoOutput() {
         <table>
           <thead>
             <tr>
-              <th>Configuration</th>
-              <th>Evidence fidelity</th>
-              <th>Unsupported claims</th>
+              <th>Section</th>
+              <th>Pages</th>
+              <th>Evidence blocks</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td>Baseline</td>
-              <td>0.86</td>
-              <td>3.8%</td>
+              <td>Methods</td>
+              <td>2</td>
+              <td>4</td>
             </tr>
             <tr>
-              <td>Verification enabled</td>
-              <td>0.94</td>
-              <td>1.1%</td>
+              <td>Results</td>
+              <td>3</td>
+              <td>6</td>
             </tr>
           </tbody>
         </table>

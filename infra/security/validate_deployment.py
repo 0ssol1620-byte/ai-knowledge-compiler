@@ -120,6 +120,15 @@ def _settings_environment_names(path: Path, class_name: str) -> set[str]:
     raise RuntimeError(f"{class_name} class was not found in {path}")
 
 
+def _collection_runtime_keys_in(mapping: dict[str, Any]) -> list[str]:
+    """Names from ``mapping`` that must live in a Kubernetes Secret instead.
+
+    Reported names come from the validated file itself; the mapped values are
+    never returned, so a misplaced secret value cannot reach a CI log.
+    """
+    return sorted(key for key in mapping if key in COLLECTION_RUNTIME_SECRET_KEYS)
+
+
 def _check_known_akc_keys(source: str, keys: set[str], known: set[str], errors: list[str]) -> None:
     unknown = sorted(key for key in keys if key.startswith("AKC_") and key not in known)
     if unknown:
@@ -233,8 +242,8 @@ def validate_environment_contract(errors: list[str]) -> None:
     missing_example_keys = sorted(all_known - example_keys)
     if missing_example_keys:
         errors.append(f".env.example is missing documented Settings keys: {missing_example_keys}")
-    for key in sorted(COLLECTION_RUNTIME_SECRET_KEYS):
-        if example_values.get(key):
+    for key in _collection_runtime_keys_in(example_values):
+        if example_values[key]:
             errors.append(f".env.example must not contain a value for {key}")
 
     compose = _load_yaml(ROOT / "docker-compose.dev.yml")
@@ -375,11 +384,11 @@ def validate_environment_contract(errors: list[str]) -> None:
     config = _load_yaml(ROOT / "infra/kubernetes/base/configmap.yaml")
     config_data = config.get("data", {})
     _check_known_akc_keys("Kubernetes akc-runtime ConfigMap", set(config_data), api_known, errors)
-    leaked_collection_secrets = sorted(COLLECTION_RUNTIME_SECRET_KEYS & set(config_data))
-    if leaked_collection_secrets:
+    misplaced_keys = _collection_runtime_keys_in(config_data)
+    if misplaced_keys:
         errors.append(
             "Kubernetes akc-runtime ConfigMap contains collection runtime Secrets: "
-            f"{leaked_collection_secrets}"
+            f"{misplaced_keys}"
         )
     missing_retrieval_config = sorted(COLLECTION_RETRIEVAL_CONFIG_KEYS - set(config_data))
     if missing_retrieval_config:
@@ -536,7 +545,7 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
     if by_kind.get("Secret"):
         errors.append("Kubernetes base must not contain a plaintext Secret")
     for config_map in by_kind.get("ConfigMap", []):
-        leaked = sorted(COLLECTION_RUNTIME_SECRET_KEYS & set(config_map.get("data", {})))
+        leaked = _collection_runtime_keys_in(config_map.get("data", {}))
         if leaked:
             name = config_map.get("metadata", {}).get("name", "unknown")
             errors.append(
@@ -829,10 +838,6 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
         "AKC_COLLECTION_METADATA_KEYRING",
         "AKC_COLLECTION_SEMANTIC_RETRIEVAL_EMBEDDING_API_KEY",
         "AKC_COLLECTION_SEMANTIC_RETRIEVAL_ROW_HMAC_SECRET",
-    ):
-        if key not in secret_contract:
-            errors.append(f"Kubernetes secret contract is missing {key}")
-    for secret_name in (
         "akc-runtime-secrets",
         "akc-scheduler-secrets",
         "akc-dispatch-secrets",
@@ -841,8 +846,8 @@ def validate_kubernetes_contract(errors: list[str]) -> None:
         "akc-url-fetcher-secrets",
         "akc-migration-secrets",
     ):
-        if secret_name not in secret_contract:
-            errors.append(f"Kubernetes secret contract is missing {secret_name}")
+        if key not in secret_contract:
+            errors.append(f"Kubernetes secret contract is missing {key}")
 
 
 def validate_gpu_and_terraform_contract(errors: list[str]) -> None:

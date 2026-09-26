@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tavonel:arena:worker-run-response:v1",
+  "title": "TAVONEL arena worker run response",
+  "description": "POST /v1/run response (ARENA_CONTRACT section 4), persisted atomically before the worker answers. raw_output.raw_text is the model's verbatim output; canonical.markdown may reorder or relabel it but never adds content.",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "ts": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$"
+    },
+    "ts_or_null": {
+      "type": ["string", "null"],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$"
+    },
+    "sha256_ref_or_null": {
+      "type": ["string", "null"],
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "count_or_null": { "type": ["integer", "null"], "minimum": 0 }
+  },
+  "properties": {
+    "schema": { "enum": ["", "tavonel.arena.worker-run-response.v1"] },
+    "inference_job_id": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "status": { "enum": ["SUCCESS", "FAILED"] },
+    "error_class": {
+      "type": ["string", "null"],
+      "enum": [
+        "INFRA_CAPACITY", "INFRA_NETWORK", "IMAGE_PULL", "MODEL_DOWNLOAD",
+        "DEPENDENCY", "MODEL_LOAD", "CUDA_INIT", "CUDA_OOM", "GPU_KERNEL",
+        "TENSOR_SHAPE", "INPUT_DECODE", "PREPROCESS", "INFERENCE_TIMEOUT",
+        "INFERENCE_STALL", "OUTPUT_EMPTY", "OUTPUT_TRUNCATED",
+        "OUTPUT_MALFORMED", "OUTPUT_REPETITION", "POSTPROCESS", "UPLOAD",
+        "CHECKSUM", "RATE_LIMIT", "AUTH", "SUBSCRIPTION_LIMIT", "EVALUATOR",
+        "UNKNOWN", null
+      ]
+    },
+    "semantic_error_class": {
+      "description": "ARENA_CONTRACT 11.1 D3: the model was wrong, not the run. Independent of status; an empty output is SUCCESS + OUTPUT_EMPTY.",
+      "type": ["string", "null"],
+      "enum": ["OUTPUT_EMPTY", "OUTPUT_TRUNCATED", "OUTPUT_REPETITION", "OUTPUT_MALFORMED", null]
+    },
+    "error_message": { "type": ["string", "null"], "minLength": 1, "maxLength": 2000 },
+    "worker_id": { "type": "string", "minLength": 1 },
+    "model_key": {
+      "enum": [
+        "paddleocr_vl_1_6", "mineru_pipeline", "mineru_vlm", "deepseek_ocr2",
+        "ovisocr2", "unlimited_ocr", "infinity_parser2_pro",
+        "infinity_parser2_flash", "monkeyocrv2_b",
+        "olmocr2", "hpd_parsing", "glm_ocr", "opus5_subscription"
+      ]
+    },
+    "model_revision": { "type": "string", "minLength": 1 },
+    "runtime_mode": { "enum": ["baked", "bootstrap", "subscription"] },
+    "runtime_image_digest": { "type": "string", "minLength": 1 },
+    "gpu_type": { "type": ["string", "null"] },
+    "pod_id": { "type": ["string", "null"] },
+    "started_at": { "$ref": "#/$defs/ts" },
+    "first_token_at": { "$ref": "#/$defs/ts_or_null" },
+    "finished_at": { "$ref": "#/$defs/ts" },
+    "timings_ms": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "load_ms": { "type": "integer", "minimum": 0 },
+        "preprocess_ms": { "type": "integer", "minimum": 0 },
+        "inference_ms": { "type": "integer", "minimum": 0 },
+        "postprocess_ms": { "type": "integer", "minimum": 0 },
+        "total_ms": { "type": "integer", "minimum": 0 }
+      },
+      "required": [
+        "inference_ms", "load_ms", "postprocess_ms", "preprocess_ms", "total_ms"
+      ]
+    },
+    "peak_vram_mb": { "$ref": "#/$defs/count_or_null" },
+    "baseline_vram_mb": {
+      "description": "Whole-GPU memory.used (MiB, summed over the configured devices) at READY, after warm-up. Null when nvidia-smi is unavailable.",
+      "$ref": "#/$defs/count_or_null"
+    },
+    "vram_total_mb": {
+      "description": "Whole-GPU memory.total (MiB, summed over the configured devices). The denominator for the section 17 headroom check.",
+      "$ref": "#/$defs/count_or_null"
+    },
+    "vram_measurement_source": {
+      "description": "How peak_vram_mb was obtained. 'nvidia-smi' is whole-GPU (anything else on the card is inside it), not this process's footprint; 'adapter' is the adapter's own figure, used only when nvidia-smi gave nothing. Null when neither measured.",
+      "type": ["string", "null"],
+      "enum": ["nvidia-smi", "adapter", null]
+    },
+    "input_bytes": { "type": "integer", "minimum": 0 },
+    "output_bytes": { "type": "integer", "minimum": 0 },
+    "output_chars": { "type": "integer", "minimum": 0 },
+    "input_tokens": { "$ref": "#/$defs/count_or_null" },
+    "output_tokens": { "$ref": "#/$defs/count_or_null" },
+    "raw_output": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "raw_text": { "type": "string" },
+        "output_format": { "type": "string", "minLength": 1 },
+        "native_json": { "type": ["object", "null"] },
+        "usage": { "type": "object" },
+        "warnings": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["output_format", "raw_text"]
+    },
+    "canonical": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "properties": {
+        "markdown": { "type": "string" },
+        "elements": { "type": ["array", "null"], "items": { "type": "object" } },
+        "lossy": { "type": "boolean" },
+        "conversion_notes": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["markdown"]
+    },
+    "raw_output_sha256": { "$ref": "#/$defs/sha256_ref_or_null" },
+    "canonical_output_sha256": { "$ref": "#/$defs/sha256_ref_or_null" }
+  },
+  "required": [
+    "finished_at", "inference_job_id", "input_bytes", "model_key",
+    "model_revision", "output_bytes", "output_chars", "runtime_image_digest",
+    "runtime_mode", "started_at", "status", "timings_ms", "worker_id"
+  ],
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "SUCCESS" } }, "required": ["status"] },
+      "then": {
+        "required": [
+          "canonical", "canonical_output_sha256", "raw_output", "raw_output_sha256"
+        ],
+        "properties": {
+          "canonical": { "type": "object" },
+          "raw_output": { "type": "object" },
+          "canonical_output_sha256": { "type": "string" },
+          "raw_output_sha256": { "type": "string" },
+          "error_class": { "type": "null" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "FAILED" } }, "required": ["status"] },
+      "then": { "required": ["error_class"], "properties": { "error_class": { "type": "string" } } }
+    }
+  ]
+}

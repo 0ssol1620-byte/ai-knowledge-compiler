@@ -635,8 +635,9 @@ function normalizeScope(event: ProductEvent): ProductEvent {
     return { ...event, collection_id: event.scope.collection_id };
   }
   if ("collection_id" in event) {
-    const { collection_id: _drop, ...rest } = event;
-    return rest as ProductEvent;
+    const withoutLegacyId = { ...event };
+    Reflect.deleteProperty(withoutLegacyId, "collection_id");
+    return withoutLegacyId as ProductEvent;
   }
   return event;
 }

@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from .llm import OpenRouterClient
-from .retrieval import LexicalRetriever, content_tokens, snippet_around
+from .retrieval import LexicalRetriever, snippet_around
 
 VALID_TYPES = {"definition", "entity", "metric", "date_event", "relation"}
 
@@ -128,8 +128,10 @@ def compile_world(
                     body_budget_chars=body_budget_chars,
                 )
             )
-        except Exception as exc:  # noqa: BLE001 — ledgered deliberately
-            world.compile_failures.append({"source_id": source_id, "error_class": type(exc).__name__})
+        except Exception as exc:
+            world.compile_failures.append(
+                {"source_id": source_id, "error_class": type(exc).__name__}
+            )
     return world
 
 
@@ -140,7 +142,10 @@ class WorldRetriever:
         self.world = world
         self.documents = documents
         self._retriever = LexicalRetriever(
-            [(element.element_id, f"{element.subject} {element.text}") for element in world.elements]
+            [
+                (element.element_id, f"{element.subject} {element.text}")
+                for element in world.elements
+            ]
         )
 
     def context_for(self, question: str, *, top_k: int = 8, radius: int = 400) -> str:
@@ -157,7 +162,8 @@ class WorldRetriever:
             seen_snippets.add(dedupe_key)
             value_note = f" [value: {element.value}]" if element.value else ""
             lines.append(
-                f"[{element.source_id} | {element.type}] {element.subject}: {element.text}{value_note}\n"
+                f"[{element.source_id} | {element.type}] "
+                f"{element.subject}: {element.text}{value_note}\n"
                 f"    excerpt: {snippet}"
             )
         header = (

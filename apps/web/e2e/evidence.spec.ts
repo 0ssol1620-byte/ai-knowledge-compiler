@@ -36,6 +36,32 @@ for (const route of ROUTES) {
   });
 }
 
+test("the measured film scene stays readable without dashboard chrome", async ({ page }) => {
+  await page.goto("/film?scene=4&static=1", { waitUntil: "domcontentloaded" });
+  await expect(page.getByRole("heading", { name: /Different models/ })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Measured model comparison" })).toBeVisible();
+  await expect(page.locator(".app-frame")).toHaveCount(0);
+  const layout = await page.evaluate(() => {
+    const copy = document.querySelector(".film-copy")!.getBoundingClientRect();
+    const visual = document.querySelector(".film-visual-metrics")!.getBoundingClientRect();
+    const firstCell = document.querySelector(".film-metrics-head strong")!.getBoundingClientRect();
+    const lastCell = document.querySelector(".film-metrics-head strong:last-child")!.getBoundingClientRect();
+    return {
+      copyBottom: copy.bottom,
+      visualTop: visual.top,
+      visualWidth: visual.width,
+      firstCellRight: firstCell.right,
+      lastCellLeft: lastCell.left,
+      documentWidth: document.documentElement.scrollWidth,
+      viewportWidth: window.innerWidth,
+    };
+  });
+  expect(layout.copyBottom).toBeLessThanOrEqual(layout.visualTop);
+  expect(layout.visualWidth).toBeGreaterThan(0);
+  expect(layout.firstCellRight).toBeLessThan(layout.lastCellLeft);
+  expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth);
+});
+
 test("the homepage does not scroll sideways at 200% zoom", async ({
   page,
   viewport,

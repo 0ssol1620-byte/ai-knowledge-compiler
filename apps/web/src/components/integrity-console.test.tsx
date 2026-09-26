@@ -7,18 +7,18 @@ afterEach(cleanup);
 
 describe("IntegrityConsole", () => {
   it("shows every durable state and automatic attempt history before override", () => {
-    render(<IntegrityConsole locale="en" reference />);
+    const { container } = render(<IntegrityConsole locale="en" reference />);
 
-    for (const status of [
-      "verified",
-      "authority_verified",
-      "auto_repaired",
-      "reprocessing",
-      "warning",
-      "unresolved",
-      "quarantined",
-    ]) {
-      expect(screen.getAllByText(status).length).toBeGreaterThan(0);
+    for (const [status, label] of [
+      ["verified", "Verified"],
+      ["authority_verified", "Authority verified"],
+      ["auto_repaired", "Auto-repaired"],
+      ["reprocessing", "Reprocessing"],
+      ["warning", "Warning"],
+      ["unresolved", "Unresolved"],
+      ["quarantined", "Quarantined"],
+    ] as const) {
+      expect(container.querySelector(`[data-status="${status}"]`)).toHaveTextContent(label);
     }
 
     expect(screen.getByText("Automatic attempt history")).toBeVisible();

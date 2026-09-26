@@ -210,7 +210,7 @@ export function SourceViewer({
           {sample ? (
             <SamplePaper pageNumber={page.page_number} />
           ) : (
-            <div className="paper-page real-source-page">
+            <div className="paper-page real-source-page" data-source-facsimile>
               {page.thumbnail_url ? (
                 // The URL is a short-lived, authenticated page preview supplied by the API.
                 // eslint-disable-next-line @next/next/no-img-element
@@ -359,7 +359,7 @@ export function SourceViewer({
 
 function SamplePaper({ pageNumber }: { pageNumber: number }) {
   return (
-    <article className="paper-page">
+    <article className="paper-page" data-source-facsimile>
       <div className="paper-journal">
         SAMPLE · JOURNAL OF RELIABLE AI SYSTEMS
       </div>
@@ -369,27 +369,27 @@ function SamplePaper({ pageNumber }: { pageNumber: number }) {
       <h3>4.2 Experimental results</h3>
       <p>
         This content is a UI validation sample. Production mode displays only
-        the API-issued source preview and stored bounding boxes.
+        the API-issued source preview and the stored bounding boxes.
       </p>
       <table>
         <caption>Table 3. Sample comparison</caption>
         <thead>
           <tr>
-            <th>Configuration</th>
-            <th>Evidence fidelity</th>
-            <th>Unsupported claim</th>
+            <th>Section</th>
+            <th>Pages</th>
+            <th>Evidence blocks</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td>Baseline</td>
-            <td>0.86</td>
-            <td>3.8%</td>
+            <td>Methods</td>
+            <td>2</td>
+            <td>4</td>
           </tr>
           <tr>
-            <td>Verification enabled</td>
-            <td>0.94</td>
-            <td>1.1%</td>
+            <td>Results</td>
+            <td>3</td>
+            <td>6</td>
           </tr>
         </tbody>
       </table>
@@ -459,7 +459,7 @@ function fallbackBlocks(pageNumber: number): CanonicalBlock[] {
       type: "table",
       markdown: "",
       source_text:
-        "Configuration Evidence fidelity Unsupported claim Baseline 0.86 3.8% Verification enabled 0.94 1.1%",
+        "Section Pages Evidence blocks Methods 2 4 Results 3 6",
       source_refs: ref([112, 402, 888, 644]),
     },
   ];

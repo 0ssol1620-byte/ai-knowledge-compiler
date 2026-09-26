@@ -41,6 +41,12 @@ class Route(StrEnum):
     PADDLE_VL = "paddle_vl"
     PADDLE_FAST = "paddle_fast"
     HPD_FAST = "hpd_fast"
+    # Added 2026-09-23 so the router can name the second readers the
+    # complementarity study measured. Neither is servable until a model_registry
+    # row carries its revision and image digest; until then `ready_routes` never
+    # contains them and every decision that would pick one falls closed.
+    OVIS_VL = "ovis_vl"
+    INFINITY_FLASH = "infinity_flash"
     UNLIMITED_LONG = "unlimited_long"
     MISTRAL_FALLBACK = "mistral_fallback"
     REGION_RECOVERY = "region_recovery"
@@ -52,6 +58,8 @@ class Route(StrEnum):
 class FeatureFlags(ContractModel):
     hpd_enabled: bool = False
     paddle_fast_enabled: bool = False
+    ovis_vl_enabled: bool = False
+    infinity_flash_enabled: bool = False
     unlimited_long_enabled: bool = False
     external_fallback_enabled: bool = False
     region_recovery_enabled: bool = False
@@ -99,6 +107,26 @@ class RouteDecision(ContractModel):
     max_attempts: Annotated[int, Field(ge=1, le=5)]
     policy_version: str
     provider_options: dict[str, Any] = Field(default_factory=dict)
+    # `require_cross_check` said a second read was wanted and never said by whom,
+    # which left the choice to whatever the caller happened to have. These two
+    # name it from the complementarity measurement, and default to None so a
+    # decision built before this field existed still validates. None while
+    # `require_cross_check` is true means no measured peer is servable: that is a
+    # second read the router cannot justify, and it is not run.
+    cross_check_route: Route | None = None
+    cross_check_element: str | None = None
+
+    @model_validator(mode="after")
+    def enforce_cross_check_pair(self) -> RouteDecision:
+        if self.cross_check_route is None and self.cross_check_element is not None:
+            raise ValueError("a cross-check element without a route names no second reader")
+        if self.cross_check_route is not None and self.cross_check_element is None:
+            raise ValueError("a cross-check route must say which element chose it")
+        if self.cross_check_route == self.route:
+            raise ValueError("a route cannot cross-check itself")
+        if self.cross_check_route is not None and not self.require_cross_check:
+            raise ValueError("a cross-check route requires require_cross_check")
+        return self
 
 
 class EscalationAction(StrEnum):

@@ -53,8 +53,17 @@ SCAN_SUFFIXES = MARKDOWN_SUFFIXES | CODE_SUFFIXES
 SKIP_DIRS = {".git", ".venv", "node_modules", "__pycache__", ".obsidian", "dist", "build"}
 
 _MONTHS = {
-    "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
-    "july": 7, "august": 8, "september": 9, "october": 10, "november": 11,
+    "january": 1,
+    "february": 2,
+    "march": 3,
+    "april": 4,
+    "may": 5,
+    "june": 6,
+    "july": 7,
+    "august": 8,
+    "september": 9,
+    "october": 10,
+    "november": 11,
     "december": 12,
 }
 
@@ -89,7 +98,10 @@ _FRONTMATTER_RE = re.compile(r"\A---\s*\n.*?\n---\s*\n?", re.DOTALL)
 
 _MD_COMMENT_RE = re.compile(r"<!--\s*(.*?)\s*-->", re.DOTALL)
 _PY_COMMENT_RE = re.compile(r"^\s*#\s?(.*)$")
-_C_COMMENT_RE = re.compile(r"^\s*(?://|/?\*|<!--)\s?(.*?)(?:\*/|-->)?\s*$")
+# Line-comment openers for non-Python code. Matched with ``str.startswith``:
+# this only extracts comment text for claims — it is not an HTML filter, and
+# markup safety lives in akc_security.markup.
+_C_COMMENT_OPENERS = ("//", "/*", "*", "<!--")
 _DEF_RE = re.compile(r"^\s*(?:async\s+)?def\s+(\w+)|^\s*class\s+(\w+)|^\s*function\s+(\w+)")
 
 _CLAIM_VERB_RE = re.compile(
@@ -409,27 +421,45 @@ def _parse_markdown(
             )
         )
     effective_authority = (
-        AuthorityClass.DRAFT
-        if draft_status
-        else (explicit_authority or doc_authority)
+        AuthorityClass.DRAFT if draft_status else (explicit_authority or doc_authority)
     )
     return claims, effective_authority
+
+
+def _c_comment_body(line: str) -> str | None:
+    """Text of a ``//``, ``/*``, ``*`` or ``<!--`` comment line, else None.
+
+    Drops one trailing ``*/`` or ``-->``.
+    """
+    text = line.lstrip()
+    opener = next((o for o in _C_COMMENT_OPENERS if text.startswith(o)), None)
+    if opener is None:
+        return None
+    tail = text[len(opener) :].strip()
+    for closer in ("*/", "-->"):
+        if tail.endswith(closer):
+            return tail[: -len(closer)].strip()
+    return tail
+
+
+def _py_comment_body(line: str) -> str | None:
+    match = _PY_COMMENT_RE.match(line)
+    return None if match is None else match.group(1).strip()
 
 
 def _parse_code(lines: list[str], rel_path: str, doc_authority: AuthorityClass) -> list[ClaimDraft]:
     """Rule extraction over code comments: dates, deadlines and status words."""
     claims: list[ClaimDraft] = []
     section = Path(rel_path).stem
-    comment_re = _PY_COMMENT_RE if rel_path.endswith(".py") else _C_COMMENT_RE
+    comment_body = _py_comment_body if rel_path.endswith(".py") else _c_comment_body
     for index, raw_line in enumerate(lines):
-        match = comment_re.match(raw_line)
-        if not match:
+        body = comment_body(raw_line)
+        if body is None:
             def_match = _DEF_RE.match(raw_line)
             if def_match:
                 section = next(group for group in def_match.groups() if group)
             continue
-        body = match.group(1).strip()
-        if not body or len(body) < 12:
+        if len(body) < 12:
             continue
         has_date = _first_date(body) is not None
         states_something = bool(_CLAIM_VERB_RE.search(body))
@@ -463,7 +493,7 @@ def _clean_ref(ref: str) -> str:
     ``policies/launch-governance.md — readiness gate`` resolves.
     """
     ref = ref.strip().rstrip(".;,")
-    ref = re.split(r"\s+(?:—|–|--|-)\s+", ref)[0].strip()
+    ref = re.split(r"\s+(?:\u2014|\u2013|--|-)\s+", ref)[0].strip()
     ref = re.sub(r"\s*\(.*\)\s*$", "", ref).strip()
     if "#" in ref:
         ref = ref.split("#", 1)[0]
@@ -497,9 +527,7 @@ def seed_logical_id(*, source: str, draft: ClaimDraft) -> str:
     the content -- so rewording a sentence does not silently fork its history,
     while moving it between sections does change where it lives.
     """
-    return logical_id_seed(
-        source=source, document_path=draft.section_path, anchor=draft.anchor
-    )
+    return logical_id_seed(source=source, document_path=draft.section_path, anchor=draft.anchor)
 
 
 def anchored_evidence_id(*, document_version: str, text: str, line_number: int) -> str:

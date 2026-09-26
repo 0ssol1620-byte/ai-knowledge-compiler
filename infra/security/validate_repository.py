@@ -192,9 +192,15 @@ def scan_secrets(errors: list[str], *, root: Path = ROOT) -> None:
                 text = path.read_text(encoding="utf-8")
             except (UnicodeDecodeError, OSError):
                 continue
-            for name, pattern in SECRET_PATTERNS.items():
-                if pattern.search(text):
-                    errors.append(f"possible {name} in {path.relative_to(root)}")
+            for pattern in SECRET_PATTERNS.values():
+                match = pattern.search(text)
+                if match:
+                    # Report where, not what: neither the matched text nor the
+                    # detector label reaches the log, only file and line.
+                    line = text.count("\n", 0, match.start()) + 1
+                    errors.append(
+                        f"possible committed credential in {path.relative_to(root)}:{line}"
+                    )
 
 
 BROWSER_SECRET_EXPORT_PATTERNS = (

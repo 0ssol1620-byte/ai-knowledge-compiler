@@ -163,6 +163,25 @@ def test_inventory_counts_by_extension_and_skips_excluded_dirs(report) -> None:
     assert "node_modules/pkg/junk.md" not in dumped
 
 
+
+def test_inventory_never_reads_symlink_target_outside_root(tmp_path: Path) -> None:
+    root = tmp_path / "ws"
+    root.mkdir()
+    (root / "inside.md").write_text("# inside\n", encoding="utf-8")
+    outside = tmp_path / "secret.md"
+    outside.write_text("# outside\n", encoding="utf-8")
+    try:
+        os.symlink(outside, root / "escape.md")
+        os.symlink(root / "inside.md", root / "alias.md")
+    except OSError as exc:  # Windows without symlink privilege
+        pytest.skip(f"cannot create symlink: {exc}")
+    rep = scan(root)
+    assert rep.sources["skipped_outside_root"] == ["escape.md"]
+    # A link that stays inside the root is still scanned.
+    assert rep.sources["discovered_files"] == 2
+    assert "secret.md" not in json.dumps(rep.to_dict())
+
+
 # ------------------------------------------------------- (2) duplicate scan
 
 

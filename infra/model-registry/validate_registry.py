@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import re
 from pathlib import Path
 from typing import Any
@@ -21,6 +23,31 @@ LICENSE_FIELDS = {
     "license_snapshot_sha256",
 }
 PRODUCTION_VALIDATION_STATUSES = {"champion", "canary", "fallback", "shadow"}
+
+
+SNAPSHOT_MANIFEST = ROOT / "license-snapshots" / "MANIFEST.json"
+
+
+def captured_license_digests() -> set[str]:
+    """Every digest the snapshot manifest actually stands behind.
+
+    A `license_snapshot_sha256` nobody can resolve is a number without a
+    receipt. The manifest is re-hashed here rather than trusted, so a snapshot
+    edited after capture fails the build instead of passing quietly.
+    """
+    if not SNAPSHOT_MANIFEST.exists():
+        return set()
+    with SNAPSHOT_MANIFEST.open("r", encoding="utf-8") as handle:
+        manifest = json.load(handle)
+    digests: set[str] = set()
+    for entry in manifest.get("snapshots", []):
+        path = ROOT.parent.parent / str(entry.get("file", ""))
+        if not path.is_file():
+            continue
+        digest = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+        if digest == entry.get("sha256"):
+            digests.add(digest)
+    return digests
 
 
 def release_is_attested(release: dict[str, Any]) -> bool:
@@ -50,6 +77,7 @@ def load_yaml(path: Path) -> dict[str, Any]:
 
 
 def validate(strict: bool = False) -> list[str]:
+    captured = captured_license_digests()
     models = load_yaml(ROOT / "models.yaml")
     recipe_data = load_yaml(ROOT / "recipes.yaml")
     errors: list[str] = []
@@ -90,6 +118,11 @@ def validate(strict: bool = False) -> list[str]:
             isinstance(license_snapshot, str) and SHA256_DIGEST.fullmatch(license_snapshot)
         ):
             errors.append(f"{prefix}: license snapshot must be a sha256 digest or null")
+        elif isinstance(license_snapshot, str) and license_snapshot not in captured:
+            errors.append(
+                f"{prefix}: license snapshot {license_snapshot} matches no captured "
+                f"file in license-snapshots/MANIFEST.json"
+            )
         if traffic < 0 or traffic > 100:
             errors.append(f"{prefix}: rollout traffic must be 0..100")
         if traffic > 0 and not release_is_attested(release):

@@ -1,5 +1,11 @@
 # Founder Actions and Costs
 
+> **The current open list is
+> [`V5_FOUNDER_ACTIONS_2026-09-23.md`](V5_FOUNDER_ACTIONS_2026-09-23.md).**
+> This file is kept as the Arena-phase budget, billing-cap and credential
+> record it was written as. Where the two disagree about what is still open,
+> the newer one is right.
+
 *Consolidated 2026-08-11 against `b62db24`. Everything here needs a person —
 an account, a payment method, a signature or a judgement. No agent can do these.*
 

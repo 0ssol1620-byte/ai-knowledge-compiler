@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:tavonel:arena:provision_gate:v1",
+  "title": "TAVONEL arena provisioning gate receipt",
+  "description": "What the controller decided before it was allowed to create a pod (ARENA_CONTRACT 11.5 D20/D26): the licence check, the GPU pool check, the authorization gate and the redacted create payload. Extension-open: the controller lane adds detail without a schema round-trip, and the four core blocks stay required. The nested blocks are deliberately unconstrained here - the controller owns their shape, and this schema exists so a reader can trust the envelope, not so it can second-guess the gate.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "schema": {
+      "const": "tavonel.arena.provision_gate.v1"
+    },
+    "campaign_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "model_key": {
+      "enum": [
+        "paddleocr_vl_1_6",
+        "mineru_pipeline",
+        "mineru_vlm",
+        "deepseek_ocr2",
+        "ovisocr2",
+        "unlimited_ocr",
+        "infinity_parser2_pro",
+        "infinity_parser2_flash",
+        "monkeyocrv2_b",
+        "olmocr2",
+        "hpd_parsing",
+        "glm_ocr",
+        "opus5_subscription"
+      ]
+    },
+    "phase": {
+      "type": "string",
+      "minLength": 1
+    },
+    "evaluated_at": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?Z$"
+    },
+    "authorization": {
+      "type": "object"
+    },
+    "provisioning": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "The create call's record. null when the gate refused before any create call was made (bundle, authorization, licence or budget refusal): nothing was provisioned, so nothing is invented."
+    },
+    "gpu_pool": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "license": {
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "authorization",
+    "campaign_id",
+    "evaluated_at",
+    "model_key",
+    "phase",
+    "provisioning",
+    "schema"
+  ]
+}

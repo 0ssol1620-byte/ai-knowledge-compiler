@@ -1,0 +1,87 @@
+{
+  "authorized_by": "founder, 2026-09-23 (ADR-007 Activation item 2)",
+  "digest_resolution": {
+    "compressed_bytes": 5800000000,
+    "image_created": "2026-05-28T20:14:59+08:00",
+    "layers": 15,
+    "method": "registry_manifest_head_then_host_pull_confirmation",
+    "note": "The tag is floating, so this digest records what latest-nvidia-gpu WAS on this date. The host independently reported the same digest on pull, so the bytes served are the bytes named.",
+    "resolved_at": "2026-09-23T01:40:00Z",
+    "resolved_from_tag": "latest-nvidia-gpu"
+  },
+  "does_not_prove": [
+    "That the weights baked into this image are Hugging Face revision c5630abae1d940eafe0697512a0325494b02ab42. The image was built 2026-05-28 and that revision was resolved 2026-09-05. Nothing here compares them, and `upstream_revision` on the registry row therefore still describes the weights the Arena measured rather than the weights this image serves.",
+    "Any accuracy figure. Four pages is a smoke test. The per-page output was not scored against ground truth, and the low-quality scan came back visibly degraded -- consistent with the campaign's published 36.9% low-quality-scan weakness, and not evidence about it.",
+    "That the pair beats the single reader. That is ADR-007 Activation item 4 and it has not been attempted."
+  ],
+  "image": "ccr-2vdh3abv-pub.cnc.bj.baidubce.com/paddlepaddle/paddleocr-genai-vllm-server@sha256:5713fd30ab76094b7b6a20d95fd8e26fa9dc452bcc90ccb16f1fb056bd2a0f4d",
+  "image_digest": "sha256:5713fd30ab76094b7b6a20d95fd8e26fa9dc452bcc90ccb16f1fb056bd2a0f4d",
+  "pages": [
+    {
+      "chars_out": 4490,
+      "completion_tokens": 2048,
+      "finish_reason": "length",
+      "head": "527 ↓ Dinc et al. | Effect of kinder on Foc preparation to continuous coagulation  Boc formation on filterability, Journal of Environmental Science 97, 158–161.  Leestravan, J. & R",
+      "page": "benchmark_multicolumn_full.jpg",
+      "page_sha256": "c1895b035e0a81a84391256cdaccb89deb24f7de11289b559bfd7c7540774326",
+      "seconds": 12.33
+    },
+    {
+      "chars_out": 2146,
+      "completion_tokens": 2048,
+      "finish_reason": "length",
+      "head": "The Chartered Institute of Environmental Health - JEHR - Molecular identification of the bacterial bundle... Page 8 of 11  The 2000 * 1000 00 00 00 00 00 00 00 00 00 00 00 00 00 00",
+      "page": "benchmark_table_full.jpg",
+      "page_sha256": "e7add98102641ce98bc9e8c00e6e17361805bed08f954b434a1db826324d38e6",
+      "seconds": 10.24
+    },
+    {
+      "chars_out": 2477,
+      "completion_tokens": 836,
+      "finish_reason": "stop",
+      "head": "2 DANIEL B. JOHNSON AND SHION N. THOMAS  Theorem 1.2 (Chen), Every sufficiently large even number N can be expressed as  \\[ \\begin{aligned} & N = p + q, \\\\ & \\text{where } p \\text{",
+      "page": "benchmark_math_full.jpg",
+      "page_sha256": "24f7f47ecb06d2c9b11639bc3a73e8a137270e1fc9a2d1e7f02fbd979eae5716",
+      "seconds": 4.75
+    },
+    {
+      "chars_out": 647,
+      "completion_tokens": 178,
+      "finish_reason": "stop",
+      "head": "law hard in The years on old It will not suffer wrong so fearful to be done of his and haven't to I know sit what can be done, so what is best to be done. I think myself on your su",
+      "page": "benchmark_oldscan_full.jpg",
+      "page_sha256": "96ead6359d01cce900d35bc988fac33e828f8ef4972632982446c173b91ecab3",
+      "seconds": 1.23
+    }
+  ],
+  "proves": [
+    "The image at this digest starts, loads PaddleOCR-VL-1.6 under vLLM, and returns text for all four page classes put to it: multi-column text, table, mathematics and a low-quality historical scan.",
+    "The digest is not a guess. The host reported it on pull."
+  ],
+  "provider_key": "paddleocr_vl_1_6",
+  "qualified_at": "2026-09-23T01:52:00Z",
+  "served_model": {
+    "command": "paddleocr genai_server --model_name PaddleOCR-VL-1.6-0.9B --host 0.0.0.0 --port 8080 --backend vllm",
+    "id": "PaddleOCR-VL-1.6-0.9B",
+    "max_model_len": 16384,
+    "owned_by": "vllm",
+    "root": "/home/paddleocr/.paddlex/official_models/PaddleOCR-VL-1.6"
+  },
+  "serving": {
+    "backend": "vllm",
+    "container_disk_gb": 80,
+    "data_center": "US-NC-1",
+    "endpoint_id": "vu6ny92nbsz0t2",
+    "endpoint_name": "tavonel-paddleocr-vl-16-qualify-20260923",
+    "endpoint_type": "LOAD_BALANCER",
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "gpu_count": 1,
+    "platform": "runpod",
+    "port": 8080,
+    "price_per_gpu_hour_usd": 0.34,
+    "price_source": "runpod get-capacity, 2026-09-23",
+    "worker_id": "94ypsrfht9i5uf",
+    "workers_max": 1,
+    "workers_min": 0
+  }
+}

@@ -14,7 +14,11 @@ _TIMING_LINE = re.compile(
     r"(?P<end>\d{1,2}:\d{2}(?::\d{2})?[,.]\d{3})(?:\s+.*)?$"
 )
 _TAG = re.compile(r"<[^>]+>")
-_VTT_SPEAKER = re.compile(r"^<v(?:\.[^ >]+)*\s+([^>]+)>(.*)$", re.DOTALL)
+# ``(?:\.[^ >]+)*`` matched the same class text in exponentially many ways; one
+# optional class run is the same language. The annotation takes its first
+# non-space character explicitly (a lone space only when there is nothing else)
+# so ``\s+`` and the name cannot trade characters.
+_VTT_SPEAKER = re.compile(r"^<v(?:\.[^\s>]+)?\s+([^\s>][^>]*|\s)>(.*)$", re.DOTALL)
 _TEXT_SPEAKER = re.compile(r"^([^\n:]{1,80}):\s+(.+)$", re.DOTALL)
 
 

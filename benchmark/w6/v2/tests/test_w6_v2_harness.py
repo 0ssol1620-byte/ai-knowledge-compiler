@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from unittest import mock
 
 import pytest
 
@@ -15,7 +14,11 @@ if str(ROOT) not in sys.path:
 
 from benchmark.w6.v2.acquisition import ItemOutcome, acquire_corpus  # noqa: E402
 from benchmark.w6.v2.credentials import load_openrouter_key, redact  # noqa: E402
-from benchmark.w6.v2.grading import critical_match, normalise, provenance_hit, wilson_interval  # noqa: E402
+from benchmark.w6.v2.grading import (  # noqa: E402
+    critical_match,
+    provenance_hit,
+    wilson_interval,
+)
 from benchmark.w6.v2.retrieval import RagIndex, chunk_text  # noqa: E402
 
 
@@ -51,9 +54,9 @@ class _FakeSession:
 
 def test_acquire_records_failures_not_silent(tmp_path):
     responses = [
-        _FakeResponse(status_code=500),          # attempt 1 -> http_500
-        _FakeResponse(status_code=500),          # attempt 2
-        _FakeResponse(status_code=500),          # attempt 3 -> item fails
+        _FakeResponse(status_code=500),  # attempt 1 -> http_500
+        _FakeResponse(status_code=500),  # attempt 2
+        _FakeResponse(status_code=500),  # attempt 3 -> item fails
         _FakeResponse(payload={"pages": [{"extract": "x" * 2500}]}),  # item 2 ok
     ]
     report = acquire_corpus(
@@ -67,7 +70,7 @@ def test_acquire_records_failures_not_silent(tmp_path):
     counts = report.summary_counts()
     assert counts.get("failed") == 1
     assert counts.get("ok") == 1
-    failed = [o for o in report.outcomes if o.status == "failed"][0]
+    failed = next(o for o in report.outcomes if o.status == "failed")
     assert failed.error_class == "http_500"
     assert failed.attempts == 3
     dumped = json.dumps(report.to_dict())
@@ -92,10 +95,10 @@ def test_acquire_respects_deadline_and_ledgers_remaining(tmp_path):
             return super().get(url, timeout=timeout)
 
     responses = [
-        _FakeResponse(payload={"pages": [{"extract": "y" * 2500}]}),   # item 1 ok
-        httpx.TimeoutException("simulated timeout"),                    # item 2 attempt 1
-        httpx.TimeoutException("simulated timeout"),                    # item 2 attempt 2
-        httpx.TimeoutException("simulated timeout"),                    # item 2 attempt 3
+        _FakeResponse(payload={"pages": [{"extract": "y" * 2500}]}),  # item 1 ok
+        httpx.TimeoutException("simulated timeout"),  # item 2 attempt 1
+        httpx.TimeoutException("simulated timeout"),  # item 2 attempt 2
+        httpx.TimeoutException("simulated timeout"),  # item 2 attempt 3
     ]
 
     report = acquire_corpus(
@@ -119,7 +122,7 @@ def test_cache_hit_skips_network(tmp_path):
     title = "Cached"
     from hashlib import sha1
 
-    cache_file = tmp_path / f"{sha1(title.encode()).hexdigest()}.json"
+    cache_file = tmp_path / f"{sha1(title.encode(), usedforsecurity=False).hexdigest()}.json"
     cache_file.write_text(json.dumps({"title": title, "text": "z" * 3000}), encoding="utf-8")
     seen: list[str] = []
 
@@ -152,6 +155,50 @@ def test_load_key_prefers_env_and_redacts():
     assert key == env["OPENROUTER_API_KEY"]
     preview = redact(key)
     assert "a" * 10 not in preview and "chars" in preview
+
+
+def test_pilot_model_log_never_prints_key_material(tmp_path, monkeypatch, capsys):
+    import hashlib
+
+    import yaml
+
+    from benchmark.w6.v2 import run_pilot
+
+    class _StopAfterModelLine(Exception):
+        pass
+
+    def _stop(*_args, **_kwargs):
+        raise _StopAfterModelLine
+
+    secret = "sk-or-v1-" + "c" * 64
+    monkeypatch.setenv("OPENROUTER_API_KEY", secret)
+    prereg_path = tmp_path / "benchmark/w6/v2/preregistration.yaml"
+    prereg_path.parent.mkdir(parents=True)
+    prereg_path.write_text(
+        yaml.safe_dump(
+            {
+                "source_registry": {"pilot_size": 1, "blocked_threshold_usable_documents": 1},
+                "frozen_source_list_head_60": {"items": ["Doc"]},
+                "model": {"primary": "m/primary", "fallback_order": []},
+            }
+        ),
+        encoding="utf-8",
+    )
+    cache_dir = tmp_path / "benchmark/results/w6-v2-pilot/cache"
+    cache_dir.mkdir(parents=True)
+    cache_key = hashlib.sha1(b"Doc", usedforsecurity=False).hexdigest()
+    (cache_dir / f"{cache_key}.json").write_text(json.dumps({"text": "body"}), encoding="utf-8")
+    monkeypatch.setattr(run_pilot.OpenRouterClient, "probe", lambda **_: (object(), "m/primary"))
+    monkeypatch.setattr(run_pilot.questions_mod, "generate_question", _stop)
+    monkeypatch.setattr(run_pilot.questions_mod, "freeze_questions", _stop)
+
+    with pytest.raises(_StopAfterModelLine):
+        run_pilot.main(["--worktree-root", str(tmp_path), "--skip-acquire"])
+
+    out = capsys.readouterr().out
+    assert "[model] pinned=m/primary key=configured" in out
+    # Neither the value, its prefix, nor the old "(N chars)" length preview.
+    assert secret[:3] not in out and "chars)" not in out
 
 
 def test_load_key_parses_labelled_file(tmp_path):

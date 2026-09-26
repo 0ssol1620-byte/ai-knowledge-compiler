@@ -25,26 +25,40 @@ def classify_suffix(path: Path) -> str:
     return suffix
 
 
-def iter_files(root: Path, config: HealthScanConfig) -> list[FileRecord]:
-    """Deterministic walk: sorted dirs/files, excluded dir names pruned."""
+def iter_files(root: Path, config: HealthScanConfig) -> tuple[list[FileRecord], list[str]]:
+    """Deterministic walk: sorted dirs/files, excluded dir names pruned.
+
+    Returns ``(records, outside_root)``. A file whose symlink/junction target
+    resolves outside ``root`` is never read; its relative path is reported in
+    ``outside_root`` instead, so the scan cannot be steered off the tree it
+    was pointed at and the omission is visible.
+    """
+    real_root = os.path.realpath(root).rstrip(os.sep)
     records: list[FileRecord] = []
+    outside_root: list[str] = []
     for dirpath, dirnames, filenames in os.walk(root):
         dirnames[:] = sorted(d for d in dirnames if d not in config.excluded_dir_names)
         for name in sorted(filenames):
             full = Path(dirpath) / name
+            rel_path = full.relative_to(root).as_posix()
+            real = os.path.realpath(full)
+            boundary = real[len(real_root) : len(real_root) + 1]
+            if not (real.startswith(real_root) and boundary == os.sep):
+                outside_root.append(rel_path)
+                continue
             try:
-                size = full.stat().st_size
+                size = os.stat(real).st_size
             except OSError:
                 continue
             records.append(
                 FileRecord(
-                    rel_path=full.relative_to(root).as_posix(),
-                    abs_path=str(full),
+                    rel_path=rel_path,
+                    abs_path=real,
                     suffix=classify_suffix(full),
                     size_bytes=size,
                 )
             )
-    return records
+    return records, outside_root
 
 
 def read_text(record: FileRecord, config: HealthScanConfig) -> str | None:

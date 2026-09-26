@@ -17,7 +17,10 @@ releases:
       code_license: Apache-2.0
       dataset_license: not_applicable
       runtime_license: Apache-2.0
-      license_snapshot_sha256: "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+      # A deterministic in-repo mock has no upstream licence document to
+      # capture, and a placeholder digest is a sha256 standing behind
+      # nothing. Null says the same thing without claiming a receipt.
+      license_snapshot_sha256: null
     runtime:
       engine: deterministic_mock
       version: "1.0.0"
@@ -31,20 +34,48 @@ releases:
       fallback_recipe: native_v1
   - provider_key: paddleocr_vl_1_6
     upstream_id: PaddlePaddle/PaddleOCR-VL-1.6
-    upstream_revision: null
+    # Resolved read-only from the Hugging Face API during the Model Arena
+    # campaign; see revision_source below. Recording it does not make the route
+    # eligible: rollout stays at 0 and the licence, image digest and internal
+    # validation below are still open.
+    upstream_revision: "c5630abae1d940eafe0697512a0325494b02ab42"
+    revision_source:
+      registry: research/model_arena_20260903/model_registry.json
+      registry_sha256: "sha256:83152ef92e2792a7ab3b2ef25fa9774115adfea2ebcd45363f7207764f8ee693"
+      method: official_huggingface_and_github_api_read_only
+      resolved_at: "2026-09-05T03:01:01Z"
+      weights_largest_file_sha256: "sha256:85a479d506a11e724e7285d395c551be69f41dbc16b6342d3cacfb189aed71db"
+      code_repository_revision: "2661c7c0ef5c613e8f93c6e93b2e052399f0f854"
     model_size: "0.9B"
     weight_dtype: bf16
     quantization: null
+    # Snapshot: license-snapshots/paddleocr_vl_1_6.model-card.md, the bytes
+    # the pinned revision served on 2026-09-23. Front matter declares
+    # `license: apache-2.0`; the code repository is Apache-2.0. No dataset
+    # licence and no runtime-image licence are published for this repo, so
+    # those two stay open -- four separate licences, and clearing one
+    # clears none of the others.
     licenses:
-      weight_license: review_required
+      weight_license: Apache-2.0
       code_license: Apache-2.0
       dataset_license: review_required
       runtime_license: review_required
-      license_snapshot_sha256: null
+      license_snapshot_sha256: "sha256:d6c5b77a660577f6e18021defccd835bdc93a8c6538f5a479d597f3e94288abf"
     runtime:
       engine: paddle_or_vllm
-      version: null
-      image_digest: null
+      version: 'paddlepaddle-gpu==3.2.1 (cu126) + "paddleocr[doc-parser]>=3.6.0", pipeline_version=v1.6'
+      image: ccr-2vdh3abv-pub.cnc.bj.baidubce.com/paddlepaddle/paddleocr-genai-vllm-server
+      # Resolved from the floating `latest-nvidia-gpu` tag on 2026-09-23 and
+      # then served: the host reported this same digest on pull, and the image
+      # answered four page classes (multi-column, table, mathematics, a
+      # low-quality historical scan). Receipt:
+      # serving-receipts/paddleocr_vl_1_6.serving-qualification.json
+      #
+      # It pins which bytes run. It does NOT establish that the weights baked
+      # into them are upstream_revision c5630ab... -- that revision was
+      # resolved 2026-09-05 and this image was built 2026-05-28. Reconciling
+      # the two is part of the no-regression benchmark, not of this pin.
+      image_digest: "sha256:5713fd30ab76094b7b6a20d95fd8e26fa9dc452bcc90ccb16f1fb056bd2a0f4d"
     claimed_languages: [multilingual, ko, en, zh]
     internal_validation:
       corpus: akc-golden-2026q3-v1
@@ -190,18 +221,129 @@ releases:
     rollout:
       traffic_percent: 0
       fallback_recipe: parse_balanced_v1
+  - provider_key: ovisocr2
+    # Led OmniDocBench text edit (0.0290 over 1,651 pages) and reading order in
+    # the 2026-09-05 Arena, and is the measured second reader for a PaddleOCR-VL
+    # baseline on text, table and reading order. It was missing from this file
+    # entirely, so no route could ever have named it.
+    upstream_id: ATH-MaaS/OvisOCR2
+    upstream_revision: "1fc9221b7823a371d6e97f92d527cc847e24e107"
+    revision_source:
+      registry: research/model_arena_20260903/model_registry.json
+      registry_sha256: "sha256:83152ef92e2792a7ab3b2ef25fa9774115adfea2ebcd45363f7207764f8ee693"
+      method: official_huggingface_and_github_api_read_only
+      resolved_at: "2026-09-05T03:01:01Z"
+      weights_largest_file_sha256: "sha256:9270560288656ece5cb3a6989001afcf5af8d223bceed4a423c33a008861d009"
+      weights_file_count: 16
+    # The Arena resolved identity read-only and recorded no parameter count or
+    # dtype for this repository. Nothing here has checked the model card for
+    # them, so neither is stated.
+    model_size: null
+    weight_dtype: null
+    quantization: null
+    # Snapshot: license-snapshots/ovisocr2.model-card.md. Front matter
+    # declares `license: apache-2.0`. The card also names
+    # `base_model: Qwen/Qwen3.5-0.8B`, whose own terms are a separate
+    # licence this snapshot does not cover. No code repository, dataset
+    # licence or runtime image licence is published for this repo.
+    licenses:
+      weight_license: Apache-2.0
+      code_license: review_required
+      dataset_license: review_required
+      runtime_license: review_required
+      license_snapshot_sha256: "sha256:03c876522bb7be5e8410eed758854dbb933204935afa898758d929c10725945d"
+    runtime:
+      engine: vllm
+      version: "vllm==0.22.1"
+      # The Arena ran it from weights rather than a published image, so there is
+      # no immutable digest to pin. Route eligibility requires one.
+      image_digest: null
+    claimed_languages: [multilingual]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: native_v1
+  - provider_key: mineru_vlm
+    # Not a variant of the `mineru` entry below: a different repository. It led
+    # olmOCR-Bench overall (0.806 over 1,403 documents and 8,413 checks) and is
+    # the only model in the campaign that reads charts -- ParseBench chart 0.605
+    # against roughly 0.01 for everything else. The registry previously carried
+    # only the pipeline, which is the variant that lost both.
+    upstream_id: opendatalab/MinerU2.5-Pro-2605-1.2B
+    upstream_revision: "bff20d4ae2bf202df9f45284b4d43681555a97ed"
+    revision_source:
+      registry: research/model_arena_20260903/model_registry.json
+      registry_sha256: "sha256:83152ef92e2792a7ab3b2ef25fa9774115adfea2ebcd45363f7207764f8ee693"
+      method: official_huggingface_and_github_api_read_only
+      resolved_at: "2026-09-05T03:01:01Z"
+      weights_largest_file_sha256: "sha256:abf8681ca63b8dec7b67de257af47b821f179442f72998d0696ae2ed9232a5f0"
+      weights_file_count: 13
+    # 1.2B is the repository's own name, not a measurement of the checkpoint.
+    model_size: "1.2B"
+    weight_dtype: null
+    quantization: null
+    # Snapshots: license-snapshots/mineru_vlm.model-card.md (the digest
+    # below, weights: `license: apache-2.0`) and
+    # license-snapshots/mineru_vlm.runtime-LICENSE.md
+    # (sha256:2d9aeb5d15159329a20dd804f251c64860ba954fbd26ec02f802220e6d71cf5c),
+    # MinerU at tag mineru-3.4.5-released. THE RUNTIME IS NOT PLAIN
+    # APACHE-2.0: it adds a commercial-licence threshold at 100M MAU or
+    # USD 20M monthly revenue, an online-service attribution obligation,
+    # and automatic termination on breach. Below those thresholds no
+    # separate licence is required; crossing either one requires one
+    # before use continues.
+    licenses:
+      weight_license: Apache-2.0
+      code_license: MinerU-Open-Source-License
+      dataset_license: review_required
+      runtime_license: LicenseRef-MinerU-Open-Source-License
+      license_snapshot_sha256: "sha256:8f829b69be518375b02023f795b3898adec98f5ac37208239884ad88e9a21cb7"
+    runtime:
+      engine: vllm
+      version: "mineru-vl-utils[vllm], vllm >= 0.10.1 for MinerULogitsProcessor"
+      image_digest: null
+    claimed_languages: [multilingual]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: native_v1
   - provider_key: mineru
-    upstream_id: opendatalab/MinerU
-    upstream_revision: null
+    # This is the pipeline variant specifically -- `engine: mineru_pipeline`
+    # below was already saying so while `upstream_id` named the umbrella
+    # repository. The Arena scored this variant at olmOCR-Bench 0.713 against
+    # mineru_vlm's 0.806 on the same 1,403 documents.
+    upstream_id: opendatalab/PDF-Extract-Kit-1.0
+    # The weights identity, not the code one. The Arena registry records
+    # two revisions for this row: `repo`/`revision` is the Hugging Face
+    # weight repository below, and `upstream_resolved_repo`/`_revision` is
+    # github.com/opendatalab/MinerU at tag mineru-3.4.5-released. They are
+    # different repositories and their shas are not interchangeable.
+    upstream_revision: "ed6b654c018d742e65a17671e379c5e6ecc87ec9"
+    revision_source:
+      registry: research/model_arena_20260903/model_registry.json
+      registry_sha256: "sha256:83152ef92e2792a7ab3b2ef25fa9774115adfea2ebcd45363f7207764f8ee693"
+      method: official_huggingface_and_github_api_read_only
+      resolved_at: "2026-09-05T03:01:01Z"
+      weights_largest_file_sha256: "sha256:6c80486e05b8cfbb48324a8802a2909221d219dd46aa6a936b92f2225555935e"
+      weights_file_count: 187
     model_size: suite
     weight_dtype: mixed
     quantization: null
+    # Snapshot: license-snapshots/mineru.model-card.md. The card declares
+    # NO licence at all -- no front matter, no LICENSE file in the
+    # repository. Readable is not reusable, so weight_license stays open
+    # and this row is not a candidate for traffic. The runtime licence is
+    # MinerU's, the same additional terms recorded on mineru_vlm above.
     licenses:
       weight_license: review_required
       code_license: MinerU-Open-Source-License
       dataset_license: review_required
       runtime_license: review_required
-      license_snapshot_sha256: null
+      license_snapshot_sha256: "sha256:96da5ddde73c3f578b9eab235ac59cbb5f512755090779a14461863767b70f34"
     runtime:
       engine: mineru_pipeline
       version: null

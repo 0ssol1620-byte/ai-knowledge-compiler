@@ -22,9 +22,11 @@ import json
 import logging
 import os
 import threading
+from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 logger = logging.getLogger("akc_desktop_watcher.journal")
 
@@ -37,7 +39,7 @@ class DedupEntry:
 
 @dataclass(frozen=True)
 class ReplayResult:
-    unprocessed: list[dict]
+    unprocessed: list[dict[str, Any]]
     dedup: dict[tuple[str, str], DedupEntry]
     manifest_revision: int
     sequence: int
@@ -68,7 +70,7 @@ class Journal:
     def __exit__(self, *exc_info: object) -> None:
         self.close()
 
-    def append_event(self, record: dict) -> None:
+    def append_event(self, record: dict[str, Any]) -> None:
         self._append_line(
             {"kind": "event", "event_key": record["event_key"], "record": record}
         )
@@ -99,7 +101,7 @@ class Journal:
         )
 
     def replay(self) -> ReplayResult:
-        unprocessed: dict[str, dict] = {}
+        unprocessed: dict[str, dict[str, Any]] = {}
         dedup: dict[tuple[str, str], DedupEntry] = {}
         manifest_revision = 0
         sequence = 0
@@ -147,7 +149,7 @@ class Journal:
             skipped_lines=skipped,
         )
 
-    def _iter_lines(self):
+    def _iter_lines(self) -> Iterator[str]:
         if not self.path.exists():
             return
         with self.path.open("r", encoding="utf-8") as fh:
@@ -156,7 +158,7 @@ class Journal:
                 if stripped:
                     yield stripped
 
-    def _append_line(self, obj: dict) -> None:
+    def _append_line(self, obj: dict[str, Any]) -> None:
         payload = json.dumps(obj, ensure_ascii=False, sort_keys=True)
         with self._write_lock:
             self._fh.write(payload + "\n")

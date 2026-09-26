@@ -1,0 +1,1002 @@
+[
+  {
+    "commit": {
+      "sha": "90770107e5287342e7c8234446a262cda5bbd029",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/90770107e5287342e7c8234446a262cda5bbd029"
+    },
+    "name": "v4.0.0a6",
+    "node_id": "REF_kwDOLZpAvbJyZWZzL3RhZ3MvdjQuMC4wYTY",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/v4.0.0a6",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/v4.0.0a6"
+  },
+  {
+    "commit": {
+      "sha": "78330d992504112fbb8d525cb9ca5e46cb9de676",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/78330d992504112fbb8d525cb9ca5e46cb9de676"
+    },
+    "name": "v4.0.0a5",
+    "node_id": "REF_kwDOLZpAvbJyZWZzL3RhZ3MvdjQuMC4wYTU",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/v4.0.0a5",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/v4.0.0a5"
+  },
+  {
+    "commit": {
+      "sha": "0244571bdb979569ca0c58a0bed601fa804288da",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/0244571bdb979569ca0c58a0bed601fa804288da"
+    },
+    "name": "v4.0.0a4",
+    "node_id": "REF_kwDOLZpAvbJyZWZzL3RhZ3MvdjQuMC4wYTQ",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/v4.0.0a4",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/v4.0.0a4"
+  },
+  {
+    "commit": {
+      "sha": "3a598532eb420c683ec7ca1e36ccc82f0c2a634c",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/3a598532eb420c683ec7ca1e36ccc82f0c2a634c"
+    },
+    "name": "v4.0.0a3",
+    "node_id": "REF_kwDOLZpAvbJyZWZzL3RhZ3MvdjQuMC4wYTM",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/v4.0.0a3",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/v4.0.0a3"
+  },
+  {
+    "commit": {
+      "sha": "43411337945cf5bf526c4735a5e8dc332c0fdf40",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/43411337945cf5bf526c4735a5e8dc332c0fdf40"
+    },
+    "name": "v4.0.0a2",
+    "node_id": "REF_kwDOLZpAvbJyZWZzL3RhZ3MvdjQuMC4wYTI",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/v4.0.0a2",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/v4.0.0a2"
+  },
+  {
+    "commit": {
+      "sha": "c79c1ee34324ba43f4b1b9effed98f7358b0ba30",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/c79c1ee34324ba43f4b1b9effed98f7358b0ba30"
+    },
+    "name": "v4.0.0a1",
+    "node_id": "REF_kwDOLZpAvbJyZWZzL3RhZ3MvdjQuMC4wYTE",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/v4.0.0a1",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/v4.0.0a1"
+  },
+  {
+    "commit": {
+      "sha": "fbb1257a555a3fde78ae5aaaa931e3b3f8fb2883",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/fbb1257a555a3fde78ae5aaaa931e3b3f8fb2883"
+    },
+    "name": "mineru-3.4.5-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuNC41LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.4.5-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.4.5-released"
+  },
+  {
+    "commit": {
+      "sha": "0dfc9460cd9ab693b9af60ae3fbffd7bc111b062",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/0dfc9460cd9ab693b9af60ae3fbffd7bc111b062"
+    },
+    "name": "mineru-3.4.4-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuNC40LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.4.4-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.4.4-released"
+  },
+  {
+    "commit": {
+      "sha": "273e1a3e9467357c63849ab3367c6b39b851fec5",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/273e1a3e9467357c63849ab3367c6b39b851fec5"
+    },
+    "name": "mineru-3.4.3-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuNC4zLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.4.3-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.4.3-released"
+  },
+  {
+    "commit": {
+      "sha": "d28782c8533f20587909b54e132093b436158ad9",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/d28782c8533f20587909b54e132093b436158ad9"
+    },
+    "name": "mineru-3.4.2-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuNC4yLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.4.2-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.4.2-released"
+  },
+  {
+    "commit": {
+      "sha": "a41edb9f074fab0f7f5e9f2b92f9ec44ef3f7b5c",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/a41edb9f074fab0f7f5e9f2b92f9ec44ef3f7b5c"
+    },
+    "name": "mineru-3.4.1-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuNC4xLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.4.1-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.4.1-released"
+  },
+  {
+    "commit": {
+      "sha": "562ba5849a03489a1e7b9883255b5ff1a768fa01",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/562ba5849a03489a1e7b9883255b5ff1a768fa01"
+    },
+    "name": "mineru-3.4.0-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuNC4wLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.4.0-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.4.0-released"
+  },
+  {
+    "commit": {
+      "sha": "d3cedcb370a16521664002314917a8f1c1e8fb52",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/d3cedcb370a16521664002314917a8f1c1e8fb52"
+    },
+    "name": "mineru-3.3.1-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMy4xLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.3.1-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.3.1-released"
+  },
+  {
+    "commit": {
+      "sha": "1a596137b15e7c6c9020431b3a59663e72618f5a",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/1a596137b15e7c6c9020431b3a59663e72618f5a"
+    },
+    "name": "mineru-3.3.0-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMy4wLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.3.0-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.3.0-released"
+  },
+  {
+    "commit": {
+      "sha": "0a1b03d7d41dac0bb7ab8e91630aee403ef142e0",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/0a1b03d7d41dac0bb7ab8e91630aee403ef142e0"
+    },
+    "name": "mineru-3.2.3-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMi4zLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.2.3-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.2.3-released"
+  },
+  {
+    "commit": {
+      "sha": "c574a9aab38146efb7ee11491c7dd61afa09eb49",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/c574a9aab38146efb7ee11491c7dd61afa09eb49"
+    },
+    "name": "mineru-3.2.2-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMi4yLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.2.2-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.2.2-released"
+  },
+  {
+    "commit": {
+      "sha": "9697823ad0a8aeafc860c88d543353aca6a0886f",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/9697823ad0a8aeafc860c88d543353aca6a0886f"
+    },
+    "name": "mineru-3.2.1-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMi4xLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.2.1-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.2.1-released"
+  },
+  {
+    "commit": {
+      "sha": "0ecc067276d226137f6bb1de5fc577a7a468bce1",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/0ecc067276d226137f6bb1de5fc577a7a468bce1"
+    },
+    "name": "mineru-3.2.0-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMi4wLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.2.0-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.2.0-released"
+  },
+  {
+    "commit": {
+      "sha": "3053436d84f663b5e686e468e4615f9201663145",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/3053436d84f663b5e686e468e4615f9201663145"
+    },
+    "name": "mineru-3.1.15-released",
+    "node_id": "REF_kwDOLZpAvdoAIHJlZnMvdGFncy9taW5lcnUtMy4xLjE1LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.15-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.15-released"
+  },
+  {
+    "commit": {
+      "sha": "d60304f5fe21a774b83b11216439f4c7b5829db2",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/d60304f5fe21a774b83b11216439f4c7b5829db2"
+    },
+    "name": "mineru-3.1.14-released",
+    "node_id": "REF_kwDOLZpAvdoAIHJlZnMvdGFncy9taW5lcnUtMy4xLjE0LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.14-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.14-released"
+  },
+  {
+    "commit": {
+      "sha": "2528385651add9f6c5e75210511780eb2bcabcb4",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/2528385651add9f6c5e75210511780eb2bcabcb4"
+    },
+    "name": "mineru-3.1.13-released",
+    "node_id": "REF_kwDOLZpAvdoAIHJlZnMvdGFncy9taW5lcnUtMy4xLjEzLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.13-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.13-released"
+  },
+  {
+    "commit": {
+      "sha": "a6e3f15e8ebf1132de5e56857f1a5568a07b320e",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/a6e3f15e8ebf1132de5e56857f1a5568a07b320e"
+    },
+    "name": "mineru-3.1.12-released",
+    "node_id": "REF_kwDOLZpAvdoAIHJlZnMvdGFncy9taW5lcnUtMy4xLjEyLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.12-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.12-released"
+  },
+  {
+    "commit": {
+      "sha": "d22835d5e50ef0280ace0c3e64a4b21da72be061",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/d22835d5e50ef0280ace0c3e64a4b21da72be061"
+    },
+    "name": "mineru-3.1.11-released",
+    "node_id": "REF_kwDOLZpAvdoAIHJlZnMvdGFncy9taW5lcnUtMy4xLjExLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.11-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.11-released"
+  },
+  {
+    "commit": {
+      "sha": "80e3a8d0acf7bed811f76c489758dce1c03465c4",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/80e3a8d0acf7bed811f76c489758dce1c03465c4"
+    },
+    "name": "mineru-3.1.10-released",
+    "node_id": "REF_kwDOLZpAvdoAIHJlZnMvdGFncy9taW5lcnUtMy4xLjEwLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.10-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.10-released"
+  },
+  {
+    "commit": {
+      "sha": "f9ea0e841da46b2e342ffa036e53d2c0b191d11c",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/f9ea0e841da46b2e342ffa036e53d2c0b191d11c"
+    },
+    "name": "mineru-3.1.9-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMS45LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.9-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.9-released"
+  },
+  {
+    "commit": {
+      "sha": "db6826b3a89e2faa09958bc58d33e771cb3e0eae",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/db6826b3a89e2faa09958bc58d33e771cb3e0eae"
+    },
+    "name": "mineru-3.1.8-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMS44LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.8-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.8-released"
+  },
+  {
+    "commit": {
+      "sha": "c297f67c76123a9f7d2de51aa69b8f3486a11054",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/c297f67c76123a9f7d2de51aa69b8f3486a11054"
+    },
+    "name": "mineru-3.1.7-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMS43LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.7-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.7-released"
+  },
+  {
+    "commit": {
+      "sha": "fd26de3a396544a1a421f9d62a75eab02195e11b",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/fd26de3a396544a1a421f9d62a75eab02195e11b"
+    },
+    "name": "mineru-3.1.6-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMS42LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.6-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.6-released"
+  },
+  {
+    "commit": {
+      "sha": "8f62cc053b1073f5a5d8b320d516fa7d850e4e99",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/8f62cc053b1073f5a5d8b320d516fa7d850e4e99"
+    },
+    "name": "mineru-3.1.5-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMS41LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.5-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.5-released"
+  },
+  {
+    "commit": {
+      "sha": "1a7d97f198f0489d8604aa21c44fab26e41fe5fc",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/1a7d97f198f0489d8604aa21c44fab26e41fe5fc"
+    },
+    "name": "mineru-3.1.4-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMS40LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.4-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.4-released"
+  },
+  {
+    "commit": {
+      "sha": "7f02bf9ab5d7fe56c6b587b2bd40257d3aec33d6",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/7f02bf9ab5d7fe56c6b587b2bd40257d3aec33d6"
+    },
+    "name": "mineru-3.1.3-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMS4zLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.3-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.3-released"
+  },
+  {
+    "commit": {
+      "sha": "c1ccec3933e779f092b2ba8727353668decc94b6",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/c1ccec3933e779f092b2ba8727353668decc94b6"
+    },
+    "name": "mineru-3.1.2-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMS4yLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.2-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.2-released"
+  },
+  {
+    "commit": {
+      "sha": "a71f2d80fae19edd80863e6a539c1df6b4bdab7e",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/a71f2d80fae19edd80863e6a539c1df6b4bdab7e"
+    },
+    "name": "mineru-3.1.1-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMS4xLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.1-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.1-released"
+  },
+  {
+    "commit": {
+      "sha": "d9cd58add047c2364c1198eefcb1ee9cd63a971a",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/d9cd58add047c2364c1198eefcb1ee9cd63a971a"
+    },
+    "name": "mineru-3.1.0-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMS4wLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.1.0-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.1.0-released"
+  },
+  {
+    "commit": {
+      "sha": "3ad7e0b9819394d9c8cbc926941d259e58e901f9",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/3ad7e0b9819394d9c8cbc926941d259e58e901f9"
+    },
+    "name": "mineru-3.0.9-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMC45LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.0.9-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.0.9-released"
+  },
+  {
+    "commit": {
+      "sha": "c6e0dbf0c3258a9ca2cc7a7b4a4234aa535dc4bd",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/c6e0dbf0c3258a9ca2cc7a7b4a4234aa535dc4bd"
+    },
+    "name": "mineru-3.0.8-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMC44LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.0.8-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.0.8-released"
+  },
+  {
+    "commit": {
+      "sha": "54b68d4bf18524c5b2eab2748445d484bd13b3fb",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/54b68d4bf18524c5b2eab2748445d484bd13b3fb"
+    },
+    "name": "mineru-3.0.7-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMC43LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.0.7-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.0.7-released"
+  },
+  {
+    "commit": {
+      "sha": "bd7118a58d5b6b906eb955106a4cb6064a9e7366",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/bd7118a58d5b6b906eb955106a4cb6064a9e7366"
+    },
+    "name": "mineru-3.0.6-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMC42LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.0.6-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.0.6-released"
+  },
+  {
+    "commit": {
+      "sha": "2c651490626b1582d49550ee684f260193579147",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/2c651490626b1582d49550ee684f260193579147"
+    },
+    "name": "mineru-3.0.5-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMC41LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.0.5-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.0.5-released"
+  },
+  {
+    "commit": {
+      "sha": "96e2de3eb43cc6922a8589e7f38f4793e4c7f856",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/96e2de3eb43cc6922a8589e7f38f4793e4c7f856"
+    },
+    "name": "mineru-3.0.4-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMC40LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.0.4-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.0.4-released"
+  },
+  {
+    "commit": {
+      "sha": "be675a5a97edd569761086460193e266a2479f07",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/be675a5a97edd569761086460193e266a2479f07"
+    },
+    "name": "mineru-3.0.3-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMC4zLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.0.3-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.0.3-released"
+  },
+  {
+    "commit": {
+      "sha": "6a5a2efc50f101f3fa5ca9f2b017830998bb92a7",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/6a5a2efc50f101f3fa5ca9f2b017830998bb92a7"
+    },
+    "name": "mineru-3.0.2-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMC4yLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.0.2-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.0.2-released"
+  },
+  {
+    "commit": {
+      "sha": "1f82300d1d019ad0aaee1959ea4b8ce52824f50e",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/1f82300d1d019ad0aaee1959ea4b8ce52824f50e"
+    },
+    "name": "mineru-3.0.1-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMC4xLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.0.1-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.0.1-released"
+  },
+  {
+    "commit": {
+      "sha": "ae16d1dd679190fcb9f275c67f6524f3fde699fe",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/ae16d1dd679190fcb9f275c67f6524f3fde699fe"
+    },
+    "name": "mineru-3.0.0-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTMuMC4wLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-3.0.0-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-3.0.0-released"
+  },
+  {
+    "commit": {
+      "sha": "e31c0ec34da89f6d7db78866ffec13eb0aaa3a3c",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/e31c0ec34da89f6d7db78866ffec13eb0aaa3a3c"
+    },
+    "name": "mineru-2.7.6-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNy42LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.7.6-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.7.6-released"
+  },
+  {
+    "commit": {
+      "sha": "4dc45f66215b26b35015973c78c6e2bcc24550b1",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/4dc45f66215b26b35015973c78c6e2bcc24550b1"
+    },
+    "name": "mineru-2.7.5-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNy41LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.7.5-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.7.5-released"
+  },
+  {
+    "commit": {
+      "sha": "c2c998ae111550971d7528659432e8458d85029c",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/c2c998ae111550971d7528659432e8458d85029c"
+    },
+    "name": "mineru-2.7.4-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNy40LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.7.4-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.7.4-released"
+  },
+  {
+    "commit": {
+      "sha": "e2282af9330e8c6b8c1875dc463a32a29fbc3441",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/e2282af9330e8c6b8c1875dc463a32a29fbc3441"
+    },
+    "name": "mineru-2.7.3-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNy4zLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.7.3-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.7.3-released"
+  },
+  {
+    "commit": {
+      "sha": "d832388cffb4e3aff824731e980aaf12bdb5c522",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/d832388cffb4e3aff824731e980aaf12bdb5c522"
+    },
+    "name": "mineru-2.7.2-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNy4yLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.7.2-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.7.2-released"
+  },
+  {
+    "commit": {
+      "sha": "45f8ad1d5c880e5114bc7e1c6640dba57576bb5d",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/45f8ad1d5c880e5114bc7e1c6640dba57576bb5d"
+    },
+    "name": "mineru-2.7.1-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNy4xLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.7.1-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.7.1-released"
+  },
+  {
+    "commit": {
+      "sha": "ed6894c1781940d89b07cb54d9b705a8554ac8e7",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/ed6894c1781940d89b07cb54d9b705a8554ac8e7"
+    },
+    "name": "mineru-2.7.0-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNy4wLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.7.0-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.7.0-released"
+  },
+  {
+    "commit": {
+      "sha": "4ccb5e04ddec3a0713e16152072d910accfd007a",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/4ccb5e04ddec3a0713e16152072d910accfd007a"
+    },
+    "name": "mineru-2.6.8-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNi44LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.6.8-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.6.8-released"
+  },
+  {
+    "commit": {
+      "sha": "f4e4050b46bfcfd1c153466c47e2b13d69431157",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/f4e4050b46bfcfd1c153466c47e2b13d69431157"
+    },
+    "name": "mineru-2.6.7-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNi43LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.6.7-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.6.7-released"
+  },
+  {
+    "commit": {
+      "sha": "cf489fefd08a5f8f96fcead2fa7aaaad6d43fec8",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/cf489fefd08a5f8f96fcead2fa7aaaad6d43fec8"
+    },
+    "name": "mineru-2.6.6-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNi42LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.6.6-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.6.6-released"
+  },
+  {
+    "commit": {
+      "sha": "4e5f03bba18455bd68c54cbbad34cdbfb88a2d26",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/4e5f03bba18455bd68c54cbbad34cdbfb88a2d26"
+    },
+    "name": "mineru-2.6.5-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNi41LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.6.5-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.6.5-released"
+  },
+  {
+    "commit": {
+      "sha": "5a937d30596dfb1517ab27d17211b85540583922",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/5a937d30596dfb1517ab27d17211b85540583922"
+    },
+    "name": "mineru-2.6.4-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNi40LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.6.4-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.6.4-released"
+  },
+  {
+    "commit": {
+      "sha": "374ace0a34841f74ce1b4c591d102b37c6e0dc2b",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/374ace0a34841f74ce1b4c591d102b37c6e0dc2b"
+    },
+    "name": "mineru-2.6.3-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNi4zLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.6.3-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.6.3-released"
+  },
+  {
+    "commit": {
+      "sha": "fe4985f6f0b176a085703030473201a9120574ff",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/fe4985f6f0b176a085703030473201a9120574ff"
+    },
+    "name": "mineru-2.6.2-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNi4yLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.6.2-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.6.2-released"
+  },
+  {
+    "commit": {
+      "sha": "2a0cb7963a51220940516815ff1e00a8c9a46ddb",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/2a0cb7963a51220940516815ff1e00a8c9a46ddb"
+    },
+    "name": "mineru-2.6.1-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNi4xLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.6.1-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.6.1-released"
+  },
+  {
+    "commit": {
+      "sha": "f5a5644d1227420ed1ed21704033f39aebeef065",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/f5a5644d1227420ed1ed21704033f39aebeef065"
+    },
+    "name": "mineru-2.6.0-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNi4wLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.6.0-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.6.0-released"
+  },
+  {
+    "commit": {
+      "sha": "61cc6886fe3edda8aa1c5b8bd2b6eaedddb8af99",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/61cc6886fe3edda8aa1c5b8bd2b6eaedddb8af99"
+    },
+    "name": "mineru-2.5.4-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNS40LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.5.4-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.5.4-released"
+  },
+  {
+    "commit": {
+      "sha": "9a88cbfb09d0196d494d69746dfc76e852d128e7",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/9a88cbfb09d0196d494d69746dfc76e852d128e7"
+    },
+    "name": "mineru-2.5.3-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNS4zLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.5.3-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.5.3-released"
+  },
+  {
+    "commit": {
+      "sha": "100ace2e99e838c4bedf73d7598404fbd06236f5",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/100ace2e99e838c4bedf73d7598404fbd06236f5"
+    },
+    "name": "mineru-2.5.2-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNS4yLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.5.2-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.5.2-released"
+  },
+  {
+    "commit": {
+      "sha": "6586c7c01e58ed73dc3108ab713dbc18ab4b150b",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/6586c7c01e58ed73dc3108ab713dbc18ab4b150b"
+    },
+    "name": "mineru-2.5.1-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNS4xLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.5.1-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.5.1-released"
+  },
+  {
+    "commit": {
+      "sha": "437022abfa11f196e6b582aab66ef9b1de6f5574",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/437022abfa11f196e6b582aab66ef9b1de6f5574"
+    },
+    "name": "mineru-2.5.0-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuNS4wLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.5.0-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.5.0-released"
+  },
+  {
+    "commit": {
+      "sha": "fd38cdff80f952352de5d6e1c11991f4805265af",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/fd38cdff80f952352de5d6e1c11991f4805265af"
+    },
+    "name": "mineru-2.2.2-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMi4yLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.2.2-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.2.2-released"
+  },
+  {
+    "commit": {
+      "sha": "13819c0596c43527dea6ef94f2ec2cbaf651c700",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/13819c0596c43527dea6ef94f2ec2cbaf651c700"
+    },
+    "name": "mineru-2.2.1-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMi4xLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.2.1-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.2.1-released"
+  },
+  {
+    "commit": {
+      "sha": "af887d63c07c628f36f39975b0fa9f1ad06a215a",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/af887d63c07c628f36f39975b0fa9f1ad06a215a"
+    },
+    "name": "mineru-2.2.0-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMi4wLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.2.0-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.2.0-released"
+  },
+  {
+    "commit": {
+      "sha": "30b698ecc51fd04e33ba4650e918dd9f8fe5adbe",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/30b698ecc51fd04e33ba4650e918dd9f8fe5adbe"
+    },
+    "name": "mineru-2.1.11-released",
+    "node_id": "REF_kwDOLZpAvdoAIHJlZnMvdGFncy9taW5lcnUtMi4xLjExLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.1.11-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.1.11-released"
+  },
+  {
+    "commit": {
+      "sha": "176bf3d845c9d3781c9513500e0c0c35c5982be3",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/176bf3d845c9d3781c9513500e0c0c35c5982be3"
+    },
+    "name": "mineru-2.1.10-released",
+    "node_id": "REF_kwDOLZpAvdoAIHJlZnMvdGFncy9taW5lcnUtMi4xLjEwLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.1.10-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.1.10-released"
+  },
+  {
+    "commit": {
+      "sha": "2b3b4331f2cfa1f3e746d25847de429805def758",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/2b3b4331f2cfa1f3e746d25847de429805def758"
+    },
+    "name": "mineru-2.1.9-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMS45LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.1.9-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.1.9-released"
+  },
+  {
+    "commit": {
+      "sha": "7ceee7f7bfe6f2ceecf2ec63788c835e0bf1f339",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/7ceee7f7bfe6f2ceecf2ec63788c835e0bf1f339"
+    },
+    "name": "mineru-2.1.8-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMS44LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.1.8-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.1.8-released"
+  },
+  {
+    "commit": {
+      "sha": "fe25040db56375ac993f5a0d10bd98bd1488c585",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/fe25040db56375ac993f5a0d10bd98bd1488c585"
+    },
+    "name": "mineru-2.1.7-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMS43LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.1.7-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.1.7-released"
+  },
+  {
+    "commit": {
+      "sha": "9356552a04f04eca482c16cdd5d9a0bc4b4dc4d4",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/9356552a04f04eca482c16cdd5d9a0bc4b4dc4d4"
+    },
+    "name": "mineru-2.1.6-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMS42LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.1.6-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.1.6-released"
+  },
+  {
+    "commit": {
+      "sha": "10e76530a5ca3e356e9a62dc2b9276921bf53f79",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/10e76530a5ca3e356e9a62dc2b9276921bf53f79"
+    },
+    "name": "mineru-2.1.5-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMS41LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.1.5-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.1.5-released"
+  },
+  {
+    "commit": {
+      "sha": "715ccbb08e070c735138cf75a3019a65695d311d",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/715ccbb08e070c735138cf75a3019a65695d311d"
+    },
+    "name": "mineru-2.1.4-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMS40LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.1.4-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.1.4-released"
+  },
+  {
+    "commit": {
+      "sha": "308f1b0424d4936eee9004b7614c807cc34398e4",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/308f1b0424d4936eee9004b7614c807cc34398e4"
+    },
+    "name": "mineru-2.1.3-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMS4zLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.1.3-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.1.3-released"
+  },
+  {
+    "commit": {
+      "sha": "07f6ba7299be668d76f8b056871de3abd6a037ea",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/07f6ba7299be668d76f8b056871de3abd6a037ea"
+    },
+    "name": "mineru-2.1.2-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMS4yLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.1.2-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.1.2-released"
+  },
+  {
+    "commit": {
+      "sha": "0bdbdffc99d9ad34c0e5ba8c6046385610ecae20",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/0bdbdffc99d9ad34c0e5ba8c6046385610ecae20"
+    },
+    "name": "mineru-2.1.1-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMS4xLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.1.1-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.1.1-released"
+  },
+  {
+    "commit": {
+      "sha": "aa53c9a30891239a510eff4edc1bd87fb433c1c8",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/aa53c9a30891239a510eff4edc1bd87fb433c1c8"
+    },
+    "name": "mineru-2.1.0-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMS4wLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.1.0-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.1.0-released"
+  },
+  {
+    "commit": {
+      "sha": "48085d02c40cb5364a58e2fc0b5417f5d74428d5",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/48085d02c40cb5364a58e2fc0b5417f5d74428d5"
+    },
+    "name": "mineru-2.0.6-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMC42LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.0.6-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.0.6-released"
+  },
+  {
+    "commit": {
+      "sha": "e8865a679a3b67c82ebecc6638fc031c1038be3f",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/e8865a679a3b67c82ebecc6638fc031c1038be3f"
+    },
+    "name": "mineru-2.0.5-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMC41LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.0.5-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.0.5-released"
+  },
+  {
+    "commit": {
+      "sha": "e9175b1937063ba56bde305aae7701d992adee46",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/e9175b1937063ba56bde305aae7701d992adee46"
+    },
+    "name": "mineru-2.0.4-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMC40LXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.0.4-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.0.4-released"
+  },
+  {
+    "commit": {
+      "sha": "9f0008acff4cd8c64af8f5be1e83a8c83e4cdd12",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/9f0008acff4cd8c64af8f5be1e83a8c83e4cdd12"
+    },
+    "name": "mineru-2.0.3-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMC4zLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.0.3-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.0.3-released"
+  },
+  {
+    "commit": {
+      "sha": "8cf86e38183d9d09c8f0ba34a0f7ef9ad4c4d09c",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/8cf86e38183d9d09c8f0ba34a0f7ef9ad4c4d09c"
+    },
+    "name": "mineru-2.0.2-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMC4yLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.0.2-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.0.2-released"
+  },
+  {
+    "commit": {
+      "sha": "19a31cce39c2f77a6dbac93774a0461124264273",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/19a31cce39c2f77a6dbac93774a0461124264273"
+    },
+    "name": "mineru-2.0.1-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMC4xLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.0.1-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.0.1-released"
+  },
+  {
+    "commit": {
+      "sha": "c5480b9d39d80d8e76a131c727228455225e572f",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/c5480b9d39d80d8e76a131c727228455225e572f"
+    },
+    "name": "mineru-2.0.0-released",
+    "node_id": "REF_kwDOLZpAvb9yZWZzL3RhZ3MvbWluZXJ1LTIuMC4wLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/mineru-2.0.0-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/mineru-2.0.0-released"
+  },
+  {
+    "commit": {
+      "sha": "a989444e2fb7c30736a1558f6cd91158987dea83",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/a989444e2fb7c30736a1558f6cd91158987dea83"
+    },
+    "name": "magic_pdf-1.3.12-released",
+    "node_id": "REF_kwDOLZpAvdoAI3JlZnMvdGFncy9tYWdpY19wZGYtMS4zLjEyLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/magic_pdf-1.3.12-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/magic_pdf-1.3.12-released"
+  },
+  {
+    "commit": {
+      "sha": "ea619281ef43577da91247a9df60f53b12d47cbc",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/ea619281ef43577da91247a9df60f53b12d47cbc"
+    },
+    "name": "magic_pdf-1.3.11-released",
+    "node_id": "REF_kwDOLZpAvdoAI3JlZnMvdGFncy9tYWdpY19wZGYtMS4zLjExLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/magic_pdf-1.3.11-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/magic_pdf-1.3.11-released"
+  },
+  {
+    "commit": {
+      "sha": "88026879343d7712f9f1729df6c110e3ee5d4333",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/88026879343d7712f9f1729df6c110e3ee5d4333"
+    },
+    "name": "magic_pdf-1.3.10-released",
+    "node_id": "REF_kwDOLZpAvdoAI3JlZnMvdGFncy9tYWdpY19wZGYtMS4zLjEwLXJlbGVhc2Vk",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/magic_pdf-1.3.10-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/magic_pdf-1.3.10-released"
+  },
+  {
+    "commit": {
+      "sha": "0d5762e57a4ef0b61fa950de6e418fa0dc1ccbec",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/0d5762e57a4ef0b61fa950de6e418fa0dc1ccbec"
+    },
+    "name": "magic_pdf-1.3.9-released",
+    "node_id": "REF_kwDOLZpAvdoAInJlZnMvdGFncy9tYWdpY19wZGYtMS4zLjktcmVsZWFzZWQ",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/magic_pdf-1.3.9-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/magic_pdf-1.3.9-released"
+  },
+  {
+    "commit": {
+      "sha": "6b7a861e8faa39bcbdd5f8b607930517b468c3bb",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/6b7a861e8faa39bcbdd5f8b607930517b468c3bb"
+    },
+    "name": "magic_pdf-1.3.8-released",
+    "node_id": "REF_kwDOLZpAvdoAInJlZnMvdGFncy9tYWdpY19wZGYtMS4zLjgtcmVsZWFzZWQ",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/magic_pdf-1.3.8-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/magic_pdf-1.3.8-released"
+  },
+  {
+    "commit": {
+      "sha": "55fcb7387f154aac6aa416eef571a0480280cf5e",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/55fcb7387f154aac6aa416eef571a0480280cf5e"
+    },
+    "name": "magic_pdf-1.3.7-released",
+    "node_id": "REF_kwDOLZpAvdoAInJlZnMvdGFncy9tYWdpY19wZGYtMS4zLjctcmVsZWFzZWQ",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/magic_pdf-1.3.7-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/magic_pdf-1.3.7-released"
+  },
+  {
+    "commit": {
+      "sha": "601b44bfe00c8ab01b4bf4558fca2f68abe791b3",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/601b44bfe00c8ab01b4bf4558fca2f68abe791b3"
+    },
+    "name": "magic_pdf-1.3.6-released",
+    "node_id": "REF_kwDOLZpAvdoAInJlZnMvdGFncy9tYWdpY19wZGYtMS4zLjYtcmVsZWFzZWQ",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/magic_pdf-1.3.6-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/magic_pdf-1.3.6-released"
+  },
+  {
+    "commit": {
+      "sha": "8fb6794b950153f5f257e0046f71be87a735cd28",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/8fb6794b950153f5f257e0046f71be87a735cd28"
+    },
+    "name": "magic_pdf-1.3.5-released",
+    "node_id": "REF_kwDOLZpAvdoAInJlZnMvdGFncy9tYWdpY19wZGYtMS4zLjUtcmVsZWFzZWQ",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/magic_pdf-1.3.5-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/magic_pdf-1.3.5-released"
+  },
+  {
+    "commit": {
+      "sha": "1b35f04453ce752d30d59b65711c253196a61916",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/1b35f04453ce752d30d59b65711c253196a61916"
+    },
+    "name": "magic_pdf-1.3.4-released",
+    "node_id": "REF_kwDOLZpAvdoAInJlZnMvdGFncy9tYWdpY19wZGYtMS4zLjQtcmVsZWFzZWQ",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/magic_pdf-1.3.4-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/magic_pdf-1.3.4-released"
+  },
+  {
+    "commit": {
+      "sha": "a1df670e34eb8b05939a455caefe2eed95411010",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/a1df670e34eb8b05939a455caefe2eed95411010"
+    },
+    "name": "magic_pdf-1.3.3-released",
+    "node_id": "REF_kwDOLZpAvdoAInJlZnMvdGFncy9tYWdpY19wZGYtMS4zLjMtcmVsZWFzZWQ",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/magic_pdf-1.3.3-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/magic_pdf-1.3.3-released"
+  },
+  {
+    "commit": {
+      "sha": "d0ed731b9edc6d415515bd394ba4a04bacbf8779",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/d0ed731b9edc6d415515bd394ba4a04bacbf8779"
+    },
+    "name": "magic_pdf-1.3.2-released",
+    "node_id": "REF_kwDOLZpAvdoAInJlZnMvdGFncy9tYWdpY19wZGYtMS4zLjItcmVsZWFzZWQ",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/magic_pdf-1.3.2-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/magic_pdf-1.3.2-released"
+  },
+  {
+    "commit": {
+      "sha": "b60166a541c9cfbfa459d766d3bd85e691999148",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/b60166a541c9cfbfa459d766d3bd85e691999148"
+    },
+    "name": "magic_pdf-1.3.1-released",
+    "node_id": "REF_kwDOLZpAvdoAInJlZnMvdGFncy9tYWdpY19wZGYtMS4zLjEtcmVsZWFzZWQ",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/magic_pdf-1.3.1-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/magic_pdf-1.3.1-released"
+  },
+  {
+    "commit": {
+      "sha": "3963b96583637986b7dd97102cc1093916c4c565",
+      "url": "https://api.github.com/repos/opendatalab/MinerU/commits/3963b96583637986b7dd97102cc1093916c4c565"
+    },
+    "name": "magic_pdf-1.3.0-released",
+    "node_id": "REF_kwDOLZpAvdoAInJlZnMvdGFncy9tYWdpY19wZGYtMS4zLjAtcmVsZWFzZWQ",
+    "tarball_url": "https://api.github.com/repos/opendatalab/MinerU/tarball/refs/tags/magic_pdf-1.3.0-released",
+    "zipball_url": "https://api.github.com/repos/opendatalab/MinerU/zipball/refs/tags/magic_pdf-1.3.0-released"
+  }
+]

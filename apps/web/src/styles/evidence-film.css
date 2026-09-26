@@ -1,0 +1,296 @@
+/* The standalone /film route does not load the retired public/styles/structara.css. */
+@layer components {
+  .film-stage {
+    min-height: 100svh;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    color: #14221e;
+    background: #f2eee5;
+  }
+
+  .film-stage-nav {
+    min-height: 68px;
+    padding: 12px clamp(20px, 4vw, 64px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    border-bottom: 1px solid rgb(20 34 30 / 15%);
+  }
+
+  .film-stage-nav a {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .film-stage-nav > span {
+    color: #52615b;
+    font-size: 12px;
+  }
+
+  .film-mark {
+    width: 28px;
+    height: 28px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: #fff;
+    background: #1d523b;
+    font-family: Georgia, serif;
+  }
+
+  .film-scene {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: minmax(270px, 0.62fr) minmax(0, 1.38fr);
+    align-items: center;
+    gap: clamp(28px, 5vw, 84px);
+    padding: clamp(32px, 5vw, 72px) clamp(20px, 4vw, 64px);
+  }
+
+  .film-copy {
+    min-width: 0;
+    display: grid;
+    align-content: center;
+    gap: 18px;
+  }
+
+  .film-copy p {
+    margin: 0;
+    color: #31674c;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .film-copy h1 {
+    margin: 0;
+    max-width: 13ch;
+    font-family: var(--font-editorial, Georgia, serif);
+    font-size: clamp(40px, 5vw, 76px);
+    font-weight: 500;
+    letter-spacing: -0.045em;
+    line-height: 1.02;
+    overflow-wrap: anywhere;
+  }
+
+  .film-copy > span {
+    max-width: 52ch;
+    color: #465750;
+    font-size: clamp(15px, 1.3vw, 18px);
+    line-height: 1.6;
+  }
+
+  .film-copy small {
+    color: #1d523b;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .film-visual {
+    position: relative;
+    min-width: 0;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border: 1px solid rgb(20 34 30 / 14%);
+    border-radius: 8px;
+    background: #12211d;
+  }
+
+  .film-visual > img {
+    object-fit: cover;
+    object-position: left top;
+  }
+
+  .film-proof-chip {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+    display: grid;
+    gap: 3px;
+    width: 180px;
+    padding: 13px 15px;
+    border: 1px solid rgb(190 225 200 / 25%);
+    border-radius: 6px;
+    color: #edf5ef;
+    background: rgb(16 34 28 / 92%);
+  }
+
+  .film-proof-chip span,
+  .film-proof-chip small {
+    color: #b8ddc6;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .film-scene--metrics {
+    grid-template-columns: minmax(0, 1fr);
+    align-content: center;
+    gap: 28px;
+    max-width: 1440px;
+    width: 100%;
+    margin-inline: auto;
+  }
+
+  .film-scene--metrics .film-copy {
+    gap: 10px;
+  }
+
+  .film-scene--metrics .film-copy h1 {
+    max-width: none;
+    font-size: clamp(36px, 4vw, 58px);
+  }
+
+  .film-visual-metrics {
+    aspect-ratio: auto;
+    min-width: 0;
+    overflow-x: auto;
+    border-color: rgb(226 238 230 / 15%);
+    scrollbar-color: #5a8570 #12211d;
+  }
+
+  .film-metrics {
+    min-width: 780px;
+    padding: clamp(20px, 3vw, 40px);
+    color: #edf5ef;
+  }
+
+  .film-metrics > div {
+    display: grid;
+    gap: 14px;
+    align-items: baseline;
+    padding: 10px 0;
+    border-bottom: 1px solid rgb(237 245 239 / 15%);
+    font-size: 13px;
+  }
+
+  .film-metrics > div span {
+    color: #b9d0c1;
+  }
+
+  .film-metrics > div strong {
+    min-width: 0;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  .film-metrics-head {
+    color: #d4e9da;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .film-metrics > small {
+    display: block;
+    margin-top: 16px;
+    color: #b9d0c1;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .film-controls {
+    min-height: 74px;
+    padding: 12px clamp(20px, 4vw, 64px);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 24px;
+    border-top: 1px solid rgb(20 34 30 / 15%);
+  }
+
+  .film-progress {
+    height: 2px;
+    overflow: hidden;
+    background: rgb(20 34 30 / 16%);
+  }
+
+  .film-progress span {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: #236749;
+    transform-origin: left center;
+  }
+
+  .film-controls > span {
+    color: #52615b;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .film-controls > div:last-child {
+    display: flex;
+    gap: 8px;
+  }
+
+  .film-controls button {
+    width: 44px;
+    height: 44px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgb(20 34 30 / 25%);
+    border-radius: 50%;
+    color: #143d2a;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  .film-controls button:hover {
+    color: #fff;
+    background: #1d523b;
+  }
+
+  .film-controls button:focus-visible,
+  .film-visual-metrics:focus-visible,
+  .film-stage-nav a:focus-visible {
+    outline: 3px solid #1d7652;
+    outline-offset: 3px;
+  }
+
+  .film-scroll-hint {
+    display: none;
+  }
+
+  @media (max-width: 768px) {
+    .film-scene {
+      grid-template-columns: minmax(0, 1fr);
+      align-content: center;
+      padding-block: 24px;
+    }
+
+    .film-copy h1 {
+      max-width: 17ch;
+    }
+
+    .film-stage-nav > span {
+      max-width: 170px;
+      text-align: right;
+      font-size: 12px;
+    }
+
+    .film-proof-chip {
+      display: none;
+    }
+
+    .film-metrics {
+      padding: 18px;
+    }
+
+    .film-scroll-hint {
+      display: block;
+      margin: -14px 0 0;
+      color: #31674c;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .film-controls {
+      gap: 12px;
+    }
+  }
+}

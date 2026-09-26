@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+from .complementarity import (
+    ARENA_MODEL_ROUTES,
+    dominant_element,
+    select_cross_check_peer,
+)
 from .models import (
     MODE_PROFILE,
     EscalationAction,
@@ -54,15 +59,54 @@ def _unresolved_for_unavailable(
     )
 
 
+def _name_cross_check(
+    decision: RouteDecision,
+    *,
+    context: RouterContext,
+    page: PageMetrics,
+) -> RouteDecision:
+    """Say which reader the second read uses, or leave the second read unnamed.
+
+    The element comes from the page's own measured densities and the peer from
+    the rescue table, so the pairing is evidence on both sides. When nothing
+    measured is servable the decision keeps `require_cross_check` and gains no
+    peer: the caller must then treat the check as unavailable rather than
+    substitute a reader the campaign never paired with this one.
+    """
+    if not decision.require_cross_check:
+        return decision
+    element = dominant_element(page)
+    measurement = select_cross_check_peer(
+        baseline=decision.route,
+        element=element,
+        ready_routes=context.ready_routes,
+    )
+    if measurement is None:
+        return decision.model_copy(
+            update={"reason_codes": (*decision.reason_codes, "cross_check_peer_unavailable")}
+        )
+    return decision.model_copy(
+        update={
+            "cross_check_route": ARENA_MODEL_ROUTES[measurement.peer],
+            "cross_check_element": element.value,
+            "reason_codes": (
+                *decision.reason_codes,
+                f"cross_check_measured:{element.value}:{measurement.peer}",
+            ),
+        }
+    )
+
+
 def _require_ready_route(
     decision: RouteDecision,
     *,
     context: RouterContext,
+    page: PageMetrics,
 ) -> RouteDecision:
     if decision.route in {Route.UNRESOLVED, Route.QUARANTINE}:
         return decision
     if decision.route in context.ready_routes:
-        return decision
+        return _name_cross_check(decision, context=context, page=page)
     return _unresolved_for_unavailable(
         context=context,
         attempted_route=decision.route,
@@ -108,6 +152,7 @@ def select_first_route(context: RouterContext, page: PageMetrics) -> RouteDecisi
                 policy_version=context.policy_version,
             ),
             context=context,
+            page=page,
         )
 
     language = (context.dominant_language or "").casefold()
@@ -134,6 +179,7 @@ def select_first_route(context: RouterContext, page: PageMetrics) -> RouteDecisi
                 policy_version=context.policy_version,
             ),
             context=context,
+            page=page,
         )
 
     if context.feature_flags.paddle_fast_enabled and context.mode == ProcessingMode.SPEED:
@@ -153,6 +199,7 @@ def select_first_route(context: RouterContext, page: PageMetrics) -> RouteDecisi
                 policy_version=context.policy_version,
             ),
             context=context,
+            page=page,
         )
 
     return _require_ready_route(
@@ -171,6 +218,7 @@ def select_first_route(context: RouterContext, page: PageMetrics) -> RouteDecisi
             policy_version=context.policy_version,
         ),
         context=context,
+        page=page,
     )
 
 

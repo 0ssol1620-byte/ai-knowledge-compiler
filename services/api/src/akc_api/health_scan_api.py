@@ -6,6 +6,13 @@ thin transport:
 
 * Authentication is mandatory — a real session (cookie or bearer), exactly
   like every other mutating route; there is no anonymous scanning.
+* The API reads *this host's* disk, so the caller never picks an arbitrary
+  path: the canonical (symlink-resolved) workspace must lie inside a root the
+  operator listed in ``AKC_HEALTH_SCAN_ROOTS``, else 403. No roots configured
+  means every scan is refused. The check runs before any existence probe so
+  the endpoint is not a filesystem oracle outside the allowlist.
+* Production refuses this route until workspaces are bound to tenant identity.
+  The local CLI remains available for real health scans.
 * A path guard maps a missing workspace to 404 before any work starts.
 * A file-count guard refuses oversized trees with 413 so a single request
   cannot pin a worker hashing an unbounded corpus.
@@ -21,10 +28,11 @@ from pathlib import Path
 from typing import Annotated, Any
 
 from akc_health_scan import HealthScanConfig, scan
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from akc_api.security import Principal, get_principal
+from akc_api.settings import Settings
 
 router = APIRouter(prefix="/v1/health-scan", tags=["health-scan"])
 
@@ -46,6 +54,22 @@ class HealthScanRequest(BaseModel):
     )
 
 
+def _allowed_workspace(requested: str, roots: tuple[str, ...]) -> str | None:
+    """Canonical ``requested`` if it is, or lies under, an allowlisted root."""
+    if not os.path.isabs(requested):
+        return None
+    try:
+        candidate = os.path.realpath(requested)
+    except (OSError, ValueError):  # e.g. an embedded NUL byte
+        return None
+    for root in roots:
+        # Prefix match plus a separator (or end) boundary, so ``/data/ws``
+        # never admits ``/data/ws-other``.
+        if candidate.startswith(root) and candidate[len(root) : len(root) + 1] in ("", os.sep):
+            return candidate
+    return None
+
+
 def _count_files(root: Path, config: HealthScanConfig) -> int:
     """Count files under ``root``, stopping once the request is doomed."""
     total = 0
@@ -61,20 +85,32 @@ def _count_files(root: Path, config: HealthScanConfig) -> int:
 def scan_workspace(
     payload: HealthScanRequest,
     principal: PrincipalDep,
+    request: Request,
 ) -> dict[str, Any]:
     """Analyze a local workspace and return the full §5.2 report JSON.
 
     The heavy filesystem work runs in the worker threadpool (sync handler),
     keeping the event loop responsive while digests are computed.
     """
-    root = Path(payload.workspace_path)
-    if not root.is_dir():
+    settings: Settings = request.app.state.settings
+    if settings.env == "production":
+        raise HTTPException(
+            status_code=403,
+            detail={"code": "WORKSPACE_NOT_ALLOWED"},
+        )
+    allowed = _allowed_workspace(payload.workspace_path, settings.health_scan_root_paths)
+    if allowed is None:
+        raise HTTPException(
+            status_code=403,
+            detail={"code": "WORKSPACE_NOT_ALLOWED"},
+        )
+    resolved = Path(allowed)
+    if not resolved.is_dir():
         raise HTTPException(
             status_code=404,
             detail={"code": "WORKSPACE_NOT_FOUND"},
         )
     config = HealthScanConfig()
-    resolved = root.resolve()
     discovered = _count_files(resolved, config)
     if discovered > MAX_WORKSPACE_FILES:
         raise HTTPException(

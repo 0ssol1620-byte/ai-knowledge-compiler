@@ -68,6 +68,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     marketingRoute ||
     authRoute ||
     designRoute ||
+    pathname === "/film" ||
     pathname === "/verify-email" ||
     pathname.startsWith("/notices");
 

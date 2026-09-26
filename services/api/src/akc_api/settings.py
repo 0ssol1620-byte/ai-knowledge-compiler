@@ -7,6 +7,7 @@ import binascii
 import hashlib
 import hmac
 import ipaddress
+import os
 import re
 from decimal import Decimal
 from functools import lru_cache
@@ -41,6 +42,10 @@ class Settings(BaseSettings):
     # published world-state snapshots (*.json). Unset means the ask surface
     # answers UNRESOLVED -- an unmounted world is a finding, not an error.
     world_store_dir: Path | None = None
+    # Absolute directories the local/test Health Scan API may read, separated
+    # by os.pathsep. Empty refuses every scan. Production always refuses this
+    # route until a workspace can be bound to a specific tenant.
+    health_scan_roots: str = ""
     web_origins: str = "http://localhost:3000"
 
     jwt_secret: str = "local-development-secret-change-before-production"  # noqa: S105
@@ -379,6 +384,15 @@ class Settings(BaseSettings):
         return tuple(
             item.strip().casefold()
             for item in self.webhook_allowed_hosts.split(",")
+            if item.strip()
+        )
+
+    @property
+    def health_scan_root_paths(self) -> tuple[str, ...]:
+        """Canonical allowlisted roots, trailing separator stripped."""
+        return tuple(
+            os.path.realpath(item.strip()).rstrip(os.sep)
+            for item in self.health_scan_roots.split(os.pathsep)
             if item.strip()
         )
 

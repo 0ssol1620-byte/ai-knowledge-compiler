@@ -57,9 +57,9 @@ export const demoBlocks: CanonicalBlock[] = [
     order: 3,
     type: "paragraph",
     source_text:
-      "The evidence-verification configuration reduced unsupported claims from 3.8% to 1.1% versus baseline. All figures are averages across three independent runs.",
+      "This content is a UI validation sample. Production mode displays only the API-issued source preview and the stored bounding boxes.",
     markdown:
-      "The evidence-verification configuration **reduced unsupported claims from 3.8% to 1.1%** versus baseline. All figures are averages across three independent runs.",
+      "This content is a UI validation sample. Production mode displays only the API-issued source preview and the stored bounding boxes.",
     origin: "ocr_extracted",
     content_layer: "structured",
     source_refs: source(7, [108, 258, 892, 364]),
@@ -72,9 +72,9 @@ export const demoBlocks: CanonicalBlock[] = [
     order: 4,
     type: "table",
     source_text:
-      "Configuration Evidence fidelity Unsupported claims Baseline 0.86 3.8% Verified 0.94 1.1%",
+      "Section Pages Evidence blocks Methods 2 4 Results 3 6",
     markdown:
-      "| Configuration | Evidence fidelity | Unsupported claims |\n|---|---:|---:|\n| Baseline | 0.86 | 3.8% |\n| Verification enabled | 0.94 | 1.1% |",
+      "| Section | Pages | Evidence blocks |\n|---|---:|---:|\n| Methods | 2 | 4 |\n| Results | 3 | 6 |",
     origin: "ocr_extracted",
     content_layer: "structured",
     source_refs: source(7, [112, 402, 888, 644]),
@@ -87,9 +87,9 @@ export const demoBlocks: CanonicalBlock[] = [
     order: 5,
     type: "paragraph",
     source_text:
-      "Evidence-based verification reduced unsupported claims, with the improvement cross-checked across three-run averages.",
+      "The sample table retains the section, page, and block counts for source review; it reports no measured product outcome.",
     markdown:
-      "> [!summary] Verifiable summary\n> Evidence-based verification reduced unsupported claims, supported by the three-run averages in Table 3.",
+      "> [!summary] Sample summary\n> The table retains section, page, and block counts for source review. It reports no measured product outcome.",
     origin: "ai_summarized",
     content_layer: "knowledge",
     source_refs: source(7, [108, 258, 892, 644]),
@@ -136,13 +136,13 @@ export const demoReviews: ReviewItem[] = [
     severity: "high",
     category: "number_mismatch",
     message:
-      "The two candidate outputs disagree on the ratio. The source table remains unresolved.",
+      "The two candidate outputs disagree on the sample block count. The source table remains unresolved.",
     page_id: "page_8",
     block_id: "blk_table",
     status: "open",
     candidates: [
-      { engine: "source-native", value: "1.1%" },
-      { engine: "visual-comparison", value: "1.7%" },
+      { engine: "source-native", value: "6" },
+      { engine: "visual-comparison", value: "8" },
     ],
   },
   {

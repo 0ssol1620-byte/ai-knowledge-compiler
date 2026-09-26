@@ -59,6 +59,14 @@ const projects: Project[] = [
 
 export default defineConfig({
   testDir: "./e2e",
+  // Compare the checked-in, platform-specific visual baselines. The default
+  // Playwright snapshot directory is not where the approved images live.
+  updateSnapshots: "none",
+  expect: {
+    toHaveScreenshot: {
+      pathTemplate: "{testDir}/visual-baselines/{projectName}/{platform}/{testFilePath}/{arg}{ext}",
+    },
+  },
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
@@ -74,16 +82,16 @@ export default defineConfig({
   },
   projects,
   webServer: {
-    command: "pnpm dev",
+    // Screenshot baselines represent the shipped bundle. `next dev` injects its black
+    // development indicator into every capture and can change fonts/layout during HMR.
+    command: "pnpm build && pnpm start",
     url: "http://127.0.0.1:3000",
     env: {
       NEXT_PUBLIC_AKC_DEMO_MODE: "true",
       NEXT_PUBLIC_AKC_API_URL: "http://127.0.0.1:8000",
     },
     reuseExistingServer: !process.env.CI,
-    // Local disks here are slow enough that a cold `next dev` compile can take
-    // two minutes (measured: "Ready in 113s"); 300s left too little headroom
-    // once another process competes for the disk.
-    timeout: process.env.CI ? 120_000 : 900_000,
+    // A cold optimized build is substantially slower than starting a dev server.
+    timeout: 900_000,
   },
 });
