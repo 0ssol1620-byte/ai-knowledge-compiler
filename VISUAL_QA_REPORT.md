@@ -1,5 +1,36 @@
 # TAVONEL visual QA report
 
+## 2026-09-26 standalone film repair
+
+The `/film` scene had a real layout defect in the 2026-09-24 Linux CI capture:
+the route was wrapped in authenticated dashboard chrome and its retired
+`public/styles/structara.css` film rules were never loaded. The model labels and
+values consequently ran together. The route now renders without dashboard
+chrome, loads scoped film styles, and gives the five-model comparison a full
+width desktop surface. The mobile comparison scrolls horizontally with a
+visible instruction and keyboard focus. The film heading now describes the
+same-page comparison rather than claiming a measured routing advantage, the
+mobile header retains the measurement date, and the display brand is TAVONEL.
+
+Local verification: TypeScript, focused ESLint, three film component tests,
+67 web unit files/383 tests, interaction-contract check, Impeccable detection,
+and production build pass. A one-run mobile Lighthouse check of `/film` reported
+performance 96, accessibility 100, best practices 100, SEO 100, LCP 2.7s,
+and CLS 0 on the final build.
+The new browser layout assertion passes at 1920, 1440, 1280, 1024, 768, 390,
+and 360px plus 1440 reduced motion; axe-core WCAG 2.2 AA checks report zero
+violations on the 390px measured scene. Production-build captures at all eight
+conditions, with SHA-256 provenance, are in
+`docs/audit/visual/2026-09-26/README.md`. The local dependency junction used
+Next.js 16.2.12, while the lockfile declares 16.3.3; exact-version confirmation
+must come from CI.
+
+**FOUNDER VISUAL REVIEW REQUIRED.** The eleven older approved Linux screenshot
+baselines remain unchanged. The homepage, benchmark, legal, and product route
+differences still need independent review; this repair does not approve those
+screens or clear the public legal-policy placeholder. Do not deploy or merge a
+production release based on the film repair alone.
+
 ## 2026-09-23 CI repair and Knowledge Studio review
 
 This section is the latest local assessment for `codex/ci-repair-20260923`.

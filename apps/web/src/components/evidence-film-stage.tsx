@@ -29,7 +29,7 @@ const scenes = [
     title: "The route is estimated before the spend.",
     body: "Static features and adaptive samples produce bounded credit, duration, and quality-risk forecasts.",
     image: "/product/workspace-home.webp",
-    signal: "P50 42.8 · P95 51.6 credits",
+    signal: "Bounded credit and duration estimate",
   },
   {
     eyebrow: "03 · Structure",
@@ -47,7 +47,7 @@ const scenes = [
   },
   {
     eyebrow: "05 · Measured model portfolio",
-    title: "Different strengths become one routing advantage.",
+    title: "Different models, measured on the same pages.",
     body: "Same 18-page OmniDocBench demo, three blind repeats, one RTX 4090. CDM and overall remain unavailable—not zero.",
     signal: `${formalCaseCount} / ${formalCaseCount} formal inference cases completed`,
     metrics: true,
@@ -74,7 +74,7 @@ const scenes = [
     signal: "Portable · source-linked · policy-controlled",
   },
   {
-    eyebrow: "09 · FOLYNTA",
+    eyebrow: "09 · TAVONEL",
     title: "Do not organize the files. Compile the knowledge.",
     body: "An evidence-first knowledge compiler for people, enterprise systems, and AI.",
     image: "/product/processing.webp",
@@ -95,7 +95,7 @@ function MetricScene() {
     ["Exact repeats", (value: (typeof measuredCandidates)[number]) => value.metrics.exact_repeat_ratio === null || value.page_count === null ? "—" : `${Math.round(value.metrics.exact_repeat_ratio * value.page_count)} / ${value.page_count}`],
   ] as const;
   const gridStyle = {
-    gridTemplateColumns: `minmax(94px, 1.2fr) repeat(${measuredCandidates.length}, minmax(72px, 1fr))`,
+    gridTemplateColumns: `minmax(140px, 1.4fr) repeat(${measuredCandidates.length}, minmax(112px, 1fr))`,
   } satisfies CSSProperties;
   const shortLabel = (label: string) =>
     label
@@ -107,13 +107,9 @@ function MetricScene() {
   return (
     <div
       className="film-metrics"
-      role="region"
-      aria-label="Measured model comparison"
-      tabIndex={0}
-      style={{ minWidth: `${150 + measuredCandidates.length * 94}px` }}
     >
       <div className="film-metrics-head" style={gridStyle}>
-        <span>Official partial metrics</span>
+        <span>18-page demo metrics</span>
         {measuredCandidates.map((candidate) => <strong key={candidate.id}>{shortLabel(candidate.label)}</strong>)}
       </div>
       {rows.map(([metric, renderValue]) => (
@@ -166,10 +162,10 @@ export function EvidenceFilmStage() {
   return (
     <main className="film-stage" id="main-content">
       <header className="film-stage-nav">
-        <Link href="/" aria-label="FOLYNTA home"><span className="film-mark">F</span><strong>FOLYNTA</strong></Link>
+        <Link href="/" aria-label="TAVONEL home"><span className="film-mark">T</span><strong>TAVONEL</strong></Link>
         <span>Evidence in Motion · measured 2026-08-01</span>
       </header>
-      <section className="film-scene" key={index} aria-live="polite">
+      <section className={`film-scene${"metrics" in scene ? " film-scene--metrics" : ""}`} key={index} aria-live="polite">
         <div className="film-copy">
           <p>{scene.eyebrow}</p>
           <h1>{scene.title}</h1>
@@ -178,17 +174,16 @@ export function EvidenceFilmStage() {
         </div>
         <div
           className={`film-visual${"metrics" in scene ? " film-visual-metrics" : ""}`}
-          style={{
-            position: "relative",
-            aspectRatio: "16 / 10",
-            overflow: "hidden",
-          }}
+          role={"metrics" in scene ? "region" : undefined}
+          aria-label={"metrics" in scene ? "Measured model comparison" : undefined}
+          tabIndex={"metrics" in scene ? 0 : undefined}
         >
           {"metrics" in scene ? <MetricScene /> : (
             <Image src={scene.image} alt="" fill priority sizes="(max-width: 900px) 100vw, 65vw" />
           )}
-          <div className="film-proof-chip"><span>Evidence</span><strong>source-linked</strong><small>verified CIR</small></div>
+          {!("metrics" in scene) && <div className="film-proof-chip"><span>Evidence</span><strong>source-linked</strong><small>verified CIR</small></div>}
         </div>
+        {"metrics" in scene && <p className="film-scroll-hint">Scroll across to compare all five models →</p>}
       </section>
       {/* The G0 merge dropped the film stylesheet. Without a positioned
           parent, next/image `fill` escapes over the whole stage and intercepts

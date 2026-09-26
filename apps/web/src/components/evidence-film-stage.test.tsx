@@ -16,7 +16,7 @@ describe("EvidenceFilmStage", () => {
     expect(screen.getByRole("heading", { name: /One collection/ })).toBeInTheDocument();
     const next = screen.getByRole("button", { name: "Next scene" });
     for (let index = 0; index < 4; index += 1) fireEvent.click(next);
-    expect(screen.getByRole("heading", { name: /Different strengths/ })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Different models/ })).toBeInTheDocument();
     const caseCount = publicBenchmarkSnapshot.datasets.reduce(
       (total, candidate) => total + (candidate.evidence?.case_count ?? 0),
       0,

@@ -503,7 +503,7 @@ test("Evidence film exposes the signed model portfolio with real controls", asyn
   await page.goto("/film?scene=4&static=1");
   await expect(
     page.getByRole("heading", {
-      name: "Different strengths become one routing advantage.",
+      name: "Different models, measured on the same pages.",
     }),
   ).toBeVisible();
   const formalCaseCount = benchmarkSnapshot.datasets
@@ -534,7 +534,7 @@ test("Evidence film exposes the signed model portfolio with real controls", asyn
   ).toBeVisible();
   await page.getByRole("button", { name: "Previous scene" }).click();
   await expect(
-    page.getByRole("heading", { name: /Different strengths/ }),
+    page.getByRole("heading", { name: /Different models/ }),
   ).toBeVisible();
 });
 
