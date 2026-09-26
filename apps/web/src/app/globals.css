@@ -578,7 +578,7 @@ a {
   outline: 0;
   background: transparent;
   color: var(--text);
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .topbar-search input::placeholder {
@@ -739,7 +739,7 @@ a {
   gap: 7px;
   border-radius: 6px;
   padding: 0 14px;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 680;
   transition:
     background-color 160ms ease,
@@ -793,7 +793,7 @@ a {
 .danger-button.compact {
   min-height: 31px;
   padding: 0 10px;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .primary-button.full-width {
@@ -1487,7 +1487,7 @@ a {
   background: var(--surface-subtle);
   padding: 0 8px;
   color: var(--text-secondary);
-  font-size: 10px;
+  font-size: 14px;
   font-weight: 620;
 }
 
@@ -1778,7 +1778,7 @@ a {
   border: 0;
   outline: 0;
   background: transparent;
-  font-size: 9px;
+  font-size: 14px;
 }
 
 .page-filter-panel {
@@ -2017,7 +2017,7 @@ a {
 .tool-button {
   min-height: 28px;
   padding: 0 7px;
-  font-size: 8px;
+  font-size: 14px;
 }
 
 .tool-separator {
@@ -2315,7 +2315,7 @@ a {
   background: transparent;
   padding: 0 7px;
   color: var(--text-tertiary);
-  font-size: 8px;
+  font-size: 14px;
 }
 
 .segmented-control button.active {
@@ -2502,7 +2502,7 @@ a {
   background: var(--surface-subtle);
   padding: 2px 5px;
   color: var(--text-secondary);
-  font-size: 7px;
+  font-size: 14px;
 }
 
 .evidence-chip:hover {
@@ -8135,11 +8135,11 @@ a {
 .evidence-chip {
   min-height: 26px;
   border-radius: 4px 0 0 4px;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .evidence-chip span {
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .evidence-pin {
@@ -8168,7 +8168,7 @@ a {
 .block-quality,
 .edit-block-button {
   min-height: 26px;
-  font-size: 11px;
+  font-size: 14px;
 }
 
 .bbox-rect.highlighted {

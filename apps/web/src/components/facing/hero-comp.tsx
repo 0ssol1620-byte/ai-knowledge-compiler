@@ -181,7 +181,7 @@ export function HeroComp({
 function VersoPage() {
   return (
     <div className="tv-hero-comp-page">
-      <article className="tv-hero-comp-paper">
+      <article className="tv-hero-comp-paper" aria-hidden="true">
         <div className="tv-hero-comp-paper-head">
           SAMPLE · JOURNAL OF RELIABLE AI SYSTEMS
           <span>Demo document · not an actual source</span>

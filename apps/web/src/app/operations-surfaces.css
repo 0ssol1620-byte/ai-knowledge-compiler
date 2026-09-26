@@ -113,6 +113,7 @@
   .app-frame .projects-bulk-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; padding: 10px 14px; border: 1px solid var(--accent-border); border-radius: 7px; background: var(--accent-soft); }
 
   .app-frame .projects-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
+  .app-frame .projects-page :is(a[href], button, input, select, label) { font-size: 14px !important; }
   .app-frame .projects-table { width: 100%; min-width: 820px; border-collapse: collapse; table-layout: fixed; }
   .app-frame .projects-table caption { padding: 14px 18px 8px; color: var(--text-secondary); font-size: 12px; text-align: left; }
   .app-frame .projects-table th,
