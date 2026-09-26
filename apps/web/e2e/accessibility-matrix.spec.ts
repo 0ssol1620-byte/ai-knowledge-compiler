@@ -98,6 +98,7 @@ test("core journeys tolerate 200 percent text scaling without horizontal overflo
 test("core journeys never render visible text below 12 pixels", async ({
   page,
 }) => {
+  const routeFailures: Array<{ route: string; failures: Array<{ selector: string; size: number; text: string }> }> = [];
   for (const route of typographyRoutes) {
     const response = await page.goto(route, { waitUntil: "domcontentloaded" });
     expect(response?.status(), route).toBeLessThan(400);
@@ -121,7 +122,9 @@ test("core journeys never render visible text below 12 pixels", async ({
           !text ||
           !element ||
           element.closest(
-            'script, style, template, noscript, svg, [aria-hidden="true"]',
+            // The zoomable source-page facsimile preserves the document's native
+            // typography; its size is controlled by the source viewer, not UI type.
+            'script, style, template, noscript, svg, [aria-hidden="true"], [data-source-facsimile]',
           )
         ) {
           continue;
@@ -153,8 +156,9 @@ test("core journeys never render visible text below 12 pixels", async ({
       return failures.slice(0, 40);
     });
 
-    expect(undersized, `${route} contains visible text below 12px`).toEqual([]);
+    if (undersized.length > 0) routeFailures.push({ route, failures: undersized });
   }
+  expect(routeFailures, "Core routes contain visible text below 12px").toEqual([]);
 });
 
 test("core controls and form labels render at 14 pixels or larger", async ({

@@ -1,5 +1,45 @@
 /* Operational views must remain legible when the workspace contains long source names. */
 @layer components {
+  .app-frame :is(
+    .brand-copy small,
+    .privacy-card strong,
+    .privacy-card span,
+    .product-back-link,
+    .topbar-search kbd,
+    .credit-chip small,
+    .account-copy strong,
+    .account-copy small,
+    .collection-intake-page small,
+    .mobile-app-nav a
+  ) {
+    font-size: 12px !important;
+  }
+
+  .app-frame button {
+    font-size: max(14px, 1em) !important;
+  }
+
+  .app-frame .processing-page :is(p, span, strong, small, em, output, code, label, li, dt, dd) {
+    font-size: max(12px, 1em) !important;
+  }
+
+  .app-frame .processing-page :is(th, td, caption),
+  .app-frame .knowledge-studio-page :is(p, span, small) {
+    font-size: max(12px, 1em) !important;
+  }
+
+  .app-frame .processing-page h1 {
+    font-size: max(16px, 1em) !important;
+  }
+
+  .app-frame .integrity-console-page small {
+    font-size: 12px !important;
+  }
+
+  .app-frame .projects-page :is(.eyebrow, .sample-data-badge span) {
+    font-size: 12px !important;
+  }
+
   .app-frame .projects-page,
   .app-frame .integrity-console-page {
     color: var(--text);
@@ -150,6 +190,7 @@
   .app-frame .integrity-console-heading aside code { overflow-wrap: anywhere; font-size: 12px; }
   .app-frame .integrity-status-register { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .app-frame .integrity-status-register > div { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 13px; }
+  .app-frame .integrity-status-register > div:last-child { grid-column: span 2; }
   .app-frame .integrity-status-register span { display: grid; gap: 2px; min-width: 0; }
   .app-frame .integrity-status-register span strong { color: var(--text); font-size: 12px; }
   .app-frame .integrity-status-register b { font-size: 21px; }

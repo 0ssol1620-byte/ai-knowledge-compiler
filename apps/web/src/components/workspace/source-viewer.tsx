@@ -210,7 +210,7 @@ export function SourceViewer({
           {sample ? (
             <SamplePaper pageNumber={page.page_number} />
           ) : (
-            <div className="paper-page real-source-page">
+            <div className="paper-page real-source-page" data-source-facsimile>
               {page.thumbnail_url ? (
                 // The URL is a short-lived, authenticated page preview supplied by the API.
                 // eslint-disable-next-line @next/next/no-img-element
@@ -359,7 +359,7 @@ export function SourceViewer({
 
 function SamplePaper({ pageNumber }: { pageNumber: number }) {
   return (
-    <article className="paper-page">
+    <article className="paper-page" data-source-facsimile>
       <div className="paper-journal">
         SAMPLE · JOURNAL OF RELIABLE AI SYSTEMS
       </div>
