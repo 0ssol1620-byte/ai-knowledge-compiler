@@ -15,7 +15,7 @@
     margin-bottom: 24px;
   }
 
-  .app-frame .projects-hero > div,
+  .app-frame .projects-hero > div:first-child,
   .app-frame .integrity-console-heading > div {
     flex: 1 1 420px;
     min-width: 0;
@@ -147,7 +147,7 @@
   .app-frame .integrity-console-heading aside span { display: grid; gap: 5px; min-width: 0; }
   .app-frame .integrity-console-heading aside small { color: var(--text-secondary); line-height: 1.4; }
   .app-frame .integrity-console-heading aside code { overflow-wrap: anywhere; font-size: 11px; }
-  .app-frame .integrity-status-register { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .app-frame .integrity-status-register { grid-template-columns: repeat(7, minmax(0, 1fr)); }
   .app-frame .integrity-status-register > div { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 13px; }
   .app-frame .integrity-status-register span { display: grid; gap: 2px; min-width: 0; }
   .app-frame .integrity-status-register span strong { color: var(--text); font-size: 12px; }
@@ -185,7 +185,7 @@
   .app-frame .integrity-attempts header { display: flex; justify-content: space-between; }
   .app-frame .integrity-attempts h3 { margin: 0; font-size: 14px; }
   .app-frame .integrity-attempts header p { margin: 6px 0 0; color: var(--text-secondary); font-size: 12px; line-height: 1.4; }
-  .app-frame .integrity-attempts ol { margin: 18px 0 0; padding-left: 22px; }
+  .app-frame .integrity-attempts ol { margin: 18px 0 0; padding: 0; list-style: none; }
   .app-frame .integrity-attempts li { padding: 0 0 14px 8px; }
   .app-frame .integrity-attempts li > div > strong { display: block; margin-bottom: 8px; font-size: 12px; }
   .app-frame .integrity-attempts li dl { display: grid; gap: 8px; margin: 0; }
@@ -193,7 +193,7 @@
 
   @media (max-width: 1000px) {
     .app-frame .integrity-console-layout { grid-template-columns: 1fr; }
-    .app-frame .integrity-status-register { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .app-frame .integrity-status-register { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 
   @media (max-width: 700px) {
@@ -201,5 +201,6 @@
     .app-frame .integrity-console-page { padding: 20px 16px 44px; }
     .app-frame .projects-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .app-frame .integrity-finding-meta { grid-template-columns: 1fr; }
+    .app-frame .integrity-status-register { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   }
 }
