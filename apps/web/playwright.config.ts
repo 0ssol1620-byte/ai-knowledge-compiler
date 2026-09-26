@@ -82,16 +82,16 @@ export default defineConfig({
   },
   projects,
   webServer: {
-    command: "pnpm dev",
+    // Screenshot baselines represent the shipped bundle. `next dev` injects its black
+    // development indicator into every capture and can change fonts/layout during HMR.
+    command: "pnpm build && pnpm start",
     url: "http://127.0.0.1:3000",
     env: {
       NEXT_PUBLIC_AKC_DEMO_MODE: "true",
       NEXT_PUBLIC_AKC_API_URL: "http://127.0.0.1:8000",
     },
     reuseExistingServer: !process.env.CI,
-    // Local disks here are slow enough that a cold `next dev` compile can take
-    // two minutes (measured: "Ready in 113s"); 300s left too little headroom
-    // once another process competes for the disk.
-    timeout: process.env.CI ? 120_000 : 900_000,
+    // A cold optimized build is substantially slower than starting a dev server.
+    timeout: 900_000,
   },
 });
