@@ -369,7 +369,7 @@ function SamplePaper({ pageNumber }: { pageNumber: number }) {
       <h3>4.2 Experimental results</h3>
       <p>
         This content is a UI validation sample. Production mode displays only
-        the API-issued source preview and stored bounding boxes.
+        the API-issued source preview and the stored bounding boxes.
       </p>
       <table>
         <caption>Table 3. Sample comparison</caption>

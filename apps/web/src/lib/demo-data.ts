@@ -57,9 +57,9 @@ export const demoBlocks: CanonicalBlock[] = [
     order: 3,
     type: "paragraph",
     source_text:
-      "This content is a UI validation sample. Production mode displays only the API-issued source preview and stored bounding boxes.",
+      "This content is a UI validation sample. Production mode displays only the API-issued source preview and the stored bounding boxes.",
     markdown:
-      "This content is a UI validation sample. Production mode displays only the API-issued source preview and stored bounding boxes.",
+      "This content is a UI validation sample. Production mode displays only the API-issued source preview and the stored bounding boxes.",
     origin: "ocr_extracted",
     content_layer: "structured",
     source_refs: source(7, [108, 258, 892, 364]),

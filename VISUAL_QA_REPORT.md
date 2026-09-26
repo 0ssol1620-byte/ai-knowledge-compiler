@@ -283,5 +283,11 @@ figures. Its source, extracted table, summary, candidate review, and marketing
 facsimile now use a labeled section/page/block-count sample. These numbers are
 illustrative document content, not a quality or cost benchmark. Source-page
 coordinates, review flags, and the source-to-output relationship are retained.
-Linux screenshot references and the complete CI matrix must be refreshed and
-checked on the exact final commit before this PR is ready for visual review.
+Four desktop/Linux screenshot references (home, projects, integrity, knowledge)
+were refreshed from the production-build images in GitHub Actions run
+`36256271597`. Local production captures cover the five affected marketing and
+product routes at 1920, 1440, 1280, 1024, 768, 390, and 360px: 35/35 returned
+HTTP 200 with no document-width overflow. The local browser matrix passed 9/9
+across the seven widths and Firefox/WebKit, and the affected accessibility
+checks passed at desktop and mobile widths. The final exact-commit CI and
+founder visual review are still required before visual acceptance.
