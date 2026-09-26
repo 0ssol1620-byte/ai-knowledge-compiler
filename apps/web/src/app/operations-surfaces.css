@@ -117,7 +117,7 @@
   .app-frame .projects-table caption { padding: 14px 18px 8px; color: var(--text-secondary); font-size: 12px; text-align: left; }
   .app-frame .projects-table th,
   .app-frame .projects-table td { padding: 14px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: middle; font-size: 13px; }
-  .app-frame .projects-table thead th { color: var(--text-secondary); background: var(--surface-subtle); font-size: 11px; font-weight: 600; }
+  .app-frame .projects-table thead th { color: var(--text-secondary); background: var(--surface-subtle); font-size: 12px; font-weight: 600; }
   .app-frame .projects-table th:first-child { width: 46px; }
   .app-frame .projects-table th:nth-child(2) { width: 35%; }
   .app-frame .projects-table th:nth-child(3) { width: 12%; }
@@ -125,9 +125,9 @@
   .app-frame .projects-table tbody tr:last-child > * { border-bottom: 0; }
   .app-frame .projects-table tbody th a { display: grid; gap: 4px; min-width: 0; }
   .app-frame .projects-table tbody th strong { overflow-wrap: anywhere; font-size: 13px; font-weight: 650; }
-  .app-frame .projects-table tbody th small { color: var(--text-secondary); font-size: 11px; font-weight: 400; line-height: 1.4; }
+  .app-frame .projects-table tbody th small { color: var(--text-secondary); font-size: 12px; font-weight: 400; line-height: 1.4; }
   .app-frame .projects-table button { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; }
-  .app-frame .project-status { display: inline-flex; padding: 5px 8px; border-radius: 4px; background: var(--surface-muted); font-size: 11px; white-space: nowrap; }
+  .app-frame .project-status { display: inline-flex; padding: 5px 8px; border-radius: 4px; background: var(--surface-muted); font-size: 12px; white-space: nowrap; }
   .app-frame .project-status[data-status="ready"] { color: var(--success); background: var(--success-soft); }
   .app-frame .project-status[data-status="attention"] { color: var(--danger); background: var(--danger-soft); }
   .app-frame .project-status[data-status="processing"] { color: var(--primary); background: var(--accent-soft); }
@@ -139,20 +139,20 @@
   .app-frame .projects-card-grid h2 { margin: 16px 0 7px; font-size: 18px; }
   .app-frame .projects-card-grid p { color: var(--text-secondary); font-size: 13px; line-height: 1.5; }
   .app-frame .projects-card-grid dl { display: flex; gap: 25px; margin: 18px 0; }
-  .app-frame .projects-card-grid dt { color: var(--text-secondary); font-size: 11px; }
+  .app-frame .projects-card-grid dt { color: var(--text-secondary); font-size: 12px; }
 
   .app-frame .integrity-console-page { width: min(1480px, 100%); padding: 30px 34px 56px; }
-  .app-frame .integrity-console-heading > div > p { margin: 0; color: var(--text-secondary); font-size: 11px; }
+  .app-frame .integrity-console-heading > div > p { margin: 0; color: var(--text-secondary); font-size: 12px; }
   .app-frame .integrity-console-heading aside { display: flex; gap: 10px; width: min(100%, 320px); padding: 14px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface); }
   .app-frame .integrity-console-heading aside span { display: grid; gap: 5px; min-width: 0; }
   .app-frame .integrity-console-heading aside small { color: var(--text-secondary); line-height: 1.4; }
-  .app-frame .integrity-console-heading aside code { overflow-wrap: anywhere; font-size: 11px; }
+  .app-frame .integrity-console-heading aside code { overflow-wrap: anywhere; font-size: 12px; }
   .app-frame .integrity-status-register { grid-template-columns: repeat(7, minmax(0, 1fr)); }
   .app-frame .integrity-status-register > div { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 13px; }
   .app-frame .integrity-status-register span { display: grid; gap: 2px; min-width: 0; }
   .app-frame .integrity-status-register span strong { color: var(--text); font-size: 12px; }
   .app-frame .integrity-status-register b { font-size: 21px; }
-  .app-frame .integrity-status-register code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; }
+  .app-frame .integrity-status-register code { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; }
   .app-frame .integrity-console-layout { display: grid; grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.35fr); gap: 16px; align-items: start; }
   .app-frame .integrity-queue,
   .app-frame .integrity-inspector { min-width: 0; border: 1px solid var(--border); border-radius: 9px; background: var(--surface); }
@@ -169,8 +169,8 @@
   .app-frame .integrity-queue-list button[aria-current="true"] { background: var(--accent-soft); box-shadow: inset 3px 0 var(--primary); }
   .app-frame .integrity-queue-list button > span { display: grid; gap: 5px; min-width: 0; }
   .app-frame .integrity-queue-list strong { overflow-wrap: anywhere; font-size: 13px; }
-  .app-frame .integrity-queue-list small { color: var(--text-secondary); font-size: 11px; line-height: 1.4; }
-  .app-frame .integrity-queue-list em { grid-column: 2; color: var(--text-secondary); font-size: 11px; font-style: normal; }
+  .app-frame .integrity-queue-list small { color: var(--text-secondary); font-size: 12px; line-height: 1.4; }
+  .app-frame .integrity-queue-list em { grid-column: 2; color: var(--text-secondary); font-size: 12px; font-style: normal; }
   .app-frame .integrity-inspector > header { display: grid; gap: 10px; }
   .app-frame .integrity-inspector > header > div { display: flex; align-items: center; gap: 9px; }
   .app-frame .integrity-inspector > header > span { color: var(--text-secondary); font-size: 12px; }
@@ -178,7 +178,7 @@
   .app-frame .integrity-finding-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 18px; }
   .app-frame .integrity-finding-meta > div { min-width: 0; }
   .app-frame .integrity-finding-meta dt,
-  .app-frame .integrity-attempts dt { margin-bottom: 4px; color: var(--text-secondary); font-size: 11px; }
+  .app-frame .integrity-attempts dt { margin-bottom: 4px; color: var(--text-secondary); font-size: 12px; }
   .app-frame .integrity-finding-meta dd,
   .app-frame .integrity-attempts dd { margin: 0; overflow-wrap: anywhere; font-size: 12px; }
   .app-frame .integrity-attempts { margin: 0 18px 18px; padding: 18px; border: 1px solid var(--border); border-radius: 7px; }
@@ -191,12 +191,16 @@
   .app-frame .integrity-attempts li dl { display: grid; gap: 8px; margin: 0; }
   .app-frame .integrity-live-state { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid var(--border); border-radius: 6px; }
 
-  @media (max-width: 1000px) {
+  @media (max-width: 1024px) {
+    .app-frame .projects-table { min-width: 0; }
+    .app-frame .projects-table tr > :nth-child(n+4):nth-child(-n+7) { display: none; }
+    .app-frame .projects-table th:nth-child(2) { width: 52%; }
+    .app-frame .projects-table th:nth-child(3) { width: auto; }
     .app-frame .integrity-console-layout { grid-template-columns: 1fr; }
     .app-frame .integrity-status-register { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   }
 
-  @media (max-width: 700px) {
+  @media (max-width: 768px) {
     .app-frame .projects-page,
     .app-frame .integrity-console-page { padding: 20px 16px 44px; }
     .app-frame .projects-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
