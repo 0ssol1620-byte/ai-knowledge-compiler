@@ -265,3 +265,23 @@ captures: nine from run `36250798453` and the repaired two from run
 visual acceptance. The repository's 1920, 1440, 1280, 1024, 768, 390, and
 360px browser matrix and reduced-motion checks remain the required gate. The
 final rerun and founder visual review are recorded separately when complete.
+
+## 2026-09-27 readability and sample-truth follow-up
+
+The production screenshots exposed clipped internal status identifiers in the
+integrity summary. The summary now shows localized status names and counts;
+the raw identifiers remain in DOM state attributes for implementation checks,
+not customer copy. The app text floor is 12px and core controls are 14px on the
+tested desktop/mobile journeys. A zoomable source-page facsimile retains its
+native document typography and is explicitly outside the UI text-floor check.
+The focused desktop/mobile typography checks passed locally after the last
+label fixes; the integrity component unit test, typecheck, ESLint, interaction
+contract, and design detector also passed.
+
+The demo document previously contained invented before/after performance
+figures. Its source, extracted table, summary, candidate review, and marketing
+facsimile now use a labeled section/page/block-count sample. These numbers are
+illustrative document content, not a quality or cost benchmark. Source-page
+coordinates, review flags, and the source-to-output relationship are retained.
+Linux screenshot references and the complete CI matrix must be refreshed and
+checked on the exact final commit before this PR is ready for visual review.

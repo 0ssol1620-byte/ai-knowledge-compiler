@@ -188,9 +188,8 @@
   .app-frame .integrity-console-heading aside span { display: grid; gap: 5px; min-width: 0; }
   .app-frame .integrity-console-heading aside small { color: var(--text-secondary); line-height: 1.4; }
   .app-frame .integrity-console-heading aside code { overflow-wrap: anywhere; font-size: 12px; }
-  .app-frame .integrity-status-register { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .app-frame .integrity-status-register { grid-template-columns: repeat(7, minmax(0, 1fr)); }
   .app-frame .integrity-status-register > div { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 13px; }
-  .app-frame .integrity-status-register > div:last-child { grid-column: span 2; }
   .app-frame .integrity-status-register span { display: grid; gap: 2px; min-width: 0; }
   .app-frame .integrity-status-register span strong { color: var(--text); font-size: 12px; }
   .app-frame .integrity-status-register b { font-size: 21px; }
@@ -239,6 +238,7 @@
     .app-frame .projects-table th:nth-child(3) { width: auto; }
     .app-frame .integrity-console-layout { grid-template-columns: 1fr; }
     .app-frame .integrity-status-register { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .app-frame .integrity-status-register > div:last-child { grid-column: span 2; }
   }
 
   @media (max-width: 768px) {
