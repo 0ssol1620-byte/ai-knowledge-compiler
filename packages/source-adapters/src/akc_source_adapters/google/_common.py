@@ -7,7 +7,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from collections.abc import Callable, Mapping
+from collections.abc import Callable
 from typing import Any, Protocol
 
 MAX_ATTEMPTS = 5
@@ -63,14 +63,14 @@ def get_json(
         except urllib.error.HTTPError as exc:
             last_status = exc.code
             headers = dict(exc.headers or {})
-            retry_after = headers.get("Retry-After")
+            retry_after = str(headers.get("Retry-After") or "")
             retryable = exc.code == 429 or exc.code >= 500
             if attempt == MAX_ATTEMPTS or not retryable:
                 raise GoogleAdapterError(
                     f"GET {urllib.parse.urlsplit(url).path} failed (HTTP {exc.code})",
                     status=exc.code,
                 ) from exc
-            wait = float(retry_after) if (retry_after or "").isdigit() else delay
+            wait = float(retry_after) if retry_after.isdigit() else delay
             sleep(min(wait, MAX_BACKOFF_SECONDS))
             delay = min(delay * 2, MAX_BACKOFF_SECONDS)
         except urllib.error.URLError as exc:

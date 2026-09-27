@@ -159,7 +159,13 @@ function checkFocusOnly(attributes, sourceFile, openingElement, tagName) {
   // An explicit role plus a name is a declared widget or region, not a stray
   // focus stop. A scrollable table region, for one, has to be tabbable to
   // satisfy WCAG 2.1.1 even though it has no handler of its own.
-  if (attributes.strings.role && attributes.names.has("aria-label")) return;
+  if (
+    attributes.strings.role &&
+    (attributes.names.has("aria-label") ||
+      attributes.names.has("aria-labelledby"))
+  ) {
+    return;
+  }
   const interactive =
     tagName === "button" ||
     tagName === "a" ||

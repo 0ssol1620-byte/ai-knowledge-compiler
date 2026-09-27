@@ -358,8 +358,25 @@ export function SourceViewer({
 }
 
 function SamplePaper({ pageNumber }: { pageNumber: number }) {
+  // Stands in for the page image a real source shows, drawn at page scale and
+  // below the 12px text floor. Like that image it carries a text alternative
+  // instead of exposing facsimile text; the extracted blocks are the readable copy.
   return (
-    <article className="paper-page">
+    <>
+      <p className="sr-only">
+        Sample source page {pageNumber}, a demo document and not an actual
+        source: &ldquo;Evaluating evidence fidelity in retrieval-augmented
+        generation&rdquo;, with Table 3 comparing baseline (evidence fidelity
+        0.86, unsupported claims 3.8%) and verification enabled (0.94, 1.1%).
+      </p>
+      <SamplePaperFacsimile pageNumber={pageNumber} />
+    </>
+  );
+}
+
+function SamplePaperFacsimile({ pageNumber }: { pageNumber: number }) {
+  return (
+    <article className="paper-page" aria-hidden="true">
       <div className="paper-journal">
         SAMPLE · JOURNAL OF RELIABLE AI SYSTEMS
       </div>

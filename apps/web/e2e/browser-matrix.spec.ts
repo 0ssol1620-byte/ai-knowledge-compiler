@@ -40,7 +40,9 @@ test("representative public and product surfaces remain usable across the releas
       `${route} H1 must be visible on ${testInfo.project.name}`,
     ).toBeVisible();
 
-    if (route === "/workspace" && (page.viewportSize()?.width ?? 1280) < 1280) {
+    // The single-pane processing controls start at the product shell's 700px
+    // breakpoint. Tablet widths retain the multi-pane workspace.
+    if (route === "/workspace" && (page.viewportSize()?.width ?? 1280) <= 700) {
       const views = page.getByRole("navigation", {
         name: "Mobile processing views",
       });

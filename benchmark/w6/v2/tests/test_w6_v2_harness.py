@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 import sys
 from pathlib import Path
-from unittest import mock
 
 import pytest
 
@@ -15,7 +14,11 @@ if str(ROOT) not in sys.path:
 
 from benchmark.w6.v2.acquisition import ItemOutcome, acquire_corpus  # noqa: E402
 from benchmark.w6.v2.credentials import load_openrouter_key, redact  # noqa: E402
-from benchmark.w6.v2.grading import critical_match, normalise, provenance_hit, wilson_interval  # noqa: E402
+from benchmark.w6.v2.grading import (  # noqa: E402
+    critical_match,
+    provenance_hit,
+    wilson_interval,
+)
 from benchmark.w6.v2.retrieval import RagIndex, chunk_text  # noqa: E402
 
 
@@ -51,9 +54,9 @@ class _FakeSession:
 
 def test_acquire_records_failures_not_silent(tmp_path):
     responses = [
-        _FakeResponse(status_code=500),          # attempt 1 -> http_500
-        _FakeResponse(status_code=500),          # attempt 2
-        _FakeResponse(status_code=500),          # attempt 3 -> item fails
+        _FakeResponse(status_code=500),  # attempt 1 -> http_500
+        _FakeResponse(status_code=500),  # attempt 2
+        _FakeResponse(status_code=500),  # attempt 3 -> item fails
         _FakeResponse(payload={"pages": [{"extract": "x" * 2500}]}),  # item 2 ok
     ]
     report = acquire_corpus(
@@ -67,7 +70,7 @@ def test_acquire_records_failures_not_silent(tmp_path):
     counts = report.summary_counts()
     assert counts.get("failed") == 1
     assert counts.get("ok") == 1
-    failed = [o for o in report.outcomes if o.status == "failed"][0]
+    failed = next(o for o in report.outcomes if o.status == "failed")
     assert failed.error_class == "http_500"
     assert failed.attempts == 3
     dumped = json.dumps(report.to_dict())
@@ -92,10 +95,10 @@ def test_acquire_respects_deadline_and_ledgers_remaining(tmp_path):
             return super().get(url, timeout=timeout)
 
     responses = [
-        _FakeResponse(payload={"pages": [{"extract": "y" * 2500}]}),   # item 1 ok
-        httpx.TimeoutException("simulated timeout"),                    # item 2 attempt 1
-        httpx.TimeoutException("simulated timeout"),                    # item 2 attempt 2
-        httpx.TimeoutException("simulated timeout"),                    # item 2 attempt 3
+        _FakeResponse(payload={"pages": [{"extract": "y" * 2500}]}),  # item 1 ok
+        httpx.TimeoutException("simulated timeout"),  # item 2 attempt 1
+        httpx.TimeoutException("simulated timeout"),  # item 2 attempt 2
+        httpx.TimeoutException("simulated timeout"),  # item 2 attempt 3
     ]
 
     report = acquire_corpus(
@@ -119,7 +122,7 @@ def test_cache_hit_skips_network(tmp_path):
     title = "Cached"
     from hashlib import sha1
 
-    cache_file = tmp_path / f"{sha1(title.encode()).hexdigest()}.json"
+    cache_file = tmp_path / f"{sha1(title.encode(), usedforsecurity=False).hexdigest()}.json"
     cache_file.write_text(json.dumps({"title": title, "text": "z" * 3000}), encoding="utf-8")
     seen: list[str] = []
 
