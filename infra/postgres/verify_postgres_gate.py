@@ -411,8 +411,49 @@ async def _verify(admin_url: str) -> None:
         await _verify_role_membership(admin)
     finally:
         await admin.close()
+    await _verify_source_cursor_api_rls(admin_url)
     await _verify_scheduler_capabilities(parts)
     await _verify_dispatch_advisory_fairness(parts)
+
+
+async def _verify_source_cursor_api_rls(admin_url: str) -> None:
+    """Exercise cursor SELECT under the actual API role, including absent context."""
+
+    admin = await asyncpg.connect(admin_url)
+    probe: asyncpg.Connection[asyncpg.Record] | None = None
+    tenant_a, tenant_b = uuid.uuid4(), uuid.uuid4()
+    source_a = f"ci:source-a:{uuid.uuid4().hex}"
+    source_b = f"ci:source-b:{uuid.uuid4().hex}"
+    try:
+        await admin.executemany(
+            """
+            INSERT INTO source_cursors (source_id, adapter, cursor, tenant_id)
+            VALUES ($1, 'ci', '{}'::jsonb, $2)
+            """,
+            [(source_a, tenant_a), (source_b, tenant_b)],
+        )
+        probe = await asyncpg.connect(admin_url)
+        async with probe.transaction():
+            await probe.execute("SET LOCAL ROLE akc_api_plane")
+            query = "SELECT source_id FROM source_cursors WHERE source_id = ANY($1::text[])"
+            ids = [source_a, source_b]
+            if await probe.fetch(query, ids):
+                raise AssertionError("source cursors visible without tenant context")
+            for tenant, expected in ((tenant_a, source_a), (tenant_b, source_b)):
+                await probe.execute("SELECT set_config('app.tenant_id', $1, true)", str(tenant))
+                visible = {row["source_id"] for row in await probe.fetch(query, ids)}
+                if visible != {expected}:
+                    raise AssertionError(
+                        f"API cursor tenant isolation failed: expected {expected}, got {visible}"
+                    )
+    finally:
+        if probe is not None:
+            await probe.close()
+        await admin.execute(
+            "DELETE FROM source_cursors WHERE source_id = ANY($1::text[])",
+            [source_a, source_b],
+        )
+        await admin.close()
 
 
 async def _main() -> None:

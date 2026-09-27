@@ -1,4 +1,4 @@
-"""Keep tenant source cursors outside the scheduler control-plane boundary.
+"""Keep source cursors out of the scheduler and admit tenant-scoped API reads.
 
 Revision ID: 0041_revoke_source_cursor_scheduler_grant
 Revises: 0040_source_cursor_tenancy
@@ -18,11 +18,17 @@ def upgrade() -> None:
     if op.get_bind().dialect.name == "postgresql":
         # 0040 added tenant restrictions but no permissive entry policy. Without
         # one, the API's tenant-scoped SELECT silently returns zero rows.
+        # Repeat the tenant predicate here as defense in depth: a later edit to
+        # the restrictive policy must not turn this admission policy into a
+        # blanket cross-tenant read.
+        op.execute("DROP POLICY IF EXISTS source_cursors_api_select ON source_cursors")
         op.execute(
             "DO $$ BEGIN "
             "IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'akc_api_plane') THEN "
             "CREATE POLICY source_cursors_api_select ON source_cursors "
-            "AS PERMISSIVE FOR SELECT TO akc_api_plane USING (true); "
+            "AS PERMISSIVE FOR SELECT TO akc_api_plane "
+            "USING (source_cursors.tenant_id = "
+            "NULLIF(current_setting('app.tenant_id', true), '')::uuid); "
             "END IF; END $$;"
         )
         op.execute(
