@@ -59,7 +59,7 @@ def test_page_count_includes_pages_beyond_the_windows_max_path_limit(
     tmp_path: Path,
 ) -> None:
     prediction = tmp_path
-    while len(str(prediction.resolve())) < 150:
+    while len(str(prediction.resolve())) < 190:
         prediction = prediction / "nested-evidence-segment"
     prediction = prediction / "markdown-repeat-1"
     prediction.mkdir(parents=True)
@@ -67,10 +67,11 @@ def test_page_count_includes_pages_beyond_the_windows_max_path_limit(
 
     # OmniDocBench ships CJK source names; the longest frozen page in the public
     # core run resolves to 291 characters, past the Windows MAX_PATH limit of 260.
-    long_name = "book_en_国外数学教材-" + ("漫游" * 60) + "_0035.md"
+    long_name = "book_en_国外数学教材-" + ("漫游" * 36) + "_0035.md"
     long_page = prediction / long_name
     target = str(long_page.resolve())
     assert len(long_name) < 255, "NTFS caps a single path component at 255"
+    assert len(long_name.encode("utf-8")) <= 255, "Linux also caps a component at 255 bytes"
     assert len(target) > 260
     if os.name == "nt":
         target = "\\\\?\\" + target

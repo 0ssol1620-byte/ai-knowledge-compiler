@@ -6,9 +6,9 @@ Freshness tier F1 (hourly polling is enough for most drives).
 from __future__ import annotations
 
 import urllib.parse
-from datetime import datetime, UTC
 from collections.abc import Mapping
-from typing import Any
+from datetime import UTC, datetime
+from typing import Any, cast
 
 from akc_source_adapters.envelope import ChangeEvent, Cursor, FetchResult
 from akc_source_adapters.google._common import GoogleTokenProvider, get_json
@@ -61,7 +61,10 @@ class DriveAdapter:
 
         while True:
             params: dict[str, str] = {
-                "fields": "nextPageToken,newStartPageToken,changes(fileId,name,mimeType,trashed,modifiedTime)",
+                "fields": (
+                    "nextPageToken,newStartPageToken,"
+                    "changes(fileId,name,mimeType,trashed,modifiedTime)"
+                ),
                 "pageSize": str(self.page_size),
                 "includeRemoved": "true",
             }
@@ -79,8 +82,9 @@ class DriveAdapter:
                 path = str(file_meta.get("name") or change.get("fileId"))
                 revision = f"{change.get('fileId')}@{file_meta.get('modifiedTime', '')}"
                 removed = bool(change.get("removed")) or bool(file_meta.get("trashed"))
+                known_files = cast(dict[str, str], state.get("files", {}))
                 kind = "file_removed" if removed else (
-                    "file_changed" if state.get("files", {}).get(path) else "file_added"
+                    "file_changed" if known_files.get(path) else "file_added"
                 )
                 event_payload: dict[str, object] = {"path": path}
                 if not removed:
@@ -90,9 +94,9 @@ class DriveAdapter:
                             "modifiedTime": file_meta.get("modifiedTime", ""),
                         }
                     )
-                    state.setdefault("files", {})[path] = revision  # type: ignore[union-attr]
+                    cast(dict[str, str], state.setdefault("files", {}))[path] = revision
                 elif "files" in state:
-                    state["files"].pop(path, None)  # type: ignore[union-attr]
+                    cast(dict[str, str], state["files"]).pop(path, None)
                 events.append(
                     ChangeEvent(
                         source_id=self.source_id,

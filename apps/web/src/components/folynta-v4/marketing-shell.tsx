@@ -55,9 +55,9 @@ export function FolyntaV4MarketingShell({
           </span>
         </div>
         <nav aria-label={ko ? "푸터 내비게이션" : "Footer navigation"}>
-          <a href="/docs">{ko ? "문서" : "Docs"}</a>
+          <a href="/developers/docs">{ko ? "문서" : "Docs"}</a>
           <a href="/benchmarks">{ko ? "벤치마크" : "Benchmarks"}</a>
-          <a href="/privacy">{ko ? "개인정보" : "Privacy"}</a>
+          <a href="/legal/privacy">{ko ? "개인정보" : "Privacy"}</a>
           <a href="/notices">{ko ? "고지" : "Notices"}</a>
         </nav>
         <small>© 2026 FOLYNTA · Evidence-first knowledge systems.</small>

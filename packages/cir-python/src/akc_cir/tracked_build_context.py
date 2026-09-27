@@ -443,8 +443,9 @@ class TrackedBuildContext:
         _TRACKED_DATETIME_SINK = sink
         import datetime as datetime_module
 
+        original_datetime_class = datetime_module.datetime
         datetime_module.datetime = _TracedDateTime  # type: ignore[misc]
-        self._record_restore(datetime_module, "datetime", datetime_module.datetime)
+        self._record_restore(datetime_module, "datetime", original_datetime_class)
 
     def _install_import_recorder(self) -> None:
         recorder = _ImportRecorder(self._record_module)
