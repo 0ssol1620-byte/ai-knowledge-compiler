@@ -15,6 +15,7 @@
     "test:e2e:visual": "playwright test e2e/visual-regression.spec.ts --project=desktop",
     "test:e2e:matrix": "playwright test --config=playwright.matrix.config.ts",
     "test:e2e:live": "playwright test --config=playwright.live.config.ts",
+    "storybook:build": "storybook build --output-dir storybook-static",
     "interactions:check": "node scripts/verify-button-contracts.mjs",
     "blueprint:check": "node scripts/verify-blueprint.mjs",
     "claims:check": "node scripts/verify-claims.mjs",

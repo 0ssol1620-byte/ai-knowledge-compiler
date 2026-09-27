@@ -156,3 +156,7 @@ automated screenshots at 1920, 1440, 1280, 1024, 768, 390, and 360px plus
 reduced motion in the exact-head CI artifact. Those captures, visual baseline
 comparison, accessibility, build, and Lighthouse results are pending for this
 change. **FOUNDER VISUAL REVIEW REQUIRED** before visual acceptance.
+
+## 2026-09-27 Linux baseline capture
+
+The eleven desktop Linux snapshots in `apps/web/e2e/visual-regression.spec.ts-snapshots/` were captured by exact-head GitHub Actions run `36284522560` from commit `183cfdf` and imported as the initial comparison baseline. The run's missing-baseline failure was a test-fixture omission, not a visual pass. These images establish a future regression reference; they do not certify the composition or customer experience. The 1920/1440/1280/1024/768/390/360-width and reduced-motion screenshots remain separate evidence. **FOUNDER VISUAL REVIEW REQUIRED** before visual acceptance.
