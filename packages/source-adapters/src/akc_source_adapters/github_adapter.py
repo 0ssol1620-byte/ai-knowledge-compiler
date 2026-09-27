@@ -41,7 +41,7 @@ import urllib.request
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, cast
 
 from akc_source_adapters.envelope import ChangeEvent, Cursor, FetchResult, utc_now
 
@@ -166,9 +166,8 @@ class GitHubAdapter:
         new_commits.reverse()  # oldest first so consumers apply history order
 
         events: list[ChangeEvent] = []
-        files: dict[str, str] = {
-            str(path): str(sha) for path, sha in dict(state.get("files") or {}).items()
-        }
+        prior_files = cast(Mapping[str, object], state.get("files") or {})
+        files: dict[str, str] = {str(path): str(sha) for path, sha in dict(prior_files).items()}
         for summary in new_commits:
             detail = self._request_json(f"/repos/{self.repo}/commits/{summary.sha}", {})
             added, modified, removed = _split_files(detail.get("files"))
@@ -286,7 +285,10 @@ class GitHubAdapter:
                 if token:
                     request.add_header("Authorization", f"Bearer {token}")
                 try:
-                    with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as response:  # noqa: S310 -- same operator-configured base
+                    # same operator-configured base
+                    with urllib.request.urlopen(  # noqa: S310
+                        request, timeout=REQUEST_TIMEOUT_SECONDS
+                    ) as response:
                         body = response.read()
                         self._respect_rate_limit(dict(response.headers))
                         return json.loads(body.decode("utf-8"))

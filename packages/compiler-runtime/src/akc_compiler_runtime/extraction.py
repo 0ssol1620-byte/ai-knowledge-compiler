@@ -463,7 +463,7 @@ def _clean_ref(ref: str) -> str:
     ``policies/launch-governance.md — readiness gate`` resolves.
     """
     ref = ref.strip().rstrip(".;,")
-    ref = re.split(r"\s+(?:—|–|--|-)\s+", ref)[0].strip()
+    ref = re.split(r"\s+(?:—|–|--|-)\s+", ref)[0].strip()  # noqa: RUF001 — en dash is a separator
     ref = re.sub(r"\s*\(.*\)\s*$", "", ref).strip()
     if "#" in ref:
         ref = ref.split("#", 1)[0]

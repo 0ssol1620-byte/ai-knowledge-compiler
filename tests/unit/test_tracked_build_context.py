@@ -347,3 +347,4 @@ def test_every_hook_is_restored_after_normal_and_erroring_exits(
     assert time.time is original_time
     assert random.random is original_random
     assert datetime_module.datetime is original_datetime_class
+    assert datetime_module.datetime is datetime
