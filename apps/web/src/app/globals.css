@@ -6219,7 +6219,7 @@ a {
   list-style: none;
 }
 
-.knowledge-evidence-panel li {
+.knowledge-evidence-panel ol li {
   display: grid;
   min-height: 58px;
   grid-template-columns: 24px 1fr;
@@ -6228,7 +6228,7 @@ a {
   border-bottom: 1px solid var(--border);
 }
 
-.knowledge-evidence-panel li > span {
+.knowledge-evidence-panel ol li > span {
   display: grid;
   width: 20px;
   height: 20px;
@@ -6239,16 +6239,16 @@ a {
   font-size: 12px;
 }
 
-.knowledge-evidence-panel li > div {
+.knowledge-evidence-panel ol li > div {
   display: grid;
   gap: 2px;
 }
 
-.knowledge-evidence-panel li strong {
+.knowledge-evidence-panel ol li strong {
   font-size: 12px;
 }
 
-.knowledge-evidence-panel li small {
+.knowledge-evidence-panel ol li small {
   color: var(--text-tertiary);
   font-size: 12px;
 }
@@ -6256,6 +6256,434 @@ a {
 .knowledge-evidence-panel > button {
   width: calc(100% - 24px);
   margin: 14px 12px;
+}
+
+/* Knowledge Studio surfaces rendered by knowledge-studio.tsx. The legacy
+   graph-sample / ol rules above serve the older static sample only. */
+@layer components {
+  .knowledge-health-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 12px;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .knowledge-health-inline strong {
+    color: var(--text);
+  }
+
+  .knowledge-view-tabs {
+    display: flex;
+    align-items: stretch;
+    gap: 4px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    padding-inline: 12px;
+    scrollbar-width: thin;
+  }
+
+  .knowledge-view-tabs button {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 6px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    padding: 0 12px;
+    color: var(--text-secondary);
+  }
+
+  .knowledge-view-tabs button:hover {
+    color: var(--text);
+  }
+
+  .knowledge-view-tabs button.active {
+    border-bottom-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .knowledge-view-tabs button:focus-visible,
+  .knowledge-neighborhood button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+
+  .knowledge-neighborhood {
+    display: grid;
+    min-height: 0;
+    grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+    align-content: start;
+    gap: 16px;
+    overflow: auto;
+    padding: 16px;
+  }
+
+  .knowledge-neighborhood-core {
+    display: grid;
+    align-content: start;
+    gap: 8px;
+  }
+
+  .knowledge-neighborhood-core > span {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .knowledge-neighbor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr));
+    align-content: start;
+    gap: 8px;
+  }
+
+  .knowledge-neighborhood button {
+    display: grid;
+    min-width: 0;
+    min-height: 76px;
+    align-content: center;
+    gap: 4px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    padding: 10px 12px;
+    text-align: left;
+  }
+
+  .knowledge-neighborhood button:hover {
+    border-color: var(--border-strong);
+  }
+
+  .knowledge-neighborhood button.selected {
+    border: 2px solid var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .knowledge-neighborhood button i {
+    display: none;
+  }
+
+  .knowledge-neighborhood button span,
+  .knowledge-neighborhood button small {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .knowledge-neighborhood button strong {
+    color: var(--text);
+    overflow-wrap: anywhere;
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  .knowledge-empty-result {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 8px;
+    min-height: 180px;
+    padding: 20px;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+
+  .knowledge-empty-result h2,
+  .knowledge-empty-result p {
+    margin: 0;
+  }
+
+  /* Notes and Relations tables reflow inside the canvas: cells wrap rather
+     than forcing a horizontal scroller, so every column stays on screen. */
+  .knowledge-table-wrap {
+    min-width: 0;
+    min-height: 0;
+    overflow: auto;
+    padding: 0 16px 16px;
+  }
+
+  .knowledge-accessible-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    font-size: 12px;
+    line-height: 1.45;
+    text-align: left;
+  }
+
+  .knowledge-accessible-table caption {
+    padding: 14px 0 10px;
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 650;
+    text-align: left;
+  }
+
+  .knowledge-accessible-table th,
+  .knowledge-accessible-table td {
+    border-bottom: 1px solid var(--border);
+    padding: 10px 12px;
+    overflow-wrap: break-word;
+    vertical-align: top;
+  }
+
+  /* Only free-text titles may break inside a word; short values such as
+     type, status and predicate keep whole words. */
+  .knowledge-accessible-table tbody th,
+  .knowledge-accessible-table[data-table="relations"]
+    td:is(:first-child, :nth-child(3)) {
+    overflow-wrap: anywhere;
+  }
+
+  .knowledge-accessible-table thead th {
+    background: var(--surface-subtle);
+    color: var(--text-secondary);
+    font-weight: 650;
+    white-space: nowrap;
+  }
+
+  .knowledge-accessible-table :is(th, td):last-child {
+    width: 1%;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .knowledge-accessible-table code {
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+
+  .knowledge-accessible-table tr[data-selected="true"] {
+    background: var(--accent-soft);
+  }
+
+  .knowledge-accessible-table tbody th {
+    font-weight: 400;
+  }
+
+  .knowledge-accessible-table button {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: var(--accent);
+    line-height: 1.35;
+    overflow-wrap: inherit;
+    text-align: left;
+  }
+
+  .knowledge-accessible-table button:hover {
+    text-decoration: underline;
+  }
+
+  .knowledge-accessible-table button:focus-visible,
+  .knowledge-explorer button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Scroll regions sit flush with the canvas edge; draw the ring inside. */
+  .knowledge-table-wrap:focus-visible,
+  .knowledge-evidence-ledger:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+
+  .knowledge-evidence-ledger {
+    display: grid;
+    min-height: 0;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+    align-content: start;
+    gap: 10px;
+    overflow: auto;
+    padding: 16px;
+  }
+
+  .knowledge-evidence-ledger article {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    padding: 12px;
+  }
+
+  .knowledge-evidence-ledger article[data-selected="true"] {
+    border: 2px solid var(--evidence-700);
+    padding: 11px;
+  }
+
+  .knowledge-evidence-ledger article > header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 4px 8px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+  }
+
+  .knowledge-evidence-ledger article > header strong {
+    color: var(--evidence-700);
+  }
+
+  .knowledge-evidence-ledger dl,
+  .knowledge-evidence-ledger dd {
+    margin: 0;
+  }
+
+  .knowledge-evidence-ledger dl {
+    display: grid;
+    gap: 8px;
+  }
+
+  .knowledge-evidence-ledger dl > div {
+    display: grid;
+    min-width: 0;
+    grid-template-columns: minmax(64px, auto) minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .knowledge-evidence-ledger dt {
+    color: var(--text-tertiary);
+    font-size: 12px;
+  }
+
+  .knowledge-evidence-ledger dd {
+    overflow-wrap: anywhere;
+    color: var(--text);
+    font-size: 12px;
+  }
+
+  .knowledge-evidence-panel > section {
+    display: grid;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+    padding: 14px;
+  }
+
+  .knowledge-evidence-panel > section > span {
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 650;
+  }
+
+  .knowledge-evidence-panel > section p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .knowledge-evidence-panel > section ul {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .knowledge-evidence-panel > section ul li {
+    display: grid;
+    min-width: 0;
+    gap: 4px;
+    border-bottom: 1px solid var(--border);
+    padding: 9px 0;
+  }
+
+  .knowledge-evidence-panel > section ul li:last-child {
+    border-bottom: 0;
+  }
+
+  .knowledge-evidence-panel > section ul code {
+    overflow-wrap: anywhere;
+    color: var(--text-tertiary);
+    font-size: 12px;
+  }
+
+  .knowledge-evidence-panel > section ul span {
+    overflow-wrap: anywhere;
+    color: var(--text);
+    font-size: 12px;
+  }
+
+  .knowledge-proof-card {
+    display: grid;
+    gap: 5px;
+    border-left: 2px solid var(--evidence-700);
+    background: var(--surface-subtle);
+    padding: 10px 12px;
+  }
+
+  .knowledge-proof-card strong,
+  .knowledge-proof-card small,
+  .knowledge-proof-card code {
+    overflow-wrap: anywhere;
+    font-size: 12px;
+  }
+
+  .knowledge-evidence-panel > a {
+    display: inline-flex;
+    margin: 14px 14px 0;
+  }
+
+  @media (width < 768px) {
+    .knowledge-neighborhood,
+    .knowledge-neighbor-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .knowledge-neighborhood {
+      gap: 12px;
+      padding: 12px;
+    }
+
+    .knowledge-view-tabs {
+      gap: 0;
+      padding-inline: 4px;
+    }
+
+    .knowledge-view-tabs button {
+      flex: 1 0 auto;
+      gap: 4px;
+      padding: 0 6px;
+    }
+
+    .knowledge-table-wrap {
+      padding: 0 8px 12px;
+    }
+
+    .knowledge-accessible-table th,
+    .knowledge-accessible-table td {
+      padding: 8px 6px;
+    }
+
+    .knowledge-evidence-ledger {
+      padding: 12px;
+    }
+  }
+}
+
+/* Font declarations on these buttons stay unlayered: the global
+   `button { font: inherit }` reset above is unlayered and would win over any
+   layered font-size or font-weight. */
+.knowledge-view-tabs button {
+  font-size: 14px;
+}
+
+.knowledge-view-tabs button.active,
+.knowledge-accessible-table button {
+  font-weight: 650;
+}
+
+.knowledge-accessible-table button {
+  font-size: 14px;
 }
 
 .developer-title {
@@ -6769,6 +7197,16 @@ a {
     grid-template-rows: auto 42px minmax(0, 1fr);
   }
 
+  .knowledge-canvas {
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .knowledge-canvas > header {
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    padding-block: 8px;
+  }
+
   .knowledge-context-header {
     flex-wrap: wrap;
     gap: 4px 8px;
@@ -6794,11 +7232,45 @@ a {
 
   .knowledge-layout {
     grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
   }
 
-  .knowledge-explorer,
   .knowledge-evidence-panel {
     display: none;
+  }
+
+  /* Search and perspectives stay reachable on phones as a compact strip. */
+  .knowledge-explorer {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(min-content, 1fr));
+    gap: 4px;
+    overflow: visible;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 6px 10px;
+  }
+
+  .knowledge-explorer > label {
+    display: flex;
+    grid-column: 1 / -1;
+    min-height: 44px;
+  }
+
+  .knowledge-explorer > button {
+    min-width: 0;
+    min-height: 48px;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 2px;
+    font-size: 14px;
+  }
+
+  .knowledge-explorer > button > span {
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .knowledge-tabs {

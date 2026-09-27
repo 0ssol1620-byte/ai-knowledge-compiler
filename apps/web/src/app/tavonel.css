@@ -3310,7 +3310,7 @@ body.tv-menu-open {
 }
 
 .app-frame .sidebar {
-  width: 240px;
+  width: min(100%, 240px);
   background: #e7e9eb;
   border-right: 1px solid #d3d6d9;
   color: #25292f;
