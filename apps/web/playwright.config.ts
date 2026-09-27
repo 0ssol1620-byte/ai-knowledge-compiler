@@ -44,7 +44,9 @@ const projects: Project[] = [
   {
     name: "desktop",
     testIgnore: /evidence\.spec\.ts/,
-    use: { ...devices["Desktop Chrome"] },
+    // The committed Linux visual baselines are captured at this width. The
+    // separate evidence project still covers 1280px and the other six widths.
+    use: { ...devices["Desktop Chrome"], viewport: { width: 1440, height: 900 } },
   },
   {
     name: "mobile",
