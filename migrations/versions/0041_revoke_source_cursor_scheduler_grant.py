@@ -1,5 +1,9 @@
 """Keep source cursors out of the scheduler and admit tenant-scoped API reads.
 
+Apply this migration before deploying the scheduler image that rejects its old
+grant. A downgrade likewise requires rolling back that image in the same
+release; the runtime capability check intentionally fails closed on mismatch.
+
 Revision ID: 0041_revoke_source_cursor_scheduler_grant
 Revises: 0040_source_cursor_tenancy
 """

@@ -335,8 +335,10 @@ jobs:
         # between the receipt's origin cluster and CI, so the comparison is over
         # the schema-determined portion rather than the whole file.
         #
-        # The baseline is the independently generated 0041 CI receipt. Older
-        # receipts remain immutable historical measurements.
+        # The 0041 baseline is captured from a clean CI PostgreSQL run; the
+        # separate role and policy probes above enforce behavior, since a
+        # receipt comparison alone cannot judge whether a policy is safe.
+        # Older receipts remain immutable historical measurements.
         run: >-
           python -m uv run --locked --extra dev
           python scripts/compare_privilege_receipt.py

@@ -7053,7 +7053,7 @@
           "roles": [
             "akc_api_plane"
           ],
-          "using": "true",
+          "using": "(tenant_id = (NULLIF(current_setting('app.tenant_id'::text, true), ''::text))::uuid)",
           "with_check": null
         },
         {

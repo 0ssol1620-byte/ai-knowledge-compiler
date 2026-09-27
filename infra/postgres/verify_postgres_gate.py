@@ -425,6 +425,18 @@ async def _verify_source_cursor_api_rls(admin_url: str) -> None:
     source_a = f"ci:source-a:{uuid.uuid4().hex}"
     source_b = f"ci:source-b:{uuid.uuid4().hex}"
     try:
+        predicate = await admin.fetchval(
+            """
+            SELECT pg_get_expr(policy.polqual, policy.polrelid)
+            FROM pg_policy AS policy
+            WHERE policy.polrelid = 'source_cursors'::regclass
+              AND policy.polname = 'source_cursors_api_select'
+            """
+        )
+        if not isinstance(predicate, str) or not all(
+            marker in predicate for marker in ("tenant_id", "current_setting", "app.tenant_id")
+        ):
+            raise AssertionError("API cursor admission policy lacks its own tenant predicate")
         await admin.executemany(
             """
             INSERT INTO source_cursors (source_id, adapter, cursor, tenant_id)
