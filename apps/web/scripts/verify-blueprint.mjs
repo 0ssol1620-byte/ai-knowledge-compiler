@@ -49,7 +49,7 @@ const ALLOWED_BREAKPOINTS = new Set([1280, 1024, 768]);
  * be argued in decision.md rather than committed here.
  */
 const BASELINE = {
-  "font-size-below-12px": 422,
+  "font-size-below-12px": 421,
   "non-conformant-breakpoint": 39,
 };
 

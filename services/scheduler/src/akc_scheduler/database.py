@@ -147,6 +147,10 @@ _POSTGRES_CAPABILITY_QUERY = text(
                           AND granted_acl.privilege_type IN ('SELECT', 'DELETE')
                       )
                       OR (
+                          granted_class.relname = 'source_cursors'
+                          AND granted_acl.privilege_type IN ('SELECT', 'INSERT', 'UPDATE')
+                      )
+                      OR (
                           granted_class.relname IN (
                               'email_verification_tokens',
                               'email_verification_deliveries'

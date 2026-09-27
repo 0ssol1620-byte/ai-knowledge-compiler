@@ -140,3 +140,19 @@ replacement nonce design is not an acceptable performance optimization.
 The locally executable visual, trust, interaction, accessibility, contract, and
 asset gates pass. Production release still depends on the external gates above.
 No status label should be interpreted as replacing those missing artifacts.
+
+## 2026-09-27 CI baseline follow-up
+
+The legacy `enterprise-refresh.css` layer contained twelve labels below the
+approved 12px floor and four nonstandard responsive breakpoints. Those labels
+now use 12px; the responsive rules use the approved 1280, 1024, and 768px
+boundaries with exclusive upper bounds. Two privacy-card labels were also
+raised to 12px, and two existing 767px queries now use `width < 768px`, which
+preserves their previous boundary behavior. The source blueprint ratchet is
+now 421 small-text declarations and 39 nonstandard breakpoints; both hold.
+
+The affected home and `/solutions/enterprise` routes are scheduled for
+automated screenshots at 1920, 1440, 1280, 1024, 768, 390, and 360px plus
+reduced motion in the exact-head CI artifact. Those captures, visual baseline
+comparison, accessibility, build, and Lighthouse results are pending for this
+change. **FOUNDER VISUAL REVIEW REQUIRED** before visual acceptance.

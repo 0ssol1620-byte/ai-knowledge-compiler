@@ -516,12 +516,12 @@ a {
 }
 
 .privacy-card strong {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .privacy-card span {
   margin-top: 2px;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .sidebar-collapsed .privacy-card {
@@ -5643,7 +5643,7 @@ a {
   }
 }
 
-@media (max-width: 767px) {
+@media (width < 768px) {
   .marketing-nav {
     width: 100%;
     padding-inline: 16px;
@@ -6753,7 +6753,7 @@ a {
   }
 }
 
-@media (max-width: 767px) {
+@media (width < 768px) {
   .quick-convert-grid,
   .workflow-grid,
   .activity-status-grid {

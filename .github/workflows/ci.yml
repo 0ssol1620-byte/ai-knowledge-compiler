@@ -184,6 +184,8 @@ jobs:
         run: pnpm --filter @akc/web test:e2e:visual
       - name: Run Chromium, Firefox, WebKit, and seven viewport contracts
         run: pnpm --filter @akc/web test:e2e:matrix
+      - name: Capture seven-width and reduced-motion route evidence
+        run: pnpm --filter @akc/web exec playwright test e2e/evidence.spec.ts
       - name: Run forced-colors and 200-percent accessibility contracts
         run: >-
           pnpm --filter @akc/web exec playwright test
