@@ -6765,6 +6765,28 @@ a {
     height: calc(100dvh - var(--topbar-height) - 64px);
   }
 
+  .knowledge-studio-page {
+    grid-template-rows: auto 42px minmax(0, 1fr);
+  }
+
+  .knowledge-context-header {
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    padding-block: 8px;
+  }
+
+  .knowledge-context-header > div:first-child {
+    flex: 1 0 100%;
+  }
+
+  .knowledge-health-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 8px;
+    min-width: 0;
+    font-size: 11px;
+  }
+
   .app-frame:has(.demo-mode-banner) .knowledge-studio-page,
   .app-frame:has(.demo-mode-banner) .review-studio-page {
     height: calc(100dvh - var(--topbar-height) - 64px - 30px);
