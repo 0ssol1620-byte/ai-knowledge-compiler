@@ -6,21 +6,36 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from threading import Lock
 
+from akc_cir.base import canonical_json, sha256_digest
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
 from .auth import ProductCoreAuthenticationError, verify_product_core_request
 from .compiler import ProductCoreCompiler
-from .contracts import ProductCoreCompileRequest
+from .contracts import ProductCoreCompileRequest, ProductCoreCompileResponse
 
 MAX_REQUEST_BYTES = 32 * 1024 * 1024
 
 
 @dataclass(frozen=True, slots=True)
 class _CachedResponse:
-    input_sha256: str
-    payload: dict[str, object]
+    work_sha256: str
+    response: ProductCoreCompileResponse
+
+
+def _work_sha256(request: ProductCoreCompileRequest) -> str:
+    """The digest of the work, without the attempt.
+
+    `requestId` and `requestedAt` name one attempt; a caller retrying the same work under the
+    same idempotency key sends new ones. Everything else -- documents, route, blueprint, prior
+    World -- is the work, and a change to any of it under the same key is a conflict.
+    """
+    return sha256_digest(
+        canonical_json(
+            request.model_dump(mode="json", by_alias=True, exclude={"request_id", "requested_at"})
+        )
+    )
 
 
 class ProductCoreService:
@@ -84,11 +99,24 @@ class ProductCoreService:
             compile_request.idempotency_key,
         )
         with self._lock:
+            work_sha256 = _work_sha256(compile_request)
             cached = self._cache.get(cache_key)
             if cached is not None:
-                if cached.input_sha256 != transport.input_sha256:
+                if cached.work_sha256 != work_sha256:
                     return 409, {"code": "CORE_IDEMPOTENCY_CONFLICT"}
-                return 200, cached.payload
+                # The same World, receipted to the attempt that was authenticated now. The
+                # candidate and its output digest are the first attempt's, unchanged.
+                replay = cached.response.model_copy(
+                    update={
+                        "receipt": cached.response.receipt.model_copy(
+                            update={
+                                "request_id": transport.request_id,
+                                "input_sha256": transport.input_sha256,
+                            }
+                        )
+                    }
+                )
+                return 200, replay.model_dump(mode="json", by_alias=True, exclude_none=True)
             try:
                 response = self.compiler.compile(
                     compile_request,
@@ -96,12 +124,8 @@ class ProductCoreService:
                 )
             except ValueError as exc:
                 return 422, {"code": "CORE_COMPILE_REJECTED", "reason": str(exc)}
-            payload = response.model_dump(mode="json", by_alias=True, exclude_none=True)
-            self._cache[cache_key] = _CachedResponse(
-                input_sha256=transport.input_sha256,
-                payload=payload,
-            )
-            return 200, payload
+            self._cache[cache_key] = _CachedResponse(work_sha256=work_sha256, response=response)
+            return 200, response.model_dump(mode="json", by_alias=True, exclude_none=True)
 
 
 def create_product_core_app(

@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+import csv
 import hashlib
+import io
+import json
+import re
 from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import replace
+from functools import partial
+from typing import Any
 
 from akc_cir.base import canonical_json, sha256_digest
 from akc_cir.dependency import DependencyEdge, DependencyGraph, EdgeType
@@ -74,6 +80,72 @@ _RETRIEVAL_MIN_CHARS = 180
 _RETRIEVAL_MAX_CHARS = 720
 _RETRIEVAL_TAIL_MAX_CHARS = 900
 
+# The four integrity checks the site reads (shared/compiledWorldValidation.ts in the web repo),
+# with the review reason each one raises when it fails. Same names, same tokens: the Core and the
+# site-side compiler must report one failure the same way.
+VALIDATION_CHECK_REVIEW_REASON = {
+    "deterministicMaterialization": "DETERMINISTIC_MATERIALIZATION_UNPROVEN",
+    "sourceCoverage": "SOURCE_COVERAGE_INCOMPLETE",
+    "evidenceCoverage": "EVIDENCE_COVERAGE_INCOMPLETE",
+    "immutableInputsOnly": "IMMUTABLE_INPUTS_ONLY_UNPROVEN",
+}
+_TTL_NODE = re.compile(r"^<urn:tavonel:([^>]+)> a tav:(\S+) \.$")
+_TTL_EDGE = re.compile(r"^<urn:tavonel:([^>]+)> tav:(\S+) <urn:tavonel:([^>]+)> \.$")
+
+
+def _jsonld_node(item: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "@id": f"urn:tavonel:{item['stableId']}",
+        "@type": item["kind"],
+        "evidence": [
+            {
+                "documentId": ref["documentId"],
+                "documentVersionId": ref["documentVersionId"],
+                "pageNumber1": ref["pageNumber1"],
+                "bbox1000": ref.get("bbox1000"),
+            }
+            for ref in item["sourceRefs"]
+        ],
+        **item["payload"],
+    }
+
+
+def _jsonld_links_agree(graph: list[dict[str, Any]], objects: list[dict[str, Any]]) -> bool:
+    """The references JSON-LD carries in its payload fields are the model's `links`.
+
+    JSON-LD has no link property of its own: a claim names its evidence and entities, a
+    relation its subject and object, a contradiction its two claims, an entity the claims and
+    evidence it was read from. Each must equal the model's links (or resolve, for entities).
+    Containment (collection -> document -> block) is not serialised in JSON-LD at all; those
+    edges are compared across the model, Turtle and relationships.csv instead.
+    """
+    nodes = {str(node["@id"]).removeprefix("urn:tavonel:"): node for node in graph}
+    evidence_node = {
+        node["evidenceId"]: node_id
+        for node_id, node in nodes.items()
+        if node["@type"] == "evidence"
+    }
+    for item in objects:
+        node = nodes[item["stableId"]]
+        kind = node["@type"]
+        if kind == "claim":
+            carried = [evidence_node[node["evidenceId"]], *node["entityIds"]]
+        elif kind == "relation":
+            carried = [node["subjectId"], node["objectId"]]
+        elif kind == "validation_record":
+            carried = list(node["claimIds"])
+        elif kind == "entity":
+            if not all(nodes[claim]["@type"] == "claim" for claim in node["claimIds"]):
+                return False
+            if not all(evidence in evidence_node for evidence in node["evidenceIds"]):
+                return False
+            carried = list(item["links"])
+        else:
+            carried = list(item["links"])
+        if carried != list(item["links"]):
+            return False
+    return True
+
 
 def _stable_id(prefix: str, *parts: str) -> str:
     payload = "\x1f".join(f"{len(part)}:{part}" for part in parts)
@@ -82,6 +154,26 @@ def _stable_id(prefix: str, *parts: str) -> str:
 
 def _json_bytes(value: object) -> bytes:
     return canonical_json(value).encode("utf-8")
+
+
+def _wire_numbers(value: Any) -> Any:
+    """Write an integral float the way the caller re-serialises it: `1`, not `1.0`.
+
+    The site verifies `outputSha256` over its own canonical form of the parsed response, and a
+    JavaScript number has no `1.0`. Hashed as Python writes it, any integral float in the
+    candidate -- `authorityScore` 1.0 for official sources, 0.0 for unclassified ones, an OCR
+    confidence of 1.0 -- made the receipt disagree with the World it describes
+    (CORE_V2_RECEIPT_INVALID). The value is unchanged; only its spelling in the digest is.
+    """
+    # ponytail: integral floats only; exponent spelling (1e-07 vs 1e-7) is not normalised,
+    # add it if a score or confidence below 1e-4 ever reaches the candidate.
+    if isinstance(value, float) and value.is_integer() and abs(value) < 2**53:
+        return int(value)
+    if isinstance(value, dict):
+        return {key: _wire_numbers(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_wire_numbers(item) for item in value]
+    return value
 
 
 def _shape(units: Iterable[UnitSnapshot]) -> DocumentShape:
@@ -311,14 +403,12 @@ class ProductCoreCompiler:
             if not report.equivalent:
                 review_reasons.append("FULL_REBUILD_EQUIVALENCE_FAILED")
 
-        lifecycle = "candidate"
-        status = "completed"
-        if review_reasons:
-            lifecycle = "review_required"
-            status = "review_required"
-        if equivalence == "failed":
-            lifecycle = "rejected"
-            status = "rejected"
+        def settle(reasons: list[str]) -> tuple[str, str]:
+            if equivalence == "failed":
+                return "rejected", "rejected"
+            if reasons:
+                return "review_required", "review_required"
+            return "candidate", "completed"
 
         parent_id = previous.world_state_id if previous else None
         world_state_id = _stable_id(
@@ -340,16 +430,52 @@ class ProductCoreCompiler:
             )
         )
         impact = graph.impact_of(diff.changed_logical_ids)
-        package, directory_plan = self._package_projection(
+        project = partial(
+            self._package_projection,
             request=request,
             canonical_documents=canonical_documents,
             knowledge_model=knowledge_model,
             units=current_units,
             semantics=semantics,
             architecture=architecture,
-            lifecycle=lifecycle,
-            review_reasons=review_reasons,
         )
+        # The integrity checks are computed by re-reading the package that was built, never
+        # asserted. They decide the lifecycle, and the lifecycle is written into
+        # validation/report.json, so the package is built once to be checked and once more to
+        # carry the verdict. Only the report differs between the two builds.
+        lifecycle, _ = settle(review_reasons)
+        probe, _ = project(lifecycle=lifecycle, review_reasons=review_reasons)
+        checks = self._validation_checks(
+            request=request,
+            canonical_documents=canonical_documents,
+            knowledge_model=knowledge_model,
+            units=current_units,
+            package=probe,
+        )
+        review_reasons.extend(
+            VALIDATION_CHECK_REVIEW_REASON[name] for name, passed in checks.items() if not passed
+        )
+        lifecycle, status = settle(review_reasons)
+        package, directory_plan = project(
+            lifecycle=lifecycle, review_reasons=review_reasons, checks=checks
+        )
+        # The shipped package is checked again, not trusted to equal the probe: it must differ
+        # only in validation/report.json and must earn the same verdict on its own.
+        checked_files = {
+            f.path: f.sha256 for f in probe.files if f.path != "validation/report.json"
+        }
+        shipped_files = {
+            f.path: f.sha256 for f in package.files if f.path != "validation/report.json"
+        }
+        shipped_checks = self._validation_checks(
+            request=request,
+            canonical_documents=canonical_documents,
+            knowledge_model=knowledge_model,
+            units=current_units,
+            package=package,
+        )
+        if checked_files != shipped_files or shipped_checks != checks:
+            raise ValueError("shipped package differs from the package that was checked")
         candidate = CandidateWorld(
             world_state_id=world_state_id,
             parent_world_state_id=parent_id,
@@ -368,9 +494,7 @@ class ProductCoreCompiler:
             package=package,
             validation={
                 "status": "passed" if lifecycle == "candidate" else lifecycle,
-                "deterministicMaterialization": True,
-                "sourceCoverage": True,
-                "evidenceCoverage": True,
+                **checks,
                 "fullRebuildEquivalence": equivalence,
                 "matchingPolicy": "legacy",
             },
@@ -397,7 +521,7 @@ class ProductCoreCompiler:
             review_reasons=tuple(sorted(set(review_reasons))),
         )
         candidate_bytes = _json_bytes(
-            candidate.model_dump(mode="json", by_alias=True, exclude_none=True)
+            _wire_numbers(candidate.model_dump(mode="json", by_alias=True, exclude_none=True))
         )
         artifact_rows = self._candidate_artifacts(
             canonical_documents,
@@ -957,6 +1081,167 @@ class ProductCoreCompiler:
             return "application/x-ndjson"
         return "application/json"
 
+    @staticmethod
+    def _validation_checks(
+        *,
+        request: ProductCoreCompileRequest,
+        canonical_documents: list[CanonicalDocument],
+        knowledge_model: CanonicalKnowledgeModel,
+        units: list[PreviousUnit],
+        package: CandidatePackage,
+    ) -> dict[str, bool]:
+        """Compute the four integrity checks by reading the package back, not by assertion.
+
+        An unreadable or missing file fails the check that needed it. Nothing defaults to true.
+        """
+        files = {file.path: file for file in package.files}
+
+        def text(path: str) -> str:
+            file = files.get(path)
+            if file is None:
+                raise KeyError(path)
+            return file.content
+
+        expected_model = knowledge_model.model_dump(mode="json", by_alias=True)
+        expected_objects = list(expected_model["objects"])
+        object_ids = {item["stableId"] for item in expected_objects}
+        kind_by_id = {item["stableId"]: item["kind"] for item in expected_objects}
+
+        try:
+            model_nodes = {(item["stableId"], item["kind"]) for item in expected_objects}
+            model_edges = {
+                (
+                    item["stableId"],
+                    _link_predicate(item["kind"], kind_by_id.get(link, "object"), index),
+                    link,
+                )
+                for item in expected_objects
+                for index, link in enumerate(item["links"])
+            }
+            jsonld = json.loads(text("ontology/knowledge.jsonld"))
+            ttl_nodes: set[tuple[str, str]] = set()
+            ttl_edges: set[tuple[str, str, str]] = set()
+            for line in text("ontology/knowledge.ttl").splitlines():
+                if node_match := _TTL_NODE.match(line):
+                    ttl_nodes.add((node_match[1], node_match[2]))
+                elif edge_match := _TTL_EDGE.match(line):
+                    ttl_edges.add((edge_match[1], edge_match[2], edge_match[3]))
+                elif line and not line.startswith("@prefix"):
+                    raise ValueError(f"unreadable turtle line: {line[:80]}")
+            node_rows = list(csv.DictReader(io.StringIO(text("graph/nodes.csv"))))
+            edge_rows = list(csv.DictReader(io.StringIO(text("graph/relationships.csv"))))
+            deterministic = (
+                json.loads(text("canonical/model.json")) == expected_model
+                and all(
+                    file.sha256 == sha256_digest(file.content)
+                    and file.size_bytes == len(file.content.encode("utf-8"))
+                    for file in package.files
+                )
+                and len(jsonld["@graph"]) == len(expected_objects)
+                and len(node_rows) == len(expected_objects)
+                and len(edge_rows) == sum(len(item["links"]) for item in expected_objects)
+                and jsonld["@graph"] == [_jsonld_node(item) for item in expected_objects]
+                and _jsonld_links_agree(jsonld["@graph"], expected_objects)
+                and ttl_nodes == model_nodes
+                and {(row["id"], row["kind"]) for row in node_rows} == model_nodes
+                and ttl_edges == model_edges
+                and {(row["subject_id"], row["predicate"], row["object_id"]) for row in edge_rows}
+                == model_edges
+                and all(link in object_ids for _, _, link in model_edges)
+            )
+        except (KeyError, TypeError, ValueError):
+            deterministic = False
+
+        document_objects = {
+            (item["payload"].get("documentVersionId"))
+            for item in expected_objects
+            if item["kind"] == "document"
+        }
+        canonical_by_version = {item.document_version_id: item for item in canonical_documents}
+        try:
+            listed = {
+                (row["documentId"], row["documentVersionId"], row["sourceSha256"])
+                for row in json.loads(text("source/collection-files.json"))
+            }
+        except (KeyError, TypeError, ValueError):
+            listed = set()
+        expected_versions: list[str] = []
+        source_coverage = len(canonical_documents) == len(request.documents)
+        for document in request.documents:
+            derived_source = source_id(
+                tenant_id=request.tenant_id,
+                connector_type=document.connector_type,
+                native_id=document.native_id,
+            )
+            version = document_version_id(
+                source=derived_source, content_sha256=document.content_sha256
+            )
+            expected_versions.append(version)
+            canonical = canonical_by_version.get(version)
+            source_coverage = source_coverage and (
+                canonical is not None
+                and canonical.document_id == derived_source
+                and canonical.source_sha256 == document.content_sha256
+                and version in document_objects
+                and (derived_source, version, document.content_sha256) in listed
+            )
+
+        evidence_objects = [item for item in expected_objects if item["kind"] == "evidence"]
+        evidence_ids = {item["payload"].get("evidenceId") for item in evidence_objects}
+        evidence_object_ids = {item["stableId"] for item in evidence_objects}
+        try:
+            chunks = [json.loads(line) for line in text("rag/chunks.jsonl").splitlines() if line]
+            chunks_bound = bool(chunks) and all(
+                chunk["evidenceIds"]
+                and set(chunk["evidenceIds"]) <= evidence_ids
+                and chunk["evidenceRefs"]
+                for chunk in chunks
+            )
+        except (KeyError, TypeError, ValueError):
+            chunks_bound = False
+        evidence_coverage = (
+            chunks_bound
+            and all(
+                any(unit.source_version_id == version for unit in units)
+                for version in expected_versions
+            )
+            and all(unit.evidence_id in evidence_ids for unit in units)
+            and all(
+                item["sourceRefs"]
+                and all(
+                    ref["documentVersionId"] in canonical_by_version for ref in item["sourceRefs"]
+                )
+                for item in evidence_objects
+            )
+            and all(
+                any(link in evidence_object_ids for link in item["links"])
+                for item in expected_objects
+                if item["kind"] == "claim"
+            )
+            and all(
+                item["payload"].get("evidenceId") in evidence_ids
+                for item in expected_objects
+                if item["kind"] == "relation"
+            )
+        )
+
+        def content_addressed(key: str, digest: str) -> bool:
+            return digest.removeprefix("sha256:").casefold() in {
+                part.casefold() for part in key.split("/")
+            }
+
+        immutable_inputs = all(
+            content_addressed(document.immutable_object_key, document.content_sha256)
+            and content_addressed(document.ocr_object_key, document.content_sha256)
+            for document in request.documents
+        )
+        return {
+            "deterministicMaterialization": bool(deterministic),
+            "sourceCoverage": bool(source_coverage),
+            "evidenceCoverage": bool(evidence_coverage),
+            "immutableInputsOnly": immutable_inputs,
+        }
+
     def _package_projection(
         self,
         *,
@@ -968,31 +1253,17 @@ class ProductCoreCompiler:
         architecture: ArchitecturePlan,
         lifecycle: str,
         review_reasons: list[str],
+        checks: dict[str, bool] | None = None,
     ) -> tuple[CandidatePackage, tuple[dict[str, object], ...]]:
         model_payload = knowledge_model.model_dump(mode="json", by_alias=True)
         objects = list(model_payload["objects"])
+        object_kind_by_id = {item["stableId"]: item["kind"] for item in objects}
         jsonld = {
             "@context": {
                 "@vocab": "urn:tavonel:",
                 "evidence": "http://www.w3.org/ns/prov#wasDerivedFrom",
             },
-            "@graph": [
-                {
-                    "@id": f"urn:tavonel:{item['stableId']}",
-                    "@type": item["kind"],
-                    "evidence": [
-                        {
-                            "documentId": ref["documentId"],
-                            "documentVersionId": ref["documentVersionId"],
-                            "pageNumber1": ref["pageNumber1"],
-                            "bbox1000": ref.get("bbox1000"),
-                        }
-                        for ref in item["sourceRefs"]
-                    ],
-                    **item["payload"],
-                }
-                for item in objects
-            ],
+            "@graph": [_jsonld_node(item) for item in objects],
         }
         ttl_lines = [
             "@prefix tav: <urn:tavonel:> .",
@@ -1003,16 +1274,7 @@ class ProductCoreCompiler:
             ttl_lines.append(f"<urn:tavonel:{item['stableId']}> a tav:{item['kind']} .")
             for link_index, link in enumerate(item["links"]):
                 predicate = _link_predicate(
-                    item["kind"],
-                    next(
-                        (
-                            candidate["kind"]
-                            for candidate in objects
-                            if candidate["stableId"] == link
-                        ),
-                        "object",
-                    ),
-                    link_index,
+                    item["kind"], object_kind_by_id.get(link, "object"), link_index
                 )
                 ttl_lines.append(
                     f"<urn:tavonel:{item['stableId']}> tav:{predicate} <urn:tavonel:{link}> ."
@@ -1032,7 +1294,6 @@ class ProductCoreCompiler:
             )
             + "\n"
         )
-        object_kind_by_id = {item["stableId"]: item["kind"] for item in objects}
         relation_rows = []
         for item in objects:
             for link_index, link in enumerate(item["links"]):
@@ -1277,6 +1538,7 @@ class ProductCoreCompiler:
                     "status": "passed" if lifecycle == "candidate" else lifecycle,
                     "matchingPolicy": "legacy",
                     "candidatePromotion": False,
+                    **({"checks": checks} if checks is not None else {}),
                     "reviewReasons": sorted(set(review_reasons)),
                     "documentCount": len(canonical_documents),
                     "knowledgeObjectCount": len(objects),
