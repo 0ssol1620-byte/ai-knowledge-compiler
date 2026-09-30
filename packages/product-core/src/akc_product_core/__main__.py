@@ -18,4 +18,5 @@ app = create_product_core_app(
     hmac_secret=_required("TAVONEL_PRODUCT_CORE_HMAC").encode(),
     core_release_digest=_required("TAVONEL_CORE_RELEASE_DIGEST"),
     allow_customer_data=os.environ.get("TAVONEL_CORE_ALLOW_CUSTOMER_DATA") == "true",
+    journal_path=os.environ.get("TAVONEL_CORE_JOURNAL_PATH") or None,
 )

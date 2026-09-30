@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import sqlite3
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
 from threading import Lock
+from typing import cast
 
-from akc_cir.base import canonical_json, sha256_digest
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
@@ -14,6 +16,7 @@ from pydantic import ValidationError
 from .auth import ProductCoreAuthenticationError, verify_product_core_request
 from .compiler import ProductCoreCompiler
 from .contracts import ProductCoreCompileRequest
+from .journal import JournalConflict, JournalCorrupt, SQLiteCompileJournal, compile_work_digest
 
 MAX_REQUEST_BYTES = 32 * 1024 * 1024
 
@@ -25,7 +28,7 @@ class _CachedResponse:
 
 
 class ProductCoreService:
-    """Fail-closed compile service with process-local idempotent replay."""
+    """Fail-closed compile service with optional durable single-host replay."""
 
     def __init__(
         self,
@@ -33,6 +36,7 @@ class ProductCoreService:
         hmac_secret: bytes,
         core_release_digest: str,
         allow_customer_data: bool = False,
+        journal_path: str | Path | None = None,
     ) -> None:
         if len(hmac_secret) < 32:
             raise ValueError("Product-Core HMAC secret must contain at least 32 bytes")
@@ -41,6 +45,7 @@ class ProductCoreService:
         self.allow_customer_data = allow_customer_data
         self._cache: dict[tuple[str, str, str], _CachedResponse] = {}
         self._lock = Lock()
+        self.journal = SQLiteCompileJournal(journal_path) if journal_path is not None else None
 
     def health(self) -> dict[str, object]:
         return {
@@ -81,21 +86,32 @@ class ProductCoreService:
 
         # Request ID, timestamp and deadline describe an attempt, not the immutable work.
         # Replays still pass HMAC and privacy checks, then receive an attempt-bound receipt.
-        semantic_request = compile_request.model_dump(mode="json", by_alias=True)
-        semantic_request.pop("requestId", None)
-        semantic_request.pop("requestedAt", None)
-        semantic_request["route"].pop("maxLatencyMs", None)
-        semantic_request["documents"].sort(
-            key=lambda document: (document["connectorType"], document["nativeId"])
-        )
-        for document in semantic_request["documents"]:
-            document["regions"].sort(key=lambda region: region["order"])
-        work_sha256 = sha256_digest(canonical_json(semantic_request).encode("utf-8"))
+        work_sha256 = compile_work_digest(compile_request)
         cache_key = (
             compile_request.tenant_id,
             compile_request.workspace_id,
             compile_request.idempotency_key,
         )
+        if self.journal is not None:
+            try:
+                payload = self.journal.compile(
+                    compile_request,
+                    compiler=self.compiler,
+                    work_digest=work_sha256,
+                    input_sha256=transport.input_sha256,
+                )
+            except JournalConflict:
+                return 409, {"code": "CORE_IDEMPOTENCY_CONFLICT"}
+            except (JournalCorrupt, sqlite3.Error):
+                return 503, {"code": "CORE_JOURNAL_UNAVAILABLE"}
+            except ValueError as exc:
+                return 422, {"code": "CORE_COMPILE_REJECTED", "reason": str(exc)}
+            payload["receipt"] = {
+                **cast(dict[str, object], payload["receipt"]),
+                "requestId": compile_request.request_id,
+                "inputSha256": transport.input_sha256,
+            }
+            return 200, payload
         with self._lock:
             cached = self._cache.get(cache_key)
             if cached is not None:
@@ -103,7 +119,7 @@ class ProductCoreService:
                     return 409, {"code": "CORE_IDEMPOTENCY_CONFLICT"}
                 payload = dict(cached.payload)
                 payload["receipt"] = {
-                    **cached.payload["receipt"],
+                    **cast(dict[str, object], cached.payload["receipt"]),
                     "requestId": compile_request.request_id,
                     "inputSha256": transport.input_sha256,
                 }
@@ -128,11 +144,13 @@ def create_product_core_app(
     hmac_secret: bytes,
     core_release_digest: str,
     allow_customer_data: bool = False,
+    journal_path: str | Path | None = None,
 ) -> FastAPI:
     service = ProductCoreService(
         hmac_secret=hmac_secret,
         core_release_digest=core_release_digest,
         allow_customer_data=allow_customer_data,
+        journal_path=journal_path,
     )
     app = FastAPI(title="TAVONEL Product Core", version="2.0.0")
 
