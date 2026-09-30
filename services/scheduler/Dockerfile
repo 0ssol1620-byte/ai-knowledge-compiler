@@ -23,7 +23,10 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PATH=/app/.venv/bin:$PATH
 
-RUN groupadd --gid 10001 akc \
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends libpcre2-8-0=10.42-1+deb12u1 \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 10001 akc \
     && useradd --uid 10001 --gid akc --create-home --shell /usr/sbin/nologin akc \
     && install -d -o akc -g akc /app
 
