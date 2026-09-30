@@ -91,7 +91,7 @@ Reports outside Git at `task-3`: `python-dependency-audit-fixed.json`,
 Local Docker is unavailable; rebuilt candidate image scans and the multi-stage
 OpenSSL overlay need actual hosted build/runtime/scanner acceptance. No built-image
 pass is claimed. Full hosted coverage/API/security/PostgreSQL and both Python
-versions require rerun after sequential integration. The real restored marketing
-visual gate fails against its approved baseline; no screenshots/assertions were
-weakened or blindly regenerated. Distributed journal fencing, retention expiry,
+versions require rerun after sequential integration. The corrected current Windows visual gate passes all 11 tests; current Linux
+baseline qualification remains pending. No screenshots/assertions were weakened
+or blindly regenerated. Distributed journal fencing, retention expiry,
 customer data and production activation remain separate qualification work.

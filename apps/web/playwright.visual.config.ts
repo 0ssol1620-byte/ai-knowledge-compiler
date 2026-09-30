@@ -1,12 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// Keep the approved platform-specific baselines separate from behavioral tests.
+// Use the current TAVONEL snapshots refreshed in 3a4319d (2026-08-30).
+// e2e/visual-baselines contains superseded FOLYNTA compositions from August 3;
+// it must not silently become the reference for the current product.
 export default defineConfig({
   testDir: "./e2e",
   testMatch: /visual-regression\.spec\.ts/,
   outputDir: "./test-results/visual",
-  snapshotPathTemplate:
-    "{testDir}/visual-baselines/{projectName}/{platform}/{testFilePath}/{arg}{ext}",
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 1 : 0,
   workers: 1,
@@ -21,7 +21,7 @@ export default defineConfig({
       name: "desktop",
       use: {
         ...devices["Desktop Chrome"],
-        viewport: { width: 1440, height: 900 },
+        viewport: { width: 1280, height: 720 },
       },
     },
   ],

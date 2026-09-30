@@ -51,16 +51,23 @@ Windows, Node 22.14.0, pnpm 11.9.0, synthetic demo data only:
 - Real Chromium 1440 production demo browser matrix: passed.
 - Prettier and whitespace checks: passed.
 
-## Remaining acceptance blocker
+## Visual qualification correction
 
-The restored real marketing-home visual check fails against the committed
-Windows baseline even with the correct production demo configuration:
-expected 1440 × 7791, received 1440 × 16317; approximately 50% pixel difference.
-The test gate is functioning and snapshots/assertions are unchanged. A UI owner
-must inspect the approved design/baseline versus current rendering before either
-changing the product or approving a new baseline. No full visual, Firefox,
-WebKit, Lighthouse, or Linux image scan pass is claimed by this slice.
+The initial restored configuration selected archived FOLYNTA screenshots from
+August 3 and a 1440 viewport. Actual screenshots and Git history identify these
+as superseded by the current TAVONEL design and snapshots refreshed in commit
+3a4319d on August 30. The current snapshots use the default Playwright location
+and Desktop Chrome 1280 by 720 viewport. Correcting those two configuration
+choices makes all 11 Windows visual tests pass without changing any screenshot,
+assertion, threshold or product rendering.
 
-Local failure evidence is under `apps/web/test-results/visual/` (actual, diff,
-error context, trace), ignored by Git. Full hosted CI remains integration-owner
-work; no push, deploy, visibility, credential, or billing changes were made.
+Fresh production demo captures at widths 1920, 1440, 1280, 1024, 768, 390 and 360
+returned HTTP 200, one primary heading, no horizontal overflow and no browser
+exceptions. Evidence lives outside Git in task-3/core-visual-qualification.
+This classifies the large marketing failure as stale test configuration.
+
+Current TAVONEL snapshots are Windows-only. Linux CI still needs reviewable
+current Linux reference captures; archived FOLYNTA Linux snapshots cannot prove
+acceptance. Missing snapshots remain a failing gate. No blanket update was made.
+Firefox, WebKit, Lighthouse and rebuilt image scan acceptance remain outstanding.
+No push, deploy, visibility, credential or billing changes were made.
