@@ -108,3 +108,34 @@ def test_customer_data_policy_is_disabled_by_default() -> None:
 
     assert response.status_code == 403
     assert response.json()["code"] == "CORE_CUSTOMER_DATA_DISABLED"
+
+
+def test_new_attempt_reuses_work_and_rebinds_authenticated_receipt() -> None:
+    from datetime import timedelta
+
+    from akc_cir.base import sha256_digest
+
+    client = TestClient(create_product_core_app(hmac_secret=SECRET, core_release_digest=RELEASE))
+    request = _request(
+        (_document("filing-a", "Revenue is 100 million won."),), request_id="attempt-one"
+    )
+    first_body = canonical_json(request.model_dump(mode="json", by_alias=True)).encode()
+    first = client.post(
+        "/v2/compile", content=first_body, headers=_signed(first_body, "attempt-one")
+    )
+    retry = request.model_copy(
+        update={
+            "request_id": "attempt-two",
+            "requested_at": request.requested_at + timedelta(seconds=1),
+            "route": request.route.model_copy(update={"max_latency_ms": 2000}),
+        }
+    )
+    retry_body = canonical_json(retry.model_dump(mode="json", by_alias=True)).encode()
+    replay = client.post(
+        "/v2/compile", content=retry_body, headers=_signed(retry_body, "attempt-two")
+    )
+    assert replay.status_code == 200
+    assert replay.json()["candidate"] == first.json()["candidate"]
+    assert replay.json()["receipt"]["requestId"] == "attempt-two"
+    assert replay.json()["receipt"]["inputSha256"] == sha256_digest(retry_body)
+    assert first.json()["receipt"]["requestId"] == "attempt-one"

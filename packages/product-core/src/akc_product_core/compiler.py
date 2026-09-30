@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 from collections import defaultdict
 from collections.abc import Iterable
-from dataclasses import replace
+from dataclasses import dataclass, replace
 
 from akc_cir.base import canonical_json, sha256_digest
 from akc_cir.dependency import DependencyEdge, DependencyGraph, EdgeType
@@ -97,6 +97,35 @@ def _fingerprint(unit: UnitSnapshot, source_lineage: str) -> LogicalUnitFingerpr
     return unit.fingerprint(source_lineage=source_lineage)
 
 
+@dataclass(frozen=True)
+class DocumentFragment:
+    """Document extraction result bound to one immutable collection revision context."""
+
+    connector_type: str
+    native_id: str
+    scope_digest: str
+    document_digest: str
+    canonical_document: CanonicalDocument
+    units: tuple[PreviousUnit, ...]
+    changes: tuple[SemanticChange, ...]
+    review_reasons: tuple[str, ...]
+    output_digest: str = ""
+
+    def content_digest(self) -> str:
+        return sha256_digest(
+            _json_bytes(
+                {
+                    "canonicalDocument": self.canonical_document.model_dump(
+                        mode="json", by_alias=True
+                    ),
+                    "units": [unit.model_dump(mode="json", by_alias=True) for unit in self.units],
+                    "changes": [change.as_record() for change in self.changes],
+                    "reviewReasons": self.review_reasons,
+                }
+            )
+        )
+
+
 class ProductCoreCompiler:
     """Compile an immutable OCR collection into a non-promoted candidate world."""
 
@@ -111,20 +140,51 @@ class ProductCoreCompiler:
         *,
         input_sha256: str,
     ) -> ProductCoreCompileResponse:
-        previous = request.previous_active_world
+        return self.reduce_fragments(
+            request, self.compile_fragments(request), input_sha256=input_sha256
+        )
+
+    def _fragment_scope(self, request: ProductCoreCompileRequest) -> str:
+        return sha256_digest(
+            _json_bytes(
+                {
+                    "tenantId": request.tenant_id,
+                    "workspaceId": request.workspace_id,
+                    "collectionId": request.collection_id,
+                    "previous": request.previous_active_world.model_dump(mode="json", by_alias=True)
+                    if request.previous_active_world
+                    else None,
+                    "coreReleaseDigest": self.core_release_digest,
+                }
+            )
+        )
+
+    def compile_fragments(
+        self,
+        request: ProductCoreCompileRequest,
+        document_keys: tuple[tuple[str, str], ...] | None = None,
+    ) -> tuple[DocumentFragment, ...]:
+        """Extract a bounded document shard without making shard-local semantic decisions."""
+        selected = set(document_keys) if document_keys is not None else None
+        available = {(doc.connector_type, doc.native_id) for doc in request.documents}
+        if selected is not None and (
+            len(selected) != len(document_keys or ()) or not selected <= available
+        ):
+            raise ValueError("fragment selection is duplicated or outside the collection")
         prior_by_source: defaultdict[str, list[PreviousUnit]] = defaultdict(list)
-        if previous is not None:
-            for unit in previous.units:
+        if request.previous_active_world:
+            for unit in request.previous_active_world.units:
                 prior_by_source[unit.source_id].append(unit)
-
-        canonical_documents: list[CanonicalDocument] = []
-        current_units: list[PreviousUnit] = []
-        review_reasons: list[str] = []
-        all_changes: list[SemanticChange] = []
-
+        fragments = []
+        scope = self._fragment_scope(request)
         for document in sorted(
             request.documents, key=lambda item: (item.connector_type, item.native_id)
         ):
+            if (
+                selected is not None
+                and (document.connector_type, document.native_id) not in selected
+            ):
+                continue
             derived_source = source_id(
                 tenant_id=request.tenant_id,
                 connector_type=document.connector_type,
@@ -135,10 +195,59 @@ class ProductCoreCompiler:
                 document=document,
                 previous=tuple(prior_by_source.get(derived_source, ())),
             )
-            canonical_documents.append(compiled)
-            current_units.extend(units)
-            all_changes.extend(changes)
-            review_reasons.extend(reviews)
+            fragments.append(
+                DocumentFragment(
+                    connector_type=document.connector_type,
+                    native_id=document.native_id,
+                    scope_digest=scope,
+                    document_digest=sha256_digest(
+                        _json_bytes(document.model_dump(mode="json", by_alias=True))
+                    ),
+                    canonical_document=compiled,
+                    units=tuple(units),
+                    changes=changes,
+                    review_reasons=tuple(reviews),
+                )
+            )
+        return tuple(
+            replace(fragment, output_digest=fragment.content_digest()) for fragment in fragments
+        )
+
+    def reduce_fragments(
+        self,
+        request: ProductCoreCompileRequest,
+        fragments: Iterable[DocumentFragment],
+        *,
+        input_sha256: str,
+    ) -> ProductCoreCompileResponse:
+        """One collection-wide semantic/dependency reduction, independent of shard boundaries."""
+        inventory = tuple(fragments)
+        if any(not isinstance(item, DocumentFragment) for item in inventory):
+            raise ValueError("malformed document fragment")
+        ordered = sorted(inventory, key=lambda item: (item.connector_type, item.native_id))
+        expected = {(doc.connector_type, doc.native_id): doc for doc in request.documents}
+        keys = [(item.connector_type, item.native_id) for item in ordered]
+        if len(set(keys)) != len(keys) or set(keys) != set(expected):
+            raise ValueError("collection fragments must cover every document exactly once")
+        scope = self._fragment_scope(request)
+        for fragment in ordered:
+            document = expected[(fragment.connector_type, fragment.native_id)]
+            digest = sha256_digest(_json_bytes(document.model_dump(mode="json", by_alias=True)))
+            if (
+                fragment.scope_digest != scope
+                or fragment.document_digest != digest
+                or fragment.output_digest != fragment.content_digest()
+            ):
+                raise ValueError("fragment does not belong to this immutable collection revision")
+        previous = request.previous_active_world
+        prior_by_source: defaultdict[str, list[PreviousUnit]] = defaultdict(list)
+        if previous:
+            for unit in previous.units:
+                prior_by_source[unit.source_id].append(unit)
+        canonical_documents = [fragment.canonical_document for fragment in ordered]
+        current_units = [unit for fragment in ordered for unit in fragment.units]
+        all_changes = [change for fragment in ordered for change in fragment.changes]
+        review_reasons = [reason for fragment in ordered for reason in fragment.review_reasons]
 
         if previous is not None:
             current_sources = {
@@ -978,9 +1087,7 @@ class ProductCoreCompiler:
         claims_by_logical: defaultdict[str, list[SemanticClaim]] = defaultdict(list)
         for claim in semantics.claims:
             claims_by_logical[claim.logical_id].append(claim)
-        entity_names = {
-            entity.entity_id: entity.canonical_name for entity in semantics.entities
-        }
+        entity_names = {entity.entity_id: entity.canonical_name for entity in semantics.entities}
         chunk_jsonl = "".join(
             canonical_json(
                 {

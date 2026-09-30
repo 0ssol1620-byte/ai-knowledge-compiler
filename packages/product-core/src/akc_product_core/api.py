@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from threading import Lock
 
+from akc_cir.base import canonical_json, sha256_digest
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pydantic import ValidationError
@@ -19,7 +20,7 @@ MAX_REQUEST_BYTES = 32 * 1024 * 1024
 
 @dataclass(frozen=True, slots=True)
 class _CachedResponse:
-    input_sha256: str
+    work_sha256: str
     payload: dict[str, object]
 
 
@@ -78,6 +79,18 @@ class ProductCoreService:
         ):
             return 403, {"code": "CORE_CUSTOMER_DATA_DISABLED"}
 
+        # Request ID, timestamp and deadline describe an attempt, not the immutable work.
+        # Replays still pass HMAC and privacy checks, then receive an attempt-bound receipt.
+        semantic_request = compile_request.model_dump(mode="json", by_alias=True)
+        semantic_request.pop("requestId", None)
+        semantic_request.pop("requestedAt", None)
+        semantic_request["route"].pop("maxLatencyMs", None)
+        semantic_request["documents"].sort(
+            key=lambda document: (document["connectorType"], document["nativeId"])
+        )
+        for document in semantic_request["documents"]:
+            document["regions"].sort(key=lambda region: region["order"])
+        work_sha256 = sha256_digest(canonical_json(semantic_request).encode("utf-8"))
         cache_key = (
             compile_request.tenant_id,
             compile_request.workspace_id,
@@ -86,9 +99,15 @@ class ProductCoreService:
         with self._lock:
             cached = self._cache.get(cache_key)
             if cached is not None:
-                if cached.input_sha256 != transport.input_sha256:
+                if cached.work_sha256 != work_sha256:
                     return 409, {"code": "CORE_IDEMPOTENCY_CONFLICT"}
-                return 200, cached.payload
+                payload = dict(cached.payload)
+                payload["receipt"] = {
+                    **cached.payload["receipt"],
+                    "requestId": compile_request.request_id,
+                    "inputSha256": transport.input_sha256,
+                }
+                return 200, payload
             try:
                 response = self.compiler.compile(
                     compile_request,
@@ -98,7 +117,7 @@ class ProductCoreService:
                 return 422, {"code": "CORE_COMPILE_REJECTED", "reason": str(exc)}
             payload = response.model_dump(mode="json", by_alias=True, exclude_none=True)
             self._cache[cache_key] = _CachedResponse(
-                input_sha256=transport.input_sha256,
+                work_sha256=work_sha256,
                 payload=payload,
             )
             return 200, payload
