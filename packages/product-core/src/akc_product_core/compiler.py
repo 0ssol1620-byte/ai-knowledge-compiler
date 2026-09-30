@@ -98,6 +98,32 @@ def _fingerprint(unit: UnitSnapshot, source_lineage: str) -> LogicalUnitFingerpr
     return unit.fingerprint(source_lineage=source_lineage)
 
 
+def _diff_input_digest(source_sha256: str, units: Iterable[UnitSnapshot]) -> str:
+    """Bind diff's binary fast path to supplied extraction and trust inputs too.
+
+    Source bytes can stay fixed while OCR, citation geometry or authority changes.
+    These are compilation inputs, not a claim that the source bytes changed.
+    Keep this digest internal; source/version identities retain the source hash.
+    """
+    return content_hash(
+        {
+            "sourceSha256": source_sha256,
+            "units": [
+                {
+                    "logicalId": unit.logical_id,
+                    "text": unit.text,
+                    "documentPath": unit.document_path,
+                    "anchor": unit.anchor,
+                    "evidenceId": unit.evidence_id,
+                    "pageNumber1": unit.page_number1,
+                    "authority": unit.authority,
+                }
+                for unit in sorted(units, key=lambda item: item.logical_id)
+            ],
+        }
+    )
+
+
 @dataclass(frozen=True)
 class DocumentFragment:
     """Document extraction result bound to one immutable collection revision context."""
@@ -607,8 +633,8 @@ class ProductCoreCompiler:
 
         before_sha = previous[0].source_content_sha256 if previous else content_hash("absent")
         document_diff = diff_documents(
-            before_sha256=before_sha,
-            after_sha256=document.content_sha256,
+            before_sha256=_diff_input_digest(before_sha, previous_snapshots),
+            after_sha256=_diff_input_digest(document.content_sha256, resolved),
             level=DiffLevel.GRAPH,
             before_shape=_shape(previous_snapshots),
             after_shape=_shape(resolved),
