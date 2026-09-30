@@ -34,6 +34,7 @@ from akc_cir.models import (
     SourceRef,
 )
 from akc_cir.recompilation import (
+    ArtifactState,
     content_hash,
     plan_recompilation,
     verify_equivalence,
@@ -312,6 +313,31 @@ class ProductCoreCompiler:
             semantics,
         )
         plan = plan_recompilation(diff=diff, graph=graph, artifacts=artifacts)
+        if previous is not None:
+            # Collection aggregates include attempt provenance (creation time,
+            # activity IDs and identity-resolution state). The previous snapshot
+            # supplies no provenance dependency inputs, so semantic impact alone
+            # cannot establish that these byte-level artifacts are reusable.
+            # Rebuild them conservatively while retaining per-unit selectivity.
+            aggregates = {
+                "canonical/model",
+                "knowledge/model",
+                "retrieval/global",
+                "export/package",
+            }
+            plan = replace(
+                plan,
+                targets=tuple(
+                    replace(
+                        target,
+                        state=ArtifactState.STALE,
+                        reason="collection aggregate includes compilation attempt provenance",
+                    )
+                    if target.artifact_id in aggregates
+                    else target
+                    for target in plan.targets
+                ),
+            )
         full_hashes = self._artifact_hashes(
             canonical_documents=canonical_documents,
             knowledge_model=knowledge_model,

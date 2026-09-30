@@ -69,6 +69,9 @@ class ProductCoreDocument(ContractModel):
     def validate_regions(self) -> ProductCoreDocument:
         if len({region.region_id for region in self.regions}) != len(self.regions):
             raise ValueError("region IDs must be unique within a document")
+        anchors = {region.native_object_id or region.region_id for region in self.regions}
+        if len(anchors) != len(self.regions):
+            raise ValueError("effective region anchors must be unique within a document")
         if len({region.order for region in self.regions}) != len(self.regions):
             raise ValueError("region order values must be unique within a document")
         if max(region.page_number1 for region in self.regions) > self.page_count:
