@@ -107,7 +107,7 @@ class SQLiteCompileJournal:
         self.path = str(path)
         if self.path == ":memory:":
             raise ValueError("compile journal requires a durable filesystem path")
-        with closing(self._connect()) as connection, connection:
+        with closing(self._connect(create=True)) as connection, connection:
             connection.execute(
                 "CREATE TABLE IF NOT EXISTS compile_jobs ("
                 "job_key TEXT PRIMARY KEY, work_digest TEXT NOT NULL, "
@@ -123,8 +123,11 @@ class SQLiteCompileJournal:
                 "FOREIGN KEY(job_key) REFERENCES compile_jobs(job_key))"
             )
 
-    def _connect(self) -> sqlite3.Connection:
-        connection = sqlite3.connect(self.path, timeout=30)
+    def _connect(self, *, create: bool = False) -> sqlite3.Connection:
+        # Runtime/maintenance must never silently recreate a lost journal and
+        # thereby forget acknowledged idempotency bindings.
+        target = Path(self.path).resolve().as_uri() + ("?mode=rwc" if create else "?mode=rw")
+        connection = sqlite3.connect(target, uri=True, timeout=30)
         connection.execute("PRAGMA foreign_keys=ON")
         connection.execute("PRAGMA synchronous=FULL")
         return connection
