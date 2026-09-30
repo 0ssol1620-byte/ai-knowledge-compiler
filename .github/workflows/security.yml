@@ -70,6 +70,17 @@ jobs:
           format: sarif
           limit-severities-for-sarif: true
           output: trivy-results.sarif
+      - name: Summarize scanner finding identities
+        if: always() && hashFiles('trivy-results.sarif') != ''
+        run: python3 scripts/summarize_trivy_sarif.py trivy-results.sarif
+      - name: Preserve filesystem scanner evidence
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always() && hashFiles('trivy-results.sarif') != ''
+        with:
+          name: filesystem-trivy-sarif-${{ github.sha }}
+          path: trivy-results.sarif
+          retention-days: 14
+          if-no-files-found: error
       - uses: github/codeql-action/upload-sarif@4187e74d05793876e9989daffde9c3e66b4acd07 # v3.37.3
         if: >-
           always() &&
@@ -181,5 +192,9 @@ jobs:
           python-version: "3.13"
       - name: Scan the tracked tree
         run: python scripts/ip_privilege_guard.py
+      - name: Bootstrap the pinned lockfile installer
+        run: python -m pip install "uv==0.12.0"
+      - name: Sync the immutable development environment
+        run: python -m uv sync --locked --extra dev
       - name: Guard's own tests
-        run: python -m pytest tests/security/test_ip_privilege_guard.py -q
+        run: python -m uv run --locked --extra dev pytest tests/security/test_ip_privilege_guard.py -q

@@ -9,10 +9,7 @@ import pytest
 
 RENDERER = Path(__file__).with_name("render_folynta_portable_report.mjs")
 FINALIZER = Path(__file__).with_name("finalize_folynta_public_benchmark_campaign_v2.ps1")
-PACKAGER = (
-    Path(__file__).parents[2]
-    / "benchmark/runpod_eval/package_public_benchmark_review.py"
-)
+PACKAGER = Path(__file__).parents[2] / "benchmark/runpod_eval/package_public_benchmark_review.py"
 
 NODE = shutil.which("node")
 requires_node = pytest.mark.skipif(NODE is None, reason="node is not installed")
@@ -96,7 +93,8 @@ def _render(tmp_path: Path, artifact: dict) -> tuple[subprocess.CompletedProcess
     source.write_text(json.dumps(artifact), encoding="utf-8")
     html = tmp_path / "report.html"
     receipt = tmp_path / "report.delivery-receipt.json"
-    process = subprocess.run(
+    # Fixed repository renderer and local fixture paths; no shell or external command input.
+    process = subprocess.run(  # noqa: S603
         [
             NODE,
             str(RENDERER),

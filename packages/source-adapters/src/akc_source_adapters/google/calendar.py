@@ -6,7 +6,8 @@ Freshness tier F0.
 from __future__ import annotations
 
 import urllib.parse
-from datetime import datetime, UTC
+from collections.abc import Mapping
+from datetime import UTC, datetime
 from typing import Any
 
 from akc_source_adapters.envelope import ChangeEvent, Cursor, FetchResult
@@ -40,21 +41,20 @@ class CalendarAdapter:
 
     def _events_url(self, params: dict[str, str]) -> str:
         query = urllib.parse.urlencode(params)
-        return (
-            f"{self.api_base}/calendars/"
-            f"{urllib.parse.quote(self.calendar_id)}/events?{query}"
-        )
+        return f"{self.api_base}/calendars/{urllib.parse.quote(self.calendar_id)}/events?{query}"
 
-    def _event_event(self, event: dict[str, Any], observed_at) -> ChangeEvent:
+    def _event_event(self, event: dict[str, Any], observed_at: datetime) -> ChangeEvent:
         status = event.get("status")
-        kind = "event_cancelled" if status == "cancelled" else (
-            "event_added" if status == "confirmed" else "event_changed"
+        kind = (
+            "event_cancelled"
+            if status == "cancelled"
+            else ("event_added" if status == "confirmed" else "event_changed")
         )
-        start = (event.get("start") or {}).get("dateTime") or (event.get("start") or {}).get("date", "")
-        attendees = [
-            a.get("email", "") for a in (event.get("attendees") or []) if a.get("email")
-        ]
-        revision = f"{event.get('id','')}@{event.get('etag', '')}"
+        start = (event.get("start") or {}).get("dateTime") or (event.get("start") or {}).get(
+            "date", ""
+        )
+        attendees = [a.get("email", "") for a in (event.get("attendees") or []) if a.get("email")]
+        revision = f"{event.get('id', '')}@{event.get('etag', '')}"
         return ChangeEvent(
             source_id=self.source_id,
             provider=PROVIDER,

@@ -6,8 +6,8 @@ Freshness tier F1 (hourly polling is enough for most drives).
 from __future__ import annotations
 
 import urllib.parse
-from datetime import datetime, UTC
 from collections.abc import Mapping
+from datetime import UTC, datetime
 from typing import Any
 
 from akc_source_adapters.envelope import ChangeEvent, Cursor, FetchResult
@@ -55,13 +55,20 @@ class DriveAdapter:
 
     def fetch_changes(self, cursor: Cursor | None) -> FetchResult:
         state: dict[str, object] = dict(cursor.state) if cursor is not None else {}
+        stored_files = state.get("files", {})
+        if not isinstance(stored_files, Mapping):
+            raise ValueError("Drive cursor files must be a mapping")
+        files = {str(path): str(revision) for path, revision in stored_files.items()}
         page_token = str(state.get("delta_token") or "")
         observed_at = datetime.now(UTC)
         events: list[ChangeEvent] = []
 
         while True:
             params: dict[str, str] = {
-                "fields": "nextPageToken,newStartPageToken,changes(fileId,name,mimeType,trashed,modifiedTime)",
+                "fields": (
+                    "nextPageToken,newStartPageToken,"
+                    "changes(fileId,name,mimeType,trashed,modifiedTime)"
+                ),
                 "pageSize": str(self.page_size),
                 "includeRemoved": "true",
             }
@@ -79,8 +86,10 @@ class DriveAdapter:
                 path = str(file_meta.get("name") or change.get("fileId"))
                 revision = f"{change.get('fileId')}@{file_meta.get('modifiedTime', '')}"
                 removed = bool(change.get("removed")) or bool(file_meta.get("trashed"))
-                kind = "file_removed" if removed else (
-                    "file_changed" if state.get("files", {}).get(path) else "file_added"
+                kind = (
+                    "file_removed"
+                    if removed
+                    else ("file_changed" if files.get(path) else "file_added")
                 )
                 event_payload: dict[str, object] = {"path": path}
                 if not removed:
@@ -90,9 +99,11 @@ class DriveAdapter:
                             "modifiedTime": file_meta.get("modifiedTime", ""),
                         }
                     )
-                    state.setdefault("files", {})[path] = revision  # type: ignore[union-attr]
+                    files[path] = revision
+                    state["files"] = files
                 elif "files" in state:
-                    state["files"].pop(path, None)  # type: ignore[union-attr]
+                    files.pop(path, None)
+                    state["files"] = files
                 events.append(
                     ChangeEvent(
                         source_id=self.source_id,
@@ -118,9 +129,9 @@ class DriveAdapter:
         return FetchResult(events=tuple(events), cursor=cursor_out)
 
     def checkpoint(self) -> Cursor:
-        start = get_json(
-            f"{self.api_base}/changes/startPageToken", self.token_provider
-        ).get("startPageToken", "")
+        start = get_json(f"{self.api_base}/changes/startPageToken", self.token_provider).get(
+            "startPageToken", ""
+        )
         return Cursor(
             provider=PROVIDER,
             source_id=self.source_id,

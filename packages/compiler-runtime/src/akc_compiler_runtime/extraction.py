@@ -53,8 +53,17 @@ SCAN_SUFFIXES = MARKDOWN_SUFFIXES | CODE_SUFFIXES
 SKIP_DIRS = {".git", ".venv", "node_modules", "__pycache__", ".obsidian", "dist", "build"}
 
 _MONTHS = {
-    "january": 1, "february": 2, "march": 3, "april": 4, "may": 5, "june": 6,
-    "july": 7, "august": 8, "september": 9, "october": 10, "november": 11,
+    "january": 1,
+    "february": 2,
+    "march": 3,
+    "april": 4,
+    "may": 5,
+    "june": 6,
+    "july": 7,
+    "august": 8,
+    "september": 9,
+    "october": 10,
+    "november": 11,
     "december": 12,
 }
 
@@ -409,9 +418,7 @@ def _parse_markdown(
             )
         )
     effective_authority = (
-        AuthorityClass.DRAFT
-        if draft_status
-        else (explicit_authority or doc_authority)
+        AuthorityClass.DRAFT if draft_status else (explicit_authority or doc_authority)
     )
     return claims, effective_authority
 
@@ -463,7 +470,7 @@ def _clean_ref(ref: str) -> str:
     ``policies/launch-governance.md — readiness gate`` resolves.
     """
     ref = ref.strip().rstrip(".;,")
-    ref = re.split(r"\s+(?:—|–|--|-)\s+", ref)[0].strip()
+    ref = re.split(r"\s+(?:\u2014|\u2013|--|-)\s+", ref)[0].strip()
     ref = re.sub(r"\s*\(.*\)\s*$", "", ref).strip()
     if "#" in ref:
         ref = ref.split("#", 1)[0]
@@ -497,9 +504,7 @@ def seed_logical_id(*, source: str, draft: ClaimDraft) -> str:
     the content -- so rewording a sentence does not silently fork its history,
     while moving it between sections does change where it lives.
     """
-    return logical_id_seed(
-        source=source, document_path=draft.section_path, anchor=draft.anchor
-    )
+    return logical_id_seed(source=source, document_path=draft.section_path, anchor=draft.anchor)
 
 
 def anchored_evidence_id(*, document_version: str, text: str, line_number: int) -> str:

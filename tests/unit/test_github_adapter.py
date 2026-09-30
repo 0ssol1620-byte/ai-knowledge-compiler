@@ -22,12 +22,12 @@ from typing import Any
 from urllib.parse import parse_qs, urlparse
 
 import pytest
+from akc_source_adapters.envelope import Cursor, SourceAdapter
 from akc_source_adapters.github_adapter import (
     KIND_FILE_DELETED,
     GitHubAdapter,
     GitHubCursorInvalid,
 )
-from akc_source_adapters.envelope import Cursor, SourceAdapter
 
 FIXED_NOW = datetime(2026, 8, 23, 12, 0, 0, tzinfo=UTC)
 OWNER = "octo"
@@ -75,7 +75,7 @@ class StubState:
 class _Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
-    def log_message(self, format: str, *args: object) -> None:  # noqa: A002 - stdlib signature
+    def log_message(self, format: str, *args: object) -> None:
         pass
 
     @property
@@ -83,12 +83,14 @@ class _Handler(BaseHTTPRequestHandler):
         stub_state: StubState = self.server.state  # type: ignore[attr-defined]
         return stub_state
 
-    def do_GET(self) -> None:  # noqa: N802 - stdlib signature
+    def do_GET(self) -> None:
         parsed = urlparse(self.path)
         parts = [segment for segment in parsed.path.split("/") if segment]
         params = {key: values[0] for key, values in parse_qs(parsed.query).items()}
         state = self.state
-        state.requests.append({"path": self.path, "authorization": self.headers.get("Authorization", "")})
+        state.requests.append(
+            {"path": self.path, "authorization": self.headers.get("Authorization", "")}
+        )
 
         # Routes: /repos/o/r, /repos/o/r/branches/<b>/protection,
         #         /repos/o/r/commits, /repos/o/r/commits/<sha>
@@ -130,7 +132,11 @@ class _Handler(BaseHTTPRequestHandler):
         return window[start : start + per_page]
 
     def _send_json(
-        self, status: int, payload: dict[str, Any] | list[dict[str, Any]], *, retry_after: int | None = None
+        self,
+        status: int,
+        payload: dict[str, Any] | list[dict[str, Any]],
+        *,
+        retry_after: int | None = None,
     ) -> None:
         state = self.state
         state.remaining = max(state.remaining - 1, 0)
@@ -176,11 +182,19 @@ def make_state() -> StubState:
             "default_branch": "main",
             "permissions": {"admin": False, "push": True, "pull": True},
         },
-        commits=[_summary(SHA_3, 3, "third"), _summary(SHA_2, 2, "second"), _summary(SHA_1, 1, "first")],
+        commits=[
+            _summary(SHA_3, 3, "third"),
+            _summary(SHA_2, 2, "second"),
+            _summary(SHA_1, 1, "first"),
+        ],
         details={
             SHA_1: _files(("docs/a.md", "added"), ("README.md", "added")),
-            SHA_2: _files(("docs/a.md", "modified"),),
-            SHA_3: _files(("README.md", "modified"),),
+            SHA_2: _files(
+                ("docs/a.md", "modified"),
+            ),
+            SHA_3: _files(
+                ("README.md", "modified"),
+            ),
         },
     )
     return state
@@ -380,9 +394,7 @@ def test_secondary_rate_limit_retries_once_after_retry_after() -> None:
     from urllib.parse import urlparse as _up
 
     commit_calls = [
-        request
-        for request in state.requests
-        if _up(request["path"]).path.endswith("/commits")
+        request for request in state.requests if _up(request["path"]).path.endswith("/commits")
     ]
     assert len(commit_calls) == 2  # first attempt 403'd, patient retry succeeded
 
@@ -398,9 +410,8 @@ def test_force_pushed_anchor_raises_cursor_invalid() -> None:
     )
     with stub_github(make_state()) as base:
         anchor = make_adapter(base).checkpoint()
-    with stub_github(state) as base:
-        with pytest.raises(GitHubCursorInvalid):
-            make_adapter(base).fetch_changes(anchor)
+    with stub_github(state) as base, pytest.raises(GitHubCursorInvalid):
+        make_adapter(base).fetch_changes(anchor)
 
 
 def test_checkpoint_reports_head_without_emitting_events() -> None:
