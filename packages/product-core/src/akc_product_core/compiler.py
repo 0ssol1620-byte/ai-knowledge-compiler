@@ -249,6 +249,9 @@ class ProductCoreCompiler:
         current_units = [unit for fragment in ordered for unit in fragment.units]
         all_changes = [change for fragment in ordered for change in fragment.changes]
         review_reasons = [reason for fragment in ordered for reason in fragment.review_reasons]
+        immutable_inputs_only = self._immutable_inputs_only(request)
+        if not immutable_inputs_only:
+            review_reasons.append("IMMUTABLE_INPUT_BINDING_INVALID")
 
         if previous is not None:
             current_sources = {
@@ -407,6 +410,7 @@ class ProductCoreCompiler:
             architecture=architecture,
             lifecycle=lifecycle,
             review_reasons=review_reasons,
+            immutable_inputs_only=immutable_inputs_only,
         )
         candidate = CandidateWorld(
             world_state_id=world_state_id,
@@ -426,6 +430,7 @@ class ProductCoreCompiler:
             package=package,
             validation={
                 "status": "passed" if lifecycle == "candidate" else lifecycle,
+                "immutableInputsOnly": immutable_inputs_only,
                 "deterministicMaterialization": True,
                 "sourceCoverage": True,
                 "evidenceCoverage": True,
@@ -482,6 +487,39 @@ class ProductCoreCompiler:
             artifacts=artifact_rows,
             receipt=receipt,
         )
+
+    @staticmethod
+    def _immutable_inputs_only(request: ProductCoreCompileRequest) -> bool:
+        """Check immutable input references, not backend retention or fetched byte integrity.
+
+        The Foundation boundary supplies inline OCR and digest-addressed source/OCR
+        references. Both references must bind to this tenant, workspace, document
+        and source digest; mutable aliases and cross-scope paths cannot pass.
+        Object storage enforcement and source-byte verification belong to intake.
+        """
+        for document in request.documents:
+            keys = (document.immutable_object_key, document.ocr_object_key)
+            if keys[0] == keys[1]:
+                return False
+            parts = [key.split("/") for key in keys]
+            # The upload/revision object ID can differ from native_id, which is
+            # the stable logical source ID across successive uploads.
+            if any(len(row) != 6 for row in parts) or parts[0][:-1] != parts[1][:-1]:
+                return False
+            for row in parts:
+                if row[:3] != ["immutable", request.tenant_id, request.workspace_id]:
+                    return False
+                if row[4] != document.content_sha256[7:]:
+                    return False
+                if any(
+                    not part
+                    or part in {".", ".."}
+                    or "\\" in part
+                    or any(ord(char) < 32 or ord(char) == 127 for char in part)
+                    for part in row
+                ):
+                    return False
+        return True
 
     def _compile_document(
         self,
@@ -1026,6 +1064,7 @@ class ProductCoreCompiler:
         architecture: ArchitecturePlan,
         lifecycle: str,
         review_reasons: list[str],
+        immutable_inputs_only: bool,
     ) -> tuple[CandidatePackage, tuple[dict[str, object], ...]]:
         model_payload = knowledge_model.model_dump(mode="json", by_alias=True)
         objects = list(model_payload["objects"])
@@ -1248,6 +1287,7 @@ class ProductCoreCompiler:
                     "status": "passed" if lifecycle == "candidate" else lifecycle,
                     "matchingPolicy": "legacy",
                     "candidatePromotion": False,
+                    "immutableInputsOnly": immutable_inputs_only,
                     "reviewReasons": sorted(set(review_reasons)),
                     "documentCount": len(canonical_documents),
                     "knowledgeObjectCount": len(objects),
