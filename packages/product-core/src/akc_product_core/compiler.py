@@ -803,42 +803,48 @@ class ProductCoreCompiler:
                         payload={"text": block.raw_text, "blockType": block.type.value},
                     )
                 )
-        block_by_evidence = {
-            evidence_id(
-                document_version=document.document_version_id,
-                page_number1=ref.page_number1,
-                bbox1000=(ref.bbox1000.as_tuple() if ref.bbox1000 else None),
-                span_text=block.raw_text,
-            ): block
+        block_by_anchor = {
+            (document.document_version_id, ref.native_object_id): block
             for document in documents
             for block in document.blocks
             for ref in block.source_refs[:1]
         }
         unit_by_logical = {unit.logical_id: unit for unit in units}
+        refs_by_logical: dict[str, tuple[SourceRef, ...]] = {}
         refs_by_evidence: dict[str, tuple[SourceRef, ...]] = {}
         evidence_object_by_id: dict[str, str] = {}
+        evidence_units: defaultdict[str, list[PreviousUnit]] = defaultdict(list)
         for unit in units:
+            block = block_by_anchor[(unit.source_version_id, unit.anchor)]
+            refs_by_logical[unit.logical_id] = block.source_refs
+            evidence_units[unit.evidence_id].append(unit)
+            combined = (*refs_by_evidence.get(unit.evidence_id, ()), *block.source_refs)
+            refs_by_evidence[unit.evidence_id] = tuple(
+                {
+                    canonical_json(ref.model_dump(mode="json", by_alias=True)): ref
+                    for ref in combined
+                }.values()
+            )
+        for evidence_key, supporting_units in evidence_units.items():
             verification_state = (
                 KnowledgeVerificationState.UNRESOLVED
-                if unit.identity_state == "unresolved"
+                if any(unit.identity_state == "unresolved" for unit in supporting_units)
                 else KnowledgeVerificationState.VERIFIED_WITH_WARNING
             )
-            block = block_by_evidence[unit.evidence_id]
-            evidence_object_id = _stable_id("ko_evidence", unit.evidence_id)
-            refs_by_evidence[unit.evidence_id] = block.source_refs
-            evidence_object_by_id[unit.evidence_id] = evidence_object_id
+            evidence_object_id = _stable_id("ko_evidence", evidence_key)
+            evidence_object_by_id[evidence_key] = evidence_object_id
             objects.append(
                 build_knowledge_object(
                     stable_id=evidence_object_id,
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.EVIDENCE,
-                    source_refs=block.source_refs,
+                    source_refs=refs_by_evidence[evidence_key],
                     origin=KnowledgeOrigin.VISUAL_EXTRACTED,
                     verification_state=verification_state,
                     created_by_activity=activity,
                     version=1,
-                    payload={"evidenceId": unit.evidence_id},
+                    payload={"evidenceId": evidence_key},
                 )
             )
 
@@ -855,7 +861,7 @@ class ProductCoreCompiler:
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.CLAIM,
-                    source_refs=refs_by_evidence[claim.evidence_id],
+                    source_refs=refs_by_logical[claim.logical_id],
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=verification_state,
                     created_by_activity=activity,
@@ -867,14 +873,20 @@ class ProductCoreCompiler:
 
         claim_by_id = {claim.claim_id: claim for claim in semantics.claims}
         for entity in semantics.entities:
-            first_claim = claim_by_id[entity.claim_ids[0]]
+            entity_refs = tuple(
+                {
+                    canonical_json(ref.model_dump(mode="json", by_alias=True)): ref
+                    for claim_id in entity.claim_ids
+                    for ref in refs_by_logical[claim_by_id[claim_id].logical_id]
+                }.values()
+            )
             objects.append(
                 build_knowledge_object(
                     stable_id=entity.entity_id,
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.ENTITY,
-                    source_refs=refs_by_evidence[first_claim.evidence_id],
+                    source_refs=entity_refs,
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=KnowledgeVerificationState.VERIFIED_WITH_WARNING,
                     created_by_activity=activity,
@@ -890,7 +902,7 @@ class ProductCoreCompiler:
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.RELATION,
-                    source_refs=refs_by_evidence[relation.evidence_id],
+                    source_refs=refs_by_logical[claim_by_id[relation.subject_id].logical_id],
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=KnowledgeVerificationState.VERIFIED_WITH_WARNING,
                     created_by_activity=activity,
