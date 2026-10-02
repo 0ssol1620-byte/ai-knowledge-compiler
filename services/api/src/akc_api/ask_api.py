@@ -19,9 +19,16 @@ Two fail-closed properties carry over unchanged from the core:
   the response has no claim ids and no evidence occurrences; naming them is
   itself the disclosure §22.1 forbids.
 
-The store format is a directory of JSON snapshots, one per world state::
+The store is partitioned by tenant, one JSON snapshot per world state::
 
-    <world_store_dir>/ws_20260824_001.json
+    <world_store_dir>/<tenant uuid>/ws_20260824_001.json
+
+The partition is chosen from the authenticated principal's tenant -- never
+from the request body -- and every snapshot also records the tenant it was
+compiled for, verified on read. A snapshot whose binding is missing or names
+another tenant poisons the lookup exactly like an unreadable one, so a
+misplaced or symlinked file cannot serve one tenant's world to another. JSON
+files at the store root (the pre-partition layout) refuse the whole lookup.
 
 Each snapshot records its publication manifest hash (recomputed and verified
 on read, so a hand-edited artifact hash fails closed), its validation
@@ -75,7 +82,7 @@ PrincipalDep = Annotated[Principal, Depends(get_principal)]
 #: any other version is unreadable by definition, and an unreadable file in
 #: the store fails the whole lookup closed rather than being skipped -- a
 #: silently skipped snapshot could be the ACTIVE one.
-SNAPSHOT_SCHEMA_VERSION = 1
+SNAPSHOT_SCHEMA_VERSION = 2
 
 
 # ---------------------------------------------------------------------------
@@ -136,6 +143,9 @@ class WorldSnapshotDocument(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     schema_version: int
+    #: The tenant this world was compiled for. Required: a snapshot with no
+    #: binding cannot be proven to belong to the asker, so it is unreadable.
+    tenant_id: uuid.UUID
     workspace_id: str
     world_state_id: str
     status: WorldStateStatus
@@ -184,14 +194,18 @@ def _read_snapshot(path: Path) -> WorldSnapshotDocument:
 
 def _resolve_world(
     store_dir: Path | None,
+    tenant_id: uuid.UUID,
     requested_world_state_id: str | None,
 ) -> WorldResolution:
-    """Find the answerable world, failing closed on every ambiguous state.
+    """Find the tenant's answerable world, failing closed on every ambiguous state.
 
-    Any unreadable snapshot poisons the whole lookup: the file that will not
-    parse could be the ACTIVE one, and answering from the readable remainder
-    is how a stale world gets served as current. Multiple ACTIVE claims get
-    the same treatment -- §73.10 allows one ACTIVE per workspace, ever.
+    ``tenant_id`` must come from the authenticated principal. Only that
+    tenant's partition is read, and each snapshot in it must be bound to the
+    same tenant. Any unreadable or foreign-bound snapshot poisons the whole
+    lookup: the file that will not parse could be the ACTIVE one, and
+    answering from the readable remainder is how a stale -- or another
+    tenant's -- world gets served as current. Multiple ACTIVE claims get the
+    same treatment -- §73.10 allows one ACTIVE per workspace, ever.
     """
     if store_dir is None:
         return WorldResolution(
@@ -199,14 +213,30 @@ def _resolve_world(
         )
     if not store_dir.is_dir():
         return WorldResolution(None, "the configured world store directory does not exist")
+    if any(store_dir.glob("*.json")):
+        return WorldResolution(
+            None,
+            "the world store holds unpartitioned snapshots at its root; "
+            "refusing to serve a world that is not bound to a tenant",
+        )
+    # A tenant that never published has no partition; that reads exactly like
+    # an empty one, so a pin cannot tell "absent" from "another tenant's".
+    tenant_dir = store_dir / str(tenant_id)
+    paths = sorted(tenant_dir.glob("*.json")) if tenant_dir.is_dir() else []
 
     snapshots: list[WorldSnapshotDocument] = []
     broken: list[str] = []
-    for path in sorted(store_dir.glob("*.json")):
+    for path in paths:
         try:
-            snapshots.append(_read_snapshot(path))
+            document = _read_snapshot(path)
         except (OSError, ValueError) as exc:
             broken.append(f"{path.name}: {exc}")
+            continue
+        if document.tenant_id != tenant_id:
+            # Never name the other tenant: the reason goes back to the caller.
+            broken.append(f"{path.name}: bound to a different tenant")
+            continue
+        snapshots.append(document)
     if broken:
         named = "; ".join(broken[:3])
         return WorldResolution(
@@ -415,7 +445,9 @@ async def ask(
     short-circuit to 401, because who is asking decides what they may see.
     """
     settings: Settings = request.app.state.settings
-    resolution = _resolve_world(settings.world_store_dir, payload.world_state_id)
+    resolution = _resolve_world(
+        settings.world_store_dir, principal.tenant_id, payload.world_state_id
+    )
     intent = classify_intent(payload.query)
 
     answer: CompiledAnswer
