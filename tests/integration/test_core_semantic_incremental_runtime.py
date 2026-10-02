@@ -373,32 +373,70 @@ def test_revoking_or_changing_a_source_permission_applies_on_the_next_ask(
         _assert_refused(pipeline.answer(BUDGET_QUESTION, permissions=permissions))
 
 
-@pytest.mark.parametrize(
-    "board_text",
-    [
-        _front_matter("required_permission: board minuted"),  # two tokens
-        _front_matter("required_permission:"),  # empty value
-        _front_matter("required_permission:", "  - board:minuted"),  # YAML list
-        _front_matter("required_permission: board:a", "required_permission: board:b"),
-        _front_matter("required-permission: !acl-unmapped"),  # the marker itself
-        _front_matter("acl: board:minuted"),  # an ACL key the runtime cannot map
-        _front_matter("visibility: private"),
-        _front_matter("allowed_groups: [board]"),
-        # Unterminated front matter declaring an ACL: not trusted as data.
-        "---\nrequired_permission: board:minuted\n" + BOARD_BODY,
-    ],
-    ids=[
-        "two-tokens",
-        "empty",
-        "yaml-list",
-        "repeated",
-        "marker-literal",
-        "acl-key",
-        "visibility",
-        "allowed-groups",
-        "unterminated",
-    ],
-)
+#: Encoding/line-ending variants of a valid declaration: honoured, not dropped.
+ENCODED_RESTRICTIONS = {
+    "utf8-bom": "﻿" + RESTRICTED_SOURCE,
+    "crlf": RESTRICTED_SOURCE.replace("\n", "\r\n"),
+    "cr-only": RESTRICTED_SOURCE.replace("\n", "\r"),
+    "quoted-value": _front_matter('required_permission: "board:minuted"'),
+}
+
+
+@pytest.mark.parametrize("board_text", ENCODED_RESTRICTIONS.values(), ids=ENCODED_RESTRICTIONS)
+def test_encoded_restriction_is_still_enforced(
+    tmp_path: Path, calls: Invocations, board_text: str
+) -> None:
+    _, pipeline, result = _compiled(tmp_path, board_text)
+
+    assert {row["required_permission"] for row in _board_rows(result)} == {"board:minuted"}
+    _assert_refused(pipeline.answer(BUDGET_QUESTION))
+    _assert_board_answer(result, pipeline.answer(BUDGET_QUESTION, permissions={"board:minuted"}))
+
+
+#: Every shape a line scanner cannot map with certainty. Each must fail closed.
+UNMAPPABLE_ACLS = {
+    "two-tokens": _front_matter("required_permission: board minuted"),
+    "empty": _front_matter("required_permission:"),
+    "yaml-list": _front_matter("required_permission:", "  - board:minuted"),
+    "repeated": _front_matter("required_permission: board:a", "required_permission: board:b"),
+    "trailing-comment": _front_matter("required_permission: board:minuted # board only"),
+    "tagged-value": _front_matter("required_permission: !!str board:minuted"),
+    "escaped-value": _front_matter('required_permission: "board\\x3aminuted"'),
+    "marker-literal": _front_matter("required-permission: !acl-unmapped"),
+    "acl-key": _front_matter("acl: board:minuted"),
+    "visibility": _front_matter("visibility: private"),
+    "allowed-groups": _front_matter("allowed_groups: [board]"),
+    "camel-case": _front_matter("requiredPermission: board:minuted"),
+    "title-case": _front_matter("Required_Permission: board:minuted"),
+    "fullwidth": _front_matter("\uff52equired_\uff50ermission: board:minuted"),
+    "double-quoted-key": _front_matter('"required_permission": board:minuted'),
+    "single-quoted-key": _front_matter("'required_permission': board:minuted"),
+    # The escape hides every ACL token, so only the key-syntax rule catches it.
+    "escaped-key": _front_matter('"\\x72equired_\\x70ermission": board:minuted'),
+    "flow-mapping": _front_matter("{required_permission: board:minuted}"),
+    "anchor-merge": _front_matter("defaults: &d {required_permission: board:minuted}", "<<: *d"),
+    "escaped-anchor-merge": _front_matter(
+        'defaults: &d {"\\x72equired_\\x70ermission": board:minuted}', "<<: *d"
+    ),
+    "complex-key": _front_matter("? required_permission", ": board:minuted"),
+    "indented-mapping": _front_matter("  required_permission: board:minuted"),
+    "nested": _front_matter("meta:", "  required_permission: board:minuted"),
+    "commented": _front_matter("# required_permission: board:minuted"),
+    "toml": '+++\nrequired_permission = "board:minuted"\n+++\n' + BOARD_BODY,
+    "json": '{"required_permission": "board:minuted"}\n' + BOARD_BODY,
+    "leading-blank-line": "\n" + RESTRICTED_SOURCE,
+    "bom-then-blank-line": "﻿\n" + RESTRICTED_SOURCE,
+    # Unterminated front matter declaring an ACL: not trusted as data.
+    "unterminated": "---\nrequired_permission: board:minuted\n" + BOARD_BODY,
+    "dots-close": "---\nrequired_permission: board:minuted\n...\n" + BOARD_BODY,
+    # A declaration outside the front matter is never silently ignored.
+    "after-close": "---\ntitle: x\n---\nrequired_permission: board:minuted\n" + BOARD_BODY,
+    "body-only": "Required permission: board:minuted\n\n" + BOARD_BODY,
+    "body-after-valid": RESTRICTED_SOURCE + "\n- required-permissions = board:chair\n",
+}
+
+
+@pytest.mark.parametrize("board_text", UNMAPPABLE_ACLS.values(), ids=UNMAPPABLE_ACLS)
 def test_unmappable_source_acl_fails_closed(
     tmp_path: Path, calls: Invocations, board_text: str
 ) -> None:
@@ -409,8 +447,19 @@ def test_unmappable_source_acl_fails_closed(
         _assert_refused(pipeline.answer(BUDGET_QUESTION, permissions=permissions))
 
 
-def test_front_matter_without_acl_keys_stays_public(tmp_path: Path, calls: Invocations) -> None:
-    _, pipeline, result = _compiled(tmp_path, _front_matter("title: Board minutes", "tags: [q3]"))
+#: Front matter with nothing ACL-ish in it stays public in every shape.
+PUBLIC_FRONT_MATTER = {
+    "yaml": _front_matter('title: "Board minutes"', "tags: [q3, board]", "- note"),
+    "toml": '+++\ntitle = "Board minutes"\n+++\n' + BOARD_BODY,
+    "leading-blank-line": "\n" + _front_matter("title: Board minutes"),
+}
+
+
+@pytest.mark.parametrize("board_text", PUBLIC_FRONT_MATTER.values(), ids=PUBLIC_FRONT_MATTER)
+def test_front_matter_without_acl_stays_public(
+    tmp_path: Path, calls: Invocations, board_text: str
+) -> None:
+    _, pipeline, result = _compiled(tmp_path, board_text)
 
     assert all(row["required_permission"] is None for row in _board_rows(result))
     _assert_board_answer(result, pipeline.answer(BUDGET_QUESTION))
