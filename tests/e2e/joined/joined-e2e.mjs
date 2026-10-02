@@ -1,0 +1,763 @@
+/**
+ * TAVONEL joined end-to-end proof, one synthetic pilot workspace on a disposable GitHub runner:
+ *
+ *   Chromium sign-in (GoTrue) -> workspace upload UI (capability -> signed PUT -> confirm)
+ *   -> [simulated R2 event + queue] -> Foundation CDR worker handleQueue -> real CDR image + pinned clamd
+ *   -> real CPU raster OCR -> ocr.json -> UI-enqueued compile job -> [simulated Vercel cron]
+ *   -> Foundation compile worker -> Core Product Core v2 /v2/compile over HTTPS -> signed compile receipt
+ *   -> candidate -> review + activate in the UI -> API key / MCP stdio / CLI answer citing the upload.
+ *
+ * Plus, in the same run: duplicate confirm / queue redelivery / compile re-enqueue cause no second
+ * OCR, Core compile or charge; an EICAR source is refused by the real scanner before OCR; a Core
+ * request whose signature fails and a Core reply whose receipt does not verify leave no candidate.
+ *
+ * Every hop is labelled real | simulated in the ledger (output/joined-e2e-ledger.json). Foundation code
+ * is imported or executed from the Foundation checkout, never copied. All keys and secrets are created
+ * in this process, live only in owned child environments, and are redacted from everything written.
+ *
+ * Run (see .github/workflows/joined-e2e.yml) from foundation/quarantine-sidecar/foundation-cdr-worker:
+ *   node --import tsx <core>/tests/e2e/joined/joined-e2e.mjs
+ */
+import assert from "node:assert/strict";
+import { execFileSync, spawn } from "node:child_process";
+import { createHash, createPublicKey, generateKeyPairSync, randomBytes, randomUUID } from "node:crypto";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import http from "node:http";
+import https from "node:https";
+import net from "node:net";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+import { s3Bucket } from "./s3-bucket.mjs";
+
+// ---------------------------------------------------------------------------------------------
+// Preconditions: disposable GitHub-hosted Linux runner only.
+// ---------------------------------------------------------------------------------------------
+assert.equal(process.platform, "linux", "The joined proof runs only on the disposable Linux runner");
+assert.equal(process.env.GITHUB_ACTIONS, "true", "The joined proof runs only in GitHub Actions");
+assert.equal(process.env.RUNNER_ENVIRONMENT, "github-hosted", "The joined proof runs only on a GitHub-hosted runner");
+const required = name => { const value = process.env[name]; assert.ok(value, `${name} is required`); return value; };
+const FOUNDATION = realpathSync(required("TAVONEL_JOINED_FOUNDATION_DIR"));
+const CORE = path.resolve(import.meta.dirname, "../../..");
+const nextRoot = path.join(FOUNDATION, "nextjs");
+const runnerTemp = realpathSync(required("RUNNER_TEMP"));
+const statusFile = realpathSync(required("TAVONEL_AUTH_STACK_STATUS"));
+assert.equal(path.dirname(statusFile), runnerTemp, "Only the workflow-generated local stack status file is accepted");
+const corePython = required("TAVONEL_JOINED_CORE_PYTHON");
+const ocrPython = required("TAVONEL_JOINED_OCR_PYTHON");
+const cdrImage = required("TAVONEL_JOINED_CDR_IMAGE");
+const output = path.resolve(CORE, "output/joined-e2e-ledger.json");
+mkdirSync(path.dirname(output), { recursive: true });
+
+const fromFoundation = relative => import(pathToFileURL(path.join(FOUNDATION, relative)).href);
+const { validateDisposableAuthStack, authGatewayService } = await fromFoundation("nextjs/scripts/journey/real-auth-ci-contract.mjs");
+const { withLocalStorage } = await fromFoundation("nextjs/scripts/journey/local-storage-journey.mjs");
+const { routeLocalStorageTransport, storageHost } = await fromFoundation("nextjs/scripts/journey/local-next-browser-journey.mjs");
+const { stopOwnedChild } = await fromFoundation("nextjs/scripts/journey/stop-owned-child.mjs");
+const { evaluateCustomerDataGate } = await fromFoundation("shared/customerDataGate.ts");
+const { customerDataPreconditions } = await fromFoundation("shared/uskcEnums.ts");
+const { handleQueue } = await fromFoundation("quarantine-sidecar/foundation-cdr-worker/src/index.ts");
+const { verifyCompileReceipt } = await fromFoundation("nextjs/lib/compile-receipt-signing.ts");
+const { readExportTrustStoreEnv } = await fromFoundation("nextjs/lib/export-signing.ts");
+
+const stack = validateDisposableAuthStack(JSON.parse(readFileSync(statusFile, "utf8")), process.env);
+const git = dir => execFileSync("git", ["-C", dir, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+const sha256 = body => createHash("sha256").update(body).digest("hex");
+
+// ---------------------------------------------------------------------------------------------
+// Identity, secrets and the ledger. Secrets never leave process memory and owned child envs.
+// ---------------------------------------------------------------------------------------------
+const owner = randomUUID();
+const workspace = `pilot-${owner.replace(/-/g, "").slice(0, 16)}`;
+const email = `joined-e2e-${owner.slice(0, 8)}@journey.invalid`;
+const password = randomBytes(32).toString("base64url");
+const origin = "https://127.0.0.1:54443", coreOrigin = "https://127.0.0.1:54444", nextPort = 3100;
+const secrets = {
+  core: randomBytes(32).toString("hex"), worker: randomBytes(32).toString("hex"), settlement: randomBytes(32).toString("hex"),
+  cdr: randomBytes(32).toString("hex"), ocr: randomBytes(32).toString("hex"),
+};
+const coreSha = git(CORE), foundationSha = git(FOUNDATION);
+// Synthetic, labelled: bound to this Core checkout, never a released Core image digest.
+const coreReleaseDigest = `sha256:${sha256(`tavonel-joined-e2e-synthetic-core-release:${coreSha}`)}`;
+const signingPair = generateKeyPairSync("ed25519");
+const signingSpki = createPublicKey(signingPair.privateKey).export({ format: "der", type: "spki" });
+const signingKeyId = `joined-e2e-${randomBytes(4).toString("hex")}`;
+const signingEnv = {
+  TAVONEL_EXPORT_SIGNING_KEY_ID: signingKeyId,
+  TAVONEL_EXPORT_SIGNING_PRIVATE_KEY_PKCS8_DER_B64: signingPair.privateKey.export({ format: "der", type: "pkcs8" }).toString("base64"),
+  TAVONEL_EXPORT_SIGNING_TRUST_STORE_JSON: JSON.stringify({
+    schemaVersion: "tavonel.export_trust.v2", minimumSignatureVersion: 2, activeKeyId: signingKeyId,
+    keys: [{ keyId: signingKeyId, keyVersion: 1, algorithm: "Ed25519", status: "active",
+      notBefore: new Date(Date.now() - 3_600_000).toISOString(), expiresAt: new Date(Date.now() + 6 * 3_600_000).toISOString(),
+      publicKeySpkiDerBase64: signingSpki.toString("base64"), publicKeySpkiSha256: `sha256:${sha256(signingSpki)}` }],
+  }),
+};
+let consumerSecret = "", storageSecret = "";
+const redact = value => [password, stack.anon, stack.service, storageSecret, consumerSecret, signingEnv.TAVONEL_EXPORT_SIGNING_PRIVATE_KEY_PKCS8_DER_B64, ...Object.values(secrets)]
+  .filter(Boolean).reduce((text, secret) => text.replaceAll(secret, "[redacted]"), String(value))
+  .replace(/eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+/g, "[redacted JWT]").replace(/tvnl_live_[A-Za-z0-9_-]+/g, "[redacted API key]")
+  .replace(/(X-Amz-(?:Signature|Credential)=)[^&\s"]+/gi, "$1[redacted]");
+
+const ledger = {
+  kind: "tavonel-joined-e2e", success: false, generatedAt: new Date().toISOString(),
+  harnessSha256: sha256(readFileSync(import.meta.filename)),
+  checkout: { coreSha, foundationSha, foundationRef: process.env.TAVONEL_JOINED_FOUNDATION_REF ?? null,
+    workflowRunId: process.env.GITHUB_RUN_ID ?? null, workflowSha: process.env.GITHUB_SHA ?? null },
+  booleans: { uploadViaUiVerified: false, cdrClamavReal: false, ocrReal: false, coreCompileReal: false, receiptSigned: false,
+    reviewActivateViaUi: false, consumerCitesUploadedDoc: false, duplicatesCauseNoSecondOcrCompileOrCharge: false,
+    malwareRefusedBeforeOcr: false, coreSignatureFailureLeavesNoCandidate: false, coreReceiptFailureLeavesNoCandidate: false },
+  hops: [
+    { hop: "Auth: password sign-in and session", label: "real", detail: "GoTrue from the disposable `supabase start` stack; Chromium holds the session" },
+    { hop: "Next application", label: "real", detail: "Foundation `next build` + `next start` (production mode) from the Foundation checkout" },
+    { hop: "TLS front door", label: "simulated", detail: "Harness HTTPS gateway 127.0.0.1:54443 (self-signed, NODE_EXTRA_CA_CERTS) in front of Next, GoTrue/PostgREST and S3; Vercel's edge is not exercised" },
+    { hop: "Upload UI: capability -> signed PUT -> confirm", label: "real", detail: "Chromium drives the workspace file input and 'Upload & compile'; Next signs the PUT; Chromium uploads the bytes" },
+    { hop: "Object storage (R2)", label: "simulated", detail: "SeaweedFS 4.48 S3, checksum-pinned, behind the R2 host name; not Cloudflare R2" },
+    { hop: "Storage CORS", label: "simulated", detail: "CORS response headers are added by the harness gateway; they are not SeaweedFS or R2 CORS configuration" },
+    { hop: "R2 object-created event + Cloudflare Queue delivery", label: "simulated", detail: "Harness builds the R2 event-notification message after the browser's confirm and calls the exported handleQueue" },
+    { hop: "R2 binding of the CDR worker", label: "simulated", detail: "S3-backed get/list/put adapter (tests/e2e/joined/s3-bucket.mjs) against the same SeaweedFS" },
+    { hop: "CDR worker logic", label: "real", detail: "Foundation quarantine-sidecar/foundation-cdr-worker/src handleQueue, executed in Node via tsx, not in workerd" },
+    { hop: "CDR service + ClamAV", label: "real", detail: "cdr-cloudrun image built from the Foundation checkout; clamd service container pinned by digest" },
+    { hop: "OCR", label: "real", detail: "workers/foundation-ocr-cpu-raster on CPU with digest-checked RapidOCR models, HMAC-signed by the worker" },
+    { hop: "Compute settlement callback", label: "real", detail: "Worker -> Next /api/internal/billing/settle (HMAC) -> SQL ledger" },
+    { hop: "Compile enqueue", label: "real", detail: "The workspace UI posts /api/compile-jobs after the upload" },
+    { hop: "Compile worker trigger (Vercel cron)", label: "simulated", detail: "Harness POSTs /api/internal/jobs/run with an ephemeral FOUNDATION_WORKER_SECRET" },
+    { hop: "Core /v2/compile", label: "real", detail: "Core Product Core v2 under uvicorn from the Core checkout, HMAC-verified, over HTTPS via harness gateway 127.0.0.1:54444" },
+    { hop: "Core customer-data switch", label: "simulated", detail: "tests/e2e/joined/core_synthetic_app.py sets allow_customer_data=True for this synthetic run only; production default unchanged" },
+    { hop: "Core release digest", label: "simulated", detail: "sha256 of a label + the Core checkout SHA, not a released image digest" },
+    { hop: "Compile receipt signing + audit", label: "real", detail: "Foundation signer with an ephemeral Ed25519 key and trust store; audit row in enterprise_audit_events" },
+    { hop: "Customer-data gate + enterprise tenancy", label: "simulated", detail: "Fixture SQL rows in the disposable DB: a 17-precondition gate receipt whose evidence names this fixture, and bootstrap_enterprise_for_user" },
+    { hop: "Review + activate", label: "real", detail: "Chromium clicks Accept and Activate reviewed candidate on /workspace/review" },
+    { hop: "Consumer reads", label: "real", detail: "Owner session, issued API key, shipped MCP stdio server and shipped CLI from the Foundation checkout, behind a loopback egress guard" },
+  ],
+  fixtures: [], assertions: [], observations: {},
+  notClaimed: ["production R2, Queues, workerd or Vercel", "production identity, keys or customer data", "retrieval quality or OCR accuracy beyond the asserted phrase",
+    "a released Core image", "production legal, encryption or operator evidence", "SeaweedFS or R2 CORS configuration"],
+};
+function check(name, actual, expected) { assert.deepEqual(actual, expected, name); ledger.assertions.push(name); }
+const observe = (key, value) => { ledger.observations[key] = value; };
+
+// ---------------------------------------------------------------------------------------------
+// Small process, SQL and HTTP helpers.
+// ---------------------------------------------------------------------------------------------
+const allowed = new Set(["PATH", "HOME", "TMP", "TEMP", "LANG", "LC_ALL"]);
+const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => allowed.has(key.toUpperCase())));
+const sql = statement => execFileSync("psql", [stack.db, "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-c", statement], { env, encoding: "utf8", timeout: 15_000 }).trim();
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+async function waitUntil(label, probe, tries = 240, delay = 500) {
+  for (let i = 0; i < tries; i++) { try { if (await probe()) return; } catch { /* still starting */ } await sleep(delay); }
+  throw new Error(`${label} did not become ready`);
+}
+async function freePort() {
+  const server = net.createServer();
+  await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
+  const { port } = server.address(); await new Promise(resolve => server.close(resolve)); return port;
+}
+const owned = [];
+function start(label, command, args, options) {
+  const child = spawn(command, args, { ...options, stdio: ["ignore", "pipe", "pipe"] });
+  const tail = [];
+  for (const stream of [child.stdout, child.stderr]) {
+    stream.setEncoding("utf8");
+    stream.on("data", chunk => { for (const line of chunk.split("\n")) if (line.trim()) { tail.push(redact(line).slice(0, 400)); if (tail.length > 120) tail.shift(); } });
+  }
+  owned.push({ label, child, tail });
+  return child;
+}
+const readBody = stream => new Promise((resolve, reject) => { const chunks = []; stream.on("data", c => chunks.push(c)); stream.on("end", () => resolve(Buffer.concat(chunks))); stream.on("error", reject); });
+async function api(resource, body, bearer = stack.service, method = body ? "POST" : "GET") {
+  const response = await fetch(`${stack.api}${resource}`, { method, headers: { apikey: stack.anon, authorization: `Bearer ${bearer}`, "content-type": "application/json" },
+    ...(body ? { body: JSON.stringify(body) } : {}), signal: AbortSignal.timeout(15_000) });
+  return { status: response.status, body: await response.json().catch(() => null) };
+}
+async function ownerToken() {
+  const login = await api("/auth/v1/token?grant_type=password", { email, password }, stack.anon);
+  assert.equal(login.status, 200, "GoTrue password login for the fixture owner");
+  return login.body.access_token;
+}
+
+/** One synthetic, ASCII-only PDF with Helvetica text (no customer content). Same layout as the Foundation CDR fixtures. */
+function textPdf(lines) {
+  const content = lines.map((line, index) => `BT /F1 28 Tf 72 ${700 - index * 48} Td (${line}) Tj ET`).join("\n");
+  return assemblePdf(["<< /Type /Catalog /Pages 2 0 R >>", "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>", `<< /Length ${content.length} >>\nstream\n${content}\nendstream`]);
+}
+/** EICAR (assembled at run time) as an uncompressed embedded file, the shape the pinned clamd is qualified to detect. */
+function eicarPdf() {
+  const eicar = ["X5O!P%@AP[4\\PZX54(P^)7CC)7}$", "EICAR-STANDARD-ANTIVIRUS-", "TEST-FILE!$H+H*"].join("");
+  return assemblePdf(["<< /Type /Catalog /Pages 2 0 R /Names << /EmbeddedFiles << /Names [(eicar.txt) 6 0 R] >> >> >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>", "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 4 0 R >>",
+    "<< /Length 8 >>\nstream\n0 0 m S\nendstream", `<< /Type /EmbeddedFile /Length ${eicar.length} >>\nstream\n${eicar}\nendstream`,
+    "<< /Type /Filespec /F (eicar.txt) /EF << /F 5 0 R >> >>"]);
+}
+function assemblePdf(objects) {
+  let pdf = "%PDF-1.4\n"; const offsets = [];
+  objects.forEach((body, index) => { offsets.push(pdf.length); pdf += `${index + 1} 0 obj\n${body}\nendobj\n`; });
+  const xref = pdf.length;
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n${offsets.map(o => `${String(o).padStart(10, "0")} 00000 n \n`).join("")}`;
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  return Buffer.from(pdf, "latin1");
+}
+
+// The phrase the consumer answer must cite. It must not exist in any Foundation fixture this job could have fed in.
+const PHRASE = /73\s*days/i;
+const docs = {
+  ui: { name: "joined-e2e-archive-policy.pdf", bytes: textPdf(["Archive retention is 73 days.", "Joined harness policy record."]) },
+  signature: { name: "joined-e2e-escalation.pdf", bytes: textPdf(["Escalation window is 19 hours."]) },
+  receipt: { name: "joined-e2e-cadence.pdf", bytes: textPdf(["Review cadence is 11 weeks."]) },
+  malware: { name: "joined-e2e-eicar.pdf", bytes: eicarPdf() },
+};
+const question = "What is the archive retention period?";
+
+const root = mkdtempSync(path.join(tmpdir(), "tavonel-joined-e2e-"));
+const browserEvents = [];
+let browser, page, cdrContainer = null;
+try {
+  // Fixture provenance: the asserted phrase is absent from every Foundation journey fixture.
+  for (const dir of ["nextjs/scripts/journey/real-auth-fixtures", "nextjs/scripts/journey/receipt-fixtures"]) {
+    for (const name of readdirSync(path.join(FOUNDATION, dir))) {
+      check(`fixture ${dir}/${name} does not contain the uploaded document's phrase`, PHRASE.test(readFileSync(path.join(FOUNDATION, dir, name), "utf8")), false);
+    }
+  }
+  observe("syntheticDocuments", Object.fromEntries(Object.entries(docs).map(([key, doc]) => [key, { name: doc.name, bytes: doc.bytes.length, sha256: sha256(doc.bytes) }])));
+
+  // -------------------------------------------------------------------------------------------
+  // Services: Core v2, CPU OCR, CDR + clamd, each behind an observing proxy.
+  // -------------------------------------------------------------------------------------------
+  const corePort = await freePort();
+  mkdirSync(path.join(root, "core-journal"));
+  start("core", corePython, ["-m", "uvicorn", "--factory", "core_synthetic_app:create_synthetic_test_app", "--app-dir", path.join(CORE, "tests/e2e/joined"),
+    "--host", "127.0.0.1", "--port", String(corePort), "--no-access-log"], { cwd: CORE, env: { ...env,
+    PYTHONPATH: ["packages/cir-python/src", "packages/domain-packs/src", "packages/product-core/src"].map(p => path.join(CORE, p)).join(path.delimiter),
+    TAVONEL_JOINED_E2E_SYNTHETIC_ONLY: "1", GITHUB_ACTIONS: process.env.GITHUB_ACTIONS, RUNNER_ENVIRONMENT: process.env.RUNNER_ENVIRONMENT,
+    TAVONEL_JOINED_CORE_HMAC: secrets.core, TAVONEL_JOINED_CORE_RELEASE_DIGEST: coreReleaseDigest,
+    TAVONEL_JOINED_CORE_JOURNAL: path.join(root, "core-journal/journal.sqlite3") } });
+  let coreHealth;
+  await waitUntil("Core /health", async () => { const r = await fetch(`http://127.0.0.1:${corePort}/health`); coreHealth = await r.json(); return r.ok; });
+  check("Core health names the v2 runtime, the synthetic release and the synthetic-only customer-data switch",
+    [coreHealth.runtime, coreHealth.coreReleaseDigest, coreHealth.customerDataEnabled], ["tavonel-python-core-v2", coreReleaseDigest, true]);
+  observe("coreHealth", coreHealth);
+
+  const ocrPort = await freePort();
+  start("ocr", ocrPython, ["-m", "uvicorn", "app:app", "--host", "127.0.0.1", "--port", String(ocrPort), "--no-access-log"],
+    { cwd: path.join(FOUNDATION, "workers/foundation-ocr-cpu-raster"), env: { ...env, TAVONEL_OCR_HMAC: secrets.ocr } });
+  // /ping is 200 only after the real engines read a rendered known page on CPUExecutionProvider sessions.
+  await waitUntil("OCR /ping self-test", async () => (await fetch(`http://127.0.0.1:${ocrPort}/ping`)).status === 200, 600, 1000);
+  const ocrHealth = await (await fetch(`http://127.0.0.1:${ocrPort}/health`)).json();
+  observe("ocrHealth", ocrHealth);
+
+  const cdrPort = await freePort();
+  cdrContainer = `joined-e2e-cdr-${randomBytes(4).toString("hex")}`;
+  // The HMAC reaches docker through its environment (`-e NAME`), never argv.
+  execFileSync("docker", ["run", "-d", "--name", cdrContainer, "--network", "host", "-e", "TAVONEL_CDR_HMAC", "-e", "CLAMD_HOST=127.0.0.1", "-e", "CLAMD_PORT=3310",
+    "-e", "CLAMD_READ_TIMEOUT_SECONDS=30", "-e", "MALWARE_SCAN_REQUIRED=1", cdrImage, "uvicorn", "app:app", "--host", "127.0.0.1", "--port", String(cdrPort), "--no-access-log"],
+  { env: { ...env, TAVONEL_CDR_HMAC: secrets.cdr }, stdio: "ignore", timeout: 60_000 });
+  // /health is 200 only with the HMAC configured, soffice present and clamd answering PING.
+  await waitUntil("CDR /health", async () => (await fetch(`http://127.0.0.1:${cdrPort}/health`)).ok, 120, 1000);
+  observe("cdr", { imageId: execFileSync("docker", ["image", "inspect", "--format", "{{.Id}}", cdrImage], { encoding: "utf8" }).trim(),
+    clamdImage: process.env.TAVONEL_JOINED_CLAMAV_IMAGE ?? null });
+
+  /** Plain HTTP pass-through that records each call. Bodies are not altered. */
+  async function observingProxy(upstreamPort, record) {
+    const calls = [];
+    const server = http.createServer(async (request, response) => {
+      const body = await readBody(request);
+      const upstream = http.request({ hostname: "127.0.0.1", port: upstreamPort, method: request.method, path: request.url, headers: request.headers, agent: false }, async result => {
+        const reply = await readBody(result);
+        calls.push(record(request, result, reply));
+        response.writeHead(result.statusCode, result.headers); response.end(reply);
+      });
+      upstream.on("error", () => { calls.push({ path: request.url, status: 0 }); response.destroy(); });
+      upstream.end(body);
+    });
+    await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
+    return { url: `http://127.0.0.1:${server.address().port}`, calls, server };
+  }
+  const ocrProxy = await observingProxy(ocrPort, (request, result, reply) => ({ path: request.url, status: result.statusCode,
+    inputSha256: request.headers["x-tavonel-input-sha256"] ?? null, bytes: reply.length }));
+  const cdrProxy = await observingProxy(cdrPort, (request, result, reply) => {
+    let scan = null, refusal = null;
+    try { scan = JSON.parse(result.headers["x-tavonel-malware-scan"] ?? "null"); } catch { /* recorded as null */ }
+    if (result.statusCode !== 200) { try { refusal = JSON.parse(reply.toString("utf8")).detail ?? null; } catch { refusal = reply.toString("utf8").slice(0, 300); } }
+    return { path: request.url, status: result.statusCode, cdrStatus: result.headers["x-tavonel-cdr-status"] ?? null, malwareScan: scan, refusal };
+  });
+
+  // -------------------------------------------------------------------------------------------
+  // Disposable identity and fixture rows (all labelled in the ledger).
+  // -------------------------------------------------------------------------------------------
+  const created = await api("/auth/v1/admin/users", { id: owner, email, password, email_confirm: true });
+  check("GoTrue admin creates the per-run synthetic owner", [created.status, created.body?.id], [200, owner]);
+  check("signup trigger provisions the owner's pilot workspace membership",
+    sql(`select count(*) from public.foundation_workspace_members where workspace_key='${workspace}' and user_id='${owner}' and state='active'`), "1");
+  sql(`insert into public.foundation_account_access_grants(user_id,grant_kind,billing_exempt,trial_exempt) values ('${owner}','owner',true,true)`);
+  sql(`insert into public.foundation_billing_accounts(workspace_key,user_id) values ('${workspace}','${owner}') on conflict (workspace_key) do nothing`);
+  sql(`select public.bootstrap_enterprise_for_user('${owner}')`);
+  const evaluatedAt = new Date(Date.now() - 60_000).toISOString();
+  const evidence = customerDataPreconditions.map(precondition => ({ precondition, satisfied: true, checkedAt: evaluatedAt,
+    evidence: `fixture:tavonel-joined-e2e:${process.env.GITHUB_RUN_ID ?? "local"}:synthetic-only-not-production-evidence` }));
+  const gate = evaluateCustomerDataGate({ tenantId: workspace, workspaceId: workspace, evidence, now: evaluatedAt });
+  assert.equal(gate.allowed, true, "the fixture gate evaluates as allowed under Foundation's own evaluator");
+  const evidenceJson = JSON.stringify(evidence).replaceAll("'", "''");
+  sql(`insert into public.customer_data_gate_receipts(tenant_id,workspace_id,allowed,satisfied_count,receipt_sha256,missing,evidence,evaluated_at)
+    values ('${workspace}','${workspace}',true,${customerDataPreconditions.length},'${gate.receiptSha256}','{}','${evidenceJson}'::jsonb,'${evaluatedAt}')`);
+  ledger.fixtures.push(
+    { table: "auth.users (via GoTrue admin API)", detail: "per-run synthetic owner, email *.invalid" },
+    { table: "foundation_account_access_grants", detail: "owner grant, billing_exempt, trial_exempt" },
+    { table: "foundation_billing_accounts", detail: "workspace billing account with no provider customer" },
+    { table: "enterprise_* (bootstrap_enterprise_for_user)", detail: "organization + workspace for service audit rows" },
+    { table: "customer_data_gate_receipts", detail: "17 satisfied preconditions whose evidence string names this fixture; receipt digest from Foundation's evaluator", receiptSha256: gate.receiptSha256 },
+  );
+
+  await withLocalStorage(required("TAVONEL_LOCAL_SEAWEED_EXE"), async storage => {
+    storageSecret = storage.env.AWS_SECRET_ACCESS_KEY;
+    const bucketName = storage.env.S3_BUCKET;
+    const bucket = s3Bucket({ endpoint: storage.endpoint, bucket: bucketName, accessKey: storage.env.AWS_ACCESS_KEY_ID, secretKey: storageSecret, signedHost: storageHost });
+    const listKeys = async prefix => (await bucket.list({ prefix })).objects.map(item => item.key).sort();
+
+    // TLS material for the two local HTTPS listeners. Files live only in this run's temp directory.
+    execFileSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", path.join(root, "key.pem"), "-out", path.join(root, "cert.pem"), "-days", "1",
+      "-subj", "/CN=localhost", "-addext", `subjectAltName=IP:127.0.0.1,DNS:localhost,DNS:${storageHost}`], { env, stdio: "ignore", timeout: 15_000 });
+    const tls = { key: readFileSync(path.join(root, "key.pem")), cert: readFileSync(path.join(root, "cert.pem")) };
+    const ca = tls.cert;
+
+    // Front door: S3 / GoTrue+PostgREST / Next by path (Foundation's own routing rule). CORS for the
+    // browser's signed PUT is answered here and recorded as simulated.
+    const s3Arrivals = [];
+    const gateway = https.createServer(tls, async (request, response) => {
+      const service = authGatewayService(request.url, bucketName);
+      if (service === "s3") {
+        const cors = request.headers.origin ? { "access-control-allow-origin": request.headers.origin, "access-control-expose-headers": "etag", vary: "origin" } : {};
+        if (request.method === "OPTIONS") { response.writeHead(204, { ...cors, "access-control-allow-methods": "PUT", "access-control-allow-headers": "content-type", "access-control-max-age": "0" }); response.end(); return; }
+        const body = await readBody(request);
+        const arrival = { method: request.method, path: request.url.split("?")[0], fromBrowserOrigin: request.headers.origin === origin, bytes: body.length, sha256: body.length ? sha256(body) : null };
+        const upstream = http.request({ hostname: "127.0.0.1", port: new URL(storage.endpoint).port, method: request.method, path: request.url, headers: { ...request.headers, host: storageHost }, agent: false }, result => {
+          arrival.status = result.statusCode; s3Arrivals.push(arrival);
+          const headers = Object.fromEntries(Object.entries(result.headers).filter(([name]) => !name.startsWith("access-control-")));
+          response.writeHead(result.statusCode, { ...headers, ...cors }); result.pipe(response);
+        });
+        upstream.on("error", () => { response.writeHead(502); response.end(); });
+        upstream.end(body);
+        return;
+      }
+      const target = service === "supabase" ? new URL(stack.api) : new URL(`http://127.0.0.1:${nextPort}`);
+      const upstream = http.request({ hostname: target.hostname, port: target.port, path: request.url, method: request.method, headers: request.headers }, result => { response.writeHead(result.statusCode, result.headers); result.pipe(response); });
+      upstream.on("error", () => { response.writeHead(502); response.end("Owned local upstream unavailable"); });
+      request.pipe(upstream);
+    });
+    await new Promise(resolve => gateway.listen(54443, "127.0.0.1", resolve));
+
+    // Core front door: HTTPS, observing, with two explicit failure modes used only by the failure path.
+    const core = { mode: "pass", calls: [] };
+    const coreGateway = https.createServer(tls, async (request, response) => {
+      const body = await readBody(request);
+      const headers = { ...request.headers, host: `127.0.0.1:${corePort}` };
+      const mode = request.url === "/v2/compile" ? core.mode : "pass";
+      if (mode === "break-request-signature") {
+        const signature = String(headers["x-tavonel-core-signature"] ?? "");
+        headers["x-tavonel-core-signature"] = `${signature.slice(0, -1)}${signature.endsWith("0") ? "1" : "0"}`;
+      }
+      const upstream = http.request({ hostname: "127.0.0.1", port: corePort, method: request.method, path: request.url, headers, agent: false }, async result => {
+        let reply = await readBody(result);
+        let replyCode = null;
+        try { replyCode = JSON.parse(reply.toString("utf8")).code ?? null; } catch { /* non-JSON */ }
+        if (request.url === "/v2/compile") {
+          let sent = null;
+          try { sent = JSON.parse(body.toString("utf8")); } catch { /* recorded as null */ }
+          const texts = (sent?.documents ?? []).flatMap(doc => (doc.regions ?? []).map(region => region.text));
+          core.calls.push({ mode, status: result.statusCode, code: replyCode, requestId: request.headers["x-tavonel-core-request-id"] ?? null,
+            privacyPolicy: sent?.route?.privacyPolicy ?? null, operationClass: sent?.route?.operationClass ?? null,
+            documents: (sent?.documents ?? []).map(doc => ({ nativeId: doc.nativeId, contentSha256: doc.contentSha256, regions: doc.regions?.length ?? 0 })),
+            phraseInRegions: texts.some(text => PHRASE.test(text)) });
+          if (mode === "tamper-response" && result.statusCode === 200) {
+            const payload = JSON.parse(reply.toString("utf8"));
+            payload.candidate.validation.matchingPolicy = "tampered-by-joined-e2e";
+            reply = Buffer.from(JSON.stringify(payload));
+          }
+        }
+        const { "transfer-encoding": _chunked, ...passed } = result.headers;
+        const out = { ...passed, "content-length": String(reply.length) };
+        response.writeHead(result.statusCode, out); response.end(reply);
+      });
+      upstream.on("error", () => { response.writeHead(502); response.end(); });
+      upstream.end(body);
+    });
+    await new Promise(resolve => coreGateway.listen(54444, "127.0.0.1", resolve));
+
+    try {
+      // -----------------------------------------------------------------------------------------
+      // Production-mode Next with every ephemeral key.
+      // -----------------------------------------------------------------------------------------
+      const preload = path.join(root, "transport.cjs");
+      writeFileSync(preload, `const os=require('node:os');const cpus=os.cpus;os.cpus=()=>cpus().slice(0,2);os.availableParallelism=()=>2;const f=globalThis.fetch;globalThis.fetch=(input,init)=>{const s=typeof input==='string'?input:input instanceof URL?input.href:null;if(s){const u=new URL(s);if(u.hostname===${JSON.stringify(storageHost)})return f(${JSON.stringify(origin)}+u.pathname+u.search,init);}return f(input,init);};`);
+      const nextEnv = { ...env, NODE_ENV: "production", NEXT_TELEMETRY_DISABLED: "1", NODE_OPTIONS: `--max-old-space-size=3072 --require ${JSON.stringify(preload)}`,
+        NODE_EXTRA_CA_CERTS: path.join(root, "cert.pem"), FOUNDATION_PILOT_USER_IDS: owner, NEXT_PUBLIC_SUPABASE_URL: origin,
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: stack.anon, SUPABASE_SERVICE_ROLE_KEY: stack.service, R2_ACCOUNT_ID: storageHost.split(".")[0], R2_BUCKET: bucketName,
+        R2_ACCESS_KEY_ID: storage.env.AWS_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY: storageSecret, FOUNDATION_CORE_V2_URL: coreOrigin,
+        FOUNDATION_CORE_V2_HMAC: secrets.core, FOUNDATION_WORKER_SECRET: secrets.worker, FOUNDATION_BILLING_SETTLEMENT_HMAC: secrets.settlement, ...signingEnv };
+      const nextBin = path.join(nextRoot, "node_modules/next/dist/bin/next");
+      execFileSync(process.execPath, [nextBin, "build"], { cwd: nextRoot, env: nextEnv, stdio: "inherit", timeout: 900_000 });
+      const next = start("next", process.execPath, [nextBin, "start", "--hostname", "127.0.0.1", "--port", String(nextPort)], { cwd: nextRoot, env: nextEnv });
+      await waitUntil("Next /api/status", async () => { if (next.exitCode !== null) throw new Error("Next exited"); return (await fetch(`http://127.0.0.1:${nextPort}/api/status`)).ok; });
+
+      /** JSON over the gateway, trusting only this run's certificate. */
+      const app = (resource, bearer, body, method = body === undefined ? "GET" : "POST") => new Promise((resolve, reject) => {
+        const url = new URL(resource, origin);
+        const payload = body === undefined ? null : JSON.stringify(body);
+        const accept = /^\/api\/(v1|developer)\//.test(url.pathname) ? "application/vnd.tavonel.v1+json" : "application/json";
+        const request = https.request(url, { method, ca, timeout: 120_000, headers: { accept, ...(bearer ? { authorization: `Bearer ${bearer}` } : {}),
+          ...(payload ? { "content-type": "application/json", "content-length": Buffer.byteLength(payload) } : {}) } }, result => {
+          readBody(result).then(raw => { let json = null; try { json = JSON.parse(raw.toString("utf8")); } catch { /* not JSON */ } resolve({ status: result.statusCode, body: json }); }, reject);
+        });
+        request.on("timeout", () => request.destroy(new Error(`${resource} timed out`))); request.on("error", reject); request.end(payload ?? undefined);
+      });
+      /** The signed PUT a browser would make, for the API-only uploads of the failure path. */
+      const signedPut = (uploadUrl, bytes) => new Promise((resolve, reject) => {
+        const signed = new URL(uploadUrl);
+        assert.equal(signed.hostname, storageHost, "capability signs a PUT for the R2 host");
+        const request = https.request(new URL(`${signed.pathname}${signed.search}`, origin), { method: "PUT", ca,
+          headers: { "content-type": "application/pdf", "content-length": bytes.length } }, result => { result.resume(); result.on("end", () => resolve(result.statusCode)); });
+        request.on("error", reject); request.end(bytes);
+      });
+      async function apiUpload(token, doc) {
+        const capability = await app("/api/uploads/capability", token, { originalFilename: doc.name, declaredMimeType: "application/pdf", requestedBytes: doc.bytes.length, estimatedPages: 1 });
+        check(`capability qualifies ${doc.name}`, [capability.status, capability.body?.code], [200, "QUALIFIED"]);
+        check(`signed PUT stores ${doc.name}`, await signedPut(capability.body.uploadUrl, doc.bytes), 200);
+        const confirm = await app("/api/uploads/confirm", token, { documentId: capability.body.documentId, sourceSha256: `sha256:${sha256(doc.bytes)}` });
+        check(`confirm accepts ${doc.name}`, [confirm.status, confirm.body?.code], [200, "UPLOAD_CONFIRMED"]);
+        return { documentId: capability.body.documentId, objectKey: capability.body.objectKey };
+      }
+
+      // -----------------------------------------------------------------------------------------
+      // Simulated R2 event + queue: the R2 event-notification body, delivered to the real handleQueue.
+      // -----------------------------------------------------------------------------------------
+      const workerEnv = {
+        FOUNDATION_QUARANTINE: bucket, FOUNDATION_R2_BUCKET: bucketName,
+        TAVONEL_CDR_URL: `${cdrProxy.url}/v1/disarm`, TAVONEL_CDR_HEALTH_URL: `${cdrProxy.url}/health`,
+        TAVONEL_CDR_PROVIDER: "ci_joined_e2e_pdfium_clamav", TAVONEL_CDR_HMAC: secrets.cdr,
+        FOUNDATION_OCR_URL: `${ocrProxy.url}/v1/ocr`, TAVONEL_OCR_HMAC: secrets.ocr,
+        FOUNDATION_BILLING_SETTLEMENT_URL: `http://127.0.0.1:${nextPort}/api/internal/billing/settle`, FOUNDATION_BILLING_SETTLEMENT_HMAC: secrets.settlement,
+      };
+      const deliveries = [];
+      async function deliver(objectKey, attempts) {
+        const head = await bucket.get(objectKey);
+        assert.ok(head, `quarantine object ${objectKey} exists before its event is delivered`);
+        const message = { body: { account: "simulated-joined-e2e", action: "PutObject", bucket: bucketName, eventTime: new Date().toISOString(),
+          object: { key: objectKey, size: head.size } }, attempts, acks: 0, retries: [], ack() { this.acks++; }, retry(options) { this.retries.push(options ?? {}); } };
+        await handleQueue({ queue: "foundation-quarantine-created", messages: [message] }, workerEnv, fetch);
+        const result = { objectKey, attempts, acks: message.acks, retries: message.retries };
+        deliveries.push(result);
+        check(`queue message for ${objectKey} (attempt ${attempts}) is decided exactly once, by ack`, [message.acks, message.retries.length], [1, 0]);
+        return result;
+      }
+      const reservation = documentId => sql(`select state||'|'||coalesce(settled_credits::text,'-')||'|'||coalesce(reason_code,'-')||'|'||coalesce(settled_at::text,'-') from public.foundation_compute_reservations where document_id='${documentId}'`);
+      const jobRow = jobId => { const [state, collectionId, manifestDigest, errorCode] = sql(`select state||'|'||coalesce(collection_id,'')||'|'||coalesce(candidate_manifest_digest,'')||'|'||coalesce(error_code,'') from public.foundation_compile_jobs where job_id='${jobId}'`).split("|"); return { state, collectionId, manifestDigest, errorCode }; };
+      const cron = async (secret = secrets.worker) => { const r = await fetch(`http://127.0.0.1:${nextPort}/api/internal/jobs/run`, { method: "POST", headers: { authorization: `Bearer ${secret}` }, signal: AbortSignal.timeout(90_000) }); return { status: r.status, body: await r.json().catch(() => null) }; };
+      async function driveJob(jobId) {
+        for (let turn = 0; turn < 90; turn++) {
+          const result = await cron();
+          assert.equal(result.status, 200, `simulated cron is authorized: ${JSON.stringify(result.body)}`);
+          const row = jobRow(jobId);
+          if (["ready", "review_required", "failed", "cancelled"].includes(row.state)) return row;
+          await sleep(2000);
+        }
+        throw new Error(`compile job ${jobId} did not reach a terminal state: ${JSON.stringify(jobRow(jobId))}`);
+      }
+      const candidateKeys = async () => (await listKeys(`immutable/${workspace}/${workspace}/collections/`)).filter(key => key.endsWith("/candidate-world.json"));
+      const counts = () => ({ ocr: ocrProxy.calls.length, cdr: cdrProxy.calls.length, core: core.calls.length,
+        audit: sql(`select count(*) from public.enterprise_audit_events where workspace_key='${workspace}' and action='compile.receipt_signed'`),
+        provenance: sql(`select count(*) from public.foundation_collection_artifact_provenance where workspace_key='${workspace}'`),
+        jobs: sql(`select count(*) from public.foundation_compile_jobs where workspace_key='${workspace}'`) });
+
+      check("simulated cron without the worker secret is refused", (await cron("not-the-worker-secret-but-long-enough-0000000000")).status, 401);
+
+      // -----------------------------------------------------------------------------------------
+      // 1. Browser: sign in, upload through the real workspace UI.
+      // -----------------------------------------------------------------------------------------
+      ledger.stage = "browser-upload";
+      const { chromium, expect } = await import(pathToFileURL(path.join(nextRoot, "node_modules/@playwright/test/index.mjs")).href);
+      browser = await chromium.launch({ headless: true });
+      const context = await browser.newContext({ ignoreHTTPSErrors: true });
+      const blocked = [];
+      await routeLocalStorageTransport(context, origin, url => blocked.push(redact(url).slice(0, 200)));
+      page = await context.newPage();
+      page.setDefaultTimeout(120_000);
+      const keep = line => { browserEvents.push(redact(line).slice(0, 400)); if (browserEvents.length > 200) browserEvents.shift(); };
+      page.on("console", message => { if (["error", "warning"].includes(message.type())) keep(`console.${message.type()}: ${message.text()}`); });
+      page.on("pageerror", error => keep(`pageerror: ${error.message}`));
+      page.on("requestfailed", request => keep(`requestfailed ${request.method()} ${request.url()}: ${request.failure()?.errorText ?? "?"}`));
+      await page.goto(`${origin}/llms.txt`);
+      const login = await page.evaluate(async ({ email, password, anon }) => {
+        const r = await fetch("/auth/v1/token?grant_type=password", { method: "POST", headers: { apikey: anon, "content-type": "application/json" }, body: JSON.stringify({ email, password }) });
+        return { status: r.status, body: await r.json() };
+      }, { email, password, anon: stack.anon });
+      check("GoTrue password login through the browser transport", login.status, 200);
+      const session = login.body;
+      session.expires_at ??= JSON.parse(Buffer.from(session.access_token.split(".")[1], "base64url").toString()).exp;
+      await page.evaluate(({ key, value }) => localStorage.setItem(key, JSON.stringify(value)), { key: "sb-127-auth-token", value: session });
+      await page.goto(`${origin}/auth/callback`);
+      await page.waitForURL("**/workspace", { timeout: 60_000 });
+      check("the provider session completes the callback into the workspace", new URL(page.url()).pathname, "/workspace");
+      await expect(page.locator(".workspace-intake")).toHaveAttribute("data-inventory-state", "ready", { timeout: 60_000 });
+
+      const responseOf = (method, matches) => page.waitForResponse(response => response.request().method() === method && matches(new URL(response.url()).pathname), { timeout: 180_000 });
+      const capabilityReply = responseOf("POST", p => p === "/api/uploads/capability");
+      const putReply = responseOf("PUT", p => p.startsWith(`/${bucketName}/quarantine/`));
+      const confirmReply = responseOf("POST", p => p === "/api/uploads/confirm");
+      const compileReply = responseOf("POST", p => p === "/api/compile-jobs");
+      await page.locator('input[type="file"][multiple]').first().setInputFiles({ name: docs.ui.name, mimeType: "application/pdf", buffer: docs.ui.bytes });
+      const preflight = page.getByRole("region", { name: "Compile preflight" });
+      await expect(preflight).toBeVisible();
+      const uploadButton = preflight.getByRole("button", { name: "Upload & compile", exact: true });
+      await expect(uploadButton).toBeEnabled({ timeout: 60_000 });
+      await uploadButton.click();
+      const capability = await (await capabilityReply).json();
+      check("UI capability request qualifies the synthetic PDF", capability.code, "QUALIFIED");
+      check("browser signed PUT is accepted by storage", (await putReply).status(), 200);
+      const confirmed = await confirmReply;
+      check("UI confirm records the upload", [confirmed.status(), (await confirmed.json()).code], [200, "UPLOAD_CONFIRMED"]);
+      const compileAccepted = await compileReply;
+      const compileJob = await compileAccepted.json();
+      check("UI enqueues the durable compile job", [compileAccepted.status(), compileJob.code], [202, "COMPILE_JOB_ACCEPTED"]);
+      const docA = { documentId: capability.documentId, objectKey: capability.objectKey, jobId: compileJob.jobId };
+      check("capability names the quarantine key of the document", docA.objectKey, `quarantine/${workspace}/${docA.documentId}/source`);
+      const browserPut = s3Arrivals.find(arrival => arrival.method === "PUT" && arrival.path === `/${bucketName}/${docA.objectKey}`);
+      check("the stored bytes arrived as the browser's cross-origin PUT", [browserPut?.fromBrowserOrigin, browserPut?.sha256, browserPut?.status], [true, sha256(docs.ui.bytes), 200]);
+      const storedSource = await bucket.get(docA.objectKey);
+      check("storage holds exactly the uploaded bytes", sha256(Buffer.from(await storedSource.arrayBuffer())), sha256(docs.ui.bytes));
+      // Requests to any other host were aborted by the route before reaching the network; listed, not asserted.
+      observe("browserBlockedRequests", blocked.slice(0, 40));
+      const confirmedAt = sql(`select confirmed_at from public.foundation_intake_admissions where document_id='${docA.documentId}'`);
+      ledger.booleans.uploadViaUiVerified = true;
+      observe("uiUpload", { documentId: docA.documentId, jobId: docA.jobId, objectKey: docA.objectKey });
+      // Leave the workspace so its live job stream does not also drive the compile; the simulated cron is the only driver.
+      await page.goto(`${origin}/llms.txt`);
+
+      // -----------------------------------------------------------------------------------------
+      // 2. Simulated event -> real CDR + ClamAV -> real OCR -> settlement.
+      // -----------------------------------------------------------------------------------------
+      ledger.stage = "cdr-ocr";
+      await deliver(docA.objectKey, 1);
+      const docPrefix = `immutable/${workspace}/${workspace}/${docA.documentId}/`;
+      const docKeys = await listKeys(docPrefix);
+      const sanitizedKey = docKeys.find(key => key.endsWith("/sanitized.pdf"));
+      assert.ok(sanitizedKey, `CDR wrote a sanitized PDF under ${docPrefix}: ${JSON.stringify(docKeys)}`);
+      docA.versionKey = sanitizedKey.split("/")[4];
+      check("CDR wrote sanitized.pdf, its receipt and OCR output beside each other",
+        ["cdr-receipt.json", "ocr.json", "sanitized.pdf"].every(name => docKeys.includes(`${docPrefix}${docA.versionKey}/${name}`)), true);
+      const cdrCall = cdrProxy.calls.at(-1);
+      check("real CDR returned a clean, scanned result", [cdrCall.status, cdrCall.cdrStatus, cdrCall.malwareScan?.verdict], [200, "clean", "clean"]);
+      check("the scan verdict names a real engine", typeof cdrCall.malwareScan?.engine === "string" && cdrCall.malwareScan.engine.length > 0, true);
+      const sanitized = Buffer.from(await (await bucket.get(sanitizedKey)).arrayBuffer());
+      check("sanitized PDF version key is its own digest", sha256(sanitized), docA.versionKey);
+      check("CDR output is not the uploaded bytes (rasterized copy)", sha256(sanitized) === sha256(docs.ui.bytes), false);
+      const ocr = JSON.parse(Buffer.from(await (await bucket.get(`${docPrefix}${docA.versionKey}/ocr.json`)).arrayBuffer()).toString("utf8"));
+      check("OCR was called exactly once, for the sanitized PDF", ocrProxy.calls.map(call => [call.status, call.inputSha256]), [[200, `sha256:${docA.versionKey}`]]);
+      check("OCR read the phrase from pixels (raster regions, not a native text layer)",
+        [ocr.regions.some(region => PHRASE.test(region.text)), ocr.regions.every(region => !String(region.regionId).startsWith("native-"))], [true, true]);
+      check("OCR regions carry page 1 bounding boxes", ocr.regions.every(region => region.pageNumber1 === 1 && Array.isArray(region.bbox1000) && region.bbox1000.length === 4), true);
+      observe("ocrResult", { pageCount: ocr.pageCount, regions: ocr.regions.map(region => ({ regionId: region.regionId, text: region.text, bbox1000: region.bbox1000, confidence: region.confidence })) });
+      const settledA = reservation(docA.documentId);
+      check("settlement closed the upload's compute reservation", settledA.split("|")[0] === "reserved", false);
+      observe("reservationAfterOcr", settledA);
+      ledger.booleans.ocrReal = true;
+
+      // -----------------------------------------------------------------------------------------
+      // 3. Simulated cron -> compile worker -> real Core -> signed receipt -> candidate.
+      // -----------------------------------------------------------------------------------------
+      ledger.stage = "compile";
+      const compiled = await driveJob(docA.jobId);
+      check("compile job reaches a reviewable candidate", ["ready", "review_required"].includes(compiled.state), true);
+      check("exactly one Core compile happened", core.calls.map(call => call.status), [200]);
+      const coreCall = core.calls[0];
+      check("Core received the OCR text of the uploaded document under the customer-data route",
+        [coreCall.phraseInRegions, coreCall.privacyPolicy, coreCall.documents.length], [true, "approved_customer_data", 1]);
+      const candidateKey = `immutable/${workspace}/${workspace}/collections/${compiled.collectionId}/${compiled.manifestDigest.slice(7)}/candidate-world.json`;
+      const candidate = JSON.parse(Buffer.from(await (await bucket.get(candidateKey)).arrayBuffer()).toString("utf8"));
+      check("candidate binds the uploaded document and its sanitized version", candidate.sourceDocuments.map(doc => [doc.documentId, doc.versionKey]), [[docA.documentId, docA.versionKey]]);
+      check("candidate's Core execution is the call Core answered", [candidate.coreExecution.runtime, candidate.coreExecution.receipt.requestId, candidate.coreExecution.receipt.coreReleaseDigest],
+        ["tavonel-python-core-v2", coreCall.requestId, coreReleaseDigest]);
+      ledger.booleans.coreCompileReal = true;
+      const trust = readExportTrustStoreEnv(signingEnv);
+      const verified = verifyCompileReceipt(candidate.signedReceipt, { tenantId: workspace, workspaceId: workspace }, trust);
+      check("compile receipt verifies under the ephemeral trust store", verified.ok, true);
+      check("signed receipt binds Core's output digest and the admitting gate receipt",
+        [verified.payload.coreOutputSha256, verified.payload.customerDataGateReceiptSha256, verified.payload.manifestDigest],
+        [candidate.coreExecution.receipt.outputSha256, gate.receiptSha256, compiled.manifestDigest]);
+      check("receipt signature is audited", sql(`select count(*) from public.enterprise_audit_events where workspace_key='${workspace}' and action='compile.receipt_signed' and target_id='${candidate.signedReceipt.signature.signedPayloadSha256}'`), "1");
+      check("candidate provenance is registered", sql(`select count(*) from public.foundation_collection_artifact_provenance where workspace_key='${workspace}' and manifest_digest='${compiled.manifestDigest}'`), "1");
+      ledger.booleans.receiptSigned = true;
+      observe("candidate", { collectionId: compiled.collectionId, manifestDigest: compiled.manifestDigest, jobState: compiled.state,
+        coreRequestId: coreCall.requestId, coreOutputSha256: candidate.coreExecution.receipt.outputSha256, receiptKeyId: candidate.signedReceipt.signature.keyId });
+
+      // -----------------------------------------------------------------------------------------
+      // 4. Failure path, part 1: duplicates do not repeat OCR, Core or the charge.
+      // -----------------------------------------------------------------------------------------
+      ledger.stage = "duplicates";
+      const token = await ownerToken();
+      const before = { ...counts(), reservation: reservation(docA.documentId), keys: await listKeys(docPrefix), candidates: await candidateKeys(), job: jobRow(docA.jobId) };
+      const reconfirm = await app("/api/uploads/confirm", token, { documentId: docA.documentId, sourceSha256: `sha256:${sha256(docs.ui.bytes)}` });
+      check("duplicate confirm is an idempotent success", [reconfirm.status, reconfirm.body?.code], [200, "UPLOAD_CONFIRMED"]);
+      check("duplicate confirm keeps the first confirmation time", sql(`select confirmed_at from public.foundation_intake_admissions where document_id='${docA.documentId}'`), confirmedAt);
+      await deliver(docA.objectKey, 2);
+      const reenqueue = await app("/api/compile-jobs", token, { documentIds: [docA.documentId] });
+      check("re-enqueueing the same documents returns the same job", [reenqueue.status < 300, reenqueue.body?.jobId], [true, docA.jobId]);
+      for (let turn = 0; turn < 2; turn++) check("simulated cron stays authorized", (await cron()).status, 200);
+      const after = { ...counts(), reservation: reservation(docA.documentId), keys: await listKeys(docPrefix), candidates: await candidateKeys(), job: jobRow(docA.jobId) };
+      check("no second OCR call", after.ocr, before.ocr);
+      check("no second Core compile", after.core, before.core);
+      check("no second charge: the reservation row is unchanged", after.reservation, before.reservation);
+      check("no new objects for the document", after.keys, before.keys);
+      check("no new candidate, receipt, provenance or job", [after.candidates, after.audit, after.provenance, after.jobs, after.job], [before.candidates, before.audit, before.provenance, before.jobs, before.job]);
+      observe("duplicateDeliveryCdrCalls", { before: before.cdr, after: after.cdr });
+      ledger.booleans.duplicatesCauseNoSecondOcrCompileOrCharge = true;
+
+      // -----------------------------------------------------------------------------------------
+      // 5. Review and activate in the UI.
+      // -----------------------------------------------------------------------------------------
+      ledger.stage = "review-activate";
+      const { acceptEvidenceThroughUi, activateCandidateThroughUi } = await import(pathToFileURL(path.join(nextRoot, "e2e/support/workspace-review-actions.ts")).href);
+      const scope = `workspace_key='${workspace}' and collection_id='${compiled.collectionId}'`;
+      check("nothing is active before the human review", sql(`select count(*) from public.foundation_active_worlds where ${scope}`), "0");
+      await page.goto(`${origin}/workspace/review?collection=${compiled.collectionId}&manifest=${encodeURIComponent(compiled.manifestDigest)}`);
+      await expect(page.getByRole("button", { name: "Accept", exact: true })).toBeVisible({ timeout: 60_000 });
+      const accepted = await acceptEvidenceThroughUi(page, compiled.collectionId, compiled.manifestDigest);
+      check("UI records the evidence acceptance", accepted.status(), 201);
+      const activated = await activateCandidateThroughUi(page, { collectionId: compiled.collectionId, manifestDigest: compiled.manifestDigest,
+        expectedCurrentManifest: null, expectedCurrentRevision: 0 }, "Reviewed the joined E2E synthetic upload and its OCR evidence.");
+      check("UI activates the reviewed candidate", [activated.status(), (await activated.json()).code], [200, "WORLD_ACTIVE"]);
+      check("SQL active pointer is the reviewed candidate", sql(`select manifest_digest||'@'||revision from public.foundation_active_worlds where ${scope}`), `${compiled.manifestDigest}@1`);
+      ledger.booleans.reviewActivateViaUi = true;
+
+      // -----------------------------------------------------------------------------------------
+      // 6. Consumers: owner session, API key, shipped MCP stdio and CLI.
+      // -----------------------------------------------------------------------------------------
+      ledger.stage = "consumers";
+      const scopes = ["ask:read", "collections:read", "worlds:read"];
+      const issued = await app("/api/developer/keys", token, { name: "joined-e2e-consumer-read", scopes, expiresInDays: 1 });
+      check("developer key route issues a read-only key", [issued.status, issued.body?.code], [201, "CREATED"]);
+      consumerSecret = String(issued.body.token ?? ""); delete issued.body.token;
+      const answerOf = body => ({ code: body?.code, retrievalPath: body?.retrievalPath, activeWorld: body?.activeWorld, answer: body?.answer, citations: body?.citations });
+      const ask = async bearer => (await app(`/api/v1/collections/${compiled.collectionId}/ask`, bearer, { question })).body;
+      const ownerAnswer = answerOf(await ask(token));
+      check("owner-session ask is a grounded answer on the activated revision", [ownerAnswer.code, ownerAnswer.activeWorld?.manifestDigest], ["GROUNDED_ANSWER", compiled.manifestDigest]);
+      const cited = (ownerAnswer.citations ?? []).filter(citation => PHRASE.test(citation.excerpt ?? ""));
+      check("a citation quotes the uploaded document's phrase", cited.length > 0, true);
+      check("that citation names page 1 and an in-range bbox", cited.every(c => c.pageNumber1 === 1 && Array.isArray(c.bbox1000) && c.bbox1000.length === 4 && c.bbox1000.every(v => v >= 0 && v <= 1000)), true);
+      check("that citation binds this run's uploaded document version", cited.every(c => [c.sourceId, c.sourceVersionId].some(v => String(v).includes(docA.versionKey) || String(v).includes(docA.documentId))), true);
+      const keyAnswer = answerOf(await ask(consumerSecret));
+      check("API key receives the same answer and citations", keyAnswer, ownerAnswer);
+
+      // Owned consumer children: the key travels only in their environment; fetch is pinned to the local origin.
+      const fetchGuard = path.join(root, "consumer-fetch-guard.cjs");
+      writeFileSync(fetchGuard, `'use strict';const allowed=${JSON.stringify(origin)};const nativeFetch=globalThis.fetch;
+Object.defineProperty(globalThis,'fetch',{value:function fetch(input,init){let t;try{t=new URL(typeof input==='string'||input instanceof URL?input:input.url);}catch{return Promise.reject(new TypeError('consumer fetch guard: unparseable URL'));}
+if(t.origin!==allowed)return Promise.reject(new TypeError('consumer fetch guard: blocked non-loopback origin'));return nativeFetch(input,{...init,redirect:'error'});},writable:false,configurable:false});`);
+      const consumerEnv = { ...env, TAVONEL_BASE_URL: origin, TAVONEL_API_KEY: consumerSecret, NODE_EXTRA_CA_CERTS: path.join(root, "cert.pem"), NODE_OPTIONS: `--require ${JSON.stringify(fetchGuard)}` };
+      const runConsumer = (script, args, input = "") => new Promise((resolve, reject) => {
+        const child = spawn(process.execPath, [path.join(nextRoot, "public/developer", script), ...args], { cwd: root, env: consumerEnv, stdio: ["pipe", "pipe", "pipe"] });
+        let stdout = "", stderr = "";
+        const timer = setTimeout(() => { stopOwnedChild(child); reject(new Error(`${script} timed out`)); }, 90_000);
+        child.stdout.setEncoding("utf8").on("data", part => { stdout += part; }); child.stderr.setEncoding("utf8").on("data", part => { stderr += part; });
+        child.once("error", reject);
+        child.once("close", code => { clearTimeout(timer); code === 0 ? resolve(stdout) : reject(new Error(`${script} exited ${code}: ${redact(stderr).slice(0, 1000)}`)); });
+        child.stdin.end(input);
+      });
+      const frames = [
+        { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "tavonel-joined-e2e", version: "1" } } },
+        { jsonrpc: "2.0", method: "notifications/initialized" },
+        { jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "ask_world", arguments: { collectionId: compiled.collectionId, question } } },
+      ];
+      const replies = new Map((await runConsumer("tavonel-mcp.mjs", [], `${frames.map(frame => JSON.stringify(frame)).join("\n")}\n`)).trim().split("\n").filter(Boolean).map(line => { const frame = JSON.parse(line); return [frame.id, frame]; }));
+      const mcpResult = replies.get(2)?.result;
+      check("MCP ask_world succeeds", mcpResult?.isError, false);
+      check("MCP stdio receives the same answer and citations", answerOf(JSON.parse(mcpResult.content[0].text)), ownerAnswer);
+      const cliAnswer = answerOf(JSON.parse(await runConsumer("tavonel-cli.mjs", ["ask_world", compiled.collectionId, question])));
+      check("CLI receives the same answer and citations", cliAnswer, ownerAnswer);
+      ledger.booleans.consumerCitesUploadedDoc = true;
+      observe("consumerAnswer", { code: ownerAnswer.code, retrievalPath: ownerAnswer.retrievalPath,
+        citations: cited.map(c => ({ evidenceId: c.evidenceId, sourceId: c.sourceId, sourceVersionId: c.sourceVersionId, pageNumber1: c.pageNumber1, bbox1000: c.bbox1000, excerpt: c.excerpt })),
+        transports: ["owner-session-https", "api-key-https", "mcp-stdio", "cli-process"] });
+      const activePointer = sql(`select manifest_digest||'@'||revision from public.foundation_active_worlds where ${scope}`);
+
+      // -----------------------------------------------------------------------------------------
+      // 7. Failure path, part 2: malware refusal, Core signature failure, Core receipt failure.
+      // -----------------------------------------------------------------------------------------
+      ledger.stage = "malware";
+      const malware = await apiUpload(token, docs.malware);
+      const ocrBeforeMalware = ocrProxy.calls.length;
+      await deliver(malware.objectKey, 1);
+      check("real clamd detects the EICAR source", [cdrProxy.calls.at(-1).status, cdrProxy.calls.at(-1).refusal?.code], [422, "MALWARE_DETECTED"]);
+      check("refused source gets a reject receipt and no immutable copy",
+        [(await listKeys(`quarantine/${workspace}/${malware.documentId}/`)).includes(`quarantine/${workspace}/${malware.documentId}/cdr-reject.json`),
+          (await listKeys(`immutable/${workspace}/${workspace}/${malware.documentId}/`)).length], [true, 0]);
+      check("refused source never reaches OCR", ocrProxy.calls.length, ocrBeforeMalware);
+      check("refused source is released, not charged", reservation(malware.documentId).split("|").slice(0, 2), ["released", "0"]);
+      ledger.booleans.malwareRefusedBeforeOcr = true;
+      ledger.booleans.cdrClamavReal = true;
+
+      for (const [mode, docKey, expectedCode, flag] of [
+        ["break-request-signature", "signature", /CORE_SIGNATURE_INVALID|CORE_V2_HTTP_401/, "coreSignatureFailureLeavesNoCandidate"],
+        ["tamper-response", "receipt", /CORE_V2_RECEIPT_INVALID/, "coreReceiptFailureLeavesNoCandidate"],
+      ]) {
+        ledger.stage = `core-${mode}`;
+        const uploaded = await apiUpload(token, docs[docKey]);
+        await deliver(uploaded.objectKey, 1);
+        const beforeFailure = { ...counts(), candidates: await candidateKeys() };
+        core.mode = mode;
+        const enqueued = await app("/api/compile-jobs", token, { documentIds: [uploaded.documentId] });
+        check(`compile job for the ${mode} case is accepted`, [enqueued.status, enqueued.body?.code], [202, "COMPILE_JOB_ACCEPTED"]);
+        const failed = await driveJob(enqueued.body.jobId);
+        core.mode = "pass";
+        const attempts = core.calls.slice(beforeFailure.core);
+        check(`${mode}: Core was reached`, attempts.length > 0 && attempts.every(call => call.mode === mode), true);
+        if (mode === "break-request-signature") check("Core itself refused the bad signature", attempts.every(call => call.status === 401 && call.code === "CORE_SIGNATURE_INVALID"), true);
+        else check("Core answered 200 before the reply was altered", attempts.every(call => call.status === 200), true);
+        check(`${mode}: the job fails with the integrity code`, [failed.state, expectedCode.test(failed.errorCode)], ["failed", true]);
+        const afterFailure = { ...counts(), candidates: await candidateKeys() };
+        check(`${mode}: no candidate, receipt or provenance exists`, [afterFailure.candidates, afterFailure.audit, afterFailure.provenance, failed.manifestDigest],
+          [beforeFailure.candidates, beforeFailure.audit, beforeFailure.provenance, ""]);
+        observe(`failure:${mode}`, { jobId: enqueued.body.jobId, errorCode: failed.errorCode, coreCalls: attempts.map(({ status, code }) => ({ status, code })) });
+        ledger.booleans[flag] = true;
+      }
+      check("failure cases leave the activated World untouched", sql(`select manifest_digest||'@'||revision from public.foundation_active_worlds where ${scope}`), activePointer);
+      observe("coreCalls", core.calls);
+      observe("cdrCalls", cdrProxy.calls);
+      observe("ocrCalls", ocrProxy.calls);
+      observe("deliveries", deliveries);
+      observe("browserVersion", browser.version());
+      ledger.success = true;
+      ledger.stage = "done";
+    } catch (error) {
+      ledger.failure = { name: error.name, message: redact(error.message).slice(0, 4000), stage: ledger.stage,
+        coreCalls: core.calls, cdrCalls: cdrProxy.calls, ocrCalls: ocrProxy.calls, s3Arrivals: s3Arrivals.slice(-40) };
+      if (page) {
+        ledger.failure.pagePath = (() => { try { return new URL(page.url()).pathname; } catch { return "?"; } })();
+        ledger.failure.headings = await page.getByRole("heading").allTextContents().then(items => items.map(redact)).catch(() => []);
+        ledger.failure.liveRegions = await page.locator('[role="status"],[role="alert"]').allTextContents().then(items => items.map(t => redact(t.trim()).slice(0, 400)).filter(Boolean)).catch(() => []);
+      }
+      throw error;
+    } finally {
+      try { if (browser) await browser.close(); } finally {
+        gateway.closeAllConnections(); coreGateway.closeAllConnections();
+        await Promise.all([gateway, coreGateway, ocrProxy.server, cdrProxy.server].map(server => new Promise(resolve => server.close(resolve))));
+      }
+    }
+  });
+} catch (error) {
+  ledger.failure ??= { name: error.name, message: redact(error.message).slice(0, 4000), stage: ledger.stage };
+  console.error("Joined E2E failure:", redact(error.stack ?? error.message));
+  process.exitCode = 1;
+} finally {
+  ledger.failure && (ledger.failure.browserEvents = browserEvents.slice(-80));
+  ledger.failure && (ledger.failure.services = Object.fromEntries(owned.map(({ label, tail }) => [label, tail.slice(-60)])));
+  if (cdrContainer) {
+    if (ledger.failure) { try { ledger.failure.services.cdr = redact(execFileSync("docker", ["logs", "--tail", "60", cdrContainer], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })).split("\n"); } catch { /* best effort */ } }
+    try { execFileSync("docker", ["rm", "-f", cdrContainer], { stdio: "ignore" }); } catch { /* already gone */ }
+  }
+  for (const { child } of owned.reverse()) await stopOwnedChild(child).catch(() => {});
+  ledger.finishedAt = new Date().toISOString();
+  writeFileSync(output, redact(JSON.stringify(ledger, null, 2)));
+  consumerSecret = "";
+  assert.ok(path.basename(root).startsWith("tavonel-joined-e2e-")); rmSync(root, { recursive: true, force: true });
+  console.log(`joined E2E ledger: ${output} success=${ledger.success}`);
+}

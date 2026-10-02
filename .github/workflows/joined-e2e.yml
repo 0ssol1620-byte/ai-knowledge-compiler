@@ -1,0 +1,206 @@
+# Joined end-to-end proof: one synthetic pilot workspace driven as a real user, from the browser upload
+# through CDR/ClamAV, CPU OCR, the Foundation compile worker and this repository's Product Core v2,
+# to review/activate in the UI and API/MCP/CLI answers that cite the uploaded document.
+#
+# The private Core repository runs it; the public Foundation repository is checked out at a pinned ref
+# (input `foundation_ref`, default the masterplan checkpoint branch) and its SHA is recorded in the
+# ledger. Everything is ephemeral and on this runner: disposable Supabase stack, SeaweedFS, generated
+# TLS, signing keys and HMACs created inside the harness process. No repository secret, no paid
+# service, no customer data. Hops that are simulated (R2 event/queue, R2 binding, Vercel cron, TLS
+# front door, storage CORS, Core's synthetic customer-data switch) are labelled in the ledger.
+name: joined-e2e
+
+on:
+  workflow_dispatch:
+    inputs:
+      foundation_ref:
+        description: "Foundation (0ssol1620-byte/tavonel-saas-foundation) ref or SHA to check out"
+        required: false
+        default: codex/masterplan-checkpoint-2026-09-30
+  pull_request:
+    paths:
+      - ".github/workflows/joined-e2e.yml"
+      - "tests/e2e/joined/**"
+      - "tests/unit/test_joined_e2e_core_app.py"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: joined-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FOUNDATION_REPOSITORY: 0ssol1620-byte/tavonel-saas-foundation
+  FOUNDATION_REF: ${{ inputs.foundation_ref || 'codex/masterplan-checkpoint-2026-09-30' }}
+  SUPABASE_INTERNAL_IMAGE_REGISTRY: docker.io
+  # Same digest pin as Foundation's quarantine-sidecar/cdr-cloudrun/service.yaml (asserted below).
+  CLAMAV_IMAGE: clamav/clamav:1.5.4
+  CLAMAV_DIGEST: sha256:f0954d679017eb6d48221e2b2be3ac5457bf278a844f39b672376f55a085f591
+
+jobs:
+  joined-e2e:
+    name: Joined upload -> CDR -> OCR -> Core -> review -> consumers
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    services:
+      clamd:
+        image: clamav/clamav:1.5.4@sha256:f0954d679017eb6d48221e2b2be3ac5457bf278a844f39b672376f55a085f591
+        ports: ["3310:3310"]
+        options: >-
+          --health-cmd "clamdscan --ping 30"
+          --health-interval 15s
+          --health-timeout 60s
+          --health-retries 20
+          --health-start-period 60s
+    steps:
+      # Foundation's db-rehearsal hypothesis: the local stack ports and this harness's fixed listeners
+      # lie in Linux's ephemeral range; keep outbound source ports off them (appended, never replaced).
+      - name: Keep the fixed local ports out of this runner's ephemeral range
+        run: |
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+          key=/proc/sys/net/ipv4/ip_local_reserved_ports
+          before="$(cat "$key")"
+          sudo sysctl -w net.ipv4.ip_local_reserved_ports="${before:+$before,}54320-54329,54443-54444,3100"
+          echo "reserved before='$before' after='$(cat "$key")'"
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          path: core
+          persist-credentials: false
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          repository: ${{ env.FOUNDATION_REPOSITORY }}
+          ref: ${{ env.FOUNDATION_REF }}
+          path: foundation
+          persist-credentials: false
+
+      - name: Record the checked-out SHAs
+        run: |
+          echo "core=$(git -C core rev-parse HEAD)"
+          echo "foundation=$(git -C foundation rev-parse HEAD) (ref ${FOUNDATION_REF})"
+
+      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
+        with:
+          version: 2.116.0
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+        with:
+          version: 10.34.4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: SigV4 signer of the harness R2-binding adapter (AWS worked examples)
+        run: node --test core/tests/e2e/joined/s3-bucket.test.mjs
+
+      - name: Install the frozen Foundation web dependencies
+        working-directory: foundation/nextjs
+        run: pnpm install --frozen-lockfile
+
+      - name: Install the Foundation CDR worker dependencies (tsx runs its TypeScript)
+        working-directory: foundation/quarantine-sidecar/foundation-cdr-worker
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Start the disposable local Supabase stack from the Foundation migrations
+        working-directory: foundation
+        run: |
+          test ! -f supabase/config.toml
+          supabase init
+          grep -qx 'major_version = 17' supabase/config.toml
+          supabase start
+          supabase status --output json > "$RUNNER_TEMP/tavonel-auth-status.json"
+          chmod 600 "$RUNNER_TEMP/tavonel-auth-status.json"
+
+      - name: Fetch the checksum-qualified portable local S3 runtime (SeaweedFS 4.48)
+        run: |
+          mkdir -p "$RUNNER_TEMP/tavonel-runtime"
+          curl --fail --location --retry 3 --max-time 180 \
+            https://github.com/seaweedfs/seaweedfs/releases/download/4.48/linux_amd64.tar.gz \
+            --output "$RUNNER_TEMP/tavonel-runtime/release.tar.gz"
+          echo "4a7d108384d044d95212d1342cdda9533fa55842c1c9b41f606ca3c8a9561124  $RUNNER_TEMP/tavonel-runtime/release.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/tavonel-runtime/release.tar.gz" -C "$RUNNER_TEMP/tavonel-runtime" weed
+          echo "8c07a1ccc4ec058cd90989ac0533c30436832e41c63de2b26f37253d9f744c4d  $RUNNER_TEMP/tavonel-runtime/weed" | sha256sum --check
+          chmod +x "$RUNNER_TEMP/tavonel-runtime/weed"
+
+      - name: Install one isolated Chromium runtime
+        working-directory: foundation/nextjs
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Same pinned requirements and digest-checked model download as Foundation's own
+      # foundation-ocr-cpu-raster workflow; materialize_models.py refuses any other model bytes.
+      - name: Install the CPU raster OCR worker and materialize its pinned models
+        working-directory: foundation/workers/foundation-ocr-cpu-raster
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgl1 libglib2.0-0 libgomp1
+          python -m venv "$RUNNER_TEMP/ocr-venv"
+          "$RUNNER_TEMP/ocr-venv/bin/python" -m pip install --disable-pip-version-check --no-cache-dir -r requirements.txt
+          "$RUNNER_TEMP/ocr-venv/bin/python" materialize_models.py
+
+      # The exact runtime pins of infra/product-core/Dockerfile, read from it rather than restated.
+      - name: Install the Product Core v2 runtime pins
+        run: |
+          mapfile -t pins < <(grep -oE '[a-z]+==[0-9.]+' core/infra/product-core/Dockerfile)
+          test "${#pins[@]}" -eq 5
+          printf 'pin %s\n' "${pins[@]}"
+          python -m venv "$RUNNER_TEMP/core-venv"
+          "$RUNNER_TEMP/core-venv/bin/python" -m pip install --disable-pip-version-check --no-cache-dir "${pins[@]}"
+
+      - name: Wait for clamd and assert the pulled image is the pinned digest
+        run: |
+          python - <<'PY'
+          import socket, sys, time
+          deadline = time.monotonic() + 420
+          while time.monotonic() < deadline:
+              try:
+                  with socket.create_connection(("localhost", 3310), timeout=5) as connection:
+                      connection.settimeout(30)
+                      connection.sendall(b"zPING\0")
+                      if connection.recv(64).startswith(b"PONG"):
+                          print("clamd answered PING")
+                          sys.exit(0)
+              except OSError:
+                  time.sleep(5)
+          sys.exit("clamd never answered PING within 420s")
+          PY
+          grep -qF "${CLAMAV_IMAGE}@${CLAMAV_DIGEST}" foundation/quarantine-sidecar/cdr-cloudrun/service.yaml
+          pulled="$(docker inspect --format '{{index .RepoDigests 0}}' "clamav/clamav@${CLAMAV_DIGEST}")"
+          test "${pulled}" = "clamav/clamav@${CLAMAV_DIGEST}"
+          echo "CLAMAV_IMAGE_RESOLVED=${pulled}" >> "$GITHUB_ENV"
+
+      - name: Build the CDR image from the Foundation checkout
+        run: docker build --tag tavonel-cdr:joined-e2e foundation/quarantine-sidecar/cdr-cloudrun
+
+      - name: Joined end-to-end journey
+        working-directory: foundation/quarantine-sidecar/foundation-cdr-worker
+        env:
+          TAVONEL_JOINED_FOUNDATION_DIR: ${{ github.workspace }}/foundation
+          TAVONEL_JOINED_FOUNDATION_REF: ${{ env.FOUNDATION_REF }}
+          TAVONEL_AUTH_STACK_STATUS: ${{ runner.temp }}/tavonel-auth-status.json
+          TAVONEL_LOCAL_SEAWEED_EXE: ${{ runner.temp }}/tavonel-runtime/weed
+          TAVONEL_LOCAL_S3_TMPDIR: ${{ runner.temp }}
+          TAVONEL_JOINED_CORE_PYTHON: ${{ runner.temp }}/core-venv/bin/python
+          TAVONEL_JOINED_OCR_PYTHON: ${{ runner.temp }}/ocr-venv/bin/python
+          TAVONEL_JOINED_CDR_IMAGE: tavonel-cdr:joined-e2e
+          TAVONEL_JOINED_CLAMAV_IMAGE: ${{ env.CLAMAV_IMAGE_RESOLVED }}
+        run: node --import tsx "$GITHUB_WORKSPACE/core/tests/e2e/joined/joined-e2e.mjs"
+
+      - name: Upload the redacted joined E2E ledger
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: joined-e2e-ledger-${{ github.run_id }}
+          path: core/output/joined-e2e-ledger.json
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Stop the runner's disposable local stack
+        if: always()
+        working-directory: foundation
+        run: |
+          supabase stop --no-backup || true
+          rm -f "$RUNNER_TEMP/tavonel-auth-status.json"
