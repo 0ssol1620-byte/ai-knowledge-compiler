@@ -18,8 +18,9 @@ claim: today a recompile re-parses every file and its built-in §44 oracle
 re-resolves every document, so it does *more* resolver work than a full
 compile. That gap is pinned below as strict xfails, not hidden.
 
-The ACL test pins a second open gap: an access restriction declared in a
-source never reaches a compiled row (``required_permission`` is always None).
+The ACL tests drive a source's front-matter ``required_permission`` through
+the same spine: it reaches compiled rows, gates the next ask, an ACL-only
+edit recompiles selectively, and an ACL the runtime cannot map fails closed.
 """
 
 from __future__ import annotations
@@ -37,6 +38,7 @@ from akc_cir.answer_compiler import AnswerOutcome
 from akc_compiler_runtime import DEMO_FILES, Pipeline, WorldResult, write_demo_workspace
 from akc_compiler_runtime import extraction as runtime_extraction
 from akc_compiler_runtime.demo import LAUNCH_PLAN
+from akc_compiler_runtime.extraction import UNMAPPED_ACL
 
 LAUNCH_QUESTION = "What is the current launch date?"
 ALL_DOCUMENTS = sorted(DEMO_FILES)
@@ -245,14 +247,12 @@ def test_recompile_does_not_reparse_untouched_documents(tmp_path: Path, calls: I
 
 
 # ---------------------------------------------------------------------------
-# ACL: a source-declared restriction never reaches a compiled row
+# ACL: a source-declared restriction reaches compiled rows and gates answers
 # ---------------------------------------------------------------------------
 
 RESTRICTED_DOC = "policies/board-minutes.md"
-RESTRICTED_SOURCE = """\
----
-required_permission: board:minuted
----
+BUDGET_QUESTION = "What is the current acquisition budget?"
+BOARD_BODY = """\
 # Board minutes
 
 ## Decision
@@ -261,25 +261,156 @@ The current acquisition budget approved by the board is four million dollars.
 """
 
 
-def test_runtime_rows_drop_source_acl_known_gap(tmp_path: Path, calls: Invocations) -> None:
-    """Pins today's behaviour; flip it when ACL input reaches compiled rows.
+def _front_matter(*lines: str) -> str:
+    return "---\n" + "".join(f"{line}\n" for line in lines) + "---\n" + BOARD_BODY
 
-    The front matter is stripped before extraction and ``_row_from_draft``
-    hard-codes ``required_permission: None``, so the restricted claim is
-    served CURRENT to a context that holds no permission at all.
-    """
+
+RESTRICTED_SOURCE = _front_matter("required_permission: board:minuted")
+
+
+def _write_board(source: Path, text: str) -> None:
+    (source / RESTRICTED_DOC).write_text(text, encoding="utf-8", newline="\n")
+
+
+def _board_rows(result: WorldResult) -> list[Mapping[str, object]]:
+    rows = [row for row in result.claims.values() if row["rel_path"] == RESTRICTED_DOC]
+    assert rows, "the restricted document compiled no claim"
+    return rows
+
+
+def _assert_refused(answer: Any) -> None:
+    assert answer.outcome is AnswerOutcome.NOT_AUTHORIZED
+    assert answer.claim_ids == ()
+    assert answer.evidence_occurrences == ()
+
+
+def _assert_board_answer(result: WorldResult, answer: Any) -> None:
+    assert answer.outcome is AnswerOutcome.CURRENT
+    assert result.claims[answer.claim_ids[0]]["rel_path"] == RESTRICTED_DOC
+
+
+def _compiled(tmp_path: Path, board_text: str) -> tuple[Path, Pipeline, WorldResult]:
     source = tmp_path / "source"
     write_demo_workspace(source)
-    (source / RESTRICTED_DOC).write_text(RESTRICTED_SOURCE, encoding="utf-8", newline="\n")
+    _write_board(source, board_text)
     pipeline = Pipeline(tmp_path / "store")
+    return source, pipeline, pipeline.compile_workspace(source)
 
-    result = pipeline.compile_workspace(source)
 
-    restricted = [row for row in result.claims.values() if row["rel_path"] == RESTRICTED_DOC]
-    assert restricted, "the restricted document compiled no claim"
-    assert all(row["required_permission"] is None for row in result.claims.values())
+def test_restricted_source_is_answered_only_to_a_permitted_asker(
+    tmp_path: Path, calls: Invocations
+) -> None:
+    _, pipeline, result = _compiled(tmp_path, RESTRICTED_SOURCE)
 
-    answer = pipeline.answer("What is the current acquisition budget?")
-    assert answer.outcome is AnswerOutcome.CURRENT
-    assert answer.outcome is not AnswerOutcome.NOT_AUTHORIZED
-    assert result.claims[answer.claim_ids[0]]["rel_path"] == RESTRICTED_DOC
+    assert {row["required_permission"] for row in _board_rows(result)} == {"board:minuted"}
+    # Only the restricted document is restricted.
+    assert all(
+        row["required_permission"] is None
+        for row in result.claims.values()
+        if row["rel_path"] != RESTRICTED_DOC
+    )
+
+    _assert_refused(pipeline.answer(BUDGET_QUESTION))
+    _assert_refused(pipeline.answer(BUDGET_QUESTION, permissions={"board:chair"}))
+    _assert_board_answer(result, pipeline.answer(BUDGET_QUESTION, permissions={"board:minuted"}))
+    # Public claims stay public to an asker with no permission.
+    assert pipeline.answer(LAUNCH_QUESTION).outcome is AnswerOutcome.CURRENT
+
+
+def test_acl_only_change_is_recompiled_selectively_and_gates_the_next_ask(
+    tmp_path: Path, calls: Invocations
+) -> None:
+    source, pipeline, before = _compiled(tmp_path, BOARD_BODY)
+    assert all(row["required_permission"] is None for row in _board_rows(before))
+    _assert_board_answer(before, pipeline.answer(BUDGET_QUESTION))
+
+    # Same body, new front matter: only the access requirement changes.
+    _write_board(source, RESTRICTED_SOURCE)
+    calls.reset()
+    after = pipeline.recompile(source)
+
+    assert after.published and after.world_state_id == "WS-2"
+    assert after.equivalence is not None and after.equivalence.equivalent
+    # Selective, not a reindex: the build resolved the one edited document.
+    assert calls.resolved_in("build") == Counter({RESTRICTED_DOC: 1})
+    board_ids = {str(row["logical_id"]) for row in _board_rows(after)}
+    assert board_ids == {str(row["logical_id"]) for row in _board_rows(before)}
+    assert {row["required_permission"] for row in _board_rows(after)} == {"board:minuted"}
+    # The diff registers the ACL change (PERMISSION_CHANGED); without it the
+    # bytes-changed-but-units-equal edit planned as "content did not change".
+    assert after.plan is not None
+    assert all(
+        target.reason != "the source content did not change" for target in after.plan.targets
+    )
+
+    _assert_refused(pipeline.answer(BUDGET_QUESTION))
+    _assert_board_answer(after, pipeline.answer(BUDGET_QUESTION, permissions={"board:minuted"}))
+
+
+def test_revoking_or_changing_a_source_permission_applies_on_the_next_ask(
+    tmp_path: Path, calls: Invocations
+) -> None:
+    source, pipeline, _ = _compiled(tmp_path, RESTRICTED_SOURCE)
+    holder = {"board:minuted"}
+
+    # Asker-side revoke: no recompile, no new world; the next ask is refused.
+    granted = pipeline.answer(BUDGET_QUESTION, permissions=holder)
+    assert granted.outcome is AnswerOutcome.CURRENT
+    _assert_refused(pipeline.answer(BUDGET_QUESTION, permissions=set()))
+
+    # Source-side change: board:minuted -> board:chair. The old holder loses it.
+    _write_board(source, _front_matter("required_permission: board:chair"))
+    changed = pipeline.recompile(source)
+    assert changed.equivalence is not None and changed.equivalence.equivalent
+    _assert_refused(pipeline.answer(BUDGET_QUESTION, permissions=holder))
+    _assert_board_answer(changed, pipeline.answer(BUDGET_QUESTION, permissions={"board:chair"}))
+
+    # Source-side revoke to a fail-closed ACL: nobody is answered.
+    _write_board(source, _front_matter("acl: [board]"))
+    revoked = pipeline.recompile(source)
+    assert revoked.equivalence is not None and revoked.equivalence.equivalent
+    for permissions in (set(), holder, {"board:chair"}, {UNMAPPED_ACL}):
+        _assert_refused(pipeline.answer(BUDGET_QUESTION, permissions=permissions))
+
+
+@pytest.mark.parametrize(
+    "board_text",
+    [
+        _front_matter("required_permission: board minuted"),  # two tokens
+        _front_matter("required_permission:"),  # empty value
+        _front_matter("required_permission:", "  - board:minuted"),  # YAML list
+        _front_matter("required_permission: board:a", "required_permission: board:b"),
+        _front_matter("required-permission: !acl-unmapped"),  # the marker itself
+        _front_matter("acl: board:minuted"),  # an ACL key the runtime cannot map
+        _front_matter("visibility: private"),
+        _front_matter("allowed_groups: [board]"),
+        # Unterminated front matter declaring an ACL: not trusted as data.
+        "---\nrequired_permission: board:minuted\n" + BOARD_BODY,
+    ],
+    ids=[
+        "two-tokens",
+        "empty",
+        "yaml-list",
+        "repeated",
+        "marker-literal",
+        "acl-key",
+        "visibility",
+        "allowed-groups",
+        "unterminated",
+    ],
+)
+def test_unmappable_source_acl_fails_closed(
+    tmp_path: Path, calls: Invocations, board_text: str
+) -> None:
+    _, pipeline, result = _compiled(tmp_path, board_text)
+
+    assert {row["required_permission"] for row in _board_rows(result)} == {UNMAPPED_ACL}
+    for permissions in (set(), {"board:minuted"}, {UNMAPPED_ACL}, {"board:minuted", UNMAPPED_ACL}):
+        _assert_refused(pipeline.answer(BUDGET_QUESTION, permissions=permissions))
+
+
+def test_front_matter_without_acl_keys_stays_public(tmp_path: Path, calls: Invocations) -> None:
+    _, pipeline, result = _compiled(tmp_path, _front_matter("title: Board minutes", "tags: [q3]"))
+
+    assert all(row["required_permission"] is None for row in _board_rows(result))
+    _assert_board_answer(result, pipeline.answer(BUDGET_QUESTION))

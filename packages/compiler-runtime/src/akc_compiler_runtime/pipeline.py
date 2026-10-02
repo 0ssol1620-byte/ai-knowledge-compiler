@@ -33,7 +33,7 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import defaultdict
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -65,14 +65,15 @@ from akc_cir.world_state import (
 )
 
 from .answers import select_drafts
-from .extraction import AuthorityClass as ExtractionAuthority
 from .extraction import (
+    UNMAPPED_ACL,
     ClaimDraft,
     ParsedDocument,
     anchored_evidence_id,
     parse_workspace,
     seed_logical_id,
 )
+from .extraction import AuthorityClass as ExtractionAuthority
 from .extraction import SourceStatus as ExtractionSourceStatus
 from .records import record_strings
 from .store import StoredWorld, WorldStore, next_deterministic_time
@@ -221,8 +222,18 @@ class Pipeline:
         )
         return self._publish_build(documents, build, previous, selective=True)
 
-    def answer(self, question: str, *, as_of: datetime | None = None) -> CompiledAnswer:
-        """Compile a question against whatever world is currently ACTIVE."""
+    def answer(
+        self,
+        question: str,
+        *,
+        as_of: datetime | None = None,
+        permissions: Iterable[str] = (),
+    ) -> CompiledAnswer:
+        """Compile a question against whatever world is currently ACTIVE.
+
+        ``permissions`` are what the asker holds; a claim from a restricted
+        source is only a candidate when its permission is among them.
+        """
         world = self.store.load_world()
         if world is None:
             raise RuntimeError("no world has been compiled yet")
@@ -233,6 +244,7 @@ class Pipeline:
             world_state_id=world.world_state_id,
             registry=registry,
             as_of=as_of,
+            permissions=permissions,
         )
 
     # ------------------------------------------------------------------
@@ -406,7 +418,7 @@ class Pipeline:
             "valid_to": _iso(draft.valid_to),
             "recorded_at": _iso(draft.recorded_at),
             "temporal_source": draft.temporal_source.value,
-            "required_permission": None,
+            "required_permission": document.required_permission,
             "evidence_id": evidence,
             "rel_path": document.file.rel_path,
             "line_number": draft.line_number,
@@ -704,6 +716,23 @@ class Pipeline:
                 ).changes
                 if change.kind is not ChangeKind.CONTENT_UNCHANGED
             )
+            # UnitSnapshot carries no ACL, so diff_documents cannot see an
+            # access change; name it here so the plan marks those claims.
+            before_acl = {
+                str(row["logical_id"]): row.get("required_permission") for row in before_rows
+            }
+            for row in after_rows:
+                logical_id = str(row["logical_id"])
+                if logical_id in before_acl and before_acl[logical_id] != row.get(
+                    "required_permission"
+                ):
+                    changes.append(
+                        SemanticChange(
+                            kind=ChangeKind.PERMISSION_CHANGED,
+                            logical_id=logical_id,
+                            detail="source access requirement changed",
+                        )
+                    )
             if old_path != path:
                 # A rename is a real source-level event even when the bytes
                 # are identical: the evidence now lives somewhere else, and
@@ -897,10 +926,13 @@ def answer_from_world(
     world_state_id: str,
     registry: WorldStateRegistry,
     as_of: datetime | None = None,
+    permissions: Iterable[str] = (),
 ) -> CompiledAnswer:
     """Select drafts lexically and compile them through akc_cir."""
     moment = as_of or datetime(2026, 10, 1, tzinfo=UTC)
-    context = ClaimContext(subject="workspace", as_of=moment)
+    # The unmapped-ACL marker is never grantable, whatever the caller claims.
+    held = frozenset(permissions) - {UNMAPPED_ACL}
+    context = ClaimContext(subject="workspace", as_of=moment, permissions=held)
     drafts = select_drafts(question, claims, world_state_id=world_state_id)
     return compile_answer(question, drafts, registry, context)
 
@@ -960,10 +992,16 @@ class WorldResult:
             logical_id for logical_id, row in self.claims.items() if not row.get("invalidated_by")
         )
 
-    def answer(self, question: str, *, as_of: datetime | None = None) -> CompiledAnswer:
+    def answer(
+        self,
+        question: str,
+        *,
+        as_of: datetime | None = None,
+        permissions: Iterable[str] = (),
+    ) -> CompiledAnswer:
         if self._pipeline is None:
             raise RuntimeError("this result is detached from its pipeline")
-        return self._pipeline.answer(question, as_of=as_of)
+        return self._pipeline.answer(question, as_of=as_of, permissions=permissions)
 
     def evidence_for(self, evidence_id: str) -> Mapping[str, object] | None:
         return self.evidence_index.get(evidence_id)

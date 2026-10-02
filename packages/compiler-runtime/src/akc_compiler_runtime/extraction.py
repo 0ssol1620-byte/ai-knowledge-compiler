@@ -36,6 +36,7 @@ from akc_cir.identity import (
 )
 
 __all__ = [
+    "UNMAPPED_ACL",
     "AuthorityClass",
     "ClaimDraft",
     "ParsedDocument",
@@ -94,7 +95,45 @@ _DEPENDS_RE = re.compile(r"^\s*(?:[-*]\s*)?depends\s+on\s*:\s*(\S[^\n]*)$", re.I
 _DERIVED_RE = re.compile(r"^\s*(?:[-*]\s*)?derived\s+from\s*:\s*(\S[^\n]*)$", re.IGNORECASE)
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.*?)\s*#*\s*$")
 _BULLET_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+(.*)$")
-_FRONTMATTER_RE = re.compile(r"\A---\s*\n.*?\n---\s*\n?", re.DOTALL)
+_FRONTMATTER_RE = re.compile(r"\A---\s*\n(.*?)\n---\s*\n?", re.DOTALL)
+_FRONTMATTER_OPEN_RE = re.compile(r"\A---\s*\n")
+_FRONTMATTER_KEY_RE = re.compile(r"^\s*([A-Za-z_][\w-]*)\s*:(.*)$")
+#: The only ACL shape the runtime can map: exactly one permission token.
+_PERMISSION_TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:/-]{0,199}")
+#: Front-matter keys that declare access control. ``required_permission`` is
+#: the one the runtime maps; any other is an ACL it cannot honour.
+_ACL_KEYS = frozenset(
+    {
+        "required_permission",
+        "required_permissions",
+        "permission",
+        "permissions",
+        "acl",
+        "acls",
+        "access",
+        "access_control",
+        "access_level",
+        "allowed_users",
+        "allowed_groups",
+        "allowed_roles",
+        "readers",
+        "roles",
+        "groups",
+        "shared_with",
+        "sharing",
+        "visibility",
+        "restricted",
+        "private",
+        "confidential",
+        "classification",
+        "sensitivity",
+    }
+)
+
+#: Fail-closed permission for a source whose ACL was declared but cannot be
+#: mapped. ``_PERMISSION_TOKEN_RE`` can never produce it, and the pipeline
+#: strips it from every caller's permissions, so nobody is ever granted it.
+UNMAPPED_ACL = "!acl-unmapped"
 
 _MD_COMMENT_RE = re.compile(r"<!--\s*(.*?)\s*-->", re.DOTALL)
 _PY_COMMENT_RE = re.compile(r"^\s*#\s?(.*)$")
@@ -196,6 +235,10 @@ class ParsedDocument:
     document_version: str  # dv_ id keyed on content hash
     authority: AuthorityClass
     claims: tuple[ClaimDraft, ...]
+    #: The source's declared access requirement: one permission token,
+    #: :data:`UNMAPPED_ACL` when an ACL was declared but cannot be mapped, or
+    #: ``None`` when the source declares none.
+    required_permission: str | None = None
 
 
 def scan_source_files(root: Path) -> list[ParsedFile]:
@@ -251,6 +294,7 @@ def parse_file(
         document_version=version,
         authority=doc_authority,
         claims=tuple(drafts),
+        required_permission=source_required_permission(file.text),
     )
 
 
@@ -261,6 +305,40 @@ def parse_file(
 
 def _strip_frontmatter(text: str) -> str:
     return _FRONTMATTER_RE.sub("", text, count=1)
+
+
+def source_required_permission(text: str) -> str | None:
+    """The access requirement a source declares in its front matter.
+
+    Fail closed: an ACL key other than ``required_permission``, a value that
+    is not exactly one permission token, a repeated declaration, or an
+    unterminated front-matter block naming any ACL key all yield
+    :data:`UNMAPPED_ACL` -- never ``None``, which would make the source public.
+    """
+    block = _FRONTMATTER_RE.match(text)
+    if block is not None:
+        lines = block.group(1).splitlines()
+    elif _FRONTMATTER_OPEN_RE.match(text):
+        lines = text.splitlines()  # unterminated: nothing in it is trusted
+    else:
+        return None
+
+    declared: list[str] = []
+    for line in lines:
+        key_match = _FRONTMATTER_KEY_RE.match(line)
+        if key_match is None:
+            continue
+        key = key_match.group(1).casefold().replace("-", "_")
+        if key not in _ACL_KEYS:
+            continue
+        if block is None or key != "required_permission":
+            return UNMAPPED_ACL
+        declared.append(key_match.group(2).strip().strip("\"'"))
+    if not declared:
+        return None
+    if len(declared) != 1 or not _PERMISSION_TOKEN_RE.fullmatch(declared[0]):
+        return UNMAPPED_ACL
+    return declared[0]
 
 
 def _folder_authority(rel_path: str) -> AuthorityClass:
