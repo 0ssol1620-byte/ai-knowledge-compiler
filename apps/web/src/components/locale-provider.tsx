@@ -33,8 +33,8 @@ export function LocaleProvider({
   const setLocale = useCallback((nextLocale: StructaraLocale) => {
     document.documentElement.lang = nextLocale;
     const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
-    // This route handler sets the locale cookie and redirects; a document
-    // navigation is required to render the translated server components.
+    // The API route sets the locale cookie before redirecting; this needs a
+    // document navigation so the next server render sees the new cookie.
     // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.assign(
       `/api/locale?value=${encodeURIComponent(nextLocale)}&returnTo=${encodeURIComponent(returnTo)}`,

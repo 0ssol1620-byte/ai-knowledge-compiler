@@ -39,6 +39,7 @@ dependencies = [
   "pydantic==2.13.4",
   "pydantic-settings>=2.10,<3",
   # >=6.15 closes CVE-2026-71852 and CVE-2026-71870, both against 6.14.2.
+  # 6.16.1 fixes the three parser advisories seen by the release audit.
   "pypdf>=6.16.1,<7",
   "pypdfium2>=4.30,<5",
   "python-docx>=1.2,<2",
@@ -62,8 +63,11 @@ dev = [
   # instancing for apps/web. brotli is what writes woff2.
   "fonttools[woff]>=4.55,<5",
   "hypothesis>=6.138,<7",
-  "mcp>=1.0,<2",
   "mypy>=1.17,<2",
+  # Full-tree pytest collects the local MCP and desktop watcher packages.
+  "mcp>=1.0,<2",
+  "watchdog>=4,<7",
+  # pip-audit --local also inspects pip in the synced development environment.
   "pip-audit>=2.9,<3",
   "pip>=26.2.1,<27",
   "pytest>=9.0.3,<10",
@@ -74,8 +78,7 @@ dev = [
   "types-bleach>=6.2,<7",
   "types-openpyxl>=3.1,<4",
   "types-pyyaml>=6.0,<7",
-  "uv==0.12.0",
-  "watchdog>=4,<7"
+  "uv==0.12.0"
 ]
 
 [tool.hatch.build.targets.wheel]

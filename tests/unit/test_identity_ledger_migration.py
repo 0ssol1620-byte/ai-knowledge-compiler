@@ -36,9 +36,14 @@ def test_postgresql_grant_uses_resolved_fixed_identifiers() -> None:
     sql = statements[0]
     assert "IF EXISTS" in sql
     assert "rolname = 'akc_api_plane'" in sql
-    assert 'GRANT SELECT, INSERT ON TABLE "identity_ledger" TO "akc_api_plane";' in sql
-    assert "{_TABLE}" not in sql
-    assert "EXECUTE" not in sql
+    # Released 0038 (main) runs the GRANT through EXECUTE; the dynamic string must
+    # be one fully resolved literal, never composed at run time.
+    assert (
+        "EXECUTE 'GRANT SELECT, INSERT ON TABLE \"identity_ledger\" TO \"akc_api_plane\"';"
+        in sql
+    )
+    assert "{_TABLE}" not in sql and "{_API_PLANE_ROLE}" not in sql
+    assert "||" not in sql and "format(" not in sql.lower()
     assert "UPDATE" not in sql and "DELETE" not in sql
 
 

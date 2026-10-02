@@ -98,7 +98,7 @@
 
 .composition[data-direction="A"] .lead {
   border-left: 0;
-  border-top: 3px solid var(--signal);
+  border-top: 1px solid var(--signal);
   padding: 24px 0 0;
 }
 

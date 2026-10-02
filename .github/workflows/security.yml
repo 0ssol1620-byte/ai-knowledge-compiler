@@ -124,9 +124,15 @@ jobs:
           corepack enable
           corepack prepare pnpm@11.9.0 --activate
           pnpm install --frozen-lockfile
-          # No fixed extract-zip release exists; the next command proves the
-          # committed patch blocks this exact symlink traversal advisory.
-          pnpm audit --audit-level high --ignore GHSA-jmr9-qjv8-65gv
+          pnpm audit --prod --audit-level high
+          # extract-zip is only in the Lighthouse/Puppeteer development toolchain.
+          # The two symlink traversal advisories have no published fix as of
+          # 2026-09-27. Keep every other development advisory gated, and remove
+          # these exact exceptions when an upstream patched release exists.
+          pnpm audit --audit-level high \
+            --ignore GHSA-jmr9-qjv8-65gv \
+            --ignore GHSA-7pqw-9j4j-h8q3
+          # The committed extract-zip patch must still block GHSA-jmr9-qjv8-65gv.
           node scripts/verify-dependency-patches.mjs
 
   application-images:
@@ -192,9 +198,7 @@ jobs:
           python-version: "3.13"
       - name: Scan the tracked tree
         run: python scripts/ip_privilege_guard.py
-      - name: Bootstrap the pinned lockfile installer
-        run: python -m pip install "uv==0.12.0"
-      - name: Sync the immutable development environment
-        run: python -m uv sync --locked --extra dev
+      - name: Install the guard's test runner
+        run: python -m pip install "pytest==9.1.1" "pytest-asyncio==1.4.0"
       - name: Guard's own tests
-        run: python -m uv run --locked --extra dev pytest tests/security/test_ip_privilege_guard.py -q
+        run: python -m pytest tests/security/test_ip_privilege_guard.py -q
