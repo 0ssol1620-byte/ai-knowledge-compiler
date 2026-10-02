@@ -433,6 +433,20 @@ UNMAPPABLE_ACLS = {
     "after-close": "---\ntitle: x\n---\nrequired_permission: board:minuted\n" + BOARD_BODY,
     "body-only": "Required permission: board:minuted\n\n" + BOARD_BODY,
     "body-after-valid": RESTRICTED_SOURCE + "\n- required-permissions = board:chair\n",
+    # YAML 1.1 line breaks the scanner must split on, hiding an escaped key.
+    "nel-break": _front_matter('title: x\x85"\\x72equired_\\x70ermission": board:minuted'),
+    "ls-break": _front_matter('title: x\u2028"\\x72equired_\\x70ermission": board:minuted'),
+    "ps-break": _front_matter('title: x\u2029"\\x72equired_\\x70ermission": board:minuted'),
+    # An opener that is not exactly --- is a block, just not a standard one.
+    "opener-comment": "--- # fm\nacl: board\n---\n" + BOARD_BODY,
+    "opener-tag": "--- !meta\nacl: board\n---\n" + BOARD_BODY,
+    # Unquoted YAML non-strings are not a permission token.
+    "null-value": _front_matter("required_permission: null"),
+    "tilde-value": _front_matter("required_permission: ~"),
+    "bool-value": _front_matter("required_permission: yes"),
+    "number-value": _front_matter("required_permission: 42"),
+    # Zero-width characters splitting the key name.
+    "zero-width": _front_matter("re\u200bquired_permi\u200bssion: board:minuted"),
 }
 
 
@@ -453,6 +467,34 @@ PUBLIC_FRONT_MATTER = {
     "toml": '+++\ntitle = "Board minutes"\n+++\n' + BOARD_BODY,
     "leading-blank-line": "\n" + _front_matter("title: Board minutes"),
 }
+
+
+@pytest.mark.parametrize(
+    "board_text",
+    [_front_matter("permitted_users: [board]"), _front_matter("audience: board-only")],
+    ids=["permitted-users", "audience"],
+)
+def test_acl_vocabulary_outside_the_contract_stays_public_known_limit(
+    tmp_path: Path, calls: Invocations, board_text: str
+) -> None:
+    """Documented limit: ``required_permission`` is the only ACL contract.
+
+    Vocabulary the token list does not name is not recognised as an ACL. This
+    pins the limit so widening the contract is a visible, deliberate change.
+    """
+    _, pipeline, result = _compiled(tmp_path, board_text)
+
+    assert all(row["required_permission"] is None for row in _board_rows(result))
+    _assert_board_answer(result, pipeline.answer(BUDGET_QUESTION))
+
+
+def test_quoted_null_is_a_literal_permission(tmp_path: Path, calls: Invocations) -> None:
+    """Quoted, ``"null"`` is a string: a (more restrictive) literal permission."""
+    _, pipeline, result = _compiled(tmp_path, _front_matter('required_permission: "null"'))
+
+    assert {row["required_permission"] for row in _board_rows(result)} == {"null"}
+    _assert_refused(pipeline.answer(BUDGET_QUESTION))
+    _assert_board_answer(result, pipeline.answer(BUDGET_QUESTION, permissions={"null"}))
 
 
 @pytest.mark.parametrize("board_text", PUBLIC_FRONT_MATTER.values(), ids=PUBLIC_FRONT_MATTER)

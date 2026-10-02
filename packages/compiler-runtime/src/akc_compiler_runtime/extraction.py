@@ -112,6 +112,11 @@ _ACL_TOKEN_RE = re.compile(
 #: line regex cannot read: quoted keys (escapes like ``\x72`` hide the name),
 #: flow collections, ``?`` complex keys, anchors, aliases, tags, ``<<`` merges.
 _YAML_KEY_SYNTAX = tuple("\"'{[?&*!<")
+#: Unquoted scalars YAML reads as null, boolean or number, not as a string.
+#: ``required_permission: null`` is ambiguous intent, so it fails closed.
+_YAML_NON_STRING_RE = re.compile(
+    r"(?i:null|~|true|false|yes|no|on|off|y|n)|[-+.]?[0-9][0-9_.:eE+-]*"
+)
 #: A ``required_permission`` declaration in any spelling, on a casefolded
 #: line. Outside the one mapped front-matter line it is never ignored.
 _STRAY_DECLARATION_RE = re.compile(r"[\W_]*required[\W_]*permissions?[\W_]*[:=]")
@@ -298,25 +303,33 @@ def source_required_permission(text: str) -> str | None:
 
     This is a line scanner, not a YAML parser, so it maps only what it can
     read for certain and refuses everything else. A leading BOM is dropped and
-    CRLF/CR become LF first. In a standard block -- ``---`` on the very first
-    line, closed by a ``---`` line -- exactly one literal
-    ``required_permission: <token>`` line maps; :data:`UNMAPPED_ACL` results
-    when any other line starts with YAML key syntax, any other line carries an
-    ACL-ish token, the line repeats, or its value is not one token. Any other
-    front-matter shape (``+++`` TOML, ``{`` JSON, ``---`` after blank lines,
-    or unterminated) is not parsed: it is :data:`UNMAPPED_ACL` if it carries
-    an ACL-ish token anywhere, else public. A ``required_permission``
+    CRLF, CR, NEL, LS and PS (YAML 1.1 line breaks) become LF first. In a
+    standard block -- exactly ``---`` on the very first line, closed by a
+    ``---`` line -- exactly one literal ``required_permission: <token>`` line
+    maps; :data:`UNMAPPED_ACL` results when any other line starts with YAML
+    key syntax, any other line carries an ACL-ish token, the line repeats, or
+    its value is not one token. Any other front-matter shape (``+++`` TOML,
+    ``{`` JSON, ``---`` after blank lines, an opener like ``--- # fm`` or
+    ``--- !tag``, or unterminated) is not parsed: it is :data:`UNMAPPED_ACL`
+    if it carries an ACL-ish token anywhere, else public. A ``required_permission``
     declaration anywhere else in the file (the body, a code comment) is
     :data:`UNMAPPED_ACL` too. Never ``None`` for a declared ACL.
+
+    Limits: ``required_permission`` is the only ACL contract. Vocabulary that
+    is not in ``_ACL_TOKEN_RE`` (``permitted_users``, ``audience``, ...) is
+    not recognised and stays public. An unquoted null, boolean or number value
+    is :data:`UNMAPPED_ACL`; quoted (``"null"``) it is that literal permission.
     """
-    text = text.removeprefix("﻿").replace("\r\n", "\n").replace("\r", "\n")
+    text = text.removeprefix("\ufeff")
+    for line_break in ("\r\n", "\r", "\x85", "\u2028", "\u2029"):
+        text = text.replace(line_break, "\n")
     lines = text.split("\n")
     first = next((i for i, line in enumerate(lines) if line.strip()), len(lines))
     opener = lines[first].strip() if first < len(lines) else ""
     if opener.startswith("{"):
         closer = "}"
-    elif opener in ("---", "+++"):
-        closer = opener
+    elif opener.startswith(("---", "+++")):
+        closer = opener[:3]  # "--- # fm", "--- !tag": a block, just not standard
     else:
         return UNMAPPED_ACL if _declares(lines) else None
     end = next((i for i in range(first + 1, len(lines)) if lines[i].rstrip() == closer), None)
@@ -345,11 +358,15 @@ def source_required_permission(text: str) -> str | None:
     value = declared[0]
     if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
         value = value[1:-1]
+    elif _YAML_NON_STRING_RE.fullmatch(value):
+        return UNMAPPED_ACL
     return value if _PERMISSION_TOKEN_RE.fullmatch(value) else UNMAPPED_ACL
 
 
 def _fold(line: str) -> str:
-    return unicodedata.normalize("NFKC", line).casefold()
+    """NFKC + casefold, minus invisible format characters (zero-width etc.)."""
+    folded = unicodedata.normalize("NFKC", line).casefold()
+    return "".join(ch for ch in folded if unicodedata.category(ch) != "Cf")
 
 
 def _acl_ish(line: str) -> bool:
