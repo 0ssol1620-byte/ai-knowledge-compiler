@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import io
 import zipfile
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
+from decimal import Decimal
 from typing import Any, cast
 
 from akc_cir import BlockType
+from akc_cir.models import CellValueType
 from defusedxml import ElementTree as SafeElementTree
 from defusedxml.common import DefusedXmlException
 from openpyxl import load_workbook
@@ -173,13 +175,42 @@ def _add_sheet_table(
         raw_text = _cell_text(raw_value)
         normalized_text = raw_text
         quality_flags: list[str] = []
+        value_type: CellValueType | None = (
+            _value_type(raw_value, cell.data_type) if cell is not None else None
+        )
+        formula_text: str | None = None
+        formula_entry: dict[str, Any] | None = None
+        preserve_raw_text = False
         if cell is not None and cell.data_type == "f":
             formula_count += 1
-            cached_value = value_sheet.cell(row=row, column=column).value
-            normalized_text = _cell_text(cached_value) if cached_value is not None else raw_text
+            # Array and data-table formulas arrive as objects; their source is
+            # the extracted OOXML text, never the object's string form. The
+            # same text is the cell's raw text, its formula, and its metadata.
+            formula_text = _formula_text(raw_value)
+            raw_text = formula_text or ""
+            preserve_raw_text = True
+            cached_cell = value_sheet.cell(row=row, column=column)
+            cached_value = cached_cell.value
+            cached_text = _cell_text(cached_value) if cached_value is not None else None
+            # Only an existing cache may become display text, and only its
+            # stored type is recorded; an absent cache stays explicitly absent.
+            normalized_text = cached_text if cached_text is not None else raw_text
+            value_type = (
+                _value_type(cached_value, cached_cell.data_type)
+                if cached_value is not None
+                else None
+            )
             quality_flags.append("formula_preserved_not_executed")
+            if formula_text is None:
+                # A data-table formula, for one, carries no formula text.
+                quality_flags.append("formula_text_unavailable")
             if cached_value is None:
                 quality_flags.append("formula_cached_value_missing")
+            formula_entry = {
+                "formula": formula_text,
+                "cachedValue": cached_text,
+                "cachedValuePresent": cached_value is not None,
+            }
         if worksheet.row_dimensions[row].hidden:
             quality_flags.append("hidden_row")
         column_letter = get_column_letter(column)
@@ -187,21 +218,8 @@ def _add_sheet_table(
             quality_flags.append("hidden_column")
         row_span, column_span = merge_anchors.get((row, column), (1, 1))
         coordinate = f"{column_letter}{row}"
-        if cell is not None and cell.data_type == "f":
-            formulas.append(
-                {
-                    "cell": coordinate,
-                    "formula": raw_text,
-                    "cachedValue": (
-                        _cell_text(value_sheet.cell(row=row, column=column).value)
-                        if value_sheet.cell(row=row, column=column).value is not None
-                        else None
-                    ),
-                    "cachedValuePresent": (
-                        value_sheet.cell(row=row, column=column).value is not None
-                    ),
-                }
-            )
+        if formula_entry is not None:
+            formulas.append({"cell": coordinate, **formula_entry})
         specs.append(
             TableCellSpec(
                 row_index0=row - min_row,
@@ -215,6 +233,10 @@ def _add_sheet_table(
                     native_object_id=(f"xlsx/sheet/{sheet_index0:04d}/cell/{coordinate}"),
                 ),
                 quality_flags=tuple(quality_flags),
+                preserve_raw_text=preserve_raw_text,
+                value_type=value_type,
+                number_format=_number_format(cell),
+                formula=formula_text,
             )
         )
 
@@ -529,6 +551,49 @@ def _cell_text(value: Any) -> str:
     if isinstance(value, bool):
         return "TRUE" if value else "FALSE"
     return normalize_text(str(value))
+
+
+def _value_type(value: Any, data_type: str | None) -> CellValueType | None:
+    """Map the workbook's stored value type; never infer a type from text."""
+
+    if value is None:
+        return None
+    if data_type == "e":
+        return "error"
+    if isinstance(value, bool):
+        return "boolean"
+    if isinstance(value, (int, float, Decimal)):
+        return "number"
+    if isinstance(value, datetime):
+        return "datetime"
+    if isinstance(value, date):
+        return "date"
+    if isinstance(value, time):
+        return "time"
+    if isinstance(value, timedelta):
+        return "duration"
+    if isinstance(value, str):
+        return "string"
+    return None
+
+
+def _formula_text(value: Any) -> str | None:
+    if isinstance(value, str):
+        return value or None
+    # Array and data-table formulas are objects carrying their source text.
+    text = getattr(value, "text", None)
+    return text if isinstance(text, str) and text else None
+
+
+def _number_format(cell: Cell | None) -> str | None:
+    """Return the format code verbatim; "General" is the OOXML default, not a label."""
+
+    if cell is None:
+        return None
+    number_format = cell.number_format
+    if not isinstance(number_format, str) or not number_format or number_format == "General":
+        return None
+    return number_format
 
 
 def _filename_title(filename: str) -> str:

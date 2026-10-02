@@ -158,6 +158,14 @@ _SAFE_ERROR_CODES = frozenset(
         "ARCHIVE_MEMBER_LIMIT",
         "ARCHIVE_SYMLINK",
         "BLOCK_LIMIT",
+        "CSV_CELL_LIMIT",
+        "CSV_COLUMN_LIMIT",
+        "CSV_EMPTY_DOCUMENT",
+        "CSV_FIELD_LIMIT",
+        "CSV_MALFORMED",
+        "CSV_PARSE_FAILED",
+        "CSV_ROW_LIMIT",
+        "CSV_TEXT_UNAVAILABLE",
         "DOCX_BODY_ELEMENT_LIMIT",
         "DOCX_EMPTY_DOCUMENT",
         "DOCX_PARSE_FAILED",
@@ -173,6 +181,7 @@ _SAFE_ERROR_CODES = frozenset(
         "HTML_TABLE_OVERLAP",
         "HTML_TEXT_UNAVAILABLE",
         "OFFICE_ACTIVE_CONTENT",
+        "OFFICE_CFB_CONTAINER_UNSUPPORTED",
         "OFFICE_EMBEDDED_OBJECT",
         "OOXML_CONTENT_TYPES_MISSING",
         "OOXML_PACKAGE_KIND_MISMATCH",
@@ -214,7 +223,7 @@ _SAFE_ERROR_CODES = frozenset(
     }
 )
 
-_STRUCTURED_NATIVE_TYPES = frozenset({"pdf", "docx", "pptx", "xlsx", "html", "srt", "vtt"})
+_STRUCTURED_NATIVE_TYPES = frozenset({"pdf", "docx", "pptx", "xlsx", "html", "srt", "vtt", "csv"})
 _PERSISTED_BLOCK_NAMESPACE = uuid.UUID("d7552336-25a5-5c70-8f6d-2d133c8378e9")
 
 

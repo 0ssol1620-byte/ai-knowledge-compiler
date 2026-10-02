@@ -23,6 +23,7 @@ from akc_cir import (
     canonical_json,
     sha256_digest,
 )
+from akc_cir.models import CellValueType
 from pydantic import field_validator
 
 
@@ -78,6 +79,10 @@ class ParserLimits:
     max_html_depth: int = 256
     max_subtitle_cues: int = 100_000
     max_cue_chars: int = 20_000
+    max_csv_rows: int = 100_000
+    max_csv_columns: int = 1_024
+    max_csv_cells: int = 500_000
+    max_csv_field_chars: int = 131_072
 
     def __post_init__(self) -> None:
         for item in fields(self):
@@ -108,6 +113,13 @@ class TableCellSpec:
     column_span: int = 1
     normalized_text: str | None = None
     quality_flags: tuple[str, ...] = ()
+    # When set, raw_text is the exact source value and reaches the CIR cell
+    # untouched; normalized_text is still derived and normalized as usual.
+    preserve_raw_text: bool = False
+    # Native-fidelity facts copied verbatim from the source; None when absent.
+    value_type: CellValueType | None = None
+    number_format: str | None = None
+    formula: str | None = None
 
 
 def normalize_text(value: str) -> str:
@@ -321,6 +333,11 @@ class CirBuilder:
                         raise StructuredParseError("TABLE_CELL_OVERLAP")
                     occupied.add(coordinate)
 
+        for cell in cells:
+            for verbatim in (cell.number_format, cell.formula):
+                if verbatim:
+                    self.reserve_metadata_text(verbatim)
+
         table_id = deterministic_id(
             "tbl",
             self.source_sha256,
@@ -339,13 +356,18 @@ class CirBuilder:
                 column_index0=cell.column_index0,
                 row_span=cell.row_span,
                 column_span=cell.column_span,
-                raw_text=normalize_text(cell.raw_text),
+                raw_text=(
+                    cell.raw_text if cell.preserve_raw_text else normalize_text(cell.raw_text)
+                ),
                 normalized_text=normalize_text(
                     cell.normalized_text if cell.normalized_text is not None else cell.raw_text
                 ),
                 origin=BlockOrigin.NATIVE_EXTRACTED,
                 source_refs=(self.source_ref(cell.location),),
                 quality_flags=tuple(sorted(set(cell.quality_flags))),
+                value_type=cell.value_type,
+                number_format=cell.number_format or None,
+                formula=cell.formula or None,
             )
             for cell in sorted(
                 cells,
@@ -384,7 +406,7 @@ class CirBuilder:
         metadata: dict[str, Any] = {
             "documentType": self.document_type,
             "nativeParser": "akc-native-parsers",
-            "nativeParserVersion": "1.1.0",
+            "nativeParserVersion": "1.2.0",
             "sourceLocationScheme": _location_scheme(self.document_type),
             "warnings": sorted(self.warnings),
             **self.metadata,
@@ -418,6 +440,7 @@ def _location_scheme(document_type: str) -> str:
         "docx": "docx/body|section|comments|revision/{index}/...",
         "pptx": "pptx/slide/{index}/shape/{z}/...",
         "xlsx": "xlsx/sheet/{index}/{A1-reference|asset}",
+        "csv": "csv/{table/range/A1-range|row/{index}/cell/A1-reference}",
         "html": "html/{DOM-path}",
         "srt": "srt/{segment|cue}/{index}",
         "vtt": "vtt/{segment|cue}/{index}",

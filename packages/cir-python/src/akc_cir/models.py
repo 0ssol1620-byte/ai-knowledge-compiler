@@ -4,13 +4,34 @@ from __future__ import annotations
 
 from datetime import datetime
 from enum import StrEnum
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
-from pydantic import Field, RootModel, field_validator, model_validator
+from pydantic import Field, RootModel, StringConstraints, field_validator, model_validator
 
 from .base import Confidence, ContractModel, NonEmptyStr, Sha256, StableId
 
 Coordinate1000 = Annotated[int, Field(ge=0, le=1000)]
+
+# Source-native strings that must survive byte-for-byte. The contract default
+# strips surrounding whitespace, which would silently alter a number format
+# such as '0.0" kg "' or a formula with trailing spaces.
+VerbatimStr = Annotated[str, StringConstraints(strip_whitespace=False, min_length=1)]
+# The same guarantee for source text that may legitimately be empty, such as a
+# cell's raw text: leading/trailing whitespace is part of the source value.
+VerbatimText = Annotated[str, StringConstraints(strip_whitespace=False)]
+
+# The value type the source format itself recorded for a cell. Never inferred
+# from the text: a CSV field is always "string".
+CellValueType = Literal[
+    "string",
+    "number",
+    "boolean",
+    "date",
+    "datetime",
+    "time",
+    "duration",
+    "error",
+]
 
 
 class BBox1000(RootModel[tuple[Coordinate1000, Coordinate1000, Coordinate1000, Coordinate1000]]):
@@ -102,12 +123,19 @@ class CanonicalCell(ContractModel):
     column_index0: Annotated[int, Field(ge=0)]
     row_span: Annotated[int, Field(ge=1)] = 1
     column_span: Annotated[int, Field(ge=1)] = 1
-    raw_text: str = ""
+    # Kept exactly as the producer supplied it; normalized_text is the
+    # display form. A producer may still choose to normalize raw_text itself.
+    raw_text: VerbatimText = ""
     normalized_text: str = ""
     origin: BlockOrigin
     source_refs: tuple[SourceRef, ...]
     confidence: Confidence | None = None
     quality_flags: tuple[str, ...] = ()
+    # Optional, backward-compatible native-fidelity fields. Absent means the
+    # source did not provide the information, never that it was defaulted.
+    value_type: CellValueType | None = None
+    number_format: VerbatimStr | None = None
+    formula: VerbatimStr | None = None
 
     @field_validator("source_refs")
     @classmethod

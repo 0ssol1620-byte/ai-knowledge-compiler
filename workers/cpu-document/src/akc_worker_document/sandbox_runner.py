@@ -32,7 +32,7 @@ from .preprocessing import preprocess_inference_raster
 _TEXT_TYPES = frozenset({"csv", "html", "htm", "txt", "md", "vtt", "srt"})
 _IMAGE_TYPES = frozenset({"png", "jpg", "jpeg", "webp", "tif", "tiff"})
 _STRUCTURED_NATIVE_EXTENSIONS = frozenset(
-    {".docx", ".pptx", ".xlsx", ".html", ".htm", ".srt", ".vtt"}
+    {".docx", ".pptx", ".xlsx", ".html", ".htm", ".srt", ".vtt", ".csv"}
 )
 _SAFE_FILENAME = re.compile(
     r"^page-[1-9][0-9]{0,4}-(?:preview|thumbnail|inference-(?:200|300))\.png$"

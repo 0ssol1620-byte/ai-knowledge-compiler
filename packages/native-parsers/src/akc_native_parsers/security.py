@@ -22,8 +22,12 @@ from defusedxml.common import DefusedXmlException
 from .models import ParserLimits, StructuredParseError
 
 OFFICE_EXTENSIONS = frozenset({".docx", ".pptx", ".xlsx"})
-TEXT_EXTENSIONS = frozenset({".html", ".htm", ".srt", ".vtt"})
+TEXT_EXTENSIONS = frozenset({".html", ".htm", ".srt", ".vtt", ".csv"})
 SUPPORTED_EXTENSIONS = OFFICE_EXTENSIONS | TEXT_EXTENSIONS
+
+# Compound File Binary header. Password-protected OOXML is wrapped in this
+# container, not in a ZIP; so are legacy binary Office formats and HWP.
+_CFB_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 
 _CANONICAL_MIME = {
     ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -33,6 +37,7 @@ _CANONICAL_MIME = {
     ".htm": "text/html",
     ".srt": "application/x-subrip",
     ".vtt": "text/vtt",
+    ".csv": "text/csv",
 }
 _ALLOWED_MIME = {
     ".docx": frozenset({_CANONICAL_MIME[".docx"]}),
@@ -42,6 +47,7 @@ _ALLOWED_MIME = {
     ".htm": frozenset({"text/html", "application/xhtml+xml"}),
     ".srt": frozenset({"application/x-subrip", "text/plain"}),
     ".vtt": frozenset({"text/vtt", "text/plain"}),
+    ".csv": frozenset({"text/csv", "application/csv", "text/plain"}),
 }
 _OFFICE_MARKER = {
     ".docx": "word/",
@@ -152,6 +158,12 @@ def _validate_office_archive(
     extension: str,
     limits: ParserLimits,
 ) -> None:
+    if data.startswith(_CFB_MAGIC):
+        # The compound file directory is never walked, so its streams are
+        # unknown: an encrypted OOXML package, a legacy binary workbook and an
+        # HWP file all look the same here. Name the container, not a guess at
+        # its contents. Nothing is decrypted and no legacy format is parsed.
+        raise StructuredParseError("OFFICE_CFB_CONTAINER_UNSUPPORTED")
     if not data.startswith(b"PK\x03\x04"):
         raise StructuredParseError("MAGIC_MISMATCH")
     try:

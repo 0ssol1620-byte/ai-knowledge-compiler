@@ -16,6 +16,7 @@ from akc_api.artifacts import build_canonical_document
 from akc_api.main import create_app
 from akc_api.models import AnalysisTask, Block, Document, Export, Page
 from akc_api.settings import Settings
+from akc_cir import CanonicalDocument, CanonicalTable
 from akc_worker_document.worker import AnalysisRuntime, AnalysisWorker
 from docx import Document as WordDocument
 from openpyxl import Workbook
@@ -27,6 +28,23 @@ from sqlalchemy import select
 _TEST_SUPPORT_KEY = "native-nonpdf-worker-verification-key"
 _REPOSITORY = Path(__file__).parents[3]
 _FIXTURES = _REPOSITORY / "tests" / "fixtures" / "nonpdf"
+
+# Synthetic CSV: a padded quoted field, a quoted CRLF, and fields that a
+# spreadsheet application would evaluate. All of it must stay inert text.
+_CSV_TEXT = 'name,amount,note\r\n"  Kim, J.  ",=1+2,"multi\r\nline"\r\nLee,+42,@SUM(A1)\r\n'
+# nativeObjectId -> (raw text, normalized text, formula-prefixed)
+_CSV_EXPECTED_CELLS = {
+    "csv/row/000000/cell/A1": ("name", "name", False),
+    "csv/row/000000/cell/B1": ("amount", "amount", False),
+    "csv/row/000000/cell/C1": ("note", "note", False),
+    "csv/row/000001/cell/A2": ("  Kim, J.  ", "Kim, J.", False),
+    "csv/row/000001/cell/B2": ("=1+2", "=1+2", True),
+    "csv/row/000001/cell/C2": ("multi\r\nline", "multi\nline", False),
+    "csv/row/000002/cell/A3": ("Lee", "Lee", False),
+    "csv/row/000002/cell/B3": ("+42", "+42", True),
+    "csv/row/000002/cell/C3": ("@SUM(A1)", "@SUM(A1)", True),
+}
+_FORMULA_PREFIX_FLAG = "spreadsheet_formula_prefix_preserved_as_text"
 
 
 @dataclass(frozen=True, slots=True)
@@ -287,10 +305,64 @@ def _samples() -> tuple[NativeSample, ...]:
             native_prefix="vtt/",
             required_block_types=frozenset({"title", "paragraph"}),
         ),
+        NativeSample(
+            filename="ledger.csv",
+            content_type="text/csv",
+            payload=_CSV_TEXT.encode("utf-8"),
+            document_type="csv",
+            page_count=1,
+            native_prefix="csv/",
+            required_block_types=frozenset({"table"}),
+        ),
     )
 
 
-async def test_six_native_formats_persist_structured_cir_and_provenance(
+def _assert_csv_fidelity(
+    blocks: list[Block],
+    first_page: Page,
+    rebuilt: CanonicalDocument,
+) -> None:
+    metadata = first_page.preflight_metrics["native_structure"]["documentMetadata"]
+    assert metadata["csv"]["dialect"]["delimiter"] == ","
+    assert metadata["csv"]["range"] == "A1:C3"
+    assert "csv_formula_prefixed_text_not_executed" in metadata["warnings"]
+
+    assert [block.block_type for block in blocks] == ["table"]
+    structured = blocks[0].structured_content
+    assert structured is not None
+    persisted = structured["table"]
+    assert persisted["sourceRefs"][0]["nativeObjectId"] == "csv/table/range/A1:C3"
+    assert (persisted["rowCount"], persisted["columnCount"]) == (3, 3)
+    # No header row is inferred from the first record.
+    assert persisted["headerRowCount"] == 0
+    assert "csv_header_not_declared" in persisted["qualityFlags"]
+    persisted_cells = {
+        cell["sourceRefs"][0]["nativeObjectId"]: cell for cell in persisted["cells"]
+    }
+    assert set(persisted_cells) == set(_CSV_EXPECTED_CELLS)
+    for anchor, (raw, normalized, formula_prefixed) in _CSV_EXPECTED_CELLS.items():
+        cell = persisted_cells[anchor]
+        assert (cell["rawText"], cell["normalizedText"]) == (raw, normalized), anchor
+        assert cell["valueType"] == "string", anchor
+        assert "formula" not in cell, anchor
+        assert (_FORMULA_PREFIX_FLAG in cell["qualityFlags"]) is formula_prefixed, anchor
+
+    rebuilt_tables = [block.table for block in rebuilt.blocks if block.table is not None]
+    assert len(rebuilt_tables) == 1
+    rebuilt_table = rebuilt_tables[0]
+    assert rebuilt_table == CanonicalTable.model_validate(persisted)
+    rebuilt_cells = {cell.source_refs[0].native_object_id: cell for cell in rebuilt_table.cells}
+    assert set(rebuilt_cells) == set(_CSV_EXPECTED_CELLS)
+    for anchor, (raw, normalized, formula_prefixed) in _CSV_EXPECTED_CELLS.items():
+        rebuilt_cell = rebuilt_cells[anchor]
+        assert (rebuilt_cell.raw_text, rebuilt_cell.normalized_text) == (raw, normalized), anchor
+        assert rebuilt_cell.value_type == "string", anchor
+        assert rebuilt_cell.formula is None, anchor
+        assert (_FORMULA_PREFIX_FLAG in rebuilt_cell.quality_flags) is formula_prefixed, anchor
+        assert rebuilt_cell.id == persisted_cells[anchor]["id"], anchor
+
+
+async def test_seven_native_formats_persist_structured_cir_and_provenance(
     native_worker_api: tuple[httpx.AsyncClient, Any, Settings],
 ) -> None:
     client, app, settings = native_worker_api
@@ -384,6 +456,8 @@ async def test_six_native_formats_persist_structured_cir_and_provenance(
             assert all(
                 block.table is not None for block in rebuilt.blocks if block.type.value == "table"
             )
+            if sample.document_type == "csv":
+                _assert_csv_fidelity(blocks, pages[0], rebuilt)
 
 
 async def test_native_parser_error_code_reaches_analysis_task(
@@ -435,5 +509,65 @@ async def test_native_parser_error_code_reaches_analysis_task(
     assert task is not None
     assert task.status == "dead_letter"
     assert task.last_error_code == "VTT_NO_CUES"
+    assert pages == []
+    assert blocks == []
+
+
+async def test_malformed_csv_reaches_analysis_task_as_safe_non_retryable_code(
+    native_worker_api: tuple[httpx.AsyncClient, Any, Settings],
+) -> None:
+    client, app, settings = native_worker_api
+    await _register(client)
+    project = await client.post(
+        "/v1/projects",
+        json={"name": "Native CSV Failure"},
+    )
+    assert project.status_code == 201
+    # Two well-formed records precede the unterminated quote, so a parser that
+    # emitted rows as it went would have something partial to persist.
+    sample = NativeSample(
+        filename="broken.csv",
+        content_type="text/csv",
+        payload=b'id,note\r\n1,"ok"\r\n2,"never closed\r\n',
+        document_type="csv",
+        page_count=1,
+        native_prefix="csv/",
+        required_block_types=frozenset(),
+    )
+    document_id = await _upload(
+        client,
+        project_id=str(project.json()["id"]),
+        sample=sample,
+    )
+    worker = AnalysisWorker(
+        engine=app.state.database.engine,
+        store=app.state.object_store,
+        runtime=AnalysisRuntime.from_api_settings(settings),
+    )
+    task_id = await _analyze(client, worker, document_id)
+    async with app.state.database.sessions() as session:
+        task = await session.get(AnalysisTask, task_id)
+        pages = list(
+            (
+                await session.scalars(
+                    select(Page).where(Page.document_id == uuid.UUID(document_id))
+                )
+            ).all()
+        )
+        blocks = list(
+            (
+                await session.scalars(
+                    select(Block).where(Block.document_id == uuid.UUID(document_id))
+                )
+            ).all()
+        )
+    assert task is not None
+    # The code is allowlisted, so it is not collapsed to PARSER_INTERNAL_ERROR,
+    # and it is non-retryable: one attempt, straight to dead letter, even
+    # though max_attempts would allow a retry.
+    assert task.last_error_code == "CSV_MALFORMED"
+    assert task.status == "dead_letter"
+    assert task.attempt_count == 1
+    assert task.max_attempts > task.attempt_count
     assert pages == []
     assert blocks == []
