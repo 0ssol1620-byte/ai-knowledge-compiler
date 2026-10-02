@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from enum import StrEnum
@@ -36,6 +37,7 @@ from akc_cir.identity import (
 )
 
 __all__ = [
+    "UNMAPPED_ACL",
     "AuthorityClass",
     "ClaimDraft",
     "ParsedDocument",
@@ -95,6 +97,34 @@ _DERIVED_RE = re.compile(r"^\s*(?:[-*]\s*)?derived\s+from\s*:\s*(\S[^\n]*)$", re
 _HEADING_RE = re.compile(r"^(#{1,6})\s+(.*?)\s*#*\s*$")
 _BULLET_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+(.*)$")
 _FRONTMATTER_RE = re.compile(r"\A---\s*\n.*?\n---\s*\n?", re.DOTALL)
+#: The one ACL line the runtime maps, spelled exactly, at column 0.
+_REQUIRED_PERMISSION_LINE_RE = re.compile(r"required_permission:[ \t]+(\S.*?)[ \t]*")
+#: Exactly one permission token.
+_PERMISSION_TOKEN_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.:/-]{0,199}")
+#: Substrings that make a front-matter line access-control-ish. Matched on
+#: NFKC-casefolded text, so camelCase, kebab and fullwidth spellings all hit.
+#: Deliberately broad: a false hit only hides a document (fail closed).
+_ACL_TOKEN_RE = re.compile(
+    r"permission|acl|access|visib|allow|role|group|reader|share|sharing|privat"
+    r"|restrict|confidential|classif|sensitiv"
+)
+#: A front-matter line starting with any of these can carry a mapping key a
+#: line regex cannot read: quoted keys (escapes like ``\x72`` hide the name),
+#: flow collections, ``?`` complex keys, anchors, aliases, tags, ``<<`` merges.
+_YAML_KEY_SYNTAX = tuple("\"'{[?&*!<")
+#: Unquoted scalars YAML reads as null, boolean or number, not as a string.
+#: ``required_permission: null`` is ambiguous intent, so it fails closed.
+_YAML_NON_STRING_RE = re.compile(
+    r"(?i:null|~|true|false|yes|no|on|off|y|n)|[-+.]?[0-9][0-9_.:eE+-]*"
+)
+#: A ``required_permission`` declaration in any spelling, on a casefolded
+#: line. Outside the one mapped front-matter line it is never ignored.
+_STRAY_DECLARATION_RE = re.compile(r"[\W_]*required[\W_]*permissions?[\W_]*[:=]")
+
+#: Fail-closed permission for a source whose ACL was declared but cannot be
+#: mapped. ``_PERMISSION_TOKEN_RE`` can never produce it, and the pipeline
+#: strips it from every caller's permissions, so nobody is ever granted it.
+UNMAPPED_ACL = "!acl-unmapped"
 
 _MD_COMMENT_RE = re.compile(r"<!--\s*(.*?)\s*-->", re.DOTALL)
 _PY_COMMENT_RE = re.compile(r"^\s*#\s?(.*)$")
@@ -196,6 +226,10 @@ class ParsedDocument:
     document_version: str  # dv_ id keyed on content hash
     authority: AuthorityClass
     claims: tuple[ClaimDraft, ...]
+    #: The source's declared access requirement: one permission token,
+    #: :data:`UNMAPPED_ACL` when an ACL was declared but cannot be mapped, or
+    #: ``None`` when the source declares none.
+    required_permission: str | None = None
 
 
 def scan_source_files(root: Path) -> list[ParsedFile]:
@@ -251,6 +285,7 @@ def parse_file(
         document_version=version,
         authority=doc_authority,
         claims=tuple(drafts),
+        required_permission=source_required_permission(file.text),
     )
 
 
@@ -261,6 +296,85 @@ def parse_file(
 
 def _strip_frontmatter(text: str) -> str:
     return _FRONTMATTER_RE.sub("", text, count=1)
+
+
+def source_required_permission(text: str) -> str | None:
+    """The access requirement a source declares in its front matter.
+
+    This is a line scanner, not a YAML parser, so it maps only what it can
+    read for certain and refuses everything else. A leading BOM is dropped and
+    CRLF, CR, NEL, LS and PS (YAML 1.1 line breaks) become LF first. In a
+    standard block -- exactly ``---`` on the very first line, closed by a
+    ``---`` line -- exactly one literal ``required_permission: <token>`` line
+    maps; :data:`UNMAPPED_ACL` results when any other line starts with YAML
+    key syntax, any other line carries an ACL-ish token, the line repeats, or
+    its value is not one token. Any other front-matter shape (``+++`` TOML,
+    ``{`` JSON, ``---`` after blank lines, an opener like ``--- # fm`` or
+    ``--- !tag``, or unterminated) is not parsed: it is :data:`UNMAPPED_ACL`
+    if it carries an ACL-ish token anywhere, else public. A ``required_permission``
+    declaration anywhere else in the file (the body, a code comment) is
+    :data:`UNMAPPED_ACL` too. Never ``None`` for a declared ACL.
+
+    Limits: ``required_permission`` is the only ACL contract. Vocabulary that
+    is not in ``_ACL_TOKEN_RE`` (``permitted_users``, ``audience``, ...) is
+    not recognised and stays public. An unquoted null, boolean or number value
+    is :data:`UNMAPPED_ACL`; quoted (``"null"``) it is that literal permission.
+    """
+    text = text.removeprefix("\ufeff")
+    for line_break in ("\r\n", "\r", "\x85", "\u2028", "\u2029"):
+        text = text.replace(line_break, "\n")
+    lines = text.split("\n")
+    first = next((i for i, line in enumerate(lines) if line.strip()), len(lines))
+    opener = lines[first].strip() if first < len(lines) else ""
+    if opener.startswith("{"):
+        closer = "}"
+    elif opener.startswith(("---", "+++")):
+        closer = opener[:3]  # "--- # fm", "--- !tag": a block, just not standard
+    else:
+        return UNMAPPED_ACL if _declares(lines) else None
+    end = next((i for i in range(first + 1, len(lines)) if lines[i].rstrip() == closer), None)
+    if end is None:
+        # Unterminated: the whole file is the unparsed block.
+        return UNMAPPED_ACL if any(_acl_ish(line) for line in lines) else None
+    if _declares(lines[end + 1 :]):
+        return UNMAPPED_ACL
+
+    if opener != "---" or first != 0:
+        return UNMAPPED_ACL if any(_acl_ish(line) for line in lines[first : end + 1]) else None
+
+    declared: list[str] = []
+    for line in lines[1:end]:
+        exact = _REQUIRED_PERMISSION_LINE_RE.fullmatch(line)
+        if exact is not None:
+            declared.append(exact.group(1))
+            continue
+        body = line.strip()
+        if body.startswith(_YAML_KEY_SYNTAX) or "<<" in body or _acl_ish(line):
+            return UNMAPPED_ACL
+    if not declared:
+        return None
+    if len(declared) != 1:
+        return UNMAPPED_ACL
+    value = declared[0]
+    if len(value) >= 2 and value[0] == value[-1] and value[0] in "\"'":
+        value = value[1:-1]
+    elif _YAML_NON_STRING_RE.fullmatch(value):
+        return UNMAPPED_ACL
+    return value if _PERMISSION_TOKEN_RE.fullmatch(value) else UNMAPPED_ACL
+
+
+def _fold(line: str) -> str:
+    """NFKC + casefold, minus invisible format characters (zero-width etc.)."""
+    folded = unicodedata.normalize("NFKC", line).casefold()
+    return "".join(ch for ch in folded if unicodedata.category(ch) != "Cf")
+
+
+def _acl_ish(line: str) -> bool:
+    return _ACL_TOKEN_RE.search(_fold(line)) is not None
+
+
+def _declares(lines: list[str]) -> bool:
+    return any(_STRAY_DECLARATION_RE.match(_fold(line)) for line in lines)
 
 
 def _folder_authority(rel_path: str) -> AuthorityClass:
