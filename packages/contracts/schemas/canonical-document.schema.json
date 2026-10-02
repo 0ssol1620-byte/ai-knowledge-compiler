@@ -109,6 +109,7 @@
         "rowSpan": { "type": "integer", "minimum": 1 },
         "columnSpan": { "type": "integer", "minimum": 1 },
         "rawText": { "type": "string" },
+        "rawTextVerbatim": { "anyOf": [{ "type": "boolean" }, { "type": "null" }] },
         "normalizedText": { "type": "string" },
         "origin": { "$ref": "#/$defs/origin" },
         "sourceRefs": {

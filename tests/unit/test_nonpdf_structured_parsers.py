@@ -943,6 +943,73 @@ def test_canonical_cell_fidelity_fields_are_optional_and_verbatim() -> None:
             CanonicalCell.model_validate({**legacy, **invalid})
 
 
+def test_ocr_cell_raw_text_keeps_contract_strip_and_hash_unless_producer_opts_in() -> None:
+    # Shaped like workers/gpu-parser/paddleocr_adapter.py output, which does
+    # not normalize rawText itself.
+    ocr_cell: dict[str, Any] = {
+        "id": "tbl_ocr_cell_0",
+        "rowIndex0": 0,
+        "columnIndex0": 0,
+        "rowSpan": 1,
+        "columnSpan": 1,
+        "rawText": "  42 ",
+        "normalizedText": "  42 ",
+        "origin": "ocr_extracted",
+        "sourceRefs": [
+            {
+                "documentId": "document_fixture",
+                "documentVersionId": "version_fixture",
+                "pageIndex0": 0,
+                "pageNumber1": 1,
+            }
+        ],
+        "confidence": 0.9,
+        "qualityFlags": [],
+    }
+    table = CanonicalTable.model_validate(
+        {
+            "id": "tbl_ocr",
+            "rowCount": 1,
+            "columnCount": 1,
+            "cells": [ocr_cell],
+            "sourceRefs": ocr_cell["sourceRefs"],
+        }
+    )
+    cell = table.cells[0]
+    assert (cell.raw_text, cell.normalized_text) == ("42", "42")
+    assert cell.raw_text_verbatim is None
+    # The wire form, and so the content hash, is what it was before the
+    # native-fidelity fields existed: no new key, stripped text.
+    wire = json.loads(canonical_json(cell))
+    assert "rawTextVerbatim" not in wire
+    assert wire["rawText"] == "42"
+    assert CanonicalCell.model_validate(wire) == cell
+
+    # Only an explicit opt-in keeps the source whitespace, and it survives
+    # the wire round trip and the static schema.
+    verbatim = CanonicalCell.model_validate({**ocr_cell, "rawTextVerbatim": True})
+    assert verbatim.raw_text == "  42 "
+    assert verbatim.normalized_text == "42"
+    restored = CanonicalCell.model_validate_json(canonical_json(verbatim))
+    assert restored == verbatim
+    _cell_schema_validator().validate(json.loads(canonical_json(verbatim)))
+    # False is not an opt-in.
+    assert CanonicalCell.model_validate({**ocr_cell, "rawTextVerbatim": False}).raw_text == "42"
+    with pytest.raises(ValidationError):
+        CanonicalCell.model_validate({**ocr_cell, "rawTextVerbatim": "maybe"})
+
+
+def test_native_csv_cells_opt_in_to_verbatim_raw_text(parse_context: ParseContext) -> None:
+    data = b"  lead,trail  \r\n"
+    document = _parse(filename="optin.csv", data=data, context=parse_context)
+    table = document.blocks[0].table
+    assert table is not None
+    assert [(c.raw_text, c.raw_text_verbatim) for c in table.cells] == [
+        ("  lead", True),
+        ("trail  ", True),
+    ]
+
+
 def test_cell_fidelity_nullability_agrees_across_python_static_schema_and_typescript() -> None:
     static_cell = json.loads(CANONICAL_DOCUMENT_SCHEMA.read_text(encoding="utf-8"))["$defs"]["cell"]
     model_cell = CanonicalDocument.model_json_schema(by_alias=True, mode="serialization")["$defs"][
@@ -951,7 +1018,7 @@ def test_cell_fidelity_nullability_agrees_across_python_static_schema_and_typesc
 
     # The static schema states exactly what the Python model accepts:
     # nullability, the value-type enum and the non-empty verbatim strings.
-    for field in (*NULLABLE_CELL_FIELDS, "rawText"):
+    for field in (*NULLABLE_CELL_FIELDS, "rawText", "rawTextVerbatim"):
         generated = {
             key: value
             for key, value in model_cell["properties"][field].items()

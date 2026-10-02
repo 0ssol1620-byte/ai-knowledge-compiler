@@ -356,6 +356,7 @@ class CirBuilder:
                 column_index0=cell.column_index0,
                 row_span=cell.row_span,
                 column_span=cell.column_span,
+                raw_text_verbatim=True if cell.preserve_raw_text else None,
                 raw_text=(
                     cell.raw_text if cell.preserve_raw_text else normalize_text(cell.raw_text)
                 ),

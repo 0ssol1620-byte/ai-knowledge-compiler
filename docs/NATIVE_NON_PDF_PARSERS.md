@@ -91,7 +91,10 @@ structure is not recovered. An unterminated or misplaced quote fails the whole
 document as `CSV_MALFORMED`. CSV must be UTF-8; the legacy text path's encoding
 fallbacks do not apply. Each cell keeps the field exactly as the reader produced it in
 `rawText` (surrounding whitespace, embedded CRLF, Unicode composition); only
-`normalizedText` is normalized. Fields that begin with `=`, `+`, `-`, or `@`
+`normalizedText` is normalized. This is an explicit per-cell opt-in,
+`rawTextVerbatim: true`, set by the CSV parser and by XLSX formula cells. A
+cell without it (every OCR producer) keeps the contract-wide whitespace strip
+on `rawText`, so its wire form and content hash are unchanged. Fields that begin with `=`, `+`, `-`, or `@`
 remain text: they are never evaluated, the cell's `formula` stays absent,
 `valueType` stays `string`, and the cell is flagged
 `spreadsheet_formula_prefix_preserved_as_text` with a document warning

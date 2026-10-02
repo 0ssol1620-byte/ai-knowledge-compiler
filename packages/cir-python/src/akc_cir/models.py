@@ -6,7 +6,14 @@ from datetime import datetime
 from enum import StrEnum
 from typing import Annotated, Any, Literal
 
-from pydantic import Field, RootModel, StringConstraints, field_validator, model_validator
+from pydantic import (
+    Field,
+    RootModel,
+    StringConstraints,
+    ValidationInfo,
+    field_validator,
+    model_validator,
+)
 
 from .base import Confidence, ContractModel, NonEmptyStr, Sha256, StableId
 
@@ -123,8 +130,13 @@ class CanonicalCell(ContractModel):
     column_index0: Annotated[int, Field(ge=0)]
     row_span: Annotated[int, Field(ge=1)] = 1
     column_span: Annotated[int, Field(ge=1)] = 1
-    # Kept exactly as the producer supplied it; normalized_text is the
-    # display form. A producer may still choose to normalize raw_text itself.
+    # Opt-in, set only by producers whose raw_text is the exact source value
+    # (native CSV/XLSX). Absent keeps the contract-wide whitespace strip, so an
+    # OCR cell's raw_text and content hash do not change across versions.
+    # Declared before raw_text so its validator can read it.
+    raw_text_verbatim: bool | None = None
+    # Stripped like every contract string unless raw_text_verbatim is true;
+    # normalized_text is the display form.
     raw_text: VerbatimText = ""
     normalized_text: str = ""
     origin: BlockOrigin
@@ -136,6 +148,11 @@ class CanonicalCell(ContractModel):
     value_type: CellValueType | None = None
     number_format: VerbatimStr | None = None
     formula: VerbatimStr | None = None
+
+    @field_validator("raw_text")
+    @classmethod
+    def strip_unless_verbatim(cls, value: str, info: ValidationInfo) -> str:
+        return value if info.data.get("raw_text_verbatim") else value.strip()
 
     @field_validator("source_refs")
     @classmethod
