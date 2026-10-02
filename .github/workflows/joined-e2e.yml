@@ -189,14 +189,17 @@ jobs:
           TAVONEL_JOINED_CLAMAV_IMAGE: ${{ env.CLAMAV_IMAGE_RESOLVED }}
         run: node --import tsx "$GITHUB_WORKSPACE/core/tests/e2e/joined/joined-e2e.mjs"
 
-      - name: Upload the redacted joined E2E ledger
+      # The redacted ledger and service logs, plus, only when the run failed, a screenshot and a
+      # Playwright trace. The trace is not redacted: it holds only this run's disposable credentials,
+      # which died with the runner's stack, so its retention is kept short.
+      - name: Upload the joined E2E ledger, logs and failure evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: joined-e2e-ledger-${{ github.run_id }}
-          path: core/output/joined-e2e-ledger.json
+          name: joined-e2e-${{ github.run_id }}-${{ github.run_attempt }}
+          path: core/output/
           if-no-files-found: warn
-          retention-days: 14
+          retention-days: 7
 
       - name: Stop the runner's disposable local stack
         if: always()
