@@ -135,6 +135,24 @@ const ledger = {
 };
 function check(name, actual, expected) { assert.deepEqual(actual, expected, name); ledger.assertions.push(name); }
 const observe = (key, value) => { ledger.observations[key] = value; };
+ledger.timeline = [];
+/** One line per hop in the CI log, and the same timeline in the ledger, so a failure shows how far the run got. */
+function hop(stage) {
+  const at = new Date().toISOString();
+  const previous = ledger.timeline.at(-1);
+  if (previous && !previous.endedAt) previous.endedAt = at;
+  ledger.stage = stage;
+  if (stage !== "done") ledger.timeline.push({ stage, startedAt: at });
+  console.log(`[joined-e2e ${at}] >>> ${stage}`);
+}
+// A pending Playwright wait rejects once the browser closes during cleanup. That must never kill the
+// process before the ledger is written; it is recorded instead.
+ledger.unhandledRejections = [];
+process.on("unhandledRejection", reason => {
+  const text = redact(reason?.stack ?? String(reason)).slice(0, 2000);
+  ledger.unhandledRejections.push(text);
+  console.error(`[joined-e2e] unhandled rejection recorded: ${text.split("\n")[0]}`);
+});
 
 // ---------------------------------------------------------------------------------------------
 // Small process, SQL and HTTP helpers.
@@ -158,7 +176,7 @@ function start(label, command, args, options) {
   const tail = [];
   for (const stream of [child.stdout, child.stderr]) {
     stream.setEncoding("utf8");
-    stream.on("data", chunk => { for (const line of chunk.split("\n")) if (line.trim()) { tail.push(redact(line).slice(0, 400)); if (tail.length > 120) tail.shift(); } });
+    stream.on("data", chunk => { for (const line of chunk.split("\n")) if (line.trim()) { tail.push(redact(line).slice(0, 400)); if (tail.length > 4000) tail.shift(); } });
   }
   owned.push({ label, child, tail });
   return child;
@@ -211,7 +229,8 @@ const question = "What is the archive retention period?";
 
 const root = mkdtempSync(path.join(tmpdir(), "tavonel-joined-e2e-"));
 const browserEvents = [];
-let browser, page, cdrContainer = null;
+let browser, context, page, cdrContainer = null;
+const outputDir = path.dirname(output);
 try {
   // Fixture provenance: the asserted phrase is absent from every Foundation journey fixture.
   for (const dir of ["nextjs/scripts/journey/real-auth-fixtures", "nextjs/scripts/journey/receipt-fixtures"]) {
@@ -224,6 +243,7 @@ try {
   // -------------------------------------------------------------------------------------------
   // Services: Core v2, CPU OCR, CDR + clamd, each behind an observing proxy.
   // -------------------------------------------------------------------------------------------
+  hop("start-core");
   const corePort = await freePort();
   mkdirSync(path.join(root, "core-journal"));
   start("core", corePython, ["-m", "uvicorn", "--factory", "core_synthetic_app:create_synthetic_test_app", "--app-dir", path.join(CORE, "tests/e2e/joined"),
@@ -238,6 +258,7 @@ try {
     [coreHealth.runtime, coreHealth.coreReleaseDigest, coreHealth.customerDataEnabled], ["tavonel-python-core-v2", coreReleaseDigest, true]);
   observe("coreHealth", coreHealth);
 
+  hop("start-ocr");
   const ocrPort = await freePort();
   start("ocr", ocrPython, ["-m", "uvicorn", "app:app", "--host", "127.0.0.1", "--port", String(ocrPort), "--no-access-log"],
     { cwd: path.join(FOUNDATION, "workers/foundation-ocr-cpu-raster"), env: { ...env, TAVONEL_OCR_HMAC: secrets.ocr } });
@@ -246,6 +267,7 @@ try {
   const ocrHealth = await (await fetch(`http://127.0.0.1:${ocrPort}/health`)).json();
   observe("ocrHealth", ocrHealth);
 
+  hop("start-cdr-clamav");
   const cdrPort = await freePort();
   cdrContainer = `joined-e2e-cdr-${randomBytes(4).toString("hex")}`;
   // The HMAC reaches docker through its environment (`-e NAME`), never argv.
@@ -285,6 +307,7 @@ try {
   // -------------------------------------------------------------------------------------------
   // Disposable identity and fixture rows (all labelled in the ledger).
   // -------------------------------------------------------------------------------------------
+  hop("fixtures");
   const created = await api("/auth/v1/admin/users", { id: owner, email, password, email_confirm: true });
   check("GoTrue admin creates the per-run synthetic owner", [created.status, created.body?.id], [200, owner]);
   check("signup trigger provisions the owner's pilot workspace membership",
@@ -387,6 +410,7 @@ try {
       // -----------------------------------------------------------------------------------------
       // Production-mode Next with every ephemeral key.
       // -----------------------------------------------------------------------------------------
+      hop("next-build-start");
       const preload = path.join(root, "transport.cjs");
       writeFileSync(preload, `const os=require('node:os');const cpus=os.cpus;os.cpus=()=>cpus().slice(0,2);os.availableParallelism=()=>2;const f=globalThis.fetch;globalThis.fetch=(input,init)=>{const s=typeof input==='string'?input:input instanceof URL?input.href:null;if(s){const u=new URL(s);if(u.hostname===${JSON.stringify(storageHost)})return f(${JSON.stringify(origin)}+u.pathname+u.search,init);}return f(input,init);};`);
       const nextEnv = { ...env, NODE_ENV: "production", NEXT_TELEMETRY_DISABLED: "1", NODE_OPTIONS: `--max-old-space-size=3072 --require ${JSON.stringify(preload)}`,
@@ -473,10 +497,14 @@ try {
       // -----------------------------------------------------------------------------------------
       // 1. Browser: sign in, upload through the real workspace UI.
       // -----------------------------------------------------------------------------------------
-      ledger.stage = "browser-upload";
-      const { chromium, expect } = await import(pathToFileURL(path.join(nextRoot, "node_modules/@playwright/test/index.mjs")).href);
+      hop("browser-sign-in");
+      const playwright = await import(pathToFileURL(path.join(nextRoot, "node_modules/@playwright/test/index.mjs")).href);
+      const { chromium } = playwright;
+      const expect = playwright.expect.configure({ timeout: 60_000 });
       browser = await chromium.launch({ headless: true });
-      const context = await browser.newContext({ ignoreHTTPSErrors: true });
+      context = await browser.newContext({ ignoreHTTPSErrors: true });
+      // Kept only when the run fails. It holds only this run's disposable, already-dead credentials.
+      await context.tracing.start({ screenshots: true, snapshots: true });
       const blocked = [];
       await routeLocalStorageTransport(context, origin, url => blocked.push(redact(url).slice(0, 200)));
       page = await context.newPage();
@@ -499,7 +527,12 @@ try {
       check("the provider session completes the callback into the workspace", new URL(page.url()).pathname, "/workspace");
       await expect(page.locator(".workspace-intake")).toHaveAttribute("data-inventory-state", "ready", { timeout: 60_000 });
 
-      const responseOf = (method, matches) => page.waitForResponse(response => response.request().method() === method && matches(new URL(response.url()).pathname), { timeout: 180_000 });
+      hop("browser-upload");
+      const responseOf = (method, matches) => {
+        const waiting = page.waitForResponse(response => response.request().method() === method && matches(new URL(response.url()).pathname), { timeout: 180_000 });
+        waiting.catch(() => {}); // awaited below; a rejection after an earlier failure must not become unhandled
+        return waiting;
+      };
       const capabilityReply = responseOf("POST", p => p === "/api/uploads/capability");
       const putReply = responseOf("PUT", p => p.startsWith(`/${bucketName}/quarantine/`));
       const confirmReply = responseOf("POST", p => p === "/api/uploads/confirm");
@@ -535,7 +568,7 @@ try {
       // -----------------------------------------------------------------------------------------
       // 2. Simulated event -> real CDR + ClamAV -> real OCR -> settlement.
       // -----------------------------------------------------------------------------------------
-      ledger.stage = "cdr-ocr";
+      hop("cdr-ocr");
       await deliver(docA.objectKey, 1);
       const docPrefix = `immutable/${workspace}/${workspace}/${docA.documentId}/`;
       const docKeys = await listKeys(docPrefix);
@@ -564,7 +597,7 @@ try {
       // -----------------------------------------------------------------------------------------
       // 3. Simulated cron -> compile worker -> real Core -> signed receipt -> candidate.
       // -----------------------------------------------------------------------------------------
-      ledger.stage = "compile";
+      hop("compile");
       const compiled = await driveJob(docA.jobId);
       check("compile job reaches a reviewable candidate", ["ready", "review_required"].includes(compiled.state), true);
       check("exactly one Core compile happened", core.calls.map(call => call.status), [200]);
@@ -592,7 +625,7 @@ try {
       // -----------------------------------------------------------------------------------------
       // 4. Failure path, part 1: duplicates do not repeat OCR, Core or the charge.
       // -----------------------------------------------------------------------------------------
-      ledger.stage = "duplicates";
+      hop("duplicates");
       const token = await ownerToken();
       const before = { ...counts(), reservation: reservation(docA.documentId), keys: await listKeys(docPrefix), candidates: await candidateKeys(), job: jobRow(docA.jobId) };
       const reconfirm = await app("/api/uploads/confirm", token, { documentId: docA.documentId, sourceSha256: `sha256:${sha256(docs.ui.bytes)}` });
@@ -614,7 +647,7 @@ try {
       // -----------------------------------------------------------------------------------------
       // 5. Review and activate in the UI.
       // -----------------------------------------------------------------------------------------
-      ledger.stage = "review-activate";
+      hop("review-activate");
       const { acceptEvidenceThroughUi, activateCandidateThroughUi } = await import(pathToFileURL(path.join(nextRoot, "e2e/support/workspace-review-actions.ts")).href);
       const scope = `workspace_key='${workspace}' and collection_id='${compiled.collectionId}'`;
       check("nothing is active before the human review", sql(`select count(*) from public.foundation_active_worlds where ${scope}`), "0");
@@ -631,7 +664,7 @@ try {
       // -----------------------------------------------------------------------------------------
       // 6. Consumers: owner session, API key, shipped MCP stdio and CLI.
       // -----------------------------------------------------------------------------------------
-      ledger.stage = "consumers";
+      hop("consumers");
       const scopes = ["ask:read", "collections:read", "worlds:read"];
       const issued = await app("/api/developer/keys", token, { name: "joined-e2e-consumer-read", scopes, expiresInDays: 1 });
       check("developer key route issues a read-only key", [issued.status, issued.body?.code], [201, "CREATED"]);
@@ -682,7 +715,7 @@ if(t.origin!==allowed)return Promise.reject(new TypeError('consumer fetch guard:
       // -----------------------------------------------------------------------------------------
       // 7. Failure path, part 2: malware refusal, Core signature failure, Core receipt failure.
       // -----------------------------------------------------------------------------------------
-      ledger.stage = "malware";
+      hop("malware");
       const malware = await apiUpload(token, docs.malware);
       const ocrBeforeMalware = ocrProxy.calls.length;
       await deliver(malware.objectKey, 1);
@@ -699,7 +732,7 @@ if(t.origin!==allowed)return Promise.reject(new TypeError('consumer fetch guard:
         ["break-request-signature", "signature", /CORE_SIGNATURE_INVALID|CORE_V2_HTTP_401/, "coreSignatureFailureLeavesNoCandidate"],
         ["tamper-response", "receipt", /CORE_V2_RECEIPT_INVALID/, "coreReceiptFailureLeavesNoCandidate"],
       ]) {
-        ledger.stage = `core-${mode}`;
+        hop(`core-${mode}`);
         const uploaded = await apiUpload(token, docs[docKey]);
         await deliver(uploaded.objectKey, 1);
         const beforeFailure = { ...counts(), candidates: await candidateKeys() };
@@ -726,8 +759,11 @@ if(t.origin!==allowed)return Promise.reject(new TypeError('consumer fetch guard:
       observe("deliveries", deliveries);
       observe("browserVersion", browser.version());
       ledger.success = true;
-      ledger.stage = "done";
+      hop("done");
     } catch (error) {
+      console.error(`[joined-e2e] FAILED at ${ledger.stage}: ${redact(error.stack ?? error.message)}`);
+      if (page) await page.screenshot({ path: path.join(outputDir, "failure-screenshot.png"), fullPage: true }).catch(() => {});
+      if (context) await context.tracing.stop({ path: path.join(outputDir, "failure-trace.zip") }).catch(() => {});
       ledger.failure = { name: error.name, message: redact(error.message).slice(0, 4000), stage: ledger.stage,
         coreCalls: core.calls, cdrCalls: cdrProxy.calls, ocrCalls: ocrProxy.calls, s3Arrivals: s3Arrivals.slice(-40) };
       if (page) {
@@ -748,16 +784,26 @@ if(t.origin!==allowed)return Promise.reject(new TypeError('consumer fetch guard:
   console.error("Joined E2E failure:", redact(error.stack ?? error.message));
   process.exitCode = 1;
 } finally {
-  ledger.failure && (ledger.failure.browserEvents = browserEvents.slice(-80));
-  ledger.failure && (ledger.failure.services = Object.fromEntries(owned.map(({ label, tail }) => [label, tail.slice(-60)])));
-  if (cdrContainer) {
-    if (ledger.failure) { try { ledger.failure.services.cdr = redact(execFileSync("docker", ["logs", "--tail", "60", cdrContainer], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })).split("\n"); } catch { /* best effort */ } }
-    try { execFileSync("docker", ["rm", "-f", cdrContainer], { stdio: "ignore" }); } catch { /* already gone */ }
+  try {
+    if (ledger.failure) ledger.failure.browserEvents = browserEvents.slice(-80);
+    mkdirSync(path.join(outputDir, "logs"), { recursive: true });
+    for (const { label, tail } of owned) writeFileSync(path.join(outputDir, "logs", `${label}.log`), `${tail.join("\n")}\n`);
+    writeFileSync(path.join(outputDir, "logs", "browser-events.log"), `${browserEvents.join("\n")}\n`);
+    if (cdrContainer) {
+      try {
+        const logs = execFileSync("docker", ["logs", "--tail", "4000", cdrContainer], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], maxBuffer: 64 * 1024 * 1024 });
+        writeFileSync(path.join(outputDir, "logs", "cdr.log"), redact(logs));
+      } catch { /* best effort */ }
+    }
+  } catch (error) {
+    console.error(`[joined-e2e] could not write service logs: ${redact(error.message)}`);
   }
+  if (cdrContainer) { try { execFileSync("docker", ["rm", "-f", cdrContainer], { stdio: "ignore" }); } catch { /* already gone */ } }
   for (const { child } of owned.reverse()) await stopOwnedChild(child).catch(() => {});
   ledger.finishedAt = new Date().toISOString();
   writeFileSync(output, redact(JSON.stringify(ledger, null, 2)));
   consumerSecret = "";
   assert.ok(path.basename(root).startsWith("tavonel-joined-e2e-")); rmSync(root, { recursive: true, force: true });
-  console.log(`joined E2E ledger: ${output} success=${ledger.success}`);
+  console.log(`[joined-e2e] ledger ${output} success=${ledger.success} stage=${ledger.stage} booleans=${JSON.stringify(ledger.booleans)}`);
+  if (ledger.failure) console.log(`[joined-e2e] failure: ${ledger.failure.stage}: ${ledger.failure.message.split("\n")[0]}`);
 }
