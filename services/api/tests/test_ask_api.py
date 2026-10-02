@@ -54,6 +54,7 @@ def _claim(**overrides: Any) -> dict[str, Any]:
 
 
 def _snapshot(
+    tenant_id: str,
     *,
     world_state_id: str = _ACTIVE_WS,
     status: str = "ACTIVE",
@@ -67,6 +68,7 @@ def _snapshot(
     )
     return {
         "schema_version": SNAPSHOT_SCHEMA_VERSION,
+        "tenant_id": tenant_id,
         "workspace_id": "personal",
         "world_state_id": world_state_id,
         "status": status,
@@ -89,9 +91,13 @@ def _snapshot(
     }
 
 
-def _write_snapshot(store_dir: Path, payload: dict[str, Any]) -> Path:
-    store_dir.mkdir(parents=True, exist_ok=True)
-    path = store_dir / f"{payload['world_state_id']}.json"
+def _write_snapshot(
+    store_dir: Path, payload: dict[str, Any], *, partition: str | None = None
+) -> Path:
+    """Write into the snapshot's own tenant partition unless told otherwise."""
+    target = store_dir / (partition if partition is not None else payload["tenant_id"])
+    target.mkdir(parents=True, exist_ok=True)
+    path = target / f"{payload['world_state_id']}.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
     return path
 
@@ -134,11 +140,14 @@ async def api(tmp_path: Path) -> AsyncIterator[tuple[httpx.AsyncClient, FastAPI]
             yield client, app
 
 
-async def _register_and_verify(client: httpx.AsyncClient, app: FastAPI) -> None:
+async def _register_and_verify(
+    client: httpx.AsyncClient, app: FastAPI, email: str = _TEST_SUPPORT_EMAIL
+) -> str:
+    """Register, verify and stay signed in; return the session's tenant id."""
     registered = await client.post(
         "/v1/auth/register",
         json={
-            "email": _TEST_SUPPORT_EMAIL,
+            "email": email,
             "password": "correct horse battery staple",
             "display_name": "Ask Owner",
             "tenant_name": "Ask Workspace",
@@ -146,12 +155,15 @@ async def _register_and_verify(client: httpx.AsyncClient, app: FastAPI) -> None:
     )
     assert registered.status_code == 201, registered.text
     capture = app.state.verification_capture
-    message = await capture.take_for(_TEST_SUPPORT_EMAIL)
+    message = await capture.take_for(email)
     assert message is not None
     verified = await client.post(
         "/v1/auth/verify-email", json={"token": message.token}
     )
     assert verified.status_code == 200, verified.text
+    session = await client.get("/v1/auth/session")
+    assert session.status_code == 200, session.text
+    return str(session.json()["tenant_id"])
 
 
 async def _ask(client: httpx.AsyncClient, **body: Any) -> httpx.Response:
@@ -184,8 +196,8 @@ async def test_fixture_world_compiles_current_answer_with_citations(
 ) -> None:
     client, app = api
     store_dir: Path = app.state.settings.world_store_dir
-    _write_snapshot(store_dir, _snapshot())
-    await _register_and_verify(client, app)
+    tenant = await _register_and_verify(client, app)
+    _write_snapshot(store_dir, _snapshot(tenant))
 
     response = await _ask(
         client, query="What is the current refund window for delivered orders?"
@@ -269,11 +281,11 @@ async def test_only_non_active_snapshots_answers_unresolved(
 ) -> None:
     client, app = api
     store_dir: Path = app.state.settings.world_store_dir
+    tenant = await _register_and_verify(client, app)
     _write_snapshot(
         store_dir,
-        _snapshot(world_state_id=_SUPERSEDED_WS, status="SUPERSEDED"),
+        _snapshot(tenant, world_state_id=_SUPERSEDED_WS, status="SUPERSEDED"),
     )
-    await _register_and_verify(client, app)
 
     response = await _ask(client)
 
@@ -289,9 +301,9 @@ async def test_two_active_claims_refuse_instead_of_guessing(
 ) -> None:
     client, app = api
     store_dir: Path = app.state.settings.world_store_dir
-    _write_snapshot(store_dir, _snapshot())
-    _write_snapshot(store_dir, _snapshot(world_state_id="ws_second_active"))
-    await _register_and_verify(client, app)
+    tenant = await _register_and_verify(client, app)
+    _write_snapshot(store_dir, _snapshot(tenant))
+    _write_snapshot(store_dir, _snapshot(tenant, world_state_id="ws_second_active"))
 
     response = await _ask(client)
 
@@ -307,10 +319,10 @@ async def test_tampered_snapshot_fails_closed(
 ) -> None:
     client, app = api
     store_dir: Path = app.state.settings.world_store_dir
-    tampered = _snapshot()
+    tenant = await _register_and_verify(client, app)
+    tampered = _snapshot(tenant)
     tampered["artifact_hashes"]["kb.md"] = "sha256:" + "9" * 64
     _write_snapshot(store_dir, tampered)
-    await _register_and_verify(client, app)
 
     response = await _ask(client)
 
@@ -326,16 +338,17 @@ async def test_pinned_world_must_be_the_active_one(
 ) -> None:
     client, app = api
     store_dir: Path = app.state.settings.world_store_dir
-    _write_snapshot(store_dir, _snapshot())
+    tenant = await _register_and_verify(client, app)
+    _write_snapshot(store_dir, _snapshot(tenant))
     _write_snapshot(
         store_dir,
         _snapshot(
+            tenant,
             world_state_id=_SUPERSEDED_WS,
             status="SUPERSEDED",
             claims=[_claim(extracted_world_state_id=_SUPERSEDED_WS)],
         ),
     )
-    await _register_and_verify(client, app)
 
     unknown = await _ask(client, world_state_id="ws_never_written")
     assert unknown.status_code == 200
@@ -363,15 +376,16 @@ async def test_not_authorized_outcome_discloses_no_claims_or_evidence(
 ) -> None:
     client, app = api
     store_dir: Path = app.state.settings.world_store_dir
+    tenant = await _register_and_verify(client, app)
     _write_snapshot(
         store_dir,
         _snapshot(
+            tenant,
             claims=[
                 _claim(required_permission="board:minuted"),
             ]
         ),
     )
-    await _register_and_verify(client, app)
 
     response = await _ask(client)
 
@@ -389,11 +403,11 @@ async def test_held_permission_serves_the_restricted_claim(
 ) -> None:
     client, app = api
     store_dir: Path = app.state.settings.world_store_dir
+    tenant = await _register_and_verify(client, app)
     _write_snapshot(
         store_dir,
-        _snapshot(claims=[_claim(required_permission="owner")]),
+        _snapshot(tenant, claims=[_claim(required_permission="owner")]),
     )
-    await _register_and_verify(client, app)
 
     response = await _ask(client)
 
@@ -408,13 +422,14 @@ async def test_stale_extraction_is_named_as_the_finding(
 ) -> None:
     client, app = api
     store_dir: Path = app.state.settings.world_store_dir
+    tenant = await _register_and_verify(client, app)
     _write_snapshot(
         store_dir,
         _snapshot(
+            tenant,
             claims=[_claim(extracted_world_state_id=_SUPERSEDED_WS)],
         ),
     )
-    await _register_and_verify(client, app)
 
     response = await _ask(client)
 
@@ -441,8 +456,8 @@ async def test_injected_receipt_sink_receives_the_consumption_record(
     sink = _RecordingSink()
     app.state.receipt_sink = sink
     store_dir: Path = app.state.settings.world_store_dir
-    _write_snapshot(store_dir, _snapshot())
-    await _register_and_verify(client, app)
+    tenant = await _register_and_verify(client, app)
+    _write_snapshot(store_dir, _snapshot(tenant))
 
     asked = await _ask(client)
 
@@ -465,10 +480,182 @@ async def test_default_sink_is_noop_and_answer_still_works(
     client, app = api
     assert not hasattr(app.state, "receipt_sink")
     store_dir: Path = app.state.settings.world_store_dir
-    _write_snapshot(store_dir, _snapshot())
-    await _register_and_verify(client, app)
+    tenant = await _register_and_verify(client, app)
+    _write_snapshot(store_dir, _snapshot(tenant))
 
     response = await _ask(client)
 
     assert response.status_code == 200
     assert response.json()["outcome"] == "CURRENT"
+
+
+# ---------------------------------------------------------------------------
+# Tenant isolation — the store partition comes from the session, and every
+# snapshot must be bound to the asking tenant
+# ---------------------------------------------------------------------------
+
+_OTHER_TENANT_EMAIL = "ask-other-tenant@example.com"
+
+
+async def _second_tenant_client(app: FastAPI) -> httpx.AsyncClient:
+    transport = httpx.ASGITransport(app=app, raise_app_exceptions=True)
+    return httpx.AsyncClient(transport=transport, base_url="http://testserver")
+
+
+async def test_tenant_never_resolves_another_tenants_active_world(
+    api: tuple[httpx.AsyncClient, FastAPI],
+) -> None:
+    client_a, app = api
+    store_dir: Path = app.state.settings.world_store_dir
+    tenant_a = await _register_and_verify(client_a, app)
+    async with await _second_tenant_client(app) as client_b:
+        tenant_b = await _register_and_verify(client_b, app, _OTHER_TENANT_EMAIL)
+        assert tenant_a != tenant_b
+        # Only tenant B has published anything.
+        _write_snapshot(
+            store_dir,
+            _snapshot(
+                tenant_b,
+                world_state_id="ws_tenant_b",
+                claims=[_claim(claim_id="cl_b", extracted_world_state_id="ws_tenant_b")],
+            ),
+        )
+
+        unpinned = await _ask(client_a)
+        pinned = await _ask(client_a, world_state_id="ws_tenant_b")
+        own = await _ask(client_b)
+
+    assert unpinned.status_code == 200
+    assert unpinned.json()["outcome"] == "UNRESOLVED"
+    assert unpinned.json()["reason"] == "no ACTIVE world state is published"
+    assert unpinned.json()["claim_ids"] == []
+    assert unpinned.json()["evidence"] == []
+    # Pinning another tenant's world is indistinguishable from a world that
+    # does not exist: no existence oracle across tenants.
+    assert pinned.json()["outcome"] == "UNRESOLVED"
+    assert "was not found" in pinned.json()["reason"]
+    assert pinned.json()["claim_ids"] == []
+    # Positive control: B's world is real and answerable by B.
+    assert own.json()["outcome"] == "CURRENT"
+    assert own.json()["claim_ids"] == ["cl_b"]
+
+
+async def test_each_tenant_answers_only_from_its_own_partition(
+    api: tuple[httpx.AsyncClient, FastAPI],
+) -> None:
+    client_a, app = api
+    store_dir: Path = app.state.settings.world_store_dir
+    tenant_a = await _register_and_verify(client_a, app)
+    async with await _second_tenant_client(app) as client_b:
+        tenant_b = await _register_and_verify(client_b, app, _OTHER_TENANT_EMAIL)
+        # Both ACTIVE: one shared directory would refuse as ambiguous or
+        # serve the wrong tenant; partitions make each lookup unambiguous.
+        _write_snapshot(
+            store_dir,
+            _snapshot(tenant_a, claims=[_claim(claim_id="cl_a")]),
+        )
+        _write_snapshot(
+            store_dir,
+            _snapshot(
+                tenant_b,
+                world_state_id="ws_tenant_b",
+                claims=[_claim(claim_id="cl_b", extracted_world_state_id="ws_tenant_b")],
+            ),
+        )
+
+        answer_a = await _ask(client_a)
+        answer_b = await _ask(client_b)
+
+    assert answer_a.json()["claim_ids"] == ["cl_a"]
+    assert answer_a.json()["world_state_id"] == _ACTIVE_WS
+    assert answer_b.json()["claim_ids"] == ["cl_b"]
+    assert answer_b.json()["world_state_id"] == "ws_tenant_b"
+
+
+async def test_snapshot_bound_to_another_tenant_fails_closed_without_fallback(
+    api: tuple[httpx.AsyncClient, FastAPI],
+) -> None:
+    client, app = api
+    store_dir: Path = app.state.settings.world_store_dir
+    tenant = await _register_and_verify(client, app)
+    foreign_tenant = "00000000-0000-4000-8000-0000000000bb"
+    # The caller's own valid ACTIVE world sits beside a foreign-bound file
+    # placed (or symlinked) into the caller's partition. Skipping the foreign
+    # file would serve the own world; the lookup must refuse instead.
+    _write_snapshot(store_dir, _snapshot(tenant))
+    _write_snapshot(
+        store_dir,
+        _snapshot(foreign_tenant, world_state_id="ws_foreign", status="SUPERSEDED"),
+        partition=tenant,
+    )
+
+    response = await _ask(client)
+    pinned = await _ask(client, world_state_id="ws_foreign")
+
+    for answered in (response, pinned):
+        body = answered.json()
+        assert body["outcome"] == "UNRESOLVED"
+        assert "bound to a different tenant" in body["reason"]
+        assert foreign_tenant not in body["reason"]
+        assert body["claim_ids"] == []
+        assert body["evidence"] == []
+        assert body["world_state_id"] == ""
+
+
+async def test_snapshot_without_tenant_binding_fails_closed_without_fallback(
+    api: tuple[httpx.AsyncClient, FastAPI],
+) -> None:
+    client, app = api
+    store_dir: Path = app.state.settings.world_store_dir
+    tenant = await _register_and_verify(client, app)
+    _write_snapshot(store_dir, _snapshot(tenant))
+    unbound = _snapshot(tenant, world_state_id="ws_unbound", status="SUPERSEDED")
+    del unbound["tenant_id"]
+    _write_snapshot(store_dir, unbound, partition=tenant)
+
+    response = await _ask(client)
+
+    body = response.json()
+    assert body["outcome"] == "UNRESOLVED"
+    assert "unreadable snapshots" in body["reason"]
+    assert "ws_unbound.json" in body["reason"]
+    # The perfectly valid ACTIVE world beside it is not served either.
+    assert body["claim_ids"] == []
+    assert body["world_state_id"] == ""
+
+
+async def test_unpartitioned_snapshot_at_store_root_refuses_every_lookup(
+    api: tuple[httpx.AsyncClient, FastAPI],
+) -> None:
+    client, app = api
+    store_dir: Path = app.state.settings.world_store_dir
+    tenant = await _register_and_verify(client, app)
+    _write_snapshot(store_dir, _snapshot(tenant))
+    legacy = _snapshot(tenant, world_state_id="ws_legacy_flat")
+    (store_dir / "ws_legacy_flat.json").write_text(json.dumps(legacy), encoding="utf-8")
+
+    response = await _ask(client)
+
+    body = response.json()
+    assert body["outcome"] == "UNRESOLVED"
+    assert "unpartitioned snapshots" in body["reason"]
+    assert body["claim_ids"] == []
+
+
+async def test_previous_schema_version_is_unreadable(
+    api: tuple[httpx.AsyncClient, FastAPI],
+) -> None:
+    client, app = api
+    store_dir: Path = app.state.settings.world_store_dir
+    tenant = await _register_and_verify(client, app)
+    old = _snapshot(tenant)
+    old["schema_version"] = SNAPSHOT_SCHEMA_VERSION - 1
+    del old["tenant_id"]
+    _write_snapshot(store_dir, old, partition=tenant)
+
+    response = await _ask(client)
+
+    body = response.json()
+    assert body["outcome"] == "UNRESOLVED"
+    assert "unsupported snapshot schema version" in body["reason"]
+    assert body["claim_ids"] == []
