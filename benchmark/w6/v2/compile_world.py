@@ -128,7 +128,7 @@ def compile_world(
                     body_budget_chars=body_budget_chars,
                 )
             )
-        except Exception as exc:
+        except Exception as exc:  # ledgered deliberately
             world.compile_failures.append(
                 {"source_id": source_id, "error_class": type(exc).__name__}
             )
@@ -162,8 +162,8 @@ class WorldRetriever:
             seen_snippets.add(dedupe_key)
             value_note = f" [value: {element.value}]" if element.value else ""
             lines.append(
-                f"[{element.source_id} | {element.type}] "
-                f"{element.subject}: {element.text}{value_note}\n"
+                f"[{element.source_id} | {element.type}] {element.subject}: "
+                f"{element.text}{value_note}\n"
                 f"    excerpt: {snippet}"
             )
         header = (

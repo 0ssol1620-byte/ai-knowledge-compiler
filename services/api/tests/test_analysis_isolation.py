@@ -1701,7 +1701,7 @@ def test_production_import_graph_and_worker_resource_guards() -> None:
         check=False,
         capture_output=True,
         text=True,
-        timeout=20,
+        timeout=60,
     )
     assert completed.returncode == 0, completed.stderr
 

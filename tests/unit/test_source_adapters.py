@@ -305,4 +305,4 @@ def test_source_cursor_migration_is_the_single_head() -> None:
 
     repository = Path(__file__).resolve().parents[2]
     script = ScriptDirectory.from_config(Config(str(repository / "alembic.ini")))
-    assert script.get_heads() == ["0041_source_cursor_acl"]
+    assert script.get_heads() == ["0041_revoke_source_cursor_scheduler_grant"]

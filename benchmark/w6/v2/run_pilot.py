@@ -9,8 +9,8 @@ Phases (each gated on the previous, all failures ledgered):
   report    -> SUMMARY.md
 
 Usage:
-  python -m benchmark.w6.v2.run_pilot --worktree-root
-D:/CodexProjects/ai-knowledge-compiler-w6v2 [--skip-acquire]
+  python -m benchmark.w6.v2.run_pilot \
+      --worktree-root D:/CodexProjects/ai-knowledge-compiler-w6v2 [--skip-acquire]
 """
 
 from __future__ import annotations
@@ -128,8 +128,8 @@ def main(argv: list[str] | None = None) -> int:
     blocked = usable < int(registry["blocked_threshold_usable_documents"])
     if blocked:
         print(
-            f"[gate] BLOCKED_ACQUISITION candidate: "
-            f"usable={usable} < {registry['blocked_threshold_usable_documents']}"
+            f"[gate] BLOCKED_ACQUISITION candidate: usable={usable} "
+            f"< {registry['blocked_threshold_usable_documents']}"
         )
     else:
         print(f"[acquire] usable documents rebuilt from cache: {usable}")
@@ -142,8 +142,10 @@ def main(argv: list[str] | None = None) -> int:
         summary_payload = {
             "verdict": verdict,
             "usable_documents": usable,
-            "diagnosis": "acquisition yielded fewer usable documents "
-            "than the preregistered gate; see acquisition-report.json item ledger",
+            "diagnosis": (
+                "acquisition yielded fewer usable documents than the preregistered gate; "
+                "see acquisition-report.json item ledger"
+            ),
         }
         write_json(
             results_dir / "evaluation.json", {"verdict": verdict, "metrics": {}, "grades": []}
@@ -183,7 +185,7 @@ def main(argv: list[str] | None = None) -> int:
                     client, source_id=source_id, title=document["title"], text=document["text"]
                 )
             )
-        except Exception as exc:
+        except Exception as exc:  # ledgered deliberately
             question_failures.append({"source_id": source_id, "error_class": type(exc).__name__})
     frozen_hash = questions_mod.freeze_questions(
         [
@@ -196,8 +198,8 @@ def main(argv: list[str] | None = None) -> int:
         results_dir / "questions.frozen.json",
     )
     print(
-        f"[questions] frozen n={len(question_rows)} "
-        f"failures={len(question_failures)} sha256={frozen_hash[:16]}..."
+        f"[questions] frozen n={len(question_rows)} failures={len(question_failures)} "
+        f"sha256={frozen_hash[:16]}..."
     )
     run_manifest["question_count"] = len(question_rows)
     run_manifest["question_failures"] = len(question_failures)
@@ -299,12 +301,12 @@ def write_summary_md(
     )
     lines.append(f"- branch: {prereg['worktree_branch']} cut from {prereg['git_commit_at_freeze']}")
     lines.append(
-        "- preregistration sha256: see "
-        "preregistration.snapshot.json (frozen before any result existed)"
+        "- preregistration sha256: see preregistration.snapshot.json "
+        "(frozen before any result existed)"
     )
     lines.append(
         f"- pinned model: `{manifest.get('pinned_model', 'n/a')}` "
-        f"(temperature 0, single-model rule)"
+        "(temperature 0, single-model rule)"
     )
     lines.append(f"- verdict: **{manifest.get('verdict', 'PENDING')}**")
     lines.append("- role: PILOT ONLY — harness validation and directional signal only\n")
@@ -315,28 +317,28 @@ def write_summary_md(
         "| Preregistration freeze | DONE | manifest + snapshot hash written before acquisition |"
     )
     blocked_now = manifest.get("verdict") == "BLOCKED_ACQUISITION"
-    question_status = "DONE" if manifest.get("question_count") else "NOT REACHED"
     lines.append(
         f"| Acquisition | {'BLOCKED' if blocked_now else 'DONE'} "
-        f"| acquisition-report.json item ledger; no silent drops |"
+        "| acquisition-report.json item ledger; no silent drops |"
     )
     lines.append(
-        f"| Question freeze | {question_status} | questions.frozen.json hash in run-manifest.json |"
+        f"| Question freeze | {'DONE' if manifest.get('question_count') else 'NOT REACHED'} "
+        "| questions.frozen.json hash in run-manifest.json |"
     )
     lines.append(
         f"| Arm execution | {'DONE' if metrics else 'NOT REACHED'} "
-        f"| runs/*.jsonl include per-row api_failure flags |"
+        "| runs/*.jsonl include per-row api_failure flags |"
     )
     lines.append(
         f"| Grading | {'DONE' if metrics else 'NOT REACHED'} "
-        f"| evaluation.json per-question grades + Wilson CIs |"
+        "| evaluation.json per-question grades + Wilson CIs |"
     )
     lines.append("")
     if metrics:
         lines.append("## Metrics (primary: accuracy over identical frozen questions)\n")
         lines.append(
-            "| arm | accuracy | Wilson 95% CI | critical-only "
-            "| provenance hit | mean latency s | api-failure rate |"
+            "| arm | accuracy | Wilson 95% CI | critical-only | provenance hit "
+            "| mean latency s | api-failure rate |"
         )
         lines.append("| --- | --- | --- | --- | --- | --- | --- |")
         for arm in ("raw", "rag", "tavonel"):
@@ -374,10 +376,10 @@ def write_summary_md(
     )
     lines.append(
         "- **BLOCKER-GIT-WORKTREE**: worktree checkout could not complete on this host "
-        "(per-file multi-second disk; interrupted resets "
-        "left the index partial). Harness and results live as "
-        "untracked files under benchmark/w6/v2/ and "
-        "benchmark/results/w6-v2-pilot/, ready to commit once the "
+        "(per-file multi-second disk; interrupted resets left the index partial). "
+        "Harness and results live as "
+        "untracked files under benchmark/w6/v2/ and benchmark/results/w6-v2-pilot/, "
+        "ready to commit once the "
         "worktree index is repaired with a single `git reset --hard HEAD`."
     )
     lines.append("")

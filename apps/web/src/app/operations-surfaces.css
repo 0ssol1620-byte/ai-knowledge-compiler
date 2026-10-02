@@ -1,0 +1,1192 @@
+/*
+ * /projects and /integrity — the two operations surfaces had markup and no
+ * stylesheet, so their registers, toolbars, tables and inspector rendered as
+ * browser defaults. Calm Precision: one bordered register per concern, rules
+ * instead of cards, status carried by text first and colour second.
+ *
+ * Layered, so any legacy unlayered rule still wins where it overlaps. Visible
+ * text never drops below 12px; controls sit at 14px with a 40px target.
+ */
+@layer components {
+  .app-frame .projects-page,
+  .app-frame .integrity-console-page {
+    --ops-status-danger: var(--danger);
+    --ops-status-warning: var(--warning);
+    --ops-status-active: var(--accent);
+    --ops-status-ok: var(--success);
+
+    color: var(--text);
+  }
+
+  /* Integrity has no .page-shell; match its measure and gutters. */
+  .app-frame .integrity-console-page {
+    width: min(1480px, 100%);
+    margin: 0 auto;
+    padding: 30px 34px 56px;
+  }
+
+  /* ── Page heading ─────────────────────────────────────────────── */
+  .app-frame .projects-hero,
+  .app-frame .integrity-console-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 16px 24px;
+    margin-bottom: 24px;
+  }
+
+  .app-frame .projects-hero > div:first-child,
+  .app-frame .integrity-console-heading > div {
+    flex: 1 1 420px;
+    min-width: 0;
+  }
+
+  .app-frame .projects-hero h1,
+  .app-frame .integrity-console-heading h1 {
+    margin: 6px 0 10px;
+    font-size: clamp(26px, 2.4vw, 34px);
+    line-height: 1.22;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  .app-frame .projects-hero p:not(.eyebrow),
+  .app-frame .integrity-console-heading > div > span {
+    display: block;
+    max-width: 68ch;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .app-frame .integrity-console-heading > div > p {
+    margin: 0;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 560;
+  }
+
+  .app-frame .projects-hero .primary-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  /* Data-mode note: states where the rows come from, never decoration. */
+  .app-frame .integrity-console-heading aside {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr);
+    gap: 10px;
+    width: min(100%, 380px);
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+  }
+
+  .app-frame .integrity-console-heading aside svg {
+    color: var(--text-secondary);
+  }
+
+  .app-frame .integrity-console-heading aside > span {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .app-frame .integrity-console-heading aside strong {
+    font-size: 14px;
+  }
+
+  .app-frame .integrity-console-heading aside small {
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .app-frame .integrity-console-heading aside code {
+    overflow-wrap: anywhere;
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+
+  /* ── Count registers ──────────────────────────────────────────── */
+  .app-frame .projects-summary,
+  .app-frame .integrity-status-register {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    overflow: hidden;
+    margin: 0 0 20px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--border);
+  }
+
+  .app-frame .projects-summary > div,
+  .app-frame .integrity-status-register > div {
+    display: flex;
+    flex: 1 1 150px;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    padding: 14px 16px;
+    background: var(--surface);
+  }
+
+  .app-frame .projects-summary span {
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .app-frame .projects-summary strong {
+    font-size: 24px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+
+  .app-frame .integrity-status-register > div {
+    display: grid;
+    flex-basis: 136px;
+    grid-template-columns: 18px minmax(0, 1fr);
+    grid-template-areas:
+      "icon count"
+      "label label";
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+  }
+
+  .app-frame .integrity-status-register svg {
+    grid-area: icon;
+    color: var(--ops-tone, var(--text-secondary));
+  }
+
+  .app-frame .integrity-status-register b {
+    grid-area: count;
+    justify-self: end;
+    font-size: 22px;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .app-frame .integrity-status-register > div > span {
+    display: grid;
+    grid-area: label;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .app-frame .integrity-status-register span strong {
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .app-frame .integrity-status-register code {
+    overflow: hidden;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Status tone, shared by register, queue and inspector. */
+  .app-frame .integrity-console-page [data-status="unresolved"],
+  .app-frame .integrity-console-page [data-status="quarantined"] {
+    --ops-tone: var(--ops-status-danger);
+  }
+
+  .app-frame .integrity-console-page [data-status="warning"] {
+    --ops-tone: var(--ops-status-warning);
+  }
+
+  .app-frame .integrity-console-page [data-status="reprocessing"] {
+    --ops-tone: var(--ops-status-active);
+  }
+
+  .app-frame .integrity-console-page [data-status="auto_repaired"],
+  .app-frame .integrity-console-page [data-status="authority_verified"],
+  .app-frame .integrity-console-page [data-status="verified"] {
+    --ops-tone: var(--ops-status-ok);
+  }
+
+  /* ── Projects toolbar ─────────────────────────────────────────── */
+  .app-frame .projects-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 12px;
+    margin-bottom: 14px;
+    font-size: 14px;
+  }
+
+  .app-frame .projects-toolbar > label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    color: var(--text-secondary);
+  }
+
+  .app-frame .projects-toolbar .projects-search {
+    position: relative;
+    flex: 1 1 280px;
+  }
+
+  .app-frame .projects-search svg {
+    position: absolute;
+    left: 12px;
+    color: var(--text-tertiary);
+    pointer-events: none;
+  }
+
+  .app-frame .projects-search input,
+  .app-frame .projects-toolbar select {
+    min-height: 40px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+  }
+
+  .app-frame .projects-search input {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    padding-left: 36px;
+  }
+
+  .app-frame .projects-toolbar select {
+    max-width: 100%;
+  }
+
+  .app-frame .projects-view-switch {
+    display: inline-flex;
+    padding: 2px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+  }
+
+  .app-frame .projects-view-switch button,
+  .app-frame .projects-bulk-bar button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 6px 12px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
+
+  .app-frame .projects-view-switch button:hover {
+    color: var(--text);
+  }
+
+  .app-frame .projects-view-switch button.active {
+    background: var(--accent-soft);
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .app-frame .projects-bulk-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    border: 1px solid var(--accent-border);
+    border-radius: 6px;
+    background: var(--accent-soft);
+    font-size: 14px;
+  }
+
+  .app-frame .projects-bulk-bar > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-right: auto;
+  }
+
+  .app-frame .projects-bulk-bar button {
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  /* ── Projects table ───────────────────────────────────────────── */
+  /*
+   * Below the table's min-width the wrap scrolls locally; the page never
+   * does. The edge shadows are the scroll cue: `local` covers travel with
+   * the content, `scroll` shadows stay pinned, so a shadow shows only on the
+   * side that still has columns to reveal.
+   */
+  .app-frame .projects-table-wrap {
+    /* Contain the .sr-only header cell, which otherwise escapes the clip. */
+    position: relative;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background:
+      linear-gradient(to right, var(--surface) 30%, transparent) left / 40px
+        100% no-repeat local,
+      linear-gradient(to left, var(--surface) 30%, transparent) right / 40px
+        100% no-repeat local,
+      radial-gradient(
+          farthest-side at 0 50%,
+          color-mix(in srgb, var(--text) 16%, transparent),
+          transparent
+        )
+        left / 14px 100% no-repeat scroll,
+      radial-gradient(
+          farthest-side at 100% 50%,
+          color-mix(in srgb, var(--text) 16%, transparent),
+          transparent
+        )
+        right / 14px 100% no-repeat scroll,
+      var(--surface);
+    overscroll-behavior-x: contain;
+  }
+
+  .app-frame .projects-table {
+    width: 100%;
+    min-width: 760px;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .app-frame .projects-table caption {
+    padding: 12px 16px 10px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    text-align: left;
+  }
+
+  .app-frame .projects-table th,
+  .app-frame .projects-table td {
+    padding: 12px;
+    border-top: 1px solid var(--border);
+    text-align: left;
+    vertical-align: middle;
+  }
+
+  .app-frame .projects-table thead th {
+    background: var(--surface-subtle);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .app-frame .projects-table tr > :first-child {
+    width: 52px;
+    padding-left: 12px;
+  }
+
+  .app-frame .projects-table tr > :last-child {
+    width: 56px;
+  }
+
+  .app-frame .projects-table tr > :nth-child(n + 4):nth-child(-n + 5) {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .app-frame .projects-table td:nth-child(n + 6) {
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  .app-frame .projects-table tbody tr:hover > * {
+    background: var(--surface-subtle);
+  }
+
+  .app-frame .projects-table tbody tr[data-selected="true"] > * {
+    background: var(--accent-soft);
+  }
+
+  .app-frame .projects-table tbody th {
+    min-width: 260px;
+    font-weight: 400;
+  }
+
+  .app-frame .projects-table tbody th a {
+    display: grid;
+    gap: 3px;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .app-frame .projects-table tbody th a:hover strong {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .app-frame .projects-table tbody th strong {
+    overflow-wrap: anywhere;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .app-frame .projects-table tbody th small {
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .app-frame .projects-table button,
+  .app-frame .projects-card-grid article > header button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-secondary);
+  }
+
+  .app-frame .projects-table button:hover,
+  .app-frame .projects-card-grid article > header button:hover {
+    border-color: var(--border-strong);
+    color: var(--text);
+  }
+
+  .app-frame .projects-table button[aria-pressed="true"],
+  .app-frame .projects-card-grid button[aria-pressed="true"] {
+    color: var(--accent);
+  }
+
+  .app-frame .projects-table .icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: var(--text-secondary);
+  }
+
+  .app-frame .project-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+
+  .app-frame .project-status::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ops-tone, var(--text-tertiary));
+  }
+
+  .app-frame .project-status[data-status="ready"] {
+    --ops-tone: var(--ops-status-ok);
+  }
+
+  .app-frame .project-status[data-status="processing"] {
+    --ops-tone: var(--ops-status-active);
+  }
+
+  .app-frame .project-status[data-status="attention"] {
+    --ops-tone: var(--ops-status-warning);
+  }
+
+  /* ── Projects card view ───────────────────────────────────────── */
+  .app-frame .projects-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: 12px;
+  }
+
+  .app-frame .projects-card-grid article {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+
+  .app-frame .projects-card-grid article[data-selected="true"] {
+    border-color: var(--accent-border);
+  }
+
+  .app-frame .projects-card-grid article > header,
+  .app-frame .projects-card-grid article > footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .app-frame .projects-card-grid article > a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .app-frame .projects-card-grid h2 {
+    margin: 10px 0 4px;
+    overflow-wrap: anywhere;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  .app-frame .projects-card-grid p {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .app-frame .projects-card-grid dl {
+    display: flex;
+    gap: 24px;
+    margin: 14px 0;
+  }
+
+  .app-frame .projects-card-grid dt {
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+
+  .app-frame .projects-card-grid dd {
+    margin: 2px 0 0;
+    font-size: 18px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .app-frame .projects-card-grid article > footer {
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .app-frame .projects-empty-state {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    padding: 40px 16px;
+    border: 1px dashed var(--border-strong);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+
+  .app-frame .projects-empty-state h2 {
+    margin: 0;
+    color: var(--text);
+    font-size: 16px;
+  }
+
+  .app-frame .projects-empty-state p {
+    max-width: 52ch;
+    margin: 0;
+  }
+
+  .app-frame .projects-ledger-note {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 14px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .app-frame .projects-ledger-note svg {
+    flex: none;
+    transform: translateY(2px);
+  }
+
+  /* ── Integrity: queue + inspector ─────────────────────────────── */
+  .app-frame .integrity-live-state {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 14px;
+  }
+
+  .app-frame .integrity-live-state[role="alert"] {
+    border-color: color-mix(in srgb, var(--danger) 40%, var(--border));
+  }
+
+  .app-frame .integrity-live-state button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 36px;
+    padding: 6px 12px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    font-size: 14px;
+  }
+
+  .app-frame .integrity-console-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.4fr);
+    align-items: start;
+    gap: 16px;
+  }
+
+  .app-frame .integrity-queue,
+  .app-frame .integrity-inspector {
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+  }
+
+  .app-frame .integrity-queue > header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .app-frame .integrity-queue h2,
+  .app-frame .integrity-inspector h2 {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  .app-frame .integrity-queue > header p {
+    margin: 4px 0 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  .app-frame .integrity-queue > header > span {
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  .app-frame .integrity-queue-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .app-frame .integrity-queue-list li + li {
+    border-top: 1px solid var(--border);
+  }
+
+  .app-frame .integrity-queue-list button {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 4px 10px;
+    width: 100%;
+    min-height: 44px;
+    padding: 12px 16px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+  }
+
+  .app-frame .integrity-queue-list button:hover {
+    background: var(--surface-subtle);
+  }
+
+  .app-frame .integrity-queue-list button:focus-visible {
+    outline-offset: -2px;
+  }
+
+  .app-frame .integrity-queue-list button[aria-current="true"] {
+    background: var(--accent-soft);
+    box-shadow: inset 3px 0 var(--accent);
+  }
+
+  .app-frame .integrity-queue-list button > svg {
+    margin-top: 1px;
+    color: var(--ops-tone, var(--text-secondary));
+  }
+
+  .app-frame .integrity-queue-list button > span {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .app-frame .integrity-queue-list strong {
+    overflow-wrap: anywhere;
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .app-frame .integrity-queue-list small {
+    overflow-wrap: anywhere;
+    color: var(--text-secondary);
+    font-size: 12px;
+    line-height: 1.45;
+  }
+
+  .app-frame .integrity-queue-list em {
+    grid-column: 2;
+    color: var(--ops-tone, var(--text-secondary));
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 600;
+  }
+
+  .app-frame .integrity-live-empty {
+    margin: 0;
+    padding: 16px;
+    color: var(--text-secondary);
+  }
+
+  .app-frame .integrity-inspector > header {
+    display: grid;
+    gap: 6px;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .app-frame .integrity-inspector > header > p {
+    margin: 0;
+    color: var(--text-tertiary);
+    font-size: 12px;
+    font-weight: 560;
+  }
+
+  .app-frame .integrity-inspector > header > div {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .app-frame .integrity-inspector > header > div > svg {
+    flex: none;
+    color: var(--ops-tone, var(--text-secondary));
+  }
+
+  .app-frame .integrity-inspector > header > div h2 {
+    overflow-wrap: anywhere;
+    font-size: 20px;
+  }
+
+  .app-frame .integrity-inspector > header > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--ops-tone, var(--text-secondary));
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .app-frame .integrity-inspector > header > span::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentcolor;
+  }
+
+  /* The inspector header's tone follows the selected item. */
+  .app-frame .integrity-inspector > header:has([data-status="unresolved"]),
+  .app-frame .integrity-inspector > header:has([data-status="quarantined"]) {
+    --ops-tone: var(--ops-status-danger);
+  }
+
+  .app-frame .integrity-inspector > header:has([data-status="warning"]) {
+    --ops-tone: var(--ops-status-warning);
+  }
+
+  .app-frame .integrity-inspector > header:has([data-status="reprocessing"]) {
+    --ops-tone: var(--ops-status-active);
+  }
+
+  .app-frame .integrity-inspector > header:has([data-status="auto_repaired"]),
+  .app-frame
+    .integrity-inspector
+    > header:has([data-status="authority_verified"]),
+  .app-frame .integrity-inspector > header:has([data-status="verified"]) {
+    --ops-tone: var(--ops-status-ok);
+  }
+
+  .app-frame .integrity-summary {
+    max-width: 72ch;
+    margin: 0;
+    padding: 16px 18px 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  .app-frame .integrity-finding-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px;
+    overflow: hidden;
+    margin: 16px 18px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--border);
+  }
+
+  .app-frame .integrity-finding-meta > div {
+    min-width: 0;
+    padding: 10px 12px;
+    background: var(--surface);
+  }
+
+  .app-frame .integrity-finding-meta dt,
+  .app-frame .integrity-attempts dt {
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+
+  .app-frame .integrity-finding-meta dd {
+    margin: 2px 0 0;
+    overflow-wrap: anywhere;
+    font-size: 14px;
+  }
+
+  .app-frame .integrity-finding-meta code,
+  .app-frame .integrity-decision-contract code {
+    font-size: 13px;
+  }
+
+  .app-frame .integrity-attempts {
+    margin: 0 18px 16px;
+  }
+
+  .app-frame .integrity-attempts > header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .app-frame .integrity-attempts > header svg {
+    flex: none;
+    color: var(--text-tertiary);
+  }
+
+  .app-frame .integrity-attempts h3,
+  .app-frame .integrity-decision-history h3 {
+    margin: 0;
+    font-size: 15px;
+  }
+
+  .app-frame .integrity-attempts > header p {
+    margin: 4px 0 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  /* Ordered by execution; the step number is in the markup. */
+  .app-frame .integrity-attempts ol {
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .app-frame .integrity-attempts li {
+    display: grid;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .app-frame .integrity-attempts li > span {
+    display: inline-grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--border-strong);
+    border-radius: 50%;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .app-frame .integrity-attempts li strong {
+    display: block;
+    margin: 2px 0 6px;
+    font-size: 14px;
+  }
+
+  .app-frame .integrity-attempts li dl {
+    display: grid;
+    gap: 4px;
+    margin: 0;
+  }
+
+  .app-frame .integrity-attempts li dl > div {
+    display: grid;
+    grid-template-columns: minmax(56px, max-content) minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .app-frame .integrity-attempts li dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-size: 14px;
+  }
+
+  .app-frame .integrity-inspector-empty {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    padding: 40px 16px;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+
+  /* ── Optional human decision ──────────────────────────────────── */
+  .app-frame .integrity-override {
+    margin: 0 18px 18px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .app-frame .integrity-override > summary {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .app-frame .integrity-override[open] > summary {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .app-frame .integrity-override > p,
+  .app-frame .integrity-override > form,
+  .app-frame .integrity-override > section {
+    margin: 0;
+    padding: 12px 14px 0;
+  }
+
+  .app-frame .integrity-override > section {
+    padding-bottom: 14px;
+  }
+
+  .app-frame .integrity-override > p {
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .app-frame .integrity-override form {
+    display: grid;
+    gap: 12px;
+    font-size: 14px;
+  }
+
+  /* Legacy unlayered 'font: inherit' on controls outranks this layer, so
+     the 14px control size is set on the parent. */
+  .app-frame .integrity-override form > label {
+    display: grid;
+    gap: 4px;
+    font-size: 14px;
+  }
+
+  .app-frame .integrity-override form > label > span {
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .app-frame .integrity-override select,
+  .app-frame .integrity-override input:not([type="checkbox"]) {
+    width: 100%;
+    min-height: 40px;
+    padding: 8px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 14px;
+  }
+
+  .app-frame .integrity-override form > .integrity-decision-acknowledgement {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 14px;
+  }
+
+  .app-frame .integrity-decision-acknowledgement input {
+    width: 18px;
+    height: 18px;
+    margin: 2px 0 0;
+  }
+
+  .app-frame .integrity-decision-contract {
+    margin: 0;
+  }
+
+  .app-frame .integrity-decision-contract dt {
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+
+  .app-frame .integrity-decision-contract dd {
+    margin: 2px 0 0;
+    overflow-wrap: anywhere;
+  }
+
+  .app-frame .integrity-decision-safety,
+  .app-frame .integrity-decision-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .app-frame .integrity-decision-safety svg,
+  .app-frame .integrity-decision-message svg {
+    flex: none;
+    margin-top: 2px;
+  }
+
+  .app-frame .integrity-decision-message[data-state="error"] {
+    color: var(--danger);
+  }
+
+  .app-frame .integrity-decision-message[data-state="success"] {
+    color: var(--success);
+  }
+
+  .app-frame .integrity-override button[type="submit"] {
+    justify-self: start;
+    min-height: 40px;
+    padding: 8px 16px;
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+    background: var(--primary);
+    color: var(--surface);
+    font-size: 14px;
+    font-weight: 600;
+  }
+
+  .app-frame .integrity-override form > small {
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .app-frame .integrity-decision-history > p {
+    margin: 6px 0 0;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .app-frame .integrity-decision-history ol {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .app-frame .integrity-decision-history li {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 4px 12px;
+    padding: 8px 0;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .app-frame .integrity-decision-history li > span {
+    display: grid;
+    gap: 2px;
+  }
+
+  .app-frame .integrity-decision-history code,
+  .app-frame .integrity-decision-history small {
+    color: var(--text-secondary);
+    font-size: 12px;
+  }
+
+  /* ── Breakpoints: §20 1024 / 768 ───────────────────────────── */
+  @media (width < 1024px) {
+    .app-frame .integrity-console-page {
+      padding-inline: 24px;
+    }
+
+    .app-frame .integrity-console-layout {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @media (width < 768px) {
+    .app-frame .integrity-console-page {
+      padding: 22px 16px 38px;
+    }
+
+    .app-frame .projects-summary > div {
+      flex-basis: 40%;
+    }
+
+    .app-frame .projects-toolbar > label:not(.projects-search) {
+      flex: 1 1 40%;
+    }
+
+    .app-frame .projects-toolbar > label:not(.projects-search) select {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .app-frame .integrity-status-register > div {
+      flex-basis: 40%;
+    }
+
+    .app-frame .integrity-summary,
+    .app-frame .integrity-inspector > header {
+      padding-inline: 14px;
+    }
+
+    .app-frame .integrity-finding-meta,
+    .app-frame .integrity-attempts,
+    .app-frame .integrity-override {
+      margin-inline: 14px;
+    }
+  }
+}

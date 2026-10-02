@@ -63,7 +63,7 @@ def get_json(
         except urllib.error.HTTPError as exc:
             last_status = exc.code
             headers = dict(exc.headers or {})
-            retry_after = headers.get("Retry-After")
+            retry_after = str(headers.get("Retry-After") or "")
             retryable = exc.code == 429 or exc.code >= 500
             if attempt == MAX_ATTEMPTS or not retryable:
                 raise GoogleAdapterError(

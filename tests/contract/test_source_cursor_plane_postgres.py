@@ -56,7 +56,9 @@ async def test_cursor_acl_repair_and_tenant_read_isolation():
                 assert before["effective_table_acl_exact"] is False
                 await connection.execute(text("RESET ROLE"))
                 for _ in range(2):
-                    await connection.run_sync(_upgrade, "0041_source_cursor_plane_privileges.py")
+                    await connection.run_sync(
+                        _upgrade, "0041_revoke_source_cursor_scheduler_grant.py"
+                    )
                 await connection.execute(text("SET LOCAL ROLE akc_scheduler"))
                 after = (await connection.execute(_POSTGRES_CAPABILITY_QUERY)).mappings().one()
                 assert after["effective_table_acl_exact"] is True

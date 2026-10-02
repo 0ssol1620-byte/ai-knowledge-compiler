@@ -38,7 +38,7 @@ def answer_once(
             max_tokens=300,
             phase=phase,
         )
-    except Exception as exc:
+    except Exception as exc:  # recorded as arm failure, never silent
         return "", time.monotonic() - started, True, type(exc).__name__
     return text.strip(), time.monotonic() - started, False, ""
 
@@ -53,9 +53,10 @@ def run_raw_arm(
     rows: list[dict[str, Any]] = []
     for item in questions:
         document = documents.get(item["source_id"], {})
-        title = document.get("title", item["title"])
-        text = document.get("text", "")[:budget_chars]
-        context = f"[{item['source_id']} | {title}]\n{text}"
+        context = (
+            f"[{item['source_id']} | {document.get('title', item['title'])}]\n"
+            f"{document.get('text', '')[:budget_chars]}"
+        )
         answer, latency, failed, error_class = answer_once(
             client, question=item["question"], context=context, phase="answering_raw"
         )

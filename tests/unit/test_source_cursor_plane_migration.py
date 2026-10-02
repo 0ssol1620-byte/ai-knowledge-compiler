@@ -6,7 +6,10 @@ from types import SimpleNamespace
 
 
 def _migration():
-    path = Path(__file__).parents[2] / "migrations/versions/0041_source_cursor_plane_privileges.py"
+    path = (
+        Path(__file__).parents[2]
+        / "migrations/versions/0041_revoke_source_cursor_scheduler_grant.py"
+    )
     spec = importlib.util.spec_from_file_location("cursor_plane_migration", path)
     assert spec and spec.loader
     module = importlib.util.module_from_spec(spec)
@@ -16,7 +19,7 @@ def _migration():
 
 def test_cursor_upgrade_revokes_unused_scheduler_authority_and_scopes_api_read(monkeypatch):
     migration = _migration()
-    assert len(migration.revision) <= 32
+    assert migration.down_revision == "0040_source_cursor_tenancy"
     statements = []
     monkeypatch.setattr(
         migration.op,
@@ -26,7 +29,7 @@ def test_cursor_upgrade_revokes_unused_scheduler_authority_and_scopes_api_read(m
     monkeypatch.setattr(migration.op, "execute", statements.append)
     migration.upgrade()
     sql = "\n".join(statements)
-    assert "REVOKE ALL PRIVILEGES ON TABLE source_cursors FROM akc_scheduler" in sql
+    assert "REVOKE SELECT, INSERT, UPDATE ON TABLE source_cursors FROM akc_scheduler" in sql
     assert "GRANT" not in sql
     assert "AS PERMISSIVE FOR SELECT TO akc_api_plane" in sql
     assert "tenant_id = NULLIF(current_setting('app.tenant_id', true), '')::uuid" in sql
