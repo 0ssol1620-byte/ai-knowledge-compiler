@@ -184,6 +184,90 @@ jobs:
         id: visual
         continue-on-error: true
         run: pnpm --filter @akc/web test:e2e:visual
+      # Stage only the visual comparison evidence before later browser steps
+      # rewrite test-results and playwright-report. Traces and the rest of
+      # test-results are deliberately left out of this curated artifact.
+      - name: Stage visual comparison evidence
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import shutil
+          from pathlib import Path
+
+          results = Path("apps/web/test-results")
+          snapshots = Path("apps/web/e2e/visual-regression.spec.ts-snapshots")
+          dest = Path(os.environ["RUNNER_TEMP"]) / "visual-comparison-evidence"
+          if dest.exists():
+              shutil.rmtree(dest)
+          dest.mkdir(parents=True)
+
+          screenshot_suffixes = ("-actual.png", "-expected.png", "-diff.png")
+          copied = []
+
+          def copy(src, rel):
+              target = dest / rel
+              target.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copy2(src, target)
+              digest = hashlib.sha256()
+              with src.open("rb") as handle:
+                  for chunk in iter(lambda: handle.read(1 << 20), b""):
+                      digest.update(chunk)
+              copied.append({
+                  "source": src.as_posix(),
+                  "artifact_path": rel.as_posix(),
+                  "bytes": src.stat().st_size,
+                  "sha256": digest.hexdigest(),
+              })
+
+          screenshot_outputs = 0
+          if results.is_dir():
+              for src in sorted(p for p in results.rglob("*") if p.is_file()):
+                  if src.name.endswith(screenshot_suffixes):
+                      screenshot_outputs += 1
+                  elif src.name != "error-context.md":
+                      continue
+                  copy(src, Path("test-results") / src.relative_to(results))
+
+          baselines = 0
+          if snapshots.is_dir():
+              for src in sorted(p for p in snapshots.rglob("*.png") if p.is_file()):
+                  baselines += 1
+                  copy(src, Path("visual-regression.spec.ts-snapshots") / src.relative_to(snapshots))
+
+          manifest = {
+              "github_sha": os.environ.get("GITHUB_SHA", ""),
+              "test_results_present": results.is_dir(),
+              "snapshots_present": snapshots.is_dir(),
+              "screenshot_outputs": screenshot_outputs,
+              "no_screenshot_outputs": screenshot_outputs == 0,
+              "baseline_pngs": baselines,
+              "files": copied,
+          }
+          (dest / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+
+          if screenshot_outputs == 0:
+              print("::notice::No visual comparison screenshot outputs (-actual/-expected/-diff.png) were produced; manifest marks no_screenshot_outputs=true")
+          print(f"Staged {len(copied)} file(s): {screenshot_outputs} screenshot output(s), {baselines} baseline PNG(s)")
+          PY
+      - name: Upload visual comparison evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: visual-comparison-evidence
+          path: ${{ runner.temp }}/visual-comparison-evidence
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload visual regression HTML report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: visual-regression-html-report
+          path: apps/web/playwright-report
+          if-no-files-found: warn
+          retention-days: 14
       - name: Run Chromium, Firefox, WebKit, and seven viewport contracts
         id: matrix
         if: always()
