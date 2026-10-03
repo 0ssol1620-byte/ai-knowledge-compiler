@@ -354,3 +354,82 @@ test("integrity status register code exposes every character", async ({
     expect(metrics.clipped, `code is not clipped at ${width}px`).toBe(false);
   }
 });
+
+// The canvas SVG stretches with preserveAspectRatio="none" while the nodes are
+// opaque, so an arrowhead that drifts out of its inter-node gap disappears.
+test("security architecture diagram keeps every arrowhead visible in its gap", async ({
+  page,
+}, testInfo) => {
+  await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "light" });
+  await setLocaleCookie(page.context(), testInfo, "en");
+  const response = await page.goto("/security", { waitUntil: "networkidle" });
+  expect(response?.status()).toBeLessThan(400);
+  await expect(page.locator("html")).toHaveAttribute("lang", langPattern("en"));
+
+  const canvas = page.locator(".tv-architecture-diagram .tv-diagram-canvas").first();
+  const arrowheads = canvas.locator("svg > path.tv-diagram-arrowhead");
+
+  const initialViewport = page.viewportSize();
+  expect(initialViewport, "project defines a viewport").not.toBeNull();
+  const viewportHeight = initialViewport!.height;
+
+  for (const width of [1440, 1280, 1024]) {
+    await page.setViewportSize({ width, height: viewportHeight });
+    await page.evaluate(() => document.fonts.ready);
+    await expect(canvas, `diagram canvas at ${width}px`).toBeVisible();
+    await expect(arrowheads, `three arrowheads at ${width}px`).toHaveCount(3);
+    await canvas.evaluate((element) => element.scrollIntoView({ block: "center" }));
+
+    const results = await canvas.evaluate((element) => {
+      const nodes = Array.from(element.querySelectorAll(":scope > div")).map((node) =>
+        node.getBoundingClientRect(),
+      );
+      const heads = Array.from(
+        element.querySelectorAll<SVGPathElement>("svg > path.tv-diagram-arrowhead"),
+      );
+      return heads.map((head) => {
+        const rect = head.getBoundingClientRect();
+        const style = getComputedStyle(head);
+        // The head is a right-pointing triangle; its centroid is a third of
+        // the way in from the base, so it is painted fill, not empty bbox.
+        const probe = { x: rect.left + rect.width / 3, y: rect.top + rect.height / 2 };
+        const hit = document.elementFromPoint(probe.x, probe.y);
+        const overlapsNode = nodes.some(
+          (node) =>
+            rect.left < node.right &&
+            rect.right > node.left &&
+            rect.top < node.bottom &&
+            rect.bottom > node.top,
+        );
+        const gap = nodes.reduce(
+          (found, node, index) => {
+            const next = nodes[index + 1];
+            return next && node.right <= rect.left && rect.right <= next.left ? index + 1 : found;
+          },
+          0,
+        );
+        return {
+          arrow: head.dataset.arrow,
+          width: rect.width,
+          height: rect.height,
+          visible: style.visibility !== "hidden" && style.display !== "none",
+          hitSelf: hit === head,
+          overlapsNode,
+          gap,
+        };
+      });
+    });
+
+    expect(results.map((result) => result.gap), `arrowheads sit in gaps 1-3 at ${width}px`).toEqual([
+      1, 2, 3,
+    ]);
+    for (const result of results) {
+      const label = `arrowhead ${result.arrow} at ${width}px`;
+      expect(result.visible, `${label} is rendered`).toBe(true);
+      expect(result.width, `${label} has width`).toBeGreaterThan(0);
+      expect(result.height, `${label} has height`).toBeGreaterThan(0);
+      expect(result.overlapsNode, `${label} does not overlap a node`).toBe(false);
+      expect(result.hitSelf, `${label} is the topmost element at its centroid`).toBe(true);
+    }
+  }
+});

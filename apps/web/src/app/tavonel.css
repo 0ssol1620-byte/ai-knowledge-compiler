@@ -124,7 +124,22 @@
       .tv-campaign-guarantees li,
       .tv-campaign-guarantees b,
       .tv-campaign-pending span,
-      .tv-campaign-pending p
+      .tv-campaign-pending p,
+      .tv-hero-comp-lead,
+      .tv-film-lead,
+      .tv-hero-comp-row strong,
+      .tv-manifesto > p,
+      .tv-chapter-copy p,
+      .tv-cv-knowledge strong,
+      .tv-security-band > div:first-child > span,
+      .tv-policy-orbit strong,
+      .tv-home-final > p,
+      .tv-route-visual-demo > div > strong,
+      .tv-route-visual-index > div strong,
+      .tv-route-proof-heading > p:last-child,
+      .tv-architecture-diagram figcaption p,
+      .app-frame .projects-summary strong,
+      .app-frame .integrity-status-register b
     )
   ) {
     font-size: max(12px, 1em) !important;
@@ -2482,14 +2497,18 @@ body.tv-menu-open {
   line-height: 1.65;
 }
 
+/* Inline padding and the column gap are percentages so each inter-node gap
+   sits at a fixed fraction of the canvas: 26.34%, 50%, 73.66%. The stretched
+   SVG (preserveAspectRatio="none") draws its arrowheads at those fractions,
+   so they stay in the gaps instead of under an opaque node at any width. */
 .tv-diagram-canvas {
   position: relative;
   min-height: 340px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 22px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4%;
   align-items: center;
-  padding: 44px;
+  padding: 44px 4.5%;
   border: 1px solid var(--tv-line);
   background-image: var(--tv-texture-coordinate);
   background-size: 42px 42px;
@@ -2509,9 +2528,10 @@ body.tv-menu-open {
   position: relative;
   z-index: 1;
   width: auto;
+  min-width: 0;
   min-height: 114px;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   align-content: center;
   gap: 10px;
   padding: 18px;
@@ -2525,13 +2545,17 @@ body.tv-menu-open {
 }
 
 .tv-diagram-canvas > div span {
+  min-width: 0;
   color: var(--tv-muted);
   font-size: 12px;
+  overflow-wrap: anywhere;
 }
 
 .tv-diagram-canvas > div strong {
+  min-width: 0;
   font-size: 12px;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .tv-diagram-equivalent {
