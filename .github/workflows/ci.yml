@@ -181,15 +181,43 @@ jobs:
       - name: Install the pinned release browser matrix
         run: pnpm --filter @akc/web exec playwright install --with-deps chromium firefox webkit
       - name: Compare approved visual baselines
+        id: visual
+        continue-on-error: true
         run: pnpm --filter @akc/web test:e2e:visual
       - name: Run Chromium, Firefox, WebKit, and seven viewport contracts
+        id: matrix
+        if: always()
         run: pnpm --filter @akc/web test:e2e:matrix
       - name: Capture seven-width and reduced-motion route evidence
+        id: evidence
+        if: always()
         run: pnpm --filter @akc/web exec playwright test e2e/evidence.spec.ts
       - name: Run forced-colors and 200-percent accessibility contracts
+        id: a11y
+        if: always()
         run: >-
           pnpm --filter @akc/web exec playwright test
           e2e/accessibility-matrix.spec.ts --project=desktop --project=mobile
+      - name: Fail if any browser contract failed
+        if: always()
+        env:
+          VISUAL_OUTCOME: ${{ steps.visual.outcome }}
+          MATRIX_OUTCOME: ${{ steps.matrix.outcome }}
+          EVIDENCE_OUTCOME: ${{ steps.evidence.outcome }}
+          A11Y_OUTCOME: ${{ steps.a11y.outcome }}
+        run: |
+          failed=0
+          check() {
+            if [ "$2" != "success" ]; then
+              echo "::error::$1 outcome: ${2:-missing}"
+              failed=1
+            fi
+          }
+          check "Compare approved visual baselines" "$VISUAL_OUTCOME"
+          check "Chromium, Firefox, WebKit, and seven viewport contracts" "$MATRIX_OUTCOME"
+          check "Seven-width and reduced-motion route evidence" "$EVIDENCE_OUTCOME"
+          check "Forced-colors and 200-percent accessibility contracts" "$A11Y_OUTCOME"
+          exit "$failed"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
@@ -395,3 +423,4 @@ jobs:
           python -m compileall -q benchmark infra/model-registry infra/security workers/gpu-common \
             workers/gpu-parser workers/gpu-knowledge workers/gpu-hpd workers/gpu-unlimited \
             workers/cpu-document workers/cpu-export
+

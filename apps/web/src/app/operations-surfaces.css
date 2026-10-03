@@ -192,11 +192,11 @@
   }
 
   .app-frame .integrity-status-register code {
-    overflow: hidden;
+    min-width: 0;
     color: var(--text-tertiary);
     font-size: 12px;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    white-space: normal;
   }
 
   /* Status tone, shared by register, queue and inspector. */
@@ -1190,3 +1190,4 @@
     }
   }
 }
+

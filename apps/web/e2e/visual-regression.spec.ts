@@ -150,3 +150,65 @@ test("privacy page keeps component type sizes above the 12px leaf floor", async 
     expect(await fontSize(selector), label).toBeGreaterThanOrEqual(12);
   }
 });
+
+test("integrity status register code exposes every character", async ({ page }, testInfo) => {
+  await setLocaleCookie(page.context(), testInfo, "ko");
+  const response = await page.goto(integrityPath, { waitUntil: "networkidle" });
+  expect(response?.status()).toBeLessThan(400);
+  await expect(page.locator("html")).toHaveAttribute("lang", langPattern("ko"));
+  await page.evaluate(() => document.fonts.ready);
+
+  const code = page.locator(".app-frame .integrity-status-register code").filter({ hasText: /^authority_verified$/ });
+  await expect(code).toHaveCount(1);
+
+  const initialViewport = page.viewportSize();
+  expect(initialViewport, "project defines a viewport").not.toBeNull();
+  const viewportHeight = initialViewport!.height;
+
+  for (const width of [1440, 768, 390, 360]) {
+    await page.setViewportSize({ width, height: viewportHeight });
+    await page.evaluate(() => document.fonts.ready);
+
+    await expect(code, `code visible at ${width}px`).toBeVisible();
+    await expect(code, `full text at ${width}px`).toHaveText("authority_verified");
+
+    const metrics = await code.evaluate((element) => {
+      const isClipped = (node: Element) =>
+        node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1;
+
+      const control = document.createElement("span");
+      control.textContent = element.textContent;
+      control.style.font = getComputedStyle(element).font;
+      Object.assign(control.style, {
+        display: "block",
+        width: "64px",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      });
+
+      const measured = {
+        text: element.textContent,
+        scrollWidth: element.scrollWidth,
+        clientWidth: element.clientWidth,
+        scrollHeight: element.scrollHeight,
+        clientHeight: element.clientHeight,
+        clipped: isClipped(element),
+      };
+
+      element.parentElement!.append(control);
+      try {
+        return { ...measured, controlClipped: isClipped(control) };
+      } finally {
+        control.remove();
+      }
+    });
+
+    expect(metrics.controlClipped, `negative control: 64px nowrap ellipsis span is clipped at ${width}px`).toBe(true);
+    expect(metrics.text, `measured text at ${width}px`).toBe("authority_verified");
+    expect(metrics.clientWidth, `code has layout width at ${width}px`).toBeGreaterThan(0);
+    expect(metrics.scrollWidth, `no horizontal clipping at ${width}px`).toBeLessThanOrEqual(metrics.clientWidth + 1);
+    expect(metrics.scrollHeight, `no vertical clipping at ${width}px`).toBeLessThanOrEqual(metrics.clientHeight + 1);
+    expect(metrics.clipped, `code is not clipped at ${width}px`).toBe(false);
+  }
+});
