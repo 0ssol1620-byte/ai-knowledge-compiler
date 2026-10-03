@@ -28,7 +28,7 @@ import net from "node:net";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { s3Bucket } from "./s3-bucket.mjs";
+import { s3Bucket, signV4 } from "./s3-bucket.mjs";
 
 // ---------------------------------------------------------------------------------------------
 // Preconditions: disposable GitHub-hosted Linux runner only.
@@ -336,6 +336,37 @@ try {
     const bucketName = storage.env.S3_BUCKET;
     const bucket = s3Bucket({ endpoint: storage.endpoint, bucket: bucketName, accessKey: storage.env.AWS_ACCESS_KEY_ID, secretKey: storageSecret, signedHost: storageHost });
     const listKeys = async prefix => (await bucket.list({ prefix })).objects.map(item => item.key).sort();
+
+    // Storage allocation/readiness before any browser traffic: the quarantine bucket and a second, distinct synthetic
+    // bucket (its own SeaweedFS collection) each take a signed write and read back the exact bytes on this run's local S3.
+    hop("storage-readiness");
+    const probeBucketName = "tavonel-joined-e2e-allocation-probe";
+    const createBucket = name => new Promise((resolve, reject) => {
+      const target = new URL(storage.endpoint);
+      const amzDate = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
+      const payloadSha256 = sha256("");
+      const headers = { host: storageHost, "x-amz-content-sha256": payloadSha256, "x-amz-date": amzDate, "content-length": "0" };
+      headers.authorization = signV4({ method: "PUT", path: `/${name}`, headers, payloadSha256, accessKey: storage.env.AWS_ACCESS_KEY_ID, secretKey: storageSecret, region: "auto", amzDate });
+      const request = http.request({ hostname: target.hostname, port: target.port, method: "PUT", path: `/${name}`, headers, agent: false, timeout: 60_000 },
+        result => { result.resume(); result.on("end", () => resolve(result.statusCode)); });
+      request.on("timeout", () => request.destroy(new Error("S3 CreateBucket timed out")));
+      request.on("error", reject); request.end();
+    });
+    check(`storage readiness: signed CreateBucket for the second synthetic bucket ${probeBucketName} succeeds`, await createBucket(probeBucketName), 200);
+    const probeBucket = s3Bucket({ endpoint: storage.endpoint, bucket: probeBucketName, accessKey: storage.env.AWS_ACCESS_KEY_ID, secretKey: storageSecret, signedHost: storageHost });
+    // The storage directory is fresh per run, but the key is run-unique anyway so a probe can never match a stale object.
+    const probeKey = `storage-readiness/${randomUUID()}/probe.bin`;
+    const probeBytes = Buffer.from(`synthetic joined-e2e storage allocation probe ${randomUUID()}\n`, "utf8");
+    const readiness = [];
+    for (const [name, client] of [[bucketName, bucket], [probeBucketName, probeBucket]]) {
+      check(`storage readiness: signed PUT of the synthetic probe to ${name} is stored`, (await client.put(probeKey, probeBytes))?.size, probeBytes.length);
+      const stored = await client.get(probeKey);
+      const readBack = stored ? Buffer.from(await stored.arrayBuffer()) : null;
+      check(`storage readiness: signed GET from ${name} returns exactly the probe bytes`, readBack, probeBytes);
+      check(`storage readiness: probe SHA-256 read back from ${name} equals the written SHA-256`, readBack && sha256(readBack), sha256(probeBytes));
+      readiness.push({ bucket: name, key: probeKey, bytes: readBack.length, sha256: sha256(readBack) });
+    }
+    observe("storageReadiness", readiness);
 
     // TLS material for the two local HTTPS listeners. Files live only in this run's temp directory.
     execFileSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", path.join(root, "key.pem"), "-out", path.join(root, "cert.pem"), "-days", "1",

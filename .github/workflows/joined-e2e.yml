@@ -175,17 +175,6 @@ jobs:
       - name: Build the CDR image from the Foundation checkout
         run: docker build --tag tavonel-cdr:joined-e2e foundation/quarantine-sidecar/cdr-cloudrun
 
-      # Run 37076037544: with every image, build and model on the root disk, SeaweedFS had 3.57 GiB
-      # free there and refused volume assignment ("No writable volumes and no free volumes left"),
-      # so the browser's signed PUT got a 500. Its data directory goes on the runner's separate
-      # /mnt disk instead; local-storage-journey.mjs takes that path via TAVONEL_LOCAL_S3_TMPDIR.
-      - name: Put the disposable S3 data directory on the runner's spare disk
-        run: |
-          df -h / /mnt || true
-          sudo mkdir -p /mnt/tavonel-s3
-          sudo chown "$(id -u):$(id -g)" /mnt/tavonel-s3
-          echo "TAVONEL_LOCAL_S3_TMPDIR=/mnt/tavonel-s3" >> "$GITHUB_ENV"
-
       - name: Joined end-to-end journey
         working-directory: foundation/quarantine-sidecar/foundation-cdr-worker
         env:
