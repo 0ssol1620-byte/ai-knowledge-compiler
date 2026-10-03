@@ -319,6 +319,28 @@ function trackConnections(server) {
   return { get size() { return open.size; }, destroyAll() { for (const socket of open) socket.destroy(); open.clear(); } };
 }
 
+/** Keep only ordinary response-framing headers in confirm diagnostics. */
+function safeConfirmHeaderEvidence(headers) {
+  const evidence = {};
+  for (const name of ["content-type", "content-length", "transfer-encoding"]) {
+    const value = headers?.[name];
+    if (typeof value === "string" && value.length <= 128) evidence[name] = value;
+  }
+  return evidence;
+}
+
+/** Observe only stream lifecycle and byte counts; never retain or log response bytes. */
+function observeConfirmResponseBodies(upstream, downstream, record) {
+  let bytes = 0;
+  upstream.on("data", chunk => { bytes += chunk.length; record({ side: "upstream", phase: "data", bytes }); });
+  upstream.once("end", () => record({ side: "upstream", phase: "end", bytes }));
+  upstream.once("aborted", () => record({ side: "upstream", phase: "aborted", bytes }));
+  upstream.once("error", () => record({ side: "upstream", phase: "error", bytes }));
+  downstream.once("finish", () => record({ side: "gateway", phase: "finish", bytes }));
+  downstream.once("close", () => record({ side: "gateway", phase: "close", bytes, writableFinished: downstream.writableFinished }));
+  downstream.once("error", () => record({ side: "gateway", phase: "error", bytes }));
+}
+
 /**
  * The abort of a server close that overran: destroys every socket it still holds, which lets the pending close finish,
  * and unrefs the listener so nothing it holds can keep this process alive.
@@ -630,6 +652,7 @@ const question = "What is the archive retention period?";
 
 const root = mkdtempSync(path.join(tmpdir(), "tavonel-joined-e2e-"));
 const browserEvents = [];
+const confirmBodyTransport = [];
 let browser, context, page, cdrContainer = null;
 // Chromium's pids (each leads its own process group) and every listener the harness opens, so teardown can stop them
 // for real when a close overruns, rather than only stop waiting for it.
@@ -801,8 +824,25 @@ try {
         return;
       }
       const target = service === "supabase" ? new URL(stack.api) : new URL(`http://127.0.0.1:${nextPort}`);
-      const upstream = http.request({ hostname: target.hostname, port: target.port, path: request.url, method: request.method, headers: request.headers }, result => { response.writeHead(result.statusCode, result.headers); result.pipe(response); });
-      upstream.on("error", () => { response.writeHead(502); response.end("Owned local upstream unavailable"); });
+      const isConfirm = request.method === "POST" && request.url?.split("?")[0] === "/api/uploads/confirm";
+      const confirmStartedAt = Date.now();
+      const recordConfirm = event => {
+        confirmBodyTransport.push({ atMs: Date.now() - confirmStartedAt, method: "POST", route: "/api/uploads/confirm", ...event });
+        if (confirmBodyTransport.length > 100) confirmBodyTransport.shift();
+      };
+      if (isConfirm) recordConfirm({ side: "gateway", phase: "request" });
+      const upstream = http.request({ hostname: target.hostname, port: target.port, path: request.url, method: request.method, headers: request.headers }, result => {
+        if (isConfirm) {
+          recordConfirm({ side: "upstream", phase: "headers", status: result.statusCode, headers: safeConfirmHeaderEvidence(result.headers) });
+          observeConfirmResponseBodies(result, response, recordConfirm);
+        }
+        response.writeHead(result.statusCode, result.headers);
+        result.pipe(response);
+      });
+      upstream.on("error", error => {
+        if (isConfirm) recordConfirm({ side: "gateway", phase: "upstream-request-error" });
+        response.writeHead(502); response.end("Owned local upstream unavailable");
+      });
       request.pipe(upstream);
     }));
     await new Promise(resolve => gateway.listen(54443, "127.0.0.1", resolve));
@@ -955,7 +995,17 @@ try {
       const keep = line => { browserEvents.push(redact(line).slice(0, 400)); if (browserEvents.length > 200) browserEvents.shift(); };
       page.on("console", message => { if (["error", "warning"].includes(message.type())) keep(`console.${message.type()}: ${message.text()}`); });
       page.on("pageerror", error => keep(`pageerror: ${error.message}`));
-      page.on("requestfailed", request => keep(`requestfailed ${request.method()} ${request.url()}: ${request.failure()?.errorText ?? "?"}`));
+      const isBrowserConfirm = request => request.method() === "POST" && new URL(request.url()).pathname === "/api/uploads/confirm";
+      page.on("requestfailed", request => {
+        if (isBrowserConfirm(request)) keep("confirm.browser method=POST route=/api/uploads/confirm phase=requestfailed");
+        else keep(`requestfailed ${request.method()} ${request.url()}: ${request.failure()?.errorText ?? "?"}`);
+      });
+      page.on("response", response => {
+        const request = response.request();
+        if (isBrowserConfirm(request)) keep(`confirm.browser method=POST route=/api/uploads/confirm phase=headers status=${response.status()} framing=${JSON.stringify(safeConfirmHeaderEvidence(response.headers()))}`);
+      });
+      page.on("requestfinished", request => { if (isBrowserConfirm(request)) keep("confirm.browser method=POST route=/api/uploads/confirm phase=requestfinished"); });
+
       await page.goto(`${origin}/llms.txt`);
       const login = await page.evaluate(async ({ email, password, anon }) => {
         const r = await fetch("/auth/v1/token?grant_type=password", { method: "POST", headers: { apikey: anon, "content-type": "application/json" }, body: JSON.stringify({ email, password }) });
@@ -1249,6 +1299,7 @@ if(t.origin!==allowed)return Promise.reject(new TypeError('consumer fetch guard:
   if (journeyError) throw journeyError;
 } catch (error) {
   ledger.failure ??= { name: error.name, code: typeof error.code === "string" ? error.code : null, message: redact(error.message).slice(0, 4000), stage: ledger.stage, step: ledger.step ?? null };
+  ledger.failure.confirmBodyTransport = confirmBodyTransport.slice(-40);
   checkpoint.tryWrite("failure");
   console.error("Joined E2E failure:", redact(error.stack ?? error.message));
   process.exitCode = 1;
@@ -1268,6 +1319,7 @@ if(t.origin!==allowed)return Promise.reject(new TypeError('consumer fetch guard:
       mkdirSync(logsDir, { recursive: true });
       for (const { label, tail } of owned) writeFileSync(path.join(logsDir, `${label}.log`), `${tail.join("\n")}\n`);
       writeFileSync(path.join(logsDir, "browser-events.log"), `${browserEvents.join("\n")}\n`);
+      writeFileSync(path.join(logsDir, "confirm-body-transport.json"), `${JSON.stringify(confirmBodyTransport.slice(-40), null, 2)}\n`);
     } },
   ];
   if (cdrContainer) {

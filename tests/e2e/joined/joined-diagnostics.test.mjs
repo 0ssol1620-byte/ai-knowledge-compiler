@@ -16,6 +16,7 @@ import { EventEmitter } from "node:events";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { PassThrough } from "node:stream";
 import { after, test } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { DEADLINE_EXIT_CODE, STOP_BOUND_SECONDS, descendants, isAlive, parseArgs } from "./deadline-supervisor.mjs";
@@ -26,15 +27,16 @@ const end = source.indexOf("// <<< joined-diagnostics helpers");
 assert.ok(begin >= 0 && end > begin, "joined-e2e.mjs delimits its diagnostics helpers");
 const helperNames = ["PROOF_FLAGS", "LEDGER_NOT_WRITTEN_EXIT_CODE", "StageTimeoutError", "LedgerCheckpointError", "withDeadline", "writeFileAtomic",
   "minimalEvidence", "ledgerCheckpointer", "createStepRunner", "installSignalCheckpoint", "recordUnhandledRejections", "runBounded",
-  "closeServer", "trackConnections", "abortServer", "killProcessGroup", "runCleanup", "finalVerdict", "concludeRun"];
+  "closeServer", "trackConnections", "abortServer", "killProcessGroup", "runCleanup", "finalVerdict", "concludeRun", "safeConfirmHeaderEvidence", "observeConfirmResponseBodies"];
 const moduleText = [
   'import { spawn } from "node:child_process";',
+  'import { EventEmitter } from "node:events";',
   'import { renameSync, rmSync, writeFileSync } from "node:fs";',
   source.slice(begin, end),
   `export { ${helperNames.join(", ")} };`,
 ].join("\n");
 const { PROOF_FLAGS, LEDGER_NOT_WRITTEN_EXIT_CODE, StageTimeoutError, LedgerCheckpointError, withDeadline, writeFileAtomic,
-  ledgerCheckpointer, createStepRunner, installSignalCheckpoint, finalVerdict, concludeRun } =
+  ledgerCheckpointer, createStepRunner, installSignalCheckpoint, finalVerdict, concludeRun, safeConfirmHeaderEvidence, observeConfirmResponseBodies } =
   await import(`data:text/javascript;base64,${Buffer.from(moduleText).toString("base64")}`);
 
 const scratch = mkdtempSync(path.join(tmpdir(), "joined-diagnostics-"));
@@ -68,6 +70,52 @@ test("withDeadline refuses a deadline that is not finite and positive", () => {
   for (const deadlineMs of [0, -1, Infinity, Number.NaN, undefined]) assert.throws(() => withDeadline("unbounded", deadlineMs, never), RangeError);
 });
 
+test("confirm response diagnostics retain framing headers and completion counts only", async () => {
+  assert.deepEqual(safeConfirmHeaderEvidence({
+    "content-type": "application/json",
+    "content-length": "31",
+    "transfer-encoding": "chunked",
+    "set-cookie": "must-not-be-kept",
+    authorization: "must-not-be-kept",
+  }), { "content-type": "application/json", "content-length": "31", "transfer-encoding": "chunked" });
+  assert.deepEqual(safeConfirmHeaderEvidence({ "content-type": "x".repeat(129) }), {});
+
+  const upstream = new PassThrough();
+  const downstream = new PassThrough();
+  const events = [];
+  observeConfirmResponseBodies(upstream, downstream, event => events.push(event));
+  upstream.pipe(downstream);
+  upstream.end(Buffer.from("synthetic body"));
+  await new Promise(resolve => downstream.once("finish", resolve));
+  assert.deepEqual(events, [
+    { side: "upstream", phase: "data", bytes: 14 },
+    { side: "upstream", phase: "end", bytes: 14 },
+    { side: "gateway", phase: "finish", bytes: 14 },
+  ]);
+
+  const stalledUpstream = new PassThrough();
+  const stalledDownstream = new PassThrough();
+  const stalledEvents = [];
+  observeConfirmResponseBodies(stalledUpstream, stalledDownstream, event => stalledEvents.push(event));
+  stalledUpstream.pipe(stalledDownstream);
+  stalledUpstream.write(Buffer.from("partial"));
+  await new Promise(resolve => setImmediate(resolve));
+  assert.deepEqual(stalledEvents, [{ side: "upstream", phase: "data", bytes: 7 }]);
+  stalledUpstream.destroy();
+  stalledDownstream.destroy();
+});
+
+test("confirm failure diagnostics use fixed fields without dynamic error details", () => {
+  const gateway = source.match(/upstream\.on\("error", error => \{([\s\S]*?)\n      \}\);/);
+  assert.ok(gateway);
+  assert.match(gateway[1], /recordConfirm\(\{ side: "gateway", phase: "upstream-request-error" \}\)/);
+  assert.doesNotMatch(gateway[1], /error\.(?:code|message)|errorText/);
+
+  const browser = source.match(/const isBrowserConfirm = request =>([\s\S]*?)await page\.goto/);
+  assert.ok(browser);
+  const confirmFailure = browser[1].match(/if \(isBrowserConfirm\(request\)\) keep\("([^"]+)"\)/);
+  assert.equal(confirmFailure?.[1], "confirm.browser method=POST route=/api/uploads/confirm phase=requestfailed");
+});
 test("a reply that fails after its deadline does not become an unhandled rejection", async () => {
   const unhandled = [];
   const record = reason => unhandled.push(reason);
