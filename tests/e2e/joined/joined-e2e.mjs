@@ -15,13 +15,23 @@
  * is imported or executed from the Foundation checkout, never copied. All keys and secrets are created
  * in this process, live only in owned child environments, and are redacted from everything written.
  *
- * Run (see .github/workflows/joined-e2e.yml) from foundation/quarantine-sidecar/foundation-cdr-worker:
- *   node --import tsx <core>/tests/e2e/joined/joined-e2e.mjs
+ * Run (see .github/workflows/joined-e2e.yml) from foundation/quarantine-sidecar/foundation-cdr-worker, under the outer
+ * deadline that stops the whole process tree even when this process is blocked in a synchronous child:
+ *   timeout --kill-after=<k>s <outer>s node <core>/tests/e2e/joined/deadline-supervisor.mjs --deadline-seconds <n> \
+ *     --grace-seconds <g> --expect-stop-bound-seconds <s> --record <core>/output/joined-e2e-supervisor.json \
+ *     -- node --import tsx <core>/tests/e2e/joined/joined-e2e.mjs
+ * The workflow sizes <n> from the job start, so the always() artifact upload and stack stop keep a fixed reserve.
+ *
+ * The ledger is the redacted proof record. Every checkpoint before the final one records `success: false`; only the final
+ * write carries the verdict, and a run whose ledger could not be written exits LEDGER_NOT_WRITTEN_EXIT_CODE with minimal,
+ * structural evidence on stderr. On failure, failure-screenshot.png and failure-trace.zip are written beside the ledger as
+ * separate artifacts; they are not redacted and may hold this run's synthetic documents, page contents and its disposable
+ * (already dead) credentials.
  */
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
 import { createHash, createPublicKey, generateKeyPairSync, randomBytes, randomUUID } from "node:crypto";
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import http from "node:http";
 import https from "node:https";
 import net from "node:net";
@@ -29,6 +39,365 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { s3Bucket, signV4 } from "./s3-bucket.mjs";
+
+// >>> joined-diagnostics helpers
+// Self-contained: only spawn from node:child_process, renameSync/rmSync/writeFileSync from node:fs, and globals.
+// joined-diagnostics.test.mjs and the review fixtures evaluate exactly this block with those imports, so nothing in it may
+// refer to anything else declared in this file.
+
+/** The ledger's proof flags, fixed. Minimal evidence reports exactly these from `ledger.booleans` and nothing else. */
+const PROOF_FLAGS = Object.freeze(["uploadViaUiVerified", "cdrClamavReal", "ocrReal", "coreCompileReal", "receiptSigned", "reviewActivateViaUi",
+  "consumerCitesUploadedDoc", "duplicatesCauseNoSecondOcrCompileOrCharge", "malwareRefusedBeforeOcr", "coreSignatureFailureLeavesNoCandidate",
+  "coreReceiptFailureLeavesNoCandidate"]);
+/** Exit status of a run whose redacted ledger failed to reach disk at least once: never 0, and distinct from a failed journey (1). */
+const LEDGER_NOT_WRITTEN_EXIT_CODE = 3;
+
+class StageTimeoutError extends Error {
+  constructor(stage, deadlineMs) {
+    super(`${stage} did not finish within its ${deadlineMs} ms deadline`);
+    this.name = "StageTimeoutError";
+    this.stage = stage;
+    this.deadlineMs = deadlineMs;
+  }
+}
+
+/**
+ * Settles as `operation` (a promise, or a function returning one) does, or rejects with StageTimeoutError once
+ * `deadlineMs` has passed. The operation is not cancelled; its late settlement is consumed here, so a reply that
+ * arrives after the deadline can never surface as an unhandled rejection.
+ */
+function withDeadline(stage, deadlineMs, operation) {
+  if (!(Number.isFinite(deadlineMs) && deadlineMs > 0)) throw new RangeError(`${stage} needs a finite, positive deadline`);
+  const work = new Promise(resolve => resolve(typeof operation === "function" ? operation() : operation));
+  work.catch(() => {});
+  let timer;
+  const expired = new Promise((_, reject) => { timer = setTimeout(() => reject(new StageTimeoutError(stage, deadlineMs)), deadlineMs); });
+  return Promise.race([work, expired]).finally(() => clearTimeout(timer));
+}
+
+/** Replaces `file` with one rename, so neither a reader nor a kill mid-write ever sees half a ledger. */
+function writeFileAtomic(file, text) {
+  const temporary = `${file}.${process.pid}.tmp`;
+  try {
+    writeFileSync(temporary, text);
+    renameSync(temporary, file);
+  } catch (error) {
+    try { rmSync(temporary, { force: true }); } catch { /* the write or rename error is the one to report */ }
+    throw error;
+  }
+}
+
+/**
+ * The shapes a structural value may take: harness-chosen stage and step names (lower-case, short), error class names
+ * (letters only), errno-style codes (upper-case) and checkpoint reasons built from those. None of them can hold a hex
+ * secret, a base64 key, a JWT, a URL or free text, so a value that does not match is withheld, never quoted.
+ */
+const STRUCTURAL = Object.freeze({
+  stageOrStep: /^[a-z][a-z0-9-]{0,39}$/,
+  errorName: /^[A-Z][A-Za-z]{0,39}$/,
+  errorCode: /^[A-Z][A-Z0-9_]{0,47}$/,
+  writeErrorCode: /^[A-Z][A-Za-z0-9_]{0,39}$/,
+  checkpointReason: /^(?:hop|step-start|step-end|signal|failure|failure-detail|teardown|final|exit-watchdog)(?::(?:SIGINT|SIGTERM|[a-z][a-z0-9-]{0,39}(?:\/[a-z][a-z0-9-]{0,39})?))?$/,
+});
+const structural = (shape, value) => (value == null ? null : typeof value === "string" && STRUCTURAL[shape].test(value) ? value : "[withheld]");
+
+/**
+ * What stderr gets when the ledger cannot be written: a fixed set of keys, each filled from a structural allowlist, so no
+ * message, observation, trace, screenshot or service-log content can reach it, whatever the ledger holds. A run whose
+ * ledger is not on disk is not a success whatever it had proven, so `success` is always false here; `proof` reports the
+ * fixed PROOF_FLAGS (true only where the ledger holds exactly `true`), never any other key of `ledger.booleans`.
+ */
+function minimalEvidence(ledger, checkpointFailure = null) {
+  const { failure, cancelled } = ledger ?? {};
+  return {
+    kind: "tavonel-joined-e2e-minimal-evidence", ledgerWritten: false, success: false,
+    stage: structural("stageOrStep", ledger?.stage), step: structural("stageOrStep", ledger?.step),
+    failure: failure ? { name: structural("errorName", failure.name), code: structural("errorCode", failure.code),
+      stage: structural("stageOrStep", failure.stage), step: structural("stageOrStep", failure.step) } : null,
+    proof: Object.fromEntries(PROOF_FLAGS.map(flag => [flag, ledger?.booleans?.[flag] === true])),
+    cancelled: cancelled ? { signal: ["SIGINT", "SIGTERM"].includes(cancelled.signal) ? cancelled.signal : "[withheld]",
+      stage: structural("stageOrStep", cancelled.stage), step: structural("stageOrStep", cancelled.step) } : null,
+    checkpoint: checkpointFailure ? { reason: structural("checkpointReason", checkpointFailure.reason),
+      writeErrorCode: structural("writeErrorCode", checkpointFailure.writeErrorCode) } : null,
+  };
+}
+
+class LedgerCheckpointError extends Error {
+  constructor(reason, writeErrorCode, cause) {
+    super(`ledger checkpoint ${reason} was not written (${writeErrorCode})`, { cause });
+    this.name = "LedgerCheckpointError";
+    this.code = "LEDGER_CHECKPOINT_FAILED";
+    this.reason = reason;
+    this.writeErrorCode = writeErrorCode;
+  }
+}
+
+/**
+ * A checkpoint writes the redacted ledger as it stands, atomically, and fails closed.
+ *
+ * Every write except `checkpoint(reason, { final: true })` records `success: false`, so no file on disk claims a success
+ * the run can still lose (a cleanup that fails later, a later write that does not land); only the final write carries the
+ * verdict. `ledger.lastCheckpoint` only ever names a write that reached disk.
+ *
+ * When a write fails, the checkpoint records the failure structurally in `ledger.checkpointFailures` and as an error in
+ * `checkpoint.failures`, prints the minimal evidence line to stderr, calls `onFailure` (the harness sets
+ * LEDGER_NOT_WRITTEN_EXIT_CODE there) and throws LedgerCheckpointError.
+ *
+ * `checkpoint.tryWrite(reason)` is only for the failure and teardown paths, which must go on stopping services after a
+ * lost write: it returns false instead of throwing. The failure is not dropped there: it is already on stderr, stays in
+ * `checkpoint.failures` and `ledger.checkpointFailures`, finalVerdict refuses success because of it, and concludeRun turns
+ * it into LEDGER_NOT_WRITTEN_EXIT_CODE. Any error other than a lost write still throws.
+ */
+function ledgerCheckpointer({ ledger, file, redact, logError = console.error, onFailure = () => {} }) {
+  const failures = [];
+  const checkpoint = (reason, { final = false } = {}) => {
+    const attempt = { reason, at: new Date().toISOString(), final };
+    try {
+      const snapshot = { ...ledger, success: final ? ledger.success === true : false, lastCheckpoint: attempt };
+      writeFileAtomic(file, redact(JSON.stringify(snapshot, null, 2)));
+    } catch (cause) {
+      const failure = { reason: structural("checkpointReason", String(reason)), at: attempt.at,
+        writeErrorCode: structural("writeErrorCode", String(cause?.code ?? cause?.name ?? "UNKNOWN")) };
+      (ledger.checkpointFailures ??= []).push(failure);
+      const error = new LedgerCheckpointError(failure.reason, failure.writeErrorCode, cause);
+      failures.push(error);
+      try {
+        logError(`[joined-e2e] LEDGER NOT WRITTEN, minimal evidence: ${redact(JSON.stringify(minimalEvidence(ledger, failure)))}`);
+      } catch { /* the failure is still recorded above and thrown below */ }
+      try { onFailure(failure); } catch { /* the failure is still recorded above and thrown below */ }
+      throw error;
+    }
+    ledger.lastCheckpoint = attempt;
+    return attempt;
+  };
+  checkpoint.failures = failures;
+  checkpoint.tryWrite = (reason, options) => {
+    try {
+      checkpoint(reason, options);
+      return true;
+    } catch (error) {
+      if (error instanceof LedgerCheckpointError) return false;
+      throw error;
+    }
+  };
+  return checkpoint;
+}
+
+/**
+ * Runs one bounded step of the current hop. The step's deadline, duration, outcome and (for a Playwright response)
+ * HTTP status go into that hop's timeline entry and one CI log line, and the ledger is checkpointed as the step starts
+ * and as it ends. A step that fails stays in `ledger.step`, so the failure record names it. A step whose start cannot be
+ * checkpointed does not run, and a step that succeeded but cannot be checkpointed at its end fails; when the operation
+ * itself failed, its error stays the one thrown and the checkpoint failure is already on stderr and in the ledger.
+ */
+function createStepRunner({ ledger, checkpoint, log = console.log, now = Date.now }) {
+  return async (name, deadlineMs, operation) => {
+    const current = ledger.timeline.at(-1);
+    const label = `${current.stage}/${name}`;
+    const started = now();
+    const entry = { step: name, deadlineMs, startedAt: new Date(started).toISOString() };
+    (current.steps ??= []).push(entry);
+    ledger.step = name;
+    try {
+      checkpoint(`step-start:${label}`);
+    } catch (error) {
+      Object.assign(entry, { outcome: "not-started", errorName: String(error?.name ?? "Error"), durationMs: 0 });
+      throw error;
+    }
+    let failed = false;
+    try {
+      const value = await withDeadline(label, deadlineMs, operation);
+      if (typeof value?.status === "function") entry.httpStatus = value.status();
+      entry.outcome = "ok";
+      ledger.step = null;
+      return value;
+    } catch (error) {
+      failed = true;
+      entry.outcome = error instanceof StageTimeoutError ? "timeout" : "error";
+      entry.errorName = String(error?.name ?? "Error");
+      throw error;
+    } finally {
+      const ended = now();
+      Object.assign(entry, { endedAt: new Date(ended).toISOString(), durationMs: ended - started });
+      log(`[joined-e2e ${entry.endedAt}]     ${label} ${entry.outcome}${entry.httpStatus ? ` ${entry.httpStatus}` : ""} in ${entry.durationMs} ms (deadline ${deadlineMs} ms)`);
+      if (!failed) checkpoint(`step-end:${label}`);
+      else {
+        try { checkpoint(`step-end:${label}`); } catch (ledgerError) { if (!(ledgerError instanceof LedgerCheckpointError)) throw ledgerError; }
+      }
+    }
+  };
+}
+
+const SIGNAL_NUMBERS = { SIGINT: 2, SIGTERM: 15 };
+/**
+ * On SIGINT/SIGTERM: record the cancellation, checkpoint synchronously and leave a non-zero exit code. Each handler is
+ * one-shot, and when no other listener owns the signal it is re-raised, so the default termination still happens:
+ * the signal is observed, never swallowed, and a cancelled run never reads as a success. A checkpoint that cannot be
+ * written does not stop the termination: its minimal evidence is already on stderr and the exit code stays non-zero.
+ */
+function installSignalCheckpoint({ ledger, checkpoint, processRef = process, log = console.error }) {
+  for (const [signal, number] of Object.entries(SIGNAL_NUMBERS)) {
+    processRef.once(signal, () => {
+      ledger.cancelled ??= { signal, at: new Date().toISOString(), stage: ledger.stage ?? null, step: ledger.step ?? null };
+      ledger.success = false;
+      ledger.failure ??= { name: "Cancelled", code: signal, message: `received ${signal}`, stage: ledger.stage ?? null, step: ledger.step ?? null };
+      let written = false;
+      try { checkpoint(`signal:${signal}`); written = true; } catch { /* reported by the checkpointer; terminate regardless */ }
+      log(`[joined-e2e] received ${signal} at ${ledger.stage ?? "start"}${ledger.step ? `/${ledger.step}` : ""}; ledger ${written ? "checkpointed" : "NOT written"}`);
+      processRef.exitCode = 128 + number;
+      if (processRef.listenerCount(signal) === 0) processRef.kill(processRef.pid, signal);
+    });
+  }
+}
+
+/** A pending wait that rejects after its owner gave up must not kill the run before the ledger is written; it is recorded. */
+function recordUnhandledRejections({ ledger, redact, processRef = process, log = console.error }) {
+  ledger.unhandledRejections ??= [];
+  processRef.on("unhandledRejection", reason => {
+    const text = redact(String(reason?.stack ?? reason)).slice(0, 2000);
+    ledger.unhandledRejections.push(text);
+    log(`[joined-e2e] unhandled rejection recorded: ${text.split("\n")[0]}`);
+  });
+}
+
+/**
+ * Runs a control-plane command (docker logs, docker rm, rm -rf) as an asynchronous child under a hard deadline: SIGTERM at
+ * `timeoutMs`, SIGKILL `graceMs` later, and the promise rejects with StageTimeoutError no later than `timeoutMs + 2 * graceMs`
+ * even if the child never goes away (it is then unref'd, so a process that cannot be reaped never holds this one open).
+ * Unlike execFileSync it never blocks the event loop, so step deadlines and signal checkpoints keep working while it runs.
+ * Resolves `{ stdout, stderr }` on exit 0; otherwise rejects with a CommandFailedError carrying the exit status and the
+ * tail of stderr. A caller that wraps it in its own deadline must allow more than `timeoutMs + 2 * graceMs`.
+ */
+function runBounded(label, command, args, { timeoutMs, graceMs = 2_000, env, cwd, maxBytes = 64 * 1024 * 1024 } = {}) {
+  if (!(Number.isFinite(timeoutMs) && timeoutMs > 0)) throw new RangeError(`${label} needs a finite, positive deadline`);
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, { env, cwd, stdio: ["ignore", "pipe", "pipe"] });
+    const chunks = { stdout: [], stderr: [] };
+    const timers = [];
+    let kept = 0, timedOut = false, settled = false;
+    const settle = (finish, value) => {
+      if (settled) return;
+      settled = true;
+      for (const timer of timers) clearTimeout(timer);
+      child.stdout?.destroy();
+      child.stderr?.destroy();
+      finish(value);
+    };
+    for (const name of ["stdout", "stderr"]) {
+      child[name].on("data", chunk => { if (kept < maxBytes) { chunks[name].push(chunk); kept += chunk.length; } });
+    }
+    timers.push(setTimeout(() => {
+      timedOut = true;
+      child.kill("SIGTERM");
+      timers.push(setTimeout(() => {
+        child.kill("SIGKILL");
+        timers.push(setTimeout(() => { child.unref(); settle(reject, new StageTimeoutError(label, timeoutMs)); }, graceMs));
+      }, graceMs));
+    }, timeoutMs));
+    child.once("error", error => settle(reject, error));
+    child.once("close", (code, signal) => {
+      if (timedOut) { settle(reject, new StageTimeoutError(label, timeoutMs)); return; }
+      const stdout = Buffer.concat(chunks.stdout).toString("utf8"), stderr = Buffer.concat(chunks.stderr).toString("utf8");
+      if (code === 0) { settle(resolve, { stdout, stderr }); return; }
+      settle(reject, Object.assign(new Error(`${label} exited with ${code ?? signal}`), { name: "CommandFailedError", exitCode: code, signal, stderr: stderr.slice(-2000) }));
+    });
+  });
+}
+
+/** Stops accepting connections, drops the open ones and settles once the server has closed. Bound it with a deadline. */
+function closeServer(server) {
+  return new Promise((resolve, reject) => {
+    server.close(error => (error && error.code !== "ERR_SERVER_NOT_RUNNING" ? reject(error) : resolve()));
+    server.closeAllConnections?.();
+  });
+}
+
+/** Keeps every accepted socket of `server`, so a close that overran can destroy what it was waiting for. */
+function trackConnections(server) {
+  const open = new Set();
+  server.on("connection", socket => { open.add(socket); socket.once("close", () => open.delete(socket)); });
+  return { get size() { return open.size; }, destroyAll() { for (const socket of open) socket.destroy(); open.clear(); } };
+}
+
+/**
+ * The abort of a server close that overran: destroys every socket it still holds, which lets the pending close finish,
+ * and unrefs the listener so nothing it holds can keep this process alive.
+ */
+function abortServer(server, connections) {
+  connections.destroyAll();
+  server.unref();
+  return true;
+}
+
+/**
+ * SIGKILLs `pid` and, where it leads one (Playwright starts Chromium detached, in a group of its own), its whole process
+ * group: renderer, GPU and zygote processes go with it. Returns whether any signal was delivered.
+ */
+function killProcessGroup(pid) {
+  if (!(Number.isInteger(pid) && pid > 0)) return false;
+  let delivered = false;
+  if (process.platform !== "win32") {
+    try { process.kill(-pid, "SIGKILL"); delivered = true; } catch { /* not a group leader, or already gone */ }
+  }
+  try { process.kill(pid, "SIGKILL"); delivered = true; } catch { /* already gone */ }
+  return delivered;
+}
+
+/**
+ * Runs each cleanup task in order under its own deadline, whatever the others did. A deadline alone stops nothing, so a
+ * task that throws or overruns gets its `abort` run at once: that is what actually stops the operation (SIGKILL the
+ * browser's process group or a child's tree, destroy a server's sockets), so it can neither keep running nor keep this
+ * process alive. The outcome, and whether the abort delivered, go into `ledger.cleanup` and the log. Returns whether every
+ * task finished cleanly; it never sets `ledger.success` (finalVerdict reads `ledger.cleanup`).
+ */
+async function runCleanup(ledger, tasks, { log = console.error, redact = String, now = Date.now } = {}) {
+  ledger.cleanup ??= [];
+  let clean = true;
+  for (const { name, deadlineMs, run, abort } of tasks) {
+    const started = now();
+    const entry = { task: name, deadlineMs };
+    try {
+      await withDeadline(`cleanup/${name}`, deadlineMs, run);
+      entry.outcome = "ok";
+    } catch (error) {
+      clean = false;
+      entry.outcome = error instanceof StageTimeoutError ? "timeout" : "error";
+      entry.errorName = structural("errorName", String(error?.name ?? "Error"));
+      if (typeof error?.exitCode === "number") entry.exitCode = error.exitCode;
+      if (abort) {
+        try { entry.aborted = abort() !== false; } catch (abortError) {
+          entry.aborted = false;
+          entry.abortError = structural("errorName", String(abortError?.name ?? "Error"));
+        }
+      }
+      log(`[joined-e2e] cleanup ${name} ${entry.outcome}${abort ? ` (abort ${entry.aborted ? "delivered" : "FAILED"})` : ""}: ${redact(String(error?.message ?? error)).slice(0, 400)}`);
+    }
+    entry.durationMs = now() - started;
+    ledger.cleanup.push(entry);
+  }
+  return clean;
+}
+
+/** Only a journey that proved everything, was not cancelled, cleaned up and kept every checkpoint on disk is a success. */
+function finalVerdict(ledger) {
+  return ledger.success === true && !ledger.cancelled && (ledger.cleanup ?? []).every(entry => entry.outcome === "ok")
+    && !((ledger.checkpointFailures ?? []).length > 0);
+}
+
+/**
+ * The end of a run, fail-closed: the verdict, the one write that may carry it, and the exit code. A lost ledger write at
+ * any point of the run (this one included) makes the exit code LEDGER_NOT_WRITTEN_EXIT_CODE; a run that is not a success
+ * never exits 0. Returns whether the final ledger reached disk. The caller then lets the process exit on its own.
+ */
+function concludeRun(ledger, checkpoint, processRef = process) {
+  ledger.success = finalVerdict(ledger);
+  const written = checkpoint.tryWrite("final", { final: true });
+  if (!written) ledger.success = false;
+  if (checkpoint.failures.length > 0) processRef.exitCode = LEDGER_NOT_WRITTEN_EXIT_CODE;
+  else if (!ledger.success) processRef.exitCode = processRef.exitCode || 1;
+  return written;
+}
+// <<< joined-diagnostics helpers
 
 // ---------------------------------------------------------------------------------------------
 // Preconditions: disposable GitHub-hosted Linux runner only.
@@ -61,7 +430,9 @@ const { verifyCompileReceipt } = await fromFoundation("nextjs/lib/compile-receip
 const { readExportTrustStoreEnv } = await fromFoundation("nextjs/lib/export-signing.ts");
 
 const stack = validateDisposableAuthStack(JSON.parse(readFileSync(statusFile, "utf8")), process.env);
-const git = dir => execFileSync("git", ["-C", dir, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+// The few synchronous commands left are short and capped with SIGKILL; the outer deadline supervisor stops this process
+// tree if one of them still never returns.
+const git = dir => execFileSync("git", ["-C", dir, "rev-parse", "HEAD"], { encoding: "utf8", timeout: 30_000, killSignal: "SIGKILL" }).trim();
 const sha256 = body => createHash("sha256").update(body).digest("hex");
 
 // ---------------------------------------------------------------------------------------------
@@ -133,33 +504,63 @@ const ledger = {
   notClaimed: ["production R2, Queues, workerd or Vercel", "production identity, keys or customer data", "retrieval quality or OCR accuracy beyond the asserted phrase",
     "a released Core image", "production legal, encryption or operator evidence", "SeaweedFS or R2 CORS configuration"],
 };
+assert.deepEqual(Object.keys(ledger.booleans), [...PROOF_FLAGS], "minimal evidence reports exactly the ledger's proof flags");
 function check(name, actual, expected) { assert.deepEqual(actual, expected, name); ledger.assertions.push(name); }
 const observe = (key, value) => { ledger.observations[key] = value; };
 ledger.timeline = [];
+// Checkpointed atomically at every hop and step boundary, on failure and on SIGINT/SIGTERM, so a run that is killed
+// or runs out of time still leaves a redacted ledger that says how far it got. A checkpoint that cannot be written fails
+// the run: minimal evidence goes to stderr and the exit code is LEDGER_NOT_WRITTEN_EXIT_CODE.
+const checkpoint = ledgerCheckpointer({ ledger, file: output, redact, onFailure: () => { process.exitCode = LEDGER_NOT_WRITTEN_EXIT_CODE; } });
+const step = createStepRunner({ ledger, checkpoint });
+installSignalCheckpoint({ ledger, checkpoint });
+const runStartedMs = Date.parse(ledger.generatedAt);
 /** One line per hop in the CI log, and the same timeline in the ledger, so a failure shows how far the run got. */
 function hop(stage) {
   const at = new Date().toISOString();
   const previous = ledger.timeline.at(-1);
-  if (previous && !previous.endedAt) previous.endedAt = at;
+  if (previous && !previous.endedAt) Object.assign(previous, { endedAt: at, durationMs: Date.parse(at) - Date.parse(previous.startedAt) });
   ledger.stage = stage;
+  ledger.step = null;
   if (stage !== "done") ledger.timeline.push({ stage, startedAt: at });
-  console.log(`[joined-e2e ${at}] >>> ${stage}`);
+  console.log(`[joined-e2e ${at}] >>> ${stage} (+${Math.round((Date.parse(at) - runStartedMs) / 1000)} s)`);
+  checkpoint(`hop:${stage}`);
 }
 // A pending Playwright wait rejects once the browser closes during cleanup. That must never kill the
 // process before the ledger is written; it is recorded instead.
-ledger.unhandledRejections = [];
-process.on("unhandledRejection", reason => {
-  const text = redact(reason?.stack ?? String(reason)).slice(0, 2000);
-  ledger.unhandledRejections.push(text);
-  console.error(`[joined-e2e] unhandled rejection recorded: ${text.split("\n")[0]}`);
-});
+recordUnhandledRejections({ ledger, redact });
 
 // ---------------------------------------------------------------------------------------------
 // Small process, SQL and HTTP helpers.
 // ---------------------------------------------------------------------------------------------
 const allowed = new Set(["PATH", "HOME", "TMP", "TEMP", "LANG", "LC_ALL"]);
 const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => allowed.has(key.toUpperCase())));
-const sql = statement => execFileSync("psql", [stack.db, "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-c", statement], { env, encoding: "utf8", timeout: 15_000 }).trim();
+const sql = statement => execFileSync("psql", [stack.db, "-X", "-qAt", "-v", "ON_ERROR_STOP=1", "-c", statement], { env, encoding: "utf8", timeout: 15_000, killSignal: "SIGKILL" }).trim();
+/** pid and parent pid of every process, from /proc (this harness runs only on Linux). */
+function processTable() {
+  const rows = [];
+  for (const name of readdirSync("/proc")) {
+    if (!/^\d+$/.test(name)) continue;
+    try {
+      const stat = readFileSync(`/proc/${name}/stat`, "utf8");
+      rows.push({ pid: Number(name), ppid: Number(stat.slice(stat.lastIndexOf(")") + 2).split(" ")[1]) });
+    } catch { /* exited while listed */ }
+  }
+  return rows;
+}
+const childPidsOf = (parentPid, table = processTable()) => table.filter(row => row.ppid === parentPid).map(row => row.pid);
+function descendantPidsOf(rootPid, table = processTable()) {
+  const found = [], queue = [rootPid];
+  while (queue.length) for (const pid of childPidsOf(queue.shift(), table)) if (!found.includes(pid)) { found.push(pid); queue.push(pid); }
+  return found;
+}
+/** The abort of an owned child that did not stop in time: SIGKILL it and everything it started (read before the kill). */
+function killOwnedTree(child) {
+  const targets = child.pid ? [child.pid, ...descendantPidsOf(child.pid)] : [];
+  let delivered = false;
+  for (const pid of targets) { try { process.kill(pid, "SIGKILL"); delivered = true; } catch { /* already gone */ } }
+  return delivered;
+}
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function waitUntil(label, probe, tries = 240, delay = 500) {
   for (let i = 0; i < tries; i++) { try { if (await probe()) return; } catch { /* still starting */ } await sleep(delay); }
@@ -230,6 +631,11 @@ const question = "What is the archive retention period?";
 const root = mkdtempSync(path.join(tmpdir(), "tavonel-joined-e2e-"));
 const browserEvents = [];
 let browser, context, page, cdrContainer = null;
+// Chromium's pids (each leads its own process group) and every listener the harness opens, so teardown can stop them
+// for real when a close overruns, rather than only stop waiting for it.
+let browserPids = [];
+const servers = [];
+const ownServer = (name, server) => { servers.push({ name, server, connections: trackConnections(server) }); return server; };
 const outputDir = path.dirname(output);
 try {
   // Fixture provenance: the asserted phrase is absent from every Foundation journey fixture.
@@ -270,19 +676,20 @@ try {
   hop("start-cdr-clamav");
   const cdrPort = await freePort();
   cdrContainer = `joined-e2e-cdr-${randomBytes(4).toString("hex")}`;
-  // The HMAC reaches docker through its environment (`-e NAME`), never argv.
-  execFileSync("docker", ["run", "-d", "--name", cdrContainer, "--network", "host", "-e", "TAVONEL_CDR_HMAC", "-e", "CLAMD_HOST=127.0.0.1", "-e", "CLAMD_PORT=3310",
+  // The HMAC reaches docker through its environment (`-e NAME`), never argv. Every docker command is an asynchronous,
+  // hard-bounded child, so none of them can block the event loop.
+  await runBounded("docker run", "docker", ["run", "-d", "--name", cdrContainer, "--network", "host", "-e", "TAVONEL_CDR_HMAC", "-e", "CLAMD_HOST=127.0.0.1", "-e", "CLAMD_PORT=3310",
     "-e", "CLAMD_READ_TIMEOUT_SECONDS=30", "-e", "MALWARE_SCAN_REQUIRED=1", cdrImage, "uvicorn", "app:app", "--host", "127.0.0.1", "--port", String(cdrPort), "--no-access-log"],
-  { env: { ...env, TAVONEL_CDR_HMAC: secrets.cdr }, stdio: "ignore", timeout: 60_000 });
+  { env: { ...env, TAVONEL_CDR_HMAC: secrets.cdr }, timeoutMs: 60_000 });
   // /health is 200 only with the HMAC configured, soffice present and clamd answering PING.
   await waitUntil("CDR /health", async () => (await fetch(`http://127.0.0.1:${cdrPort}/health`)).ok, 120, 1000);
-  observe("cdr", { imageId: execFileSync("docker", ["image", "inspect", "--format", "{{.Id}}", cdrImage], { encoding: "utf8" }).trim(),
-    clamdImage: process.env.TAVONEL_JOINED_CLAMAV_IMAGE ?? null });
+  const cdrImageId = (await runBounded("docker image inspect", "docker", ["image", "inspect", "--format", "{{.Id}}", cdrImage], { env, timeoutMs: 30_000 })).stdout.trim();
+  observe("cdr", { imageId: cdrImageId, clamdImage: process.env.TAVONEL_JOINED_CLAMAV_IMAGE ?? null });
 
   /** Plain HTTP pass-through that records each call. Bodies are not altered. */
   async function observingProxy(upstreamPort, record) {
     const calls = [];
-    const server = http.createServer(async (request, response) => {
+    const server = ownServer(`proxy:${upstreamPort}`, http.createServer(async (request, response) => {
       const body = await readBody(request);
       const upstream = http.request({ hostname: "127.0.0.1", port: upstreamPort, method: request.method, path: request.url, headers: request.headers, agent: false }, async result => {
         const reply = await readBody(result);
@@ -291,7 +698,7 @@ try {
       });
       upstream.on("error", () => { calls.push({ path: request.url, status: 0 }); response.destroy(); });
       upstream.end(body);
-    });
+    }));
     await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
     return { url: `http://127.0.0.1:${server.address().port}`, calls, server };
   }
@@ -331,7 +738,7 @@ try {
     { table: "customer_data_gate_receipts", detail: "17 satisfied preconditions whose evidence string names this fixture; receipt digest from Foundation's evaluator", receiptSha256: gate.receiptSha256 },
   );
 
-  await withLocalStorage(required("TAVONEL_LOCAL_SEAWEED_EXE"), async storage => {
+  const journeyInStorage = async storage => {
     storageSecret = storage.env.AWS_SECRET_ACCESS_KEY;
     const bucketName = storage.env.S3_BUCKET;
     const bucket = s3Bucket({ endpoint: storage.endpoint, bucket: bucketName, accessKey: storage.env.AWS_ACCESS_KEY_ID, secretKey: storageSecret, signedHost: storageHost });
@@ -370,14 +777,14 @@ try {
 
     // TLS material for the two local HTTPS listeners. Files live only in this run's temp directory.
     execFileSync("openssl", ["req", "-x509", "-newkey", "rsa:2048", "-nodes", "-keyout", path.join(root, "key.pem"), "-out", path.join(root, "cert.pem"), "-days", "1",
-      "-subj", "/CN=localhost", "-addext", `subjectAltName=IP:127.0.0.1,DNS:localhost,DNS:${storageHost}`], { env, stdio: "ignore", timeout: 15_000 });
+      "-subj", "/CN=localhost", "-addext", `subjectAltName=IP:127.0.0.1,DNS:localhost,DNS:${storageHost}`], { env, stdio: "ignore", timeout: 15_000, killSignal: "SIGKILL" });
     const tls = { key: readFileSync(path.join(root, "key.pem")), cert: readFileSync(path.join(root, "cert.pem")) };
     const ca = tls.cert;
 
     // Front door: S3 / GoTrue+PostgREST / Next by path (Foundation's own routing rule). CORS for the
     // browser's signed PUT is answered here and recorded as simulated.
     const s3Arrivals = [];
-    const gateway = https.createServer(tls, async (request, response) => {
+    const gateway = ownServer("gateway", https.createServer(tls, async (request, response) => {
       const service = authGatewayService(request.url, bucketName);
       if (service === "s3") {
         const cors = request.headers.origin ? { "access-control-allow-origin": request.headers.origin, "access-control-expose-headers": "etag", vary: "origin" } : {};
@@ -397,12 +804,12 @@ try {
       const upstream = http.request({ hostname: target.hostname, port: target.port, path: request.url, method: request.method, headers: request.headers }, result => { response.writeHead(result.statusCode, result.headers); result.pipe(response); });
       upstream.on("error", () => { response.writeHead(502); response.end("Owned local upstream unavailable"); });
       request.pipe(upstream);
-    });
+    }));
     await new Promise(resolve => gateway.listen(54443, "127.0.0.1", resolve));
 
     // Core front door: HTTPS, observing, with two explicit failure modes used only by the failure path.
     const core = { mode: "pass", calls: [] };
-    const coreGateway = https.createServer(tls, async (request, response) => {
+    const coreGateway = ownServer("core-gateway", https.createServer(tls, async (request, response) => {
       const body = await readBody(request);
       const headers = { ...request.headers, host: `127.0.0.1:${corePort}` };
       const mode = request.url === "/v2/compile" ? core.mode : "pass";
@@ -434,7 +841,7 @@ try {
       });
       upstream.on("error", () => { response.writeHead(502); response.end(); });
       upstream.end(body);
-    });
+    }));
     await new Promise(resolve => coreGateway.listen(54444, "127.0.0.1", resolve));
 
     try {
@@ -450,7 +857,7 @@ try {
         R2_ACCESS_KEY_ID: storage.env.AWS_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY: storageSecret, FOUNDATION_CORE_V2_URL: coreOrigin,
         FOUNDATION_CORE_V2_HMAC: secrets.core, FOUNDATION_WORKER_SECRET: secrets.worker, FOUNDATION_BILLING_SETTLEMENT_HMAC: secrets.settlement, ...signingEnv };
       const nextBin = path.join(nextRoot, "node_modules/next/dist/bin/next");
-      execFileSync(process.execPath, [nextBin, "build"], { cwd: nextRoot, env: nextEnv, stdio: "inherit", timeout: 900_000 });
+      execFileSync(process.execPath, [nextBin, "build"], { cwd: nextRoot, env: nextEnv, stdio: "inherit", timeout: 900_000, killSignal: "SIGKILL" });
       const next = start("next", process.execPath, [nextBin, "start", "--hostname", "127.0.0.1", "--port", String(nextPort)], { cwd: nextRoot, env: nextEnv });
       await waitUntil("Next /api/status", async () => { if (next.exitCode !== null) throw new Error("Next exited"); return (await fetch(`http://127.0.0.1:${nextPort}/api/status`)).ok; });
 
@@ -532,9 +939,14 @@ try {
       const playwright = await import(pathToFileURL(path.join(nextRoot, "node_modules/@playwright/test/index.mjs")).href);
       const { chromium } = playwright;
       const expect = playwright.expect.configure({ timeout: 60_000 });
+      const childrenBeforeBrowser = new Set(childPidsOf(process.pid));
       browser = await chromium.launch({ headless: true });
+      // Playwright starts Chromium as a detached child of this process; its pids are what a stuck browser-close aborts.
+      browserPids = childPidsOf(process.pid).filter(pid => !childrenBeforeBrowser.has(pid));
+      observe("browserProcessGroups", browserPids.length);
       context = await browser.newContext({ ignoreHTTPSErrors: true });
-      // Kept only when the run fails. It holds only this run's disposable, already-dead credentials.
+      // Kept only when the run fails, as failure-trace.zip: a separate artifact from the ledger and not redacted. It can
+      // hold this run's synthetic documents, page contents and disposable, already-dead credentials.
       await context.tracing.start({ screenshots: true, snapshots: true });
       const blocked = [];
       await routeLocalStorageTransport(context, origin, url => blocked.push(redact(url).slice(0, 200)));
@@ -559,8 +971,15 @@ try {
       await expect(page.locator(".workspace-intake")).toHaveAttribute("data-inventory-state", "ready", { timeout: 60_000 });
 
       hop("browser-upload");
+      // Each step is bounded, so a stalled upload fails here with the step named instead of running into the job
+      // timeout. The PUT allowance is sized for this ~1 KB synthetic fixture, not for production uploads.
+      const uploadDeadlineMs = { selectFile: 30_000, preflight: 90_000, submit: 30_000, replyHeaders: 90_000, replyBody: 15_000, signedPut: 180_000 };
+      // The waiters start before the click so no reply is missed. Their own timeout outlasts every step deadline
+      // added together, so it only backstops them: the step deadline is the one that fires and names the step.
+      const replyWaitMs = uploadDeadlineMs.selectFile + uploadDeadlineMs.preflight + uploadDeadlineMs.submit + uploadDeadlineMs.signedPut
+        + 3 * (uploadDeadlineMs.replyHeaders + uploadDeadlineMs.replyBody);
       const responseOf = (method, matches) => {
-        const waiting = page.waitForResponse(response => response.request().method() === method && matches(new URL(response.url()).pathname), { timeout: 180_000 });
+        const waiting = page.waitForResponse(response => response.request().method() === method && matches(new URL(response.url()).pathname), { timeout: replyWaitMs });
         waiting.catch(() => {}); // awaited below; a rejection after an earlier failure must not become unhandled
         return waiting;
       };
@@ -568,19 +987,25 @@ try {
       const putReply = responseOf("PUT", p => p.startsWith(`/${bucketName}/quarantine/`));
       const confirmReply = responseOf("POST", p => p === "/api/uploads/confirm");
       const compileReply = responseOf("POST", p => p === "/api/compile-jobs");
-      await page.locator('input[type="file"][multiple]').first().setInputFiles({ name: docs.ui.name, mimeType: "application/pdf", buffer: docs.ui.bytes });
+      await step("select-file", uploadDeadlineMs.selectFile,
+        () => page.locator('input[type="file"][multiple]').first().setInputFiles({ name: docs.ui.name, mimeType: "application/pdf", buffer: docs.ui.bytes }));
       const preflight = page.getByRole("region", { name: "Compile preflight" });
-      await expect(preflight).toBeVisible();
       const uploadButton = preflight.getByRole("button", { name: "Upload & compile", exact: true });
-      await expect(uploadButton).toBeEnabled({ timeout: 60_000 });
-      await uploadButton.click();
-      const capability = await (await capabilityReply).json();
+      await step("preflight", uploadDeadlineMs.preflight, async () => {
+        await expect(preflight).toBeVisible();
+        await expect(uploadButton).toBeEnabled({ timeout: 60_000 });
+      });
+      await step("submit", uploadDeadlineMs.submit, () => uploadButton.click());
+      const capabilityResponse = await step("capability-headers", uploadDeadlineMs.replyHeaders, capabilityReply);
+      const capability = await step("capability-body", uploadDeadlineMs.replyBody, () => capabilityResponse.json());
       check("UI capability request qualifies the synthetic PDF", capability.code, "QUALIFIED");
-      check("browser signed PUT is accepted by storage", (await putReply).status(), 200);
-      const confirmed = await confirmReply;
-      check("UI confirm records the upload", [confirmed.status(), (await confirmed.json()).code], [200, "UPLOAD_CONFIRMED"]);
-      const compileAccepted = await compileReply;
-      const compileJob = await compileAccepted.json();
+      const putResponse = await step("signed-put", uploadDeadlineMs.signedPut, putReply);
+      check("browser signed PUT is accepted by storage", putResponse.status(), 200);
+      const confirmed = await step("confirm-headers", uploadDeadlineMs.replyHeaders, confirmReply);
+      const confirmBody = await step("confirm-body", uploadDeadlineMs.replyBody, () => confirmed.json());
+      check("UI confirm records the upload", [confirmed.status(), confirmBody.code], [200, "UPLOAD_CONFIRMED"]);
+      const compileAccepted = await step("compile-enqueue-headers", uploadDeadlineMs.replyHeaders, compileReply);
+      const compileJob = await step("compile-enqueue-body", uploadDeadlineMs.replyBody, () => compileAccepted.json());
       check("UI enqueues the durable compile job", [compileAccepted.status(), compileJob.code], [202, "COMPILE_JOB_ACCEPTED"]);
       const docA = { documentId: capability.documentId, objectKey: capability.objectKey, jobId: compileJob.jobId };
       check("capability names the quarantine key of the document", docA.objectKey, `quarantine/${workspace}/${docA.documentId}/source`);
@@ -792,49 +1217,97 @@ if(t.origin!==allowed)return Promise.reject(new TypeError('consumer fetch guard:
       ledger.success = true;
       hop("done");
     } catch (error) {
-      console.error(`[joined-e2e] FAILED at ${ledger.stage}: ${redact(error.stack ?? error.message)}`);
-      if (page) await page.screenshot({ path: path.join(outputDir, "failure-screenshot.png"), fullPage: true }).catch(() => {});
-      if (context) await context.tracing.stop({ path: path.join(outputDir, "failure-trace.zip") }).catch(() => {});
-      ledger.failure = { name: error.name, message: redact(error.message).slice(0, 4000), stage: ledger.stage,
-        coreCalls: core.calls, cdrCalls: cdrProxy.calls, ocrCalls: ocrProxy.calls, s3Arrivals: s3Arrivals.slice(-40) };
+      console.error(`[joined-e2e] FAILED at ${ledger.stage}${ledger.step ? `/${ledger.step}` : ""}: ${redact(error.stack ?? error.message)}`);
+      // The failure record is on disk before any best-effort browser capture, which can itself hang or fail.
+      ledger.failure = { name: error.name, code: typeof error.code === "string" ? error.code : null, message: redact(error.message).slice(0, 4000),
+        stage: ledger.stage, step: ledger.step ?? null, coreCalls: core.calls, cdrCalls: cdrProxy.calls, ocrCalls: ocrProxy.calls, s3Arrivals: s3Arrivals.slice(-40) };
+      checkpoint.tryWrite("failure");
+      // Best-effort captures, each bounded; one that fails or overruns is named in the ledger, never hidden.
+      const captureFailed = name => captureError => { (ledger.failure.captureErrors ??= {})[name] = String(captureError?.name ?? "Error"); };
+      if (page) await withDeadline("failure-screenshot", 30_000, () => page.screenshot({ path: path.join(outputDir, "failure-screenshot.png"), fullPage: true })).catch(captureFailed("screenshot"));
+      if (context) await withDeadline("failure-trace", 60_000, () => context.tracing.stop({ path: path.join(outputDir, "failure-trace.zip") })).catch(captureFailed("trace"));
       if (page) {
         ledger.failure.pagePath = (() => { try { return new URL(page.url()).pathname; } catch { return "?"; } })();
-        ledger.failure.headings = await page.getByRole("heading").allTextContents().then(items => items.map(redact)).catch(() => []);
-        ledger.failure.liveRegions = await page.locator('[role="status"],[role="alert"]').allTextContents().then(items => items.map(t => redact(t.trim()).slice(0, 400)).filter(Boolean)).catch(() => []);
+        ledger.failure.headings = await withDeadline("failure-headings", 15_000, () => page.getByRole("heading").allTextContents()).then(items => items.map(redact))
+          .catch(captureError => { captureFailed("headings")(captureError); return []; });
+        ledger.failure.liveRegions = await withDeadline("failure-live-regions", 15_000, () => page.locator('[role="status"],[role="alert"]').allTextContents())
+          .then(items => items.map(t => redact(t.trim()).slice(0, 400)).filter(Boolean)).catch(captureError => { captureFailed("liveRegions")(captureError); return []; });
       }
+      checkpoint.tryWrite("failure-detail");
       throw error;
-    } finally {
-      try { if (browser) await browser.close(); } finally {
-        gateway.closeAllConnections(); coreGateway.closeAllConnections();
-        await Promise.all([gateway, coreGateway, ocrProxy.server, cdrProxy.server].map(server => new Promise(resolve => server.close(resolve))));
-      }
     }
-  });
+  };
+  // The journey runs inside the local S3 runtime's scope. Once it is over, whichever way, stopping that runtime is a
+  // cleanup task like any other: bounded and recorded, so it can never hold the teardown below hostage.
+  let storageCallbackSettled;
+  const storageCallbackDone = new Promise(resolve => { storageCallbackSettled = resolve; });
+  let journeyError = null;
+  const storageSettled = withLocalStorage(required("TAVONEL_LOCAL_SEAWEED_EXE"), storage => journeyInStorage(storage).finally(() => storageCallbackSettled()))
+    .then(() => {}, error => { journeyError = error; });
+  await Promise.race([storageCallbackDone, storageSettled]);
+  await runCleanup(ledger, [{ name: "local-storage-stop", deadlineMs: 90_000, run: () => storageSettled }], { redact });
+  if (journeyError) throw journeyError;
 } catch (error) {
-  ledger.failure ??= { name: error.name, message: redact(error.message).slice(0, 4000), stage: ledger.stage };
+  ledger.failure ??= { name: error.name, code: typeof error.code === "string" ? error.code : null, message: redact(error.message).slice(0, 4000), stage: ledger.stage, step: ledger.step ?? null };
+  checkpoint.tryWrite("failure");
   console.error("Joined E2E failure:", redact(error.stack ?? error.message));
   process.exitCode = 1;
 } finally {
-  try {
-    if (ledger.failure) ledger.failure.browserEvents = browserEvents.slice(-80);
-    mkdirSync(path.join(outputDir, "logs"), { recursive: true });
-    for (const { label, tail } of owned) writeFileSync(path.join(outputDir, "logs", `${label}.log`), `${tail.join("\n")}\n`);
-    writeFileSync(path.join(outputDir, "logs", "browser-events.log"), `${browserEvents.join("\n")}\n`);
-    if (cdrContainer) {
-      try {
-        const logs = execFileSync("docker", ["logs", "--tail", "4000", cdrContainer], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], maxBuffer: 64 * 1024 * 1024 });
-        writeFileSync(path.join(outputDir, "logs", "cdr.log"), redact(logs));
-      } catch { /* best effort */ }
-    }
-  } catch (error) {
-    console.error(`[joined-e2e] could not write service logs: ${redact(error.message)}`);
+  checkpoint.tryWrite("teardown");
+  // Every teardown task is bounded, asynchronous and has an abort that really stops what it waited for: the browser's
+  // process groups are SIGKILLed, a server's sockets destroyed, an owned child's tree SIGKILLed. docker and rm run under
+  // runBounded, which kills its own child inside the task deadline (60 s + 2 x 2 s grace < 75 s).
+  const logsDir = path.join(outputDir, "logs");
+  const teardown = [
+    ...(browser ? [{ name: "browser-close", deadlineMs: 60_000, run: () => browser.close(),
+      abort: () => browserPids.map(pid => killProcessGroup(pid)).some(Boolean) }] : []),
+    ...servers.map(({ name, server, connections }) => ({ name: `server-close:${name}`, deadlineMs: 15_000,
+      run: () => closeServer(server), abort: () => abortServer(server, connections) })),
+    { name: "service-logs", deadlineMs: 30_000, run: () => {
+      if (ledger.failure) ledger.failure.browserEvents = browserEvents.slice(-80);
+      mkdirSync(logsDir, { recursive: true });
+      for (const { label, tail } of owned) writeFileSync(path.join(logsDir, `${label}.log`), `${tail.join("\n")}\n`);
+      writeFileSync(path.join(logsDir, "browser-events.log"), `${browserEvents.join("\n")}\n`);
+    } },
+  ];
+  if (cdrContainer) {
+    teardown.push(
+      { name: "docker-logs", deadlineMs: 75_000, run: async () => {
+        const { stdout, stderr } = await runBounded("docker logs", "docker", ["logs", "--tail", "4000", cdrContainer], { timeoutMs: 60_000, env });
+        writeFileSync(path.join(logsDir, "cdr.log"), redact(`${stdout}${stderr}`));
+      } },
+      { name: "docker-rm", deadlineMs: 75_000, run: () => runBounded("docker rm", "docker", ["rm", "-f", cdrContainer], { timeoutMs: 60_000, env })
+        .catch(error => { if (!/No such container/i.test(error.stderr ?? "")) throw error; }) },
+    );
   }
-  if (cdrContainer) { try { execFileSync("docker", ["rm", "-f", cdrContainer], { stdio: "ignore" }); } catch { /* already gone */ } }
-  for (const { child } of owned.reverse()) await stopOwnedChild(child).catch(() => {});
+  for (const { label, child } of [...owned].reverse()) {
+    teardown.push({ name: `stop:${label}`, deadlineMs: 30_000, run: () => stopOwnedChild(child), abort: () => killOwnedTree(child) });
+  }
+  teardown.push({ name: "scratch-rm", deadlineMs: 75_000, run: () => {
+    assert.ok(path.basename(root).startsWith("tavonel-joined-e2e-"));
+    return runBounded("scratch rm", "rm", ["-rf", "--", root], { timeoutMs: 60_000, env });
+  } });
+  await runCleanup(ledger, teardown, { redact });
   ledger.finishedAt = new Date().toISOString();
-  writeFileSync(output, redact(JSON.stringify(ledger, null, 2)));
+  const finalWritten = concludeRun(ledger, checkpoint);
   consumerSecret = "";
-  assert.ok(path.basename(root).startsWith("tavonel-joined-e2e-")); rmSync(root, { recursive: true, force: true });
-  console.log(`[joined-e2e] ledger ${output} success=${ledger.success} stage=${ledger.stage} booleans=${JSON.stringify(ledger.booleans)}`);
-  if (ledger.failure) console.log(`[joined-e2e] failure: ${ledger.failure.stage}: ${ledger.failure.message.split("\n")[0]}`);
+  if (finalWritten) console.log(`[joined-e2e] ledger ${output} success=${ledger.success} stage=${ledger.stage} booleans=${JSON.stringify(ledger.booleans)}`);
+  else console.error("[joined-e2e] LEDGER NOT WRITTEN: the final ledger did not reach disk, so this run is not a success; minimal evidence is above");
+  if (checkpoint.failures.length) console.error(`[joined-e2e] ${checkpoint.failures.length} ledger write(s) failed; exit code ${LEDGER_NOT_WRITTEN_EXIT_CODE}`);
+  if (ledger.failure) console.log(`[joined-e2e] failure: ${ledger.failure.stage}${ledger.failure.step ? `/${ledger.failure.step}` : ""}: ${String(ledger.failure.message).split("\n")[0]}`);
+  const cleanupProblems = (ledger.cleanup ?? []).filter(entry => entry.outcome !== "ok");
+  if (cleanupProblems.length) console.log(`[joined-e2e] cleanup problems: ${JSON.stringify(cleanupProblems)}`);
+  // No process.exit here: the exit code is set and the process ends once its last handle closes, so nothing pending (a
+  // write, a child's exit) is cut short. Every task above aborted what it could not finish, so that is normally at once.
+  // If something still holds the process, this unref'd watchdog records it, fails the run and exits; the outer deadline
+  // supervisor stops the process tree if even that cannot happen.
+  const EXIT_WATCHDOG_MS = 30_000;
+  setTimeout(() => {
+    const held = process.getActiveResourcesInfo().filter(type => type !== "Timeout");
+    ledger.success = false;
+    ledger.exitWatchdog = { afterMs: EXIT_WATCHDOG_MS, activeResources: held.slice(0, 40) };
+    checkpoint.tryWrite("exit-watchdog", { final: true });
+    console.error(`[joined-e2e] still running ${EXIT_WATCHDOG_MS} ms after teardown (held by ${held.join(", ") || "nothing reported"}); exiting as a failure`);
+    process.exit(checkpoint.failures.length ? LEDGER_NOT_WRITTEN_EXIT_CODE : process.exitCode || 1);
+  }, EXIT_WATCHDOG_MS).unref();
 }

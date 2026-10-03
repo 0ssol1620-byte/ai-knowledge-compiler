@@ -37,6 +37,12 @@ env:
   # Same digest pin as Foundation's quarantine-sidecar/cdr-cloudrun/service.yaml (asserted below).
   CLAMAV_IMAGE: clamav/clamav:1.5.4
   CLAMAV_DIGEST: sha256:f0954d679017eb6d48221e2b2be3ac5457bf278a844f39b672376f55a085f591
+  # Time budget of the joined journey, in seconds. JOB_TIMEOUT must equal the job's `timeout-minutes: 75`. POST_RESERVE is
+  # held back, counted from the job start, for the always() steps after the journey: the artifact upload
+  # (timeout-minutes 5) plus the local stack stop (timeout-minutes 4) plus 60 s of step transitions. The journey step's
+  # own `timeout-minutes: 65` is JOB_TIMEOUT - POST_RESERVE.
+  JOINED_E2E_JOB_TIMEOUT_SECONDS: "4500"
+  JOINED_E2E_POST_RESERVE_SECONDS: "600"
 
 jobs:
   joined-e2e:
@@ -54,6 +60,20 @@ jobs:
           --health-retries 20
           --health-start-period 60s
     steps:
+      # The journey's outer deadline is measured from the job start, not from its own step, so however long the setup below
+      # takes it can never eat the reserve kept for the always() steps. The service containers are created as the job
+      # starts, before any step runs, so the oldest one's creation time is the earlier (safer) clock; this step's own time
+      # is the fallback. This must stay the first step.
+      - name: Record the job start for the joined journey's deadline
+        run: |
+          started="$(date +%s)"
+          for id in $(docker ps --all --quiet); do
+            created="$(date --date "$(docker inspect --format '{{.Created}}' "$id")" +%s)" || continue
+            if [ "$created" -lt "$started" ]; then started="$created"; fi
+          done
+          echo "job started at epoch ${started}, $(( $(date +%s) - started )) s before this step"
+          echo "JOINED_E2E_JOB_STARTED_EPOCH=${started}" >> "$GITHUB_ENV"
+
       # Foundation's db-rehearsal hypothesis: the local stack ports and this harness's fixed listeners
       # lie in Linux's ephemeral range; keep outbound source ports off them (appended, never replaced).
       - name: Keep the fixed local ports out of this runner's ephemeral range
@@ -96,6 +116,12 @@ jobs:
 
       - name: SigV4 signer of the harness R2-binding adapter (AWS worked examples)
         run: node --test core/tests/e2e/joined/s3-bucket.test.mjs
+
+      # Bounded steps, fail-closed ledger writes and the deadline supervisor, each against real child processes (hung body,
+      # hung browser and server close, a blocked synchronous child, a failed ledger write, signals, late rejections).
+      - name: Diagnostics and deadline-supervisor regression tests
+        timeout-minutes: 5
+        run: node --test core/tests/e2e/joined/joined-diagnostics.test.mjs
 
       - name: Install the frozen Foundation web dependencies
         working-directory: foundation/nextjs
@@ -175,7 +201,19 @@ jobs:
       - name: Build the CDR image from the Foundation checkout
         run: docker build --tag tavonel-cdr:joined-e2e foundation/quarantine-sidecar/cdr-cloudrun
 
-      - name: Joined end-to-end journey
+      # The journey runs under two independent bounds, both sized from the job start recorded in the first step:
+      #   deadline-supervisor.mjs  stops the harness's whole process tree at `deadline` (SIGTERM, `grace`, SIGKILL), even
+      #                            when the harness is blocked in a synchronous child, writes core/output/
+      #                            joined-e2e-supervisor.json and exits within grace + its STOP_BOUND_SECONDS (30) of the
+      #                            deadline. It refuses to start if its stop bound is not the `stop_bound` assumed here.
+      #   timeout --kill-after     the backstop for a supervisor that cannot run: TERM at deadline + grace + stop_bound, the
+      #                            supervisor's own bound, then KILL `kill_after` later.
+      # deadline + grace + stop_bound + kill_after + slack is exactly the time left before the POST_RESERVE, so this step
+      # ends inside JOB_TIMEOUT - POST_RESERVE of the job start and the always() steps keep their reserve. The 65-minute
+      # step cap is JOB_TIMEOUT - POST_RESERVE measured from this step's own start, so it can never fire first; the script
+      # checks all of this before it starts anything and refuses a window too short to run the journey.
+      - name: Joined end-to-end journey (under the outer deadline)
+        timeout-minutes: 65
         working-directory: foundation/quarantine-sidecar/foundation-cdr-worker
         env:
           TAVONEL_JOINED_FOUNDATION_DIR: ${{ github.workspace }}/foundation
@@ -186,13 +224,37 @@ jobs:
           TAVONEL_JOINED_OCR_PYTHON: ${{ runner.temp }}/ocr-venv/bin/python
           TAVONEL_JOINED_CDR_IMAGE: tavonel-cdr:joined-e2e
           TAVONEL_JOINED_CLAMAV_IMAGE: ${{ env.CLAMAV_IMAGE_RESOLVED }}
-        run: node --import tsx "$GITHUB_WORKSPACE/core/tests/e2e/joined/joined-e2e.mjs"
+        run: |
+          : "${JOINED_E2E_JOB_STARTED_EPOCH:?recorded by the first step}"
+          grace=60 stop_bound=30 kill_after=15 slack=15
+          step_cap=$(( 65 * 60 ))  # this step's timeout-minutes
+          test "$step_cap" -eq $(( JOINED_E2E_JOB_TIMEOUT_SECONDS - JOINED_E2E_POST_RESERVE_SECONDS ))
+          window_end=$(( JOINED_E2E_JOB_STARTED_EPOCH + JOINED_E2E_JOB_TIMEOUT_SECONDS - JOINED_E2E_POST_RESERVE_SECONDS ))
+          now="$(date +%s)"
+          available=$(( window_end - now ))
+          deadline=$(( available - grace - stop_bound - kill_after - slack ))
+          outer=$(( deadline + grace + stop_bound ))
+          echo "job started $(( now - JOINED_E2E_JOB_STARTED_EPOCH )) s ago; ${available} s left before the ${JOINED_E2E_POST_RESERVE_SECONDS} s always() reserve"
+          echo "supervisor deadline ${deadline} s, grace ${grace} s, stop bound ${stop_bound} s; timeout ${outer} s, kill after ${kill_after} s; step cap ${step_cap} s"
+          if [ "$deadline" -lt 600 ]; then
+            echo "::error::only ${deadline} s would be left for the joined journey after setup; not starting a run that cannot finish before the reserve"
+            exit 1
+          fi
+          test $(( outer + kill_after + slack )) -le "$step_cap"
+          timeout --kill-after="${kill_after}s" "${outer}s" \
+            node "$GITHUB_WORKSPACE/core/tests/e2e/joined/deadline-supervisor.mjs" \
+              --deadline-seconds "$deadline" --grace-seconds "$grace" --expect-stop-bound-seconds "$stop_bound" \
+              --record "$GITHUB_WORKSPACE/core/output/joined-e2e-supervisor.json" \
+              -- node --import tsx "$GITHUB_WORKSPACE/core/tests/e2e/joined/joined-e2e.mjs"
 
       # The redacted ledger and service logs, plus, only when the run failed, a screenshot and a
       # Playwright trace. The trace is not redacted: it holds only this run's disposable credentials,
       # which died with the runner's stack, so its retention is kept short.
+      # This step and the next are capped at 5 + 4 minutes: together with 60 s of step transitions they are the
+      # JOINED_E2E_POST_RESERVE_SECONDS the journey's deadline leaves free.
       - name: Upload the joined E2E ledger, logs and failure evidence
         if: always()
+        timeout-minutes: 5
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: joined-e2e-${{ github.run_id }}-${{ github.run_attempt }}
@@ -202,6 +264,7 @@ jobs:
 
       - name: Stop the runner's disposable local stack
         if: always()
+        timeout-minutes: 4
         working-directory: foundation
         run: |
           supabase stop --no-backup || true
