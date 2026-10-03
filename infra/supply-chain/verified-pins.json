@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "verified_at": "2026-09-27",
+  "verified_at": "2026-10-03",
   "verification": {
     "container_images": "Registry manifest bytes were SHA-256 hashed and matched Docker-Content-Digest.",
     "github_actions": "The upstream exact-version tag commit was resolved and the commit object was verified through the GitHub API."
@@ -24,6 +24,8 @@
     "easimon/maximize-build-space@v10": "fc881a613ad2a34aca9c9624518214ebc21dfc0c",
     "aquasecurity/trivy-action@v0.36.0": "ed142fd0673e97e23eac54620cfb913e5ce36c25",
     "github/codeql-action@v3.37.3": "4187e74d05793876e9989daffde9c3e66b4acd07",
-    "hashicorp/setup-terraform@v3.1.2": "b9cd54a3c349d3f38e8881555d616ced269862dd"
+    "hashicorp/setup-terraform@v3.1.2": "b9cd54a3c349d3f38e8881555d616ced269862dd",
+    "pnpm/action-setup@v4.3.0": "b906affcce14559ad1aafd4ab0e942779e9f58b1",
+    "supabase/setup-cli@v1.7.3": "1dedf2c611547ede7232d26866dd3c56ab903bbb"
   }
 }
