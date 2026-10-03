@@ -71,6 +71,20 @@
   letter-spacing: 0;
 }
 
+/* Let the brand subtitle wrap at spaces instead of clipping in the 256px sidebar. */
+@media (min-width: 701px) {
+  .app-frame .sidebar .brand-copy {
+    min-width: 0;
+  }
+
+  .app-frame .sidebar .brand-copy small {
+    overflow-wrap: normal;
+    text-overflow: clip;
+    white-space: normal;
+    word-break: keep-all;
+  }
+}
+
 .app-frame .sidebar-nav {
   gap: 2px;
   padding: 15px 9px;
