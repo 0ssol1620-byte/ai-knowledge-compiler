@@ -450,6 +450,8 @@ const { customerDataPreconditions } = await fromFoundation("shared/uskcEnums.ts"
 const { handleQueue } = await fromFoundation("quarantine-sidecar/foundation-cdr-worker/src/index.ts");
 const { verifyCompileReceipt } = await fromFoundation("nextjs/lib/compile-receipt-signing.ts");
 const { readExportTrustStoreEnv } = await fromFoundation("nextjs/lib/export-signing.ts");
+const { deriveFileKey, newAttemptKey, approvedSourceIdempotencyKey, intakeManifestDigest } = await fromFoundation("nextjs/lib/intake-approval.ts");
+const { quoteIntakeManifest, intakePricingFingerprint } = await fromFoundation("nextjs/lib/usage-pricing.ts");
 
 const stack = validateDisposableAuthStack(JSON.parse(readFileSync(statusFile, "utf8")), process.env);
 // The few synchronous commands left are short and capped with SIGKILL; the outer deadline supervisor stops this process
@@ -503,7 +505,7 @@ const ledger = {
     { hop: "Auth: password sign-in and session", label: "real", detail: "GoTrue from the disposable `supabase start` stack; Chromium holds the session" },
     { hop: "Next application", label: "real", detail: "Foundation `next build` + `next start` (production mode) from the Foundation checkout" },
     { hop: "TLS front door", label: "simulated", detail: "Harness HTTPS gateway 127.0.0.1:54443 (self-signed, NODE_EXTRA_CA_CERTS) in front of Next, GoTrue/PostgREST and S3; Vercel's edge is not exercised" },
-    { hop: "Upload UI: capability -> signed PUT -> confirm", label: "real", detail: "Chromium drives the workspace file input and 'Upload & compile'; Next signs the PUT; Chromium uploads the bytes" },
+    { hop: "Upload UI: approval -> capability -> signed PUT -> confirm", label: "real", detail: "Chromium approves the maximum for the whole selection with 'Approve maximum & upload'; Next signs the PUT; Chromium uploads the bytes" },
     { hop: "Object storage (R2)", label: "simulated", detail: "SeaweedFS 4.48 S3, checksum-pinned, behind the R2 host name; not Cloudflare R2" },
     { hop: "Storage CORS", label: "simulated", detail: "CORS response headers are added by the harness gateway; they are not SeaweedFS or R2 CORS configuration" },
     { hop: "R2 object-created event + Cloudflare Queue delivery", label: "simulated", detail: "Harness builds the R2 event-notification message after the browser's confirm and calls the exported handleQueue" },
@@ -902,11 +904,11 @@ try {
       await waitUntil("Next /api/status", async () => { if (next.exitCode !== null) throw new Error("Next exited"); return (await fetch(`http://127.0.0.1:${nextPort}/api/status`)).ok; });
 
       /** JSON over the gateway, trusting only this run's certificate. */
-      const app = (resource, bearer, body, method = body === undefined ? "GET" : "POST") => new Promise((resolve, reject) => {
+      const app = (resource, bearer, body, method = body === undefined ? "GET" : "POST", extraHeaders = {}) => new Promise((resolve, reject) => {
         const url = new URL(resource, origin);
         const payload = body === undefined ? null : JSON.stringify(body);
         const accept = /^\/api\/(v1|developer)\//.test(url.pathname) ? "application/vnd.tavonel.v1+json" : "application/json";
-        const request = https.request(url, { method, ca, timeout: 120_000, headers: { accept, ...(bearer ? { authorization: `Bearer ${bearer}` } : {}),
+        const request = https.request(url, { method, ca, timeout: 120_000, headers: { accept, ...(bearer ? { authorization: `Bearer ${bearer}` } : {}), ...extraHeaders,
           ...(payload ? { "content-type": "application/json", "content-length": Buffer.byteLength(payload) } : {}) } }, result => {
           readBody(result).then(raw => { let json = null; try { json = JSON.parse(raw.toString("utf8")); } catch { /* not JSON */ } resolve({ status: result.statusCode, body: json }); }, reject);
         });
@@ -921,12 +923,42 @@ try {
         request.on("error", reject); request.end(bytes);
       });
       async function apiUpload(token, doc) {
-        const capability = await app("/api/uploads/capability", token, { originalFilename: doc.name, declaredMimeType: "application/pdf", requestedBytes: doc.bytes.length, estimatedPages: 1 });
+        const contentSha256 = `sha256:${sha256(doc.bytes)}`;
+        const mimeType = "application/pdf";
+        const fileKey = await deriveFileKey({ relativePath: doc.name, contentSha256, byteLength: doc.bytes.length, mimeType });
+        const files = [{ fileKey, originalFilename: doc.name, contentSha256, byteLength: doc.bytes.length, mimeType, claimedPages: null, claimedBasis: null }];
+        const clientManifestDigest = await intakeManifestDigest(files);
+        const pricingFingerprint = await intakePricingFingerprint();
+        const quoted = quoteIntakeManifest(files.map(file => ({ bytes: file.byteLength, mimeType: file.mimeType, claimedPages: file.claimedPages, claimedBasis: file.claimedBasis })));
+        assert.equal(quoted.ok, true, `bounded synthetic maximum quote exists for ${doc.name}`);
+        const attemptKey = newAttemptKey();
+        const approvalReply = await app("/api/uploads/approval", token, {
+          attemptKey, clientManifestDigest, pricingFingerprint, aggregateMaximumCredits: quoted.quote.maximumCredits, files,
+        });
+        check(`complete one-file manifest approval accepts ${doc.name}`, [approvalReply.status, approvalReply.body?.code], [200, "INTAKE_APPROVED"]);
+        const approval = approvalReply.body.approval;
+        const approvedFile = approval?.files?.find(file => file.fileKey === fileKey);
+        check(`approval binds the exact bounded quote for ${doc.name}`,
+          [approval?.attemptKey, approval?.clientManifestDigest, approval?.pricingFingerprint, approval?.aggregateMaximumCredits,
+            approvedFile?.contentSha256, approvedFile?.byteLength, approvedFile?.approvedMaximumCredits],
+          [attemptKey, clientManifestDigest, pricingFingerprint, quoted.quote.maximumCredits, contentSha256, doc.bytes.length, quoted.quote.maximumCredits]);
+        const scopeDigest = approval.scopeDigest;
+        const idempotencyKey = await approvedSourceIdempotencyKey(attemptKey, fileKey);
+        const capability = await app("/api/uploads/capability", token, {
+          originalFilename: doc.name, declaredMimeType: mimeType, requestedBytes: doc.bytes.length,
+          attemptKey, scopeDigest, pricingFingerprint, fileKey, contentSha256,
+        }, "POST", { "x-tavonel-source-idempotency-key": idempotencyKey });
         check(`capability qualifies ${doc.name}`, [capability.status, capability.body?.code], [200, "QUALIFIED"]);
+        check(`capability keeps the approved document identity for ${doc.name}`, capability.body?.documentId, approvedFile.documentId);
         check(`signed PUT stores ${doc.name}`, await signedPut(capability.body.uploadUrl, doc.bytes), 200);
-        const confirm = await app("/api/uploads/confirm", token, { documentId: capability.body.documentId, sourceSha256: `sha256:${sha256(doc.bytes)}` });
+        const confirmBody = { documentId: capability.body.documentId, sourceSha256: contentSha256, attemptKey, scopeDigest, fileKey };
+        const confirm = await app("/api/uploads/confirm", token, confirmBody);
         check(`confirm accepts ${doc.name}`, [confirm.status, confirm.body?.code], [200, "UPLOAD_CONFIRMED"]);
-        return { documentId: capability.body.documentId, objectKey: capability.body.objectKey };
+        check(`confirm receipt binds the approved file for ${doc.name}`,
+          [confirm.body?.approvedFile?.fileKey, confirm.body?.approvedFile?.documentId, confirm.body?.approvedFile?.fileState],
+          [fileKey, capability.body.documentId, "confirmed"]);
+        return { documentId: capability.body.documentId, objectKey: capability.body.objectKey,
+          attemptKey, scopeDigest, pricingFingerprint, fileKey, contentSha256, idempotencyKey };
       }
 
       // -----------------------------------------------------------------------------------------
@@ -993,6 +1025,14 @@ try {
       page = await context.newPage();
       page.setDefaultTimeout(120_000);
       const keep = line => { browserEvents.push(redact(line).slice(0, 400)); if (browserEvents.length > 200) browserEvents.shift(); };
+      const uploadRequestTimes = { approvalFinishedAt: null, capabilityRequestedAt: null };
+      page.on("request", request => {
+        const pathname = new URL(request.url()).pathname;
+        if (request.method() === "POST" && pathname === "/api/uploads/capability") uploadRequestTimes.capabilityRequestedAt = Date.now();
+      });
+      page.on("requestfinished", request => {
+        if (request.method() === "POST" && new URL(request.url()).pathname === "/api/uploads/approval") uploadRequestTimes.approvalFinishedAt = Date.now();
+      });
       page.on("console", message => { if (["error", "warning"].includes(message.type())) keep(`console.${message.type()}: ${message.text()}`); });
       page.on("pageerror", error => keep(`pageerror: ${error.message}`));
       const isBrowserConfirm = request => request.method() === "POST" && new URL(request.url()).pathname === "/api/uploads/confirm";
@@ -1028,36 +1068,78 @@ try {
       // added together, so it only backstops them: the step deadline is the one that fires and names the step.
       const replyWaitMs = uploadDeadlineMs.selectFile + uploadDeadlineMs.preflight + uploadDeadlineMs.submit + uploadDeadlineMs.signedPut
         + 3 * (uploadDeadlineMs.replyHeaders + uploadDeadlineMs.replyBody);
+      await step("select-file", uploadDeadlineMs.selectFile,
+        () => page.locator('input[type="file"][multiple]').first().setInputFiles({ name: docs.ui.name, mimeType: "application/pdf", buffer: docs.ui.bytes }));
+      const preflight = page.getByRole("region", { name: "Compile preflight" });
+      const uploadButton = preflight.getByRole("button", { name: "Approve maximum & upload", exact: true });
+      await step("preflight", uploadDeadlineMs.preflight, async () => {
+        await expect(preflight).toBeVisible();
+        await expect(uploadButton).toBeEnabled({ timeout: 60_000 });
+      });
       const responseOf = (method, matches) => {
         const waiting = page.waitForResponse(response => response.request().method() === method && matches(new URL(response.url()).pathname), { timeout: replyWaitMs });
         waiting.catch(() => {}); // awaited below; a rejection after an earlier failure must not become unhandled
         return waiting;
       };
+      const approvalReply = responseOf("POST", p => p === "/api/uploads/approval");
       const capabilityReply = responseOf("POST", p => p === "/api/uploads/capability");
       const putReply = responseOf("PUT", p => p.startsWith(`/${bucketName}/quarantine/`));
       const confirmReply = responseOf("POST", p => p === "/api/uploads/confirm");
       const compileReply = responseOf("POST", p => p === "/api/compile-jobs");
-      await step("select-file", uploadDeadlineMs.selectFile,
-        () => page.locator('input[type="file"][multiple]').first().setInputFiles({ name: docs.ui.name, mimeType: "application/pdf", buffer: docs.ui.bytes }));
-      const preflight = page.getByRole("region", { name: "Compile preflight" });
-      const uploadButton = preflight.getByRole("button", { name: "Upload & compile", exact: true });
-      await step("preflight", uploadDeadlineMs.preflight, async () => {
-        await expect(preflight).toBeVisible();
-        await expect(uploadButton).toBeEnabled({ timeout: 60_000 });
-      });
       await step("submit", uploadDeadlineMs.submit, () => uploadButton.click());
+      const approvalResponse = await step("approval-headers", uploadDeadlineMs.replyHeaders, approvalReply);
+      const approvalBody = await step("approval-body", uploadDeadlineMs.replyBody, () => approvalResponse.json());
+      const approvalRequest = approvalResponse.request();
+      const approvalRequestBody = approvalRequest.postDataJSON();
+      check("UI creates a real complete-set approval before requesting a capability",
+        [approvalResponse.status(), approvalBody.code, approvalRequestBody.files?.length,
+          uploadRequestTimes.approvalFinishedAt !== null && uploadRequestTimes.capabilityRequestedAt !== null
+            && uploadRequestTimes.approvalFinishedAt <= uploadRequestTimes.capabilityRequestedAt],
+        [200, "INTAKE_APPROVED", 1, true]);
+      const uiManifestDigest = await intakeManifestDigest(approvalRequestBody.files);
+      const uiQuote = quoteIntakeManifest(approvalRequestBody.files.map(file => ({ bytes: file.byteLength, mimeType: file.mimeType,
+        claimedPages: file.claimedPages, claimedBasis: file.claimedBasis })));
+      assert.equal(uiQuote.ok, true, "the selected browser manifest has a bounded shared quote");
+      const uiApproval = approvalBody.approval;
+      check("UI approval response binds the submitted attempt key", uiApproval.attemptKey, approvalRequestBody.attemptKey);
+      check("UI approval matches the canonical manifest and explicit maximum",
+        [uiApproval.clientManifestDigest, uiApproval.pricingFingerprint, approvalRequestBody.aggregateMaximumCredits,
+          uiApproval.aggregateMaximumCredits, uiApproval.fileCount],
+        [uiManifestDigest, await intakePricingFingerprint(), uiQuote.quote.maximumCredits, uiQuote.quote.maximumCredits, approvalRequestBody.files.length]);
+      const uiApprovedFile = uiApproval.files.find(file => file.fileKey === approvalRequestBody.files[0].fileKey);
+      check("UI approval contains the selected file identity and exact member maximum",
+        [Boolean(uiApprovedFile), uiApprovedFile?.contentSha256, uiApprovedFile?.byteLength, uiApprovedFile?.approvedMaxPages,
+          uiApprovedFile?.approvedReservedCredits, uiApprovedFile?.approvedMaximumCredits],
+        [true, approvalRequestBody.files[0].contentSha256, approvalRequestBody.files[0].byteLength, uiQuote.quote.files[0].approvedMaxPages,
+          uiQuote.quote.files[0].reservedCredits, uiQuote.quote.files[0].maximumCredits]);
       const capabilityResponse = await step("capability-headers", uploadDeadlineMs.replyHeaders, capabilityReply);
       const capability = await step("capability-body", uploadDeadlineMs.replyBody, () => capabilityResponse.json());
       check("UI capability request qualifies the synthetic PDF", capability.code, "QUALIFIED");
+      const uiCapabilityRequest = capabilityResponse.request();
+      const uiCapabilityBody = uiCapabilityRequest.postDataJSON();
+      const uiIdempotencyKey = await approvedSourceIdempotencyKey(uiApproval.attemptKey, uiApprovedFile.fileKey);
+      check("UI capability carries the approved identities and derived idempotency key",
+        [uiCapabilityBody.attemptKey, uiCapabilityBody.scopeDigest, uiCapabilityBody.pricingFingerprint, uiCapabilityBody.fileKey,
+          uiCapabilityBody.contentSha256, uiCapabilityRequest.headers()["x-tavonel-source-idempotency-key"]],
+        [uiApproval.attemptKey, uiApproval.scopeDigest, uiApproval.pricingFingerprint, uiApprovedFile.fileKey,
+          uiApprovedFile.contentSha256, uiIdempotencyKey]);
+      check("UI capability names the approved member's document", capability.documentId, uiApprovedFile.documentId);
       const putResponse = await step("signed-put", uploadDeadlineMs.signedPut, putReply);
       check("browser signed PUT is accepted by storage", putResponse.status(), 200);
       const confirmed = await step("confirm-headers", uploadDeadlineMs.replyHeaders, confirmReply);
       const confirmBody = await step("confirm-body", uploadDeadlineMs.replyBody, () => confirmed.json());
       check("UI confirm records the upload", [confirmed.status(), confirmBody.code], [200, "UPLOAD_CONFIRMED"]);
+      const uiConfirmBody = confirmed.request().postDataJSON();
+      check("UI confirmation retains the approval identities and validated receipt",
+        [uiConfirmBody.attemptKey, uiConfirmBody.scopeDigest, uiConfirmBody.fileKey, uiConfirmBody.sourceSha256,
+          confirmBody.approvedFile?.fileKey, confirmBody.approvedFile?.fileState],
+        [uiApproval.attemptKey, uiApproval.scopeDigest, uiApprovedFile.fileKey, uiApprovedFile.contentSha256, uiApprovedFile.fileKey, "confirmed"]);
       const compileAccepted = await step("compile-enqueue-headers", uploadDeadlineMs.replyHeaders, compileReply);
       const compileJob = await step("compile-enqueue-body", uploadDeadlineMs.replyBody, () => compileAccepted.json());
       check("UI enqueues the durable compile job", [compileAccepted.status(), compileJob.code], [202, "COMPILE_JOB_ACCEPTED"]);
-      const docA = { documentId: capability.documentId, objectKey: capability.objectKey, jobId: compileJob.jobId };
+      const docA = { documentId: capability.documentId, objectKey: capability.objectKey, jobId: compileJob.jobId,
+        attemptKey: uiApproval.attemptKey, scopeDigest: uiApproval.scopeDigest, pricingFingerprint: uiApproval.pricingFingerprint,
+        fileKey: uiApprovedFile.fileKey, contentSha256: uiApprovedFile.contentSha256, idempotencyKey: uiIdempotencyKey };
       check("capability names the quarantine key of the document", docA.objectKey, `quarantine/${workspace}/${docA.documentId}/source`);
       const browserPut = s3Arrivals.find(arrival => arrival.method === "PUT" && arrival.path === `/${bucketName}/${docA.objectKey}`);
       check("the stored bytes arrived as the browser's cross-origin PUT", [browserPut?.fromBrowserOrigin, browserPut?.sha256, browserPut?.status], [true, sha256(docs.ui.bytes), 200]);
@@ -1134,8 +1216,12 @@ try {
       hop("duplicates");
       const token = await ownerToken();
       const before = { ...counts(), reservation: reservation(docA.documentId), keys: await listKeys(docPrefix), candidates: await candidateKeys(), job: jobRow(docA.jobId) };
-      const reconfirm = await app("/api/uploads/confirm", token, { documentId: docA.documentId, sourceSha256: `sha256:${sha256(docs.ui.bytes)}` });
+      const reconfirm = await app("/api/uploads/confirm", token, { documentId: docA.documentId, sourceSha256: docA.contentSha256,
+        attemptKey: docA.attemptKey, scopeDigest: docA.scopeDigest, fileKey: docA.fileKey });
       check("duplicate confirm is an idempotent success", [reconfirm.status, reconfirm.body?.code], [200, "UPLOAD_CONFIRMED"]);
+      check("duplicate confirm retains the same approved identities",
+        [reconfirm.body?.approvedFile?.fileKey, reconfirm.body?.approvedFile?.documentId, reconfirm.body?.approvedFile?.fileState],
+        [docA.fileKey, docA.documentId, "confirmed"]);
       check("duplicate confirm keeps the first confirmation time", sql(`select confirmed_at from public.foundation_intake_admissions where document_id='${docA.documentId}'`), confirmedAt);
       await deliver(docA.objectKey, 2);
       const reenqueue = await app("/api/compile-jobs", token, { documentIds: [docA.documentId] });
