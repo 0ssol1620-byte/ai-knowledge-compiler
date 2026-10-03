@@ -984,13 +984,71 @@ async def test_retention_sweep_is_bounded_and_duplicate_safe_across_workers(
                 )
             )
         )
+        assert len(requests) == 1
+        events = list(
+            await session.scalars(
+                select(OutboxEvent).where(
+                    OutboxEvent.tenant_id == seed.tenant_id,
+                    OutboxEvent.aggregate_type == "deletion_request",
+                    OutboxEvent.aggregate_id == requests[0].id,
+                    OutboxEvent.event_type == "deletion.purge.requested.v1",
+                )
+            )
+        )
         document = await session.get(Document, seed.document_id)
-    assert len(requests) == 1
     assert document is not None and document.deletion_requested_at is not None
+    assert len(events) == 1
+    available_at = events[0].available_at
+    if available_at.tzinfo is None:
+        available_at = available_at.replace(tzinfo=UTC)
+    else:
+        available_at = available_at.astimezone(UTC)
+    clock.value = max(clock.value, available_at)
     assert await first.run_once()
     async with harness.database.sessions() as session:
         request = await session.get(DeletionRequest, requests[0].id)
     assert request is not None and request.state == "purged"
+
+
+async def test_deletion_worker_waits_until_persisted_event_available_at(
+    harness: Harness,
+) -> None:
+    seed = await _seed_document(harness)
+    assert seed.request_id is not None
+    async with harness.database.sessions() as session:
+        events = list(
+            await session.scalars(
+                select(OutboxEvent).where(
+                    OutboxEvent.tenant_id == seed.tenant_id,
+                    OutboxEvent.aggregate_type == "deletion_request",
+                    OutboxEvent.aggregate_id == seed.request_id,
+                    OutboxEvent.event_type == "deletion.purge.requested.v1",
+                )
+            )
+        )
+    assert len(events) == 1
+    available_at = events[0].available_at
+    if available_at.tzinfo is None:
+        available_at = available_at.replace(tzinfo=UTC)
+    else:
+        available_at = available_at.astimezone(UTC)
+    clock = MutableClock(available_at - timedelta(microseconds=1))
+    worker = DeletionWorker(
+        engine=harness.database.engine,
+        object_store=harness.store,
+        settings=harness.settings,
+        clock=clock,
+    )
+
+    assert await worker.run_once() is False
+    clock.value = available_at
+    assert await worker.run_once() is True
+
+    async with harness.database.sessions() as session:
+        request = await session.get(DeletionRequest, seed.request_id)
+        document = await session.get(Document, seed.document_id)
+    assert request is not None and request.state == "purged"
+    assert document is None
 
 
 async def test_retention_sweep_filters_expiry_before_applying_batch_limit(

@@ -68,8 +68,16 @@
 }
 
 @layer utilities {
-  /* WCAG-readable leaf copy must not collapse inside dense evidence surfaces. */
-  :where(p, span, strong, b, em, small, code, pre, li, dt, dd, th, td, caption) {
+  /* WCAG-readable leaf copy must not collapse inside dense evidence surfaces.
+     A layered !important outranks every unlayered declaration, !important
+     included, and 1em is the parent's size — so the floor also discards a
+     leaf's own larger size. Leaves whose component size is declared at or
+     above 12px at every breakpoint are exempted by name; everything else,
+     including the legacy sub-12px rules the blueprint ratchet counts, keeps
+     the forced floor. */
+  :where(p, span, strong, b, em, small, code, pre, li, dt, dd, th, td, caption):where(
+      :not(.tv-page-hero-copy > p:not(.tv-context-label), .tv-thesis p, .tv-page-sections p)
+    ) {
     font-size: max(12px, 1em) !important;
   }
 

@@ -115,3 +115,38 @@ for (const locale of ["en", "ko"] as const) {
     );
   });
 }
+
+// The utilities-layer 12px leaf floor is !important, so it outranks unlayered
+// component sizes; this pins the exemptions without letting the floor lapse.
+test("privacy page keeps component type sizes above the 12px leaf floor", async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "light" });
+  await setLocaleCookie(page.context(), testInfo, "en");
+  const response = await page.goto("/legal/privacy", { waitUntil: "networkidle" });
+  expect(response?.status()).toBeLessThan(400);
+  await expect(page.locator("html")).toHaveAttribute("lang", langPattern("en"));
+  await page.evaluate(() => document.fonts.ready);
+
+  const fontSize = async (selector: string) => {
+    const target = page.locator(selector).first();
+    await expect(target, selector).toBeVisible();
+    return target.evaluate((element) => Number.parseFloat(getComputedStyle(element).fontSize));
+  };
+
+  const thesis = await fontSize(".tv-thesis p");
+  expect(thesis, "thesis").toBeGreaterThanOrEqual(40);
+  expect(thesis, "thesis").toBeLessThanOrEqual(64);
+
+  const headline = await fontSize(".tv-page-hero-copy h1");
+  expect(headline, "headline").toBeGreaterThanOrEqual(58);
+  expect(headline, "headline").toBeLessThanOrEqual(82);
+
+  expect(await fontSize(".tv-page-hero-copy > p:not(.tv-context-label)"), "body lead").toBe(18);
+  expect(await fontSize(".tv-page-sections p"), "section body").toBe(17);
+
+  for (const [label, selector] of [
+    ["thesis caption", ".tv-thesis span"],
+    ["context label", ".tv-page-hero-copy > .tv-context-label"],
+  ] as const) {
+    expect(await fontSize(selector), label).toBeGreaterThanOrEqual(12);
+  }
+});
