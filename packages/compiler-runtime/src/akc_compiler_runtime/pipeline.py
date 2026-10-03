@@ -34,14 +34,19 @@ import hashlib
 import json
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from pathlib import Path
 
 from akc_cir.answer_compiler import CompiledAnswer, DraftClaim, compile_answer
 from akc_cir.authority import AuthorityClass, ClaimContext, SourceStatus
 from akc_cir.dependency import DependencyEdge, DependencyGraph, EdgeType
-from akc_cir.identity import LogicalMatch, assign_one_to_one, source_id
+from akc_cir.identity import (
+    LogicalMatch,
+    assign_one_to_one,
+    normalize_text_for_identity,
+    source_id,
+)
 from akc_cir.recompilation import (
     EquivalenceReport,
     RecompilationPlan,
@@ -214,6 +219,7 @@ class Pipeline:
                 renames=(),
                 plan=None,
                 equivalence=None,
+                tombstones=tuple(_tombstone_units(previous)),
                 _pipeline=self,
             )
 
@@ -326,12 +332,14 @@ class Pipeline:
         previous_rows: Sequence[Mapping[str, object]],
         *,
         lineage_source: str,
+        previous_rel_path: str | None = None,
     ) -> _DocumentResolution:
         """Resolve one document's claims against its previous version.
 
         Matched identities keep their logical ids; new units are seeded; an
         identity the resolver cannot settle is quarantined for review instead
-        of being merged or split on a guess.
+        of being merged or split on a guess. ``previous_rel_path`` names where
+        ``previous_rows`` lived when the document was renamed this run.
         """
         anchors = [draft.anchor for draft in document.claims]
         neighbour_pairs = [
@@ -347,6 +355,10 @@ class Pipeline:
             for draft, seed, neighbours in zip(document.claims, seeds, neighbour_pairs, strict=True)
         ]
         before_snapshots = [self._snapshot_from_record(row) for row in previous_rows]
+        if previous_rel_path is not None:
+            before_snapshots = _rebase_folders(
+                before_snapshots, previous_rel_path, document.file.rel_path
+            )
 
         decisions = (
             assign_one_to_one(
@@ -464,6 +476,20 @@ class Pipeline:
         by_path = {doc.file.rel_path: doc for doc in documents}
         prev_rows_by_path = self._previous_by_path(previous) if previous else {}
 
+        # Lineage belongs to the document, not to one run: a document keeps
+        # the path it was first compiled at through every later rename and
+        # edit, so its identities, its document node and the edges other
+        # documents hold to it all survive the move.
+        def lineage_of(path: str) -> str:
+            for row in prev_rows_by_path.get(path, []):
+                if row.get("moved_from"):
+                    return str(row["moved_from"])
+            return path
+
+        lineage_by_path = {path: lineage_of(path) for path in by_path}
+        for new_path, old_path in classification.renamed.items():
+            lineage_by_path[new_path] = lineage_of(old_path)
+
         rows: list[dict[str, object]] = []
         reviews: list[ReviewItem] = []
         # (logical_id, lineage path) for every unit this build retires, either
@@ -488,12 +514,14 @@ class Pipeline:
             doc = by_path.get(new_path)
             if doc is None:
                 continue
+            lineage = lineage_by_path[new_path]
             resolution = self._resolve_document(
                 doc,
                 prev_rows_by_path.get(old_path, []),
-                lineage_source=self._source_of(old_path),
+                lineage_source=self._source_of(lineage),
+                previous_rel_path=old_path,
             )
-            absorb(resolution, lineage_path=old_path, rel_path=new_path)
+            absorb(resolution, lineage_path=lineage, rel_path=new_path)
             renames.append((old_path, new_path))
 
         # 2. Changed and added paths.
@@ -502,42 +530,63 @@ class Pipeline:
             doc = by_path.get(path)
             if doc is None:
                 continue
+            lineage = lineage_by_path[path]
             resolution = self._resolve_document(
                 doc,
                 prev_rows_by_path.get(path, []),
-                lineage_source=self._source_of(path),
+                lineage_source=self._source_of(lineage),
             )
-            absorb(resolution, lineage_path=path, rel_path=path)
+            absorb(resolution, lineage_path=lineage, rel_path=path)
 
         # 3. Removals: every previous row whose file is gone retires. The
-        #    file's path rides along so the unit keeps its document edge and
-        #    impact can still propagate out of a deleted document.
+        #    document's lineage path rides along so the unit keeps its
+        #    document edge and impact can still propagate out of a deleted
+        #    document, however many times it moved before it was deleted.
         for path in classification.removed:
             for row in prev_rows_by_path.get(path, []):
-                removed_units.append((str(row["logical_id"]), path))
+                removed_units.append((str(row["logical_id"]), _lineage_path(row)))
 
         # 4. Clean paths: selective carries rows verbatim; full re-resolves.
         for path in sorted(set(by_path) - resolved_paths):
             doc = by_path[path]
             prior_rows = prev_rows_by_path.get(path, [])
             if resolve_all:
+                lineage = lineage_by_path[path]
                 resolution = self._resolve_document(
-                    doc, prior_rows, lineage_source=self._source_of(path)
+                    doc, prior_rows, lineage_source=self._source_of(lineage)
                 )
-                absorb(resolution, lineage_path=path, rel_path=path)
+                absorb(resolution, lineage_path=lineage, rel_path=path)
             else:
                 rows.extend(self._carry_row(row) for row in prior_rows)
 
         path_aliases = {old: new for new, old in classification.renamed.items()}
         rows = self._attach_dependencies(rows, path_aliases=path_aliases)
+
+        # 5. Tombstones: a deleted document's units keep invalidating what
+        #    depends on that document in every later world -- across publishes
+        #    and restarts -- until a document with the same lineage exists
+        #    again. Units retired from a document that is still live remain
+        #    this run's event only, exactly as before.
+        live_lineages = set(lineage_by_path.values())
+        row_ids = {str(row["logical_id"]) for row in rows}
+
+        def is_tombstone(unit: tuple[str, str]) -> bool:
+            return unit[1] not in live_lineages and unit[0] not in row_ids
+
+        impact_units = list(
+            dict.fromkeys(
+                [*removed_units, *filter(is_tombstone, _tombstone_units(previous))]
+            )
+        )
+        tombstones = sorted(filter(is_tombstone, impact_units))
         rows = self._stamp_invalidation(
             rows,
-            [unit_id for unit_id, _ in removed_units],
-            removed_units=removed_units,
+            [unit_id for unit_id, _ in impact_units],
+            removed_units=impact_units,
         )
 
         merged_diff = self._merged_diff(classification, by_path, prev_rows_by_path, rows)
-        graph = self._dependency_graph(rows, removed_units)
+        graph = self._dependency_graph(rows, impact_units)
         inventory = [str(row["logical_id"]) for row in rows]
         plan = plan_recompilation(diff=merged_diff, graph=graph, artifacts=inventory)
         return _Build(
@@ -550,6 +599,7 @@ class Pipeline:
             plan=plan,
             resolved_row_ids=resolved_row_ids,
             removed_units=removed_units,
+            tombstones=tombstones,
         )
 
     def _source_of(self, rel_path: str) -> str:
@@ -795,6 +845,7 @@ class Pipeline:
             for row in rows
         }
         cursor = {doc.file.rel_path: doc.file.sha256 for doc in documents}
+        tombstones = _tombstone_records(build.tombstones)
         artifacts = {
             **{
                 f"claim/{logical_id}": content_hash(row) for logical_id, row in claims_table.items()
@@ -802,6 +853,8 @@ class Pipeline:
             "evidence/index": content_hash(_jsonable(evidence_index)),
             "cursor": content_hash(_jsonable(cursor)),
         }
+        if tombstones:
+            artifacts["tombstones"] = content_hash(tombstones)
 
         equivalence_report: EquivalenceReport | None = None
         if selective:
@@ -838,6 +891,7 @@ class Pipeline:
             evidence_index=evidence_index,
             review_queue=tuple(item.as_record() for item in build.reviews),
             cursor=cursor,
+            tombstones=tuple(tombstones),
         )
         return WorldResult(
             world_state_id=world_state_id,
@@ -854,6 +908,7 @@ class Pipeline:
             renames=tuple(build.renames),
             plan=build.plan,
             equivalence=equivalence_report,
+            tombstones=tuple(build.tombstones),
             _pipeline=self,
         )
 
@@ -880,6 +935,9 @@ class Pipeline:
             f"claim/{logical_id}": content_hash(_jsonable(row))
             for logical_id, row in ((str(row["logical_id"]), row) for row in full_build.rows)
         }
+        full_tombstones = _tombstone_records(full_build.tombstones)
+        if full_tombstones:
+            full_artifacts["tombstones"] = content_hash(full_tombstones)
         rebuilt: dict[str, str] = {}
         carried: dict[str, str] = {}
         for name, digest in selective_artifacts.items():
@@ -910,6 +968,49 @@ def _lineage_path(row: Mapping[str, object]) -> str:
     if moved_from:
         return str(moved_from)
     return str(row["rel_path"])
+
+
+def _tombstone_units(world: StoredWorld | None) -> list[tuple[str, str]]:
+    """``(logical_id, lineage_path)`` for every tombstone a stored world holds."""
+    if world is None:
+        return []
+    return [
+        (str(record["logical_id"]), str(record["lineage_path"])) for record in world.tombstones
+    ]
+
+
+def _tombstone_records(units: Sequence[tuple[str, str]]) -> list[dict[str, object]]:
+    return [
+        {"logical_id": logical_id, "lineage_path": lineage_path}
+        for logical_id, lineage_path in units
+    ]
+
+
+def _folder_parts(rel_path: str) -> tuple[str, ...]:
+    """The folder prefix extraction puts at the head of every section path."""
+    parts = rel_path.replace("\\", "/").split("/")[:-1]
+    return tuple(normalize_text_for_identity(part) for part in parts)
+
+
+def _rebase_folders(
+    snapshots: Sequence[UnitSnapshot], old_rel_path: str, new_rel_path: str
+) -> list[UnitSnapshot]:
+    """Re-express a renamed document's previous units under its new folder.
+
+    An exact-content rename changes where the bytes live, not the structure
+    inside them. Section paths lead with the folder, so without this a move
+    across folders zeroes the structural signal and forks every identity.
+    """
+    old_prefix = _folder_parts(old_rel_path)
+    new_prefix = _folder_parts(new_rel_path)
+    if old_prefix == new_prefix:
+        return list(snapshots)
+    return [
+        replace(snapshot, document_path=new_prefix + snapshot.document_path[len(old_prefix) :])
+        if snapshot.document_path[: len(old_prefix)] == old_prefix
+        else snapshot
+        for snapshot in snapshots
+    ]
 
 
 def _shape_of(rows: Sequence[Mapping[str, object]]) -> DocumentShape:
@@ -965,6 +1066,7 @@ class _Build:
     plan: RecompilationPlan
     resolved_row_ids: set[str]
     removed_units: list[tuple[str, str]]
+    tombstones: list[tuple[str, str]]
 
 
 @dataclass(frozen=True, slots=True)
@@ -983,6 +1085,8 @@ class WorldResult:
     renames: tuple[tuple[str, str], ...]
     plan: RecompilationPlan | None
     equivalence: EquivalenceReport | None
+    #: ``(logical_id, lineage_path)`` of deleted units still invalidating.
+    tombstones: tuple[tuple[str, str], ...] = ()
     _pipeline: Pipeline | None = field(default=None, repr=False, compare=False)
 
     @property

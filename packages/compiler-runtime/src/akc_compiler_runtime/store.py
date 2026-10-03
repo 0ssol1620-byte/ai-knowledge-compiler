@@ -75,6 +75,9 @@ class StoredWorld:
     review_queue: tuple[dict[str, object], ...]
     cursor: dict[str, str]  # rel_path -> sha256
     built_at: datetime
+    #: Units of deleted documents that still invalidate their dependents:
+    #: ``{"logical_id", "lineage_path"}`` records, carried world to world.
+    tombstones: tuple[dict[str, object], ...] = ()
 
 
 class WorldStore:
@@ -132,6 +135,7 @@ class WorldStore:
             review_queue=tuple(claims.get("review_queue", ())),
             cursor=dict(claims["cursor"]),
             built_at=datetime.fromisoformat(world["built_at"]),
+            tombstones=tuple(claims.get("tombstones", ())),
         )
 
     def load_registry(self) -> WorldStateRegistry:
@@ -195,6 +199,7 @@ class WorldStore:
         evidence_index: dict[str, dict[str, object]],
         review_queue: tuple[dict[str, object], ...],
         cursor: dict[str, str],
+        tombstones: tuple[dict[str, object], ...] = (),
     ) -> PublishResult:
         """Persist a candidate world, then swap the pointer. In that order."""
         self._sequence += 1
@@ -249,6 +254,7 @@ class WorldStore:
                 "evidence_index": evidence_index,
                 "review_queue": list(review_queue),
                 "cursor": cursor,
+                "tombstones": list(tombstones),
             },
         )
         # The pointer moves last and in one replace: this is §N22.2's swap.
