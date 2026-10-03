@@ -151,14 +151,139 @@ test("privacy page keeps component type sizes above the 12px leaf floor", async 
   }
 });
 
-test("integrity status register code exposes every character", async ({ page }, testInfo) => {
+// Visual-hierarchy contract, not an interaction test: the leaf floor's
+// max(12px, 1em) resolves against the parent, so without a named exemption it
+// replaces authored proof-section sizes with the parent size. A <div> probe is
+// outside the leaf selector, so it resolves each token as the component does.
+test("home proof sections preserve authored type sizes and readability floors", async ({
+  page,
+}, testInfo) => {
+  await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "light" });
+  await setLocaleCookie(page.context(), testInfo, "en");
+  const response = await page.goto("/", { waitUntil: "networkidle" });
+  expect(response?.status()).toBeLessThan(400);
+  await expect(page.locator("html")).toHaveAttribute("lang", langPattern("en"));
+  await page.evaluate(() => document.fonts.ready);
+
+  const typography = [
+    {
+      role: "section labels",
+      selector:
+        ".tv-accuracy-eyebrow, .tv-accuracy-table thead th, .tv-accuracy-evidence, .tv-recovery-eyebrow, .tv-recovery-arm span, .tv-recovery-arm small, .tv-campaign-eyebrow, .tv-campaign-rates article span, .tv-campaign-stages li span, .tv-campaign-pending span",
+      token: "--fs-label",
+    },
+    {
+      role: "accuracy and recovery figures",
+      selector: ".tv-accuracy-figure strong, .tv-recovery-arm strong",
+      token: "--fs-display-1",
+    },
+    {
+      role: "campaign figures",
+      selector: ".tv-campaign-rates article strong",
+      token: "--fs-title-1",
+    },
+    {
+      role: "accuracy figure captions",
+      selector: ".tv-accuracy-figure span",
+      token: "--fs-small",
+    },
+    {
+      role: "body copy",
+      selector:
+        ".tv-accuracy-context p:not(.tv-accuracy-corpus), .tv-accuracy-spread, .tv-accuracy-cell b, .tv-accuracy-worst-note, .tv-recovery-context p, .tv-campaign-note",
+      token: "--fs-body",
+    },
+    {
+      role: "small copy and table cells",
+      selector:
+        ".tv-accuracy-corpus, .tv-accuracy-table td, .tv-recovery-corroboration dt, .tv-recovery-corroboration dd, .tv-recovery-direction, .tv-campaign-rates article p, .tv-campaign-stages li, .tv-campaign-guarantees li, .tv-campaign-pending p",
+      token: "--fs-small",
+    },
+    {
+      role: "recovery lead and campaign guarantees",
+      selector: ".tv-recovery-lead, .tv-campaign-guarantees b",
+      token: "--fs-lead",
+    },
+  ] as const;
+
+  for (const { role, selector, token } of typography) {
+    const leaves = page.locator(selector);
+    expect(await leaves.count(), `${role} elements`).toBeGreaterThan(0);
+
+    const measured = await leaves.evaluateAll(
+      (elements, tokenName) =>
+        elements.map((element) => {
+          const parent = element.parentElement!;
+          const probe = document.createElement("div");
+          probe.setAttribute("aria-hidden", "true");
+          probe.style.cssText = `position: absolute; visibility: hidden; font-size: var(${tokenName});`;
+          parent.appendChild(probe);
+          try {
+            return {
+              actual: Number.parseFloat(getComputedStyle(element).fontSize),
+              expected: Number.parseFloat(getComputedStyle(probe).fontSize),
+            };
+          } finally {
+            probe.remove();
+          }
+        }),
+      token,
+    );
+
+    for (const [index, { actual, expected }] of measured.entries()) {
+      const label = `${role} #${index}`;
+      expect(Number.isFinite(expected), `${label}: ${token} resolves`).toBe(
+        true,
+      );
+      expect(
+        expected,
+        `${label}: authored size respects the 12px minimum`,
+      ).toBeGreaterThanOrEqual(12);
+      expect(actual, `${label}: resolves ${token}`).toBe(expected);
+    }
+  }
+
+  const floors = await page.evaluate(() => {
+    const host = document.createElement("div");
+    host.style.cssText =
+      "position: fixed; inset: 0 auto auto 0; font-size: 10px;";
+    const bodyLeaf = document.createElement("span");
+    bodyLeaf.style.fontSize = "8px";
+    const control = document.createElement("button");
+    control.style.fontSize = "8px";
+    host.append(bodyLeaf, control);
+    document.querySelector("main")!.appendChild(host);
+    try {
+      return {
+        body: Number.parseFloat(getComputedStyle(bodyLeaf).fontSize),
+        control: Number.parseFloat(getComputedStyle(control).fontSize),
+      };
+    } finally {
+      host.remove();
+    }
+  });
+  expect(
+    floors.body,
+    "ordinary leaves retain the 12px floor",
+  ).toBeGreaterThanOrEqual(12);
+  expect(
+    floors.control,
+    "interactive controls retain the separate 14px floor",
+  ).toBeGreaterThanOrEqual(14);
+});
+
+test("integrity status register code exposes every character", async ({
+  page,
+}, testInfo) => {
   await setLocaleCookie(page.context(), testInfo, "ko");
   const response = await page.goto(integrityPath, { waitUntil: "networkidle" });
   expect(response?.status()).toBeLessThan(400);
   await expect(page.locator("html")).toHaveAttribute("lang", langPattern("ko"));
   await page.evaluate(() => document.fonts.ready);
 
-  const code = page.locator(".app-frame .integrity-status-register code").filter({ hasText: /^authority_verified$/ });
+  const code = page
+    .locator(".app-frame .integrity-status-register code")
+    .filter({ hasText: /^authority_verified$/ });
   await expect(code).toHaveCount(1);
 
   const initialViewport = page.viewportSize();
@@ -170,11 +295,14 @@ test("integrity status register code exposes every character", async ({ page }, 
     await page.evaluate(() => document.fonts.ready);
 
     await expect(code, `code visible at ${width}px`).toBeVisible();
-    await expect(code, `full text at ${width}px`).toHaveText("authority_verified");
+    await expect(code, `full text at ${width}px`).toHaveText(
+      "authority_verified",
+    );
 
     const metrics = await code.evaluate((element) => {
       const isClipped = (node: Element) =>
-        node.scrollWidth > node.clientWidth + 1 || node.scrollHeight > node.clientHeight + 1;
+        node.scrollWidth > node.clientWidth + 1 ||
+        node.scrollHeight > node.clientHeight + 1;
 
       const control = document.createElement("span");
       control.textContent = element.textContent;
@@ -204,11 +332,25 @@ test("integrity status register code exposes every character", async ({ page }, 
       }
     });
 
-    expect(metrics.controlClipped, `negative control: 64px nowrap ellipsis span is clipped at ${width}px`).toBe(true);
-    expect(metrics.text, `measured text at ${width}px`).toBe("authority_verified");
-    expect(metrics.clientWidth, `code has layout width at ${width}px`).toBeGreaterThan(0);
-    expect(metrics.scrollWidth, `no horizontal clipping at ${width}px`).toBeLessThanOrEqual(metrics.clientWidth + 1);
-    expect(metrics.scrollHeight, `no vertical clipping at ${width}px`).toBeLessThanOrEqual(metrics.clientHeight + 1);
+    expect(
+      metrics.controlClipped,
+      `negative control: 64px nowrap ellipsis span is clipped at ${width}px`,
+    ).toBe(true);
+    expect(metrics.text, `measured text at ${width}px`).toBe(
+      "authority_verified",
+    );
+    expect(
+      metrics.clientWidth,
+      `code has layout width at ${width}px`,
+    ).toBeGreaterThan(0);
+    expect(
+      metrics.scrollWidth,
+      `no horizontal clipping at ${width}px`,
+    ).toBeLessThanOrEqual(metrics.clientWidth + 1);
+    expect(
+      metrics.scrollHeight,
+      `no vertical clipping at ${width}px`,
+    ).toBeLessThanOrEqual(metrics.clientHeight + 1);
     expect(metrics.clipped, `code is not clipped at ${width}px`).toBe(false);
   }
 });

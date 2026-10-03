@@ -75,9 +75,58 @@
      above 12px at every breakpoint are exempted by name; everything else,
      including the legacy sub-12px rules the blueprint ratchet counts, keeps
      the forced floor. */
-  :where(p, span, strong, b, em, small, code, pre, li, dt, dd, th, td, caption):where(
-      :not(.tv-page-hero-copy > p:not(.tv-context-label), .tv-thesis p, .tv-page-sections p)
-    ) {
+  :where(
+    p,
+    span,
+    strong,
+    b,
+    em,
+    small,
+    code,
+    pre,
+    li,
+    dt,
+    dd,
+    th,
+    td,
+    caption
+  ):where(
+    :not(
+      .tv-page-hero-copy > p:not(.tv-context-label),
+      .tv-thesis p,
+      .tv-page-sections p,
+      .tv-accuracy-eyebrow,
+      .tv-accuracy-figure strong,
+      .tv-accuracy-figure span,
+      .tv-accuracy-context p,
+      .tv-accuracy-spread,
+      .tv-accuracy-table thead th,
+      .tv-accuracy-table td,
+      .tv-accuracy-cell b,
+      .tv-accuracy-worst-note,
+      .tv-accuracy-evidence,
+      .tv-recovery-eyebrow,
+      .tv-recovery-lead,
+      .tv-recovery-arm span,
+      .tv-recovery-arm strong,
+      .tv-recovery-arm small,
+      .tv-recovery-context p,
+      .tv-recovery-corroboration dt,
+      .tv-recovery-corroboration dd,
+      .tv-recovery-direction,
+      .tv-campaign-eyebrow,
+      .tv-campaign-rates article span,
+      .tv-campaign-rates article strong,
+      .tv-campaign-rates article p,
+      .tv-campaign-stages li,
+      .tv-campaign-stages li span,
+      .tv-campaign-note,
+      .tv-campaign-guarantees li,
+      .tv-campaign-guarantees b,
+      .tv-campaign-pending span,
+      .tv-campaign-pending p
+    )
+  ) {
     font-size: max(12px, 1em) !important;
   }
 
