@@ -27,9 +27,11 @@ from __future__ import annotations
 
 import json
 import shutil
+from copy import deepcopy
 from collections import Counter
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -43,6 +45,132 @@ from akc_compiler_runtime.extraction import UNMAPPED_ACL
 LAUNCH_QUESTION = "What is the current launch date?"
 ALL_DOCUMENTS = sorted(DEMO_FILES)
 UNTOUCHED = sorted(set(ALL_DOCUMENTS) - {LAUNCH_PLAN})
+
+# A deliberately small, 13-document source tree for the runtime oracle. The
+# graph contains a two-hop dependency path so deleting its middle document
+# exercises transitive invalidation through Pipeline rather than a test-only
+# graph builder. Keep this separate from the 9-file public demo: the ACL
+# compatibility cases below still exercise that fixture unchanged.
+RUNTIME_FILES: dict[str, str] = {
+    "projects/launch-plan.md": """\
+# Project Phoenix - Launch Plan
+
+## Launch date
+
+The current confirmed launch date for Project Phoenix is October 15, 2026.
+
+## Dependencies
+
+- Depends on: policies/launch-governance.md - readiness gate compliance.
+
+## Scope
+
+The plan covers the go-to-market workstream for the Phoenix platform.
+""",
+    "policies/launch-governance.md": """\
+# Launch Governance
+
+## Readiness gate
+
+The launch readiness gate requires sign-off from legal and finance before any public announcement.
+""",
+    "specs/launch-spec.md": """\
+# Launch Readiness Spec
+
+## Dependencies
+
+- Depends on: projects/launch-plan.md - dates and scope.
+
+## Go or no-go criteria
+
+Go criterion: the marketing site must be live one week before day one.
+""",
+    "projects/rollout.md": """\
+# Rollout
+
+## Dependencies
+
+- Depends on: policies/launch-bridge.md - bridge approval.
+
+## Checklist
+
+The rollout checklist is ready for the Phoenix launch.
+""",
+    "policies/launch-bridge.md": """\
+# Launch Bridge
+
+## Dependencies
+
+- Depends on: policies/launch-authority.md - approval chain.
+
+## Decision
+
+The launch bridge is approved for the Phoenix release.
+""",
+    "policies/launch-authority.md": """\
+# Launch Authority
+
+## Approval
+
+Launch authority requires approval from the release chair.
+""",
+    "policies/access-policy.md": """\
+# Access Policy
+
+## Review
+
+The access policy requires quarterly review by the security team.
+""",
+    "policies/support-policy.md": """\
+# Support Policy
+
+## Support hours
+
+Current support coverage is Monday through Friday from nine to five until December 31, 2026.
+
+- Effective January 1, 2027: support coverage extends to weekends.
+""",
+    "notes/roadmap-hints.md": """\
+# Roadmap hints
+
+## Later
+
+The companion mobile app is planned for next quarter.
+""",
+    "notes/pricing-note.md": """\
+# Pricing notes
+
+## Warranty
+
+- The three-year extended warranty commitment is superseded by policies/warranty-policy.md.
+""",
+    "projects/quality.md": """\
+# Quality
+
+## Exit criteria
+
+The quality review requires a signed release checklist.
+""",
+    "projects/board-budget.md": """\
+# Board Budget
+
+## Acquisition budget
+
+The current board acquisition budget is four million dollars.
+""",
+    "meetings/2026-09-30-kickoff.md": """\
+Date: 2026-09-30
+
+# Kickoff Meeting
+
+## Decisions
+
+The kickoff meeting recorded a tentative launch date pending board approval.
+""",
+}
+RUNTIME_DOCUMENTS = sorted(RUNTIME_FILES)
+ALL_DOCUMENTS = RUNTIME_DOCUMENTS
+UNTOUCHED = sorted(set(RUNTIME_DOCUMENTS) - {LAUNCH_PLAN})
 
 
 @dataclass
@@ -106,9 +234,16 @@ def _edit_launch_plan(source: Path) -> None:
     path.write_text(text.replace("October 15", "November 3"), encoding="utf-8", newline="\n")
 
 
+def _write_runtime_workspace(source: Path) -> None:
+    for rel_path, content in RUNTIME_FILES.items():
+        path = source / rel_path
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(content, encoding="utf-8", newline="\n")
+
+
 def _run(tmp_path: Path, calls: Invocations) -> Run:
     source = tmp_path / "source"
-    write_demo_workspace(source)
+    _write_runtime_workspace(source)
     store = tmp_path / "store"
     pipeline = Pipeline(store)
     initial = pipeline.compile_workspace(source)
@@ -126,6 +261,65 @@ def _without_logical_ids(claims: Mapping[str, Mapping[str, object]]) -> list[str
         json.dumps({k: v for k, v in row.items() if k != "logical_id"}, sort_keys=True)
         for row in claims.values()
     )
+
+
+def _without_lineage_metadata(
+    claims: Mapping[str, Mapping[str, object]],
+    *,
+    include_invalidated_by: bool = True,
+) -> list[str]:
+    """Compare claims, retaining answer-affecting invalidation by default."""
+    ignored = {"logical_id", "moved_from", "doc_node", "dependencies"}
+    if not include_invalidated_by:
+        ignored.add("invalidated_by")
+    return sorted(
+        json.dumps(
+            {k: v for k, v in row.items() if k not in ignored},
+            sort_keys=True,
+        )
+        for row in claims.values()
+    )
+
+
+def _mutate_runtime_workspace(source: Path, mutation: str) -> None:
+    if mutation == "add":
+        path = source / "notes/contingency.md"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            "# Contingency\n\nThe contingency plan requires daily review.\n",
+            encoding="utf-8",
+            newline="\n",
+        )
+    elif mutation == "modify":
+        _edit_launch_plan(source)
+    elif mutation == "delete":
+        (source / "notes/roadmap-hints.md").unlink()
+    elif mutation == "rename":
+        old = source / "notes/roadmap-hints.md"
+        old.rename(source / "notes/roadmap.md")
+    elif mutation == "bridge-delete":
+        (source / "policies/launch-bridge.md").unlink()
+    elif mutation == "authority-delete":
+        (source / "policies/launch-authority.md").unlink()
+    elif mutation == "acl-only":
+        path = source / "projects/board-budget.md"
+        text = path.read_text(encoding="utf-8")
+        path.write_text(
+            "---\nrequired_permission: board:budget\n---\n" + text,
+            encoding="utf-8",
+            newline="\n",
+        )
+    elif mutation == "temporal":
+        path = source / "policies/support-policy.md"
+        text = path.read_text(encoding="utf-8")
+        assert "Effective January 1, 2027" in text
+        path.write_text(
+            text.replace("Effective January 1, 2027", "Effective February 1, 2027"),
+            encoding="utf-8",
+            newline="\n",
+        )
+    else:  # pragma: no cover - parametrization is the only caller
+        raise AssertionError(f"unknown mutation: {mutation}")
 
 
 # ---------------------------------------------------------------------------
@@ -173,9 +367,155 @@ def test_incremental_recompile_equals_full_rebuild_oracles(
         assert "November 3" in str(world.claims[answer.claim_ids[0]]["value"])
 
 
+@pytest.mark.parametrize(
+    ("mutation", "build_resolves", "changed_paths"),
+    [
+        ("add", ["notes/contingency.md"], {"notes/contingency.md"}),
+        ("delete", [], {"notes/roadmap-hints.md"}),
+        (
+            "rename",
+            ["notes/roadmap.md"],
+            {"notes/roadmap-hints.md", "notes/roadmap.md"},
+        ),
+        ("bridge-delete", [], {"policies/launch-bridge.md"}),
+        ("authority-delete", [], {"policies/launch-authority.md"}),
+        ("acl-only", ["projects/board-budget.md"], {"projects/board-budget.md"}),
+        ("temporal", ["policies/support-policy.md"], {"policies/support-policy.md"}),
+    ],
+    ids=["add", "delete", "rename", "bridge-delete", "authority-two-hop-delete", "acl-only", "temporal-change"],
+)
+def test_mutations_match_same_prior_and_clean_rebuilds(
+    tmp_path: Path,
+    calls: Invocations,
+    mutation: str,
+    build_resolves: list[str],
+    changed_paths: set[str],
+) -> None:
+    source = tmp_path / "source"
+    _write_runtime_workspace(source)
+    store = tmp_path / "store"
+    pipeline = Pipeline(store)
+    prior = pipeline.compile_workspace(source)
+    prior_snapshot = (
+        deepcopy(prior.claims),
+        deepcopy(prior.evidence_index),
+        prior.manifest_hash,
+    )
+    temporal_question = "What is the current support coverage weekends?"
+    as_of_january = datetime(2027, 1, 15, tzinfo=UTC)
+    temporal_before = (
+        pipeline.answer(temporal_question, as_of=as_of_january)
+        if mutation == "temporal"
+        else None
+    )
+    if temporal_before is not None:
+        assert temporal_before.outcome is AnswerOutcome.CURRENT
+    prior_store_copy = tmp_path / "store-ws1"
+    shutil.copytree(store, prior_store_copy)
+
+    _mutate_runtime_workspace(source, mutation)
+    current_paths = sorted(
+        path.relative_to(source).as_posix() for path in source.rglob("*") if path.is_file()
+    )
+    calls.reset()
+    incremental = pipeline.recompile(source)
+
+    assert incremental.world_state_id == "WS-2"
+    assert incremental.published and not incremental.no_op
+    assert incremental.equivalence is not None and incremental.equivalence.equivalent
+    assert calls.parsed == Counter(dict.fromkeys(current_paths, 1))
+    assert calls.resolved_in("build") == Counter(dict.fromkeys(build_resolves, 1))
+    assert calls.resolved_in("oracle") == Counter(dict.fromkeys(current_paths, 1))
+
+    # The initial in-memory result remains a frozen view of WS-1 while the
+    # active store advances to WS-2.
+    assert prior.world_state_id == "WS-1"
+    assert dict(prior.claims) == prior_snapshot[0]
+    assert dict(prior.evidence_index) == prior_snapshot[1]
+    assert prior.manifest_hash == prior_snapshot[2]
+
+    calls.reset()
+    same_prior = Pipeline(prior_store_copy).compile_workspace(source)
+    assert same_prior.world_state_id == incremental.world_state_id
+    assert dict(same_prior.claims) == dict(incremental.claims)
+    assert dict(same_prior.evidence_index) == dict(incremental.evidence_index)
+    assert same_prior.manifest_hash == incremental.manifest_hash
+
+    clean = Pipeline(tmp_path / "clean-store").compile_workspace(source)
+    if mutation in {"bridge-delete", "authority-delete"}:
+        # A clean compile has no prior-world tombstones, so it does not know
+        # that these still-present dependents were invalidated by deletion.
+        # Keep that answer-affecting history visible as an explicit divergence.
+        assert _without_lineage_metadata(clean.claims) != _without_lineage_metadata(
+            incremental.claims
+        )
+        assert _without_lineage_metadata(
+            clean.claims, include_invalidated_by=False
+        ) == _without_lineage_metadata(incremental.claims, include_invalidated_by=False)
+    else:
+        assert _without_lineage_metadata(clean.claims) == _without_lineage_metadata(
+            incremental.claims
+        )
+    assert dict(clean.evidence_index) == dict(incremental.evidence_index)
+    differing_ids = set(clean.claims) ^ set(incremental.claims)
+    assert {
+        str(row["rel_path"])
+        for table in (clean.claims, incremental.claims)
+        for logical_id, row in table.items()
+        if logical_id in differing_ids
+    } <= changed_paths
+
+    if mutation == "add":
+        assert any(row["rel_path"] == "notes/contingency.md" for row in incremental.claims.values())
+    elif mutation == "delete":
+        assert all(row["rel_path"] != "notes/roadmap-hints.md" for row in incremental.claims.values())
+    elif mutation == "rename":
+        renamed = [row for row in incremental.claims.values() if row["rel_path"] == "notes/roadmap.md"]
+        assert renamed
+        assert {row["moved_from"] for row in renamed} == {"notes/roadmap-hints.md"}
+        old_ids = {
+            str(row["logical_id"])
+            for row in prior.claims.values()
+            if row["rel_path"] == "notes/roadmap-hints.md"
+        }
+        assert {str(row["logical_id"]) for row in renamed} == old_ids
+    elif mutation == "bridge-delete":
+        dependent = [row for row in incremental.claims.values() if row["rel_path"] == "projects/rollout.md"]
+        assert dependent and all(row["invalidated_by"] for row in dependent)
+        assert clean.answer("What is the rollout checklist?").outcome is AnswerOutcome.CURRENT
+        assert pipeline.answer("What is the rollout checklist?").outcome is AnswerOutcome.UNRESOLVED
+    elif mutation == "authority-delete":
+        bridge = [row for row in incremental.claims.values() if row["rel_path"] == "policies/launch-bridge.md"]
+        rollout = [row for row in incremental.claims.values() if row["rel_path"] == "projects/rollout.md"]
+        assert bridge and all(row["invalidated_by"] for row in bridge)
+        assert rollout and all(row["invalidated_by"] for row in rollout)
+        for question in ("What is the launch bridge approved for?", "What is the rollout checklist?"):
+            assert clean.answer(question).outcome is AnswerOutcome.CURRENT
+            assert pipeline.answer(question).outcome is AnswerOutcome.UNRESOLVED
+    elif mutation == "acl-only":
+        budget_rows = [
+            row for row in incremental.claims.values() if row["rel_path"] == "projects/board-budget.md"
+        ]
+        assert budget_rows and {row["required_permission"] for row in budget_rows} == {"board:budget"}
+        budget_question = "What is the current board acquisition budget?"
+        _assert_refused(pipeline.answer(budget_question))
+        _assert_refused(pipeline.answer(budget_question, permissions={"board:chair"}))
+        assert pipeline.answer(budget_question, permissions={"board:budget"}).outcome is AnswerOutcome.CURRENT
+    elif mutation == "temporal":
+        weekend_rows = [
+            row
+            for row in incremental.claims.values()
+            if row["rel_path"] == "policies/support-policy.md" and "extends to weekends" in str(row["value"])
+        ]
+        assert weekend_rows and {row["valid_from"] for row in weekend_rows} == {
+            "2027-02-01T00:00:00+00:00"
+        }
+        assert pipeline.answer(temporal_question, as_of=as_of_january).outcome is AnswerOutcome.UNRESOLVED
+
+
 def test_recompile_with_no_change_is_a_no_op(tmp_path: Path, calls: Invocations) -> None:
     source = tmp_path / "source"
-    write_demo_workspace(source)
+    _write_runtime_workspace(source)
     pipeline = Pipeline(tmp_path / "store")
     pipeline.compile_workspace(source)
     calls.reset()
@@ -198,7 +538,7 @@ def test_recompile_invocation_counts_are_what_the_runtime_does(
     tmp_path: Path, calls: Invocations
 ) -> None:
     source = tmp_path / "source"
-    write_demo_workspace(source)
+    _write_runtime_workspace(source)
     pipeline = Pipeline(tmp_path / "store")
     pipeline.compile_workspace(source)
     full_compile_resolves = Counter(path for _, path in calls.resolved)
