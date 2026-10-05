@@ -172,7 +172,9 @@ def _add_sheet_table(
     for row, column in sorted(coordinates):
         cell = actual_cells.get((row, column))
         raw_value = cell.value if cell is not None else None
-        raw_text = _cell_text(raw_value)
+        # A string's padding, line endings and Unicode composition are source
+        # facts. Display normalization belongs in the builder, after raw text.
+        raw_text = raw_value if isinstance(raw_value, str) else _cell_text(raw_value)
         normalized_text = raw_text
         quality_flags: list[str] = []
         value_type: CellValueType | None = (
@@ -180,7 +182,19 @@ def _add_sheet_table(
         )
         formula_text: str | None = None
         formula_entry: dict[str, Any] | None = None
-        preserve_raw_text = False
+        # Keep unchanged cells' wire representation and hashes compatible.
+        preserve_raw_text = (
+            isinstance(raw_value, str)
+            and cell is not None
+            and cell.data_type != "f"
+            and normalize_text(raw_text) != raw_text
+        )
+        if preserve_raw_text:
+            # This raw field is newly emitted alongside normalized display
+            # text. Charge it in full to the same cumulative text fence before
+            # constructing cells, including text normalization strips away.
+            builder.reserve_metadata_text(raw_text)
+            quality_flags.append("xlsx_cell_text_normalized")
         if cell is not None and cell.data_type == "f":
             formula_count += 1
             # Array and data-table formulas arrive as objects; their source is
