@@ -138,33 +138,47 @@ def _add_sheet_table(
         if isinstance(cell, Cell) and cell.value is not None
     }
     merge_anchors: dict[tuple[int, int], tuple[int, int]] = {}
-    covered: set[tuple[int, int]] = set()
+    merged_bounds: list[tuple[int, int, int, int]] = []
     for merged_range in worksheet.merged_cells.ranges:
         min_column, min_row, max_column, max_row = _range_boundaries(str(merged_range))
+        if (min_row, min_column) in merge_anchors:
+            raise StructuredParseError("TABLE_CELL_OVERLAP")
         merge_anchors[(min_row, min_column)] = (
             max_row - min_row + 1,
             max_column - min_column + 1,
         )
-        for row in range(min_row, max_row + 1):
-            for column in range(min_column, max_column + 1):
-                if (row, column) != (min_row, min_column):
-                    covered.add((row, column))
+        merged_bounds.append((min_column, min_row, max_column, max_row))
 
-    coordinates = (set(actual_cells) | set(merge_anchors)) - covered
+    coordinates = set(actual_cells) | set(merge_anchors)
     if not coordinates:
         return None, []
     if len(coordinates) > builder.limits.max_cells_per_sheet:
         raise StructuredParseError("SHEET_CELL_LIMIT")
     min_row = min(row for row, _column in coordinates)
-    max_row = max(row for row, _column in coordinates)
+    max_row = max([row for row, _column in coordinates] + [bounds[3] for bounds in merged_bounds])
     min_column = min(column for _row, column in coordinates)
-    max_column = max(column for _row, column in coordinates)
+    max_column = max(
+        [column for _row, column in coordinates] + [bounds[2] for bounds in merged_bounds]
+    )
     row_count = max_row - min_row + 1
     column_count = max_column - min_column + 1
     if row_count > builder.limits.max_rows_per_sheet:
         raise StructuredParseError("SHEET_ROW_LIMIT")
     if column_count > builder.limits.max_columns_per_sheet:
         raise StructuredParseError("SHEET_COLUMN_LIMIT")
+    _enforce_table_bounds(row_count, column_count, builder)
+
+    # Bounds include declared empty merge edges, but only their anchors become
+    # canonical cells. Validate the grid before expanding covered coordinates.
+    covered: set[tuple[int, int]] = set()
+    for min_column_bound, min_row_bound, max_column_bound, max_row_bound in merged_bounds:
+        for row in range(min_row_bound, max_row_bound + 1):
+            for column in range(min_column_bound, max_column_bound + 1):
+                if (row, column) != (min_row_bound, min_column_bound):
+                    covered.add((row, column))
+    # Preserve overlapping anchors so the builder rejects overlaps rather than
+    # silently discarding a declared source range.
+    coordinates = (set(actual_cells) - covered) | set(merge_anchors)
 
     specs: list[TableCellSpec] = []
     formula_count = 0
@@ -487,6 +501,7 @@ def _preflight_worksheet_xml(data: bytes, builder: CirBuilder) -> None:
             cell_count = 0
             merged_area = 0
             rows: set[int] = set()
+            grid_bounds: list[tuple[int, int, int, int]] = []
             for element in root.iter():
                 local_name = element.tag.rsplit("}", 1)[-1]
                 if local_name == "c":
@@ -496,6 +511,19 @@ def _preflight_worksheet_xml(data: bytes, builder: CirBuilder) -> None:
                         row, column = _safe_coordinate(reference)
                         rows.add(row)
                         _enforce_sheet_bounds(row, column, builder)
+                        if any(
+                            child.tag.rsplit("}", 1)[-1] == "f"
+                            or (child.tag.rsplit("}", 1)[-1] == "v" and child.text is not None)
+                            or (
+                                child.tag.rsplit("}", 1)[-1] == "is"
+                                and any(
+                                    part.tag.rsplit("}", 1)[-1] == "t" and part.text is not None
+                                    for part in child.iter()
+                                )
+                            )
+                            for child in element
+                        ):
+                            grid_bounds.append((column, row, column, row))
                 elif local_name == "row":
                     raw_row = element.attrib.get("r")
                     if raw_row and raw_row.isdigit():
@@ -507,13 +535,28 @@ def _preflight_worksheet_xml(data: bytes, builder: CirBuilder) -> None:
                 elif local_name == "mergeCell":
                     reference = element.attrib.get("ref")
                     if reference:
-                        merged_area += _enforce_range(reference, builder)
+                        merged_area += _enforce_range(reference, builder, table_limits=True)
+                        grid_bounds.append(_range_boundaries(reference.replace("$", "")))
                         if merged_area > builder.limits.max_cells_per_sheet:
                             raise StructuredParseError("SHEET_CELL_LIMIT")
+                        if merged_area > builder.limits.max_table_cells:
+                            raise StructuredParseError("TABLE_CELL_LIMIT")
             if cell_count > builder.limits.max_cells_per_sheet:
                 raise StructuredParseError("SHEET_CELL_LIMIT")
             if len(rows) > builder.limits.max_rows_per_sheet:
                 raise StructuredParseError("SHEET_ROW_LIMIT")
+            if grid_bounds and merged_area:
+                row_count = (
+                    max(bounds[3] for bounds in grid_bounds)
+                    - min(bounds[1] for bounds in grid_bounds)
+                    + 1
+                )
+                column_count = (
+                    max(bounds[2] for bounds in grid_bounds)
+                    - min(bounds[0] for bounds in grid_bounds)
+                    + 1
+                )
+                _enforce_table_bounds(row_count, column_count, builder)
 
 
 def _safe_coordinate(reference: str) -> tuple[int, int]:
@@ -524,7 +567,7 @@ def _safe_coordinate(reference: str) -> tuple[int, int]:
     return row, column
 
 
-def _enforce_range(reference: str, builder: CirBuilder) -> int:
+def _enforce_range(reference: str, builder: CirBuilder, *, table_limits: bool = False) -> int:
     try:
         min_column, min_row, max_column, max_row = _range_boundaries(reference.replace("$", ""))
     except (TypeError, ValueError) as exc:
@@ -537,7 +580,20 @@ def _enforce_range(reference: str, builder: CirBuilder) -> int:
     area = (max_row - min_row + 1) * (max_column - min_column + 1)
     if area > builder.limits.max_cells_per_sheet:
         raise StructuredParseError("SHEET_CELL_LIMIT")
+    if table_limits:
+        _enforce_table_bounds(max_row - min_row + 1, max_column - min_column + 1, builder)
     return area
+
+
+def _enforce_table_bounds(row_count: int, column_count: int, builder: CirBuilder) -> None:
+    if row_count > builder.limits.max_table_rows:
+        raise StructuredParseError("TABLE_ROW_LIMIT")
+    if column_count > builder.limits.max_table_columns:
+        raise StructuredParseError("TABLE_COLUMN_LIMIT")
+    if row_count * column_count > builder.limits.max_cells_per_sheet:
+        raise StructuredParseError("SHEET_CELL_LIMIT")
+    if row_count * column_count > builder.limits.max_table_cells:
+        raise StructuredParseError("TABLE_CELL_LIMIT")
 
 
 def _enforce_sheet_bounds(row: int, column: int, builder: CirBuilder) -> None:
@@ -554,7 +610,10 @@ def _range_boundaries(reference: str) -> tuple[int, int, int, int]:
         raise StructuredParseError("XLSX_INVALID_RANGE") from exc
     if any(value is None for value in boundaries):
         raise StructuredParseError("XLSX_INVALID_RANGE")
-    return cast(tuple[int, int, int, int], boundaries)
+    min_column, min_row, max_column, max_row = cast(tuple[int, int, int, int], boundaries)
+    if min_column < 1 or min_row < 1 or max_column < min_column or max_row < min_row:
+        raise StructuredParseError("XLSX_INVALID_RANGE")
+    return min_column, min_row, max_column, max_row
 
 
 def _cell_text(value: Any) -> str:
