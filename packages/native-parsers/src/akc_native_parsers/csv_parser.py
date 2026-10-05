@@ -279,7 +279,14 @@ def parse_csv(text: str, builder: CirBuilder) -> str:
                 if _has_formula_prefix(field):
                     formula_prefixed = True
                     quality_flags.append("spreadsheet_formula_prefix_preserved_as_text")
-                if normalize_text(field) != field:
+                normalized_field = normalize_text(field)
+                if len(field) > len(normalized_field):
+                    # The builder charges normalized display text. Reserve
+                    # only the additional verbatim characters so ordinary
+                    # fields are not charged twice. The slice supplies that
+                    # excess count; the complete field remains raw_text below.
+                    builder.reserve_metadata_text(field[len(normalized_field) :])
+                if normalized_field != field:
                     quality_flags.append("csv_field_whitespace_normalized")
                 coordinate = f"{_column_letter(column_index0 + 1)}{record_index0 + 1}"
                 specs.append(
