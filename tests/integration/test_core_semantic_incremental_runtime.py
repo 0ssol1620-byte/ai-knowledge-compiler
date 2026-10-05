@@ -14,9 +14,9 @@ builder over hand-made specs), this drives the production spine,
 
 Resolver and parser invocations are counted with spies on the real
 functions. The counts are a record of what the runtime does, not a cost
-claim: today a recompile re-parses every file and its built-in §44 oracle
-re-resolves every document, so it does *more* resolver work than a full
-compile. That gap is pinned below as strict xfails, not hidden.
+claim: a recompile parses only dirty files when sealed outputs are available.
+Its built-in §44 oracle still re-resolves every document, so it does *more*
+resolver work than a full compile. That gap remains a strict xfail below.
 
 The ACL tests drive a source's front-matter ``required_permission`` through
 the same spine: it reaches compiled rows, gates the next ask, an ACL-only
@@ -423,7 +423,7 @@ def test_mutations_match_same_prior_and_clean_rebuilds(
     assert incremental.world_state_id == "WS-2"
     assert incremental.published and not incremental.no_op
     assert incremental.equivalence is not None and incremental.equivalence.equivalent
-    assert calls.parsed == Counter(dict.fromkeys(current_paths, 1))
+    assert calls.parsed == Counter(dict.fromkeys(build_resolves, 1))
     assert calls.resolved_in("build") == Counter(dict.fromkeys(build_resolves, 1))
     assert calls.resolved_in("oracle") == Counter(dict.fromkeys(current_paths, 1))
 
@@ -518,6 +518,10 @@ def test_recompile_with_no_change_is_a_no_op(tmp_path: Path, calls: Invocations)
     _write_runtime_workspace(source)
     pipeline = Pipeline(tmp_path / "store")
     pipeline.compile_workspace(source)
+    stored_bytes = {
+        path.relative_to(pipeline.store.base): path.read_bytes()
+        for path in pipeline.store.base.rglob("*") if path.is_file()
+    }
     calls.reset()
 
     again = pipeline.recompile(source)
@@ -525,8 +529,11 @@ def test_recompile_with_no_change_is_a_no_op(tmp_path: Path, calls: Invocations)
     assert again.no_op and not again.published
     assert again.world_state_id == "WS-1"
     assert calls.resolved == []
-    # Even a no-op re-parses the whole tree to hash it against the cursor.
-    assert calls.parsed == Counter(dict.fromkeys(ALL_DOCUMENTS, 1))
+    assert calls.parsed == Counter()
+    assert {
+        path.relative_to(pipeline.store.base): path.read_bytes()
+        for path in pipeline.store.base.rglob("*") if path.is_file()
+    } == stored_bytes
 
 
 # ---------------------------------------------------------------------------
@@ -550,10 +557,10 @@ def test_recompile_invocation_counts_are_what_the_runtime_does(
 
     # The selective build itself touches only the edited document ...
     assert calls.resolved_in("build") == Counter({LAUNCH_PLAN: 1})
-    # ... but the §44 oracle then re-resolves every document, and every file
-    # is re-parsed up front. Total resolver work exceeds a full compile.
+    # ... but the §44 oracle still re-resolves every document.
+    # Total resolver work exceeds a full compile; parser work is dirty-only.
     assert calls.resolved_in("oracle") == Counter(dict.fromkeys(ALL_DOCUMENTS, 1))
-    assert calls.parsed == Counter(dict.fromkeys(ALL_DOCUMENTS, 1))
+    assert calls.parsed == Counter({LAUNCH_PLAN: 1})
     assert len(calls.resolved) == len(ALL_DOCUMENTS) + 1
 
 
@@ -573,14 +580,6 @@ def test_recompile_does_not_reresolve_untouched_documents(
     assert all(resolved[path] == 0 for path in UNTOUCHED)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=AssertionError,
-    reason=(
-        "known gap: Pipeline._parse runs parse_file (claim extraction) on every "
-        "file before the cursor diff, so untouched documents are re-parsed"
-    ),
-)
 def test_recompile_does_not_reparse_untouched_documents(tmp_path: Path, calls: Invocations) -> None:
     _run(tmp_path, calls)
     assert all(calls.parsed[path] == 0 for path in UNTOUCHED)

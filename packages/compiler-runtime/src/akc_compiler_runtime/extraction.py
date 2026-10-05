@@ -23,7 +23,7 @@ from __future__ import annotations
 import hashlib
 import re
 import unicodedata
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import UTC, date, datetime
 from enum import StrEnum
 from pathlib import Path
@@ -53,6 +53,9 @@ MARKDOWN_SUFFIXES = {".md", ".markdown"}
 CODE_SUFFIXES = {".py", ".js", ".ts", ".tsx", ".jsx"}
 SCAN_SUFFIXES = MARKDOWN_SUFFIXES | CODE_SUFFIXES
 SKIP_DIRS = {".git", ".venv", "node_modules", "__pycache__", ".obsidian", "dist", "build"}
+
+# Bump when extraction rules, draft schema or source/version identity change.
+PARSER_CACHE_VERSION = 1
 
 _MONTHS = {
     "january": 1,
@@ -260,6 +263,90 @@ def parse_workspace(source_dir: Path, *, tenant_id: str = "personal") -> list[Pa
         parse_file(parsed_file, tenant_id=tenant_id, connector_type="filesystem")
         for parsed_file in scan_source_files(source_dir)
     ]
+
+
+def parsed_document_record(document: ParsedDocument) -> dict[str, object]:
+    """Deterministic parser output, excluding the freshly scanned source text."""
+    claims = []
+    for draft in document.claims:
+        row = asdict(draft)
+        for name in ("valid_from", "valid_to", "recorded_at"):
+            moment = row[name]
+            row[name] = moment.isoformat() if moment is not None else None
+        for name in ("section_path", "depends_on_refs", "derived_from_refs"):
+            row[name] = list(row[name])
+        claims.append(row)
+    return {
+        "rel_path": document.file.rel_path,
+        "sha256": document.file.sha256,
+        "source": document.source,
+        "document_version": document.document_version,
+        "authority": document.authority.value,
+        "required_permission": document.required_permission,
+        "claims": claims,
+    }
+
+
+def parsed_document_from_record(
+    record: object, file: ParsedFile, *, tenant_id: str
+) -> ParsedDocument:
+    """Decode a sealed output and attach current file metadata; reject bad shapes."""
+    if not isinstance(record, dict):
+        raise ValueError("invalid parsed document")
+    src = source_id(tenant_id=tenant_id, connector_type="filesystem", native_id=file.rel_path)
+    version = document_version_id(source=src, content_sha256=f"sha256:{file.sha256}")
+    if (
+        record.get("rel_path") != file.rel_path
+        or record.get("sha256") != file.sha256
+        or record.get("source") != src
+        or record.get("document_version") != version
+    ):
+        raise ValueError("parsed document binding mismatch")
+    permission = record["required_permission"]
+    if permission is not None and not isinstance(permission, str):
+        raise ValueError("invalid cached permission")
+    raw_claims = record["claims"]
+    if not isinstance(raw_claims, list):
+        raise ValueError("invalid cached claims")
+    claims = []
+    for raw in raw_claims:
+        if not isinstance(raw, dict):
+            raise ValueError("invalid cached claim")
+        row = dict(raw)
+        for name in ("anchor", "text", "subject", "kind"):
+            if not isinstance(row[name], str):
+                raise ValueError("invalid cached string")
+        if type(row["line_number"]) is not int or row["line_number"] < 1:
+            raise ValueError("invalid cached line")
+        for name in ("section_path", "depends_on_refs", "derived_from_refs"):
+            values = row[name]
+            if not isinstance(values, list) or not all(isinstance(v, str) for v in values):
+                raise ValueError("invalid cached path or references")
+            row[name] = tuple(values)
+        scope = row["scope"]
+        if not isinstance(scope, dict) or not all(
+            isinstance(k, str) and isinstance(v, str) for k, v in scope.items()
+        ):
+            raise ValueError("invalid cached scope")
+        for name in ("valid_from", "valid_to", "recorded_at"):
+            moment = row[name]
+            if moment is not None and not isinstance(moment, str):
+                raise ValueError("invalid cached time")
+            row[name] = datetime.fromisoformat(moment) if moment is not None else None
+        row["temporal_source"] = TemporalSource(row["temporal_source"])
+        row["source_status"] = SourceStatus(row["source_status"])
+        claims.append(ClaimDraft(**row))
+    document = ParsedDocument(
+        file=file,
+        source=src,
+        document_version=version,
+        authority=AuthorityClass(record["authority"]),
+        claims=tuple(claims),
+        required_permission=permission,
+    )
+    if parsed_document_record(document) != record:
+        raise ValueError("noncanonical parsed document")
+    return document
 
 
 def parse_file(

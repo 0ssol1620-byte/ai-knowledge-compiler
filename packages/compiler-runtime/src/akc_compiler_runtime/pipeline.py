@@ -34,6 +34,7 @@ import hashlib
 import json
 from collections import defaultdict
 from collections.abc import Iterable, Mapping, Sequence
+from contextlib import suppress
 from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from pathlib import Path
@@ -69,6 +70,7 @@ from akc_cir.world_state import (
     publication_manifest,
 )
 
+from . import extraction
 from .answers import select_drafts
 from .extraction import (
     UNMAPPED_ACL,
@@ -194,10 +196,23 @@ class Pipeline:
         Unchanged trees are a no-op: the active world is retained and nothing
         -- not a candidate, not a receipt -- is written.
         """
-        documents = self._parse(Path(source_dir))
         previous = self.store.load_world()
         if previous is None:
             return self.compile_workspace(source_dir)
+
+        cached = self.store.load_parsed_cache(previous, context=self._parser_context())
+        documents = []
+        for file in extraction.scan_source_files(Path(source_dir)):
+            document = None
+            if previous.cursor.get(file.rel_path) == file.sha256 and file.rel_path in cached:
+                # Optional cache: malformed output always takes the cold path.
+                with suppress(ValueError, TypeError, KeyError, RecursionError):
+                    document = extraction.parsed_document_from_record(
+                        cached[file.rel_path], file, tenant_id=self.options.tenant_id
+                    )
+            if document is None:
+                document = extraction.parse_file(file, tenant_id=self.options.tenant_id)
+            documents.append(document)
 
         classification = self._classify(documents, previous)
         if not (
@@ -259,6 +274,16 @@ class Pipeline:
 
     def _parse(self, source_dir: Path) -> list[ParsedDocument]:
         return parse_workspace(source_dir, tenant_id=self.options.tenant_id)
+
+    def _parser_context(self) -> dict[str, object]:
+        """Bind scope and options, including the current filesystem parser contract."""
+        return {
+            "parser_schema": extraction.PARSER_CACHE_VERSION,
+            "tenant_id": self.options.tenant_id,
+            "workspace_id": self.options.workspace_id,
+            "connector_type": self.options.connector_type,
+            "max_depth": self.options.max_depth,
+        }
 
     def _classify(
         self, documents: Sequence[ParsedDocument], previous: StoredWorld | None
@@ -869,6 +894,15 @@ class Pipeline:
         )
 
         world_state_id = self.store.next_world_state_id
+        parsed_cache: dict[str, object] = {
+            "world_state_id": world_state_id,
+            "workspace_id": self.options.workspace_id,
+            "context": self._parser_context(),
+            "documents": {
+                doc.file.rel_path: extraction.parsed_document_record(doc) for doc in documents
+            },
+        }
+        artifacts["parsed/documents"] = content_hash(parsed_cache)
         manifest = publication_manifest(
             world_state_id=world_state_id,
             compiler_version=COMPILER_VERSION,
@@ -892,6 +926,7 @@ class Pipeline:
             review_queue=tuple(item.as_record() for item in build.reviews),
             cursor=cursor,
             tombstones=tuple(tombstones),
+            parsed_cache=parsed_cache,
         )
         return WorldResult(
             world_state_id=world_state_id,
