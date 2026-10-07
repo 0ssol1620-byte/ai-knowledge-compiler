@@ -25,6 +25,9 @@ from akc_native_parsers import (
 from akc_native_parsers.csv_parser import CsvPreflight, preflight_csv
 from akc_native_parsers.models import normalize_text
 from docx import Document as WordDocument
+from docx.oxml.ns import qn
+from docx.shared import Inches as WordInches
+from docx.table import _Row
 from jsonschema import Draft202012Validator
 from openpyxl import Workbook
 from openpyxl.worksheet.formula import ArrayFormula, DataTableFormula
@@ -657,6 +660,255 @@ def test_docx_table_and_pptx_slides_keep_source_order_without_omission(
     assert pages == sorted(pages)
     texts = [block.raw_text for block in pptx.blocks]
     assert texts.index("두 번째 슬라이드") < texts.index("슬라이드 순서를 보존합니다.")
+
+
+def test_docx_header_footer_tables_keep_cells_anchors_and_story_order(
+    parse_context: ParseContext,
+) -> None:
+    # Synthetic in-memory DOCX: a header of paragraph, table, paragraph and a
+    # footer of paragraph, table, table.
+    word = WordDocument()
+    word.add_paragraph("본문")
+    header = word.sections[0].header
+    header.paragraphs[0].text = "머리말 앞"
+    _story_table(header, "문서 번호", "AKC-001")
+    header.add_paragraph("머리말 뒤")
+    footer = word.sections[0].footer
+    footer.paragraphs[0].text = "꼬리말"
+    _story_table(footer, "쪽", "1")
+    _story_table(footer, "판", "2")
+
+    document = _parse(filename="story.docx", data=_word_bytes(word), context=parse_context)
+
+    assert _story_refs(document) == [
+        (BlockType.HEADER, "docx/section/0000/header/p/000000"),
+        (BlockType.TABLE, "docx/section/0000/header/tbl/000000"),
+        (BlockType.HEADER, "docx/section/0000/header/p/000001"),
+        (BlockType.FOOTER, "docx/section/0000/footer/p/000000"),
+        (BlockType.TABLE, "docx/section/0000/footer/tbl/000000"),
+        (BlockType.TABLE, "docx/section/0000/footer/tbl/000001"),
+    ]
+    header_texts = [block.raw_text for block in document.blocks if block.type == BlockType.HEADER]
+    assert header_texts == ["머리말 앞", "머리말 뒤"]
+    for table_id, texts in (
+        ("docx/section/0000/header/tbl/000000", ("문서 번호", "AKC-001")),
+        ("docx/section/0000/footer/tbl/000000", ("쪽", "1")),
+        ("docx/section/0000/footer/tbl/000001", ("판", "2")),
+    ):
+        table = _table_at(document, table_id)
+        assert (table.row_count, table.column_count) == (1, 2)
+        assert [(cell.source_refs[0].native_object_id, cell.raw_text) for cell in table.cells] == [
+            (f"{table_id}/r/000000/c/{column:06d}", text) for column, text in enumerate(texts)
+        ]
+
+
+def test_docx_header_footer_tables_share_the_document_table_budget(
+    parse_context: ParseContext,
+) -> None:
+    word = WordDocument()
+    word.add_table(rows=1, cols=1).cell(0, 0).text = "본문 표"
+    _story_table(word.sections[0].header, "머리말 표")
+    _story_table(word.sections[0].footer, "꼬리말 표")
+    data = _word_bytes(word)
+
+    at_bound = _parse(
+        filename="budget.docx",
+        data=data,
+        context=parse_context,
+        limits=replace(ParserLimits(), max_docx_tables=3),
+    )
+    table_ids = _table_ids(at_bound)
+    assert len(table_ids) == 3
+    assert table_ids[0].startswith("docx/body/table/")
+    assert table_ids[1:] == [
+        "docx/section/0000/header/tbl/000000",
+        "docx/section/0000/footer/tbl/000000",
+    ]
+    # The body table alone is under the bound; the story tables carry it over.
+    with pytest.raises(StructuredParseError) as failure:
+        _parse(
+            filename="budget.docx",
+            data=data,
+            context=parse_context,
+            limits=replace(ParserLimits(), max_docx_tables=2),
+        )
+    assert failure.value.code == "DOCX_TABLE_LIMIT"
+
+
+def test_docx_linked_header_footer_tables_are_emitted_and_counted_once(
+    parse_context: ParseContext,
+) -> None:
+    word = WordDocument()
+    word.add_paragraph("첫 구역")
+    _story_table(word.sections[0].header, "공유 머리말")
+    _story_table(word.sections[0].footer, "공유 꼬리말")
+    word.add_section()
+    word.add_paragraph("둘째 구역")
+    second = word.sections[1]
+    assert second.header.is_linked_to_previous
+    assert second.footer.is_linked_to_previous
+
+    # Both sections resolve to the same parts; counted twice this would need
+    # a budget of four.
+    linked = _parse(
+        filename="linked.docx",
+        data=_word_bytes(word),
+        context=parse_context,
+        limits=replace(ParserLimits(), max_docx_tables=2),
+    )
+    assert _table_ids(linked) == [
+        "docx/section/0000/header/tbl/000000",
+        "docx/section/0000/footer/tbl/000000",
+    ]
+    assert not any(ref.startswith("docx/section/0001/") for _, ref in _story_refs(linked))
+
+    # Unlinking the second header gives it its own part and its own count.
+    second.header.is_linked_to_previous = False
+    _story_table(second.header, "둘째 머리말")
+    data = _word_bytes(word)
+    unlinked = _parse(
+        filename="unlinked.docx",
+        data=data,
+        context=parse_context,
+        limits=replace(ParserLimits(), max_docx_tables=3),
+    )
+    assert _table_ids(unlinked) == [
+        "docx/section/0000/header/tbl/000000",
+        "docx/section/0000/footer/tbl/000000",
+        "docx/section/0001/header/tbl/000000",
+    ]
+    second_header = _table_at(unlinked, "docx/section/0001/header/tbl/000000")
+    assert [cell.raw_text for cell in second_header.cells] == ["둘째 머리말"]
+    with pytest.raises(StructuredParseError) as failure:
+        _parse(
+            filename="unlinked.docx",
+            data=data,
+            context=parse_context,
+            limits=replace(ParserLimits(), max_docx_tables=2),
+        )
+    assert failure.value.code == "DOCX_TABLE_LIMIT"
+
+
+def test_docx_story_table_grid_span_width_is_refused_before_cells_expand(
+    parse_context: ParseContext,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # A two-cell header table whose first cell claims a billion grid columns;
+    # python-docx would build one cell object for each of them.
+    word = WordDocument()
+    word.add_paragraph("본문")
+    huge = _story_table(word.sections[0].header, "a", "b")
+    _set_grid_span(huge.cell(0, 0), "1000000000")
+    data = _word_bytes(word)
+    assert _refusal_before_cell_expansion(monkeypatch, data, parse_context) == "TABLE_COLUMN_LIMIT"
+
+    # At-bound control: an ordinary horizontal merge is two grid columns
+    # wide, so the row is three wide and fits a three-column bound exactly.
+    # Its span is rewritten with XML Schema whitespace around the integer.
+    word = WordDocument()
+    word.add_paragraph("본문")
+    merged = _story_table(word.sections[0].header, "a", "b", "c")
+    merged.cell(0, 0).merge(merged.cell(0, 1)).text = "ab"
+    _set_grid_span(merged.cell(0, 0), " \t2\n ")
+    assert merged.cell(0, 0)._tc.tcPr.gridSpan.get(qn("w:val")) == " \t2\n "
+    data = _word_bytes(word)
+    document = _parse(
+        filename="bounded.docx",
+        data=data,
+        context=parse_context,
+        limits=replace(ParserLimits(), max_table_columns=3),
+    )
+    table_id = "docx/section/0000/header/tbl/000000"
+    table = _table_at(document, table_id)
+    assert (table.row_count, table.column_count) == (1, 3)
+    assert [
+        (cell.source_refs[0].native_object_id, cell.column_span, cell.raw_text)
+        for cell in table.cells
+    ] == [
+        (f"{table_id}/r/000000/c/000000", 2, "ab"),
+        (f"{table_id}/r/000000/c/000002", 1, "c"),
+    ]
+    limits = replace(ParserLimits(), max_table_columns=2)
+    code = _refusal_before_cell_expansion(monkeypatch, data, parse_context, limits)
+    assert code == "TABLE_COLUMN_LIMIT"
+
+
+def test_docx_story_table_rectangular_area_is_refused_before_cells_expand(
+    parse_context: ParseContext,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    word = WordDocument()
+    word.add_paragraph("본문")
+    grid = word.sections[0].footer.add_table(rows=2, cols=3, width=WordInches(6))
+    for row in range(2):
+        for column in range(3):
+            grid.cell(row, column).text = f"{row}{column}"
+    data = _word_bytes(word)
+
+    # At-bound control: two rows of three is exactly six cells.
+    document = _parse(
+        filename="bounded.docx",
+        data=data,
+        context=parse_context,
+        limits=replace(ParserLimits(), max_table_cells=6),
+    )
+    table = _table_at(document, "docx/section/0000/footer/tbl/000000")
+    assert (table.row_count, table.column_count) == (2, 3)
+    assert [cell.raw_text for cell in table.cells] == ["00", "01", "02", "10", "11", "12"]
+
+    limits = replace(ParserLimits(), max_table_cells=5)
+    code = _refusal_before_cell_expansion(monkeypatch, data, parse_context, limits)
+    assert code == "TABLE_CELL_LIMIT"
+
+
+def test_docx_story_table_invalid_grid_span_is_a_stable_parse_failure(
+    parse_context: ParseContext,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # None leaves the w:gridSpan element without the w:val it requires.
+    for value in ("0", "-1", "+0", "two", "", "1.5", None):
+        word = WordDocument()
+        word.add_paragraph("본문")
+        table = _story_table(word.sections[0].footer, "a", "b")
+        _set_grid_span(table.cell(0, 1), value)
+        data = _word_bytes(word)
+        code = _refusal_before_cell_expansion(monkeypatch, data, parse_context)
+        assert code == "DOCX_PARSE_FAILED", value
+
+
+def test_docx_story_table_keeps_horizontal_and_vertical_merges(
+    parse_context: ParseContext,
+) -> None:
+    word = WordDocument()
+    word.add_paragraph("본문")
+    table = word.sections[0].header.add_table(rows=2, cols=3, width=WordInches(6))
+    table.cell(0, 0).merge(table.cell(1, 0)).text = "세로"
+    table.cell(0, 1).merge(table.cell(0, 2)).text = "가로"
+    table.cell(1, 1).text = "e"
+    table.cell(1, 2).text = "f"
+    _story_table(word.sections[0].footer, "쪽", "1")
+
+    document = _parse(filename="merged.docx", data=_word_bytes(word), context=parse_context)
+
+    assert _table_ids(document) == [
+        "docx/section/0000/header/tbl/000000",
+        "docx/section/0000/footer/tbl/000000",
+    ]
+    table_id = "docx/section/0000/header/tbl/000000"
+    merged = _table_at(document, table_id)
+    assert (merged.row_count, merged.column_count) == (2, 3)
+    assert [
+        (cell.source_refs[0].native_object_id, cell.row_span, cell.column_span, cell.raw_text)
+        for cell in merged.cells
+    ] == [
+        (f"{table_id}/r/000000/c/000000", 2, 1, "세로"),
+        (f"{table_id}/r/000000/c/000001", 1, 2, "가로"),
+        (f"{table_id}/r/000001/c/000001", 1, 1, "e"),
+        (f"{table_id}/r/000001/c/000002", 1, 1, "f"),
+    ]
+    assert not any("irregular_merge_geometry" in cell.quality_flags for cell in merged.cells)
+    footer = _table_at(document, "docx/section/0000/footer/tbl/000000")
+    assert [cell.raw_text for cell in footer.cells] == ["쪽", "1"]
 
 
 def test_xlsx_keeps_sheet_order_state_sparse_cells_types_and_number_formats(
@@ -1492,6 +1744,24 @@ def test_hwp_and_hwpx_remain_unsupported(
         assert failure.value.code == "UNSUPPORTED_NON_PDF_TYPE"
 
 
+@pytest.mark.parametrize("filename", ["report.hwp", "report.hwpx", "REPORT.HWP", "REPORT.HWPX"])
+def test_hwp_and_hwpx_are_rejected_by_extension_before_any_content_check(
+    parse_context: ParseContext,
+    filename: str,
+) -> None:
+    # Placeholder bytes, not a real HWP or HWPX file: the extension alone,
+    # in any case, is refused before MIME or magic bytes are looked at.
+    assert not {"hwp", "hwpx", ".hwp", ".hwpx"} & SUPPORTED_EXTENSIONS
+    with pytest.raises(StructuredParseError) as failure:
+        parse_non_pdf_to_cir(
+            filename=filename,
+            declared_mime="application/octet-stream",
+            data=b"placeholder, not a real document",
+            context=parse_context,
+        )
+    assert failure.value.code == "UNSUPPORTED_NON_PDF_TYPE"
+
+
 def test_cfb_containers_are_unsupported_and_never_classified_by_content(
     parse_context: ParseContext,
 ) -> None:
@@ -1576,6 +1846,71 @@ def _sheet_table(document: CanonicalDocument, sheet_index0: int) -> CanonicalTab
         if block.table is not None and block.source_refs[0].page_index0 == sheet_index0:
             return block.table
     raise AssertionError(f"no table for sheet {sheet_index0}")
+
+
+def _story_table(story: Any, *texts: str) -> Any:
+    table = story.add_table(rows=1, cols=len(texts), width=WordInches(6))
+    for column, text in enumerate(texts):
+        table.cell(0, column).text = text
+    return table
+
+
+def _set_grid_span(cell: Any, value: str | None) -> None:
+    # The raw attribute text, so invalid lexical values reach the parser as-is.
+    grid_span = cell._tc.get_or_add_tcPr().get_or_add_gridSpan()
+    if value is not None:
+        grid_span.set(qn("w:val"), value)
+
+
+def _refusal_before_cell_expansion(
+    monkeypatch: pytest.MonkeyPatch,
+    data: bytes,
+    context: ParseContext,
+    limits: ParserLimits | None = None,
+) -> str:
+    """Parse with python-docx row.cells disabled and return the refusal code."""
+
+    expanded: list[Any] = []
+
+    def refuse(row: Any) -> Any:
+        expanded.append(row)
+        raise AssertionError("row.cells expanded before the table bounds were checked")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(_Row, "cells", property(refuse))
+        with pytest.raises(StructuredParseError) as failure:
+            _parse(filename="bounded.docx", data=data, context=context, limits=limits)
+    assert not expanded
+    return failure.value.code
+
+
+def _word_bytes(word: Any) -> bytes:
+    output = io.BytesIO()
+    word.save(output)
+    return output.getvalue()
+
+
+def _story_refs(document: CanonicalDocument) -> list[tuple[BlockType, str]]:
+    return [
+        (block.type, native_id)
+        for block in document.blocks
+        if (native_id := block.source_refs[0].native_object_id or "").startswith("docx/section/")
+    ]
+
+
+def _table_ids(document: CanonicalDocument) -> list[str]:
+    return [
+        block.source_refs[0].native_object_id or ""
+        for block in document.blocks
+        if block.type == BlockType.TABLE
+    ]
+
+
+def _table_at(document: CanonicalDocument, native_object_id: str) -> CanonicalTable:
+    for block in document.blocks:
+        if block.table is not None and block.source_refs[0].native_object_id == native_object_id:
+            return block.table
+    raise AssertionError(f"no table at {native_object_id}")
 
 
 def _cell(table: CanonicalTable, native_object_id: str) -> CanonicalCell:
