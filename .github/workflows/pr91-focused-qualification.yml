@@ -810,7 +810,7 @@ jobs:
       # hung browser and server close, a blocked synchronous child, a failed ledger write, signals, late rejections).
       - name: Diagnostics and deadline-supervisor regression tests
         timeout-minutes: 5
-        run: node --test core/tests/e2e/joined/joined-diagnostics.test.mjs
+        run: node --test core/tests/e2e/joined/joined-diagnostics.test.mjs core/tests/e2e/joined/joined-review-selection.test.mjs
 
       - name: Install the frozen Foundation web dependencies
         working-directory: foundation/nextjs

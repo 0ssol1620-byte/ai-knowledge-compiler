@@ -39,6 +39,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { s3Bucket, signV4 } from "./s3-bucket.mjs";
+import { assertAcceptPostBindsEvidence, resolveReviewEvidence, uniquePhraseRegion } from "./review-evidence.mjs";
 
 // >>> joined-diagnostics helpers
 // Self-contained: only spawn from node:child_process, renameSync/rmSync/writeFileSync from node:fs, and globals.
@@ -521,7 +522,7 @@ const ledger = {
     { hop: "Core release digest", label: "simulated", detail: "sha256 of a label + the Core checkout SHA, not a released image digest" },
     { hop: "Compile receipt signing + audit", label: "real", detail: "Foundation signer with an ephemeral Ed25519 key and trust store; audit row in enterprise_audit_events" },
     { hop: "Customer-data gate + enterprise tenancy", label: "simulated", detail: "Fixture SQL rows in the disposable DB: a 17-precondition gate receipt whose evidence names this fixture, and bootstrap_enterprise_for_user" },
-    { hop: "Review + activate", label: "real", detail: "Chromium clicks Accept and Activate reviewed candidate on /workspace/review" },
+    { hop: "Review + activate", label: "real", detail: "Chromium selects the uploaded document's exact evidence record, then clicks Accept and Activate reviewed candidate on /workspace/review" },
     { hop: "Consumer reads", label: "real", detail: "Owner session, issued API key, shipped MCP stdio server and shipped CLI from the Foundation checkout, behind a loopback egress guard" },
   ],
   fixtures: [], assertions: [], observations: {},
@@ -1293,10 +1294,50 @@ try {
       const { acceptEvidenceThroughUi, activateCandidateThroughUi } = await import(pathToFileURL(path.join(nextRoot, "e2e/support/workspace-review-actions.ts")).href);
       const scope = `workspace_key='${workspace}' and collection_id='${compiled.collectionId}'`;
       check("nothing is active before the human review", sql(`select count(*) from public.foundation_active_worlds where ${scope}`), "0");
+      // The review page reads the World itself; the harness names its evidence from that same read, never from a guess.
+      const worldPath = `/api/v1/world/${compiled.collectionId}`;
+      const worldReply = page.waitForResponse(response => response.request().method() === "GET" && new URL(response.url()).pathname === worldPath, { timeout: 60_000 });
+      worldReply.catch(() => {}); // awaited below; a rejection after an earlier failure must not become unhandled
       await page.goto(`${origin}/workspace/review?collection=${compiled.collectionId}&manifest=${encodeURIComponent(compiled.manifestDigest)}`);
-      await expect(page.getByRole("button", { name: "Accept", exact: true })).toBeVisible({ timeout: 60_000 });
-      const accepted = await acceptEvidenceThroughUi(page, compiled.collectionId, compiled.manifestDigest);
+      const worldResponse = await worldReply;
+      check("the review page reads exactly the candidate World revision",
+        [worldResponse.status(), new URL(worldResponse.url()).searchParams.get("manifest")], [200, compiled.manifestDigest]);
+      const phraseRegion = uniquePhraseRegion(ocr.regions, PHRASE);
+      const reviewEvidence = resolveReviewEvidence((await worldResponse.json())?.model, { collectionId: compiled.collectionId,
+        manifestDigest: compiled.manifestDigest, documentId: docA.documentId, versionKey: docA.versionKey, phrase: PHRASE,
+        page: phraseRegion.pageNumber1, bbox: phraseRegion.bbox1000 });
+      observe("reviewEvidence", { evidenceId: reviewEvidence.id, sourceId: reviewEvidence.sourceId, sourceVersionId: reviewEvidence.sourceVersionId,
+        page: reviewEvidence.page, bbox: reviewEvidence.bbox });
+      const comparison = page.locator('section[aria-labelledby="review-comparison-title"]');
+      const acceptButton = comparison.getByRole("button", { name: "Accept", exact: true });
+      const evidenceCard = comparison.locator("button[aria-pressed]")
+        .filter({ hasText: `${reviewEvidence.sourceId} / p.${reviewEvidence.page}` })
+        .filter({ hasText: reviewEvidence.excerpt })
+        .filter({ hasText: `Region [${reviewEvidence.bbox.join(", ")}]` });
+      await expect(acceptButton).toBeVisible({ timeout: 60_000 });
+      await expect(evidenceCard).toHaveCount(1);
+      // Selection precedes acceptance: nothing is chosen on arrival, so nothing can be accepted.
+      await expect(evidenceCard).toHaveAttribute("aria-pressed", "false");
+      await expect(acceptButton).toBeDisabled();
+      const reviewPosts = [];
+      const recordReviewPost = request => { if (request.method() === "POST" && new URL(request.url()).pathname === "/api/v1/reviews") reviewPosts.push(request.postDataJSON()); };
+      page.on("request", recordReviewPost);
+      let accepted;
+      try {
+        await evidenceCard.click();
+        await expect(evidenceCard).toHaveAttribute("aria-pressed", "true");
+        const inspector = comparison.getByRole("complementary", { name: "World selection inspector" });
+        await expect(inspector.locator(":scope > strong")).toHaveText(reviewEvidence.sourceId);
+        await expect(inspector.locator("dd")).toHaveText([reviewEvidence.sourceVersionId, String(reviewEvidence.page), `[${reviewEvidence.bbox.join(", ")}]`]);
+        await expect(acceptButton).toBeEnabled();
+        accepted = await acceptEvidenceThroughUi(page, compiled.collectionId, compiled.manifestDigest);
+      } finally {
+        page.off("request", recordReviewPost);
+      }
       check("UI records the evidence acceptance", accepted.status(), 201);
+      check("the review POST accepts exactly the selected evidence of this revision",
+        assertAcceptPostBindsEvidence(reviewPosts, { collectionId: compiled.collectionId, manifestDigest: compiled.manifestDigest, evidenceId: reviewEvidence.id }),
+        { collectionId: compiled.collectionId, manifestDigest: compiled.manifestDigest, evidenceId: reviewEvidence.id, action: "accept" });
       const activated = await activateCandidateThroughUi(page, { collectionId: compiled.collectionId, manifestDigest: compiled.manifestDigest,
         expectedCurrentManifest: null, expectedCurrentRevision: 0 }, "Reviewed the joined E2E synthetic upload and its OCR evidence.");
       check("UI activates the reviewed candidate", [activated.status(), (await activated.json()).code], [200, "WORLD_ACTIVE"]);
