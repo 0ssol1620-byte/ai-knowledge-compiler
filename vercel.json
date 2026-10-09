@@ -2,5 +2,10 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "nextjs",
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm --filter @akc/web build"
+  "buildCommand": "pnpm --filter @akc/web build",
+  "git": {
+    "deploymentEnabled": {
+      "codex/masterplan-checkpoint-2026-09-30": false
+    }
+  }
 }

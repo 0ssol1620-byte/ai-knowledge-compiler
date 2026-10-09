@@ -18,9 +18,6 @@ RUN python -m pip install "uv==0.12.0" \
     && python -m uv pip check --python /build/.venv/bin/python
 
 FROM python:3.13-slim-bookworm@sha256:9d7f287598e1a5a978c015ee176d8216435aaf335ed69ac3c38dd1bbb10e8d64 AS runtime
-RUN apt-get update \
-    && apt-get install --yes --no-install-recommends libpcre2-8-0 \
-    && rm -rf /var/lib/apt/lists/*
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -28,7 +25,8 @@ ENV PYTHONUNBUFFERED=1 \
     AKC_DATA_DIR=/var/lib/akc
 
 RUN apt-get update \
-    && apt-get install --yes --no-install-recommends libpcre2-8-0=10.42-1+deb12u1 \
+    && apt-get install --yes --no-install-recommends \
+      libpcre2-8-0=10.42-1+deb12u2 perl-base=5.36.0-7+deb12u4 \
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --gid 10001 akc \
     && useradd --uid 10001 --gid akc --create-home --shell /usr/sbin/nologin akc \

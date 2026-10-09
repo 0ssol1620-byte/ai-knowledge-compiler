@@ -492,3 +492,70 @@ def test_signed_invalid_utf8_is_rejected_and_valid_utf8_stays_closed() -> None:
     assert closed.status_code == 403
     assert closed.json() == {"code": "CORE_NATIVE_PROCESSING_DISABLED"}
     assert closed.headers["cache-control"] == "no-store"
+
+
+def _hwpx_bytes() -> bytes:
+    import zipfile
+
+    parts = {
+        "mimetype": b"application/hwp+zip",
+        "META-INF/container.xml": (
+            b'<ocf:container xmlns:ocf="urn:oasis:names:tc:opendocument:xmlns:container">'
+            b'<ocf:rootfiles><ocf:rootfile full-path="Contents/content.hpf"'
+            b' media-type="application/hwpml-package+xml"/></ocf:rootfiles></ocf:container>'
+        ),
+        "Contents/content.hpf": (
+            b'<opf:package xmlns:opf="http://www.idpf.org/2007/opf/"><opf:manifest>'
+            b'<opf:item id="s0" href="Contents/section0.xml" media-type="application/xml"/>'
+            b'</opf:manifest><opf:spine><opf:itemref idref="s0"/></opf:spine></opf:package>'
+        ),
+        "Contents/section0.xml": (
+            '<hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"'
+            ' xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">'
+            "<hp:p><hp:run><hp:t>한글 문서</hp:t></hp:run></hp:p></hs:sec>"
+        ).encode(),
+    }
+    output = io.BytesIO()
+    with zipfile.ZipFile(output, "w") as archive:
+        for name, payload in parts.items():
+            info = zipfile.ZipInfo(name, date_time=(2026, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_STORED if name == "mimetype" else zipfile.ZIP_DEFLATED
+            archive.writestr(info, payload)
+    return output.getvalue()
+
+
+def test_hwpx_cir_is_rejected_at_the_xlsx_only_native_endpoint() -> None:
+    # A correctly bound, digest-consistent HWPX CIR still is not a format this
+    # endpoint accepts: the native slice stays XLSX-only.
+    payload = _fixture()
+    envelope = payload["documents"][0]
+    data = _hwpx_bytes()
+    digest = sha256_digest(data)
+    version = document_version_id(source=envelope["sourceId"], content_sha256=digest)
+    document = parse_non_pdf_to_cir(
+        filename="fixture.hwpx",
+        declared_mime="application/hwp+zip",
+        data=data,
+        context=ParseContext(
+            tenant_id="tenant-native",
+            document_id=envelope["sourceId"],
+            document_version_id=version,
+            created_at=NOW,
+        ),
+    )
+    assert document.metadata["documentType"] == "hwpx"
+    assert document.metadata["nativeParserVersion"] == "1.2.0"
+    envelope["sourceVersionId"] = version
+    envelope["contentSha256"] = digest
+    envelope["canonicalDocument"] = document.model_dump(
+        mode="json", by_alias=True, exclude_none=True
+    )
+    envelope["cirSha256"] = sha256_digest(canonical_json(document))
+    body = _body(payload)
+    with pytest.raises(ValueError, match="unsupported native producer/format"):
+        parse_native_request(body)
+    client = TestClient(create_product_core_app(hmac_secret=SECRET, core_release_digest=RELEASE))
+    result = client.post("/v3/native-cir/compile", content=body, headers=_signed(body))
+    assert result.status_code == 422
+    assert result.json() == {"code": "CORE_NATIVE_CIR_INVALID"}
+    assert result.headers["cache-control"] == "no-store"

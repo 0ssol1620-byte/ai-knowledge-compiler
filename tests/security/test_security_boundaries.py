@@ -93,6 +93,92 @@ def test_ooxml_embedded_executable_or_opaque_ole_is_quarantined(
     assert result.reason_code == reason
 
 
+def hwpx(extra: dict[str, bytes] | None = None) -> bytes:
+    section = (
+        '<hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"'
+        ' xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">'
+        "<hp:p><hp:run><hp:t>본문</hp:t></hp:run></hp:p></hs:sec>"
+    )
+    entries = {
+        "mimetype": b"application/hwp+zip",
+        "META-INF/container.xml": (
+            b'<ocf:container xmlns:ocf="urn:oasis:names:tc:opendocument:xmlns:container">'
+            b'<ocf:rootfiles><ocf:rootfile full-path="Contents/content.hpf"'
+            b' media-type="application/hwpml-package+xml"/></ocf:rootfiles></ocf:container>'
+        ),
+        "Contents/content.hpf": (
+            b'<opf:package xmlns:opf="http://www.idpf.org/2007/opf/"><opf:manifest>'
+            b'<opf:item id="s0" href="Contents/section0.xml" media-type="application/xml"/>'
+            b'</opf:manifest><opf:spine><opf:itemref idref="s0"/></opf:spine></opf:package>'
+        ),
+        "Contents/section0.xml": section.encode(),
+        **(extra or {}),
+    }
+    output = io.BytesIO()
+    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for path, content in entries.items():
+            compression = zipfile.ZIP_STORED if path == "mimetype" else zipfile.ZIP_DEFLATED
+            archive.writestr(path, content, compress_type=compression)
+    return output.getvalue()
+
+
+def test_valid_hwpx_package_passes_the_shared_inspector() -> None:
+    result = validate_upload_bytes("보고서.hwpx", hwpx())
+    assert result.accepted
+    assert result.detected_mime == "application/hwp+zip"
+    # A package-local href is accepted; it is never resolved.
+    local = hwpx({"Contents/unreferenced.xml": b'<x href="BinData/image1.png"/>'})
+    assert validate_upload_bytes("a.hwpx", local).accepted
+
+
+# href / xlink:href outside the manifest -- unreferenced header, omitted control.
+_UNSAFE = "hwpx_unsafe_href"
+
+
+@pytest.mark.parametrize(
+    ("data", "reason"),
+    (
+        (
+            ooxml({"[Content_Types].xml": b"<Types/>", "word/document.xml": b"<document/>"}),
+            "hwpx_package_kind_mismatch",
+        ),
+        (hwpx({"../escape.xml": b"<x/>"}), "hwpx_archive_path_unsafe"),
+        (hwpx({"Scripts/sourceScripts": b"function OnDocument_New() {}"}), "hwpx_active_script"),
+        (
+            hwpx({"Contents/unreferenced.xml": b'<!DOCTYPE x [<!ENTITY e "e">]><x>&e;</x>'}),
+            "hwpx_xml_unsafe",
+        ),
+        (hwpx({"META-INF/encryption.xml": b"<encryption/>"}), "hwpx_encrypted_content"),
+        (hwpx({"BinData/payload.bin": b"MZ\x90\x00"}), "hwpx_embedded_executable"),
+        (hwpx({"Contents/header.xml": b'<head><link href="../outside.xml"/></head>'}), _UNSAFE),
+        (
+            hwpx(
+                {
+                    "Contents/section0.xml": (
+                        b'<hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"'
+                        b' xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph"'
+                        b' xmlns:xlink="http://www.w3.org/1999/xlink"><hp:p><hp:run>'
+                        b'<hp:pic xlink:href="https://example.test/a"/></hp:run></hp:p></hs:sec>'
+                    ),
+                }
+            ),
+            _UNSAFE,
+        ),
+        (b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + b"\x00" * 504, "file_signature_mismatch"),
+    ),
+)
+def test_hostile_or_mislabelled_hwpx_is_rejected(data: bytes, reason: str) -> None:
+    result = validate_upload_bytes("a.hwpx", data)
+    assert not result.accepted
+    assert result.reason_code == reason
+
+
+def test_legacy_hwp_binary_is_not_an_allowed_upload() -> None:
+    result = validate_upload_bytes("legacy.hwp", b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1rest")
+    assert not result.accepted
+    assert result.reason_code == "extension_not_allowed"
+
+
 @pytest.mark.parametrize("target_mode", (' TargetMode="External"', ""))
 def test_ooxml_external_relationship_is_rejected(target_mode: str) -> None:
     data = ooxml(

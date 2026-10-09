@@ -10,7 +10,8 @@ from akc_cir.identity import document_version_id, source_id
 from akc_product_core import native_world_manifest as native
 from akc_product_core.native_cir import parse_native_request, serialize_native_draft
 from akc_product_core.native_facts import project_native_facts
-from test_product_core_native_cir import _body, _fixture, _rebind_cir_hashes
+
+from .test_product_core_native_cir import _body, _fixture, _rebind_cir_hashes
 
 RELEASE = "sha256:" + "a" * 64
 

@@ -3,23 +3,41 @@ packages:
   - "packages/*"
 
 overrides:
-  # All three close `pnpm audit --audit-level high` findings. Transitive only —
+  # Each closes a `pnpm audit --audit-level high` finding. Transitive only —
   # nothing here is a direct dependency, so an override is the whole fix.
-  #   brace-expansion  <5.0.9   via eslint and @lhci/cli
+  #   brace-expansion  <5.0.11  via eslint and @lhci/cli
   #   js-yaml          <4.3.2   via eslint and Lighthouse
   #   tmp              <0.2.7   via @lhci/cli
   #   nanoid           <3.3.18  via postcss, which next and vite both pull in
   #   image-size       <2.0.3   via Storybook's Next.js plugin
-  # The previous brace-expansion pin (5.0.8) was itself inside the vulnerable
+  #   undici           <8.10.2  via jsdom
+  #   proxy-addr       <2.0.8   via @lhci/cli's express
+  #   compression      <1.8.2   via @lhci/cli
+  # The previous brace-expansion pin (5.0.9) was itself inside the vulnerable
   # range the advisory names.
-  brace-expansion: 5.0.9
+  brace-expansion: 5.0.11
   js-yaml: 4.3.2
   image-size: 2.0.3
   tmp: 0.2.7
+  undici: 8.10.2
+  proxy-addr: 2.0.8
+  compression: 1.8.2
+  # basic-ftp <=6.2.0 (GHSA-c475-qrg2-pj4r) via @lhci/cli's proxy-agent >
+  # pac-proxy-agent > get-uri. The checked get-uri 6.0.5 and latest 8.0.1
+  # releases still declare basic-ftp ^5, so this deliberately crosses that
+  # range for this one parent.
+  # Loopback FTP tests of get-uri 6.0.5 behaved the same on 5.3.1 and 6.2.1,
+  # including get-uri's own unhandled rejection when RETR fails after the
+  # stream is returned. 6.x also refuses a PASV data host other than the
+  # control host.
+  "get-uri@6.0.5>basic-ftp": 6.2.1
   nanoid: ^3.3.18
   uuid: ^11.1.1
   postcss: 8.5.24
-  sharp: 0.35.4
+  sharp: 0.35.5
+  # Pins every pnpm-resolved source-map-js dependency to one version rather
+  # than whatever each parent's range picks.
+  source-map-js: 1.2.2
 
 patchedDependencies:
   extract-zip@2.0.1: patches/extract-zip@2.0.1.patch

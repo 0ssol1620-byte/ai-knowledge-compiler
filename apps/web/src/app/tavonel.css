@@ -74,7 +74,9 @@
      leaf's own larger size. Leaves whose component size is declared at or
      above 12px at every breakpoint are exempted by name; everything else,
      including the legacy sub-12px rules the blueprint ratchet counts, keeps
-     the forced floor. */
+     the forced floor. The one non-copy exemption is the aria-hidden hero page
+     facsimile: a proportional picture of a page whose text equivalent is its
+     sr-only sentence, where a floor only clips fixed bbox blocks. */
   :where(
     p,
     span,
@@ -128,6 +130,7 @@
       .tv-hero-comp-lead,
       .tv-film-lead,
       .tv-hero-comp-row strong,
+      .tv-hero-comp-paper[aria-hidden="true"] *,
       .tv-manifesto > p,
       .tv-chapter-copy p,
       .tv-cv-knowledge strong,

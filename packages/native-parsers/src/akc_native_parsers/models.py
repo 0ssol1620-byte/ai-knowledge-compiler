@@ -83,6 +83,12 @@ class ParserLimits:
     max_csv_columns: int = 1_024
     max_csv_cells: int = 500_000
     max_csv_field_chars: int = 131_072
+    max_hwpx_sections: int = 1_000
+    max_hwpx_xml_bytes: int = 64 * 1024 * 1024
+    max_hwpx_xml_nodes: int = 1_000_000
+    max_hwpx_xml_depth: int = 256
+    max_hwpx_paragraphs: int = 200_000
+    max_hwpx_tables: int = 5_000
 
     def __post_init__(self) -> None:
         for item in fields(self):
@@ -441,6 +447,7 @@ def _location_scheme(document_type: str) -> str:
         "docx": "docx/body|section|comments|revision/{index}/...",
         "pptx": "pptx/slide/{index}/shape/{z}/...",
         "xlsx": "xlsx/sheet/{index}/{A1-reference|asset}",
+        "hwpx": "hwpx/section/{index}/p/{index}/{text|tbl/{index}/tr/{index}/tc}/{index}",
         "csv": "csv/{table/range/A1-range|row/{index}/cell/A1-reference}",
         "html": "html/{DOM-path}",
         "srt": "srt/{segment|cue}/{index}",

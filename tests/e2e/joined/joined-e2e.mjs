@@ -505,7 +505,7 @@ const ledger = {
     { hop: "Auth: password sign-in and session", label: "real", detail: "GoTrue from the disposable `supabase start` stack; Chromium holds the session" },
     { hop: "Next application", label: "real", detail: "Foundation `next build` + `next start` (production mode) from the Foundation checkout" },
     { hop: "TLS front door", label: "simulated", detail: "Harness HTTPS gateway 127.0.0.1:54443 (self-signed, NODE_EXTRA_CA_CERTS) in front of Next, GoTrue/PostgREST and S3; Vercel's edge is not exercised" },
-    { hop: "Upload UI: approval -> capability -> signed PUT -> confirm", label: "real", detail: "Chromium approves the maximum for the whole selection with 'Approve maximum & upload'; Next signs the PUT; Chromium uploads the bytes" },
+    { hop: "Upload UI: triage availability -> legacy approval -> capability -> signed PUT -> confirm", label: "real", detail: "Chromium clicks 'Review sources before processing' and the real Next triage route answers 404 INTAKE_TRIAGE_DISABLED (code-owned rollout off) without any upload; Chromium then explicitly approves the displayed full-scope maximum with the legacy 'Approve maximum & upload'; Next signs the PUT; Chromium uploads the bytes" },
     { hop: "Object storage (R2)", label: "simulated", detail: "SeaweedFS 4.48 S3, checksum-pinned, behind the R2 host name; not Cloudflare R2" },
     { hop: "Storage CORS", label: "simulated", detail: "CORS response headers are added by the harness gateway; they are not SeaweedFS or R2 CORS configuration" },
     { hop: "R2 object-created event + Cloudflare Queue delivery", label: "simulated", detail: "Harness builds the R2 event-notification message after the browser's confirm and calls the exported handleQueue" },
@@ -1063,24 +1063,74 @@ try {
       hop("browser-upload");
       // Each step is bounded, so a stalled upload fails here with the step named instead of running into the job
       // timeout. The PUT allowance is sized for this ~1 KB synthetic fixture, not for production uploads.
-      const uploadDeadlineMs = { selectFile: 30_000, preflight: 90_000, submit: 30_000, replyHeaders: 90_000, replyBody: 15_000, signedPut: 180_000 };
+      const uploadDeadlineMs = { selectFile: 30_000, preflight: 90_000, review: 30_000, legacyAlert: 30_000, submit: 30_000,
+        replyHeaders: 90_000, replyBody: 15_000, signedPut: 180_000 };
       // The waiters start before the click so no reply is missed. Their own timeout outlasts every step deadline
       // added together, so it only backstops them: the step deadline is the one that fires and names the step.
-      const replyWaitMs = uploadDeadlineMs.selectFile + uploadDeadlineMs.preflight + uploadDeadlineMs.submit + uploadDeadlineMs.signedPut
-        + 3 * (uploadDeadlineMs.replyHeaders + uploadDeadlineMs.replyBody);
+      const replyWaitMs = uploadDeadlineMs.selectFile + uploadDeadlineMs.preflight + uploadDeadlineMs.review + uploadDeadlineMs.legacyAlert
+        + uploadDeadlineMs.submit + uploadDeadlineMs.signedPut + 4 * (uploadDeadlineMs.replyHeaders + uploadDeadlineMs.replyBody);
       await step("select-file", uploadDeadlineMs.selectFile,
         () => page.locator('input[type="file"][multiple]').first().setInputFiles({ name: docs.ui.name, mimeType: "application/pdf", buffer: docs.ui.bytes }));
       const preflight = page.getByRole("region", { name: "Compile preflight" });
-      const uploadButton = preflight.getByRole("button", { name: "Approve maximum & upload", exact: true });
+      const triage = preflight.getByRole("region", { name: "Server source triage", exact: true });
+      const reviewButton = triage.getByRole("button", { name: "Review sources before processing", exact: true });
+      const legacyApproval = triage.getByRole("alert").filter({ hasText: "Full-scope legacy approval" });
+      const uploadButton = legacyApproval.getByRole("button", { name: "Approve maximum & upload", exact: true });
       await step("preflight", uploadDeadlineMs.preflight, async () => {
         await expect(preflight).toBeVisible();
-        await expect(uploadButton).toBeEnabled({ timeout: 60_000 });
+        await expect(triage).toBeVisible();
+        await expect(reviewButton).toBeEnabled({ timeout: 60_000 });
       });
       const responseOf = (method, matches) => {
         const waiting = page.waitForResponse(response => response.request().method() === method && matches(new URL(response.url()).pathname), { timeout: replyWaitMs });
         waiting.catch(() => {}); // awaited below; a rejection after an earlier failure must not become unhandled
         return waiting;
       };
+      // The triage rollout is code-owned off. Reviewing sources is a real availability check that must upload nothing;
+      // any other reply fails the run here rather than enabling triage or standing in for it.
+      const reviewRequests = [];
+      const recordReviewRequest = request => reviewRequests.push({ method: request.method(), pathname: new URL(request.url()).pathname });
+      const objectPuts = () => s3Arrivals.filter(arrival => arrival.method === "PUT").length;
+      const beforeReview = { ...counts(), objectPuts: objectPuts() };
+      page.on("request", recordReviewRequest);
+      try {
+        const stageReply = responseOf("POST", p => p === "/api/v1/uploads/triage/stage");
+        await step("review-sources", uploadDeadlineMs.review, () => reviewButton.click());
+        const stageResponse = await step("triage-stage-headers", uploadDeadlineMs.replyHeaders, stageReply);
+        const stageBody = await step("triage-stage-body", uploadDeadlineMs.replyBody, () => stageResponse.json());
+        const stageRequestBody = stageResponse.request().postDataJSON();
+        const stagedFile = stageRequestBody?.files?.[0];
+        const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        check("the triage availability check declares exactly the selected fixture's path, MIME type and byte count, never its bytes",
+          [Object.keys(stageRequestBody ?? {}).sort(), uuid.test(stageRequestBody?.batchId), stageRequestBody?.files?.length,
+            Object.keys(stagedFile ?? {}).sort(), stagedFile?.relativePath, stagedFile?.declaredMimeType, stagedFile?.requestedBytes, uuid.test(stagedFile?.idempotencyKey)],
+          [["batchId", "files"], true, 1, ["declaredMimeType", "idempotencyKey", "relativePath", "requestedBytes"],
+            docs.ui.name, "application/pdf", docs.ui.bytes.length, true]);
+        check("the real Next triage route reports the code-owned rollout as disabled", [stageResponse.status(), stageBody], [404, { code: "INTAKE_TRIAGE_DISABLED" }]);
+        await step("legacy-approval-alert", uploadDeadlineMs.legacyAlert, async () => {
+          await expect(legacyApproval).toBeVisible();
+          await expect(triage).toContainText("Server triage is disabled.");
+          await expect(uploadButton).toBeEnabled();
+        });
+      } finally {
+        page.off("request", recordReviewRequest);
+      }
+      check("the triage review phase made no approval, capability, object PUT, confirm or compile request",
+        reviewRequests.filter(({ method, pathname }) => method === "PUT"
+          || (method === "POST" && ["/api/uploads/approval", "/api/uploads/capability", "/api/uploads/confirm", "/api/compile-jobs"].includes(pathname))), []);
+      check("the triage review phase made exactly one triage request",
+        reviewRequests.filter(({ pathname }) => pathname.startsWith("/api/v1/uploads/triage/")).map(({ method, pathname }) => `${method} ${pathname}`),
+        ["POST /api/v1/uploads/triage/stage"]);
+      check("the triage review phase changed no OCR, CDR, Core, job, audit, provenance or stored-object count",
+        { ...counts(), objectPuts: objectPuts() }, beforeReview);
+      const displayedMaximum = Number((await preflight.getByRole("term").filter({ hasText: /^Maximum$/ }).locator("xpath=following-sibling::dd").textContent())
+        ?.trim().replace(/^\$/, "").replaceAll(",", ""));
+      check("the Compile preflight displays a finite maximum", Number.isFinite(displayedMaximum) && displayedMaximum > 0, true);
+      check("the full-scope legacy approval names the displayed maximum and offers no bounded-preflight control",
+        [await legacyApproval.count(), (await legacyApproval.textContent())?.includes(`approves the displayed maximum of $${displayedMaximum.toFixed(2)}.`),
+          await uploadButton.count(), await reviewButton.count(), await triage.getByRole("button", { name: "Approve bounded source preflight" }).count(),
+          await triage.getByRole("list", { name: "Server classified source inventory" }).count()],
+        [1, true, 1, 0, 0, 0]);
       const approvalReply = responseOf("POST", p => p === "/api/uploads/approval");
       const capabilityReply = responseOf("POST", p => p === "/api/uploads/capability");
       const putReply = responseOf("PUT", p => p.startsWith(`/${bucketName}/quarantine/`));

@@ -272,6 +272,138 @@ test("home proof sections preserve authored type sizes and readability floors", 
   ).toBeGreaterThanOrEqual(14);
 });
 
+// The hero source page is an aria-hidden facsimile laid out at fixed bbox1000
+// coordinates with overflow: hidden. A px floor there does not make it readable;
+// it clips the title and drops table rows, so the picture stops matching the
+// coordinates the highlights and threads are drawn from. This pins proportional
+// type inside it while the readable surfaces around it keep their floors.
+test("home source facsimile stays proportional and unclipped at its bbox geometry", async ({
+  page,
+}, testInfo) => {
+  await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "light" });
+  await setLocaleCookie(page.context(), testInfo, "en");
+  const response = await page.goto("/", { waitUntil: "networkidle" });
+  expect(response?.status()).toBeLessThan(400);
+  await expect(page.locator("html")).toHaveAttribute("lang", langPattern("en"));
+  await page.evaluate(() => document.fonts.ready);
+
+  const paper = page.locator('.tv-hero-comp-paper[aria-hidden="true"]');
+  await expect(paper).toHaveCount(1);
+  await expect(
+    page.locator(".tv-hero-comp-page > p.sr-only"),
+    "the facsimile keeps its text alternative",
+  ).toContainText("a demo document and not an actual source");
+
+  const facsimile = await paper.evaluate((element) => {
+    const width = element.getBoundingClientRect().width;
+    const size = (node: Element) => Number.parseFloat(getComputedStyle(node).fontSize);
+    const rect = (node: Element) => {
+      const { top, right, bottom, left } = node.getBoundingClientRect();
+      return { top, right, bottom, left };
+    };
+    const blocks = Array.from(element.querySelectorAll<HTMLElement>(".tv-hero-comp-block")).map(
+      (block) => ({
+        kind: block.dataset.kind,
+        size: size(block),
+        rect: rect(block),
+        overflowX: block.scrollWidth - block.clientWidth,
+        overflowY: block.scrollHeight - block.clientHeight,
+      }),
+    );
+    const table = element.querySelector('.tv-hero-comp-block[data-kind="table"]')!;
+    const sourcePage = element.closest(".tv-hero-comp-page")!;
+    const head = element.querySelector<HTMLElement>(".tv-hero-comp-paper-head")!;
+    const headLabel = head.querySelector("span")!;
+    return {
+      width,
+      head: size(head),
+      headLabel: size(headLabel),
+      headOverflowX: head.scrollWidth - head.clientWidth,
+      headRect: rect(head),
+      headLabelRect: rect(headLabel),
+      blocks,
+      tableBlock: rect(table),
+      tableLeaves: Array.from(table.querySelectorAll("caption, th, td")).map(size),
+      rows: Array.from(table.querySelectorAll("tbody tr")).map(rect),
+      highlights: Array.from(sourcePage.querySelectorAll<HTMLElement>(".tv-hero-comp-bbox")).map(
+        (bbox) => ({ state: bbox.dataset.state, rect: rect(bbox) }),
+      ),
+    };
+  });
+
+  expect(facsimile.width, "facsimile has layout width").toBeGreaterThan(0);
+  const cqw = (percent: number) => (facsimile.width * percent) / 100;
+  const expectedSize = { title: 3.6, heading: 2.5, paragraph: 2.4, table: 2.1 } as const;
+
+  expect(facsimile.head, "page header scales with the page").toBeCloseTo(cqw(2.1), 0);
+  expect(facsimile.headLabel, "header sample label is not floored").toBeCloseTo(cqw(2.1), 0);
+  // Both header labels are drawn whole: nothing runs past the header, the
+  // disclaimer label ends inside it, and the header ends above the title bbox.
+  expect(facsimile.headOverflowX, "page header is not horizontally clipped").toBeLessThanOrEqual(1);
+  expect(
+    facsimile.headLabelRect.right,
+    "header sample label ends inside the header",
+  ).toBeLessThanOrEqual(facsimile.headRect.right + 1);
+  expect(facsimile.headRect.bottom, "page header ends above the title").toBeLessThanOrEqual(
+    facsimile.blocks[0]!.rect.top,
+  );
+  expect(facsimile.blocks.map((block) => block.kind)).toEqual([
+    "title",
+    "heading",
+    "paragraph",
+    "table",
+  ]);
+  for (const block of facsimile.blocks) {
+    const kind = block.kind as keyof typeof expectedSize;
+    expect(block.size, `${kind} scales with the page`).toBeCloseTo(cqw(expectedSize[kind]), 0);
+    expect(block.overflowX, `${kind} is not horizontally clipped`).toBeLessThanOrEqual(1);
+    expect(block.overflowY, `${kind} is not vertically clipped`).toBeLessThanOrEqual(1);
+  }
+  for (const [index, leaf] of facsimile.tableLeaves.entries()) {
+    expect(leaf, `table leaf #${index} is not floored`).toBeCloseTo(cqw(2.1), 0);
+  }
+  expect(facsimile.rows, "both table rows are drawn").toHaveLength(2);
+  for (const [index, row] of facsimile.rows.entries()) {
+    expect(row.bottom, `table row #${index} sits inside its bbox`).toBeLessThanOrEqual(
+      facsimile.tableBlock.bottom + 1,
+    );
+  }
+
+  // Highlights and blocks read the same bbox1000 numbers, so they coincide.
+  const titleBlock = facsimile.blocks[0]!.rect;
+  for (const [state, block] of [
+    ["verified", titleBlock],
+    ["review", facsimile.tableBlock],
+  ] as const) {
+    const highlight = facsimile.highlights.find((item) => item.state === state);
+    expect(highlight, `${state} highlight exists`).toBeDefined();
+    for (const edge of ["top", "right", "bottom", "left"] as const) {
+      expect(
+        Math.abs(highlight!.rect[edge] - block[edge]),
+        `${state} highlight ${edge} matches its block`,
+      ).toBeLessThanOrEqual(1);
+    }
+  }
+
+  // The exemption is the facsimile only; the readable hero text keeps 12px.
+  for (const selector of [
+    ".tv-facing-meta span",
+    ".tv-facing-caption",
+    ".tv-hero-comp-tag",
+    ".tv-hero-comp-row td",
+  ]) {
+    const sizes = await page
+      .locator(selector)
+      .evaluateAll((elements) =>
+        elements.map((element) => Number.parseFloat(getComputedStyle(element).fontSize)),
+      );
+    expect(sizes.length, `${selector} elements`).toBeGreaterThan(0);
+    for (const size of sizes) {
+      expect(size, `${selector} keeps the 12px floor`).toBeGreaterThanOrEqual(12);
+    }
+  }
+});
+
 test("integrity status register code exposes every character", async ({
   page,
 }, testInfo) => {

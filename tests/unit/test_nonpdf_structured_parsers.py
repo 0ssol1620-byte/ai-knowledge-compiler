@@ -1723,17 +1723,24 @@ def test_parse_csv_runs_the_preflight_before_the_reader_is_built(
         assert calls == ["preflight"]
 
 
-def test_hwp_and_hwpx_remain_unsupported(
+def test_legacy_hwp_stays_unsupported_and_renamed_ooxml_is_not_hwpx(
     parse_context: ParseContext,
     docx_bytes: bytes,
 ) -> None:
     assert "csv" in SUPPORTED_EXTENSIONS
-    assert not {"hwp", "hwpx"} & SUPPORTED_EXTENSIONS
+    assert "hwpx" in SUPPORTED_EXTENSIONS
+    assert "hwp" not in SUPPORTED_EXTENSIONS
     sources = [
-        ("report.hwp", "application/x-hwp", b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + b"\x00" * 504),
-        ("report.hwpx", "application/hwp+zip", docx_bytes),
+        (
+            "report.hwp",
+            "application/x-hwp",
+            b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + b"\x00" * 504,
+            "UNSUPPORTED_NON_PDF_TYPE",
+        ),
+        # A DOCX renamed .hwpx is refused by the HWPX package check, not parsed.
+        ("report.hwpx", "application/hwp+zip", docx_bytes, "HWPX_PACKAGE_KIND_MISMATCH"),
     ]
-    for filename, declared_mime, payload in sources:
+    for filename, declared_mime, payload, code in sources:
         with pytest.raises(StructuredParseError) as failure:
             parse_non_pdf_to_cir(
                 filename=filename,
@@ -1741,17 +1748,17 @@ def test_hwp_and_hwpx_remain_unsupported(
                 data=payload,
                 context=parse_context,
             )
-        assert failure.value.code == "UNSUPPORTED_NON_PDF_TYPE"
+        assert failure.value.code == code
 
 
-@pytest.mark.parametrize("filename", ["report.hwp", "report.hwpx", "REPORT.HWP", "REPORT.HWPX"])
-def test_hwp_and_hwpx_are_rejected_by_extension_before_any_content_check(
+@pytest.mark.parametrize("filename", ["report.hwp", "REPORT.HWP"])
+def test_legacy_hwp_is_rejected_by_extension_before_any_content_check(
     parse_context: ParseContext,
     filename: str,
 ) -> None:
-    # Placeholder bytes, not a real HWP or HWPX file: the extension alone,
-    # in any case, is refused before MIME or magic bytes are looked at.
-    assert not {"hwp", "hwpx", ".hwp", ".hwpx"} & SUPPORTED_EXTENSIONS
+    # Placeholder bytes, not a real HWP file: the extension alone, in any
+    # case, is refused before MIME or magic bytes are looked at.
+    assert not {"hwp", ".hwp"} & SUPPORTED_EXTENSIONS
     with pytest.raises(StructuredParseError) as failure:
         parse_non_pdf_to_cir(
             filename=filename,
@@ -1760,6 +1767,29 @@ def test_hwp_and_hwpx_are_rejected_by_extension_before_any_content_check(
             context=parse_context,
         )
     assert failure.value.code == "UNSUPPORTED_NON_PDF_TYPE"
+
+
+@pytest.mark.parametrize(
+    ("filename", "declared_mime", "code"),
+    [
+        ("report.hwpx", "application/octet-stream", "MIME_MISMATCH"),
+        ("REPORT.HWPX", "application/hwp+zip", "HWPX_MAGIC_MISMATCH"),
+    ],
+)
+def test_hwpx_placeholder_bytes_never_reach_the_parser(
+    parse_context: ParseContext,
+    filename: str,
+    declared_mime: str,
+    code: str,
+) -> None:
+    with pytest.raises(StructuredParseError) as failure:
+        parse_non_pdf_to_cir(
+            filename=filename,
+            declared_mime=declared_mime,
+            data=b"placeholder, not a real document",
+            context=parse_context,
+        )
+    assert failure.value.code == code
 
 
 def test_cfb_containers_are_unsupported_and_never_classified_by_content(

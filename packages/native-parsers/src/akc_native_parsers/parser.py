@@ -7,6 +7,7 @@ from akc_cir import CanonicalDocument
 from .csv_parser import parse_csv
 from .docx_parser import parse_docx
 from .html_parser import parse_html
+from .hwpx_parser import parse_hwpx
 from .models import CirBuilder, ParseContext, ParserLimits, StructuredParseError
 from .pptx_parser import parse_pptx
 from .security import SUPPORTED_EXTENSIONS as _SUPPORTED_EXTENSIONS
@@ -58,6 +59,10 @@ def parse_non_pdf_to_cir(
             title = parse_pptx(data, builder)
         elif document_type == "xlsx":
             title = parse_xlsx(data, builder)
+        elif document_type == "hwpx":
+            if validated.hwpx is None:
+                raise StructuredParseError("HWPX_PACKAGE_UNAVAILABLE")
+            title = parse_hwpx(validated.hwpx, builder)
         elif document_type == "html":
             if validated.text is None:
                 raise StructuredParseError("HTML_TEXT_UNAVAILABLE")
