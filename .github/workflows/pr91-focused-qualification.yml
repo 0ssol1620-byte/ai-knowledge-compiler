@@ -35,7 +35,7 @@ jobs:
       matrix:
         python-version: ["3.12", "3.13"]
     steps:
-      # Full history so the PR base commit is present for the changed-path diff without a credentialed fetch later.
+      # Full history so the qualification-batch baseline commit is present for the changed-path diff without a credentialed fetch later.
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -110,12 +110,13 @@ jobs:
         id: ruff
         continue-on-error: true
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          BASE_SHA: 956b2efb458bb6062e94f83247acd83696bd3a57
         run: |
           set -euo pipefail
           git cat-file -e "${BASE_SHA}^{commit}"
-          # Three-dot: the plain PR diff from the merge base. Deleted files are not lintable.
-          git diff --name-only --diff-filter=d -z "${BASE_SHA}...HEAD" -- '*.py' > "$RUNNER_TEMP/ruff-changed.z"
+          git merge-base --is-ancestor "$BASE_SHA" HEAD
+          # Qualification-batch baseline (an ancestor of the tested head), not the PR merge base. Deleted files are not lintable.
+          git diff --name-only --diff-filter=d -z "$BASE_SHA" HEAD -- '*.py' > "$RUNNER_TEMP/ruff-changed.z"
           mapfile -d '' -t files < "$RUNNER_TEMP/ruff-changed.z"
           printf '%s\n' "${files[@]}" > "$EVIDENCE_DIR/ruff-changed-python-paths.txt"
           echo "base ${BASE_SHA}; ${#files[@]} changed Python path(s)"
@@ -675,11 +676,17 @@ jobs:
           exit "$failed"
 
   # Copied from joined-e2e.yml (it has no workflow_call). Setup, supervisor and cleanup bodies, the upload's 5-minute
-  # cap, the 75-minute job budget, the 65-minute journey cap and the 600 s always() reserve are unchanged. Differences:
-  # Core is checked out at the PR head SHA, Foundation at the pinned SHA (checkout, FOUNDATION_REF and
-  # TAVONEL_JOINED_FOUNDATION_REF), one identity step before the journey writes into core/output/, the upload publishes
-  # an explicit allowlist instead of all of core/output/ (no raw trace, storage state, .env, Authorization header or
-  # failure screenshot), and one ledger check runs after both reserved always() steps.
+  # cap, the 75-minute job budget, the 65-minute journey cap and the 600 s always() reserve are unchanged. Like
+  # joined-e2e.yml, the disposable DB setup now stages the four reviewed, still-unregistered Foundation drafts (ACL
+  # boundary, ACL refresh, async authority, intake triage v3; source bytes hash-checked against their qualification at
+  # 5e174884) as runner-local migrations before `supabase start`, and runs focused pgTAP files plus a service_role
+  # legacy-v2 read with the DB rollout gate asserted off afterwards. This is a test-setup correction, not a production
+  # or release change. Differences: Core is checked out at the PR head SHA, Foundation at the pinned SHA (checkout,
+  # FOUNDATION_REF and TAVONEL_JOINED_FOUNDATION_REF), the staging step's qualified-source pin is FOUNDATION_PIN_SHA,
+  # one identity step before the journey writes into core/output/, the upload publishes an explicit allowlist instead
+  # of all of core/output/ (no raw trace, storage state, .env, Authorization header or failure screenshot; the
+  # sanitized staging record is core/output/logs/foundation-draft-staging.log), and one ledger check runs after both
+  # reserved always() steps.
   joined-e2e:
     name: Joined upload -> CDR -> OCR -> Core -> review -> consumers (pinned Foundation)
     if: github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
@@ -813,15 +820,290 @@ jobs:
         working-directory: foundation/quarantine-sidecar/foundation-cdr-worker
         run: npm ci --ignore-scripts --no-audit --no-fund
 
+      # Test setup only, same body as joined-e2e.yml. Foundation's v2 approval reader needs the reviewed intake triage v3
+      # draft, which stays unregistered in Foundation, and that draft needs the ACL boundary, ACL refresh and async
+      # authority drafts before it. The pattern is Foundation's db-rehearsal.yml: the pinned official CLI generates each
+      # runner-local migration, the exact qualified draft bytes are copied in, compared and hash-checked, and two draft
+      # pgTAP fixtures are copied into supabase/tests. QUALIFIED_FOUNDATION_SOURCE_SHA (here FOUNDATION_PIN_SHA) is where
+      # those bytes were qualified; FOUNDATION_REF and the actual checked-out SHA are recorded separately. A Foundation
+      # checkout without the eight qualified files fails here, before anything is staged, and no other ref or SQL is
+      # substituted. Nothing is registered in Foundation source or committed/pushed; the generated migration files stay
+      # runner-local, and no other draft (completed-read included) is staged. The record holds only refs, SHAs, versions and flags, and lands under
+      # core/output/logs/, inside the upload allowlist below.
+      - name: Stage the qualified Foundation drafts into the disposable migration chain
+        timeout-minutes: 3
+        working-directory: foundation
+        env:
+          QUALIFIED_FOUNDATION_SOURCE_SHA: ${{ env.FOUNDATION_PIN_SHA }}
+        run: |
+          set -euo pipefail
+          record="$GITHUB_WORKSPACE/core/output/logs/foundation-draft-staging.log"
+          mkdir -p "$(dirname "$record")"
+          actual="$(git rev-parse HEAD)"
+          {
+            echo "kind=tavonel-joined-foundation-draft-staging"
+            echo "qualifiedSourcePinSha=${QUALIFIED_FOUNDATION_SOURCE_SHA}"
+            echo "selectedFoundationRef=${FOUNDATION_REF}"
+            echo "actualFoundationSha=${actual}"
+            if [ "$actual" = "$QUALIFIED_FOUNDATION_SOURCE_SHA" ]; then
+              echo "actualShaIsQualifiedPin=true"
+            else
+              echo "actualShaIsQualifiedPin=false"
+            fi
+          } | tee "$record"
+
+          qualified="$RUNNER_TEMP/foundation-qualified-source.sha256"
+          cat > "$qualified" <<'SUMS'
+          8aad3ffaf8d3062c764988029a1235db4e04ab181e0211524677f9f213e306bc  supabase/drafts/google-viewer-principal-boundary.sql
+          04b75937e204db4da659352c6f9194c110018cd45715c72553ee0e2e41e8c4a8  supabase/drafts/google-drive-acl-refresh/queue.sql
+          e81baa53eaafb3e642d4100402df5cbd84b8ca4872aa0eafd12ef3a88ac34e4d  supabase/drafts/compile-job-viewer-authority.sql
+          092247c80b04e861471cb04edf7ba22699ebc7bbf81cb067b6840724ebb7a00e  supabase/drafts/migrations/20261004120000_foundation_intake_triage_v3.sql
+          ec6c87f5867825d7353b6048808c6177e8d23e62ae157ae582a230c5ae0faaf7  supabase/tests/google_viewer_principal_boundary.sql
+          ecc2b851051b7bbccaed09b231e44a9dcc4fabf6483f6b572fafe3488c1177e2  supabase/drafts/google-drive-acl-refresh/tests/google_drive_acl_refresh_queue.sql
+          91f421c3a4a9fda4d121aa60aa550ce867c2e9e6f5923920c9f3f41604002d00  supabase/tests/compile_job_viewer_authority.sql
+          f142517c4432668cc291abf7ed3942976a373149c3842dfc45a1ead534cefda0  supabase/drafts/tests/foundation_intake_triage_binding.sql
+          SUMS
+          test "$(wc -l < "$qualified")" -eq 8
+          absent=0
+          while read -r _ path; do
+            if [ ! -f "$path" ]; then
+              echo "::error::selected Foundation ${FOUNDATION_REF} (${actual}) lacks qualified source file ${path}; nothing staged"
+              absent=1
+            fi
+          done < "$qualified"
+          test "$absent" -eq 0
+          if ! sha256sum --check --strict "$qualified"; then
+            echo "::error::selected Foundation ${FOUNDATION_REF} (${actual}) does not carry the source bytes qualified at ${QUALIFIED_FOUNDATION_SOURCE_SHA}; nothing staged"
+            exit 1
+          fi
+          echo "qualifiedSourceSha256=verified files=8" | tee -a "$record"
+
+          # Code-owned server switch: read, never changed and never replaced by an environment flag.
+          gate_file=nextjs/lib/intake-triage-rollout.ts
+          declaration='export const INTAKE_TRIAGE_ROLLOUT_ENABLED = false;'
+          if [ ! -f "$gate_file" ] || [ "$(grep -cFx -- "$declaration" "$gate_file")" -ne 1 ] \
+            || [ "$(grep -cE '(^|[^A-Za-z0-9_$])(const|let|var)[[:space:]]+INTAKE_TRIAGE_ROLLOUT_ENABLED([^A-Za-z0-9_$]|$)' "$gate_file")" -ne 1 ]; then
+            echo "::error::${gate_file} does not hold exactly one declaration, '${declaration}'"
+            exit 1
+          fi
+          echo "codeRolloutGate=INTAKE_TRIAGE_ROLLOUT_ENABLED:false" | tee -a "$record"
+
+          shopt -s nullglob
+          for name in google_viewer_principal_boundary google_drive_acl_refresh_queue compile_job_viewer_authority foundation_intake_triage_v3; do
+            registered=(supabase/migrations/*_"${name}".sql)
+            if [ "${#registered[@]}" -ne 0 ]; then
+              echo "::error::Foundation already registers ${registered[*]}; the reviewed draft must stay unregistered, refusing to stage"
+              exit 1
+            fi
+          done
+          for target in supabase/tests/google_drive_acl_refresh_queue.sql supabase/tests/foundation_intake_triage_binding.sql; do
+            if [ -e "$target" ]; then
+              echo "::error::${target} already exists; refusing to overwrite it"
+              exit 1
+            fi
+          done
+
+          # The disposable stack config, exactly as the start step below used to create it.
+          test ! -f supabase/config.toml
+          supabase init
+          grep -qx 'major_version = 17' supabase/config.toml
+
+          previous=""
+          for existing in supabase/migrations/*.sql; do
+            if [[ "$(basename "$existing")" =~ ^([0-9]{14})_ ]] && [[ "${BASH_REMATCH[1]}" > "$previous" ]]; then
+              previous="${BASH_REMATCH[1]}"
+            fi
+          done
+          echo "latestRegisteredMigrationVersion=${previous:-none}" | tee -a "$record"
+
+          # Fixed order: each draft depends on the one before it. The CLI versions a migration by the current UTC second,
+          # so a prior version in the future fails, and an equal second waits at most 5 s for the next one.
+          supabase migration new --help > /dev/null
+          drafts=(
+            "google_viewer_principal_boundary supabase/drafts/google-viewer-principal-boundary.sql 8aad3ffaf8d3062c764988029a1235db4e04ab181e0211524677f9f213e306bc"
+            "google_drive_acl_refresh_queue supabase/drafts/google-drive-acl-refresh/queue.sql 04b75937e204db4da659352c6f9194c110018cd45715c72553ee0e2e41e8c4a8"
+            "compile_job_viewer_authority supabase/drafts/compile-job-viewer-authority.sql e81baa53eaafb3e642d4100402df5cbd84b8ca4872aa0eafd12ef3a88ac34e4d"
+            "foundation_intake_triage_v3 supabase/drafts/migrations/20261004120000_foundation_intake_triage_v3.sql 092247c80b04e861471cb04edf7ba22699ebc7bbf81cb067b6840724ebb7a00e"
+          )
+          versions=()
+          for entry in "${drafts[@]}"; do
+            read -r name draft sha <<<"$entry"
+            now="$(date -u +%Y%m%d%H%M%S)"
+            if [ -n "$previous" ] && [[ "$previous" > "$now" ]]; then
+              echo "::error::prior migration version ${previous} is in the future (now ${now}); cannot generate a later ${name} migration"
+              exit 1
+            fi
+            waited=0
+            while [ -n "$previous" ] && [[ ! "$now" > "$previous" ]]; do
+              if [ "$waited" -ge 5 ]; then
+                echo "::error::the UTC second did not pass ${previous} within 5 s"
+                exit 1
+              fi
+              sleep 1
+              waited=$(( waited + 1 ))
+              now="$(date -u +%Y%m%d%H%M%S)"
+            done
+            supabase migration new "$name" < /dev/null
+            generated=(supabase/migrations/*_"${name}".sql)
+            if [ "${#generated[@]}" -ne 1 ] || [[ ! "$(basename "${generated[0]}")" =~ ^([0-9]{14})_${name}\.sql$ ]]; then
+              echo "::error::supabase migration new did not create exactly one 14-digit ${name} migration"
+              exit 1
+            fi
+            version="${BASH_REMATCH[1]}"
+            if [ -n "$previous" ] && [[ ! "$version" > "$previous" ]]; then
+              echo "::error::generated ${name} version ${version} is not after ${previous}"
+              exit 1
+            fi
+            cp -- "$draft" "${generated[0]}"
+            cmp -- "$draft" "${generated[0]}"
+            printf '%s  %s\n' "$sha" "$draft" "$sha" "${generated[0]}" | sha256sum --check --strict
+            echo "staged ${name} version=${version} file=${generated[0]} sha256=${sha} source=${draft}" | tee -a "$record"
+            versions+=("$version")
+            previous="$version"
+          done
+
+          for fixture in \
+            "supabase/drafts/google-drive-acl-refresh/tests/google_drive_acl_refresh_queue.sql supabase/tests/google_drive_acl_refresh_queue.sql ecc2b851051b7bbccaed09b231e44a9dcc4fabf6483f6b572fafe3488c1177e2" \
+            "supabase/drafts/tests/foundation_intake_triage_binding.sql supabase/tests/foundation_intake_triage_binding.sql f142517c4432668cc291abf7ed3942976a373149c3842dfc45a1ead534cefda0"; do
+            read -r source target sha <<<"$fixture"
+            cp -- "$source" "$target"
+            cmp -- "$source" "$target"
+            printf '%s  %s\n' "$sha" "$source" "$sha" "$target" | sha256sum --check --strict
+            echo "fixture ${target} sha256=${sha} source=${source}" | tee -a "$record"
+          done
+          # The eight qualified files, including the two test fixtures already in supabase/tests, are still exact.
+          sha256sum --check --strict "$qualified"
+          echo "qualifiedSourceSha256AfterStaging=verified files=8" | tee -a "$record"
+          echo "FOUNDATION_DRAFT_VERSIONS=${versions[*]}" >> "$GITHUB_ENV"
+
       - name: Start the disposable local Supabase stack from the Foundation migrations
         working-directory: foundation
         run: |
-          test ! -f supabase/config.toml
-          supabase init
+          # supabase/config.toml comes from the staging step above (`supabase init`, asserted absent before it).
+          test -f supabase/config.toml
           grep -qx 'major_version = 17' supabase/config.toml
           supabase start
           supabase status --output json > "$RUNNER_TEMP/tavonel-auth-status.json"
           chmod 600 "$RUNNER_TEMP/tavonel-auth-status.json"
+
+      # Focused checks on the disposable stack, with the pinned official CLI and the runner's own psql client (nothing is
+      # installed): the four staged drafts' pgTAP files only (not the full suite), and one service_role read of the
+      # reviewed legacy approval fixture through the v2 reader inside a rolled-back transaction. The persistent DB
+      # rollout gate must read false, as postgres, before and after. The reviewed binding fixture enables the gate only
+      # inside its own rolled-back transaction. Neither the DB URL nor any payload is printed or recorded, only flags.
+      - name: Focused disposable-DB checks of the staged drafts (gate off, legacy v2 read)
+        timeout-minutes: 8
+        working-directory: foundation
+        run: |
+          set -euo pipefail
+          record="$GITHUB_WORKSPACE/core/output/logs/foundation-draft-staging.log"
+          test -f "$record"
+          versions_pattern='^[0-9]{14}( [0-9]{14}){3}$'
+          if [[ ! "${FOUNDATION_DRAFT_VERSIONS:-}" =~ $versions_pattern ]]; then
+            echo "::error::the staging step did not record four draft migration versions"
+            exit 1
+          fi
+          read -r v1 v2 v3 v4 <<<"$FOUNDATION_DRAFT_VERSIONS"
+          if ! command -v psql > /dev/null; then
+            echo "::error::psql is not available on this runner; this workflow installs nothing for it"
+            exit 1
+          fi
+          db_url="$(jq -er '.DB_URL' "$RUNNER_TEMP/tavonel-auth-status.json")"
+          local_db_pattern='^postgres(ql)?://[^@/]+@(127\.0\.0\.1|localhost):[0-9]+/[A-Za-z0-9_]+$'
+          if [[ ! "$db_url" =~ $local_db_pattern ]]; then
+            echo "::error::the local stack status DB_URL is not a localhost/127.0.0.1 Postgres URL (value not printed)"
+            exit 1
+          fi
+          run_sql() {
+            timeout 60 psql "$db_url" -X -q -A -t -v ON_ERROR_STOP=1 -f "$1"
+          }
+
+          sql="$RUNNER_TEMP/foundation-draft-checks"
+          mkdir -p "$sql"
+          cat > "$sql/gate.sql" <<'SQL'
+          begin;
+          set local statement_timeout = '15s';
+          select current_user = 'postgres',
+                 count(*) = 1 and coalesce(bool_and(gate_key = 'upload_triage_v1' and not enabled), false)
+            from public.foundation_intake_triage_rollout_gate;
+          rollback;
+          SQL
+          printf '%s\n' "begin;" "set local statement_timeout = '15s';" \
+            "select count(*) = 4 from supabase_migrations.schema_migrations where version in ('${v1}','${v2}','${v3}','${v4}');" \
+            "rollback;" > "$sql/applied.sql"
+          cat > "$sql/legacy-v2-read.sql" <<'SQL'
+          begin;
+          set local statement_timeout = '30s';
+          insert into auth.users (
+            instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+            raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+          ) values ('00000000-0000-0000-0000-000000000000', '88880011-8888-4888-8888-888888888811',
+            'authenticated', 'authenticated', 'triage-owner@example.invalid', '$2a$10$fixture', now(),
+            '{"provider":"email","providers":["email"]}', '{}', now(), now());
+          insert into public.foundation_intake_approvals (
+            approval_id,workspace_key,user_id,attempt_key,client_manifest_digest,scope_digest,
+            pricing_fingerprint,file_count,aggregate_maximum_pages,aggregate_reserved_credits,
+            aggregate_maximum_credits,state,created_at,expires_at
+          ) values ('88880031-8888-4888-8888-888888888831','pilot-triage01','88880011-8888-4888-8888-888888888811',
+            'attempt_legacytriage01','sha256:'||repeat('6',64),'sha256:'||repeat('7',64),'sha256:'||repeat('3',64),
+            1,80,1,1,'approved',now(),now()+interval '10 minutes');
+          insert into public.foundation_intake_approval_files (
+            approval_id,file_key,document_id,content_sha256,byte_length,declared_mime_type,page_basis,
+            approved_max_pages,approved_reserved_credits,approved_maximum_credits,created_at
+          ) values ('88880031-8888-4888-8888-888888888831','fk_legacy01','88880034-8888-4888-8888-888888888834',
+            'sha256:'||repeat('9',64),1024,'application/pdf','unknown',80,1,1,now());
+          set local role service_role;
+          -- Each flag is spelled out as the text 'true' or 'false' (a NULL predicate is 'false'); format('%s', boolean)
+          -- would print PostgreSQL's t/f instead.
+          select format('role=%s marker=%s nullKeys=%s legacyStage=%s', current_user,
+                 case when jsonb_typeof(p->'triageLineageVersion') = 'number' and p->'triageLineageVersion' = '1'::jsonb
+                   then 'true' else 'false' end,
+                 case when p ? 'triageReceiptId' and jsonb_typeof(p->'triageReceiptId') = 'null'
+                   and p ? 'triageVersion' and jsonb_typeof(p->'triageVersion') = 'null'
+                   and p ? 'triageInventoryDigest' and jsonb_typeof(p->'triageInventoryDigest') = 'null'
+                   and p ? 'configurationRevision' and jsonb_typeof(p->'configurationRevision') = 'null'
+                   then 'true' else 'false' end,
+                 case when p->>'approvalStage' = 'legacy' then 'true' else 'false' end)
+            from (select public.read_foundation_intake_approval_v2('pilot-triage01',
+                    '88880011-8888-4888-8888-888888888811', 'attempt_legacytriage01') as p) as v2;
+          rollback;
+          SQL
+
+          if [ "$(run_sql "$sql/gate.sql")" != "t|t" ]; then
+            echo "::error::the persistent upload_triage_v1 DB rollout gate is not exactly one false row before the checks"
+            exit 1
+          fi
+          echo "dbRolloutGateBefore=false" | tee -a "$record"
+          if [ "$(run_sql "$sql/applied.sql")" != "t" ]; then
+            echo "::error::the four staged draft versions are not all applied to the disposable database"
+            exit 1
+          fi
+          echo "stagedDraftVersionsApplied=4" | tee -a "$record"
+
+          timeout 60 supabase db query --local "create extension if not exists pgtap with schema extensions;"
+          supabase test db --help > /dev/null
+          timeout 240 supabase test db --local \
+            supabase/tests/google_viewer_principal_boundary.sql \
+            supabase/tests/google_drive_acl_refresh_queue.sql \
+            supabase/tests/compile_job_viewer_authority.sql \
+            supabase/tests/foundation_intake_triage_binding.sql
+          echo "focusedPgtapFiles=4 passed" | tee -a "$record"
+
+          if ! proof="$(run_sql "$sql/legacy-v2-read.sql")"; then
+            echo "::error::the service_role legacy v2 read failed (missing reader, fixture or grant)"
+            exit 1
+          fi
+          if [ "$proof" != "role=service_role marker=true nullKeys=true legacyStage=true" ]; then
+            echo "::error::service_role legacy v2 read proof is not complete: ${proof}"
+            exit 1
+          fi
+          echo "legacyV2Read ${proof}" | tee -a "$record"
+
+          if [ "$(run_sql "$sql/gate.sql")" != "t|t" ]; then
+            echo "::error::the persistent upload_triage_v1 DB rollout gate is not exactly one false row after the checks"
+            exit 1
+          fi
+          echo "dbRolloutGateAfter=false" | tee -a "$record"
 
       - name: Fetch the checksum-qualified portable local S3 runtime (SeaweedFS 4.48)
         run: |
