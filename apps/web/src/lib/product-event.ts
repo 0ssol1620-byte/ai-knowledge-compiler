@@ -635,8 +635,8 @@ function normalizeScope(event: ProductEvent): ProductEvent {
     return { ...event, collection_id: event.scope.collection_id };
   }
   if ("collection_id" in event) {
-    const rest = { ...event } as ProductEvent & { collection_id?: string };
-    delete rest.collection_id;
+    const { collection_id: _drop, ...rest } = event;
+    void _drop;
     return rest as ProductEvent;
   }
   return event;

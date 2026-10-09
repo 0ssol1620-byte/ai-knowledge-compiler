@@ -1,13 +1,13 @@
 {
   "schema_version": "1.0",
-  "verified_at": "2026-07-30",
+  "verified_at": "2026-10-03",
   "verification": {
     "container_images": "Registry manifest bytes were SHA-256 hashed and matched Docker-Content-Digest.",
     "github_actions": "The upstream exact-version tag commit was resolved and the commit object was verified through the GitHub API."
   },
   "container_images": {
     "grafana/k6:0.57.0": "sha256:70af91f86cd8e142e0544a4edaf79835a80033f71974b92edd5ac36fd4442a7b",
-    "gcr.io/distroless/nodejs24-debian13:nonroot": "sha256:af85d11ce7ef10172855a6e3649e3e8125b1b9e3ca41849ec2918036f05cb212",
+    "gcr.io/distroless/nodejs24-debian13:nonroot": "sha256:bb6b03d81066993293a10feda7250e8e1cc034035fe9b61cfceededa7c8bf04d",
     "node:24.18.0-bookworm-slim": "sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d",
     "nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04": "sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802",
     "pgvector/pgvector:pg17": "sha256:d2ef61f42ef767baa5a1475393303cc235bcd92febd9d7014eddb48b41f3bad0",
@@ -24,6 +24,8 @@
     "easimon/maximize-build-space@v10": "fc881a613ad2a34aca9c9624518214ebc21dfc0c",
     "aquasecurity/trivy-action@v0.36.0": "ed142fd0673e97e23eac54620cfb913e5ce36c25",
     "github/codeql-action@v3.37.3": "4187e74d05793876e9989daffde9c3e66b4acd07",
-    "hashicorp/setup-terraform@v3.1.2": "b9cd54a3c349d3f38e8881555d616ced269862dd"
+    "hashicorp/setup-terraform@v3.1.2": "b9cd54a3c349d3f38e8881555d616ced269862dd",
+    "pnpm/action-setup@v4.3.0": "b906affcce14559ad1aafd4ab0e942779e9f58b1",
+    "supabase/setup-cli@v1.7.3": "1dedf2c611547ede7232d26866dd3c56ab903bbb"
   }
 }

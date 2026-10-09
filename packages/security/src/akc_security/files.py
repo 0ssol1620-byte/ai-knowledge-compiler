@@ -19,6 +19,8 @@ from akc_cir import ContractModel
 from defusedxml import ElementTree
 from pydantic import Field
 
+from .hwpx import HWPX_MEDIA_TYPE, HwpxLimits, HwpxPackageError, inspect_hwpx_package
+
 ALLOWED_EXTENSIONS = frozenset(
     {
         ".pdf",
@@ -31,6 +33,7 @@ ALLOWED_EXTENSIONS = frozenset(
         ".docx",
         ".pptx",
         ".xlsx",
+        ".hwpx",
         ".csv",
         ".html",
         ".htm",
@@ -132,6 +135,7 @@ EXPECTED_MIME = {
     ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".hwpx": HWPX_MEDIA_TYPE,
     ".csv": "text/csv",
     ".html": "text/html",
     ".htm": "text/html",
@@ -235,7 +239,9 @@ def _detected_mime(extension: str, data: bytes) -> str | None:
     if data.startswith(b"%PDF-"):
         return "application/pdf"
     if data.startswith(b"PK\x03\x04"):
-        return EXPECTED_MIME.get(extension) if extension in OOXML_MARKERS else "application/zip"
+        if extension in OOXML_MARKERS or extension == ".hwpx":
+            return EXPECTED_MIME[extension]
+        return "application/zip"
     if extension in _TEXT_EXTENSIONS:
         return EXPECTED_MIME[extension]
     return None
@@ -469,6 +475,18 @@ def validate_upload_stream(
                     detected_mime=detected,
                     reason_code=str(exc),
                 )
+        elif extension == ".hwpx":
+            # The parser's own bounds are fixed for HWPX, whatever the plan tier.
+            try:
+                inspect_hwpx_package(cast(BinaryIO, quarantine), HwpxLimits())
+            except HwpxPackageError as exc:
+                return _invalid_result(
+                    normalized=normalized,
+                    extension=extension,
+                    detected_mime=detected,
+                    reason_code=exc.code,
+                )
+            warnings = ()
         else:
             warnings = ()
         return FileValidationResult(

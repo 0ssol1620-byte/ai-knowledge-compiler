@@ -22,11 +22,13 @@ from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
+from akc_cir.recompilation import content_hash
 from akc_cir.world_state import (
     PublicationManifest,
     PublishResult,
     ValidationReceipt,
     WorldStateRegistry,
+    publication_manifest,
 )
 
 __all__ = [
@@ -57,7 +59,8 @@ def _write_json_atomic(path: Path, payload: object) -> None:
 def _read_json(path: Path) -> object | None:
     if not path.exists():
         return None
-    return json.loads(path.read_text(encoding="utf-8"))
+    value: object = json.loads(path.read_text(encoding="utf-8"))
+    return value
 
 
 @dataclass(frozen=True, slots=True)
@@ -74,6 +77,9 @@ class StoredWorld:
     review_queue: tuple[dict[str, object], ...]
     cursor: dict[str, str]  # rel_path -> sha256
     built_at: datetime
+    #: Units of deleted documents that still invalidate their dependents:
+    #: ``{"logical_id", "lineage_path"}`` records, carried world to world.
+    tombstones: tuple[dict[str, object], ...] = ()
 
 
 class WorldStore:
@@ -106,7 +112,10 @@ class WorldStore:
         if pointer is None:
             return None
         assert isinstance(pointer, dict)
-        return pointer.get("active_world_state_id")  # type: ignore[return-value]
+        target = pointer.get("active_world_state_id")
+        if target is not None and not isinstance(target, str):
+            raise ValueError("active world state id must be a string")
+        return target
 
     def load_world(self, world_state_id: str | None = None) -> StoredWorld | None:
         """Load the pointed-at world, or a specific one by id."""
@@ -128,6 +137,7 @@ class WorldStore:
             review_queue=tuple(claims.get("review_queue", ())),
             cursor=dict(claims["cursor"]),
             built_at=datetime.fromisoformat(world["built_at"]),
+            tombstones=tuple(claims.get("tombstones", ())),
         )
 
     def load_registry(self) -> WorldStateRegistry:
@@ -162,6 +172,44 @@ class WorldStore:
             )
         return registry
 
+    def load_parsed_cache(
+        self, world: StoredWorld, *, context: dict[str, object]
+    ) -> dict[str, object]:
+        """Optional parser artifact: legacy, corrupt or incompatible means a miss."""
+        try:
+            cache = _read_json(self.base / "parsed" / f"{world.world_state_id}.json")
+            if not isinstance(cache, dict):
+                return {}
+            expected = world.manifest.artifact_hashes.get("parsed/documents")
+            manifest = publication_manifest(
+                world_state_id=world.world_state_id,
+                compiler_version=world.manifest.compiler_version,
+                artifact_hashes=world.manifest.artifact_hashes,
+            )
+            if (
+                expected is None
+                or expected != world.artifact_hashes.get("parsed/documents")
+                or content_hash(cache) != expected
+                or manifest.manifest_hash != world.manifest.manifest_hash
+                or cache.get("world_state_id") != world.world_state_id
+                or cache.get("workspace_id") != self.workspace_id
+                or cache.get("context") != context
+            ):
+                return {}
+            documents = cache["documents"]
+            if not isinstance(documents, dict) or set(documents) != set(world.cursor):
+                return {}
+            if any(
+                not isinstance(record, dict)
+                or record.get("rel_path") != path
+                or record.get("sha256") != world.cursor[path]
+                for path, record in documents.items()
+            ):
+                return {}
+            return documents
+        except (OSError, ValueError, TypeError, KeyError, RecursionError):
+            return {}
+
     def _history_ids(self) -> list[str]:
         worlds_dir = self.base / "worlds"
         if not worlds_dir.exists():
@@ -191,8 +239,15 @@ class WorldStore:
         evidence_index: dict[str, dict[str, object]],
         review_queue: tuple[dict[str, object], ...],
         cursor: dict[str, str],
+        tombstones: tuple[dict[str, object], ...] = (),
+        parsed_cache: dict[str, object] | None = None,
     ) -> PublishResult:
         """Persist a candidate world, then swap the pointer. In that order."""
+        if parsed_cache is not None and (
+            content_hash(parsed_cache) != artifacts.get("parsed/documents")
+            or content_hash(parsed_cache) != manifest.artifact_hashes.get("parsed/documents")
+        ):
+            raise ValueError("parsed cache is not sealed by the publication manifest")
         self._sequence += 1
         built_at = next_deterministic_time(self._sequence)
         result = registry.publish(
@@ -205,7 +260,11 @@ class WorldStore:
         state = result.world_state
         _write_json_atomic(
             self.base / "meta.json",
-            {"version": _STORE_VERSION, "sequence": self._sequence, "workspace_id": self.workspace_id},
+            {
+                "version": _STORE_VERSION,
+                "sequence": self._sequence,
+                "workspace_id": self.workspace_id,
+            },
         )
         _write_json_atomic(
             self.base / "worlds" / f"{world_state_id}.json",
@@ -241,8 +300,13 @@ class WorldStore:
                 "evidence_index": evidence_index,
                 "review_queue": list(review_queue),
                 "cursor": cursor,
+                "tombstones": list(tombstones),
             },
         )
+        if parsed_cache is not None:
+            _write_json_atomic(
+                self.base / "parsed" / f"{world_state_id}.json", parsed_cache
+            )
         # The pointer moves last and in one replace: this is §N22.2's swap.
         _write_json_atomic(
             self.base / "pointer.json",

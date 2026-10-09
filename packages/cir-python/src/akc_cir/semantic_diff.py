@@ -91,6 +91,9 @@ class ChangeKind(StrEnum):
     RELATIONSHIP_ADDED = "relationship_added"
     RELATIONSHIP_REMOVED = "relationship_removed"
     AUTHORITY_CHANGED = "authority_changed"
+    # Who may see a unit changed; its content did not. Emitted by callers that
+    # track source ACLs (UnitSnapshot has no ACL channel).
+    PERMISSION_CHANGED = "permission_changed"
     # Not a change. A statement that identity could not be established, which is
     # deliberately not spelled as one of the changes above.
     IDENTITY_UNRESOLVED = "identity_unresolved"

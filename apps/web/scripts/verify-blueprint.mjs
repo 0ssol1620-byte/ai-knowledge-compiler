@@ -44,12 +44,13 @@ const MIN_FONT_PX = 12;
 const ALLOWED_BREAKPOINTS = new Set([1280, 1024, 768]);
 
 /**
- * Measured 2026-08-08. Lower these when a wave removes violations. Raising one
+ * Measured 2026-08-08; font-size re-measured 2026-09-27 after the legacy
+ * sheets were lifted to the 12px floor. Lower these when a wave removes violations. Raising one
  * is not a fix — it is a decision to let the blueprint drift, and it needs to
  * be argued in decision.md rather than committed here.
  */
 const BASELINE = {
-  "font-size-below-12px": 414,
+  "font-size-below-12px": 23,
   "non-conformant-breakpoint": 39,
 };
 

@@ -26,7 +26,7 @@ DEFAULT_USER_AGENT = "TAVONEL-W6-v2-pilot/0.1 (research; contact: operator) pyth
 class ItemOutcome:
     source_id: str
     title: str
-    status: str = "pending"     # pending | ok | failed | deadline_exceeded | cache_hit
+    status: str = "pending"  # pending | ok | failed | deadline_exceeded | cache_hit
     url: str = ""
     attempts: int = 0
     error_class: str = ""
@@ -134,7 +134,10 @@ def acquire_corpus(
     with session_factory() as session:
         for index, title in enumerate(titles):
             source_id = f"src-{index:03d}"
-            cache_path = cache_dir / f"{hashlib.sha1(title.encode('utf-8')).hexdigest()}.json"
+            cache_path = (
+                cache_dir
+                / f"{hashlib.sha1(title.encode('utf-8'), usedforsecurity=False).hexdigest()}.json"
+            )
             outcome = ItemOutcome(source_id=source_id, title=title)
 
             if cache_path.exists():
@@ -166,19 +169,22 @@ def acquire_corpus(
             last_url = ""
             total_attempts = 0
 
-            for url_index, url in enumerate(urls):
+            for url in urls:
                 last_url = url
                 remaining_budget = deadline - clock()
                 if remaining_budget <= 0:
                     last_error_class = "deadline_exceeded"
                     break
-                for attempt in range(1, max_attempts_per_item + 1):
+                for _attempt in range(1, max_attempts_per_item + 1):
                     total_attempts += 1
                     timeout = min(per_fetch_timeout_seconds, max(1.0, deadline - clock()))
                     try:
                         response = session.get(url, timeout=timeout)
                     except httpx.TimeoutException:
-                        last_error_class, last_error_detail = "timeout", f"fetch timed out after {timeout:.0f}s"
+                        last_error_class, last_error_detail = (
+                            "timeout",
+                            f"fetch timed out after {timeout:.0f}s",
+                        )
                         continue
                     except httpx.TransportError as exc:
                         last_error_class, last_error_detail = "transport_error", type(exc).__name__
@@ -210,13 +216,17 @@ def acquire_corpus(
                 outcome.text_sha256 = hashlib.sha256(fetched_text.encode("utf-8")).hexdigest()
                 outcome.usable = True
                 cache_path.write_text(
-                    json.dumps({"title": title, "url": final_url, "text": fetched_text}, ensure_ascii=False),
+                    json.dumps(
+                        {"title": title, "url": final_url, "text": fetched_text}, ensure_ascii=False
+                    ),
                     encoding="utf-8",
                 )
             elif fetched_text:
                 outcome.status = "failed"
                 outcome.error_class = "too_short"
-                outcome.error_detail = f"{len(fetched_text)} chars < {usable_document_min_chars} minimum"
+                outcome.error_detail = (
+                    f"{len(fetched_text)} chars < {usable_document_min_chars} minimum"
+                )
             else:
                 outcome.status = "failed"
                 outcome.error_class = last_error_class or "unknown"

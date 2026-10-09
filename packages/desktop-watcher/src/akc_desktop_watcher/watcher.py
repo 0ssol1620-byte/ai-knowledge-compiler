@@ -39,7 +39,8 @@ from pathlib import Path
 from types import TracebackType
 from typing import Any
 
-from watchdog.events import (
+# watchdog is this package's dependency; import stubs vary by environment.
+from watchdog.events import (  # type: ignore[import-not-found,unused-ignore]
     DirCreatedEvent,
     DirDeletedEvent,
     DirMovedEvent,
@@ -50,7 +51,9 @@ from watchdog.events import (
     FileSystemEvent,
     FileSystemEventHandler,
 )
-from watchdog.observers import Observer as BaseObserver
+from watchdog.observers import (  # type: ignore[import-not-found,unused-ignore]
+    Observer as BaseObserver,
+)
 
 from .config import RootConfig, WatcherConfig
 from .events import (
@@ -492,7 +495,7 @@ class DesktopWatcher:
         )
 
 
-class _RootHandler(FileSystemEventHandler):
+class _RootHandler(FileSystemEventHandler):  # type: ignore[misc,unused-ignore]
     """Translates watchdog events into pending-map updates. No I/O here."""
 
     def __init__(self, watcher: DesktopWatcher, root: _Root) -> None:

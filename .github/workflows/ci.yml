@@ -181,13 +181,127 @@ jobs:
       - name: Install the pinned release browser matrix
         run: pnpm --filter @akc/web exec playwright install --with-deps chromium firefox webkit
       - name: Compare approved visual baselines
+        id: visual
+        continue-on-error: true
         run: pnpm --filter @akc/web test:e2e:visual
+      # Stage only the visual comparison evidence before later browser steps
+      # rewrite test-results and playwright-report. Traces and the rest of
+      # test-results are deliberately left out of this curated artifact.
+      - name: Stage visual comparison evidence
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import shutil
+          from pathlib import Path
+
+          results = Path("apps/web/test-results")
+          snapshots = Path("apps/web/e2e/visual-regression.spec.ts-snapshots")
+          dest = Path(os.environ["RUNNER_TEMP"]) / "visual-comparison-evidence"
+          if dest.exists():
+              shutil.rmtree(dest)
+          dest.mkdir(parents=True)
+
+          screenshot_suffixes = ("-actual.png", "-expected.png", "-diff.png")
+          copied = []
+
+          def copy(src, rel):
+              target = dest / rel
+              target.parent.mkdir(parents=True, exist_ok=True)
+              shutil.copy2(src, target)
+              digest = hashlib.sha256()
+              with src.open("rb") as handle:
+                  for chunk in iter(lambda: handle.read(1 << 20), b""):
+                      digest.update(chunk)
+              copied.append({
+                  "source": src.as_posix(),
+                  "artifact_path": rel.as_posix(),
+                  "bytes": src.stat().st_size,
+                  "sha256": digest.hexdigest(),
+              })
+
+          screenshot_outputs = 0
+          if results.is_dir():
+              for src in sorted(p for p in results.rglob("*") if p.is_file()):
+                  if src.name.endswith(screenshot_suffixes):
+                      screenshot_outputs += 1
+                  elif src.name != "error-context.md":
+                      continue
+                  copy(src, Path("test-results") / src.relative_to(results))
+
+          baselines = 0
+          if snapshots.is_dir():
+              for src in sorted(p for p in snapshots.rglob("*.png") if p.is_file()):
+                  baselines += 1
+                  copy(src, Path("visual-regression.spec.ts-snapshots") / src.relative_to(snapshots))
+
+          manifest = {
+              "github_sha": os.environ.get("GITHUB_SHA", ""),
+              "test_results_present": results.is_dir(),
+              "snapshots_present": snapshots.is_dir(),
+              "screenshot_outputs": screenshot_outputs,
+              "no_screenshot_outputs": screenshot_outputs == 0,
+              "baseline_pngs": baselines,
+              "files": copied,
+          }
+          (dest / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
+
+          if screenshot_outputs == 0:
+              print("::notice::No visual comparison screenshot outputs (-actual/-expected/-diff.png) were produced; manifest marks no_screenshot_outputs=true")
+          print(f"Staged {len(copied)} file(s): {screenshot_outputs} screenshot output(s), {baselines} baseline PNG(s)")
+          PY
+      - name: Upload visual comparison evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: visual-comparison-evidence
+          path: ${{ runner.temp }}/visual-comparison-evidence
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload visual regression HTML report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: visual-regression-html-report
+          path: apps/web/playwright-report
+          if-no-files-found: warn
+          retention-days: 14
       - name: Run Chromium, Firefox, WebKit, and seven viewport contracts
+        id: matrix
+        if: always()
         run: pnpm --filter @akc/web test:e2e:matrix
+      - name: Capture seven-width and reduced-motion route evidence
+        id: evidence
+        if: always()
+        run: pnpm --filter @akc/web exec playwright test e2e/evidence.spec.ts
       - name: Run forced-colors and 200-percent accessibility contracts
+        id: a11y
+        if: always()
         run: >-
           pnpm --filter @akc/web exec playwright test
           e2e/accessibility-matrix.spec.ts --project=desktop --project=mobile
+      - name: Fail if any browser contract failed
+        if: always()
+        env:
+          VISUAL_OUTCOME: ${{ steps.visual.outcome }}
+          MATRIX_OUTCOME: ${{ steps.matrix.outcome }}
+          EVIDENCE_OUTCOME: ${{ steps.evidence.outcome }}
+          A11Y_OUTCOME: ${{ steps.a11y.outcome }}
+        run: |
+          failed=0
+          check() {
+            if [ "$2" != "success" ]; then
+              echo "::error::$1 outcome: ${2:-missing}"
+              failed=1
+            fi
+          }
+          check "Compare approved visual baselines" "$VISUAL_OUTCOME"
+          check "Chromium, Firefox, WebKit, and seven viewport contracts" "$MATRIX_OUTCOME"
+          check "Seven-width and reduced-motion route evidence" "$EVIDENCE_OUTCOME"
+          check "Forced-colors and 200-percent accessibility contracts" "$A11Y_OUTCOME"
+          exit "$failed"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
@@ -333,14 +447,14 @@ jobs:
         # between the receipt's origin cluster and CI, so the comparison is over
         # the schema-determined portion rather than the whole file.
         #
-        # The baseline is the 0037 receipt. The 0033-0036 receipts stay as
-        # the measurements they were — other documents cite them by sha256, and
-        # rewriting historical evidence to make a build green is the one thing
-        # a receipt may never do.
+        # The 0041 baseline is captured from a clean CI PostgreSQL run; the
+        # separate role and policy probes above enforce behavior, since a
+        # receipt comparison alone cannot judge whether a policy is safe.
+        # Older receipts remain immutable historical measurements.
         run: >-
           python -m uv run --locked --extra dev
           python scripts/compare_privilege_receipt.py
-          docs/audit/receipts/privilege-receipt-0037.json
+          docs/audit/receipts/privilege-receipt-0041.json
           artifacts/privilege-receipt-ci.json
       - name: Shadow-validate the dual-plane authorization boundary
         # ARMING GATE 2. Everything above this line ran `alembic upgrade head`
@@ -393,3 +507,4 @@ jobs:
           python -m compileall -q benchmark infra/model-registry infra/security workers/gpu-common \
             workers/gpu-parser workers/gpu-knowledge workers/gpu-hpd workers/gpu-unlimited \
             workers/cpu-document workers/cpu-export
+

@@ -109,6 +109,7 @@
         "rowSpan": { "type": "integer", "minimum": 1 },
         "columnSpan": { "type": "integer", "minimum": 1 },
         "rawText": { "type": "string" },
+        "rawTextVerbatim": { "anyOf": [{ "type": "boolean" }, { "type": "null" }] },
         "normalizedText": { "type": "string" },
         "origin": { "$ref": "#/$defs/origin" },
         "sourceRefs": {
@@ -117,7 +118,31 @@
           "items": { "$ref": "#/$defs/sourceRef" }
         },
         "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
-        "qualityFlags": { "type": "array", "items": { "type": "string" } }
+        "qualityFlags": { "type": "array", "items": { "type": "string" } },
+        "valueType": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "string",
+                "number",
+                "boolean",
+                "date",
+                "datetime",
+                "time",
+                "duration",
+                "error"
+              ]
+            },
+            { "type": "null" }
+          ]
+        },
+        "numberFormat": {
+          "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+        },
+        "formula": {
+          "anyOf": [{ "type": "string", "minLength": 1 }, { "type": "null" }]
+        }
       }
     },
     "table": {

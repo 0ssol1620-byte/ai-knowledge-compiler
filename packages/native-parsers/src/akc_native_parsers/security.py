@@ -16,32 +16,49 @@ from akc_security import (
     safe_relative_path,
     validate_upload_bytes,
 )
+from akc_security.hwpx import (
+    HWPX_MEDIA_TYPE,
+    HwpxLimits,
+    HwpxPackage,
+    HwpxPackageError,
+    inspect_hwpx_package,
+)
 from defusedxml import ElementTree as SafeElementTree
 from defusedxml.common import DefusedXmlException
 
 from .models import ParserLimits, StructuredParseError
 
 OFFICE_EXTENSIONS = frozenset({".docx", ".pptx", ".xlsx"})
-TEXT_EXTENSIONS = frozenset({".html", ".htm", ".srt", ".vtt"})
-SUPPORTED_EXTENSIONS = OFFICE_EXTENSIONS | TEXT_EXTENSIONS
+TEXT_EXTENSIONS = frozenset({".html", ".htm", ".srt", ".vtt", ".csv"})
+# OWPML packages only. Legacy binary .hwp stays unsupported.
+HWPX_EXTENSIONS = frozenset({".hwpx"})
+SUPPORTED_EXTENSIONS = OFFICE_EXTENSIONS | TEXT_EXTENSIONS | HWPX_EXTENSIONS
+
+# Compound File Binary header. Password-protected OOXML is wrapped in this
+# container, not in a ZIP; so are legacy binary Office formats and HWP.
+_CFB_MAGIC = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"
 
 _CANONICAL_MIME = {
     ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ".pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".hwpx": HWPX_MEDIA_TYPE,
     ".html": "text/html",
     ".htm": "text/html",
     ".srt": "application/x-subrip",
     ".vtt": "text/vtt",
+    ".csv": "text/csv",
 }
 _ALLOWED_MIME = {
     ".docx": frozenset({_CANONICAL_MIME[".docx"]}),
     ".pptx": frozenset({_CANONICAL_MIME[".pptx"]}),
     ".xlsx": frozenset({_CANONICAL_MIME[".xlsx"]}),
+    ".hwpx": frozenset({HWPX_MEDIA_TYPE}),
     ".html": frozenset({"text/html", "application/xhtml+xml"}),
     ".htm": frozenset({"text/html", "application/xhtml+xml"}),
     ".srt": frozenset({"application/x-subrip", "text/plain"}),
     ".vtt": frozenset({"text/vtt", "text/plain"}),
+    ".csv": frozenset({"text/csv", "application/csv", "text/plain"}),
 }
 _OFFICE_MARKER = {
     ".docx": "word/",
@@ -80,6 +97,7 @@ class ValidatedSource:
     extension: str
     source_sha256: str
     text: str | None = None
+    hwpx: HwpxPackage | None = None
 
 
 def validate_source(
@@ -103,6 +121,7 @@ def validate_source(
 
     if extension in OFFICE_EXTENSIONS:
         _validate_office_archive(data, extension, limits)
+    hwpx = _inspect_hwpx(data, limits) if extension in HWPX_EXTENSIONS else None
 
     validation = validate_upload_bytes(
         normalized_filename,
@@ -129,7 +148,34 @@ def validate_source(
         extension=extension,
         source_sha256=validation.sha256,
         text=text,
+        hwpx=hwpx,
     )
+
+
+def _inspect_hwpx(data: bytes, limits: ParserLimits) -> HwpxPackage:
+    # Configured limits may tighten the HWPX ceilings but never widen them.
+    ceiling = HwpxLimits()
+    try:
+        return inspect_hwpx_package(
+            data,
+            HwpxLimits(
+                max_input_bytes=min(limits.max_input_bytes, ceiling.max_input_bytes),
+                max_entries=min(limits.max_archive_entries, ceiling.max_entries),
+                max_uncompressed_bytes=min(
+                    limits.max_archive_uncompressed_bytes, ceiling.max_uncompressed_bytes
+                ),
+                max_member_bytes=min(limits.max_archive_member_bytes, ceiling.max_member_bytes),
+                max_compression_ratio=min(
+                    limits.max_compression_ratio, ceiling.max_compression_ratio
+                ),
+                max_xml_bytes=min(limits.max_hwpx_xml_bytes, ceiling.max_xml_bytes),
+                max_xml_nodes=min(limits.max_hwpx_xml_nodes, ceiling.max_xml_nodes),
+                max_xml_depth=min(limits.max_hwpx_xml_depth, ceiling.max_xml_depth),
+                max_sections=min(limits.max_hwpx_sections, ceiling.max_sections),
+            ),
+        )
+    except HwpxPackageError as exc:
+        raise StructuredParseError(exc.code.upper()) from exc
 
 
 def _validation_tier(max_input_bytes: int) -> PlanTier:
@@ -152,6 +198,12 @@ def _validate_office_archive(
     extension: str,
     limits: ParserLimits,
 ) -> None:
+    if data.startswith(_CFB_MAGIC):
+        # The compound file directory is never walked, so its streams are
+        # unknown: an encrypted OOXML package, a legacy binary workbook and an
+        # HWP file all look the same here. Name the container, not a guess at
+        # its contents. Nothing is decrypted and no legacy format is parsed.
+        raise StructuredParseError("OFFICE_CFB_CONTAINER_UNSUPPORTED")
     if not data.startswith(b"PK\x03\x04"):
         raise StructuredParseError("MAGIC_MISMATCH")
     try:

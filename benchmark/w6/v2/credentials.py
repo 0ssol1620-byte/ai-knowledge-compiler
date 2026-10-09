@@ -9,14 +9,16 @@ from __future__ import annotations
 
 import os
 import re
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Mapping
 
 DEFAULT_CREDENTIAL_FILE = Path("D:/Github_API.txt")
 
 # OpenRouter keys look like sk-or-v1-<64 hex>; accept the general shape but do
 # not hard-fail on future formats (any non-space token >= 20 chars).
-_OPENROUTER_TOKEN_PATTERN = re.compile(r"(?<![A-Za-z0-9_-])sk-or-[A-Za-z0-9_-]{20,}(?![A-Za-z0-9_-])")
+_OPENROUTER_TOKEN_PATTERN = re.compile(
+    r"(?<![A-Za-z0-9_-])sk-or-[A-Za-z0-9_-]{20,}(?![A-Za-z0-9_-])"
+)
 _GENERIC_TOKEN_PATTERN = re.compile(r"(?<![A-Za-z0-9_-])[A-Za-z0-9_\-]{20,}(?![A-Za-z0-9_-])")
 
 
@@ -46,7 +48,7 @@ def load_openrouter_key(
         text = Path(configured_file).read_text(encoding="utf-8-sig")
     except OSError:
         raise CredentialError(
-            f"credential file cannot be read (path withheld); set OPENROUTER_API_KEY instead"
+            "credential file cannot be read (path withheld); set OPENROUTER_API_KEY instead"
         ) from None
 
     candidates: list[str] = []

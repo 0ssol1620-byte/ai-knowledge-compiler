@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import io
 import uuid
+import zipfile
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +17,7 @@ from akc_api.artifacts import build_canonical_document
 from akc_api.main import create_app
 from akc_api.models import AnalysisTask, Block, Document, Export, Page
 from akc_api.settings import Settings
+from akc_cir import CanonicalDocument, CanonicalTable
 from akc_worker_document.worker import AnalysisRuntime, AnalysisWorker
 from docx import Document as WordDocument
 from openpyxl import Workbook
@@ -27,6 +29,23 @@ from sqlalchemy import select
 _TEST_SUPPORT_KEY = "native-nonpdf-worker-verification-key"
 _REPOSITORY = Path(__file__).parents[3]
 _FIXTURES = _REPOSITORY / "tests" / "fixtures" / "nonpdf"
+
+# Synthetic CSV: a padded quoted field, a quoted CRLF, and fields that a
+# spreadsheet application would evaluate. All of it must stay inert text.
+_CSV_TEXT = 'name,amount,note\r\n"  Kim, J.  ",=1+2,"multi\r\nline"\r\nLee,+42,@SUM(A1)\r\n'
+# nativeObjectId -> (raw text, normalized text, formula-prefixed)
+_CSV_EXPECTED_CELLS = {
+    "csv/row/000000/cell/A1": ("name", "name", False),
+    "csv/row/000000/cell/B1": ("amount", "amount", False),
+    "csv/row/000000/cell/C1": ("note", "note", False),
+    "csv/row/000001/cell/A2": ("  Kim, J.  ", "Kim, J.", False),
+    "csv/row/000001/cell/B2": ("=1+2", "=1+2", True),
+    "csv/row/000001/cell/C2": ("multi\r\nline", "multi\nline", False),
+    "csv/row/000002/cell/A3": ("Lee", "Lee", False),
+    "csv/row/000002/cell/B3": ("+42", "+42", True),
+    "csv/row/000002/cell/C3": ("@SUM(A1)", "@SUM(A1)", True),
+}
+_FORMULA_PREFIX_FLAG = "spreadsheet_formula_prefix_preserved_as_text"
 
 
 @dataclass(frozen=True, slots=True)
@@ -221,6 +240,71 @@ def _xlsx_bytes() -> bytes:
     return output.getvalue()
 
 
+def _hwpx_cell(text: str, row: int, column: int) -> str:
+    return (
+        f'<hp:tc header="{1 if row == 0 else 0}">'
+        f'<hp:cellAddr colAddr="{column}" rowAddr="{row}"/>'
+        '<hp:cellSpan colSpan="1" rowSpan="1"/>'
+        f"<hp:subList><hp:p><hp:run><hp:t>{text}</hp:t></hp:run></hp:p></hp:subList></hp:tc>"
+    )
+
+
+# Korean paragraph, a 2x2 unit-span table with a header row, and a picture the
+# reader must omit rather than flatten.
+_HWPX_BODY = (
+    "<hp:p><hp:run><hp:t>첫 문단입니다.</hp:t></hp:run></hp:p>"
+    '<hp:p><hp:run><hp:tbl rowCnt="2" colCnt="2">'
+    f"<hp:tr>{_hwpx_cell('항목', 0, 0)}{_hwpx_cell('값', 0, 1)}</hp:tr>"
+    f"<hp:tr>{_hwpx_cell('점수', 1, 0)}{_hwpx_cell('0.94', 1, 1)}</hp:tr>"
+    "</hp:tbl></hp:run></hp:p>"
+    "<hp:p><hp:run><hp:t>그림 앞</hp:t><hp:pic><hp:t>그림 속 비밀</hp:t></hp:pic></hp:run></hp:p>"
+)
+
+
+def _hwpx_bytes(body: str) -> bytes:
+    """A synthetic OWPML package; nothing here is taken from a real HWPX file."""
+
+    section = (
+        '<?xml version="1.0" encoding="UTF-8"?>'
+        '<hs:sec xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section"'
+        f' xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">{body}</hs:sec>'
+    )
+    parts = {
+        "mimetype": b"application/hwp+zip",
+        "META-INF/container.xml": (
+            b'<ocf:container xmlns:ocf="urn:oasis:names:tc:opendocument:xmlns:container">'
+            b'<ocf:rootfiles><ocf:rootfile full-path="Contents/content.hpf"'
+            b' media-type="application/hwpml-package+xml"/></ocf:rootfiles></ocf:container>'
+        ),
+        "Contents/content.hpf": (
+            b'<opf:package xmlns:opf="http://www.idpf.org/2007/opf/"><opf:manifest>'
+            b'<opf:item id="section0" href="Contents/section0.xml" media-type="application/xml"/>'
+            b'</opf:manifest><opf:spine><opf:itemref idref="section0"/></opf:spine>'
+            b"</opf:package>"
+        ),
+        "Contents/section0.xml": section.encode(),
+    }
+    output = io.BytesIO()
+    with zipfile.ZipFile(output, "w") as archive:
+        for name, payload in parts.items():
+            info = zipfile.ZipInfo(name, date_time=(2026, 10, 9, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_STORED if name == "mimetype" else zipfile.ZIP_DEFLATED
+            archive.writestr(info, payload)
+    return output.getvalue()
+
+
+def _hwpx_sample(body: str) -> NativeSample:
+    return NativeSample(
+        filename="report.hwpx",
+        content_type="application/hwp+zip",
+        payload=_hwpx_bytes(body),
+        document_type="hwpx",
+        page_count=1,
+        native_prefix="hwpx/section/",
+        required_block_types=frozenset({"paragraph", "table"}),
+    )
+
+
 def _samples() -> tuple[NativeSample, ...]:
     return (
         NativeSample(
@@ -287,10 +371,62 @@ def _samples() -> tuple[NativeSample, ...]:
             native_prefix="vtt/",
             required_block_types=frozenset({"title", "paragraph"}),
         ),
+        NativeSample(
+            filename="ledger.csv",
+            content_type="text/csv",
+            payload=_CSV_TEXT.encode("utf-8"),
+            document_type="csv",
+            page_count=1,
+            native_prefix="csv/",
+            required_block_types=frozenset({"table"}),
+        ),
     )
 
 
-async def test_six_native_formats_persist_structured_cir_and_provenance(
+def _assert_csv_fidelity(
+    blocks: list[Block],
+    first_page: Page,
+    rebuilt: CanonicalDocument,
+) -> None:
+    metadata = first_page.preflight_metrics["native_structure"]["documentMetadata"]
+    assert metadata["csv"]["dialect"]["delimiter"] == ","
+    assert metadata["csv"]["range"] == "A1:C3"
+    assert "csv_formula_prefixed_text_not_executed" in metadata["warnings"]
+
+    assert [block.block_type for block in blocks] == ["table"]
+    structured = blocks[0].structured_content
+    assert structured is not None
+    persisted = structured["table"]
+    assert persisted["sourceRefs"][0]["nativeObjectId"] == "csv/table/range/A1:C3"
+    assert (persisted["rowCount"], persisted["columnCount"]) == (3, 3)
+    # No header row is inferred from the first record.
+    assert persisted["headerRowCount"] == 0
+    assert "csv_header_not_declared" in persisted["qualityFlags"]
+    persisted_cells = {cell["sourceRefs"][0]["nativeObjectId"]: cell for cell in persisted["cells"]}
+    assert set(persisted_cells) == set(_CSV_EXPECTED_CELLS)
+    for anchor, (raw, normalized, formula_prefixed) in _CSV_EXPECTED_CELLS.items():
+        cell = persisted_cells[anchor]
+        assert (cell["rawText"], cell["normalizedText"]) == (raw, normalized), anchor
+        assert cell["valueType"] == "string", anchor
+        assert "formula" not in cell, anchor
+        assert (_FORMULA_PREFIX_FLAG in cell["qualityFlags"]) is formula_prefixed, anchor
+
+    rebuilt_tables = [block.table for block in rebuilt.blocks if block.table is not None]
+    assert len(rebuilt_tables) == 1
+    rebuilt_table = rebuilt_tables[0]
+    assert rebuilt_table == CanonicalTable.model_validate(persisted)
+    rebuilt_cells = {cell.source_refs[0].native_object_id: cell for cell in rebuilt_table.cells}
+    assert set(rebuilt_cells) == set(_CSV_EXPECTED_CELLS)
+    for anchor, (raw, normalized, formula_prefixed) in _CSV_EXPECTED_CELLS.items():
+        rebuilt_cell = rebuilt_cells[anchor]
+        assert (rebuilt_cell.raw_text, rebuilt_cell.normalized_text) == (raw, normalized), anchor
+        assert rebuilt_cell.value_type == "string", anchor
+        assert rebuilt_cell.formula is None, anchor
+        assert (_FORMULA_PREFIX_FLAG in rebuilt_cell.quality_flags) is formula_prefixed, anchor
+        assert rebuilt_cell.id == persisted_cells[anchor]["id"], anchor
+
+
+async def test_seven_native_formats_persist_structured_cir_and_provenance(
     native_worker_api: tuple[httpx.AsyncClient, Any, Settings],
 ) -> None:
     client, app, settings = native_worker_api
@@ -384,6 +520,8 @@ async def test_six_native_formats_persist_structured_cir_and_provenance(
             assert all(
                 block.table is not None for block in rebuilt.blocks if block.type.value == "table"
             )
+            if sample.document_type == "csv":
+                _assert_csv_fidelity(blocks, pages[0], rebuilt)
 
 
 async def test_native_parser_error_code_reaches_analysis_task(
@@ -435,5 +573,209 @@ async def test_native_parser_error_code_reaches_analysis_task(
     assert task is not None
     assert task.status == "dead_letter"
     assert task.last_error_code == "VTT_NO_CUES"
+    assert pages == []
+    assert blocks == []
+
+
+async def test_malformed_csv_reaches_analysis_task_as_safe_non_retryable_code(
+    native_worker_api: tuple[httpx.AsyncClient, Any, Settings],
+) -> None:
+    client, app, settings = native_worker_api
+    await _register(client)
+    project = await client.post(
+        "/v1/projects",
+        json={"name": "Native CSV Failure"},
+    )
+    assert project.status_code == 201
+    # Two well-formed records precede the unterminated quote, so a parser that
+    # emitted rows as it went would have something partial to persist.
+    sample = NativeSample(
+        filename="broken.csv",
+        content_type="text/csv",
+        payload=b'id,note\r\n1,"ok"\r\n2,"never closed\r\n',
+        document_type="csv",
+        page_count=1,
+        native_prefix="csv/",
+        required_block_types=frozenset(),
+    )
+    document_id = await _upload(
+        client,
+        project_id=str(project.json()["id"]),
+        sample=sample,
+    )
+    worker = AnalysisWorker(
+        engine=app.state.database.engine,
+        store=app.state.object_store,
+        runtime=AnalysisRuntime.from_api_settings(settings),
+    )
+    task_id = await _analyze(client, worker, document_id)
+    async with app.state.database.sessions() as session:
+        task = await session.get(AnalysisTask, task_id)
+        pages = list(
+            (
+                await session.scalars(
+                    select(Page).where(Page.document_id == uuid.UUID(document_id))
+                )
+            ).all()
+        )
+        blocks = list(
+            (
+                await session.scalars(
+                    select(Block).where(Block.document_id == uuid.UUID(document_id))
+                )
+            ).all()
+        )
+    assert task is not None
+    # The code is allowlisted, so it is not collapsed to PARSER_INTERNAL_ERROR,
+    # and it is non-retryable: one attempt, straight to dead letter, even
+    # though max_attempts would allow a retry.
+    assert task.last_error_code == "CSV_MALFORMED"
+    assert task.status == "dead_letter"
+    assert task.attempt_count == 1
+    assert task.max_attempts > task.attempt_count
+    assert pages == []
+    assert blocks == []
+
+
+async def test_hwpx_upload_persists_partial_cir_and_exports_its_anchors(
+    native_worker_api: tuple[httpx.AsyncClient, Any, Settings],
+) -> None:
+    client, app, settings = native_worker_api
+    registration = await _register(client)
+    project = await client.post("/v1/projects", json={"name": "Native HWPX"})
+    assert project.status_code == 201, project.text
+    project_id = str(project.json()["id"])
+    sample = _hwpx_sample(_HWPX_BODY)
+    document_id = await _upload(client, project_id=project_id, sample=sample)
+    worker = AnalysisWorker(
+        engine=app.state.database.engine,
+        store=app.state.object_store,
+        runtime=AnalysisRuntime.from_api_settings(settings),
+    )
+    task_id = await _analyze(client, worker, document_id)
+    async with app.state.database.sessions() as session:
+        task = await session.get(AnalysisTask, task_id)
+        document = await session.get(Document, uuid.UUID(document_id))
+        pages = list(
+            (
+                await session.scalars(
+                    select(Page).where(Page.document_id == uuid.UUID(document_id))
+                )
+            ).all()
+        )
+        blocks = list(
+            (
+                await session.scalars(
+                    select(Block)
+                    .where(Block.document_id == uuid.UUID(document_id))
+                    .order_by(Block.block_order)
+                )
+            ).all()
+        )
+        assert task is not None and task.status == "completed", task
+        assert task.last_error_code is None
+        assert document is not None
+        assert document.document_type == "hwpx"
+        assert document.page_count == 1
+        assert len(pages) == 1
+
+        anchors = [
+            block.structured_content["sourceRefs"][0]["nativeObjectId"]
+            for block in blocks
+            if block.structured_content is not None
+        ]
+        assert anchors == [
+            "hwpx/section/0000/p/000000/text/000",
+            "hwpx/section/0000/p/000001/tbl/000",
+            "hwpx/section/0000/p/000002/text/000",
+        ]
+        assert [block.block_type for block in blocks] == ["paragraph", "table", "paragraph"]
+        assert blocks[0].normalized_text == "첫 문단입니다."
+        assert blocks[2].normalized_text == "그림 앞"
+        assert "hwpx_unsupported_content_omitted" in blocks[2].warnings
+        assert all("그림 속 비밀" not in (block.normalized_text or "") for block in blocks)
+        table_content = blocks[1].structured_content
+        assert table_content is not None
+        persisted = table_content["table"]
+        assert (persisted["rowCount"], persisted["columnCount"]) == (2, 2)
+        assert persisted["headerRowCount"] == 1
+        assert {cell["rawText"] for cell in persisted["cells"]} == {"항목", "값", "점수", "0.94"}
+
+        # Sections are not physical pages; there is nothing to render a preview from.
+        assert pages[0].preflight_metrics["preview_unavailable_reason"] == (
+            "unsupported_document_preview"
+        )
+        metadata = pages[0].preflight_metrics["native_structure"]["documentMetadata"]
+        assert metadata["documentType"] == "hwpx"
+        assert metadata["nativeParserVersion"] == "1.2.0"
+        assert metadata["hwpx"]["supportStatus"] == "partial"
+        assert metadata["hwpx"]["unsupportedFeatures"] == {"pic": 1}
+        partial_warnings = {
+            "hwpx_partial_fidelity",
+            "hwpx_physical_pagination_unavailable",
+            "hwpx_styling_not_preserved",
+            "hwpx_layout_not_preserved",
+            "hwpx_unsupported_content_omitted",
+        }
+        assert partial_warnings <= set(metadata["warnings"])
+
+        export = Export(
+            tenant_id=uuid.UUID(registration["tenant_id"]),
+            project_id=uuid.UUID(project_id),
+            document_id=uuid.UUID(document_id),
+            export_type="portable",
+            status="queued",
+            options={},
+            created_by=uuid.UUID(registration["user_id"]),
+        )
+        session.add(export)
+        await session.flush()
+        rebuilt, _knowledge = await build_canonical_document(session, export)
+    assert [block.source_refs[0].native_object_id for block in rebuilt.blocks] == anchors
+    assert partial_warnings <= set(rebuilt.metadata["warnings"])
+    assert rebuilt.metadata["hwpx"]["supportStatus"] == "partial"
+    assert "hwpx_unsupported_content_omitted" in rebuilt.blocks[2].quality_flags
+    rebuilt_table = rebuilt.blocks[1].table
+    assert rebuilt_table is not None
+    assert rebuilt_table == CanonicalTable.model_validate(persisted)
+
+
+async def test_hwpx_without_supported_content_dead_letters_once(
+    native_worker_api: tuple[httpx.AsyncClient, Any, Settings],
+) -> None:
+    client, app, settings = native_worker_api
+    await _register(client)
+    project = await client.post("/v1/projects", json={"name": "Native HWPX Failure"})
+    assert project.status_code == 201
+    # Only an omitted control: nothing the reader may claim to have extracted.
+    picture_only = "<hp:p><hp:run><hp:pic><hp:t>그림 속 비밀</hp:t></hp:pic></hp:run></hp:p>"
+    sample = _hwpx_sample(picture_only)
+    document_id = await _upload(client, project_id=str(project.json()["id"]), sample=sample)
+    worker = AnalysisWorker(
+        engine=app.state.database.engine,
+        store=app.state.object_store,
+        runtime=AnalysisRuntime.from_api_settings(settings),
+    )
+    task_id = await _analyze(client, worker, document_id)
+    async with app.state.database.sessions() as session:
+        task = await session.get(AnalysisTask, task_id)
+        pages = list(
+            (
+                await session.scalars(
+                    select(Page).where(Page.document_id == uuid.UUID(document_id))
+                )
+            ).all()
+        )
+        blocks = list(
+            (
+                await session.scalars(
+                    select(Block).where(Block.document_id == uuid.UUID(document_id))
+                )
+            ).all()
+        )
+    assert task is not None
+    assert task.last_error_code == "HWPX_EMPTY_DOCUMENT"
+    assert task.status == "dead_letter"
+    assert task.attempt_count == 1
     assert pages == []
     assert blocks == []

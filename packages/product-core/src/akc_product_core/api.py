@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+import sqlite3
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
 from threading import Lock
+from typing import cast
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
@@ -13,18 +16,20 @@ from pydantic import ValidationError
 from .auth import ProductCoreAuthenticationError, verify_product_core_request
 from .compiler import ProductCoreCompiler
 from .contracts import ProductCoreCompileRequest
+from .journal import JournalConflict, JournalCorrupt, SQLiteCompileJournal, compile_work_digest
+from .native_cir import parse_native_request
 
 MAX_REQUEST_BYTES = 32 * 1024 * 1024
 
 
 @dataclass(frozen=True, slots=True)
 class _CachedResponse:
-    input_sha256: str
+    work_sha256: str
     payload: dict[str, object]
 
 
 class ProductCoreService:
-    """Fail-closed compile service with process-local idempotent replay."""
+    """Fail-closed compile service with optional durable single-host replay."""
 
     def __init__(
         self,
@@ -32,6 +37,7 @@ class ProductCoreService:
         hmac_secret: bytes,
         core_release_digest: str,
         allow_customer_data: bool = False,
+        journal_path: str | Path | None = None,
     ) -> None:
         if len(hmac_secret) < 32:
             raise ValueError("Product-Core HMAC secret must contain at least 32 bytes")
@@ -40,6 +46,7 @@ class ProductCoreService:
         self.allow_customer_data = allow_customer_data
         self._cache: dict[tuple[str, str, str], _CachedResponse] = {}
         self._lock = Lock()
+        self.journal = SQLiteCompileJournal(journal_path) if journal_path is not None else None
 
     def health(self) -> dict[str, object]:
         return {
@@ -78,17 +85,47 @@ class ProductCoreService:
         ):
             return 403, {"code": "CORE_CUSTOMER_DATA_DISABLED"}
 
+        # Request ID, timestamp and deadline describe an attempt, not the immutable work.
+        # Replays still pass HMAC and privacy checks, then receive an attempt-bound receipt.
+        work_sha256 = compile_work_digest(compile_request)
         cache_key = (
             compile_request.tenant_id,
             compile_request.workspace_id,
             compile_request.idempotency_key,
         )
+        if self.journal is not None:
+            try:
+                payload = self.journal.compile(
+                    compile_request,
+                    compiler=self.compiler,
+                    work_digest=work_sha256,
+                    input_sha256=transport.input_sha256,
+                )
+            except JournalConflict:
+                return 409, {"code": "CORE_IDEMPOTENCY_CONFLICT"}
+            except (JournalCorrupt, sqlite3.Error):
+                return 503, {"code": "CORE_JOURNAL_UNAVAILABLE"}
+            except ValueError as exc:
+                return 422, {"code": "CORE_COMPILE_REJECTED", "reason": str(exc)}
+            payload["receipt"] = {
+                **cast(dict[str, object], payload["receipt"]),
+                "requestId": compile_request.request_id,
+                "inputSha256": transport.input_sha256,
+            }
+            return 200, payload
+
         with self._lock:
             cached = self._cache.get(cache_key)
             if cached is not None:
-                if cached.input_sha256 != transport.input_sha256:
+                if cached.work_sha256 != work_sha256:
                     return 409, {"code": "CORE_IDEMPOTENCY_CONFLICT"}
-                return 200, cached.payload
+                payload = dict(cached.payload)
+                payload["receipt"] = {
+                    **cast(dict[str, object], cached.payload["receipt"]),
+                    "requestId": compile_request.request_id,
+                    "inputSha256": transport.input_sha256,
+                }
+                return 200, payload
             try:
                 response = self.compiler.compile(
                     compile_request,
@@ -98,10 +135,38 @@ class ProductCoreService:
                 return 422, {"code": "CORE_COMPILE_REJECTED", "reason": str(exc)}
             payload = response.model_dump(mode="json", by_alias=True, exclude_none=True)
             self._cache[cache_key] = _CachedResponse(
-                input_sha256=transport.input_sha256,
+                work_sha256=work_sha256,
                 payload=payload,
             )
             return 200, payload
+
+    def validate_native_draft(
+        self, *, body: bytes, headers: dict[str, str]
+    ) -> tuple[int, dict[str, object]]:
+        """Reserved versioned boundary; no shared-secret caller is yet qualified.
+
+        There is deliberately no constructor flag or client boolean to open it.
+        Do not reach the compiler, cache or journal until a separately reviewed
+        processing-caller and approval-receipt binding exists.
+        """
+        if len(body) > MAX_REQUEST_BYTES:
+            return 413, {"code": "CORE_REQUEST_TOO_LARGE"}
+        try:
+            transport = verify_product_core_request(
+                body=body,
+                headers=headers,
+                secret=self.hmac_secret,
+                now=datetime.now(tz=UTC),
+            )
+        except ProductCoreAuthenticationError as exc:
+            return 401, {"code": exc.code}
+        try:
+            native_request = parse_native_request(body)
+        except ValueError:
+            return 422, {"code": "CORE_NATIVE_CIR_INVALID"}
+        if native_request.request_id != transport.request_id:
+            return 401, {"code": "CORE_REQUEST_ID_MISMATCH"}
+        return 403, {"code": "CORE_NATIVE_PROCESSING_DISABLED"}
 
 
 def create_product_core_app(
@@ -109,11 +174,13 @@ def create_product_core_app(
     hmac_secret: bytes,
     core_release_digest: str,
     allow_customer_data: bool = False,
+    journal_path: str | Path | None = None,
 ) -> FastAPI:
     service = ProductCoreService(
         hmac_secret=hmac_secret,
         core_release_digest=core_release_digest,
         allow_customer_data=allow_customer_data,
+        journal_path=journal_path,
     )
     app = FastAPI(title="TAVONEL Product Core", version="2.0.0")
 
@@ -129,6 +196,24 @@ def create_product_core_app(
             status_code=status,
             content=payload,
             headers={"Cache-Control": "no-store"},
+        )
+
+    @app.post("/v3/native-cir/compile")
+    async def native_cir_candidate(request: Request) -> JSONResponse:
+        body = bytearray()
+        async for chunk in request.stream():
+            if len(body) + len(chunk) > MAX_REQUEST_BYTES:
+                return JSONResponse(
+                    status_code=413,
+                    content={"code": "CORE_REQUEST_TOO_LARGE"},
+                    headers={"Cache-Control": "no-store"},
+                )
+            body.extend(chunk)
+        status, payload = service.validate_native_draft(
+            body=bytes(body), headers=dict(request.headers)
+        )
+        return JSONResponse(
+            status_code=status, content=payload, headers={"Cache-Control": "no-store"}
         )
 
     app.state.product_core_service = service

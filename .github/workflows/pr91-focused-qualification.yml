@@ -1,0 +1,1353 @@
+# PR91 focused qualification: re-runs only the checks the PR91 batch touches (HWPX/non-PDF parsers and security
+# boundaries, facsimile/visual spec, Next and lockfile changes, application and GPU-worker Dockerfiles, joined harness),
+# against the actual PR head. It is not a replacement for anything:
+#   - ci.yml, security.yml, model-ci.yml and joined-e2e.yml stay required and are not disabled, skipped or inherited;
+#   - the full release remains unqualified;
+#   - the known unresolved braces development-dependency audit debt is neither resolved nor suppressed here.
+#
+# Every job checks out github.event.pull_request.head.sha explicitly and asserts it. GITHUB_SHA on a pull_request event
+# is GitHub's synthetic merge commit; it is recorded as such and never treated as the tested head.
+name: pr91-focused-qualification
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr91-focused-qualification-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  EXPECTED_CORE_SHA: ${{ github.event.pull_request.head.sha }}
+  FOUNDATION_PIN_SHA: 5e174884e52ba24be8f6159b4fb044922e3d705b
+
+jobs:
+  python-focused:
+    name: Python focused (${{ matrix.python-version }})
+    if: github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      # Full history so the qualification-batch baseline commit is present for the changed-path diff without a credentialed fetch later.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Assert and record the tested Core identity
+        env:
+          IDENTITY_JOB: python-focused-${{ matrix.python-version }}
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/pr91-evidence"
+          echo "EVIDENCE_DIR=$evidence" >> "$GITHUB_ENV"
+          mkdir -p "$evidence"
+          actual="$(git rev-parse HEAD)"
+          jq -n \
+            --arg job "$IDENTITY_JOB" --arg actual "$actual" \
+            --arg pnpmLock "$(sha256sum pnpm-lock.yaml | cut -d' ' -f1)" \
+            --arg uvLock "$(sha256sum uv.lock | cut -d' ' -f1)" \
+            '{kind: "pr91-focused-identity", job: $job,
+              actualCoreSha: $actual, expectedCoreSha: env.EXPECTED_CORE_SHA,
+              coreShaMatches: ($actual == env.EXPECTED_CORE_SHA),
+              syntheticMergeShaNotTested: env.GITHUB_SHA,
+              runId: env.GITHUB_RUN_ID, runAttempt: env.GITHUB_RUN_ATTEMPT,
+              lockSha256: {"pnpm-lock.yaml": $pnpmLock, "uv.lock": $uvLock},
+              pinnedFoundationSha: env.FOUNDATION_PIN_SHA}' | tee "$evidence/identity.json"
+          if [ "$actual" != "$EXPECTED_CORE_SHA" ]; then
+            echo "::error::checked-out Core ${actual} is not the PR head ${EXPECTED_CORE_SHA}"
+            exit 1
+          fi
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Bootstrap the pinned lockfile installer
+        run: python -m pip install "uv==0.12.0"
+      - name: Sync the immutable development environment
+        run: python -m uv sync --locked --extra dev
+      - name: Verify resolved Python dependencies
+        run: python -m uv pip check --python .venv/bin/python
+      # Collection only, over the whole configured tree, so an import or collection break anywhere is caught without
+      # executing the full suite. pyproject's addopts (including --import-mode=importlib) is used as-is.
+      - name: Collect the full test tree (no execution)
+        id: collect
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          grep -qF -- '--import-mode=importlib' pyproject.toml
+          python -m uv run --locked --extra dev pytest --collect-only -q 2>&1 | tee "$EVIDENCE_DIR/collect-only.log"
+      - name: Run only the PR91-affected test files
+        id: focused
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          files=(
+            tests/unit/test_hwpx_structured_parser.py
+            tests/unit/test_nonpdf_structured_parsers.py
+            tests/unit/test_product_core_native_cir.py
+            tests/unit/test_product_core_native_world_manifest.py
+            tests/security/test_security_boundaries.py
+            services/api/tests/test_native_nonpdf_worker_e2e.py
+          )
+          missing=0
+          for file in "${files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "::error::focused test file is absent at the tested head: $file"
+              missing=1
+            fi
+          done
+          test "$missing" -eq 0
+          python -m uv run --locked --extra dev pytest "${files[@]}" \
+            --junitxml="$EVIDENCE_DIR/focused-junit.xml" 2>&1 | tee "$EVIDENCE_DIR/focused.log"
+      - name: Ruff on the Python paths this PR changes
+        id: ruff
+        continue-on-error: true
+        env:
+          BASE_SHA: 956b2efb458bb6062e94f83247acd83696bd3a57
+        run: |
+          set -euo pipefail
+          git cat-file -e "${BASE_SHA}^{commit}"
+          git merge-base --is-ancestor "$BASE_SHA" HEAD
+          # Qualification-batch baseline (an ancestor of the tested head), not the PR merge base. Deleted files are not lintable.
+          git diff --name-only --diff-filter=d -z "$BASE_SHA" HEAD -- '*.py' > "$RUNNER_TEMP/ruff-changed.z"
+          mapfile -d '' -t files < "$RUNNER_TEMP/ruff-changed.z"
+          printf '%s\n' "${files[@]}" > "$EVIDENCE_DIR/ruff-changed-python-paths.txt"
+          echo "base ${BASE_SHA}; ${#files[@]} changed Python path(s)"
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "No changed Python paths; ruff has nothing to check." | tee "$EVIDENCE_DIR/ruff.log"
+            exit 0
+          fi
+          python -m uv run --locked --extra dev ruff check --force-exclude -- "${files[@]}" 2>&1 \
+            | tee "$EVIDENCE_DIR/ruff.log"
+      - name: Upload Python focused evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pr91-python-${{ matrix.python-version }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/pr91-evidence
+          if-no-files-found: error
+          retention-days: 14
+      - name: Fail if any Python focused check failed
+        if: always()
+        env:
+          COLLECT_OUTCOME: ${{ steps.collect.outcome }}
+          FOCUSED_OUTCOME: ${{ steps.focused.outcome }}
+          RUFF_OUTCOME: ${{ steps.ruff.outcome }}
+        run: |
+          failed=0
+          check() {
+            if [ "$2" != "success" ]; then
+              echo "::error::$1 outcome: ${2:-missing}"
+              failed=1
+            fi
+          }
+          check "Full-tree collection" "$COLLECT_OUTCOME"
+          check "PR91-affected test files" "$FOCUSED_OUTCOME"
+          check "Ruff on changed Python paths" "$RUFF_OUTCOME"
+          exit "$failed"
+
+  # Same build, Trivy and SBOM policy as security.yml application-images; nothing is pushed to a registry.
+  application-images:
+    name: Application image ${{ matrix.image.name }}
+    if: github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - name: api
+            dockerfile: services/api/Dockerfile
+          - name: scheduler
+            dockerfile: services/scheduler/Dockerfile
+          - name: cpu-document
+            dockerfile: workers/cpu-document/Dockerfile
+          - name: web
+            dockerfile: apps/web/Dockerfile
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Assert and record the tested Core identity
+        env:
+          IDENTITY_JOB: application-image-${{ matrix.image.name }}
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/pr91-evidence"
+          echo "EVIDENCE_DIR=$evidence" >> "$GITHUB_ENV"
+          mkdir -p "$evidence"
+          actual="$(git rev-parse HEAD)"
+          jq -n \
+            --arg job "$IDENTITY_JOB" --arg actual "$actual" \
+            --arg pnpmLock "$(sha256sum pnpm-lock.yaml | cut -d' ' -f1)" \
+            --arg uvLock "$(sha256sum uv.lock | cut -d' ' -f1)" \
+            '{kind: "pr91-focused-identity", job: $job,
+              actualCoreSha: $actual, expectedCoreSha: env.EXPECTED_CORE_SHA,
+              coreShaMatches: ($actual == env.EXPECTED_CORE_SHA),
+              syntheticMergeShaNotTested: env.GITHUB_SHA,
+              runId: env.GITHUB_RUN_ID, runAttempt: env.GITHUB_RUN_ATTEMPT,
+              lockSha256: {"pnpm-lock.yaml": $pnpmLock, "uv.lock": $uvLock},
+              pinnedFoundationSha: env.FOUNDATION_PIN_SHA}' | tee "$evidence/identity.json"
+          if [ "$actual" != "$EXPECTED_CORE_SHA" ]; then
+            echo "::error::checked-out Core ${actual} is not the PR head ${EXPECTED_CORE_SHA}"
+            exit 1
+          fi
+      - name: Build immutable candidate image locally
+        id: build
+        env:
+          DOCKERFILE: ${{ matrix.image.dockerfile }}
+          IMAGE_NAME: ${{ matrix.image.name }}
+        run: |
+          set -euo pipefail
+          docker build \
+            --file "$DOCKERFILE" \
+            --tag "akc-${IMAGE_NAME}:${EXPECTED_CORE_SHA}" \
+            . 2>&1 | tee "$EVIDENCE_DIR/docker-build.log"
+      # The scan keeps its exit-code 1 policy; continue-on-error only lets the SBOM and upload run, and the final step
+      # turns a failed scan back into a failed job.
+      - name: Scan candidate image
+        id: scan
+        continue-on-error: true
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: akc-${{ matrix.image.name }}:${{ env.EXPECTED_CORE_SHA }}
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      - name: Generate candidate image SBOM
+        id: sbom
+        if: always() && steps.build.outcome == 'success'
+        uses: anchore/sbom-action@df80a981bc6edbc4e220a492d3cbe9f5547a6e75 # v0.17.9
+        with:
+          image: akc-${{ matrix.image.name }}:${{ env.EXPECTED_CORE_SHA }}
+          format: spdx-json
+          output-file: ${{ runner.temp }}/akc-${{ matrix.image.name }}.spdx.json
+      - name: Upload image evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pr91-image-${{ matrix.image.name }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/pr91-evidence
+            ${{ runner.temp }}/akc-${{ matrix.image.name }}.spdx.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Fail if the image scan or SBOM failed
+        if: always()
+        env:
+          SCAN_OUTCOME: ${{ steps.scan.outcome }}
+          SBOM_OUTCOME: ${{ steps.sbom.outcome }}
+        run: |
+          failed=0
+          check() {
+            if [ "$2" != "success" ]; then
+              echo "::error::$1 outcome: ${2:-missing}"
+              failed=1
+            fi
+          }
+          check "Trivy HIGH/CRITICAL image scan" "$SCAN_OUTCOME"
+          check "Image SBOM" "$SBOM_OUTCOME"
+          exit "$failed"
+
+  # Same model-free local target, self-test, jq assertion, Trivy and SBOM as model-ci.yml local-images.
+  # No CUDA runtime, no provider call, no GPU spend.
+  gpu-local-images:
+    name: GPU worker local image ${{ matrix.worker }}
+    if: github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        worker: [gpu-parser, gpu-knowledge, gpu-hpd, gpu-unlimited]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Assert and record the tested Core identity
+        env:
+          IDENTITY_JOB: gpu-local-image-${{ matrix.worker }}
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/pr91-evidence"
+          echo "EVIDENCE_DIR=$evidence" >> "$GITHUB_ENV"
+          mkdir -p "$evidence"
+          actual="$(git rev-parse HEAD)"
+          jq -n \
+            --arg job "$IDENTITY_JOB" --arg actual "$actual" \
+            --arg pnpmLock "$(sha256sum pnpm-lock.yaml | cut -d' ' -f1)" \
+            --arg uvLock "$(sha256sum uv.lock | cut -d' ' -f1)" \
+            '{kind: "pr91-focused-identity", job: $job,
+              actualCoreSha: $actual, expectedCoreSha: env.EXPECTED_CORE_SHA,
+              coreShaMatches: ($actual == env.EXPECTED_CORE_SHA),
+              syntheticMergeShaNotTested: env.GITHUB_SHA,
+              runId: env.GITHUB_RUN_ID, runAttempt: env.GITHUB_RUN_ATTEMPT,
+              lockSha256: {"pnpm-lock.yaml": $pnpmLock, "uv.lock": $uvLock},
+              pinnedFoundationSha: env.FOUNDATION_PIN_SHA}' | tee "$evidence/identity.json"
+          if [ "$actual" != "$EXPECTED_CORE_SHA" ]; then
+            echo "::error::checked-out Core ${actual} is not the PR head ${EXPECTED_CORE_SHA}"
+            exit 1
+          fi
+      - name: Build model-free local handler image
+        id: build
+        run: docker build --target local -f "workers/${{ matrix.worker }}/Dockerfile" -t "akc-${{ matrix.worker }}:contract" .
+      - name: Run local self-test
+        id: selftest
+        continue-on-error: true
+        run: |
+          docker run --rm \
+            -e AKC_LOCAL_SELF_TEST=true \
+            -e EXPERIMENT_ENABLED=true \
+            "akc-${{ matrix.worker }}:contract" | tee "${RUNNER_TEMP}/self-test.json"
+          jq -e '.ok == true and (.model_revision | test("^[0-9a-f]{40,64}$"))' "${RUNNER_TEMP}/self-test.json"
+      - name: Scan local image
+        id: scan
+        continue-on-error: true
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: akc-${{ matrix.worker }}:contract
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: "1"
+      - name: Generate local-contract image SBOM
+        id: sbom
+        if: always() && steps.build.outcome == 'success'
+        uses: anchore/sbom-action@df80a981bc6edbc4e220a492d3cbe9f5547a6e75 # v0.17.9
+        with:
+          image: akc-${{ matrix.worker }}:contract
+          format: spdx-json
+          output-file: ${{ runner.temp }}/akc-${{ matrix.worker }}.spdx.json
+      - name: Upload GPU local image evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pr91-gpu-local-${{ matrix.worker }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/pr91-evidence
+            ${{ runner.temp }}/self-test.json
+            ${{ runner.temp }}/akc-${{ matrix.worker }}.spdx.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Fail if the self-test, scan or SBOM failed
+        if: always()
+        env:
+          SELFTEST_OUTCOME: ${{ steps.selftest.outcome }}
+          SCAN_OUTCOME: ${{ steps.scan.outcome }}
+          SBOM_OUTCOME: ${{ steps.sbom.outcome }}
+        run: |
+          failed=0
+          check() {
+            if [ "$2" != "success" ]; then
+              echo "::error::$1 outcome: ${2:-missing}"
+              failed=1
+            fi
+          }
+          check "Model-free local self-test" "$SELFTEST_OUTCOME"
+          check "Trivy HIGH/CRITICAL image scan" "$SCAN_OUTCOME"
+          check "Image SBOM" "$SBOM_OUTCOME"
+          exit "$failed"
+
+  web-focused:
+    name: Web lockfile, build and full visual-regression spec
+    if: github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    env:
+      CAPTURE_CONFIG: playwright.pr91-capture.config.ts
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Assert and record the tested Core identity
+        env:
+          IDENTITY_JOB: web-focused
+        run: |
+          set -euo pipefail
+          evidence="$RUNNER_TEMP/pr91-evidence"
+          echo "EVIDENCE_DIR=$evidence" >> "$GITHUB_ENV"
+          echo "PR91_PLAYWRIGHT_JSON=$evidence/playwright-report.json" >> "$GITHUB_ENV"
+          mkdir -p "$evidence"
+          actual="$(git rev-parse HEAD)"
+          jq -n \
+            --arg job "$IDENTITY_JOB" --arg actual "$actual" \
+            --arg pnpmLock "$(sha256sum pnpm-lock.yaml | cut -d' ' -f1)" \
+            --arg uvLock "$(sha256sum uv.lock | cut -d' ' -f1)" \
+            '{kind: "pr91-focused-identity", job: $job,
+              actualCoreSha: $actual, expectedCoreSha: env.EXPECTED_CORE_SHA,
+              coreShaMatches: ($actual == env.EXPECTED_CORE_SHA),
+              syntheticMergeShaNotTested: env.GITHUB_SHA,
+              runId: env.GITHUB_RUN_ID, runAttempt: env.GITHUB_RUN_ATTEMPT,
+              lockSha256: {"pnpm-lock.yaml": $pnpmLock, "uv.lock": $uvLock},
+              pinnedFoundationSha: env.FOUNDATION_PIN_SHA}' | tee "$evidence/identity.json"
+          if [ "$actual" != "$EXPECTED_CORE_SHA" ]; then
+            echo "::error::checked-out Core ${actual} is not the PR head ${EXPECTED_CORE_SHA}"
+            exit 1
+          fi
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Activate declared pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@11.9.0 --activate
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Verify committed dependency patches
+        id: patches
+        continue-on-error: true
+        run: node scripts/verify-dependency-patches.mjs
+      # Production audit only. The full development audit is not repeated here and the known unresolved braces
+      # development-dependency advisory stays open debt for security.yml dependency-audit; nothing is ignored.
+      - name: Audit production JavaScript dependencies
+        id: audit
+        continue-on-error: true
+        run: |
+          echo "::notice::Production-only audit. Known unresolved braces development-dependency audit debt is NOT covered, resolved or suppressed by this focused run."
+          pnpm audit --prod --audit-level high
+      - name: Lint
+        id: lint
+        continue-on-error: true
+        run: pnpm --filter @akc/web lint
+      - name: Typecheck
+        id: typecheck
+        continue-on-error: true
+        run: pnpm --filter @akc/web typecheck
+      - name: Production build
+        id: build
+        continue-on-error: true
+        run: pnpm --filter @akc/web build
+      - name: Install the pinned Chromium runtime
+        run: pnpm --filter @akc/web exec playwright install --with-deps chromium
+      # Generated only on the runner, next to the active config, and never committed. It extends playwright.config.ts
+      # as-is (1440 desktop project, retries, `pnpm dev` web server, snapshot thresholds) and changes only
+      # use.screenshot, plus a JSON reporter appended after the existing html and list reporters.
+      - name: Generate the screenshot-capture config extending the active config
+        working-directory: apps/web
+        run: |
+          set -euo pipefail
+          test ! -e "$CAPTURE_CONFIG"
+          cat > "$CAPTURE_CONFIG" <<'TS'
+          // Generated by .github/workflows/pr91-focused-qualification.yml on the CI runner. Not committed.
+          import { defineConfig } from "@playwright/test";
+          import base from "./playwright.config";
+
+          const jsonReport = process.env.PR91_PLAYWRIGHT_JSON;
+          if (!jsonReport) throw new Error("PR91_PLAYWRIGHT_JSON is required");
+          if (!Array.isArray(base.reporter)) throw new Error("playwright.config.ts must declare a reporter array");
+
+          export default defineConfig({
+            ...base,
+            reporter: [...base.reporter, ["json", { outputFile: jsonReport }]],
+            use: { ...base.use, screenshot: { mode: "on", fullPage: true } },
+          });
+          TS
+          cp "$CAPTURE_CONFIG" "$EVIDENCE_DIR/$CAPTURE_CONFIG"
+      # The whole spec on the desktop project: the eleven route goldens, the facsimile test and every non-golden
+      # contract in the file. No --update-snapshots, no threshold change. Stale goldens may fail; the evidence is
+      # uploaded and the failure is preserved by the last step.
+      - name: Run the full visual-regression spec with automatic screenshots
+        id: visual
+        continue-on-error: true
+        run: >-
+          pnpm --filter @akc/web exec playwright test e2e/visual-regression.spec.ts
+          --project=desktop --config="$CAPTURE_CONFIG"
+      - name: Map every test attempt to its captures (name, file, PNG dimensions, SHA-256)
+        id: map
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import hashlib
+          import json
+          import os
+          import struct
+          import sys
+          from pathlib import Path
+
+          web = Path("apps/web").resolve()
+          evidence = Path(os.environ["EVIDENCE_DIR"])
+          report_path = Path(os.environ["PR91_PLAYWRIGHT_JSON"])
+          if not report_path.is_file():
+              sys.exit(f"::error::Playwright JSON report was not written: {report_path}")
+          report = json.loads(report_path.read_text())
+
+          route_goldens = [
+              "marketing-home", "evidence-film", "benchmark-evidence", "verify-product", "dart-public-proof",
+              "sec-public-proof", "security-architecture", "projects-operations", "integrity-console",
+              "knowledge-studio", "privacy-publication-control",
+          ]
+
+          def display(path):
+              try:
+                  return path.resolve().relative_to(web).as_posix()
+              except ValueError:
+                  return path.as_posix()
+
+          def png_dimensions(path):
+              with path.open("rb") as handle:
+                  head = handle.read(24)
+              if len(head) < 24 or head[:8] != b"\x89PNG\r\n\x1a\n" or head[12:16] != b"IHDR":
+                  return None
+              width, height = struct.unpack(">II", head[16:24])
+              return {"width": width, "height": height}
+
+          def sha256(path):
+              digest = hashlib.sha256()
+              with path.open("rb") as handle:
+                  for chunk in iter(lambda: handle.read(1 << 20), b""):
+                      digest.update(chunk)
+              return digest.hexdigest()
+
+          rows, missing_files = [], []
+
+          def capture(attachment):
+              entry = {"name": attachment.get("name"), "contentType": attachment.get("contentType")}
+              if not attachment.get("path"):
+                  entry["inline"] = True
+                  return entry
+              path = Path(attachment["path"])
+              entry["file"] = display(path)
+              if not path.is_file():
+                  entry["missing"] = True
+                  missing_files.append(entry["file"])
+                  return entry
+              entry["bytes"] = path.stat().st_size
+              entry["sha256"] = sha256(path)
+              if entry["contentType"] == "image/png":
+                  entry["png"] = png_dimensions(path)
+              return entry
+
+          def walk(suite, titles):
+              titles = titles + ([suite["title"]] if suite.get("title") else [])
+              for spec in suite.get("specs", []):
+                  for test in spec.get("tests", []):
+                      base = {"file": spec.get("file"), "titlePath": titles + [spec.get("title")],
+                              "title": spec.get("title"), "project": test.get("projectName"),
+                              "testStatus": test.get("status"), "expectedStatus": test.get("expectedStatus")}
+                      results = test.get("results", [])
+                      if not results:
+                          rows.append({**base, "retry": None, "resultStatus": None, "captures": [], "noCapture": True})
+                      for result in results:
+                          images = [capture(a) for a in result.get("attachments", [])
+                                    if str(a.get("contentType", "")).startswith("image/")]
+                          images.sort(key=lambda c: (c.get("name") or "", c.get("file") or ""))
+                          rows.append({**base, "retry": result.get("retry"), "resultStatus": result.get("status"),
+                                       "durationMs": result.get("duration"), "captures": images,
+                                       "noCapture": not images})
+              for child in suite.get("suites", []):
+                  walk(child, titles)
+
+          for suite in report.get("suites", []):
+              walk(suite, [])
+          rows.sort(key=lambda r: (r["file"] or "", r["titlePath"], r["project"] or "",
+                                   -1 if r["retry"] is None else r["retry"]))
+
+          titles = {r["title"] for r in rows}
+          absent_goldens = [n for n in route_goldens if f"{n} visual baseline" not in titles]
+          tests = {(r["file"], tuple(r["titlePath"]), r["project"]) for r in rows}
+          manifest = {
+              "kind": "pr91-visual-capture-map",
+              "expectedCoreSha": os.environ["EXPECTED_CORE_SHA"],
+              "syntheticMergeShaNotTested": os.environ.get("GITHUB_SHA"),
+              "runId": os.environ.get("GITHUB_RUN_ID"), "runAttempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
+              "playwrightStats": report.get("stats"),
+              "tests": len(tests), "attempts": len(rows),
+              "attemptsWithoutCapture": sum(1 for r in rows if r["noCapture"]),
+              "routeGoldensExpected": route_goldens, "routeGoldensAbsent": absent_goldens,
+              "missingAttachmentFiles": missing_files,
+              "results": rows,
+          }
+          (evidence / "visual-capture-map.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+
+          for r in rows:
+              shots = ", ".join(
+                  f"{c.get('file', '[inline]')} {c['png']['width']}x{c['png']['height']}" if c.get("png") else c.get("file", "[inline]")
+                  for c in r["captures"]) or "NO CAPTURE"
+              print(f"[{r['testStatus']}/{r['resultStatus']} retry={r['retry']}] {r['title']}: {shots}")
+          print(f"{len(tests)} test(s), {len(rows)} attempt(s), {manifest['attemptsWithoutCapture']} without a capture")
+
+          failed = False
+          # Every route golden needs an executed desktop attempt with Playwright's own automatic capture (attachment
+          # "screenshot"); golden attachments such as "<name>-expected.png" do not count.
+          executed_statuses = {"passed", "failed", "timedOut", "interrupted"}
+          for name in route_goldens:
+              executed = [r for r in rows if r["title"] == f"{name} visual baseline" and r["project"] == "desktop"
+                          and r["resultStatus"] in executed_statuses]
+              captured = any(
+                  c.get("name") == "screenshot" and c.get("file") and not c.get("missing", False) and c.get("sha256")
+                  and (c.get("png") or {}).get("width", 0) > 0 and (c.get("png") or {}).get("height", 0) > 0
+                  for r in executed for c in r["captures"])
+              if not captured:
+                  print(f"::error::{name} visual baseline: no executed desktop result with an automatic screenshot capture")
+                  failed = True
+          if not rows:
+              print("::error::the JSON report holds no test results"); failed = True
+          if absent_goldens:
+              print(f"::error::route goldens absent from the run: {', '.join(absent_goldens)}"); failed = True
+          if missing_files:
+              print(f"::error::{len(missing_files)} attachment file(s) referenced by the report are missing"); failed = True
+          sys.exit(1 if failed else 0)
+          PY
+      # A missing golden makes Playwright write a new PNG next to the spec. That is never accepted here: any change
+      # under apps/web/e2e on the runner fails the job.
+      - name: Require committed snapshots and specs to stay untouched
+        id: snapshots
+        if: always()
+        run: |
+          changed="$(git status --porcelain --untracked-files=all -- apps/web/e2e)"
+          if [ -n "$changed" ]; then
+            printf '%s\n' "$changed" | tee "$EVIDENCE_DIR/e2e-tree-changes.txt"
+            echo "::error::the run changed files under apps/web/e2e (a missing or rewritten snapshot)"
+            exit 1
+          fi
+      # The visual spec drives only demo routes with locale cookies (no sign-in, no auth), so its HTML report and PNG
+      # screenshots carry no session credentials. Traces and every other potentially sensitive output are still never
+      # published: zip archives (raw traces and the HTML report's zipped data attachments), trace directories, browser
+      # storage-state JSON, .env files and any authorization dump are excluded below. The config's trace setting and
+      # the tests are unchanged; a trace may be written on the runner but is not uploaded.
+      - name: Upload Playwright HTML report and per-test captures
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pr91-web-playwright-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+            !apps/web/playwright-report/**/*.zip
+            !apps/web/test-results/**/*.zip
+            !apps/web/playwright-report/**/trace/**
+            !apps/web/test-results/**/trace/**
+            !apps/web/playwright-report/**/*.trace
+            !apps/web/test-results/**/*.trace
+            !apps/web/playwright-report/**/*[Ss]torage*[Ss]tate*
+            !apps/web/test-results/**/*[Ss]torage*[Ss]tate*
+            !apps/web/playwright-report/**/.env*
+            !apps/web/test-results/**/.env*
+            !apps/web/playwright-report/**/*.env
+            !apps/web/test-results/**/*.env
+            !apps/web/playwright-report/**/*[Aa]uthorization*
+            !apps/web/test-results/**/*[Aa]uthorization*
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Upload web focused evidence (identity, JSON report, capture map)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pr91-web-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/pr91-evidence
+          if-no-files-found: error
+          retention-days: 14
+      - name: Fail if any web focused check failed
+        if: always()
+        env:
+          PATCHES_OUTCOME: ${{ steps.patches.outcome }}
+          AUDIT_OUTCOME: ${{ steps.audit.outcome }}
+          LINT_OUTCOME: ${{ steps.lint.outcome }}
+          TYPECHECK_OUTCOME: ${{ steps.typecheck.outcome }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          VISUAL_OUTCOME: ${{ steps.visual.outcome }}
+          MAP_OUTCOME: ${{ steps.map.outcome }}
+          SNAPSHOTS_OUTCOME: ${{ steps.snapshots.outcome }}
+        run: |
+          failed=0
+          check() {
+            if [ "$2" != "success" ]; then
+              echo "::error::$1 outcome: ${2:-missing}"
+              failed=1
+            fi
+          }
+          check "Committed dependency patches" "$PATCHES_OUTCOME"
+          check "Production dependency audit" "$AUDIT_OUTCOME"
+          check "Lint" "$LINT_OUTCOME"
+          check "Typecheck" "$TYPECHECK_OUTCOME"
+          check "Production build" "$BUILD_OUTCOME"
+          check "Full visual-regression spec" "$VISUAL_OUTCOME"
+          check "Capture map" "$MAP_OUTCOME"
+          check "Untouched snapshots" "$SNAPSHOTS_OUTCOME"
+          exit "$failed"
+
+  # Copied from joined-e2e.yml (it has no workflow_call). Setup, supervisor and cleanup bodies, the upload's 5-minute
+  # cap, the 75-minute job budget, the 65-minute journey cap and the 600 s always() reserve are unchanged. Like
+  # joined-e2e.yml, the disposable DB setup now stages the four reviewed, still-unregistered Foundation drafts (ACL
+  # boundary, ACL refresh, async authority, intake triage v3; source bytes hash-checked against their qualification at
+  # 5e174884) as runner-local migrations before `supabase start`, and runs focused pgTAP files plus a service_role
+  # legacy-v2 read with the DB rollout gate asserted off afterwards. This is a test-setup correction, not a production
+  # or release change. Differences: Core is checked out at the PR head SHA, Foundation at the pinned SHA (checkout,
+  # FOUNDATION_REF and TAVONEL_JOINED_FOUNDATION_REF), the staging step's qualified-source pin is FOUNDATION_PIN_SHA,
+  # one identity step before the journey writes into core/output/, the upload publishes an explicit allowlist instead
+  # of all of core/output/ (no raw trace, storage state, .env, Authorization header or failure screenshot; the
+  # sanitized staging record is core/output/logs/foundation-draft-staging.log), and one ledger check runs after both
+  # reserved always() steps.
+  joined-e2e:
+    name: Joined upload -> CDR -> OCR -> Core -> review -> consumers (pinned Foundation)
+    if: github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-24.04
+    timeout-minutes: 75
+    env:
+      FOUNDATION_REPOSITORY: 0ssol1620-byte/tavonel-saas-foundation
+      FOUNDATION_REF: 5e174884e52ba24be8f6159b4fb044922e3d705b
+      SUPABASE_INTERNAL_IMAGE_REGISTRY: docker.io
+      # Same digest pin as Foundation's quarantine-sidecar/cdr-cloudrun/service.yaml (asserted below).
+      CLAMAV_IMAGE: clamav/clamav:1.5.4
+      CLAMAV_DIGEST: sha256:f0954d679017eb6d48221e2b2be3ac5457bf278a844f39b672376f55a085f591
+      # Time budget of the joined journey, in seconds. JOB_TIMEOUT must equal the job's `timeout-minutes: 75`. POST_RESERVE is
+      # held back, counted from the job start, for the always() steps after the journey: the artifact upload
+      # (timeout-minutes 5) plus the local stack stop (timeout-minutes 4) plus 60 s of step transitions. The journey step's
+      # own `timeout-minutes: 65` is JOB_TIMEOUT - POST_RESERVE.
+      JOINED_E2E_JOB_TIMEOUT_SECONDS: "4500"
+      JOINED_E2E_POST_RESERVE_SECONDS: "600"
+    services:
+      clamd:
+        image: clamav/clamav:1.5.4@sha256:f0954d679017eb6d48221e2b2be3ac5457bf278a844f39b672376f55a085f591
+        ports: ["3310:3310"]
+        options: >-
+          --health-cmd "clamdscan --ping 30"
+          --health-interval 15s
+          --health-timeout 60s
+          --health-retries 20
+          --health-start-period 60s
+    steps:
+      # The journey's outer deadline is measured from the job start, not from its own step, so however long the setup below
+      # takes it can never eat the reserve kept for the always() steps. The service containers are created as the job
+      # starts, before any step runs, so the oldest one's creation time is the earlier (safer) clock; this step's own time
+      # is the fallback. This must stay the first step.
+      - name: Record the job start for the joined journey's deadline
+        run: |
+          started="$(date +%s)"
+          for id in $(docker ps --all --quiet); do
+            created="$(date --date "$(docker inspect --format '{{.Created}}' "$id")" +%s)" || continue
+            if [ "$created" -lt "$started" ]; then started="$created"; fi
+          done
+          echo "job started at epoch ${started}, $(( $(date +%s) - started )) s before this step"
+          echo "JOINED_E2E_JOB_STARTED_EPOCH=${started}" >> "$GITHUB_ENV"
+
+      # Foundation's db-rehearsal hypothesis: the local stack ports and this harness's fixed listeners
+      # lie in Linux's ephemeral range; keep outbound source ports off them (appended, never replaced).
+      - name: Keep the fixed local ports out of this runner's ephemeral range
+        run: |
+          test "$RUNNER_ENVIRONMENT" = "github-hosted"
+          key=/proc/sys/net/ipv4/ip_local_reserved_ports
+          before="$(cat "$key")"
+          sudo sysctl -w net.ipv4.ip_local_reserved_ports="${before:+$before,}54320-54329,54443-54444,3100"
+          echo "reserved before='$before' after='$(cat "$key")'"
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: core
+          persist-credentials: false
+
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          repository: ${{ env.FOUNDATION_REPOSITORY }}
+          ref: 5e174884e52ba24be8f6159b4fb044922e3d705b
+          path: foundation
+          persist-credentials: false
+
+      - name: Record the checked-out SHAs
+        run: |
+          echo "core=$(git -C core rev-parse HEAD)"
+          echo "foundation=$(git -C foundation rev-parse HEAD) (ref ${FOUNDATION_REF})"
+
+      # Written into core/output/ so the allowlisted upload step below carries it next to the ledger and supervisor record.
+      - name: Assert and record the tested Core/Foundation identity
+        run: |
+          set -euo pipefail
+          core_actual="$(git -C core rev-parse HEAD)"
+          foundation_actual="$(git -C foundation rev-parse HEAD)"
+          mkdir -p core/output
+          jq -n \
+            --arg core "$core_actual" --arg foundation "$foundation_actual" \
+            --arg pnpmLock "$(sha256sum core/pnpm-lock.yaml | cut -d' ' -f1)" \
+            --arg uvLock "$(sha256sum core/uv.lock | cut -d' ' -f1)" \
+            '{kind: "pr91-focused-identity", job: "joined-e2e",
+              actualCoreSha: $core, expectedCoreSha: env.EXPECTED_CORE_SHA,
+              coreShaMatches: ($core == env.EXPECTED_CORE_SHA),
+              syntheticMergeShaNotTested: env.GITHUB_SHA,
+              runId: env.GITHUB_RUN_ID, runAttempt: env.GITHUB_RUN_ATTEMPT,
+              lockSha256: {"pnpm-lock.yaml": $pnpmLock, "uv.lock": $uvLock},
+              pinnedFoundationSha: env.FOUNDATION_PIN_SHA, actualFoundationSha: $foundation,
+              foundationRef: env.FOUNDATION_REF,
+              foundationShaMatches: ($foundation == env.FOUNDATION_PIN_SHA and env.FOUNDATION_REF == env.FOUNDATION_PIN_SHA)}' \
+            | tee core/output/pr91-focused-identity.json
+          failed=0
+          if [ "$core_actual" != "$EXPECTED_CORE_SHA" ]; then
+            echo "::error::checked-out Core ${core_actual} is not the PR head ${EXPECTED_CORE_SHA}"
+            failed=1
+          fi
+          if [ "$FOUNDATION_REF" != "$FOUNDATION_PIN_SHA" ] || [ "$foundation_actual" != "$FOUNDATION_PIN_SHA" ]; then
+            echo "::error::Foundation ${foundation_actual} (ref ${FOUNDATION_REF}) is not the pinned ${FOUNDATION_PIN_SHA}"
+            failed=1
+          fi
+          exit "$failed"
+
+      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
+        with:
+          version: 2.116.0
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+        with:
+          version: 10.34.4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: SigV4 signer of the harness R2-binding adapter (AWS worked examples)
+        run: node --test core/tests/e2e/joined/s3-bucket.test.mjs
+
+      # Bounded steps, fail-closed ledger writes and the deadline supervisor, each against real child processes (hung body,
+      # hung browser and server close, a blocked synchronous child, a failed ledger write, signals, late rejections).
+      - name: Diagnostics and deadline-supervisor regression tests
+        timeout-minutes: 5
+        run: node --test core/tests/e2e/joined/joined-diagnostics.test.mjs core/tests/e2e/joined/joined-review-selection.test.mjs
+
+      - name: Install the frozen Foundation web dependencies
+        working-directory: foundation/nextjs
+        run: pnpm install --frozen-lockfile
+
+      - name: Install the Foundation CDR worker dependencies (tsx runs its TypeScript)
+        working-directory: foundation/quarantine-sidecar/foundation-cdr-worker
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      # Test setup only, same body as joined-e2e.yml. Foundation's v2 approval reader needs the reviewed intake triage v3
+      # draft, which stays unregistered in Foundation, and that draft needs the ACL boundary, ACL refresh and async
+      # authority drafts before it. The pattern is Foundation's db-rehearsal.yml: the pinned official CLI generates each
+      # runner-local migration, the exact qualified draft bytes are copied in, compared and hash-checked, and two draft
+      # pgTAP fixtures are copied into supabase/tests. QUALIFIED_FOUNDATION_SOURCE_SHA (here FOUNDATION_PIN_SHA) is where
+      # those bytes were qualified; FOUNDATION_REF and the actual checked-out SHA are recorded separately. A Foundation
+      # checkout without the eight qualified files fails here, before anything is staged, and no other ref or SQL is
+      # substituted. Nothing is registered in Foundation source or committed/pushed; the generated migration files stay
+      # runner-local, and no other draft (completed-read included) is staged. The record holds only refs, SHAs, versions and flags, and lands under
+      # core/output/logs/, inside the upload allowlist below.
+      - name: Stage the qualified Foundation drafts into the disposable migration chain
+        timeout-minutes: 3
+        working-directory: foundation
+        env:
+          QUALIFIED_FOUNDATION_SOURCE_SHA: ${{ env.FOUNDATION_PIN_SHA }}
+        run: |
+          set -euo pipefail
+          record="$GITHUB_WORKSPACE/core/output/logs/foundation-draft-staging.log"
+          mkdir -p "$(dirname "$record")"
+          actual="$(git rev-parse HEAD)"
+          {
+            echo "kind=tavonel-joined-foundation-draft-staging"
+            echo "qualifiedSourcePinSha=${QUALIFIED_FOUNDATION_SOURCE_SHA}"
+            echo "selectedFoundationRef=${FOUNDATION_REF}"
+            echo "actualFoundationSha=${actual}"
+            if [ "$actual" = "$QUALIFIED_FOUNDATION_SOURCE_SHA" ]; then
+              echo "actualShaIsQualifiedPin=true"
+            else
+              echo "actualShaIsQualifiedPin=false"
+            fi
+          } | tee "$record"
+
+          qualified="$RUNNER_TEMP/foundation-qualified-source.sha256"
+          cat > "$qualified" <<'SUMS'
+          8aad3ffaf8d3062c764988029a1235db4e04ab181e0211524677f9f213e306bc  supabase/drafts/google-viewer-principal-boundary.sql
+          04b75937e204db4da659352c6f9194c110018cd45715c72553ee0e2e41e8c4a8  supabase/drafts/google-drive-acl-refresh/queue.sql
+          e81baa53eaafb3e642d4100402df5cbd84b8ca4872aa0eafd12ef3a88ac34e4d  supabase/drafts/compile-job-viewer-authority.sql
+          092247c80b04e861471cb04edf7ba22699ebc7bbf81cb067b6840724ebb7a00e  supabase/drafts/migrations/20261004120000_foundation_intake_triage_v3.sql
+          ec6c87f5867825d7353b6048808c6177e8d23e62ae157ae582a230c5ae0faaf7  supabase/tests/google_viewer_principal_boundary.sql
+          ecc2b851051b7bbccaed09b231e44a9dcc4fabf6483f6b572fafe3488c1177e2  supabase/drafts/google-drive-acl-refresh/tests/google_drive_acl_refresh_queue.sql
+          91f421c3a4a9fda4d121aa60aa550ce867c2e9e6f5923920c9f3f41604002d00  supabase/tests/compile_job_viewer_authority.sql
+          f142517c4432668cc291abf7ed3942976a373149c3842dfc45a1ead534cefda0  supabase/drafts/tests/foundation_intake_triage_binding.sql
+          SUMS
+          test "$(wc -l < "$qualified")" -eq 8
+          absent=0
+          while read -r _ path; do
+            if [ ! -f "$path" ]; then
+              echo "::error::selected Foundation ${FOUNDATION_REF} (${actual}) lacks qualified source file ${path}; nothing staged"
+              absent=1
+            fi
+          done < "$qualified"
+          test "$absent" -eq 0
+          if ! sha256sum --check --strict "$qualified"; then
+            echo "::error::selected Foundation ${FOUNDATION_REF} (${actual}) does not carry the source bytes qualified at ${QUALIFIED_FOUNDATION_SOURCE_SHA}; nothing staged"
+            exit 1
+          fi
+          echo "qualifiedSourceSha256=verified files=8" | tee -a "$record"
+
+          # Code-owned server switch: read, never changed and never replaced by an environment flag.
+          gate_file=nextjs/lib/intake-triage-rollout.ts
+          declaration='export const INTAKE_TRIAGE_ROLLOUT_ENABLED = false;'
+          if [ ! -f "$gate_file" ] || [ "$(grep -cFx -- "$declaration" "$gate_file")" -ne 1 ] \
+            || [ "$(grep -cE '(^|[^A-Za-z0-9_$])(const|let|var)[[:space:]]+INTAKE_TRIAGE_ROLLOUT_ENABLED([^A-Za-z0-9_$]|$)' "$gate_file")" -ne 1 ]; then
+            echo "::error::${gate_file} does not hold exactly one declaration, '${declaration}'"
+            exit 1
+          fi
+          echo "codeRolloutGate=INTAKE_TRIAGE_ROLLOUT_ENABLED:false" | tee -a "$record"
+
+          shopt -s nullglob
+          for name in google_viewer_principal_boundary google_drive_acl_refresh_queue compile_job_viewer_authority foundation_intake_triage_v3; do
+            registered=(supabase/migrations/*_"${name}".sql)
+            if [ "${#registered[@]}" -ne 0 ]; then
+              echo "::error::Foundation already registers ${registered[*]}; the reviewed draft must stay unregistered, refusing to stage"
+              exit 1
+            fi
+          done
+          for target in supabase/tests/google_drive_acl_refresh_queue.sql supabase/tests/foundation_intake_triage_binding.sql; do
+            if [ -e "$target" ]; then
+              echo "::error::${target} already exists; refusing to overwrite it"
+              exit 1
+            fi
+          done
+
+          # The disposable stack config, exactly as the start step below used to create it.
+          test ! -f supabase/config.toml
+          supabase init
+          grep -qx 'major_version = 17' supabase/config.toml
+
+          previous=""
+          for existing in supabase/migrations/*.sql; do
+            if [[ "$(basename "$existing")" =~ ^([0-9]{14})_ ]] && [[ "${BASH_REMATCH[1]}" > "$previous" ]]; then
+              previous="${BASH_REMATCH[1]}"
+            fi
+          done
+          echo "latestRegisteredMigrationVersion=${previous:-none}" | tee -a "$record"
+
+          # Fixed order: each draft depends on the one before it. The CLI versions a migration by the current UTC second,
+          # so a prior version in the future fails, and an equal second waits at most 5 s for the next one.
+          supabase migration new --help > /dev/null
+          drafts=(
+            "google_viewer_principal_boundary supabase/drafts/google-viewer-principal-boundary.sql 8aad3ffaf8d3062c764988029a1235db4e04ab181e0211524677f9f213e306bc"
+            "google_drive_acl_refresh_queue supabase/drafts/google-drive-acl-refresh/queue.sql 04b75937e204db4da659352c6f9194c110018cd45715c72553ee0e2e41e8c4a8"
+            "compile_job_viewer_authority supabase/drafts/compile-job-viewer-authority.sql e81baa53eaafb3e642d4100402df5cbd84b8ca4872aa0eafd12ef3a88ac34e4d"
+            "foundation_intake_triage_v3 supabase/drafts/migrations/20261004120000_foundation_intake_triage_v3.sql 092247c80b04e861471cb04edf7ba22699ebc7bbf81cb067b6840724ebb7a00e"
+          )
+          versions=()
+          for entry in "${drafts[@]}"; do
+            read -r name draft sha <<<"$entry"
+            now="$(date -u +%Y%m%d%H%M%S)"
+            if [ -n "$previous" ] && [[ "$previous" > "$now" ]]; then
+              echo "::error::prior migration version ${previous} is in the future (now ${now}); cannot generate a later ${name} migration"
+              exit 1
+            fi
+            waited=0
+            while [ -n "$previous" ] && [[ ! "$now" > "$previous" ]]; do
+              if [ "$waited" -ge 5 ]; then
+                echo "::error::the UTC second did not pass ${previous} within 5 s"
+                exit 1
+              fi
+              sleep 1
+              waited=$(( waited + 1 ))
+              now="$(date -u +%Y%m%d%H%M%S)"
+            done
+            supabase migration new "$name" < /dev/null
+            generated=(supabase/migrations/*_"${name}".sql)
+            if [ "${#generated[@]}" -ne 1 ] || [[ ! "$(basename "${generated[0]}")" =~ ^([0-9]{14})_${name}\.sql$ ]]; then
+              echo "::error::supabase migration new did not create exactly one 14-digit ${name} migration"
+              exit 1
+            fi
+            version="${BASH_REMATCH[1]}"
+            if [ -n "$previous" ] && [[ ! "$version" > "$previous" ]]; then
+              echo "::error::generated ${name} version ${version} is not after ${previous}"
+              exit 1
+            fi
+            cp -- "$draft" "${generated[0]}"
+            cmp -- "$draft" "${generated[0]}"
+            printf '%s  %s\n' "$sha" "$draft" "$sha" "${generated[0]}" | sha256sum --check --strict
+            echo "staged ${name} version=${version} file=${generated[0]} sha256=${sha} source=${draft}" | tee -a "$record"
+            versions+=("$version")
+            previous="$version"
+          done
+
+          for fixture in \
+            "supabase/drafts/google-drive-acl-refresh/tests/google_drive_acl_refresh_queue.sql supabase/tests/google_drive_acl_refresh_queue.sql ecc2b851051b7bbccaed09b231e44a9dcc4fabf6483f6b572fafe3488c1177e2" \
+            "supabase/drafts/tests/foundation_intake_triage_binding.sql supabase/tests/foundation_intake_triage_binding.sql f142517c4432668cc291abf7ed3942976a373149c3842dfc45a1ead534cefda0"; do
+            read -r source target sha <<<"$fixture"
+            cp -- "$source" "$target"
+            cmp -- "$source" "$target"
+            printf '%s  %s\n' "$sha" "$source" "$sha" "$target" | sha256sum --check --strict
+            echo "fixture ${target} sha256=${sha} source=${source}" | tee -a "$record"
+          done
+          # The eight qualified files, including the two test fixtures already in supabase/tests, are still exact.
+          sha256sum --check --strict "$qualified"
+          echo "qualifiedSourceSha256AfterStaging=verified files=8" | tee -a "$record"
+          echo "FOUNDATION_DRAFT_VERSIONS=${versions[*]}" >> "$GITHUB_ENV"
+
+      - name: Start the disposable local Supabase stack from the Foundation migrations
+        working-directory: foundation
+        run: |
+          # supabase/config.toml comes from the staging step above (`supabase init`, asserted absent before it).
+          test -f supabase/config.toml
+          grep -qx 'major_version = 17' supabase/config.toml
+          supabase start
+          supabase status --output json > "$RUNNER_TEMP/tavonel-auth-status.json"
+          chmod 600 "$RUNNER_TEMP/tavonel-auth-status.json"
+
+      # Focused checks on the disposable stack, with the pinned official CLI and the runner's own psql client (nothing is
+      # installed): the four staged drafts' pgTAP files only (not the full suite), and one service_role read of the
+      # reviewed legacy approval fixture through the v2 reader inside a rolled-back transaction. The persistent DB
+      # rollout gate must read false, as postgres, before and after. The reviewed binding fixture enables the gate only
+      # inside its own rolled-back transaction. Neither the DB URL nor any payload is printed or recorded, only flags.
+      - name: Focused disposable-DB checks of the staged drafts (gate off, legacy v2 read)
+        timeout-minutes: 8
+        working-directory: foundation
+        run: |
+          set -euo pipefail
+          record="$GITHUB_WORKSPACE/core/output/logs/foundation-draft-staging.log"
+          test -f "$record"
+          versions_pattern='^[0-9]{14}( [0-9]{14}){3}$'
+          if [[ ! "${FOUNDATION_DRAFT_VERSIONS:-}" =~ $versions_pattern ]]; then
+            echo "::error::the staging step did not record four draft migration versions"
+            exit 1
+          fi
+          read -r v1 v2 v3 v4 <<<"$FOUNDATION_DRAFT_VERSIONS"
+          if ! command -v psql > /dev/null; then
+            echo "::error::psql is not available on this runner; this workflow installs nothing for it"
+            exit 1
+          fi
+          db_url="$(jq -er '.DB_URL' "$RUNNER_TEMP/tavonel-auth-status.json")"
+          local_db_pattern='^postgres(ql)?://[^@/]+@(127\.0\.0\.1|localhost):[0-9]+/[A-Za-z0-9_]+$'
+          if [[ ! "$db_url" =~ $local_db_pattern ]]; then
+            echo "::error::the local stack status DB_URL is not a localhost/127.0.0.1 Postgres URL (value not printed)"
+            exit 1
+          fi
+          run_sql() {
+            timeout 60 psql "$db_url" -X -q -A -t -v ON_ERROR_STOP=1 -f "$1"
+          }
+
+          sql="$RUNNER_TEMP/foundation-draft-checks"
+          mkdir -p "$sql"
+          cat > "$sql/gate.sql" <<'SQL'
+          begin;
+          set local statement_timeout = '15s';
+          select current_user = 'postgres',
+                 count(*) = 1 and coalesce(bool_and(gate_key = 'upload_triage_v1' and not enabled), false)
+            from public.foundation_intake_triage_rollout_gate;
+          rollback;
+          SQL
+          printf '%s\n' "begin;" "set local statement_timeout = '15s';" \
+            "select count(*) = 4 from supabase_migrations.schema_migrations where version in ('${v1}','${v2}','${v3}','${v4}');" \
+            "rollback;" > "$sql/applied.sql"
+          cat > "$sql/legacy-v2-read.sql" <<'SQL'
+          begin;
+          set local statement_timeout = '30s';
+          insert into auth.users (
+            instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+            raw_app_meta_data, raw_user_meta_data, created_at, updated_at
+          ) values ('00000000-0000-0000-0000-000000000000', '88880011-8888-4888-8888-888888888811',
+            'authenticated', 'authenticated', 'triage-owner@example.invalid', '$2a$10$fixture', now(),
+            '{"provider":"email","providers":["email"]}', '{}', now(), now());
+          insert into public.foundation_intake_approvals (
+            approval_id,workspace_key,user_id,attempt_key,client_manifest_digest,scope_digest,
+            pricing_fingerprint,file_count,aggregate_maximum_pages,aggregate_reserved_credits,
+            aggregate_maximum_credits,state,created_at,expires_at
+          ) values ('88880031-8888-4888-8888-888888888831','pilot-triage01','88880011-8888-4888-8888-888888888811',
+            'attempt_legacytriage01','sha256:'||repeat('6',64),'sha256:'||repeat('7',64),'sha256:'||repeat('3',64),
+            1,80,1,1,'approved',now(),now()+interval '10 minutes');
+          insert into public.foundation_intake_approval_files (
+            approval_id,file_key,document_id,content_sha256,byte_length,declared_mime_type,page_basis,
+            approved_max_pages,approved_reserved_credits,approved_maximum_credits,created_at
+          ) values ('88880031-8888-4888-8888-888888888831','fk_legacy01','88880034-8888-4888-8888-888888888834',
+            'sha256:'||repeat('9',64),1024,'application/pdf','unknown',80,1,1,now());
+          set local role service_role;
+          -- Each flag is spelled out as the text 'true' or 'false' (a NULL predicate is 'false'); format('%s', boolean)
+          -- would print PostgreSQL's t/f instead.
+          select format('role=%s marker=%s nullKeys=%s legacyStage=%s', current_user,
+                 case when jsonb_typeof(p->'triageLineageVersion') = 'number' and p->'triageLineageVersion' = '1'::jsonb
+                   then 'true' else 'false' end,
+                 case when p ? 'triageReceiptId' and jsonb_typeof(p->'triageReceiptId') = 'null'
+                   and p ? 'triageVersion' and jsonb_typeof(p->'triageVersion') = 'null'
+                   and p ? 'triageInventoryDigest' and jsonb_typeof(p->'triageInventoryDigest') = 'null'
+                   and p ? 'configurationRevision' and jsonb_typeof(p->'configurationRevision') = 'null'
+                   then 'true' else 'false' end,
+                 case when p->>'approvalStage' = 'legacy' then 'true' else 'false' end)
+            from (select public.read_foundation_intake_approval_v2('pilot-triage01',
+                    '88880011-8888-4888-8888-888888888811', 'attempt_legacytriage01') as p) as v2;
+          rollback;
+          SQL
+
+          if [ "$(run_sql "$sql/gate.sql")" != "t|t" ]; then
+            echo "::error::the persistent upload_triage_v1 DB rollout gate is not exactly one false row before the checks"
+            exit 1
+          fi
+          echo "dbRolloutGateBefore=false" | tee -a "$record"
+          if [ "$(run_sql "$sql/applied.sql")" != "t" ]; then
+            echo "::error::the four staged draft versions are not all applied to the disposable database"
+            exit 1
+          fi
+          echo "stagedDraftVersionsApplied=4" | tee -a "$record"
+
+          timeout 60 supabase db query --local "create extension if not exists pgtap with schema extensions;"
+          supabase test db --help > /dev/null
+          timeout 240 supabase test db --local \
+            supabase/tests/google_viewer_principal_boundary.sql \
+            supabase/tests/google_drive_acl_refresh_queue.sql \
+            supabase/tests/compile_job_viewer_authority.sql \
+            supabase/tests/foundation_intake_triage_binding.sql
+          echo "focusedPgtapFiles=4 passed" | tee -a "$record"
+
+          if ! proof="$(run_sql "$sql/legacy-v2-read.sql")"; then
+            echo "::error::the service_role legacy v2 read failed (missing reader, fixture or grant)"
+            exit 1
+          fi
+          if [ "$proof" != "role=service_role marker=true nullKeys=true legacyStage=true" ]; then
+            echo "::error::service_role legacy v2 read proof is not complete: ${proof}"
+            exit 1
+          fi
+          echo "legacyV2Read ${proof}" | tee -a "$record"
+
+          if [ "$(run_sql "$sql/gate.sql")" != "t|t" ]; then
+            echo "::error::the persistent upload_triage_v1 DB rollout gate is not exactly one false row after the checks"
+            exit 1
+          fi
+          echo "dbRolloutGateAfter=false" | tee -a "$record"
+
+      - name: Fetch the checksum-qualified portable local S3 runtime (SeaweedFS 4.48)
+        run: |
+          mkdir -p "$RUNNER_TEMP/tavonel-runtime"
+          curl --fail --location --retry 3 --max-time 180 \
+            https://github.com/seaweedfs/seaweedfs/releases/download/4.48/linux_amd64.tar.gz \
+            --output "$RUNNER_TEMP/tavonel-runtime/release.tar.gz"
+          echo "4a7d108384d044d95212d1342cdda9533fa55842c1c9b41f606ca3c8a9561124  $RUNNER_TEMP/tavonel-runtime/release.tar.gz" | sha256sum --check
+          tar -xzf "$RUNNER_TEMP/tavonel-runtime/release.tar.gz" -C "$RUNNER_TEMP/tavonel-runtime" weed
+          echo "8c07a1ccc4ec058cd90989ac0533c30436832e41c63de2b26f37253d9f744c4d  $RUNNER_TEMP/tavonel-runtime/weed" | sha256sum --check
+          chmod +x "$RUNNER_TEMP/tavonel-runtime/weed"
+
+      - name: Install one isolated Chromium runtime
+        working-directory: foundation/nextjs
+        run: pnpm exec playwright install --with-deps chromium
+
+      # Same pinned requirements and digest-checked model download as Foundation's own
+      # foundation-ocr-cpu-raster workflow; materialize_models.py refuses any other model bytes.
+      - name: Install the CPU raster OCR worker and materialize its pinned models
+        working-directory: foundation/workers/foundation-ocr-cpu-raster
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libgl1 libglib2.0-0 libgomp1
+          python -m venv "$RUNNER_TEMP/ocr-venv"
+          "$RUNNER_TEMP/ocr-venv/bin/python" -m pip install --disable-pip-version-check --no-cache-dir -r requirements.txt
+          "$RUNNER_TEMP/ocr-venv/bin/python" materialize_models.py
+
+      # The exact runtime pins of infra/product-core/Dockerfile, read from it rather than restated.
+      - name: Install the Product Core v2 runtime pins
+        run: |
+          mapfile -t pins < <(grep -oE '[a-z]+==[0-9.]+' core/infra/product-core/Dockerfile)
+          test "${#pins[@]}" -eq 5
+          printf 'pin %s\n' "${pins[@]}"
+          python -m venv "$RUNNER_TEMP/core-venv"
+          "$RUNNER_TEMP/core-venv/bin/python" -m pip install --disable-pip-version-check --no-cache-dir "${pins[@]}"
+
+      - name: Wait for clamd and assert the pulled image is the pinned digest
+        run: |
+          python - <<'PY'
+          import socket, sys, time
+          deadline = time.monotonic() + 420
+          while time.monotonic() < deadline:
+              try:
+                  with socket.create_connection(("localhost", 3310), timeout=5) as connection:
+                      connection.settimeout(30)
+                      connection.sendall(b"zPING\0")
+                      if connection.recv(64).startswith(b"PONG"):
+                          print("clamd answered PING")
+                          sys.exit(0)
+              except OSError:
+                  time.sleep(5)
+          sys.exit("clamd never answered PING within 420s")
+          PY
+          grep -qF "${CLAMAV_IMAGE}@${CLAMAV_DIGEST}" foundation/quarantine-sidecar/cdr-cloudrun/service.yaml
+          pulled="$(docker inspect --format '{{index .RepoDigests 0}}' "clamav/clamav@${CLAMAV_DIGEST}")"
+          test "${pulled}" = "clamav/clamav@${CLAMAV_DIGEST}"
+          echo "CLAMAV_IMAGE_RESOLVED=${pulled}" >> "$GITHUB_ENV"
+
+      - name: Build the CDR image from the Foundation checkout
+        run: docker build --tag tavonel-cdr:joined-e2e foundation/quarantine-sidecar/cdr-cloudrun
+
+      # The journey runs under two independent bounds, both sized from the job start recorded in the first step:
+      #   deadline-supervisor.mjs  stops the harness's whole process tree at `deadline` (SIGTERM, `grace`, SIGKILL), even
+      #                            when the harness is blocked in a synchronous child, writes core/output/
+      #                            joined-e2e-supervisor.json and exits within grace + its STOP_BOUND_SECONDS (30) of the
+      #                            deadline. It refuses to start if its stop bound is not the `stop_bound` assumed here.
+      #   timeout --kill-after     the backstop for a supervisor that cannot run: TERM at deadline + grace + stop_bound, the
+      #                            supervisor's own bound, then KILL `kill_after` later.
+      # deadline + grace + stop_bound + kill_after + slack is exactly the time left before the POST_RESERVE, so this step
+      # ends inside JOB_TIMEOUT - POST_RESERVE of the job start and the always() steps keep their reserve. The 65-minute
+      # step cap is JOB_TIMEOUT - POST_RESERVE measured from this step's own start, so it can never fire first; the script
+      # checks all of this before it starts anything and refuses a window too short to run the journey.
+      - name: Joined end-to-end journey (under the outer deadline)
+        timeout-minutes: 65
+        working-directory: foundation/quarantine-sidecar/foundation-cdr-worker
+        env:
+          TAVONEL_JOINED_FOUNDATION_DIR: ${{ github.workspace }}/foundation
+          TAVONEL_JOINED_FOUNDATION_REF: ${{ env.FOUNDATION_REF }}
+          TAVONEL_AUTH_STACK_STATUS: ${{ runner.temp }}/tavonel-auth-status.json
+          TAVONEL_LOCAL_SEAWEED_EXE: ${{ runner.temp }}/tavonel-runtime/weed
+          TAVONEL_JOINED_CORE_PYTHON: ${{ runner.temp }}/core-venv/bin/python
+          TAVONEL_JOINED_OCR_PYTHON: ${{ runner.temp }}/ocr-venv/bin/python
+          TAVONEL_JOINED_CDR_IMAGE: tavonel-cdr:joined-e2e
+          TAVONEL_JOINED_CLAMAV_IMAGE: ${{ env.CLAMAV_IMAGE_RESOLVED }}
+        run: |
+          : "${JOINED_E2E_JOB_STARTED_EPOCH:?recorded by the first step}"
+          grace=60 stop_bound=30 kill_after=15 slack=15
+          step_cap=$(( 65 * 60 ))  # this step's timeout-minutes
+          test "$step_cap" -eq $(( JOINED_E2E_JOB_TIMEOUT_SECONDS - JOINED_E2E_POST_RESERVE_SECONDS ))
+          window_end=$(( JOINED_E2E_JOB_STARTED_EPOCH + JOINED_E2E_JOB_TIMEOUT_SECONDS - JOINED_E2E_POST_RESERVE_SECONDS ))
+          now="$(date +%s)"
+          available=$(( window_end - now ))
+          deadline=$(( available - grace - stop_bound - kill_after - slack ))
+          outer=$(( deadline + grace + stop_bound ))
+          echo "job started $(( now - JOINED_E2E_JOB_STARTED_EPOCH )) s ago; ${available} s left before the ${JOINED_E2E_POST_RESERVE_SECONDS} s always() reserve"
+          echo "supervisor deadline ${deadline} s, grace ${grace} s, stop bound ${stop_bound} s; timeout ${outer} s, kill after ${kill_after} s; step cap ${step_cap} s"
+          if [ "$deadline" -lt 600 ]; then
+            echo "::error::only ${deadline} s would be left for the joined journey after setup; not starting a run that cannot finish before the reserve"
+            exit 1
+          fi
+          test $(( outer + kill_after + slack )) -le "$step_cap"
+          timeout --kill-after="${kill_after}s" "${outer}s" \
+            node "$GITHUB_WORKSPACE/core/tests/e2e/joined/deadline-supervisor.mjs" \
+              --deadline-seconds "$deadline" --grace-seconds "$grace" --expect-stop-bound-seconds "$stop_bound" \
+              --record "$GITHUB_WORKSPACE/core/output/joined-e2e-supervisor.json" \
+              -- node --import tsx "$GITHUB_WORKSPACE/core/tests/e2e/joined/joined-e2e.mjs"
+
+      # An explicit allowlist, not core/output/: the redacted ledger, the structural supervisor record, this workflow's
+      # identity record and the service/browser logs that joined-e2e.mjs redacts and bounds before writing. The raw
+      # Playwright trace, browser storage state, .env files and Authorization headers are never published, and neither
+      # is the joined failure screenshot: the harness documents that it may expose credentials, and its content cannot
+      # be guaranteed safe. It is still captured locally on failure and the failure outcome is unchanged; it just stays
+      # on the runner.
+      # This step and the next are capped at 5 + 4 minutes: together with 60 s of step transitions they are the
+      # JOINED_E2E_POST_RESERVE_SECONDS the journey's deadline leaves free.
+      - name: Upload the joined E2E ledger, supervisor record, identity and redacted logs
+        if: always()
+        timeout-minutes: 5
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: joined-e2e-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            core/output/joined-e2e-ledger.json
+            core/output/joined-e2e-supervisor.json
+            core/output/pr91-focused-identity.json
+            core/output/logs/*.log
+          if-no-files-found: warn
+          retention-days: 7
+
+      - name: Stop the runner's disposable local stack
+        if: always()
+        timeout-minutes: 4
+        working-directory: foundation
+        run: |
+          supabase stop --no-backup || true
+          rm -f "$RUNNER_TEMP/tavonel-auth-status.json"
+
+      # Placed after both reserved always() steps so it never takes their reserve. It reads only the redacted ledger
+      # and the structural supervisor record and prints only flags, SHAs and the run id. If the 75-minute job timeout
+      # cancels it, the job is not a success and the aggregate fails closed.
+      - name: Require all eleven ledger proofs from this run for the current Core/Foundation pair
+        if: always()
+        timeout-minutes: 1
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+          from datetime import datetime
+          from pathlib import Path
+
+          flags = ["uploadViaUiVerified", "cdrClamavReal", "ocrReal", "coreCompileReal", "receiptSigned",
+                   "reviewActivateViaUi", "consumerCitesUploadedDoc", "duplicatesCauseNoSecondOcrCompileOrCharge",
+                   "malwareRefusedBeforeOcr", "coreSignatureFailureLeavesNoCandidate",
+                   "coreReceiptFailureLeavesNoCandidate"]
+          problems = []
+
+          def load(path):
+              if not path.is_file():
+                  problems.append(f"{path} was not written by this run")
+                  return {}
+              try:
+                  return json.loads(path.read_text())
+              except ValueError:
+                  problems.append(f"{path} is not valid JSON")
+                  return {}
+
+          ledger = load(Path("core/output/joined-e2e-ledger.json"))
+          supervisor = load(Path("core/output/joined-e2e-supervisor.json"))
+          checkout = ledger.get("checkout") or {}
+          booleans = ledger.get("booleans") or {}
+
+          if ledger and ledger.get("kind") != "tavonel-joined-e2e":
+              problems.append(f"ledger kind {ledger.get('kind')!r}")
+          if ledger and list(booleans) != flags:
+              problems.append(f"ledger proof flags {list(booleans)} are not the eleven expected flags")
+          for flag in flags:
+              print(f"proof {flag}: {booleans.get(flag) is True}")
+              if booleans.get(flag) is not True:
+                  problems.append(f"proof {flag} is not true")
+          if ledger.get("success") is not True:
+              problems.append("ledger success is not true")
+          expected = {
+              "coreSha": os.environ["EXPECTED_CORE_SHA"],
+              "foundationSha": os.environ["FOUNDATION_PIN_SHA"],
+              "foundationRef": os.environ["FOUNDATION_PIN_SHA"],
+              "workflowRunId": os.environ["GITHUB_RUN_ID"],
+          }
+          for key, want in expected.items():
+              print(f"ledger checkout.{key}={checkout.get(key)} expected={want}")
+              if checkout.get(key) != want:
+                  problems.append(f"ledger checkout.{key} is {checkout.get(key)!r}, expected {want!r}")
+          started = int(os.environ.get("JOINED_E2E_JOB_STARTED_EPOCH", "0"))
+          try:
+              generated = datetime.fromisoformat(str(ledger.get("generatedAt")).replace("Z", "+00:00")).timestamp()
+          except ValueError:
+              generated = None
+          if generated is None or started <= 0 or generated < started:
+              problems.append(f"ledger generatedAt {ledger.get('generatedAt')!r} is not from this job (started {started})")
+          if supervisor and (supervisor.get("kind") != "tavonel-joined-e2e-supervisor"
+                             or supervisor.get("outcome") != "exited" or supervisor.get("exitCode") != 0):
+              problems.append(f"supervisor outcome={supervisor.get('outcome')!r} exitCode={supervisor.get('exitCode')!r}")
+
+          for problem in problems:
+              print(f"::error::{problem}")
+          sys.exit(1 if problems else 0)
+          PY
+
+  focused-qualification:
+    name: PR91 focused qualification (not broad CI, security or release)
+    if: always() && github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
+    needs: [python-focused, application-images, gpu-local-images, web-focused, joined-e2e]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Require every expected focused job to have succeeded
+        env:
+          NEEDS_JSON: ${{ toJSON(needs) }}
+        run: |
+          set -euo pipefail
+          expected='["application-images","gpu-local-images","joined-e2e","python-focused","web-focused"]'
+          verdict=PASS
+          if ! jq -e --argjson expected "$expected" '(keys | sort) == $expected' <<<"$NEEDS_JSON" >/dev/null; then
+            echo "::error::needs keys $(jq -c 'keys' <<<"$NEEDS_JSON") are not exactly ${expected}"
+            verdict=FAIL
+          fi
+          for job in $(jq -r '.[]' <<<"$expected"); do
+            result="$(jq -r --arg job "$job" '.[$job].result // "missing"' <<<"$NEEDS_JSON")"
+            echo "${job}: ${result}"
+            if [ "$result" != "success" ]; then
+              echo "::error::${job} result is ${result}, not success"
+              verdict=FAIL
+            fi
+          done
+          {
+            echo "## PR91 focused qualification: ${verdict}"
+            echo
+            echo "Tested Core head: \`${EXPECTED_CORE_SHA}\`; pinned Foundation: \`${FOUNDATION_PIN_SHA}\`."
+            echo "Synthetic merge \`${GITHUB_SHA}\` is not the tested head."
+            echo
+            jq -r 'to_entries | sort_by(.key)[] | "- \(.key): \(.value.result)"' <<<"$NEEDS_JSON"
+            echo
+            echo "This is a focused qualification only. CI, Security, Model CI, joined-e2e and the release gates remain"
+            echo "required; the full release remains unqualified. The known unresolved braces development-dependency"
+            echo "audit debt is not resolved or suppressed by this run."
+          } >> "$GITHUB_STEP_SUMMARY"
+          test "$verdict" = PASS

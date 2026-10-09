@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 from collections import defaultdict
 from collections.abc import Iterable
-from dataclasses import replace
+from dataclasses import dataclass, replace
 
 from akc_cir.base import canonical_json, sha256_digest
 from akc_cir.dependency import DependencyEdge, DependencyGraph, EdgeType
@@ -34,6 +34,7 @@ from akc_cir.models import (
     SourceRef,
 )
 from akc_cir.recompilation import (
+    ArtifactState,
     content_hash,
     plan_recompilation,
     verify_equivalence,
@@ -97,6 +98,61 @@ def _fingerprint(unit: UnitSnapshot, source_lineage: str) -> LogicalUnitFingerpr
     return unit.fingerprint(source_lineage=source_lineage)
 
 
+def _diff_input_digest(source_sha256: str, units: Iterable[UnitSnapshot]) -> str:
+    """Bind diff's binary fast path to supplied extraction and trust inputs too.
+
+    Source bytes can stay fixed while OCR, citation geometry or authority changes.
+    These are compilation inputs, not a claim that the source bytes changed.
+    Keep this digest internal; source/version identities retain the source hash.
+    """
+    return content_hash(
+        {
+            "sourceSha256": source_sha256,
+            "units": [
+                {
+                    "logicalId": unit.logical_id,
+                    "text": unit.text,
+                    "documentPath": unit.document_path,
+                    "anchor": unit.anchor,
+                    "evidenceId": unit.evidence_id,
+                    "pageNumber1": unit.page_number1,
+                    "authority": unit.authority,
+                }
+                for unit in sorted(units, key=lambda item: item.logical_id)
+            ],
+        }
+    )
+
+
+@dataclass(frozen=True)
+class DocumentFragment:
+    """Document extraction result bound to one immutable collection revision context."""
+
+    connector_type: str
+    native_id: str
+    scope_digest: str
+    document_digest: str
+    canonical_document: CanonicalDocument
+    units: tuple[PreviousUnit, ...]
+    changes: tuple[SemanticChange, ...]
+    review_reasons: tuple[str, ...]
+    output_digest: str = ""
+
+    def content_digest(self) -> str:
+        return sha256_digest(
+            _json_bytes(
+                {
+                    "canonicalDocument": self.canonical_document.model_dump(
+                        mode="json", by_alias=True
+                    ),
+                    "units": [unit.model_dump(mode="json", by_alias=True) for unit in self.units],
+                    "changes": [change.as_record() for change in self.changes],
+                    "reviewReasons": self.review_reasons,
+                }
+            )
+        )
+
+
 class ProductCoreCompiler:
     """Compile an immutable OCR collection into a non-promoted candidate world."""
 
@@ -111,20 +167,51 @@ class ProductCoreCompiler:
         *,
         input_sha256: str,
     ) -> ProductCoreCompileResponse:
-        previous = request.previous_active_world
+        return self.reduce_fragments(
+            request, self.compile_fragments(request), input_sha256=input_sha256
+        )
+
+    def _fragment_scope(self, request: ProductCoreCompileRequest) -> str:
+        return sha256_digest(
+            _json_bytes(
+                {
+                    "tenantId": request.tenant_id,
+                    "workspaceId": request.workspace_id,
+                    "collectionId": request.collection_id,
+                    "previous": request.previous_active_world.model_dump(mode="json", by_alias=True)
+                    if request.previous_active_world
+                    else None,
+                    "coreReleaseDigest": self.core_release_digest,
+                }
+            )
+        )
+
+    def compile_fragments(
+        self,
+        request: ProductCoreCompileRequest,
+        document_keys: tuple[tuple[str, str], ...] | None = None,
+    ) -> tuple[DocumentFragment, ...]:
+        """Extract a bounded document shard without making shard-local semantic decisions."""
+        selected = set(document_keys) if document_keys is not None else None
+        available = {(doc.connector_type, doc.native_id) for doc in request.documents}
+        if selected is not None and (
+            len(selected) != len(document_keys or ()) or not selected <= available
+        ):
+            raise ValueError("fragment selection is duplicated or outside the collection")
         prior_by_source: defaultdict[str, list[PreviousUnit]] = defaultdict(list)
-        if previous is not None:
-            for unit in previous.units:
+        if request.previous_active_world:
+            for unit in request.previous_active_world.units:
                 prior_by_source[unit.source_id].append(unit)
-
-        canonical_documents: list[CanonicalDocument] = []
-        current_units: list[PreviousUnit] = []
-        review_reasons: list[str] = []
-        all_changes: list[SemanticChange] = []
-
+        fragments = []
+        scope = self._fragment_scope(request)
         for document in sorted(
             request.documents, key=lambda item: (item.connector_type, item.native_id)
         ):
+            if (
+                selected is not None
+                and (document.connector_type, document.native_id) not in selected
+            ):
+                continue
             derived_source = source_id(
                 tenant_id=request.tenant_id,
                 connector_type=document.connector_type,
@@ -135,10 +222,62 @@ class ProductCoreCompiler:
                 document=document,
                 previous=tuple(prior_by_source.get(derived_source, ())),
             )
-            canonical_documents.append(compiled)
-            current_units.extend(units)
-            all_changes.extend(changes)
-            review_reasons.extend(reviews)
+            fragments.append(
+                DocumentFragment(
+                    connector_type=document.connector_type,
+                    native_id=document.native_id,
+                    scope_digest=scope,
+                    document_digest=sha256_digest(
+                        _json_bytes(document.model_dump(mode="json", by_alias=True))
+                    ),
+                    canonical_document=compiled,
+                    units=tuple(units),
+                    changes=changes,
+                    review_reasons=tuple(reviews),
+                )
+            )
+        return tuple(
+            replace(fragment, output_digest=fragment.content_digest()) for fragment in fragments
+        )
+
+    def reduce_fragments(
+        self,
+        request: ProductCoreCompileRequest,
+        fragments: Iterable[DocumentFragment],
+        *,
+        input_sha256: str,
+    ) -> ProductCoreCompileResponse:
+        """One collection-wide semantic/dependency reduction, independent of shard boundaries."""
+        inventory = tuple(fragments)
+        if any(not isinstance(item, DocumentFragment) for item in inventory):
+            raise ValueError("malformed document fragment")
+        ordered = sorted(inventory, key=lambda item: (item.connector_type, item.native_id))
+        expected = {(doc.connector_type, doc.native_id): doc for doc in request.documents}
+        keys = [(item.connector_type, item.native_id) for item in ordered]
+        if len(set(keys)) != len(keys) or set(keys) != set(expected):
+            raise ValueError("collection fragments must cover every document exactly once")
+        scope = self._fragment_scope(request)
+        for fragment in ordered:
+            document = expected[(fragment.connector_type, fragment.native_id)]
+            digest = sha256_digest(_json_bytes(document.model_dump(mode="json", by_alias=True)))
+            if (
+                fragment.scope_digest != scope
+                or fragment.document_digest != digest
+                or fragment.output_digest != fragment.content_digest()
+            ):
+                raise ValueError("fragment does not belong to this immutable collection revision")
+        previous = request.previous_active_world
+        prior_by_source: defaultdict[str, list[PreviousUnit]] = defaultdict(list)
+        if previous:
+            for unit in previous.units:
+                prior_by_source[unit.source_id].append(unit)
+        canonical_documents = [fragment.canonical_document for fragment in ordered]
+        current_units = [unit for fragment in ordered for unit in fragment.units]
+        all_changes = [change for fragment in ordered for change in fragment.changes]
+        review_reasons = [reason for fragment in ordered for reason in fragment.review_reasons]
+        immutable_inputs_only = self._immutable_inputs_only(request)
+        if not immutable_inputs_only:
+            review_reasons.append("IMMUTABLE_INPUT_BINDING_INVALID")
 
         if previous is not None:
             current_sources = {
@@ -203,6 +342,31 @@ class ProductCoreCompiler:
             semantics,
         )
         plan = plan_recompilation(diff=diff, graph=graph, artifacts=artifacts)
+        if previous is not None:
+            # Collection aggregates include attempt provenance (creation time,
+            # activity IDs and identity-resolution state). The previous snapshot
+            # supplies no provenance dependency inputs, so semantic impact alone
+            # cannot establish that these byte-level artifacts are reusable.
+            # Rebuild them conservatively while retaining per-unit selectivity.
+            aggregates = {
+                "canonical/model",
+                "knowledge/model",
+                "retrieval/global",
+                "export/package",
+            }
+            plan = replace(
+                plan,
+                targets=tuple(
+                    replace(
+                        target,
+                        state=ArtifactState.STALE,
+                        reason="collection aggregate includes compilation attempt provenance",
+                    )
+                    if target.artifact_id in aggregates
+                    else target
+                    for target in plan.targets
+                ),
+            )
         full_hashes = self._artifact_hashes(
             canonical_documents=canonical_documents,
             knowledge_model=knowledge_model,
@@ -272,6 +436,7 @@ class ProductCoreCompiler:
             architecture=architecture,
             lifecycle=lifecycle,
             review_reasons=review_reasons,
+            immutable_inputs_only=immutable_inputs_only,
         )
         candidate = CandidateWorld(
             world_state_id=world_state_id,
@@ -291,6 +456,7 @@ class ProductCoreCompiler:
             package=package,
             validation={
                 "status": "passed" if lifecycle == "candidate" else lifecycle,
+                "immutableInputsOnly": immutable_inputs_only,
                 "deterministicMaterialization": True,
                 "sourceCoverage": True,
                 "evidenceCoverage": True,
@@ -347,6 +513,39 @@ class ProductCoreCompiler:
             artifacts=artifact_rows,
             receipt=receipt,
         )
+
+    @staticmethod
+    def _immutable_inputs_only(request: ProductCoreCompileRequest) -> bool:
+        """Check immutable input references, not backend retention or fetched byte integrity.
+
+        The Foundation boundary supplies inline OCR and digest-addressed source/OCR
+        references. Both references must bind to this tenant, workspace, document
+        and source digest; mutable aliases and cross-scope paths cannot pass.
+        Object storage enforcement and source-byte verification belong to intake.
+        """
+        for document in request.documents:
+            keys = (document.immutable_object_key, document.ocr_object_key)
+            if keys[0] == keys[1]:
+                return False
+            parts = [key.split("/") for key in keys]
+            # The upload/revision object ID can differ from native_id, which is
+            # the stable logical source ID across successive uploads.
+            if any(len(row) != 6 for row in parts) or parts[0][:-1] != parts[1][:-1]:
+                return False
+            for row in parts:
+                if row[:3] != ["immutable", request.tenant_id, request.workspace_id]:
+                    return False
+                if row[4] != document.content_sha256[7:]:
+                    return False
+                if any(
+                    not part
+                    or part in {".", ".."}
+                    or "\\" in part
+                    or any(ord(char) < 32 or ord(char) == 127 for char in part)
+                    for part in row
+                ):
+                    return False
+        return True
 
     def _compile_document(
         self,
@@ -434,8 +633,8 @@ class ProductCoreCompiler:
 
         before_sha = previous[0].source_content_sha256 if previous else content_hash("absent")
         document_diff = diff_documents(
-            before_sha256=before_sha,
-            after_sha256=document.content_sha256,
+            before_sha256=_diff_input_digest(before_sha, previous_snapshots),
+            after_sha256=_diff_input_digest(document.content_sha256, resolved),
             level=DiffLevel.GRAPH,
             before_shape=_shape(previous_snapshots),
             after_shape=_shape(resolved),
@@ -604,42 +803,48 @@ class ProductCoreCompiler:
                         payload={"text": block.raw_text, "blockType": block.type.value},
                     )
                 )
-        block_by_evidence = {
-            evidence_id(
-                document_version=document.document_version_id,
-                page_number1=ref.page_number1,
-                bbox1000=(ref.bbox1000.as_tuple() if ref.bbox1000 else None),
-                span_text=block.raw_text,
-            ): block
+        block_by_anchor = {
+            (document.document_version_id, ref.native_object_id): block
             for document in documents
             for block in document.blocks
             for ref in block.source_refs[:1]
         }
         unit_by_logical = {unit.logical_id: unit for unit in units}
+        refs_by_logical: dict[str, tuple[SourceRef, ...]] = {}
         refs_by_evidence: dict[str, tuple[SourceRef, ...]] = {}
         evidence_object_by_id: dict[str, str] = {}
+        evidence_units: defaultdict[str, list[PreviousUnit]] = defaultdict(list)
         for unit in units:
+            block = block_by_anchor[(unit.source_version_id, unit.anchor)]
+            refs_by_logical[unit.logical_id] = block.source_refs
+            evidence_units[unit.evidence_id].append(unit)
+            combined = (*refs_by_evidence.get(unit.evidence_id, ()), *block.source_refs)
+            refs_by_evidence[unit.evidence_id] = tuple(
+                {
+                    canonical_json(ref.model_dump(mode="json", by_alias=True)): ref
+                    for ref in combined
+                }.values()
+            )
+        for evidence_key, supporting_units in evidence_units.items():
             verification_state = (
                 KnowledgeVerificationState.UNRESOLVED
-                if unit.identity_state == "unresolved"
+                if any(unit.identity_state == "unresolved" for unit in supporting_units)
                 else KnowledgeVerificationState.VERIFIED_WITH_WARNING
             )
-            block = block_by_evidence[unit.evidence_id]
-            evidence_object_id = _stable_id("ko_evidence", unit.evidence_id)
-            refs_by_evidence[unit.evidence_id] = block.source_refs
-            evidence_object_by_id[unit.evidence_id] = evidence_object_id
+            evidence_object_id = _stable_id("ko_evidence", evidence_key)
+            evidence_object_by_id[evidence_key] = evidence_object_id
             objects.append(
                 build_knowledge_object(
                     stable_id=evidence_object_id,
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.EVIDENCE,
-                    source_refs=block.source_refs,
+                    source_refs=refs_by_evidence[evidence_key],
                     origin=KnowledgeOrigin.VISUAL_EXTRACTED,
                     verification_state=verification_state,
                     created_by_activity=activity,
                     version=1,
-                    payload={"evidenceId": unit.evidence_id},
+                    payload={"evidenceId": evidence_key},
                 )
             )
 
@@ -656,7 +861,7 @@ class ProductCoreCompiler:
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.CLAIM,
-                    source_refs=refs_by_evidence[claim.evidence_id],
+                    source_refs=refs_by_logical[claim.logical_id],
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=verification_state,
                     created_by_activity=activity,
@@ -668,14 +873,20 @@ class ProductCoreCompiler:
 
         claim_by_id = {claim.claim_id: claim for claim in semantics.claims}
         for entity in semantics.entities:
-            first_claim = claim_by_id[entity.claim_ids[0]]
+            entity_refs = tuple(
+                {
+                    canonical_json(ref.model_dump(mode="json", by_alias=True)): ref
+                    for claim_id in entity.claim_ids
+                    for ref in refs_by_logical[claim_by_id[claim_id].logical_id]
+                }.values()
+            )
             objects.append(
                 build_knowledge_object(
                     stable_id=entity.entity_id,
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.ENTITY,
-                    source_refs=refs_by_evidence[first_claim.evidence_id],
+                    source_refs=entity_refs,
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=KnowledgeVerificationState.VERIFIED_WITH_WARNING,
                     created_by_activity=activity,
@@ -691,7 +902,7 @@ class ProductCoreCompiler:
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.RELATION,
-                    source_refs=refs_by_evidence[relation.evidence_id],
+                    source_refs=refs_by_logical[claim_by_id[relation.subject_id].logical_id],
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=KnowledgeVerificationState.VERIFIED_WITH_WARNING,
                     created_by_activity=activity,
@@ -891,6 +1102,7 @@ class ProductCoreCompiler:
         architecture: ArchitecturePlan,
         lifecycle: str,
         review_reasons: list[str],
+        immutable_inputs_only: bool,
     ) -> tuple[CandidatePackage, tuple[dict[str, object], ...]]:
         model_payload = knowledge_model.model_dump(mode="json", by_alias=True)
         objects = list(model_payload["objects"])
@@ -978,9 +1190,7 @@ class ProductCoreCompiler:
         claims_by_logical: defaultdict[str, list[SemanticClaim]] = defaultdict(list)
         for claim in semantics.claims:
             claims_by_logical[claim.logical_id].append(claim)
-        entity_names = {
-            entity.entity_id: entity.canonical_name for entity in semantics.entities
-        }
+        entity_names = {entity.entity_id: entity.canonical_name for entity in semantics.entities}
         chunk_jsonl = "".join(
             canonical_json(
                 {
@@ -1115,6 +1325,7 @@ class ProductCoreCompiler:
                     "status": "passed" if lifecycle == "candidate" else lifecycle,
                     "matchingPolicy": "legacy",
                     "candidatePromotion": False,
+                    "immutableInputsOnly": immutable_inputs_only,
                     "reviewReasons": sorted(set(review_reasons)),
                     "documentCount": len(canonical_documents),
                     "knowledgeObjectCount": len(objects),

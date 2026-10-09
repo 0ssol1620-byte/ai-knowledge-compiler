@@ -800,6 +800,13 @@ class OntologyStore:
         return self.ontology_path(world_id).is_file()
 
     def save(self, manifest: OntologyManifest) -> Path:
+        # Mirror load(): refuse to write a manifest this store could not read
+        # back. Checked before any directory or file is touched.
+        if manifest.schema_version != ONTOLOGY_MANIFEST_SCHEMA_VERSION:
+            raise OntologyManifestError(
+                f"refusing to persist world {manifest.world_id!r}: "
+                f"unsupported ontology manifest schema {manifest.schema_version!r}"
+            )
         if not manifest.verify_hash():
             raise OntologyManifestError(
                 f"refusing to persist world {manifest.world_id!r}: "

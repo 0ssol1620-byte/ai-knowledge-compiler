@@ -13,6 +13,7 @@ from defusedxml import ElementTree as SafeElementTree
 from defusedxml.common import DefusedXmlException
 from docx import Document as open_docx
 from docx.document import Document
+from docx.oxml.ns import qn
 from docx.table import Table
 from docx.text.paragraph import Paragraph
 
@@ -26,6 +27,7 @@ from .models import (
 
 _HEADING_PATTERN = re.compile(r"^heading\s*([1-9])$", re.IGNORECASE)
 _RELATIONSHIP_ATTRIBUTE_NAMES = frozenset({"embed", "id"})
+_GRID_SPAN_PATTERN = re.compile(r"\+?[0-9]+")
 
 
 def parse_docx(data: bytes, builder: CirBuilder) -> str:
@@ -142,11 +144,11 @@ def parse_docx(data: bytes, builder: CirBuilder) -> str:
             _add_docx_table(
                 table,
                 builder=builder,
-                body_index=body_index,
+                native_object_id=f"docx/body/table/{body_index:06d}",
                 parent_id=parent_id,
             )
 
-    story_image_count = _add_headers_and_footers(document, builder)
+    story_image_count = _add_headers_and_footers(document, builder, table_count=table_count)
     comments = _add_comments(data, builder, comment_parents)
     revisions = _collect_revisions(data, builder)
     if revisions:
@@ -187,9 +189,10 @@ def _add_docx_table(
     table: Table,
     *,
     builder: CirBuilder,
-    body_index: int,
+    native_object_id: str,
     parent_id: str | None,
 ) -> None:
+    _check_docx_table_bounds(table, builder=builder)
     rows = list(table.rows)
     if not rows:
         return
@@ -211,7 +214,7 @@ def _add_docx_table(
     cells: list[TableCellSpec] = []
     table_location = SourceLocation(
         page_index0=0,
-        native_object_id=f"docx/body/table/{body_index:06d}",
+        native_object_id=native_object_id,
     )
     for key, positions in sorted(
         locations_by_cell.items(),
@@ -260,12 +263,60 @@ def _add_docx_table(
     )
 
 
+def _check_docx_table_bounds(table: Table, *, builder: CirBuilder) -> None:
+    # python-docx allocates one cell object per spanned grid column on every
+    # row.cells access, so a single w:gridSpan can demand any number of them.
+    # Bound the table from its direct w:tr and w:tc children before that.
+    limits = builder.limits
+    row_count = 0
+    for _ in table._tbl.iterchildren(qn("w:tr")):
+        row_count += 1
+        if row_count > limits.max_table_rows:
+            raise StructuredParseError("TABLE_ROW_LIMIT")
+    widest_row = 0
+    for tr in table._tbl.iterchildren(qn("w:tr")):
+        width = 0
+        for tc in tr.iterchildren(qn("w:tc")):
+            width += _docx_grid_span(tc)
+            if width > limits.max_table_columns:
+                raise StructuredParseError("TABLE_COLUMN_LIMIT")
+        widest_row = max(widest_row, width)
+    if row_count * widest_row > limits.max_table_cells:
+        raise StructuredParseError("TABLE_CELL_LIMIT")
+
+
+def _docx_grid_span(tc: Any) -> int:
+    tc_pr = tc.find(qn("w:tcPr"))
+    grid_span = tc_pr.find(qn("w:gridSpan")) if tc_pr is not None else None
+    if grid_span is None:
+        return 1
+    value = grid_span.get(qn("w:val"))
+    if value is not None:
+        # XML Schema integers collapse surrounding whitespace before the
+        # lexical check; only XML's own whitespace characters are stripped.
+        value = value.strip(" \t\r\n")
+    if value is None or not _GRID_SPAN_PATTERN.fullmatch(value):
+        raise StructuredParseError("DOCX_PARSE_FAILED")
+    try:
+        span = int(value)
+    except ValueError as exc:  # more digits than int() will convert
+        raise StructuredParseError("DOCX_PARSE_FAILED") from exc
+    if span < 1:
+        raise StructuredParseError("DOCX_PARSE_FAILED")
+    return span
+
+
 def _looks_like_header(cells: Iterable[TableCellSpec]) -> bool:
     first_row = [cell for cell in cells if cell.row_index0 == 0]
     return bool(first_row) and all(cell.raw_text.strip() for cell in first_row)
 
 
-def _add_headers_and_footers(document: Document, builder: CirBuilder) -> int:
+def _add_headers_and_footers(
+    document: Document,
+    builder: CirBuilder,
+    *,
+    table_count: int,
+) -> int:
     seen_parts: set[str] = set()
     image_count = 0
     for section_index, section in enumerate(document.sections):
@@ -278,9 +329,30 @@ def _add_headers_and_footers(document: Document, builder: CirBuilder) -> int:
             if identity in seen_parts:
                 continue
             seen_parts.add(identity)
-            for paragraph_index, paragraph in enumerate(story.paragraphs):
-                native_id = f"docx/section/{section_index:04d}/{kind}/p/{paragraph_index:06d}"
-                text = _visible_text(paragraph._p)
+            story_id = f"docx/section/{section_index:04d}/{kind}"
+            paragraph_index = 0
+            story_table_index = 0
+            # Native child order keeps story paragraphs and tables interleaved;
+            # each kind keeps its own index so paragraph IDs do not shift.
+            for element in story._element.iterchildren():
+                local_name = _local_name(element)
+                if local_name == "tbl":
+                    table_count += 1
+                    if table_count > builder.limits.max_docx_tables:
+                        raise StructuredParseError("DOCX_TABLE_LIMIT")
+                    _add_docx_table(
+                        Table(element, story),
+                        builder=builder,
+                        native_object_id=f"{story_id}/tbl/{story_table_index:06d}",
+                        parent_id=None,
+                    )
+                    story_table_index += 1
+                    continue
+                if local_name != "p":
+                    continue
+                native_id = f"{story_id}/p/{paragraph_index:06d}"
+                paragraph_index += 1
+                text = _visible_text(element)
                 if text:
                     builder.add_block(
                         block_type=block_type,
@@ -290,11 +362,11 @@ def _add_headers_and_footers(document: Document, builder: CirBuilder) -> int:
                         ),
                         raw_text=text,
                         markdown=text,
-                        quality_flags=_revision_quality_flags(paragraph._p),
+                        quality_flags=_revision_quality_flags(element),
                     )
                 image_count += len(
                     _add_docx_figures(
-                        paragraph._p,
+                        element,
                         related_part=story.part,
                         builder=builder,
                         location=SourceLocation(

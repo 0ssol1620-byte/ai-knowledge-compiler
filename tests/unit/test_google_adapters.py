@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
 import pytest
-
+from akc_source_adapters.envelope import Cursor
 from akc_source_adapters.google import CalendarAdapter, DriveAdapter, GmailAdapter
 from akc_source_adapters.google._common import StaticTokenProvider
 
@@ -29,7 +29,7 @@ class _Stub(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(raw)
 
-    def do_GET(self) -> None:  # noqa: N802
+    def do_GET(self) -> None:
         state = self.server.state  # type: ignore[attr-defined]
         state["requests"].append(self.path)
         if state.get("fail_first_with_429"):
@@ -72,29 +72,216 @@ def test_drive_full_then_incremental_with_tombstone(stub) -> None:
         "/changes": [
             {
                 "changes": [
-                    {"fileId": "f1", "file": {"name": "spec.md", "mimeType": "text/markdown", "modifiedTime": "2026-08-01T00:00:00Z"}, "removed": False},
+                    {
+                        "fileId": "f1",
+                        "file": {
+                            "name": "spec.md",
+                            "mimeType": "text/markdown",
+                            "modifiedTime": "2026-08-01T00:00:00Z",
+                        },
+                        "removed": False,
+                    },
                 ],
                 "newStartPageToken": "TOK1",
             },
             {
                 "changes": [
-                    {"fileId": "f1", "file": {"name": "spec.md", "mimeType": "text/markdown", "modifiedTime": "2026-08-02T00:00:00Z"}, "removed": False},
+                    {
+                        "fileId": "f1",
+                        "file": {
+                            "name": "spec.md",
+                            "mimeType": "text/markdown",
+                            "modifiedTime": "2026-08-02T00:00:00Z",
+                        },
+                        "removed": False,
+                    },
                     {"fileId": "f2", "removed": True},
                 ],
                 "newStartPageToken": "TOK2",
             },
         ],
     }
-    adapter = DriveAdapter(source_name="main", token_provider=StaticTokenProvider(_token()), api_base=base)
+    adapter = DriveAdapter(
+        source_name="main", token_provider=StaticTokenProvider(_token()), api_base=base
+    )
 
     first = adapter.fetch_changes(None)
     assert [e.kind for e in first.events] == ["file_added"]
     assert first.cursor.state["delta_token"] == "TOK1"
 
+    original_files = dict(first.cursor.state["files"])
     second = adapter.fetch_changes(first.cursor)
+    assert first.cursor.state["files"] == original_files
     kinds = [e.kind for e in second.events]
     assert kinds == ["file_changed", "file_removed"]
     assert second.cursor.state["delta_token"] == "TOK2"
+
+
+def _drive_file(file_id: str, name: str, modified: str) -> dict[str, Any]:
+    return {
+        "fileId": file_id,
+        "file": {"name": name, "mimeType": "text/markdown", "modifiedTime": modified},
+        "removed": False,
+    }
+
+
+def test_drive_tracks_file_ids_across_rename_tombstone_and_shared_names(stub) -> None:
+    base, state = stub
+    state["routes"] = {
+        "/changes": [
+            {
+                "changes": [
+                    _drive_file("f1", "a.md", "2026-08-01T00:00:00Z"),
+                    _drive_file("f2", "dup.md", "2026-08-01T00:00:00Z"),
+                    _drive_file("f3", "dup.md", "2026-08-01T00:00:00Z"),
+                ],
+                "newStartPageToken": "TOK1",
+            },
+            {
+                "changes": [
+                    _drive_file("f1", "b.md", "2026-08-02T00:00:00Z"),
+                    _drive_file("f3", "dup.md", "2026-08-02T00:00:00Z"),
+                    {"fileId": "f2", "removed": True},
+                ],
+                "newStartPageToken": "TOK2",
+            },
+        ],
+    }
+    adapter = DriveAdapter(
+        source_name="main", token_provider=StaticTokenProvider(_token()), api_base=base
+    )
+
+    first = adapter.fetch_changes(None)
+    assert [e.kind for e in first.events] == ["file_added"] * 3
+    assert sorted(first.cursor.state["file_ids"]) == ["f1", "f2", "f3"]
+    assert first.cursor.state["file_ids"]["f2"]["path"] == "dup.md"
+    assert first.cursor.state["file_ids"]["f3"]["path"] == "dup.md"
+
+    second = adapter.fetch_changes(first.cursor)
+    assert [(e.kind, e.payload["path"]) for e in second.events] == [
+        ("file_removed", "a.md"),
+        ("file_added", "b.md"),
+        ("file_changed", "dup.md"),
+        ("file_removed", "dup.md"),
+    ]
+    assert second.cursor.state["file_ids"] == {
+        "f1": {"path": "b.md", "revision": "f1@2026-08-02T00:00:00Z"},
+        "f3": {"path": "dup.md", "revision": "f3@2026-08-02T00:00:00Z"},
+    }
+    assert second.cursor.state["files"] == {
+        "b.md": "f1@2026-08-02T00:00:00Z",
+        "dup.md": "f3@2026-08-02T00:00:00Z",
+    }
+
+
+def test_drive_legacy_files_cursor_derives_file_ids(stub) -> None:
+    base, state = stub
+    state["routes"] = {
+        "/changes": {
+            "changes": [
+                {"fileId": "f1", "removed": True},
+                _drive_file("f2", "notes.md", "2026-08-02T00:00:00Z"),
+                _drive_file("f9", "notes.md", "2026-08-02T00:00:00Z"),
+            ],
+            "newStartPageToken": "TOK2",
+        },
+    }
+    adapter = DriveAdapter(
+        source_name="main", token_provider=StaticTokenProvider(_token()), api_base=base
+    )
+    legacy = Cursor(
+        provider="gdrive",
+        source_id=adapter.source_id,
+        state={
+            "delta_token": "TOK1",
+            "files": {
+                "spec.md": "f1@2026-08-01T00:00:00Z",
+                "notes.md": "f2@2026-08-01T00:00:00Z",
+            },
+        },
+    )
+
+    result = adapter.fetch_changes(legacy)
+    assert [(e.kind, e.payload["path"]) for e in result.events] == [
+        ("file_removed", "spec.md"),
+        ("file_changed", "notes.md"),
+        ("file_added", "notes.md"),
+    ]
+    assert sorted(result.cursor.state["file_ids"]) == ["f2", "f9"]
+    assert result.cursor.state["files"] == {"notes.md": "f9@2026-08-02T00:00:00Z"}
+    assert "file_ids" not in legacy.state
+
+
+def test_drive_shared_name_projection_survives_encoded_roundtrip(stub) -> None:
+    base, state = stub
+    state["routes"] = {
+        "/changes": [
+            {
+                "changes": [
+                    _drive_file("f2", "dup.md", "2026-08-01T00:00:00Z"),
+                    _drive_file("f1", "dup.md", "2026-08-01T00:00:00Z"),
+                ],
+                "newStartPageToken": "TOK1",
+            },
+            {"changes": [], "newStartPageToken": "TOK2"},
+            {
+                "changes": [_drive_file("f1", "dup.md", "2026-08-03T00:00:00Z")],
+                "newStartPageToken": "TOK3",
+            },
+        ],
+    }
+    adapter = DriveAdapter(
+        source_name="main", token_provider=StaticTokenProvider(_token()), api_base=base
+    )
+
+    first = adapter.fetch_changes(None)
+    assert first.cursor.state["files"] == {"dup.md": "f1@2026-08-01T00:00:00Z"}
+
+    decoded = Cursor.decode(first.cursor.encoded())
+    assert list(decoded.state["file_ids"]) == ["f1", "f2"]
+
+    empty = adapter.fetch_changes(decoded)
+    assert empty.events == ()
+    assert empty.cursor.state["files"] == {"dup.md": "f1@2026-08-01T00:00:00Z"}
+    assert sorted(empty.cursor.state["file_ids"]) == ["f1", "f2"]
+
+    later = adapter.fetch_changes(Cursor.decode(empty.cursor.encoded()))
+    assert [(e.kind, e.payload["path"]) for e in later.events] == [("file_changed", "dup.md")]
+    assert later.cursor.state["files"] == {"dup.md": "f1@2026-08-03T00:00:00Z"}
+    assert later.cursor.state["file_ids"] == {
+        "f1": {"path": "dup.md", "revision": "f1@2026-08-03T00:00:00Z"},
+        "f2": {"path": "dup.md", "revision": "f2@2026-08-01T00:00:00Z"},
+    }
+
+
+def test_drive_legacy_cursor_rejects_file_id_under_two_paths(stub) -> None:
+    base, state = stub
+    state["routes"] = {
+        "/changes": {
+            "changes": [_drive_file("f1", "a.md", "2026-08-03T00:00:00Z")],
+            "newStartPageToken": "TOK2",
+        },
+    }
+    adapter = DriveAdapter(
+        source_name="main", token_provider=StaticTokenProvider(_token()), api_base=base
+    )
+    legacy = Cursor(
+        provider="gdrive",
+        source_id=adapter.source_id,
+        state={
+            "delta_token": "TOK1",
+            "files": {"a.md": "f1@2026-08-02T00:00:00Z", "z.md": "f1@2026-08-01T00:00:00Z"},
+        },
+    )
+    token = legacy.encoded()
+    decoded = Cursor.decode(token)
+
+    with pytest.raises(ValueError, match="fileId 'f1' to multiple paths"):
+        adapter.fetch_changes(decoded)
+    assert state["requests"] == []
+    assert decoded.state["delta_token"] == "TOK1"
+    assert "file_ids" not in decoded.state
+    assert decoded.encoded() == token
 
 
 def test_gmail_history_tombstones_and_resume(stub) -> None:
@@ -104,9 +291,13 @@ def test_gmail_history_tombstones_and_resume(stub) -> None:
             {"emailAddress": "a@b.c", "historyId": "1000"},
             {"emailAddress": "a@b.c", "historyId": "1000"},
         ],
-        "/messages/m1": {"id": "m1", "threadId": "t1", "snippet": "hello",
-                          "labelIds": ["INBOX"],
-                          "payload": {"headers": [{"name": "Subject", "value": "Kickoff notes"}]}},
+        "/messages/m1": {
+            "id": "m1",
+            "threadId": "t1",
+            "snippet": "hello",
+            "labelIds": ["INBOX"],
+            "payload": {"headers": [{"name": "Subject", "value": "Kickoff notes"}]},
+        },
         "/history": {
             "history": [
                 {"messagesAdded": [{"message": {"id": "m1", "threadId": "t1"}}]},
@@ -115,7 +306,9 @@ def test_gmail_history_tombstones_and_resume(stub) -> None:
             "historyId": "1001",
         },
     }
-    adapter = GmailAdapter(source_name="me", token_provider=StaticTokenProvider(_token()), api_base=base)
+    adapter = GmailAdapter(
+        source_name="me", token_provider=StaticTokenProvider(_token()), api_base=base
+    )
 
     bootstrap = adapter.fetch_changes(None)
     assert bootstrap.events == ()
@@ -133,14 +326,23 @@ def test_calendar_cancelled_is_tombstone_and_sync_token_persists(stub) -> None:
         "/calendars/cal-1": {"summary": "Work", "timeZone": "Asia/Seoul"},
         "/calendars/cal-1/events": {
             "items": [
-                {"id": "e1", "status": "confirmed", "summary": "Standup", "start": {"dateTime": "2026-08-24T09:00:00+09:00"}, "etag": "1"},
+                {
+                    "id": "e1",
+                    "status": "confirmed",
+                    "summary": "Standup",
+                    "start": {"dateTime": "2026-08-24T09:00:00+09:00"},
+                    "etag": "1",
+                },
                 {"id": "e2", "status": "cancelled", "summary": "Old", "etag": "2"},
             ],
             "nextSyncToken": "SYNC1",
         },
     }
     adapter = CalendarAdapter(
-        source_name="work", calendar_id="cal-1", token_provider=StaticTokenProvider(_token()), api_base=base
+        source_name="work",
+        calendar_id="cal-1",
+        token_provider=StaticTokenProvider(_token()),
+        api_base=base,
     )
     result = adapter.fetch_changes(None)
     kinds = sorted(e.kind for e in result.events)
@@ -154,7 +356,9 @@ def test_backoff_honors_retry_after_then_succeeds(stub, monkeypatch) -> None:
     state["fail_first_with_429"] = 1
     sleeps: list[float] = []
     adapter = DriveAdapter(
-        source_name="main", token_provider=StaticTokenProvider(_token()), api_base=base,
+        source_name="main",
+        token_provider=StaticTokenProvider(_token()),
+        api_base=base,
         sleep=sleeps.append,
     )
     result = adapter.fetch_changes(None)
@@ -165,7 +369,17 @@ def test_backoff_honors_retry_after_then_succeeds(stub, monkeypatch) -> None:
 def test_discover_reports_account_and_tier(stub) -> None:
     base, state = stub
     state["routes"] = {"/about": {"user": {"emailAddress": "x@y.z"}, "storageQuota": {}}}
-    adapter = DriveAdapter(source_name="main", token_provider=StaticTokenProvider(_token()), api_base=base)
+    adapter = DriveAdapter(
+        source_name="main", token_provider=StaticTokenProvider(_token()), api_base=base
+    )
     info = adapter.discover()
     assert info["account"] == "x@y.z"
     assert info["freshness_tier"] == "F1"
+
+
+@pytest.mark.parametrize("files", [None, [], "invalid"])
+def test_drive_rejects_malformed_file_cursor(files: object) -> None:
+    adapter = DriveAdapter(source_name="main", token_provider=StaticTokenProvider(_token()))
+    cursor = Cursor(provider="gdrive", source_id=adapter.source_id, state={"files": files})
+    with pytest.raises(ValueError, match="cursor files must be a mapping"):
+        adapter.fetch_changes(cursor)

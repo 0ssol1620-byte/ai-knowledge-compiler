@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import io
 import zipfile
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
+from decimal import Decimal
 from typing import Any, cast
 
 from akc_cir import BlockType
+from akc_cir.models import CellValueType
 from defusedxml import ElementTree as SafeElementTree
 from defusedxml.common import DefusedXmlException
 from openpyxl import load_workbook
@@ -136,33 +138,47 @@ def _add_sheet_table(
         if isinstance(cell, Cell) and cell.value is not None
     }
     merge_anchors: dict[tuple[int, int], tuple[int, int]] = {}
-    covered: set[tuple[int, int]] = set()
+    merged_bounds: list[tuple[int, int, int, int]] = []
     for merged_range in worksheet.merged_cells.ranges:
         min_column, min_row, max_column, max_row = _range_boundaries(str(merged_range))
+        if (min_row, min_column) in merge_anchors:
+            raise StructuredParseError("TABLE_CELL_OVERLAP")
         merge_anchors[(min_row, min_column)] = (
             max_row - min_row + 1,
             max_column - min_column + 1,
         )
-        for row in range(min_row, max_row + 1):
-            for column in range(min_column, max_column + 1):
-                if (row, column) != (min_row, min_column):
-                    covered.add((row, column))
+        merged_bounds.append((min_column, min_row, max_column, max_row))
 
-    coordinates = (set(actual_cells) | set(merge_anchors)) - covered
+    coordinates = set(actual_cells) | set(merge_anchors)
     if not coordinates:
         return None, []
     if len(coordinates) > builder.limits.max_cells_per_sheet:
         raise StructuredParseError("SHEET_CELL_LIMIT")
     min_row = min(row for row, _column in coordinates)
-    max_row = max(row for row, _column in coordinates)
+    max_row = max([row for row, _column in coordinates] + [bounds[3] for bounds in merged_bounds])
     min_column = min(column for _row, column in coordinates)
-    max_column = max(column for _row, column in coordinates)
+    max_column = max(
+        [column for _row, column in coordinates] + [bounds[2] for bounds in merged_bounds]
+    )
     row_count = max_row - min_row + 1
     column_count = max_column - min_column + 1
     if row_count > builder.limits.max_rows_per_sheet:
         raise StructuredParseError("SHEET_ROW_LIMIT")
     if column_count > builder.limits.max_columns_per_sheet:
         raise StructuredParseError("SHEET_COLUMN_LIMIT")
+    _enforce_table_bounds(row_count, column_count, builder)
+
+    # Bounds include declared empty merge edges, but only their anchors become
+    # canonical cells. Validate the grid before expanding covered coordinates.
+    covered: set[tuple[int, int]] = set()
+    for min_column_bound, min_row_bound, max_column_bound, max_row_bound in merged_bounds:
+        for row in range(min_row_bound, max_row_bound + 1):
+            for column in range(min_column_bound, max_column_bound + 1):
+                if (row, column) != (min_row_bound, min_column_bound):
+                    covered.add((row, column))
+    # Preserve overlapping anchors so the builder rejects overlaps rather than
+    # silently discarding a declared source range.
+    coordinates = (set(actual_cells) - covered) | set(merge_anchors)
 
     specs: list[TableCellSpec] = []
     formula_count = 0
@@ -170,16 +186,59 @@ def _add_sheet_table(
     for row, column in sorted(coordinates):
         cell = actual_cells.get((row, column))
         raw_value = cell.value if cell is not None else None
-        raw_text = _cell_text(raw_value)
+        # A string's padding, line endings and Unicode composition are source
+        # facts. Display normalization belongs in the builder, after raw text.
+        raw_text = raw_value if isinstance(raw_value, str) else _cell_text(raw_value)
         normalized_text = raw_text
         quality_flags: list[str] = []
+        value_type: CellValueType | None = (
+            _value_type(raw_value, cell.data_type) if cell is not None else None
+        )
+        formula_text: str | None = None
+        formula_entry: dict[str, Any] | None = None
+        # Keep unchanged cells' wire representation and hashes compatible.
+        preserve_raw_text = (
+            isinstance(raw_value, str)
+            and cell is not None
+            and cell.data_type != "f"
+            and normalize_text(raw_text) != raw_text
+        )
+        if preserve_raw_text:
+            # This raw field is newly emitted alongside normalized display
+            # text. Charge it in full to the same cumulative text fence before
+            # constructing cells, including text normalization strips away.
+            builder.reserve_metadata_text(raw_text)
+            quality_flags.append("xlsx_cell_text_normalized")
         if cell is not None and cell.data_type == "f":
             formula_count += 1
-            cached_value = value_sheet.cell(row=row, column=column).value
-            normalized_text = _cell_text(cached_value) if cached_value is not None else raw_text
+            # Array and data-table formulas arrive as objects; their source is
+            # the extracted OOXML text, never the object's string form. The
+            # same text is the cell's raw text, its formula, and its metadata.
+            formula_text = _formula_text(raw_value)
+            raw_text = formula_text or ""
+            preserve_raw_text = True
+            cached_cell = value_sheet.cell(row=row, column=column)
+            cached_value = cached_cell.value
+            cached_text = _cell_text(cached_value) if cached_value is not None else None
+            # Only an existing cache may become display text, and only its
+            # stored type is recorded; an absent cache stays explicitly absent.
+            normalized_text = cached_text if cached_text is not None else raw_text
+            value_type = (
+                _value_type(cached_value, cached_cell.data_type)
+                if cached_value is not None
+                else None
+            )
             quality_flags.append("formula_preserved_not_executed")
+            if formula_text is None:
+                # A data-table formula, for one, carries no formula text.
+                quality_flags.append("formula_text_unavailable")
             if cached_value is None:
                 quality_flags.append("formula_cached_value_missing")
+            formula_entry = {
+                "formula": formula_text,
+                "cachedValue": cached_text,
+                "cachedValuePresent": cached_value is not None,
+            }
         if worksheet.row_dimensions[row].hidden:
             quality_flags.append("hidden_row")
         column_letter = get_column_letter(column)
@@ -187,21 +246,8 @@ def _add_sheet_table(
             quality_flags.append("hidden_column")
         row_span, column_span = merge_anchors.get((row, column), (1, 1))
         coordinate = f"{column_letter}{row}"
-        if cell is not None and cell.data_type == "f":
-            formulas.append(
-                {
-                    "cell": coordinate,
-                    "formula": raw_text,
-                    "cachedValue": (
-                        _cell_text(value_sheet.cell(row=row, column=column).value)
-                        if value_sheet.cell(row=row, column=column).value is not None
-                        else None
-                    ),
-                    "cachedValuePresent": (
-                        value_sheet.cell(row=row, column=column).value is not None
-                    ),
-                }
-            )
+        if formula_entry is not None:
+            formulas.append({"cell": coordinate, **formula_entry})
         specs.append(
             TableCellSpec(
                 row_index0=row - min_row,
@@ -215,6 +261,10 @@ def _add_sheet_table(
                     native_object_id=(f"xlsx/sheet/{sheet_index0:04d}/cell/{coordinate}"),
                 ),
                 quality_flags=tuple(quality_flags),
+                preserve_raw_text=preserve_raw_text,
+                value_type=value_type,
+                number_format=_number_format(cell),
+                formula=formula_text,
             )
         )
 
@@ -451,6 +501,7 @@ def _preflight_worksheet_xml(data: bytes, builder: CirBuilder) -> None:
             cell_count = 0
             merged_area = 0
             rows: set[int] = set()
+            grid_bounds: list[tuple[int, int, int, int]] = []
             for element in root.iter():
                 local_name = element.tag.rsplit("}", 1)[-1]
                 if local_name == "c":
@@ -460,6 +511,19 @@ def _preflight_worksheet_xml(data: bytes, builder: CirBuilder) -> None:
                         row, column = _safe_coordinate(reference)
                         rows.add(row)
                         _enforce_sheet_bounds(row, column, builder)
+                        if any(
+                            child.tag.rsplit("}", 1)[-1] == "f"
+                            or (child.tag.rsplit("}", 1)[-1] == "v" and child.text is not None)
+                            or (
+                                child.tag.rsplit("}", 1)[-1] == "is"
+                                and any(
+                                    part.tag.rsplit("}", 1)[-1] == "t" and part.text is not None
+                                    for part in child.iter()
+                                )
+                            )
+                            for child in element
+                        ):
+                            grid_bounds.append((column, row, column, row))
                 elif local_name == "row":
                     raw_row = element.attrib.get("r")
                     if raw_row and raw_row.isdigit():
@@ -471,13 +535,28 @@ def _preflight_worksheet_xml(data: bytes, builder: CirBuilder) -> None:
                 elif local_name == "mergeCell":
                     reference = element.attrib.get("ref")
                     if reference:
-                        merged_area += _enforce_range(reference, builder)
+                        merged_area += _enforce_range(reference, builder, table_limits=True)
+                        grid_bounds.append(_range_boundaries(reference.replace("$", "")))
                         if merged_area > builder.limits.max_cells_per_sheet:
                             raise StructuredParseError("SHEET_CELL_LIMIT")
+                        if merged_area > builder.limits.max_table_cells:
+                            raise StructuredParseError("TABLE_CELL_LIMIT")
             if cell_count > builder.limits.max_cells_per_sheet:
                 raise StructuredParseError("SHEET_CELL_LIMIT")
             if len(rows) > builder.limits.max_rows_per_sheet:
                 raise StructuredParseError("SHEET_ROW_LIMIT")
+            if grid_bounds and merged_area:
+                row_count = (
+                    max(bounds[3] for bounds in grid_bounds)
+                    - min(bounds[1] for bounds in grid_bounds)
+                    + 1
+                )
+                column_count = (
+                    max(bounds[2] for bounds in grid_bounds)
+                    - min(bounds[0] for bounds in grid_bounds)
+                    + 1
+                )
+                _enforce_table_bounds(row_count, column_count, builder)
 
 
 def _safe_coordinate(reference: str) -> tuple[int, int]:
@@ -488,7 +567,7 @@ def _safe_coordinate(reference: str) -> tuple[int, int]:
     return row, column
 
 
-def _enforce_range(reference: str, builder: CirBuilder) -> int:
+def _enforce_range(reference: str, builder: CirBuilder, *, table_limits: bool = False) -> int:
     try:
         min_column, min_row, max_column, max_row = _range_boundaries(reference.replace("$", ""))
     except (TypeError, ValueError) as exc:
@@ -501,7 +580,20 @@ def _enforce_range(reference: str, builder: CirBuilder) -> int:
     area = (max_row - min_row + 1) * (max_column - min_column + 1)
     if area > builder.limits.max_cells_per_sheet:
         raise StructuredParseError("SHEET_CELL_LIMIT")
+    if table_limits:
+        _enforce_table_bounds(max_row - min_row + 1, max_column - min_column + 1, builder)
     return area
+
+
+def _enforce_table_bounds(row_count: int, column_count: int, builder: CirBuilder) -> None:
+    if row_count > builder.limits.max_table_rows:
+        raise StructuredParseError("TABLE_ROW_LIMIT")
+    if column_count > builder.limits.max_table_columns:
+        raise StructuredParseError("TABLE_COLUMN_LIMIT")
+    if row_count * column_count > builder.limits.max_cells_per_sheet:
+        raise StructuredParseError("SHEET_CELL_LIMIT")
+    if row_count * column_count > builder.limits.max_table_cells:
+        raise StructuredParseError("TABLE_CELL_LIMIT")
 
 
 def _enforce_sheet_bounds(row: int, column: int, builder: CirBuilder) -> None:
@@ -518,7 +610,10 @@ def _range_boundaries(reference: str) -> tuple[int, int, int, int]:
         raise StructuredParseError("XLSX_INVALID_RANGE") from exc
     if any(value is None for value in boundaries):
         raise StructuredParseError("XLSX_INVALID_RANGE")
-    return cast(tuple[int, int, int, int], boundaries)
+    min_column, min_row, max_column, max_row = cast(tuple[int, int, int, int], boundaries)
+    if min_column < 1 or min_row < 1 or max_column < min_column or max_row < min_row:
+        raise StructuredParseError("XLSX_INVALID_RANGE")
+    return min_column, min_row, max_column, max_row
 
 
 def _cell_text(value: Any) -> str:
@@ -529,6 +624,49 @@ def _cell_text(value: Any) -> str:
     if isinstance(value, bool):
         return "TRUE" if value else "FALSE"
     return normalize_text(str(value))
+
+
+def _value_type(value: Any, data_type: str | None) -> CellValueType | None:
+    """Map the workbook's stored value type; never infer a type from text."""
+
+    if value is None:
+        return None
+    if data_type == "e":
+        return "error"
+    if isinstance(value, bool):
+        return "boolean"
+    if isinstance(value, (int, float, Decimal)):
+        return "number"
+    if isinstance(value, datetime):
+        return "datetime"
+    if isinstance(value, date):
+        return "date"
+    if isinstance(value, time):
+        return "time"
+    if isinstance(value, timedelta):
+        return "duration"
+    if isinstance(value, str):
+        return "string"
+    return None
+
+
+def _formula_text(value: Any) -> str | None:
+    if isinstance(value, str):
+        return value or None
+    # Array and data-table formulas are objects carrying their source text.
+    text = getattr(value, "text", None)
+    return text if isinstance(text, str) and text else None
+
+
+def _number_format(cell: Cell | None) -> str | None:
+    """Return the format code verbatim; "General" is the OOXML default, not a label."""
+
+    if cell is None:
+        return None
+    number_format = cell.number_format
+    if not isinstance(number_format, str) or not number_format or number_format == "General":
+        return None
+    return number_format
 
 
 def _filename_title(filename: str) -> str:

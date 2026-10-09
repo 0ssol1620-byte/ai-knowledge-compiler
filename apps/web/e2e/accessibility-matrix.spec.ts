@@ -35,16 +35,32 @@ const typographyRoutes = [
   "/legal/privacy",
 ] as const;
 
-test("core journeys preserve meaning and focus in forced colors", async ({
-  page,
-}) => {
-  await page.emulateMedia({
-    forcedColors: "active",
-    reducedMotion: "reduce",
-    colorScheme: "light",
-  });
+const controlRoutes = [
+  "/",
+  "/product/verify",
+  "/intake",
+  "/documents/sample-dart/processing",
+  "/integrity?reference=1",
+  "/knowledge-bases",
+  "/demo/dart",
+  "/demo/sec",
+  "/security",
+  "/projects",
+  "/legal/privacy",
+] as const;
 
-  for (const route of coreRoutes) {
+// Keep each route in a fresh Playwright test/Page. The original route loops
+// shared one default 30-second test budget across six or eleven navigations.
+for (const route of coreRoutes) {
+  test(`forced colors preserve meaning and focus: ${route}`, async ({
+    page,
+  }) => {
+    await page.emulateMedia({
+      forcedColors: "active",
+      reducedMotion: "reduce",
+      colorScheme: "light",
+    });
+
     const response = await page.goto(route, { waitUntil: "domcontentloaded" });
     await expectHydrated(page);
     expect(response?.status(), route).toBeLessThan(400);
@@ -73,18 +89,18 @@ test("core journeys preserve meaning and focus in forced colors", async ({
         `${route} must retain a visible focus treatment in forced colors`,
       ).toBe(true);
     }
-  }
-});
+  });
+}
 
-test("core journeys tolerate 200 percent text scaling without horizontal overflow", async ({
-  page,
-}, testInfo) => {
-  test.skip(
-    testInfo.project.name === "mobile",
-    "desktop text-scaling contract",
-  );
+for (const route of coreRoutes) {
+  test(`200 percent text scaling has no horizontal overflow: ${route}`, async ({
+    page,
+  }, testInfo) => {
+    test.skip(
+      testInfo.project.name === "mobile",
+      "desktop text-scaling contract",
+    );
 
-  for (const route of coreRoutes) {
     const response = await page.goto(route, { waitUntil: "domcontentloaded" });
     await expectHydrated(page);
     expect(response?.status(), route).toBeLessThan(400);
@@ -111,13 +127,11 @@ test("core journeys tolerate 200 percent text scaling without horizontal overflo
       metrics.bodyWidth,
       `${route} body overflow at 200% text`,
     ).toBeLessThanOrEqual(metrics.clientWidth + 1);
-  }
-});
+  });
+}
 
-test("core journeys never render visible text below 12 pixels", async ({
-  page,
-}) => {
-  for (const route of typographyRoutes) {
+for (const route of typographyRoutes) {
+  test(`visible text is at least 12 pixels: ${route}`, async ({ page }) => {
     const response = await page.goto(route, { waitUntil: "domcontentloaded" });
     await expectHydrated(page);
     expect(response?.status(), route).toBeLessThan(400);
@@ -174,27 +188,13 @@ test("core journeys never render visible text below 12 pixels", async ({
     });
 
     expect(undersized, `${route} contains visible text below 12px`).toEqual([]);
-  }
-});
+  });
+}
 
-test("core controls and form labels render at 14 pixels or larger", async ({
-  page,
-}) => {
-  const controlRoutes = [
-    "/",
-    "/product/verify",
-    "/intake",
-    "/documents/sample-dart/processing",
-    "/integrity?reference=1",
-    "/knowledge-bases",
-    "/demo/dart",
-    "/demo/sec",
-    "/security",
-    "/projects",
-    "/legal/privacy",
-  ] as const;
-
-  for (const route of controlRoutes) {
+for (const route of controlRoutes) {
+  test(`core controls and labels are at least 14 pixels: ${route}`, async ({
+    page,
+  }) => {
     const response = await page.goto(route, { waitUntil: "domcontentloaded" });
     await expectHydrated(page);
     expect(response?.status(), route).toBeLessThan(400);
@@ -248,5 +248,5 @@ test("core controls and form labels render at 14 pixels or larger", async ({
     expect
       .soft(undersized, `${route} contains a core control below 14px`)
       .toEqual([]);
-  }
-});
+  });
+}

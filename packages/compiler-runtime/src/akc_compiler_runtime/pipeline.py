@@ -33,15 +33,21 @@ from __future__ import annotations
 import hashlib
 import json
 from collections import defaultdict
-from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from collections.abc import Iterable, Mapping, Sequence
+from contextlib import suppress
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from pathlib import Path
 
 from akc_cir.answer_compiler import CompiledAnswer, DraftClaim, compile_answer
 from akc_cir.authority import AuthorityClass, ClaimContext, SourceStatus
 from akc_cir.dependency import DependencyEdge, DependencyGraph, EdgeType
-from akc_cir.identity import LogicalMatch, assign_one_to_one, source_id
+from akc_cir.identity import (
+    LogicalMatch,
+    assign_one_to_one,
+    normalize_text_for_identity,
+    source_id,
+)
 from akc_cir.recompilation import (
     EquivalenceReport,
     RecompilationPlan,
@@ -64,16 +70,19 @@ from akc_cir.world_state import (
     publication_manifest,
 )
 
+from . import extraction
 from .answers import select_drafts
-from .extraction import AuthorityClass as ExtractionAuthority
 from .extraction import (
+    UNMAPPED_ACL,
     ClaimDraft,
     ParsedDocument,
     anchored_evidence_id,
     parse_workspace,
     seed_logical_id,
 )
+from .extraction import AuthorityClass as ExtractionAuthority
 from .extraction import SourceStatus as ExtractionSourceStatus
+from .records import record_strings
 from .store import StoredWorld, WorldStore, next_deterministic_time
 
 __all__ = [
@@ -108,6 +117,16 @@ class ReviewItem:
     rel_path: str
     text: str
 
+    @classmethod
+    def from_record(cls, record: Mapping[str, object]) -> ReviewItem:
+        return cls(
+            subject=str(record["subject"]),
+            reason=str(record["reason"]),
+            candidates=record_strings(record["candidates"]),
+            rel_path=str(record["rel_path"]),
+            text=str(record["text"]),
+        )
+
     def as_record(self) -> dict[str, object]:
         return {
             "subject": self.subject,
@@ -139,7 +158,9 @@ def _from_iso(raw: object) -> datetime | None:
 
 
 def _jsonable(row: Mapping[str, object]) -> dict[str, object]:
-    return json.loads(json.dumps(dict(row), ensure_ascii=False))
+    value: object = json.loads(json.dumps(dict(row), ensure_ascii=False))
+    assert isinstance(value, dict)
+    return {str(key): item for key, item in value.items()}
 
 
 class Pipeline:
@@ -152,9 +173,7 @@ class Pipeline:
         options: CompileOptions | None = None,
     ) -> None:
         self.options = options or CompileOptions()
-        self.store = WorldStore(
-            Path(world_store_root), workspace_id=self.options.workspace_id
-        )
+        self.store = WorldStore(Path(world_store_root), workspace_id=self.options.workspace_id)
         self.registry: WorldStateRegistry = self.store.load_registry()
 
     # ------------------------------------------------------------------
@@ -177,10 +196,23 @@ class Pipeline:
         Unchanged trees are a no-op: the active world is retained and nothing
         -- not a candidate, not a receipt -- is written.
         """
-        documents = self._parse(Path(source_dir))
         previous = self.store.load_world()
         if previous is None:
             return self.compile_workspace(source_dir)
+
+        cached = self.store.load_parsed_cache(previous, context=self._parser_context())
+        documents = []
+        for file in extraction.scan_source_files(Path(source_dir)):
+            document = None
+            if previous.cursor.get(file.rel_path) == file.sha256 and file.rel_path in cached:
+                # Optional cache: malformed output always takes the cold path.
+                with suppress(ValueError, TypeError, KeyError, RecursionError):
+                    document = extraction.parsed_document_from_record(
+                        cached[file.rel_path], file, tenant_id=self.options.tenant_id
+                    )
+            if document is None:
+                document = extraction.parse_file(file, tenant_id=self.options.tenant_id)
+            documents.append(document)
 
         classification = self._classify(documents, previous)
         if not (
@@ -197,11 +229,12 @@ class Pipeline:
                 no_op=True,
                 claims=dict(previous.claims),
                 evidence_index=dict(previous.evidence_index),
-                review_queue=tuple(previous.review_queue),
+                review_queue=tuple(ReviewItem.from_record(item) for item in previous.review_queue),
                 invalidated=(),
                 renames=(),
                 plan=None,
                 equivalence=None,
+                tombstones=tuple(_tombstone_units(previous)),
                 _pipeline=self,
             )
 
@@ -210,8 +243,18 @@ class Pipeline:
         )
         return self._publish_build(documents, build, previous, selective=True)
 
-    def answer(self, question: str, *, as_of: datetime | None = None) -> CompiledAnswer:
-        """Compile a question against whatever world is currently ACTIVE."""
+    def answer(
+        self,
+        question: str,
+        *,
+        as_of: datetime | None = None,
+        permissions: Iterable[str] = (),
+    ) -> CompiledAnswer:
+        """Compile a question against whatever world is currently ACTIVE.
+
+        ``permissions`` are what the asker holds; a claim from a restricted
+        source is only a candidate when its permission is among them.
+        """
         world = self.store.load_world()
         if world is None:
             raise RuntimeError("no world has been compiled yet")
@@ -222,6 +265,7 @@ class Pipeline:
             world_state_id=world.world_state_id,
             registry=registry,
             as_of=as_of,
+            permissions=permissions,
         )
 
     # ------------------------------------------------------------------
@@ -230,6 +274,16 @@ class Pipeline:
 
     def _parse(self, source_dir: Path) -> list[ParsedDocument]:
         return parse_workspace(source_dir, tenant_id=self.options.tenant_id)
+
+    def _parser_context(self) -> dict[str, object]:
+        """Bind scope and options, including the current filesystem parser contract."""
+        return {
+            "parser_schema": extraction.PARSER_CACHE_VERSION,
+            "tenant_id": self.options.tenant_id,
+            "workspace_id": self.options.workspace_id,
+            "connector_type": self.options.connector_type,
+            "max_depth": self.options.max_depth,
+        }
 
     def _classify(
         self, documents: Sequence[ParsedDocument], previous: StoredWorld | None
@@ -267,9 +321,7 @@ class Pipeline:
     # identity resolution
     # ------------------------------------------------------------------
 
-    def _previous_by_path(
-        self, previous: StoredWorld
-    ) -> dict[str, list[dict[str, object]]]:
+    def _previous_by_path(self, previous: StoredWorld) -> dict[str, list[dict[str, object]]]:
         grouped: defaultdict[str, list[dict[str, object]]] = defaultdict(list)
         for row in previous.claims.values():
             grouped[str(row["rel_path"])].append(row)
@@ -284,9 +336,7 @@ class Pipeline:
             document_path=tuple(row["section_path"]),  # type: ignore[arg-type]
             anchor=str(row["anchor"]),
             neighbour_anchors=(
-                (previous_anchor, next_anchor)
-                if previous_anchor or next_anchor
-                else ()
+                (previous_anchor, next_anchor) if previous_anchor or next_anchor else ()
             ),
         )
 
@@ -307,12 +357,14 @@ class Pipeline:
         previous_rows: Sequence[Mapping[str, object]],
         *,
         lineage_source: str,
+        previous_rel_path: str | None = None,
     ) -> _DocumentResolution:
         """Resolve one document's claims against its previous version.
 
         Matched identities keep their logical ids; new units are seeded; an
         identity the resolver cannot settle is quarantined for review instead
-        of being merged or split on a guess.
+        of being merged or split on a guess. ``previous_rel_path`` names where
+        ``previous_rows`` lived when the document was renamed this run.
         """
         anchors = [draft.anchor for draft in document.claims]
         neighbour_pairs = [
@@ -322,22 +374,27 @@ class Pipeline:
             )
             for index in range(len(anchors))
         ]
-        seeds = [
-            seed_logical_id(source=lineage_source, draft=draft)
-            for draft in document.claims
-        ]
+        seeds = [seed_logical_id(source=lineage_source, draft=draft) for draft in document.claims]
         after_snapshots = [
             self._snapshot_from_draft(draft, seed, neighbours)
-            for draft, seed, neighbours in zip(
-                document.claims, seeds, neighbour_pairs, strict=True
-            )
+            for draft, seed, neighbours in zip(document.claims, seeds, neighbour_pairs, strict=True)
         ]
         before_snapshots = [self._snapshot_from_record(row) for row in previous_rows]
+        if previous_rel_path is not None:
+            before_snapshots = _rebase_folders(
+                before_snapshots, previous_rel_path, document.file.rel_path
+            )
 
         decisions = (
             assign_one_to_one(
-                [snapshot.fingerprint(source_lineage=lineage_source) for snapshot in after_snapshots],
-                [snapshot.fingerprint(source_lineage=lineage_source) for snapshot in before_snapshots],
+                [
+                    snapshot.fingerprint(source_lineage=lineage_source)
+                    for snapshot in after_snapshots
+                ],
+                [
+                    snapshot.fingerprint(source_lineage=lineage_source)
+                    for snapshot in before_snapshots
+                ],
             )
             if (after_snapshots or before_snapshots)
             else []
@@ -398,7 +455,7 @@ class Pipeline:
             "valid_to": _iso(draft.valid_to),
             "recorded_at": _iso(draft.recorded_at),
             "temporal_source": draft.temporal_source.value,
-            "required_permission": None,
+            "required_permission": document.required_permission,
             "evidence_id": evidence,
             "rel_path": document.file.rel_path,
             "line_number": draft.line_number,
@@ -444,6 +501,20 @@ class Pipeline:
         by_path = {doc.file.rel_path: doc for doc in documents}
         prev_rows_by_path = self._previous_by_path(previous) if previous else {}
 
+        # Lineage belongs to the document, not to one run: a document keeps
+        # the path it was first compiled at through every later rename and
+        # edit, so its identities, its document node and the edges other
+        # documents hold to it all survive the move.
+        def lineage_of(path: str) -> str:
+            for row in prev_rows_by_path.get(path, []):
+                if row.get("moved_from"):
+                    return str(row["moved_from"])
+            return path
+
+        lineage_by_path = {path: lineage_of(path) for path in by_path}
+        for new_path, old_path in classification.renamed.items():
+            lineage_by_path[new_path] = lineage_of(old_path)
+
         rows: list[dict[str, object]] = []
         reviews: list[ReviewItem] = []
         # (logical_id, lineage path) for every unit this build retires, either
@@ -453,17 +524,13 @@ class Pipeline:
         resolved_row_ids: set[str] = set()
         renames: list[tuple[str, str]] = []
 
-        def absorb(
-            resolution: _DocumentResolution, *, lineage_path: str, rel_path: str
-        ) -> None:
+        def absorb(resolution: _DocumentResolution, *, lineage_path: str, rel_path: str) -> None:
             for row in resolution.rows:
                 if lineage_path != rel_path:
                     row["moved_from"] = lineage_path
             rows.extend(resolution.rows)
             reviews.extend(resolution.review)
-            removed_units.extend(
-                (unit_id, lineage_path) for unit_id in resolution.retired
-            )
+            removed_units.extend((unit_id, lineage_path) for unit_id in resolution.retired)
             resolved_paths.add(rel_path)
             resolved_row_ids.update(str(row["logical_id"]) for row in resolution.rows)
 
@@ -472,12 +539,14 @@ class Pipeline:
             doc = by_path.get(new_path)
             if doc is None:
                 continue
+            lineage = lineage_by_path[new_path]
             resolution = self._resolve_document(
                 doc,
                 prev_rows_by_path.get(old_path, []),
-                lineage_source=self._source_of(old_path),
+                lineage_source=self._source_of(lineage),
+                previous_rel_path=old_path,
             )
-            absorb(resolution, lineage_path=old_path, rel_path=new_path)
+            absorb(resolution, lineage_path=lineage, rel_path=new_path)
             renames.append((old_path, new_path))
 
         # 2. Changed and added paths.
@@ -486,46 +555,65 @@ class Pipeline:
             doc = by_path.get(path)
             if doc is None:
                 continue
+            lineage = lineage_by_path[path]
             resolution = self._resolve_document(
                 doc,
                 prev_rows_by_path.get(path, []),
-                lineage_source=self._source_of(path),
+                lineage_source=self._source_of(lineage),
             )
-            absorb(resolution, lineage_path=path, rel_path=path)
+            absorb(resolution, lineage_path=lineage, rel_path=path)
 
         # 3. Removals: every previous row whose file is gone retires. The
-        #    file's path rides along so the unit keeps its document edge and
-        #    impact can still propagate out of a deleted document.
+        #    document's lineage path rides along so the unit keeps its
+        #    document edge and impact can still propagate out of a deleted
+        #    document, however many times it moved before it was deleted.
         for path in classification.removed:
             for row in prev_rows_by_path.get(path, []):
-                removed_units.append((str(row["logical_id"]), path))
+                removed_units.append((str(row["logical_id"]), _lineage_path(row)))
 
         # 4. Clean paths: selective carries rows verbatim; full re-resolves.
         for path in sorted(set(by_path) - resolved_paths):
             doc = by_path[path]
             prior_rows = prev_rows_by_path.get(path, [])
             if resolve_all:
+                lineage = lineage_by_path[path]
                 resolution = self._resolve_document(
-                    doc, prior_rows, lineage_source=self._source_of(path)
+                    doc, prior_rows, lineage_source=self._source_of(lineage)
                 )
-                absorb(resolution, lineage_path=path, rel_path=path)
+                absorb(resolution, lineage_path=lineage, rel_path=path)
             else:
                 rows.extend(self._carry_row(row) for row in prior_rows)
 
         path_aliases = {old: new for new, old in classification.renamed.items()}
         rows = self._attach_dependencies(rows, path_aliases=path_aliases)
+
+        # 5. Tombstones: a deleted document's units keep invalidating what
+        #    depends on that document in every later world -- across publishes
+        #    and restarts -- until a document with the same lineage exists
+        #    again. Units retired from a document that is still live remain
+        #    this run's event only, exactly as before.
+        live_lineages = set(lineage_by_path.values())
+        row_ids = {str(row["logical_id"]) for row in rows}
+
+        def is_tombstone(unit: tuple[str, str]) -> bool:
+            return unit[1] not in live_lineages and unit[0] not in row_ids
+
+        impact_units = list(
+            dict.fromkeys(
+                [*removed_units, *filter(is_tombstone, _tombstone_units(previous))]
+            )
+        )
+        tombstones = sorted(filter(is_tombstone, impact_units))
         rows = self._stamp_invalidation(
             rows,
-            [unit_id for unit_id, _ in removed_units],
-            removed_units=removed_units,
+            [unit_id for unit_id, _ in impact_units],
+            removed_units=impact_units,
         )
 
         merged_diff = self._merged_diff(classification, by_path, prev_rows_by_path, rows)
-        graph = self._dependency_graph(rows, removed_units)
+        graph = self._dependency_graph(rows, impact_units)
         inventory = [str(row["logical_id"]) for row in rows]
-        plan = plan_recompilation(
-            diff=merged_diff, graph=graph, artifacts=inventory
-        )
+        plan = plan_recompilation(diff=merged_diff, graph=graph, artifacts=inventory)
         return _Build(
             rows=rows,
             reviews=reviews,
@@ -536,6 +624,7 @@ class Pipeline:
             plan=plan,
             resolved_row_ids=resolved_row_ids,
             removed_units=removed_units,
+            tombstones=tombstones,
         )
 
     def _source_of(self, rel_path: str) -> str:
@@ -581,7 +670,7 @@ class Pipeline:
             return f"doc:{self._source_of(ref)}"
 
         for row in rows:
-            refs = row["dep_refs"]  # type: ignore[union-attr]
+            refs = record_strings(row["dep_refs"])
             targets = {resolve(ref) for ref in refs}
             targets.discard(str(row["doc_node"]))
             row["dependencies"] = sorted(targets)
@@ -610,7 +699,8 @@ class Pipeline:
             stamps = sorted(
                 cause
                 for cause in causes
-                if cause != logical_id and cause in graph.nodes
+                if cause != logical_id
+                and cause in graph.nodes
                 and logical_id in graph.impact_of([cause]).affected_ids
             )
             row["invalidated_by"] = stamps
@@ -641,9 +731,7 @@ class Pipeline:
                 return
             seen_edges.add(key)
             edges.append(
-                DependencyEdge(
-                    source_id=source_id, target_id=target_id, edge_type=edge_type
-                )
+                DependencyEdge(source_id=source_id, target_id=target_id, edge_type=edge_type)
             )
 
         for row in rows:
@@ -651,7 +739,7 @@ class Pipeline:
             doc_node = str(row["doc_node"])
             add(logical_id, doc_node, EdgeType.CONSUMED_BY)
             add(doc_node, logical_id, EdgeType.INVALIDATES)
-            for target in row["dependencies"]:  # type: ignore[union-attr]
+            for target in record_strings(row["dependencies"]):
                 add(doc_node, str(target), EdgeType.DEPENDS_ON)
         for unit_id, lineage_path in removed_units:
             add(unit_id, f"doc:{self._source_of(lineage_path)}", EdgeType.CONSUMED_BY)
@@ -667,9 +755,7 @@ class Pipeline:
         """One aggregate SemanticDiff over every dirty or removed document."""
         changes: list[SemanticChange] = []
         dirty = (
-            set(classification.changed)
-            | set(classification.added)
-            | set(classification.renamed)
+            set(classification.changed) | set(classification.added) | set(classification.renamed)
         )
         new_rows_by_path: defaultdict[str, list[Mapping[str, object]]] = defaultdict(list)
         for row in new_rows:
@@ -682,9 +768,7 @@ class Pipeline:
             old_path = classification.renamed.get(path, path)
             before_rows = prev_rows_by_path.get(old_path, [])
             after_rows = new_rows_by_path.get(path, [])
-            before_sha = (
-                str(before_rows[0]["sha256"]) if before_rows else f"absent:{old_path}"
-            )
+            before_sha = str(before_rows[0]["sha256"]) if before_rows else f"absent:{old_path}"
             changes.extend(
                 change
                 for change in diff_documents(
@@ -693,9 +777,7 @@ class Pipeline:
                     level=DiffLevel.SEMANTIC,
                     before_shape=_shape_of(before_rows),
                     after_shape=_shape_of(after_rows),
-                    before_units=[
-                        self._snapshot_from_record(row) for row in before_rows
-                    ],
+                    before_units=[self._snapshot_from_record(row) for row in before_rows],
                     after_units=[
                         UnitSnapshot(
                             logical_id=str(row["logical_id"]),
@@ -709,6 +791,23 @@ class Pipeline:
                 ).changes
                 if change.kind is not ChangeKind.CONTENT_UNCHANGED
             )
+            # UnitSnapshot carries no ACL, so diff_documents cannot see an
+            # access change; name it here so the plan marks those claims.
+            before_acl = {
+                str(row["logical_id"]): row.get("required_permission") for row in before_rows
+            }
+            for row in after_rows:
+                logical_id = str(row["logical_id"])
+                if logical_id in before_acl and before_acl[logical_id] != row.get(
+                    "required_permission"
+                ):
+                    changes.append(
+                        SemanticChange(
+                            kind=ChangeKind.PERMISSION_CHANGED,
+                            logical_id=logical_id,
+                            detail="source access requirement changed",
+                        )
+                    )
             if old_path != path:
                 # A rename is a real source-level event even when the bytes
                 # are identical: the evidence now lives somewhere else, and
@@ -771,20 +870,20 @@ class Pipeline:
             for row in rows
         }
         cursor = {doc.file.rel_path: doc.file.sha256 for doc in documents}
+        tombstones = _tombstone_records(build.tombstones)
         artifacts = {
             **{
-                f"claim/{logical_id}": content_hash(row)
-                for logical_id, row in claims_table.items()
+                f"claim/{logical_id}": content_hash(row) for logical_id, row in claims_table.items()
             },
             "evidence/index": content_hash(_jsonable(evidence_index)),
             "cursor": content_hash(_jsonable(cursor)),
         }
+        if tombstones:
+            artifacts["tombstones"] = content_hash(tombstones)
 
         equivalence_report: EquivalenceReport | None = None
         if selective:
-            equivalence_report = self._verify_oracle(
-                documents, build, claims_table, artifacts
-            )
+            equivalence_report = self._verify_oracle(documents, build, claims_table, artifacts)
 
         receipt = ValidationReceipt(
             receipt_id=f"rcpt-{build.diff.change_id[:16]}",
@@ -795,6 +894,15 @@ class Pipeline:
         )
 
         world_state_id = self.store.next_world_state_id
+        parsed_cache: dict[str, object] = {
+            "world_state_id": world_state_id,
+            "workspace_id": self.options.workspace_id,
+            "context": self._parser_context(),
+            "documents": {
+                doc.file.rel_path: extraction.parsed_document_record(doc) for doc in documents
+            },
+        }
+        artifacts["parsed/documents"] = content_hash(parsed_cache)
         manifest = publication_manifest(
             world_state_id=world_state_id,
             compiler_version=COMPILER_VERSION,
@@ -817,12 +925,12 @@ class Pipeline:
             evidence_index=evidence_index,
             review_queue=tuple(item.as_record() for item in build.reviews),
             cursor=cursor,
+            tombstones=tuple(tombstones),
+            parsed_cache=parsed_cache,
         )
         return WorldResult(
             world_state_id=world_state_id,
-            previous_world_state_id=(
-                previous.world_state_id if previous else None
-            ),
+            previous_world_state_id=(previous.world_state_id if previous else None),
             manifest_hash=manifest.manifest_hash,
             published=True,
             no_op=False,
@@ -830,13 +938,12 @@ class Pipeline:
             evidence_index=evidence_index,
             review_queue=tuple(build.reviews),
             invalidated=tuple(
-                logical_id
-                for logical_id, row in claims_table.items()
-                if row["invalidated_by"]
+                logical_id for logical_id, row in claims_table.items() if row["invalidated_by"]
             ),
             renames=tuple(build.renames),
             plan=build.plan,
             equivalence=equivalence_report,
+            tombstones=tuple(build.tombstones),
             _pipeline=self,
         )
 
@@ -861,10 +968,11 @@ class Pipeline:
         )
         full_artifacts = {
             f"claim/{logical_id}": content_hash(_jsonable(row))
-            for logical_id, row in (
-                (str(row["logical_id"]), row) for row in full_build.rows
-            )
+            for logical_id, row in ((str(row["logical_id"]), row) for row in full_build.rows)
         }
+        full_tombstones = _tombstone_records(full_build.tombstones)
+        if full_tombstones:
+            full_artifacts["tombstones"] = content_hash(full_tombstones)
         rebuilt: dict[str, str] = {}
         carried: dict[str, str] = {}
         for name, digest in selective_artifacts.items():
@@ -897,11 +1005,52 @@ def _lineage_path(row: Mapping[str, object]) -> str:
     return str(row["rel_path"])
 
 
+def _tombstone_units(world: StoredWorld | None) -> list[tuple[str, str]]:
+    """``(logical_id, lineage_path)`` for every tombstone a stored world holds."""
+    if world is None:
+        return []
+    return [
+        (str(record["logical_id"]), str(record["lineage_path"])) for record in world.tombstones
+    ]
+
+
+def _tombstone_records(units: Sequence[tuple[str, str]]) -> list[dict[str, object]]:
+    return [
+        {"logical_id": logical_id, "lineage_path": lineage_path}
+        for logical_id, lineage_path in units
+    ]
+
+
+def _folder_parts(rel_path: str) -> tuple[str, ...]:
+    """The folder prefix extraction puts at the head of every section path."""
+    parts = rel_path.replace("\\", "/").split("/")[:-1]
+    return tuple(normalize_text_for_identity(part) for part in parts)
+
+
+def _rebase_folders(
+    snapshots: Sequence[UnitSnapshot], old_rel_path: str, new_rel_path: str
+) -> list[UnitSnapshot]:
+    """Re-express a renamed document's previous units under its new folder.
+
+    An exact-content rename changes where the bytes live, not the structure
+    inside them. Section paths lead with the folder, so without this a move
+    across folders zeroes the structural signal and forks every identity.
+    """
+    old_prefix = _folder_parts(old_rel_path)
+    new_prefix = _folder_parts(new_rel_path)
+    if old_prefix == new_prefix:
+        return list(snapshots)
+    return [
+        replace(snapshot, document_path=new_prefix + snapshot.document_path[len(old_prefix) :])
+        if snapshot.document_path[: len(old_prefix)] == old_prefix
+        else snapshot
+        for snapshot in snapshots
+    ]
+
+
 def _shape_of(rows: Sequence[Mapping[str, object]]) -> DocumentShape:
     return DocumentShape(
-        heading_path_set=frozenset(
-            tuple(row["section_path"]) for row in rows  # type: ignore[arg-type]
-        ),
+        heading_path_set=frozenset(record_strings(row["section_path"]) for row in rows),
         block_count=len(rows),
     )
 
@@ -913,10 +1062,13 @@ def answer_from_world(
     world_state_id: str,
     registry: WorldStateRegistry,
     as_of: datetime | None = None,
+    permissions: Iterable[str] = (),
 ) -> CompiledAnswer:
     """Select drafts lexically and compile them through akc_cir."""
     moment = as_of or datetime(2026, 10, 1, tzinfo=UTC)
-    context = ClaimContext(subject="workspace", as_of=moment)
+    # The unmapped-ACL marker is never grantable, whatever the caller claims.
+    held = frozenset(permissions) - {UNMAPPED_ACL}
+    context = ClaimContext(subject="workspace", as_of=moment, permissions=held)
     drafts = select_drafts(question, claims, world_state_id=world_state_id)
     return compile_answer(question, drafts, registry, context)
 
@@ -949,6 +1101,7 @@ class _Build:
     plan: RecompilationPlan
     resolved_row_ids: set[str]
     removed_units: list[tuple[str, str]]
+    tombstones: list[tuple[str, str]]
 
 
 @dataclass(frozen=True, slots=True)
@@ -967,21 +1120,27 @@ class WorldResult:
     renames: tuple[tuple[str, str], ...]
     plan: RecompilationPlan | None
     equivalence: EquivalenceReport | None
+    #: ``(logical_id, lineage_path)`` of deleted units still invalidating.
+    tombstones: tuple[tuple[str, str], ...] = ()
     _pipeline: Pipeline | None = field(default=None, repr=False, compare=False)
 
     @property
     def active_claim_ids(self) -> tuple[str, ...]:
         """Claims that may serve an answer: present and not invalidated."""
         return tuple(
-            logical_id
-            for logical_id, row in self.claims.items()
-            if not row.get("invalidated_by")
+            logical_id for logical_id, row in self.claims.items() if not row.get("invalidated_by")
         )
 
-    def answer(self, question: str, *, as_of: datetime | None = None) -> CompiledAnswer:
+    def answer(
+        self,
+        question: str,
+        *,
+        as_of: datetime | None = None,
+        permissions: Iterable[str] = (),
+    ) -> CompiledAnswer:
         if self._pipeline is None:
             raise RuntimeError("this result is detached from its pipeline")
-        return self._pipeline.answer(question, as_of=as_of)
+        return self._pipeline.answer(question, as_of=as_of, permissions=permissions)
 
     def evidence_for(self, evidence_id: str) -> Mapping[str, object] | None:
         return self.evidence_index.get(evidence_id)

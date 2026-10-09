@@ -26,6 +26,7 @@ Decisions that open a capability rather than resolve a conflict.
 | Record | Decides |
 | --- | --- |
 | [ADR-006](ADR-006-anonymous-trial-ingest.md) | The marketing hero may accept a document from an anonymous visitor, under caps. Tenant scoping is preserved through a system trial tenant; the ADR-004 quarantine path is not shortened; the flow stops at `PREFLIGHTED` so GPU spend stays behind a principal; `trial_ingest_enabled` defaults to `false`. |
+| [ADR-007](ADR-007-element-aware-second-reader.md) (Proposed) | A cross-check names its second reader, chosen per element from the 2026-09-06 complementarity measurement rather than left to whatever the caller had. No measurement means no second read, never a default partner. `ovisocr2` and `mineru_vlm` join the registry and the `mineru` row is pinned to the pipeline variant it always was. Nothing is enabled: licence review, GPU serving, the registry rows and a no-regression benchmark of the pair are all founder decisions. |
 
 ## Decision order
 

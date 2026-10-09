@@ -3,6 +3,7 @@ from __future__ import annotations
 import io
 from datetime import UTC, datetime
 
+from akc_cir import BlockType
 from akc_native_parsers import ParseContext, ParserLimits, parse_pdf_to_cir
 from PIL import Image, ImageDraw
 from pypdf import PdfReader, PdfWriter
@@ -109,6 +110,39 @@ def test_pdf_native_parser_preserves_coordinates_boxes_drawings_and_assets() -> 
     assert len(image_blocks) >= 1
     assert image_blocks[0].source_refs[0].image_asset_id is not None
     assert image_blocks[0].source_refs[0].page_number1 == 2
+
+
+def test_pdf_native_text_follows_top_to_bottom_reading_order() -> None:
+    # The parser sorts native text objects by page, then top edge, then left
+    # edge. That ordering is all this asserts: it makes no claim about
+    # multi-column layout or table detection, which the parser does not do.
+    document = parse_pdf_to_cir(
+        filename="evidence.pdf",
+        declared_mime="application/pdf",
+        data=_mixed_pdf(),
+        context=_context(),
+        max_pages=4,
+    )
+    page_one_text = [
+        block
+        for block in document.blocks
+        if block.raw_text
+        and block.source_refs[0].page_index0 == 0
+        and block.type in {BlockType.TITLE, BlockType.HEADING, BlockType.PARAGRAPH}
+    ]
+    assert [block.raw_text for block in page_one_text] == [
+        "Evidence Architecture",
+        "Coordinate-aware native extraction.",
+    ]
+    assert page_one_text[0].type == BlockType.TITLE
+    tops: list[int] = []
+    for block in page_one_text:
+        bbox = block.source_refs[0].bbox1000
+        assert bbox is not None
+        tops.append(bbox.root[1])
+    assert tops == sorted(tops)
+    assert page_one_text[0].order < page_one_text[1].order
+    assert not any(block.type == BlockType.TABLE for block in document.blocks)
 
 
 def test_pdf_native_parser_is_byte_deterministic() -> None:
