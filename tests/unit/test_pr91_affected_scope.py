@@ -814,14 +814,12 @@ class TestK15FiniteEntityAdmission(unittest.TestCase):
             self.assertEqual(result["mode"], "broad-required", result)
 
     def test_k15_actual_published_tree_regular_sources_and_cli_receipt(self):
-        # Bind the checkout's available source tree, not an unpublished local intermediate.
-        source_tree = subprocess.run(  # noqa: S603 - read-only exact checkout identity.
-            [self.git_executable, "-C", str(ROOT), "rev-parse", "HEAD^{tree}"],
-            env=self.environment,
-            capture_output=True,
-            text=True,
-            check=True,
-        ).stdout.strip()
+        # Bind the immutable published base available in this PR's object history.
+        # The reviewed helper keeps Git operations in the same temporary repository.
+        source_tree = self._git(
+            "rev-parse", "5f0bca3284825d7bc30a02080acf673289771c27^{tree}"
+        ).decode().strip()
+        self.assertEqual(source_tree, "581cfdae95cc5716e39e487b7de7e1b8ae939457")
         self.assertEqual(self._git("cat-file", "-t", source_tree).decode().strip(), "tree")
         head = self._commit(source_tree)
         self._git("update-ref", "refs/heads/synthetic-routing-fixture", head)

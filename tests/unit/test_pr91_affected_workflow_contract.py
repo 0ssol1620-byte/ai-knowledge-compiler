@@ -10,6 +10,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import tempfile
 import unittest
@@ -19,6 +20,111 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 ROOT = Path(os.environ.get("AKC_AFFECTED_WORKFLOW_ROOT", Path(__file__).resolve().parents[2]))
+
+
+def existing_executable(candidate: str | Path | None, program: str) -> str:
+    """Resolve the installed runtime; caller data cannot select another executable."""
+    if candidate is None or not isinstance(candidate, (str, Path)):
+        raise ValueError("Existing executable required; no installation fallback")
+    path = Path(candidate)
+    if "\0" in str(path) or not path.is_absolute():
+        raise ValueError("Executable must be an absolute installed path")
+    resolved = path.resolve(strict=True)
+    if not stat.S_ISREG(resolved.stat().st_mode):
+        raise ValueError("Executable must be a regular file")
+    if resolved.name.lower() not in {program, program + ".exe"}:
+        raise ValueError("Unexpected executable identity")
+    if program == "node":
+        installed = shutil.which("node")
+        if installed is None or resolved != Path(installed).resolve(strict=True):
+            raise ValueError("Node override differs from the installed selected runtime")
+    return str(resolved)
+
+
+def ordinary_directory(path: Path) -> Path:
+    if path.is_symlink() or path.is_junction() or not stat.S_ISDIR(path.lstat().st_mode):
+        raise ValueError("Expected an ordinary task-owned directory")
+    if path.resolve(strict=True) != path.absolute():
+        raise ValueError("Task directory ancestry redirects its canonical path")
+    return path.resolve(strict=True)
+
+
+def checked_fixture_script(path: Path, root: Path, expected: str) -> str:
+    directory = ordinary_directory(root)
+    if path.is_symlink() or path.is_junction() or not stat.S_ISREG(path.lstat().st_mode):
+        raise ValueError("Fixture script must be an ordinary file")
+    resolved = path.resolve(strict=True)
+    if resolved.parent != directory or path.name not in {"type.sh", "gate.sh"}:
+        raise ValueError("Fixture script escaped its task-owned scope")
+    if len(expected) > 65536 or path.read_text(encoding="utf-8") != expected:
+        raise ValueError("Fixture script differs from its reviewed workflow fragment")
+    return str(resolved)
+
+
+def checked_bash_environment(environment: dict[str, str]) -> dict[str, str]:
+    controls = {
+        "SCOPE_MODE": {"full", "parser-delta", "parser-entity-delta", "entity-delta"},
+        "MOCK_MYPY_EXIT": {"0", "23"},
+        "TYPE_OUTCOME": {"success", "failure", "skipped", "cancelled", ""},
+    }
+    for name, allowed in controls.items():
+        if name in environment and environment[name] not in allowed:
+            raise ValueError("Unknown synthetic Bash control")
+    if environment.get("EVIDENCE_DIR") != "evidence" or environment.get("ARGV_FILE") != "argv.txt":
+        raise ValueError("Bash fixture outputs must remain inside its temporary cwd")
+    return {
+        key: value
+        for key, value in environment.items()
+        if key not in {"BASH_ENV", "ENV", "LD_PRELOAD", "LD_LIBRARY_PATH"}
+        and not key.startswith("BASH_FUNC_")
+    }
+
+
+def checked_materializer_arguments(
+    script: Path, canonical: Path, root: str, extra: tuple[str, ...]
+):
+    if not isinstance(root, str) or "\0" in root or len(root) > 4096:
+        raise ValueError("Invalid materializer data argument")
+    if len(extra) > 8 or any(
+        not isinstance(arg, str) or "\0" in arg or len(arg) > 4096 for arg in extra
+    ):
+        raise ValueError("Invalid materializer argv data")
+    fixed = ROOT / "tests/e2e/joined/materialize-g1-11-contract-fixture.mjs"
+    if canonical.is_symlink() or canonical.resolve(strict=True) != fixed.resolve(strict=True):
+        raise ValueError("Materializer differs from its fixed repository identity")
+    original = canonical.read_text(encoding="utf-8")
+    if hashlib.sha256(original.encode()).hexdigest() != (
+        "d6a0098c66043baa4c70553f5cc93014df32d5fff647bb69d44e434a4001f649"
+    ):
+        raise ValueError("Materializer differs from reviewed published source")
+    if script.is_symlink() or script.is_junction() or not stat.S_ISREG(script.lstat().st_mode):
+        raise ValueError("Materializer script must be an ordinary file")
+    if script.resolve(strict=True) != canonical.resolve(strict=True):
+        owner = ordinary_directory(Path(root).parent)
+        if script.name != "corrupt.mjs" or script.resolve(strict=True).parent != owner:
+            raise ValueError("Unrecognized task-owned materializer fixture")
+        pin = '"sha256": "59bd6a3eb2bcb63dc03ba1b5ec6e8f113eea6fbc68741d07f3be165d31e3db34"'
+        if original.count(pin) != 1 or script.read_text(encoding="utf-8") != original.replace(
+            pin, '"sha256": "' + "0" * 64 + '"'
+        ):
+            raise ValueError("Only the existing exact corrupt-digest fixture is allowed")
+    # Negative relative/traversal/symlink roots and extra options remain argv data.
+    return [str(script.resolve(strict=True)), root, *extra]
+
+
+def checked_junction_environment(root: Path, link: Path, target: Path) -> dict[str, str]:
+    base = ordinary_directory(root)
+    ordinary_directory(target)
+    if link.name != "link" or target.name != "ordinary" or link.parent.resolve() != base:
+        raise ValueError("Junction paths differ from their task-owned scope")
+    if target.resolve().parent != base or link.exists() or link.is_symlink() or link.is_junction():
+        raise ValueError("Junction must be new and must not escape its task-owned directory")
+    environment = dict(os.environ)
+    environment["TAVONEL_JUNCTION_LINK"] = str(base / "link")
+    environment["TAVONEL_JUNCTION_TARGET"] = str(base / "ordinary")
+    return environment
+
+
 KINDS = {
     "ci": "ci",
     "pr91-focused-qualification": "focused",
@@ -412,6 +518,7 @@ class TestPR91AffectedWorkflowContract(unittest.TestCase):
             else Path("/bin/bash")
         )
         self.assertTrue(bash.is_file(), "Existing Bash required; no installation fallback")
+        bash_executable = existing_executable(bash, "bash")
         block = required_job("pr91-focused-qualification", "python-focused")
 
         def step_script(label: str) -> str:
@@ -431,31 +538,35 @@ class TestPR91AffectedWorkflowContract(unittest.TestCase):
                 root = Path(directory)
                 (root / "evidence").mkdir()
                 filename = root / "type.sh"
-                filename.write_text(
+                fixture_script = (
                     'python() { printf "%s\\n" "$@" > "$ARGV_FILE"; '
-                    'return "$MOCK_MYPY_EXIT"; }\n' + type_script,
-                    encoding="utf-8",
+                    'return "$MOCK_MYPY_EXIT"; }\n' + type_script
                 )
+                filename.write_text(fixture_script, encoding="utf-8")
+                fixture_path = checked_fixture_script(filename, root, fixture_script)
                 env = dict(
                     os.environ, SCOPE_MODE=mode, EVIDENCE_DIR="evidence", ARGV_FILE="argv.txt"
                 )
                 for code in (0, 23):
-                    child = subprocess.run(
-                        [str(bash), str(filename)],
+                    child = subprocess.run(  # noqa: S603 - installed Bash, owned reviewed script
+                        [bash_executable, "--noprofile", "--norc", fixture_path],
                         cwd=root,
-                        env=dict(env, MOCK_MYPY_EXIT=str(code)),
+                        env=checked_bash_environment(dict(env, MOCK_MYPY_EXIT=str(code))),
                         capture_output=True,
                         text=True,
+                        shell=False,
                         timeout=10,
                         check=False,
                     )
                     self.assertEqual(child.returncode, code, (mode, code, child.stderr))
+                    self.assertLessEqual(len(child.stdout) + len(child.stderr), 65536)
                     self.assertEqual(
                         (root / "argv.txt").read_text().splitlines(),
                         ["-m", "uv", "run", "--locked", "--extra", "dev", "mypy", *expected],
                     )
                 gate = root / "gate.sh"
                 gate.write_text(gate_script, encoding="utf-8")
+                gate_path = checked_fixture_script(gate, root, gate_script)
                 for outcome in ("success", "failure", "skipped", "cancelled", ""):
                     gate_env = dict(
                         env,
@@ -465,15 +576,17 @@ class TestPR91AffectedWorkflowContract(unittest.TestCase):
                         SHARED_OUTCOME="success",
                         TYPE_OUTCOME=outcome,
                     )
-                    child = subprocess.run(
-                        [str(bash), str(gate)],
+                    child = subprocess.run(  # noqa: S603 - installed Bash, owned finite gate fixture
+                        [bash_executable, "--noprofile", "--norc", gate_path],
                         cwd=root,
-                        env=gate_env,
+                        env=checked_bash_environment(gate_env),
                         capture_output=True,
                         text=True,
+                        shell=False,
                         timeout=10,
                         check=False,
                     )
+                    self.assertLessEqual(len(child.stdout) + len(child.stderr), 65536)
                     self.assertEqual(
                         child.returncode,
                         0 if outcome == "success" else 1,
@@ -651,6 +764,84 @@ class TestPR91AffectedWorkflowContract(unittest.TestCase):
         self.assertIn("JOINED_E2E_POST_RESERVE_SECONDS", source("joined-e2e"))
 
 
+class TestPR91FixtureInputSafety(unittest.TestCase):
+    """Direct checks of the new executable/script/data boundaries."""
+
+    def test_node_override_and_unowned_mutations_fail_before_execution(self):
+        canonical = ROOT / "tests/e2e/joined/materialize-g1-11-contract-fixture.mjs"
+        for candidate in (None, "relative-node", "node\0argument"):
+            with self.subTest(candidate=candidate), self.assertRaises(ValueError):
+                existing_executable(candidate, "node")
+        with tempfile.TemporaryDirectory(prefix="pr91-node-safety-") as directory:
+            owner = Path(directory)
+            fake = owner / ("node.exe" if os.name == "nt" else "node")
+            fake.write_text("not the selected installed runtime")
+            with self.assertRaisesRegex(ValueError, "override differs"):
+                existing_executable(fake, "node")
+            malicious = owner / "arbitrary.mjs"
+            malicious.write_text("throw new Error('must not execute')")
+            with self.assertRaisesRegex(ValueError, "Unrecognized"):
+                checked_materializer_arguments(
+                    malicious,
+                    canonical,
+                    str(owner / "runner-temp"),
+                    (),
+                )
+            malicious = owner / "corrupt.mjs"
+            malicious.write_text("throw new Error('not the permitted digest mutation')")
+            with self.assertRaisesRegex(ValueError, "exact corrupt-digest"):
+                checked_materializer_arguments(
+                    malicious,
+                    canonical,
+                    str(owner / "runner-temp"),
+                    (),
+                )
+        # Malicious-looking arguments remain data for the real program's negative tests.
+        args = checked_materializer_arguments(canonical, canonical, "../../outside", ("--eval=x",))
+        self.assertEqual(args[1:], ["../../outside", "--eval=x"])
+
+    def test_bash_script_identity_finite_controls_and_startup_hooks(self):
+        environment = {
+            "SCOPE_MODE": "parser-delta",
+            "MOCK_MYPY_EXIT": "0",
+            "EVIDENCE_DIR": "evidence",
+            "ARGV_FILE": "argv.txt",
+            "BASH_ENV": "untrusted",
+            "ENV": "untrusted",
+            "BASH_FUNC_python%%": "untrusted",
+        }
+        clean = checked_bash_environment(environment)
+        self.assertNotIn("BASH_ENV", clean)
+        self.assertNotIn("ENV", clean)
+        self.assertNotIn("BASH_FUNC_python%%", clean)
+        with self.assertRaises(ValueError):
+            checked_bash_environment(dict(environment, MOCK_MYPY_EXIT="0;untrusted"))
+        with tempfile.TemporaryDirectory(prefix="pr91-bash-safety-") as directory:
+            root = Path(directory)
+            script = root / "type.sh"
+            expected = "printf 'fixed fixture\\n'\n"
+            script.write_text(expected, encoding="utf-8")
+            self.assertEqual(checked_fixture_script(script, root, expected), str(script.resolve()))
+            script.write_text("different script", encoding="utf-8")
+            with self.assertRaises(ValueError):
+                checked_fixture_script(script, root, expected)
+
+    def test_junction_paths_are_owned_new_entries_and_not_code(self):
+        with tempfile.TemporaryDirectory(prefix="pr91-junction-'quote-") as directory:
+            root = Path(directory)
+            target = root / "ordinary"
+            target.mkdir()
+            link = root / "link"
+            environment = checked_junction_environment(root, link, target)
+            self.assertEqual(environment["TAVONEL_JUNCTION_LINK"], str(link.resolve()))
+            self.assertEqual(environment["TAVONEL_JUNCTION_TARGET"], str(target.resolve()))
+            with self.assertRaises(ValueError):
+                checked_junction_environment(root, root / "unexpected", target)
+            link.mkdir()
+            with self.assertRaises(ValueError):
+                checked_junction_environment(root, link, target)
+
+
 class TestG111JoinedCIRegistration(unittest.TestCase):
     """New direct contracts only. Never reads model-ci or starts the joined runtime."""
 
@@ -668,13 +859,29 @@ class TestG111JoinedCIRegistration(unittest.TestCase):
     def invoke_materializer(self, root: str, *extra: str, script: Path | None = None):
         node = os.environ.get("AKC_G1_11_CONTRACT_NODE") or shutil.which("node")
         self.assertIsNotNone(node, "Existing Node runtime is required; no installation fallback")
-        return subprocess.run(
-            [node, str(script or self.materializer()), root, *extra],
+        executable = existing_executable(node, "node")
+        arguments = checked_materializer_arguments(
+            script or self.materializer(),
+            self.materializer(),
+            root,
+            extra,
+        )
+        environment = {
+            key: value
+            for key, value in os.environ.items()
+            if key not in {"NODE_OPTIONS", "NODE_PATH", "LD_PRELOAD", "LD_LIBRARY_PATH"}
+        }
+        result = subprocess.run(  # noqa: S603 - installed Node, pinned source/owned fixture, argv data
+            [executable, *arguments],
+            env=environment,
             capture_output=True,
             text=True,
+            shell=False,
             timeout=10,
             check=False,
         )
+        self.assertLessEqual(len(result.stdout) + len(result.stderr), 65536)
+        return result
 
     def test_joined_registration_routes_only_successful_full_or_selected_parser_delta(self) -> None:
         block = required_job("joined-e2e", "joined-e2e")
@@ -966,24 +1173,28 @@ class TestG111JoinedCIRegistration(unittest.TestCase):
                 # the same lstat boundary.
                 if os.name != "nt":
                     raise
-                link_literal = str(link).replace("'", "''")
-                target_literal = str(target).replace("'", "''")
-                powershell = shutil.which("powershell")
-                self.assertIsNotNone(powershell, "Existing PowerShell is required")
-                result = subprocess.run(
+                powershell = existing_executable(shutil.which("powershell"), "powershell")
+                environment = checked_junction_environment(root, link, target)
+                result = subprocess.run(  # noqa: S603 - fixed script, validated owned junction data
                     [
                         powershell,
                         "-NoProfile",
+                        "-NonInteractive",
                         "-Command",
-                        "$null = New-Item -ItemType Junction "
-                        f"-Path '{link_literal}' -Target '{target_literal}'",
+                        "-",
                     ],
+                    input="$ErrorActionPreference = 'Stop'\n"
+                    "$null = New-Item -ItemType Junction -Path $env:TAVONEL_JUNCTION_LINK "
+                    "-Target $env:TAVONEL_JUNCTION_TARGET\n",
+                    env=environment,
                     capture_output=True,
                     text=True,
+                    shell=False,
                     timeout=10,
                     check=False,
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertLessEqual(len(result.stdout) + len(result.stderr), 65536)
             for path in (link, link / "child"):
                 result = self.invoke_materializer(str(path))
                 self.assertNotEqual(result.returncode, 0)
