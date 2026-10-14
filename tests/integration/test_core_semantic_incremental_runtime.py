@@ -16,7 +16,9 @@ Resolver and parser invocations are counted with spies on the real
 functions. The counts are a record of what the runtime does, not a cost
 claim: a recompile parses only dirty files when sealed outputs are available.
 Its built-in §44 oracle still re-resolves every document, so it does *more*
-resolver work than a full compile. That gap remains a strict xfail below.
+resolver work than a full compile. The untouched-document contract below
+checks selective work separately while retaining all full-oracle calls; it
+does not assert that a complete recompile avoids untouched resolver work.
 
 The ACL tests drive a source's front-matter ``required_permission`` through
 the same spine: it reaches compiled rows, gates the next ask, an ACL-only
@@ -564,20 +566,50 @@ def test_recompile_invocation_counts_are_what_the_runtime_does(
     assert len(calls.resolved) == len(ALL_DOCUMENTS) + 1
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=AssertionError,
-    reason=(
-        "known gap: Pipeline._verify_oracle re-resolves every document on each "
-        "non-no-op recompile, so untouched documents are resolved again"
-    ),
-)
+def _assert_selective_does_not_reresolve_untouched(calls: Invocations) -> None:
+    resolved = calls.resolved_in("build")
+    assert all(resolved[path] == 0 for path in UNTOUCHED), (
+        "selective build re-resolved unchanged source"
+    )
+
+
 def test_recompile_does_not_reresolve_untouched_documents(
     tmp_path: Path, calls: Invocations
 ) -> None:
     _run(tmp_path, calls)
-    resolved = Counter(path for _, path in calls.resolved)
-    assert all(resolved[path] == 0 for path in UNTOUCHED)
+    _assert_selective_does_not_reresolve_untouched(calls)
+    # Full-oracle work remains mandatory and visible, not relabeled or skipped.
+    assert calls.resolved_in("oracle") == Counter(dict.fromkeys(ALL_DOCUMENTS, 1))
+    assert len(calls.resolved) == len(ALL_DOCUMENTS) + 1
+
+
+def test_untouched_resolver_contract_catches_real_selective_reresolution(
+    tmp_path: Path, calls: Invocations, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    real_build = Pipeline._build_rows
+    untouched = UNTOUCHED[0]
+
+    def build_with_extra_resolve(
+        self: Pipeline, documents: Any, previous: Any, **kwargs: Any
+    ) -> Any:
+        if not kwargs["resolve_all"]:
+            # Inject actual resolver work into the selective stage. Do not
+            # alter the fixture counters, full oracle or production source.
+            document = next(doc for doc in documents if doc.file.rel_path == untouched)
+            self._resolve_document(
+                document, self._previous_by_path(previous).get(untouched, []),
+                lineage_source=self._source_of(untouched),
+            )
+        return real_build(self, documents, previous, **kwargs)
+
+    monkeypatch.setattr(Pipeline, "_build_rows", build_with_extra_resolve)
+    run = _run(tmp_path, calls)
+    assert run.incremental.equivalence is not None and run.incremental.equivalence.equivalent
+    assert calls.resolved_in("build")[untouched] == 1
+    assert calls.resolved_in("oracle") == Counter(dict.fromkeys(ALL_DOCUMENTS, 1))
+    assert calls.parsed == Counter({LAUNCH_PLAN: 1})
+    with pytest.raises(AssertionError, match="selective build re-resolved unchanged source"):
+        _assert_selective_does_not_reresolve_untouched(calls)
 
 
 def test_recompile_does_not_reparse_untouched_documents(tmp_path: Path, calls: Invocations) -> None:
