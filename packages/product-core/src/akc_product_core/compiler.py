@@ -581,6 +581,8 @@ class ProductCoreCompiler:
                 )
             if region.authority == "unclassified":
                 reviews.append(f"AUTHORITY_UNCLASSIFIED:{derived_source_id}:{region.region_id}")
+            if region.recognition_conflict is not None:
+                reviews.append(f"OCR_RECOGNITION_CONFLICT:{derived_source_id}:{region.region_id}")
             path = (document.title, f"page-{region.page_number1}", region.block_type.value)
             anchor = region.native_object_id or region.region_id
             seeds.append(
@@ -1289,6 +1291,17 @@ class ProductCoreCompiler:
             canonical_json(contradiction.as_record()) + "\n"
             for contradiction in semantics.contradictions
         )
+        # Put v3's completed-reader/source binding in the mandatory Core source
+        # manifest, including a clean result with zero conflicts. A projection
+        # that drops its optional metadata can then be refused by the consumer.
+        requested_by_source = {
+            source_id(
+                tenant_id=request.tenant_id,
+                connector_type=document.connector_type,
+                native_id=document.native_id,
+            ): document
+            for document in request.documents
+        }
         contents: dict[str, str] = {
             "source/collection-files.json": canonical_json(
                 [
@@ -1296,6 +1309,18 @@ class ProductCoreCompiler:
                         "documentId": item.document_id,
                         "documentVersionId": item.document_version_id,
                         "sourceSha256": item.source_sha256,
+                        **(
+                            {
+                                "ocrSchemaVersion": "tavonel.ocr_result.v3",
+                                "readerRevision": requested_by_source[item.document_id].reader_revision,
+                                "readerBindingSha256": requested_by_source[item.document_id].reader_binding_sha256,
+                                "recognitionConflictCount": requested_by_source[item.document_id].recognition_conflict_count,
+                                "immutableObjectKey": requested_by_source[item.document_id].immutable_object_key,
+                                "ocrObjectKey": requested_by_source[item.document_id].ocr_object_key,
+                            }
+                            if requested_by_source[item.document_id].recognition_conflict_count is not None
+                            else {}
+                        ),
                     }
                     for item in canonical_documents
                 ]

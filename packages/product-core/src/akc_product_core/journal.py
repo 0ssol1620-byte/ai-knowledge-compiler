@@ -10,8 +10,8 @@ from typing import cast
 
 from akc_cir.base import ContractModel, Sha256, canonical_json, sha256_digest
 from akc_cir.models import CanonicalDocument
-from akc_cir.semantic_diff import ChangeKind, SemanticChange
-from pydantic import ValidationError
+from akc_cir.semantic_diff import ChangeChannel, ChangeKind, SemanticChange
+from pydantic import ValidationError, model_validator
 
 from .compiler import DocumentFragment, ProductCoreCompiler
 from .contracts import PreviousUnit, ProductCoreCompileRequest, ProductCoreCompileResponse
@@ -44,11 +44,20 @@ class _AcceptedWork(ContractModel):
 
 class _Change(ContractModel):
     kind: ChangeKind
+    channel: ChangeChannel
     logical_id: str | None = None
     before: str | None = None
     after: str | None = None
     detail: str = ""
     candidates: tuple[str, ...] = ()
+
+    @model_validator(mode="after")
+    def bind_channel(self) -> _Change:
+        # The CIR emits this field. Preserve and verify it instead of dropping
+        # it from the durable fragment or rejecting every current change.
+        if self.channel != SemanticChange(kind=self.kind).channel:
+            raise ValueError("change channel does not match its kind")
+        return self
 
 
 class _Fragment(ContractModel):
@@ -87,7 +96,7 @@ class _Fragment(ContractModel):
             canonical_document=self.canonical_document,
             units=self.units,
             changes=tuple(
-                SemanticChange(**change.model_dump(by_alias=False)) for change in self.changes
+                SemanticChange(**change.model_dump(by_alias=False, exclude={"channel"})) for change in self.changes
             ),
             review_reasons=self.review_reasons,
             output_digest=self.output_digest,

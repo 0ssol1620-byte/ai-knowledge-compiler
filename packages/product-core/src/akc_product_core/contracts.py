@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+from math import isfinite
 from typing import Annotated, Literal
 
 from akc_cir.base import ContractModel, Sha256
@@ -24,6 +25,41 @@ BlueprintId = Literal[
 ]
 
 
+class OcrRecognitionCandidate(ContractModel):
+    engine_id: Literal["general-ppocrv6", "korean-ppocrv5"]
+    model_sha256: Sha256
+    text: Annotated[str, Field(min_length=1, max_length=2_000)]
+    confidence: Annotated[float, Field(ge=0, le=1)]
+    polygon: Annotated[tuple[tuple[float, float], ...], Field(min_length=3, max_length=8)]
+
+    @model_validator(mode="after")
+    def exact_model_and_polygon(self) -> OcrRecognitionCandidate:
+        models = {
+            "general-ppocrv6": "sha256:6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884",
+            "korean-ppocrv5": "sha256:cd6e2ea50f6943ca7271eb8c56a877a5a90720b7047fe9c41a2e541a25773c9b",
+        }
+        if self.model_sha256 != models[self.engine_id]:
+            raise ValueError("OCR engine must bind to its exact reviewed model")
+        if any(not isfinite(value) or value < 0 for point in self.polygon for value in point):
+            raise ValueError("OCR polygon must contain finite nonnegative raster coordinates")
+        return self
+
+
+class OcrRecognitionConflict(ContractModel):
+    source_sha256: Sha256
+    region_id: Identifier
+    page_index0: Annotated[int, Field(ge=0)]
+    bbox1000: BBox1000
+    candidates: tuple[OcrRecognitionCandidate, OcrRecognitionCandidate]
+
+    @model_validator(mode="after")
+    def distinct_raw_candidates(self) -> OcrRecognitionConflict:
+        first, second = self.candidates
+        if first.engine_id == second.engine_id or first.text == second.text:
+            raise ValueError("OCR conflict requires distinct engines and raw texts")
+        return self
+
+
 class ProductCoreRegion(ContractModel):
     region_id: Identifier
     page_index0: Annotated[int, Field(ge=0)]
@@ -35,6 +71,10 @@ class ProductCoreRegion(ContractModel):
     native_object_id: Identifier | None = None
     confidence: Annotated[float, Field(ge=0, le=1)] | None = None
     authority: Annotated[str, Field(min_length=1, max_length=80)] = "informal"
+    # Preserve v2 document digests when no v3 evidence is present.
+    recognition_conflict: OcrRecognitionConflict | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
 
     @model_validator(mode="after")
     def bind_page_number(self) -> ProductCoreRegion:
@@ -54,6 +94,11 @@ class ProductCoreDocument(ContractModel):
     title: Annotated[str, Field(min_length=1, max_length=500)]
     source_filename: Annotated[str, Field(min_length=1, max_length=500)]
     page_count: Annotated[int, Field(ge=1, le=100_000)]
+    reader_revision: Sha256 | None = Field(default=None, exclude_if=lambda value: value is None)
+    reader_binding_sha256: Sha256 | None = Field(default=None, exclude_if=lambda value: value is None)
+    recognition_conflict_count: Annotated[int, Field(ge=0, le=128)] | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
     regions: Annotated[tuple[ProductCoreRegion, ...], Field(min_length=1, max_length=100_000)]
 
     @field_validator("immutable_object_key", "ocr_object_key")
@@ -67,6 +112,13 @@ class ProductCoreDocument(ContractModel):
 
     @model_validator(mode="after")
     def validate_regions(self) -> ProductCoreDocument:
+        if len({self.reader_revision is None, self.reader_binding_sha256 is None,
+                self.recognition_conflict_count is None}) != 1:
+            raise ValueError("OCR reader revision, completed-read binding and count must travel together")
+        conflict_count = sum(region.recognition_conflict is not None for region in self.regions)
+        if conflict_count > 128 or (self.recognition_conflict_count is not None and
+                                    self.recognition_conflict_count != conflict_count):
+            raise ValueError("too many OCR recognition conflicts")
         if len({region.region_id for region in self.regions}) != len(self.regions):
             raise ValueError("region IDs must be unique within a document")
         anchors = {region.native_object_id or region.region_id for region in self.regions}
@@ -76,6 +128,23 @@ class ProductCoreDocument(ContractModel):
             raise ValueError("region order values must be unique within a document")
         if max(region.page_number1 for region in self.regions) > self.page_count:
             raise ValueError("region page exceeds pageCount")
+        for region in self.regions:
+            conflict = region.recognition_conflict
+            if conflict is None:
+                continue
+            if self.reader_revision is None or self.reader_binding_sha256 is None or self.recognition_conflict_count is None:
+                raise ValueError("OCR v3 conflict requires qualified completed-read provenance")
+            if (
+                conflict.source_sha256 != self.content_sha256
+                or conflict.region_id != region.region_id
+                or conflict.page_index0 != region.page_index0
+                or conflict.bbox1000 != region.bbox1000
+                or not any(
+                    region.text == candidate.text and region.confidence == candidate.confidence
+                    for candidate in conflict.candidates
+                )
+            ):
+                raise ValueError("OCR conflict must bind to the unchanged source region")
         return self
 
 
