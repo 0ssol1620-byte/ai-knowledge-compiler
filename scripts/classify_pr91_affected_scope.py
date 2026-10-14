@@ -1,7 +1,7 @@
 """Fail-closed PR91 routing over exact Git evidence, without executing checks.
 
-The narrow route describes the reviewed parser successor and finite joined source delta. A classification
-is never evidence that a test, audit, image build or release prerequisite passed.
+The narrow route describes the reviewed parser successor and finite joined source delta.
+A classification is never evidence that a test, audit, image build or release prerequisite passed.
 This helper never fetches, changes Git state or calls an external service.
 """
 
@@ -27,14 +27,12 @@ PINNED_PAYLOAD = {
         "fb9e0edb665d5da1d83dbee82f1232a60dbdc22e",
     "packages/compiler-runtime/src/akc_compiler_runtime/pipeline.py":
         "84848dffcafe288ee80430c1b3036f3e71ab1389",
-    "scripts/prepare_parser_upgrade_fixtures.py":
-        "efe51ff99b2824c210ee21996139240d517300d5",
+    "scripts/prepare_parser_upgrade_fixtures.py": "efe51ff99b2824c210ee21996139240d517300d5",
     "tests/integration/test_document_parser_policy_upgrade.py":
         "e0e93397ad4ac68fa1bae5332c2b4d0ffb193416",
     "tests/unit/test_document_remaining_state_extraction.py":
         "f02f4d9b6866d3a41f62b681da84dffa4614dee0",
-    "tests/unit/test_parser_upgrade_ci_contract.py":
-        "4d486de75a9c314ac6f4442758b3f27055c1dfeb",
+    "tests/unit/test_parser_upgrade_ci_contract.py": "4d486de75a9c314ac6f4442758b3f27055c1dfeb",
 }
 # K15 is a separately reviewed finite pair, never an arbitrary Python prefix.
 ENTITY_PAYLOAD = {
@@ -76,12 +74,23 @@ CI_CONTROL_PATHS = {
     "docs/audit/PR91_AFFECTED_SCOPE.md",
 }
 UNCHANGED_INPUTS = (
-    "pyproject.toml", "uv.lock", "pnpm-lock.yaml", "package.json", "pnpm-workspace.yaml",
-    ".dockerignore", "services/api/Dockerfile", "services/scheduler/Dockerfile",
-    "workers/cpu-document/Dockerfile", "apps/web/Dockerfile", "infra/product-core/Dockerfile",
-    "workers/gpu-parser/Dockerfile", "workers/gpu-knowledge/Dockerfile",
-    "workers/gpu-hpd/Dockerfile", "workers/gpu-unlimited/Dockerfile",
-    "workers/gpu-common/pyproject.toml", "workers/gpu-common/uv.lock",
+    "pyproject.toml",
+    "uv.lock",
+    "pnpm-lock.yaml",
+    "package.json",
+    "pnpm-workspace.yaml",
+    ".dockerignore",
+    "services/api/Dockerfile",
+    "services/scheduler/Dockerfile",
+    "workers/cpu-document/Dockerfile",
+    "apps/web/Dockerfile",
+    "infra/product-core/Dockerfile",
+    "workers/gpu-parser/Dockerfile",
+    "workers/gpu-knowledge/Dockerfile",
+    "workers/gpu-hpd/Dockerfile",
+    "workers/gpu-unlimited/Dockerfile",
+    "workers/gpu-common/pyproject.toml",
+    "workers/gpu-common/uv.lock",
 )
 REQUIRED_TESTS = (
     "tests/unit/test_hwpx_structured_parser.py",
@@ -121,8 +130,10 @@ def _git(repo: Path, *arguments: str) -> bytes:
     try:
         # Fixed operations, verified hexadecimal revisions, no shell or fetch.
         return subprocess.run(  # noqa: S603
-            [executable, "-C", str(repo), *arguments], env=environment,
-            capture_output=True, check=True,
+            [executable, "-C", str(repo), *arguments],
+            env=environment,
+            capture_output=True,
+            check=True,
         ).stdout
     except subprocess.CalledProcessError as exc:
         raise EvidenceError("missing-git-evidence", "Required local Git evidence failed") from exc
@@ -147,8 +158,16 @@ def _entries(repo: Path, revision: str, paths: tuple | dict | set) -> dict:
 
 def _changes(repo: Path, base: str, head: str) -> list[dict]:
     raw = _git(
-        repo, "diff", "--raw", "--no-renames", "--no-ext-diff", "--no-textconv",
-        "--abbrev=40", "-z", base, head,
+        repo,
+        "diff",
+        "--raw",
+        "--no-renames",
+        "--no-ext-diff",
+        "--no-textconv",
+        "--abbrev=40",
+        "-z",
+        base,
+        head,
     )
     parts = raw.split(b"\0")
     records = []
@@ -161,10 +180,16 @@ def _changes(repo: Path, base: str, head: str) -> list[dict]:
         path = parts[index + 1].decode("utf-8")
         if "\n" in path or "\r" in path:
             raise EvidenceError("invalid-path", "Unsupported path line breaks")
-        records.append({
-            "path": path, "status": metadata[4], "old_mode": metadata[0][1:],
-            "new_mode": metadata[1], "old_blob": metadata[2], "new_blob": metadata[3],
-        })
+        records.append(
+            {
+                "path": path,
+                "status": metadata[4],
+                "old_mode": metadata[0][1:],
+                "new_mode": metadata[1],
+                "old_blob": metadata[2],
+                "new_blob": metadata[3],
+            }
+        )
     return records
 
 
@@ -172,9 +197,12 @@ def _selection(mode: str, joined: bool = False) -> dict:
     accepted = mode == "full" or mode in NARROW_MODES
     full = mode == "full"
     return {
-        "python": accepted, "images": full, "web": full, "db": full,
-        "model": full, "joined": full or (mode in {"parser-delta",
-            "parser-entity-delta"} and joined),
+        "python": accepted,
+        "images": full,
+        "web": full,
+        "db": full,
+        "model": full,
+        "joined": full or (mode in {"parser-delta", "parser-entity-delta"} and joined),
         "security_core": accepted,
         "dependency_audit": full,
         "codeql_languages": ["python", "javascript-typescript"] if full else ["python"],
@@ -183,13 +211,24 @@ def _selection(mode: str, joined: bool = False) -> dict:
 
 def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> dict:
     report = {
-        "mode": "broad-required", "full_qualification": False,
-        "selection": _selection("broad-required"), "reason_codes": [], "reasons": [],
-        "identity": {"event_name": event_name, "workflow_kind": workflow_kind,
-                     "anchor_commit": ANCHOR_COMMIT, "anchor_tree": ANCHOR_TREE},
-        "delta": None, "cumulative_pr_diff": None, "unchanged_inputs": None,
+        "mode": "broad-required",
+        "full_qualification": False,
+        "selection": _selection("broad-required"),
+        "reason_codes": [],
+        "reasons": [],
+        "identity": {
+            "event_name": event_name,
+            "workflow_kind": workflow_kind,
+            "anchor_commit": ANCHOR_COMMIT,
+            "anchor_tree": ANCHOR_TREE,
+        },
+        "delta": None,
+        "cumulative_pr_diff": None,
+        "unchanged_inputs": None,
         "required_tests": list(REQUIRED_TESTS),
-        "required_joined_tests": [], "joined_sources": None, "entity_sources": None,
+        "required_joined_tests": [],
+        "joined_sources": None,
+        "entity_sources": None,
         "qualification_semantics": "Selection only; no test/audit/image/release pass is inherited",
         "reviewed_payload_tree_reference": REVIEWED_TREE_REFERENCE,
     }
@@ -222,11 +261,15 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                 _git(repo, "merge-base", base, head).decode().strip(), "PR merge base"
             )
             report["identity"].update(
-                pr_number=number, pr_base_commit=base, pr_merge_base=merge_base,
+                pr_number=number,
+                pr_base_commit=base,
+                pr_merge_base=merge_base,
                 cumulative_diff_basis="PR merge-base to event head; never the delta routing basis",
             )
             report["cumulative_pr_diff"] = {
-                "base_commit": base, "merge_base": merge_base, "head_commit": head,
+                "base_commit": base,
+                "merge_base": merge_base,
+                "head_commit": head,
                 "paths": _changes(repo, merge_base, head),
             }
             if number != 91:
@@ -244,15 +287,20 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                 _git(repo, "merge-base", "--is-ancestor", ANCHOR_COMMIT, head)
                 changes = _changes(repo, ANCHOR_COMMIT, head)
                 report["delta"] = {
-                    "base_commit": ANCHOR_COMMIT, "head_commit": head, "paths": changes,
+                    "base_commit": ANCHOR_COMMIT,
+                    "head_commit": head,
+                    "paths": changes,
                     "python_paths": sorted(
-                        item["path"] for item in changes
+                        item["path"]
+                        for item in changes
                         if item["path"].endswith(".py") and item["new_mode"] == "100644"
                     ),
                 }
                 allowed = (
-                    PINNED_PAYLOAD.keys() | ENTITY_PAYLOAD.keys()
-                    | CI_CONTROL_PATHS | set(JOINED_SOURCE_PATHS)
+                    PINNED_PAYLOAD.keys()
+                    | ENTITY_PAYLOAD.keys()
+                    | CI_CONTROL_PATHS
+                    | set(JOINED_SOURCE_PATHS)
                 )
                 if not changes:
                     raise EvidenceError("empty-delta", "No reviewed parser successor delta")
@@ -271,17 +319,19 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                 parser_active = any(item["path"] in PINNED_PAYLOAD for item in changes)
                 # Original parser route always requires its frozen six payloads. An entity-only
                 # route instead requires those parser files to remain exactly at the anchor.
-                expected_payload = {
-                    path: {"mode": "100644", "kind": "blob", "blob": blob}
-                    for path, blob in PINNED_PAYLOAD.items()
-                } if parser_active or not entity_changes else _entries(
-                    repo, ANCHOR_COMMIT, PINNED_PAYLOAD
+                expected_payload = (
+                    {
+                        path: {"mode": "100644", "kind": "blob", "blob": blob}
+                        for path, blob in PINNED_PAYLOAD.items()
+                    }
+                    if parser_active or not entity_changes
+                    else _entries(repo, ANCHOR_COMMIT, PINNED_PAYLOAD)
                 )
                 payload = _entries(repo, head, PINNED_PAYLOAD)
                 if payload != expected_payload:
                     raise EvidenceError(
                         "payload-mismatch",
-                        "Reviewed parser payload or unchanged anchor entry set differs"
+                        "Reviewed parser payload or unchanged anchor entry set differs",
                     )
                 before = _entries(repo, ANCHOR_COMMIT, UNCHANGED_INPUTS)
                 after = _entries(repo, head, UNCHANGED_INPUTS)
@@ -298,7 +348,8 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                         "wheel-scope-mismatch", "Compiler runtime enters packaged wheel"
                     )
                 report["unchanged_inputs"] = {
-                    "entries": before, "wheel_packages": wheel_packages,
+                    "entries": before,
+                    "wheel_packages": wheel_packages,
                     "qualification": (
                         "Static anchor/head equality only; no current audit or build pass"
                     ),
@@ -311,11 +362,14 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                 if entity_changes:
                     entity_sources = _entries(repo, head, ENTITY_PAYLOAD)
                     for path, blob in ENTITY_PAYLOAD.items():
-                        if entity_sources.get(path) != {"mode": "100644",
+                        if entity_sources.get(path) != {
+                            "mode": "100644",
                             "kind": "blob",
-                            "blob": blob}:
-                            raise EvidenceError("entity-payload-mismatch",
-                                f"Reviewed K15 payload differs: {path}")
+                            "blob": blob,
+                        }:
+                            raise EvidenceError(
+                                "entity-payload-mismatch", f"Reviewed K15 payload differs: {path}"
+                            )
                     report["entity_sources"] = {
                         "changed_paths": sorted(item["path"] for item in entity_changes),
                         "entries": entity_sources,
@@ -323,8 +377,11 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                             "Pinned source only; no entity accuracy, test or image equivalence pass"
                         ),
                     }
-                    required = list(dict.fromkeys([*REQUIRED_TESTS,
-                        *ENTITY_REQUIRED_TESTS])) if parser_active else list(ENTITY_REQUIRED_TESTS)
+                    required = (
+                        list(dict.fromkeys([*REQUIRED_TESTS, *ENTITY_REQUIRED_TESTS]))
+                        if parser_active
+                        else list(ENTITY_REQUIRED_TESTS)
+                    )
                     report["required_tests"] = required
                     report["unchanged_inputs"]["image_boundary"] = (
                         "Build configuration equality only; CIR source changes "
@@ -333,9 +390,11 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                         "qualification remains unrun."
                     )
                 tests = _entries(repo, head, required)
-                if any(tests.get(path,
-                    {}).get("mode") != "100644" or tests.get(path,
-                    {}).get("kind") != "blob" for path in required):
+                if any(
+                    tests.get(path, {}).get("mode") != "100644"
+                    or tests.get(path, {}).get("kind") != "blob"
+                    for path in required
+                ):
                     raise EvidenceError(
                         "required-test-missing", "Mandatory related test source unavailable"
                     )
@@ -348,8 +407,10 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                 joined_changes = [item for item in changes if item["path"] in JOINED_SOURCE_PATHS]
                 if joined_changes:
                     if entity_changes and not parser_active:
-                        raise EvidenceError("unsupported-combination",
-                            "Entity-only route cannot activate joined sources")
+                        raise EvidenceError(
+                            "unsupported-combination",
+                            "Entity-only route cannot activate joined sources",
+                        )
                     joined_sources = _entries(repo, head, JOINED_SOURCE_PATHS)
                     if any(
                         joined_sources.get(path, {}).get("mode") != "100644"
@@ -357,18 +418,22 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                         for path in JOINED_SOURCE_PATHS
                     ):
                         raise EvidenceError(
-                            "joined-source-missing", "Finite joined source set must be regular and complete"
+                            "joined-source-missing",
+                            "Finite joined source set must be regular and complete",
                         )
                     joined_active = True
                     report["required_joined_tests"] = list(REQUIRED_JOINED_TESTS)
                     report["joined_sources"] = {
                         "changed_paths": sorted(item["path"] for item in joined_changes),
                         "entries": joined_sources,
-                        "qualification": "Regular source presence only; no Node or runtime pass is inherited",
+                        "qualification": (
+                            "Regular source presence only; no Node or runtime pass is inherited"
+                        ),
                     }
                 mode = (
                     ("parser-entity-delta" if parser_active else "entity-delta")
-                    if entity_changes else "parser-delta"
+                    if entity_changes
+                    else "parser-delta"
                 )
         elif event_name == "push":
             if (
@@ -381,12 +446,19 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
             mode = "full"
         else:
             raise EvidenceError("unsupported-event", "No original full policy for this event")
-        report.update(mode=mode, full_qualification=mode == "full", selection=_selection(mode, joined=joined_active))
+        report.update(
+            mode=mode,
+            full_qualification=mode == "full",
+            selection=_selection(mode, joined=joined_active),
+        )
         report["reason_codes"] = [
             ("reviewed-" + mode) if mode in NARROW_MODES else "original-full-policy"
         ]
-        report["reasons"] = ["Run only mandatory related checks" if mode in NARROW_MODES
-                             else "Preserve original full workflow policy"]
+        report["reasons"] = [
+            "Run only mandatory related checks"
+            if mode in NARROW_MODES
+            else "Preserve original full workflow policy"
+        ]
     except EvidenceError as exc:
         report["reason_codes"].append(exc.code)
         report["reasons"].append(str(exc))
@@ -420,8 +492,11 @@ def main() -> int:
         print("Broad qualification required: " + "; ".join(report["reason_codes"]))
         return 1
     if arguments.github_output is not None:
-        outputs = {"mode": report["mode"], "full_qualification": report["full_qualification"],
-                   **report["selection"]}
+        outputs = {
+            "mode": report["mode"],
+            "full_qualification": report["full_qualification"],
+            **report["selection"],
+        }
         with arguments.github_output.open("a", encoding="utf-8", newline="\n") as handle:
             for key, value in outputs.items():
                 encoded = json.dumps(value) if not isinstance(value, str) else value

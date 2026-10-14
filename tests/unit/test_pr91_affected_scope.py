@@ -38,15 +38,17 @@ class TestPR91AffectedScope(unittest.TestCase):
         if cls.git_executable is None:
             raise RuntimeError("Actual Git required; no metadata stubs permitted")
         cls.environment = dict(os.environ)
-        cls.environment.update({
-            "GIT_AUTHOR_NAME": "Synthetic CI contract fixture",
-            "GIT_AUTHOR_EMAIL": "fixture@example.invalid",
-            "GIT_COMMITTER_NAME": "Synthetic CI contract fixture",
-            "GIT_COMMITTER_EMAIL": "fixture@example.invalid",
-            "GIT_AUTHOR_DATE": "2026-10-10T00:00:00+00:00",
-            "GIT_COMMITTER_DATE": "2026-10-10T00:00:00+00:00",
-            "GIT_NO_REPLACE_OBJECTS": "1",
-        })
+        cls.environment.update(
+            {
+                "GIT_AUTHOR_NAME": "Synthetic CI contract fixture",
+                "GIT_AUTHOR_EMAIL": "fixture@example.invalid",
+                "GIT_COMMITTER_NAME": "Synthetic CI contract fixture",
+                "GIT_COMMITTER_EMAIL": "fixture@example.invalid",
+                "GIT_AUTHOR_DATE": "2026-10-10T00:00:00+00:00",
+                "GIT_COMMITTER_DATE": "2026-10-10T00:00:00+00:00",
+                "GIT_NO_REPLACE_OBJECTS": "1",
+            }
+        )
         overlay_file = os.environ.get("AKC_PR91_SCOPE_GIT_OBJECT_ENV")
         if overlay_file:
             overlay = json.loads(Path(overlay_file).read_text(encoding="utf-8"))
@@ -56,7 +58,9 @@ class TestPR91AffectedScope(unittest.TestCase):
             history_repo = Path(os.environ.get("AKC_PR91_SCOPE_HISTORY_REPO", str(ROOT)))
             result = subprocess.run(  # noqa: S603 - fixed local Git object-directory lookup.
                 [cls.git_executable, "-C", str(history_repo), "rev-parse", "--git-path", "objects"],
-                capture_output=True, text=True, check=True,
+                capture_output=True,
+                text=True,
+                check=True,
             )
             path = Path(result.stdout.strip())
             objects = [str(path if path.is_absolute() else history_repo / path)]
@@ -65,7 +69,9 @@ class TestPR91AffectedScope(unittest.TestCase):
         cls.environment["GIT_ALTERNATE_OBJECT_DIRECTORIES"] = os.pathsep.join(objects)
         subprocess.run(  # noqa: S603 - local temporary repository, no remote or source writes.
             [cls.git_executable, "init", "--quiet", str(cls.repo)],
-            env=cls.environment, check=True, capture_output=True,
+            env=cls.environment,
+            check=True,
+            capture_output=True,
         )
         cls.environment["GIT_INDEX_FILE"] = str(cls.temp / "synthetic.index")
         cls._git("read-tree", scope.ANCHOR_TREE)
@@ -73,8 +79,10 @@ class TestPR91AffectedScope(unittest.TestCase):
             cls._git("update-index", "--add", "--cacheinfo", "100644", blob, path)
         # Explicit synthetic workflow/control data tests classification only.
         for path in (
-            ".github/workflows/ci.yml", ".github/workflows/pr91-focused-qualification.yml",
-            "scripts/classify_pr91_affected_scope.py", "tests/unit/test_pr91_affected_scope.py",
+            ".github/workflows/ci.yml",
+            ".github/workflows/pr91-focused-qualification.yml",
+            "scripts/classify_pr91_affected_scope.py",
+            "tests/unit/test_pr91_affected_scope.py",
             "tests/unit/test_pr91_affected_workflow_contract.py",
         ):
             cls._add(path, b"# Synthetic routing metadata fixture; no CI execution\n")
@@ -82,15 +90,18 @@ class TestPR91AffectedScope(unittest.TestCase):
         cls.head = cls._commit(cls.payload_tree)
         cls._git("update-ref", "refs/heads/synthetic-routing-fixture", cls.head)
         cls._git("symbolic-ref", "HEAD", "refs/heads/synthetic-routing-fixture")
-        cls.previous_anchor = cls._git(
-            "rev-list", "--parents", "-n", "1", scope.ANCHOR_COMMIT
-        ).decode().split()[1]
+        cls.previous_anchor = (
+            cls._git("rev-list", "--parents", "-n", "1", scope.ANCHOR_COMMIT).decode().split()[1]
+        )
 
     @classmethod
     def _git(cls, *arguments: str, raw: bytes | None = None) -> bytes:
         return subprocess.run(  # noqa: S603 - fixed Git operations in temporary synthetic repo.
-            [cls.git_executable, "-C", str(cls.repo), *arguments], input=raw,
-            env=cls.environment, capture_output=True, check=True,
+            [cls.git_executable, "-C", str(cls.repo), *arguments],
+            input=raw,
+            env=cls.environment,
+            capture_output=True,
+            check=True,
         ).stdout
 
     @classmethod
@@ -100,20 +111,28 @@ class TestPR91AffectedScope(unittest.TestCase):
 
     @classmethod
     def _commit(cls, tree: str, parent: str | None = None) -> str:
-        return cls._git(
-            "commit-tree", tree, "-p", parent or scope.ANCHOR_COMMIT,
-            raw=b"Synthetic local-only routing contract metadata\n",
-        ).decode().strip()
+        return (
+            cls._git(
+                "commit-tree",
+                tree,
+                "-p",
+                parent or scope.ANCHOR_COMMIT,
+                raw=b"Synthetic local-only routing contract metadata\n",
+            )
+            .decode()
+            .strip()
+        )
 
     def setUp(self) -> None:
         self._git("update-ref", "refs/heads/synthetic-routing-fixture", self.head)
 
     def _event(self, *, number: int = 91, base: str | None = None) -> dict:
         return {
-            "repository": {"full_name": scope.REPOSITORY}, "number": number,
+            "repository": {"full_name": scope.REPOSITORY},
+            "number": number,
             "pull_request": {
-                "number": number, "head": {"sha": self.head,
-                                           "repo": {"full_name": scope.REPOSITORY}},
+                "number": number,
+                "head": {"sha": self.head, "repo": {"full_name": scope.REPOSITORY}},
                 "base": {"sha": base or scope.ANCHOR_COMMIT},
             },
         }
@@ -137,20 +156,32 @@ class TestPR91AffectedScope(unittest.TestCase):
         result = self._classify()
         self.assertEqual(result["mode"], "parser-delta", result)
         self.assertFalse(result["full_qualification"])
-        self.assertEqual(result["selection"], {
-            "python": True, "images": False, "web": False, "db": False, "model": False,
-            "joined": False, "security_core": True, "dependency_audit": False,
-            "codeql_languages": ["python"],
-        })
+        self.assertEqual(
+            result["selection"],
+            {
+                "python": True,
+                "images": False,
+                "web": False,
+                "db": False,
+                "model": False,
+                "joined": False,
+                "security_core": True,
+                "dependency_audit": False,
+                "codeql_languages": ["python"],
+            },
+        )
         self.assertEqual(len(result["required_tests"]), 16)
         self.assertEqual(result["identity"]["head_commit"], self.head)
         self.assertEqual(result["delta"]["base_commit"], scope.ANCHOR_COMMIT)
         self.assertIn("Static anchor/head equality", result["unchanged_inputs"]["qualification"])
-        self.assertNotIn("packages/compiler-runtime/src/akc_compiler_runtime",
-                         result["unchanged_inputs"]["wheel_packages"])
-        self.assertEqual(result["delta"]["python_paths"], sorted(
-            row["path"] for row in result["delta"]["paths"] if row["path"].endswith(".py")
-        ))
+        self.assertNotIn(
+            "packages/compiler-runtime/src/akc_compiler_runtime",
+            result["unchanged_inputs"]["wheel_packages"],
+        )
+        self.assertEqual(
+            result["delta"]["python_paths"],
+            sorted(row["path"] for row in result["delta"]["paths"] if row["path"].endswith(".py")),
+        )
         self.assertIn("no test/audit/image/release pass", result["qualification_semantics"])
 
     def test_cumulative_pr_changes_are_recorded_separately_and_do_not_route_delta(self) -> None:
@@ -180,8 +211,12 @@ class TestPR91AffectedScope(unittest.TestCase):
                 self.assertFalse(result["selection"]["python"])
 
     def test_unknown_paths_lock_changes_and_ci_control_near_matches_fail_closed(self) -> None:
-        for path in ("unexpected.md", "uv.lock", ".github/workflows/ci.yml.extra",
-                     "scripts/another_router.py"):
+        for path in (
+            "unexpected.md",
+            "uv.lock",
+            ".github/workflows/ci.yml.extra",
+            "scripts/another_router.py",
+        ):
             with self.subTest(path=path):
                 head = self._changed_head({path: b"Synthetic unknown input\n"})
                 event = self._event()
@@ -202,10 +237,12 @@ class TestPR91AffectedScope(unittest.TestCase):
 
     def test_deleted_renamed_symlink_and_executable_controls_are_not_admitted(self) -> None:
         path = "scripts/classify_pr91_affected_scope.py"
-        cases = [({path: None}, "100644"),
-                 ({path: None, "scripts/renamed_scope.py": b"Synthetic rename\n"}, "100644"),
-                 ({path: b"synthetic-link-target"}, "120000"),
-                 ({path: b"Synthetic executable\n"}, "100755")]
+        cases = [
+            ({path: None}, "100644"),
+            ({path: None, "scripts/renamed_scope.py": b"Synthetic rename\n"}, "100644"),
+            ({path: b"synthetic-link-target"}, "120000"),
+            ({path: b"Synthetic executable\n"}, "100755"),
+        ]
         for changes, mode in cases:
             with self.subTest(mode=mode, changes=list(changes)):
                 head = self._changed_head(changes, mode=mode)
@@ -221,9 +258,9 @@ class TestPR91AffectedScope(unittest.TestCase):
         with patch.object(scope, "ANCHOR_COMMIT", "0" * 40):
             self.assertEqual(self._classify()["mode"], "broad-required")
         # A real orphan synthetic commit, not a fabricated ancestry response.
-        orphan = self._git(
-            "commit-tree", self.payload_tree, raw=b"Synthetic orphan\n"
-        ).decode().strip()
+        orphan = (
+            self._git("commit-tree", self.payload_tree, raw=b"Synthetic orphan\n").decode().strip()
+        )
         self._git("update-ref", "refs/heads/synthetic-routing-fixture", orphan)
         event = self._event(base=orphan)
         event["pull_request"]["head"]["sha"] = orphan
@@ -238,8 +275,14 @@ class TestPR91AffectedScope(unittest.TestCase):
     def test_original_other_pr_main_manual_and_schedule_policies_remain_full(self) -> None:
         events = [
             ("pull_request", self._event(number=92)),
-            ("push", {"repository": {"full_name": scope.REPOSITORY},
-                      "ref": "refs/heads/main", "after": self.head}),
+            (
+                "push",
+                {
+                    "repository": {"full_name": scope.REPOSITORY},
+                    "ref": "refs/heads/main",
+                    "after": self.head,
+                },
+            ),
             ("workflow_dispatch", {"repository": {"full_name": scope.REPOSITORY}}),
             ("schedule", {"repository": {"full_name": scope.REPOSITORY}}),
         ]
@@ -249,8 +292,9 @@ class TestPR91AffectedScope(unittest.TestCase):
                 self.assertEqual(result["mode"], "full", result)
                 self.assertTrue(result["full_qualification"])
                 self.assertTrue(result["selection"]["dependency_audit"])
-                self.assertEqual(result["selection"]["codeql_languages"],
-                                 ["python", "javascript-typescript"])
+                self.assertEqual(
+                    result["selection"]["codeql_languages"], ["python", "javascript-typescript"]
+                )
         invalid = deepcopy(events[1][1])
         invalid["ref"] = "refs/heads/synthetic-other-branch"
         self.assertEqual(self._classify(invalid, name="push")["mode"], "broad-required")
@@ -266,36 +310,60 @@ class TestPR91AffectedScope(unittest.TestCase):
                 output = prefix.with_suffix(".receipt.json")
                 github_output = prefix.with_suffix(".github-output.txt")
                 event_path.write_text(json.dumps(event), encoding="utf-8")
-                command = [sys.executable, str(SCRIPT), "--repo", str(self.repo),
-                           "--event-path", str(event_path), "--event-name", "pull_request",
-                           "--workflow-kind", "ci", "--output", str(output),
-                           "--github-output", str(github_output)]
+                command = [
+                    sys.executable,
+                    str(SCRIPT),
+                    "--repo",
+                    str(self.repo),
+                    "--event-path",
+                    str(event_path),
+                    "--event-name",
+                    "pull_request",
+                    "--workflow-kind",
+                    "ci",
+                    "--output",
+                    str(output),
+                    "--github-output",
+                    str(github_output),
+                ]
                 result = subprocess.run(  # noqa: S603 - fixed local classifier CLI.
-                    command, env=self.environment, capture_output=True, text=True,
-                    encoding="utf-8", check=False,
+                    command,
+                    env=self.environment,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    check=False,
                 )
                 self.assertEqual(result.returncode, 0 if accepted else 1, result.stderr)
                 record = json.loads(output.read_text(encoding="utf-8"))
-                self.assertEqual(
-                    record["mode"], "parser-delta" if accepted else "broad-required"
-                )
+                self.assertEqual(record["mode"], "parser-delta" if accepted else "broad-required")
                 if accepted:
-                    outputs = dict(line.split("=", 1) for line in
-                                   github_output.read_text(encoding="utf-8").splitlines())
+                    outputs = dict(
+                        line.split("=", 1)
+                        for line in github_output.read_text(encoding="utf-8").splitlines()
+                    )
                     self.assertEqual(outputs["mode"], "parser-delta")
                     self.assertEqual(outputs["full_qualification"], "false")
                     self.assertEqual(json.loads(outputs["codeql_languages"]), ["python"])
                 else:
                     self.assertFalse(github_output.exists())
-                print(json.dumps({"synthetic_cli_contract": True, "accepted": accepted,
-                                  "exit_code": result.returncode, "mode": record["mode"]}))
-
-
+                print(
+                    json.dumps(
+                        {
+                            "synthetic_cli_contract": True,
+                            "accepted": accepted,
+                            "exit_code": result.returncode,
+                            "mode": record["mode"],
+                        }
+                    )
+                )
 
     def _joined_registration_head(self, overrides=None, modes=None) -> str:
         # Actual synthetic Git metadata only, never the reviewed Node runtime payload.
-        changes = {path: b"// Synthetic joined selection source; not runtime evidence\n"
-                   for path in scope.JOINED_SOURCE_PATHS}
+        changes = {
+            path: b"// Synthetic joined selection source; not runtime evidence\n"
+            for path in scope.JOINED_SOURCE_PATHS
+        }
         changes.update(overrides or {})
         self._git("read-tree", self.payload_tree)
         for path, raw in changes.items():
@@ -334,31 +402,52 @@ class TestPR91AffectedScope(unittest.TestCase):
                 result = self._classify(event, kind=kind)
                 self.assertEqual(result["mode"], "parser-delta", result)
                 self.assertFalse(result["full_qualification"])
-                self.assertEqual(result["selection"], {
-                    "python": True, "images": False, "web": False, "db": False,
-                    "model": False, "joined": True, "security_core": True,
-                    "dependency_audit": False, "codeql_languages": ["python"],
-                })
+                self.assertEqual(
+                    result["selection"],
+                    {
+                        "python": True,
+                        "images": False,
+                        "web": False,
+                        "db": False,
+                        "model": False,
+                        "joined": True,
+                        "security_core": True,
+                        "dependency_audit": False,
+                        "codeql_languages": ["python"],
+                    },
+                )
                 self.assertEqual(set(result["joined_sources"]["changed_paths"]), expected_paths)
                 self.assertEqual(set(result["joined_sources"]["entries"]), expected_paths)
                 self.assertEqual(result["required_tests"], list(scope.REQUIRED_TESTS))
                 self.assertEqual(len(result["required_tests"]), 16)
-                self.assertEqual(result["required_joined_tests"], [
-                    "tests/e2e/joined/g1-11-runtime-producer.test.mjs",
-                    "tests/e2e/joined/g1-11-producer-review-correction.test.mjs",
-                    "tests/e2e/joined/g1-11-seven-member-scenario.test.mjs",
-                ])
+                self.assertEqual(
+                    result["required_joined_tests"],
+                    [
+                        "tests/e2e/joined/g1-11-runtime-producer.test.mjs",
+                        "tests/e2e/joined/g1-11-producer-review-correction.test.mjs",
+                        "tests/e2e/joined/g1-11-seven-member-scenario.test.mjs",
+                    ],
+                )
                 for path, row in result["joined_sources"]["entries"].items():
                     self.assertEqual(row["mode"], "100644")
                     self.assertEqual(row["kind"], "blob")
-                    self.assertEqual(row["blob"], self._git(
-                        "rev-parse", f"{head}:{path}"
-                    ).decode().strip())
+                    self.assertEqual(
+                        row["blob"], self._git("rev-parse", f"{head}:{path}").decode().strip()
+                    )
                 self.assertIn("no Node or runtime pass", result["joined_sources"]["qualification"])
         for path, blob in scope.PINNED_PAYLOAD.items():
             self.assertEqual(self._git("rev-parse", f"{head}:{path}").decode().strip(), blob)
-        print(json.dumps({"synthetic_joined_routing": True, "head": head,
-                          "source_count": 8, "payload_count": 6, "runtime_executed": False}))
+        print(
+            json.dumps(
+                {
+                    "synthetic_joined_routing": True,
+                    "head": head,
+                    "source_count": 8,
+                    "payload_count": 6,
+                    "runtime_executed": False,
+                }
+            )
+        )
 
     def test_joined_registration_parser_only_false_and_original_full_policy_unchanged(self) -> None:
         parser = self._classify()
@@ -372,11 +461,20 @@ class TestPR91AffectedScope(unittest.TestCase):
         full = self._classify(event)
         self.assertEqual(full["mode"], "full", full)
         self.assertTrue(full["full_qualification"])
-        self.assertEqual(full["selection"], {
-            "python": True, "images": True, "web": True, "db": True, "model": True,
-            "joined": True, "security_core": True, "dependency_audit": True,
-            "codeql_languages": ["python", "javascript-typescript"],
-        })
+        self.assertEqual(
+            full["selection"],
+            {
+                "python": True,
+                "images": True,
+                "web": True,
+                "db": True,
+                "model": True,
+                "joined": True,
+                "security_core": True,
+                "dependency_audit": True,
+                "codeql_languages": ["python", "javascript-typescript"],
+            },
+        )
 
     def test_joined_registration_every_source_is_mandatory_when_activated(self) -> None:
         for path in scope.JOINED_SOURCE_PATHS:
@@ -388,8 +486,12 @@ class TestPR91AffectedScope(unittest.TestCase):
                 self.assertFalse(result["full_qualification"])
                 # An anchor-existing file is a forbidden deletion; newly registered sources
                 # absent at both revisions fail the full finite source-presence contract.
-                self.assertTrue({"joined-source-missing", "unsupported-change"}.intersection(
-                    result["reason_codes"]), result)
+                self.assertTrue(
+                    {"joined-source-missing", "unsupported-change"}.intersection(
+                        result["reason_codes"]
+                    ),
+                    result,
+                )
                 self.assertEqual(result["required_joined_tests"], [])
 
     def test_joined_registration_unsafe_modes_deletion_and_rename_fail_closed(self) -> None:
@@ -402,14 +504,18 @@ class TestPR91AffectedScope(unittest.TestCase):
                 self.assertIn("unsupported-change", result["reason_codes"])
                 self.assertFalse(result["selection"]["joined"])
         old = "tests/e2e/joined/joined-e2e.mjs"
-        for overrides in ({old: None}, {old: None,
-                "tests/e2e/joined/renamed-joined-e2e.mjs": b"// Synthetic rename target\n"}):
+        for overrides in (
+            {old: None},
+            {old: None, "tests/e2e/joined/renamed-joined-e2e.mjs": b"// Synthetic rename target\n"},
+        ):
             with self.subTest(changes=list(overrides)):
                 head = self._joined_registration_head(overrides)
                 result = self._classify(self._joined_registration_event(head))
                 self.assertEqual(result["mode"], "broad-required", result)
-                self.assertTrue({"unsupported-change", "unknown-path"}.intersection(
-                    result["reason_codes"]), result)
+                self.assertTrue(
+                    {"unsupported-change", "unknown-path"}.intersection(result["reason_codes"]),
+                    result,
+                )
                 self.assertFalse(result["selection"]["joined"])
 
     def _joined_registration_raw_path_head(self, path: str, raw: bytes) -> str:
@@ -433,14 +539,14 @@ class TestPR91AffectedScope(unittest.TestCase):
                 self.assertEqual(metadata[1], b"tree")
                 subtree = insert(metadata[2].decode("ascii"), parts[1:])
                 entries[name] = f"040000 tree {subtree}".encode("ascii")
-            payload = b"".join(metadata + b"\t" + name + b"\0"
-                               for name, metadata in entries.items())
+            payload = b"".join(
+                metadata + b"\t" + name + b"\0" for name, metadata in entries.items()
+            )
             return self._git("mktree", "-z", raw=payload).decode().strip()
 
         tree = insert(root, path.encode("utf-8").split(b"/"))
         head = self._commit(tree, parent=regular_head)
-        self.assertIn(b"\t" + path.encode("utf-8") + b"\0",
-                      self._git("ls-tree", "-r", "-z", head))
+        self.assertIn(b"\t" + path.encode("utf-8") + b"\0", self._git("ls-tree", "-r", "-z", head))
         self._git("update-ref", "refs/heads/synthetic-routing-fixture", head)
         return head
 
@@ -453,9 +559,11 @@ class TestPR91AffectedScope(unittest.TestCase):
         ):
             with self.subTest(path=path):
                 raw = b"// Synthetic unknown source\n"
-                head = (self._joined_registration_raw_path_head(path, raw)
-                        if "\n" in path or "\r" in path
-                        else self._joined_registration_head({path: raw}))
+                head = (
+                    self._joined_registration_raw_path_head(path, raw)
+                    if "\n" in path or "\r" in path
+                    else self._joined_registration_head({path: raw})
+                )
                 result = self._classify(self._joined_registration_event(head))
                 self.assertEqual(result["mode"], "broad-required", result)
                 self.assertIn(reason, result["reason_codes"])
@@ -489,9 +597,11 @@ class TestPR91AffectedScope(unittest.TestCase):
     def test_joined_registration_cli_exports_true_only_for_valid_finite_sources(self) -> None:
         for accepted in (True, False):
             with self.subTest(accepted=accepted):
-                overrides = {} if accepted else {
-                    "tests/e2e/joined/not-registered.mjs": b"// Synthetic unknown source\n"
-                }
+                overrides = (
+                    {}
+                    if accepted
+                    else {"tests/e2e/joined/not-registered.mjs": b"// Synthetic unknown source\n"}
+                )
                 head = self._joined_registration_head(overrides)
                 event = self._joined_registration_event(head)
                 prefix = self.temp / f"joined-cli-{accepted}"
@@ -500,18 +610,35 @@ class TestPR91AffectedScope(unittest.TestCase):
                 github_output = prefix.with_suffix(".github-output.txt")
                 event_path.write_text(json.dumps(event), encoding="utf-8")
                 result = subprocess.run(  # noqa: S603 - fixed local classifier CLI, not CI.
-                    [sys.executable, str(SCRIPT), "--repo", str(self.repo),
-                     "--event-path", str(event_path), "--event-name", "pull_request",
-                     "--workflow-kind", "joined", "--output", str(output),
-                     "--github-output", str(github_output)],
-                    env=self.environment, capture_output=True, text=True,
-                    encoding="utf-8", check=False,
+                    [
+                        sys.executable,
+                        str(SCRIPT),
+                        "--repo",
+                        str(self.repo),
+                        "--event-path",
+                        str(event_path),
+                        "--event-name",
+                        "pull_request",
+                        "--workflow-kind",
+                        "joined",
+                        "--output",
+                        str(output),
+                        "--github-output",
+                        str(github_output),
+                    ],
+                    env=self.environment,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    check=False,
                 )
                 self.assertEqual(result.returncode, 0 if accepted else 1, result.stderr)
                 record = json.loads(output.read_text(encoding="utf-8"))
                 if accepted:
-                    values = dict(line.split("=", 1) for line in
-                                  github_output.read_text(encoding="utf-8").splitlines())
+                    values = dict(
+                        line.split("=", 1)
+                        for line in github_output.read_text(encoding="utf-8").splitlines()
+                    )
                     self.assertEqual(values["mode"], "parser-delta")
                     self.assertEqual(values["joined"], "true")
                     self.assertEqual(values["full_qualification"], "false")
@@ -522,8 +649,16 @@ class TestPR91AffectedScope(unittest.TestCase):
                     self.assertFalse(github_output.exists())
                     self.assertEqual(record["mode"], "broad-required")
                     self.assertFalse(record["selection"]["joined"])
-                print(json.dumps({"synthetic_joined_cli": True, "accepted": accepted,
-                                  "exit_code": result.returncode, "runtime_executed": False}))
+                print(
+                    json.dumps(
+                        {
+                            "synthetic_joined_cli": True,
+                            "accepted": accepted,
+                            "exit_code": result.returncode,
+                            "runtime_executed": False,
+                        }
+                    )
+                )
 
 
 if __name__ == "__main__":
@@ -532,176 +667,213 @@ if __name__ == "__main__":
 
 class TestK15FiniteEntityAdmission(unittest.TestCase):
     """New contracts share only fixture helpers; discovery never duplicates prior tests."""
-    setUpClass = TestPR91AffectedScope.__dict__['setUpClass']
-    setUp = TestPR91AffectedScope.__dict__['setUp']
-    _git = TestPR91AffectedScope.__dict__['_git']
-    _add = TestPR91AffectedScope.__dict__['_add']
-    _commit = TestPR91AffectedScope.__dict__['_commit']
-    _event = TestPR91AffectedScope.__dict__['_event']
-    _classify = TestPR91AffectedScope.__dict__['_classify']
+
+    setUpClass = TestPR91AffectedScope.__dict__["setUpClass"]
+    setUp = TestPR91AffectedScope.__dict__["setUp"]
+    _git = TestPR91AffectedScope.__dict__["_git"]
+    _add = TestPR91AffectedScope.__dict__["_add"]
+    _commit = TestPR91AffectedScope.__dict__["_commit"]
+    _event = TestPR91AffectedScope.__dict__["_event"]
+    _classify = TestPR91AffectedScope.__dict__["_classify"]
 
     def _k15_head(self, *, parser=True, joined=False, overrides=None, modes=None):
-        self._git('read-tree', self.payload_tree if parser else scope.ANCHOR_TREE)
-        for path in ('scripts/classify_pr91_affected_scope.py',
-            'tests/unit/test_pr91_affected_scope.py',
-            'tests/unit/test_pr91_affected_workflow_contract.py'):
-            self._add(path, b'# Synthetic exact routing control fixture\n')
+        self._git("read-tree", self.payload_tree if parser else scope.ANCHOR_TREE)
+        for path in (
+            "scripts/classify_pr91_affected_scope.py",
+            "tests/unit/test_pr91_affected_scope.py",
+            "tests/unit/test_pr91_affected_workflow_contract.py",
+        ):
+            self._add(path, b"# Synthetic exact routing control fixture\n")
         for path, blob in scope.ENTITY_PAYLOAD.items():
-            self._git('update-index', '--add', '--cacheinfo', '100644', blob, path)
+            self._git("update-index", "--add", "--cacheinfo", "100644", blob, path)
         if joined:
             for path in scope.JOINED_SOURCE_PATHS:
-                self._add(path, b'// Synthetic joined source presence, not G1 evidence\n')
+                self._add(path, b"// Synthetic joined source presence, not G1 evidence\n")
         for path, raw in (overrides or {}).items():
             if raw is None:
-                self._git('update-index', '--force-remove', path)
+                self._git("update-index", "--force-remove", path)
             else:
-                mode = (modes or {}).get(path, '100644')
-                if mode == '160000':
-                    self._git('update-index',
-                        '--add',
-                        '--cacheinfo',
-                        mode,
-                        scope.ANCHOR_COMMIT,
-                        path)
+                mode = (modes or {}).get(path, "100644")
+                if mode == "160000":
+                    self._git(
+                        "update-index", "--add", "--cacheinfo", mode, scope.ANCHOR_COMMIT, path
+                    )
                 else:
                     self._add(path, raw, mode)
-        head = self._commit(self._git('write-tree').decode().strip())
-        self._git('update-ref', 'refs/heads/synthetic-routing-fixture', head)
+        head = self._commit(self._git("write-tree").decode().strip())
+        self._git("update-ref", "refs/heads/synthetic-routing-fixture", head)
         return head
 
     def _k15_event(self, head):
         event = self._event()
-        event['pull_request']['head']['sha'] = head
+        event["pull_request"]["head"]["sha"] = head
         return event
 
     def test_k15_exact_pair_and_entity_only_selection(self):
-        self.assertEqual(scope.ENTITY_PAYLOAD,
+        self.assertEqual(
+            scope.ENTITY_PAYLOAD,
             {
-                'packages/cir-python/src/akc_cir/entity.py':
-                '7536ab16f28be68d2d6d43aa261702f5bb491349',
-            'tests/unit/test_entity.py': 'aeddade75b55a00b70ffe0a7aed05a89a3123839'})
+                "packages/cir-python/src/akc_cir/entity.py":
+                    "7536ab16f28be68d2d6d43aa261702f5bb491349",
+                "tests/unit/test_entity.py": "aeddade75b55a00b70ffe0a7aed05a89a3123839",
+            },
+        )
         head = self._k15_head(parser=False)
         for kind in scope.WORKFLOW_KINDS:
             result = self._classify(self._k15_event(head), kind=kind)
-            self.assertEqual(result['mode'], 'entity-delta', result)
-            self.assertEqual(result['required_tests'], list(scope.ENTITY_REQUIRED_TESTS))
-            self.assertEqual(result['required_joined_tests'], [])
-            self.assertFalse(result['full_qualification'])
-            self.assertEqual(result['selection'],
-                {'python': True,
-                'images': False,
-                'web': False,
-                'db': False,
-                'model': False,
-                'joined': False,
-                'security_core': True,
-                'dependency_audit': False,
-                'codeql_languages': ['python']})
-            self.assertEqual(set(result['entity_sources']['entries']), set(scope.ENTITY_PAYLOAD))
+            self.assertEqual(result["mode"], "entity-delta", result)
+            self.assertEqual(result["required_tests"], list(scope.ENTITY_REQUIRED_TESTS))
+            self.assertEqual(result["required_joined_tests"], [])
+            self.assertFalse(result["full_qualification"])
+            self.assertEqual(
+                result["selection"],
+                {
+                    "python": True,
+                    "images": False,
+                    "web": False,
+                    "db": False,
+                    "model": False,
+                    "joined": False,
+                    "security_core": True,
+                    "dependency_audit": False,
+                    "codeql_languages": ["python"],
+                },
+            )
+            self.assertEqual(set(result["entity_sources"]["entries"]), set(scope.ENTITY_PAYLOAD))
 
     def test_k15_combined_preserves_parser_and_joined_exact_selection(self):
         original = self._classify()
-        self.assertEqual(original['mode'], 'parser-delta')
-        self.assertEqual(original['required_tests'], list(scope.REQUIRED_TESTS))
+        self.assertEqual(original["mode"], "parser-delta")
+        self.assertEqual(original["required_tests"], list(scope.REQUIRED_TESTS))
         for joined in (False, True):
             head = self._k15_head(joined=joined)
             result = self._classify(self._k15_event(head))
-            self.assertEqual(result['mode'], 'parser-entity-delta', result)
-            self.assertEqual(result['required_tests'],
-                list(scope.REQUIRED_TESTS) + ['tests/unit/test_entity.py'])
-            self.assertEqual(result['selection'], dict(original['selection'], joined=joined))
-            self.assertEqual(result['required_joined_tests'],
-                list(scope.REQUIRED_JOINED_TESTS) if joined else [])
+            self.assertEqual(result["mode"], "parser-entity-delta", result)
+            self.assertEqual(
+                result["required_tests"], [*scope.REQUIRED_TESTS, "tests/unit/test_entity.py"]
+            )
+            self.assertEqual(result["selection"], dict(original["selection"], joined=joined))
+            self.assertEqual(
+                result["required_joined_tests"], list(scope.REQUIRED_JOINED_TESTS) if joined else []
+            )
 
     def test_k15_payload_pair_missing_or_drift_fail_closed(self):
         for path in scope.ENTITY_PAYLOAD:
-            for raw in (None, b'# not the reviewed K15 source\n'):
+            for raw in (None, b"# not the reviewed K15 source\n"):
                 with self.subTest(path=path, raw=raw):
                     head = self._k15_head(overrides={path: raw})
                     result = self._classify(self._k15_event(head))
-                    self.assertEqual(result['mode'], 'broad-required', result)
-                    self.assertTrue({'entity-payload-mismatch',
-                        'unsupported-change'}.intersection(result['reason_codes']))
-                    self.assertFalse(result['selection']['python'])
-                    self.assertIsNone(result['entity_sources'])
+                    self.assertEqual(result["mode"], "broad-required", result)
+                    self.assertTrue(
+                        {"entity-payload-mismatch", "unsupported-change"}.intersection(
+                            result["reason_codes"]
+                        )
+                    )
+                    self.assertFalse(result["selection"]["python"])
+                    self.assertIsNone(result["entity_sources"])
 
     def test_k15_unsafe_type_rename_and_unknown_neighbors_fail_closed(self):
         for path in scope.ENTITY_PAYLOAD:
-            for mode in ('100755', '120000', '160000'):
-                head = self._k15_head(overrides={path: b'unsafe'}, modes={path: mode})
+            for mode in ("100755", "120000", "160000"):
+                head = self._k15_head(overrides={path: b"unsafe"}, modes={path: mode})
                 result = self._classify(self._k15_event(head))
-                self.assertEqual(result['mode'], 'broad-required', result)
-                self.assertIn('unsupported-change', result['reason_codes'])
-        for changes in ({'packages/cir-python/src/akc_cir/entity.py.extra': b'x'},
-            {'tests/unit/test_entity_extra.py': b'x'},
-            {'packages/cir-python/src/akc_cir/entity.py': None,
-            'packages/cir-python/src/akc_cir/entity-renamed.py': b'x'}):
+                self.assertEqual(result["mode"], "broad-required", result)
+                self.assertIn("unsupported-change", result["reason_codes"])
+        for changes in (
+            {"packages/cir-python/src/akc_cir/entity.py.extra": b"x"},
+            {"tests/unit/test_entity_extra.py": b"x"},
+            {
+                "packages/cir-python/src/akc_cir/entity.py": None,
+                "packages/cir-python/src/akc_cir/entity-renamed.py": b"x",
+            },
+        ):
             head = self._k15_head(overrides=changes)
             result = self._classify(self._k15_event(head))
-            self.assertEqual(result['mode'], 'broad-required', result)
-            self.assertTrue({'unknown-path',
-                'unsupported-change'}.intersection(result['reason_codes']))
+            self.assertEqual(result["mode"], "broad-required", result)
+            self.assertTrue(
+                {"unknown-path", "unsupported-change"}.intersection(result["reason_codes"])
+            )
 
     def test_k15_event_identity_ancestry_and_frozen_inputs_fail_closed(self):
         head = self._k15_head()
         event = self._k15_event(head)
         mismatch = deepcopy(event)
-        mismatch['pull_request']['head']['sha'] = scope.ANCHOR_COMMIT
+        mismatch["pull_request"]["head"]["sha"] = scope.ANCHOR_COMMIT
         fork = deepcopy(event)
-        fork['pull_request']['head']['repo']['full_name'] = 'foreign/repo'
+        fork["pull_request"]["head"]["repo"]["full_name"] = "foreign/repo"
         malformed = deepcopy(event)
-        malformed['number'] = True
+        malformed["number"] = True
         for bad in (mismatch, fork, malformed):
             result = self._classify(bad)
-            self.assertEqual(result['mode'], 'broad-required', result)
-        with patch.object(scope, 'ANCHOR_TREE', 'f' * 40):
-            self.assertEqual(self._classify(event)['mode'], 'broad-required')
-        for path in (next(iter(scope.PINNED_PAYLOAD)), 'uv.lock'):
-            head = self._k15_head(overrides={path: b'unreviewed drift'})
+            self.assertEqual(result["mode"], "broad-required", result)
+        with patch.object(scope, "ANCHOR_TREE", "f" * 40):
+            self.assertEqual(self._classify(event)["mode"], "broad-required")
+        for path in (next(iter(scope.PINNED_PAYLOAD)), "uv.lock"):
+            head = self._k15_head(overrides={path: b"unreviewed drift"})
             result = self._classify(self._k15_event(head))
-            self.assertEqual(result['mode'], 'broad-required', result)
+            self.assertEqual(result["mode"], "broad-required", result)
 
-    def test_k15_actual_a679_tree_regular_sources_and_cli_receipt(self):
-        head = self._commit('a679e75549a9a3aac4fb300462e3fc1377f97a8e')
-        self._git('update-ref', 'refs/heads/synthetic-routing-fixture', head)
-        event = self._k15_event(head)
-        result = self._classify(event, kind='focused')
-        self.assertEqual(result['mode'], 'parser-entity-delta', result)
-        self.assertTrue(result['selection']['joined'])
-        for path, blob in scope.ENTITY_PAYLOAD.items():
-            self.assertEqual(result['entity_sources']['entries'][path],
-                {'mode': '100644',
-                'kind': 'blob',
-                'blob': blob})
-        filename = self.temp / 'k15-cli-event.json'
-        filename.write_text(json.dumps(event))
-        output = self.temp / 'k15-cli-report.json'
-        ghoutput = self.temp / 'k15-gh-output.txt'
-        child = subprocess.run([sys.executable,  # noqa: S603 - fixed task-owned command
-            str(SCRIPT),
-            '--repo',
-            str(self.repo),
-            '--event-path',
-            str(filename),
-            '--event-name',
-            'pull_request',
-            '--workflow-kind',
-            'focused',
-            '--output',
-            str(output),
-            '--github-output',
-            str(ghoutput)],
+    def test_k15_actual_published_tree_regular_sources_and_cli_receipt(self):
+        # Bind the checkout's available source tree, not an unpublished local intermediate.
+        source_tree = subprocess.run(  # noqa: S603 - read-only exact checkout identity.
+            [self.git_executable, "-C", str(ROOT), "rev-parse", "HEAD^{tree}"],
             env=self.environment,
             capture_output=True,
-            text=True)
+            text=True,
+            check=True,
+        ).stdout.strip()
+        self.assertEqual(self._git("cat-file", "-t", source_tree).decode().strip(), "tree")
+        head = self._commit(source_tree)
+        self._git("update-ref", "refs/heads/synthetic-routing-fixture", head)
+        event = self._k15_event(head)
+        result = self._classify(event, kind="focused")
+        self.assertEqual(result["mode"], "parser-entity-delta", result)
+        self.assertEqual(result["identity"]["head_tree"], source_tree)
+        self.assertTrue(result["selection"]["joined"])
+        for path, blob in scope.ENTITY_PAYLOAD.items():
+            self.assertEqual(
+                result["entity_sources"]["entries"][path],
+                {"mode": "100644", "kind": "blob", "blob": blob},
+            )
+        filename = self.temp / "k15-cli-event.json"
+        filename.write_text(json.dumps(event))
+        output = self.temp / "k15-cli-report.json"
+        ghoutput = self.temp / "k15-gh-output.txt"
+        child = subprocess.run(  # noqa: S603 - fixed task-owned command
+            [
+                sys.executable,
+                str(SCRIPT),
+                "--repo",
+                str(self.repo),
+                "--event-path",
+                str(filename),
+                "--event-name",
+                "pull_request",
+                "--workflow-kind",
+                "focused",
+                "--output",
+                str(output),
+                "--github-output",
+                str(ghoutput),
+            ],
+            env=self.environment,
+            capture_output=True,
+            text=True,
+        )
         self.assertEqual(child.returncode, 0, child.stderr + child.stdout)
-        values = dict((line.split('=', 1) for line in ghoutput.read_text().splitlines()))
-        self.assertEqual(values['mode'], 'parser-entity-delta')
-        self.assertEqual(values['full_qualification'], 'false')
-        print(json.dumps({'synthetic_commit_over_actual_local_tree': head,
-            'tree': result['identity']['head_tree'],
-            'entity_entries': result['entity_sources']['entries'],
-            'actual_ci': False}))
+        values = dict(line.split("=", 1) for line in ghoutput.read_text().splitlines())
+        self.assertEqual(values["mode"], "parser-entity-delta")
+        self.assertEqual(values["full_qualification"], "false")
+        print(
+            json.dumps(
+                {
+                    "synthetic_commit_over_actual_local_tree": head,
+                    "tree": result["identity"]["head_tree"],
+                    "entity_entries": result["entity_sources"]["entries"],
+                    "actual_ci": False,
+                }
+            )
+        )
 
     def test_k15_discovery_contains_only_new_methods_and_exact_shared_fixture_helpers(self):
         ids = [
@@ -709,10 +881,9 @@ class TestK15FiniteEntityAdmission(unittest.TestCase):
             for case in unittest.defaultTestLoader.loadTestsFromTestCase(type(self))
         ]
         self.assertEqual(len(ids), 7)
-        self.assertTrue(all((name.startswith('test_k15_') for name in ids)))
-        self.assertFalse(any(
-            name in ids for name in TestPR91AffectedScope.__dict__
-            if name.startswith('test_')
-        ))
-        for helper in ('setUpClass', 'setUp', '_git', '_add', '_commit', '_event', '_classify'):
+        self.assertTrue(all(name.startswith("test_k15_") for name in ids))
+        self.assertFalse(
+            any(name in ids for name in TestPR91AffectedScope.__dict__ if name.startswith("test_"))
+        )
+        for helper in ("setUpClass", "setUp", "_git", "_add", "_commit", "_event", "_classify"):
             self.assertIs(type(self).__dict__[helper], TestPR91AffectedScope.__dict__[helper])
