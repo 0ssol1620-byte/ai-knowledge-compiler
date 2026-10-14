@@ -73,6 +73,8 @@ CI_CONTROL_PATHS = {
     "tests/unit/test_pr91_affected_workflow_contract.py",
     "docs/audit/PR91_AFFECTED_SCOPE.md",
 }
+# Exact already-mandatory K06 test source; never admit its directory by prefix.
+K06_TEST_DELTA_PATH = "tests/integration/test_core_semantic_incremental_runtime.py"
 UNCHANGED_INPUTS = (
     "pyproject.toml",
     "uv.lock",
@@ -300,6 +302,7 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                     PINNED_PAYLOAD.keys()
                     | ENTITY_PAYLOAD.keys()
                     | CI_CONTROL_PATHS
+                    | {K06_TEST_DELTA_PATH}
                     | set(JOINED_SOURCE_PATHS)
                 )
                 if not changes:
@@ -317,6 +320,14 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                         )
                 entity_changes = [item for item in changes if item["path"] in ENTITY_PAYLOAD]
                 parser_active = any(item["path"] in PINNED_PAYLOAD for item in changes)
+                if (
+                    any(item["path"] == K06_TEST_DELTA_PATH for item in changes)
+                    and not parser_active
+                ):
+                    raise EvidenceError(
+                        "unsupported-combination",
+                        "K06 test delta requires the reviewed parser payload route",
+                    )
                 # Original parser route always requires its frozen six payloads. An entity-only
                 # route instead requires those parser files to remain exactly at the anchor.
                 expected_payload = (

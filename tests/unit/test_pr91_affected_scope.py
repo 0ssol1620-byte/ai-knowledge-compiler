@@ -225,6 +225,50 @@ class TestPR91AffectedScope(unittest.TestCase):
                 self.assertEqual(result["mode"], "broad-required")
                 self.assertIn("unknown-path", result["reason_codes"])
 
+    def test_k06_exact_test_delta_requires_parser_route(self) -> None:
+        path = scope.K06_TEST_DELTA_PATH
+        self.assertIn(path, scope.REQUIRED_TESTS)
+        head = self._changed_head({path: b"# Synthetic K06 test correction\n"})
+        event = self._event()
+        event["pull_request"]["head"]["sha"] = head
+        for kind in sorted(scope.WORKFLOW_KINDS):
+            with self.subTest(kind=kind):
+                result = self._classify(event, kind=kind)
+                self.assertEqual(result["mode"], "parser-delta", result)
+                self.assertTrue(result["selection"]["python"])
+                self.assertFalse(result["full_qualification"])
+                self.assertIn(path, result["delta"]["python_paths"])
+                self.assertIn(path, result["required_tests"])
+
+        self._git("read-tree", scope.ANCHOR_TREE)
+        self._add(path, b"# Synthetic K06-only test correction\n")
+        k06_only = self._commit(self._git("write-tree").decode().strip())
+        self._git("update-ref", "refs/heads/synthetic-routing-fixture", k06_only)
+        event["pull_request"]["head"]["sha"] = k06_only
+        result = self._classify(event)
+        self.assertEqual(result["mode"], "broad-required")
+        self.assertIn("unsupported-combination", result["reason_codes"])
+
+    def test_k06_near_match_deletion_and_symlink_still_fail_closed(self) -> None:
+        path = scope.K06_TEST_DELTA_PATH
+        for changed, mode, reason in (
+            ({path + ".extra": b"# Near match\n"}, "100644", "unknown-path"),
+            (
+                {"tests/integration/another_runtime_test.py": b"# New path\n"},
+                "100644",
+                "unknown-path",
+            ),
+            ({path: None}, "100644", "unsupported-change"),
+            ({path: b"symlink-target"}, "120000", "unsupported-change"),
+        ):
+            with self.subTest(paths=list(changed), mode=mode):
+                head = self._changed_head(changed, mode=mode)
+                event = self._event()
+                event["pull_request"]["head"]["sha"] = head
+                result = self._classify(event)
+                self.assertEqual(result["mode"], "broad-required")
+                self.assertIn(reason, result["reason_codes"])
+
     def test_each_of_six_frozen_payload_blobs_is_mandatory(self) -> None:
         for path in scope.PINNED_PAYLOAD:
             with self.subTest(path=path):
@@ -757,6 +801,33 @@ class TestK15FiniteEntityAdmission(unittest.TestCase):
                 result["required_joined_tests"], list(scope.REQUIRED_JOINED_TESTS) if joined else []
             )
 
+    def test_k15_k06_delta_cannot_sneak_into_entity_only_route(self):
+        head = self._k15_head(
+            parser=False,
+            overrides={scope.K06_TEST_DELTA_PATH: b"# Synthetic entity-plus-K06 test\n"},
+        )
+        event = self._k15_event(head)
+        for kind in sorted(scope.WORKFLOW_KINDS):
+            with self.subTest(kind=kind):
+                result = self._classify(event, kind=kind)
+                self.assertEqual(result["mode"], "broad-required")
+                self.assertIn("unsupported-combination", result["reason_codes"])
+                self.assertFalse(result["selection"]["python"])
+
+    def test_k15_k06_delta_on_combined_route_keeps_k06_mandatory(self):
+        head = self._k15_head(
+            parser=True,
+            overrides={scope.K06_TEST_DELTA_PATH: b"# Synthetic combined K06 test\n"},
+        )
+        event = self._k15_event(head)
+        for kind in sorted(scope.WORKFLOW_KINDS):
+            with self.subTest(kind=kind):
+                result = self._classify(event, kind=kind)
+                self.assertEqual(result["mode"], "parser-entity-delta", result)
+                self.assertIn(scope.K06_TEST_DELTA_PATH, result["required_tests"])
+                self.assertIn(scope.K06_TEST_DELTA_PATH, result["delta"]["python_paths"])
+                self.assertTrue(result["selection"]["python"])
+
     def test_k15_payload_pair_missing_or_drift_fail_closed(self):
         for path in scope.ENTITY_PAYLOAD:
             for raw in (None, b"# not the reviewed K15 source\n"):
@@ -878,7 +949,21 @@ class TestK15FiniteEntityAdmission(unittest.TestCase):
             case._testMethodName
             for case in unittest.defaultTestLoader.loadTestsFromTestCase(type(self))
         ]
-        self.assertEqual(len(ids), 7)
+        self.assertEqual(
+            set(ids),
+            {
+                "test_k15_actual_published_tree_regular_sources_and_cli_receipt",
+                "test_k15_combined_preserves_parser_and_joined_exact_selection",
+                "test_k15_discovery_contains_only_new_methods_and_exact_shared_fixture_helpers",
+                "test_k15_event_identity_ancestry_and_frozen_inputs_fail_closed",
+                "test_k15_exact_pair_and_entity_only_selection",
+                "test_k15_k06_delta_cannot_sneak_into_entity_only_route",
+                "test_k15_k06_delta_on_combined_route_keeps_k06_mandatory",
+                "test_k15_payload_pair_missing_or_drift_fail_closed",
+                "test_k15_unsafe_type_rename_and_unknown_neighbors_fail_closed",
+            },
+        )
+        self.assertEqual(len(ids), 9)
         self.assertTrue(all(name.startswith("test_k15_") for name in ids))
         self.assertFalse(
             any(name in ids for name in TestPR91AffectedScope.__dict__ if name.startswith("test_"))

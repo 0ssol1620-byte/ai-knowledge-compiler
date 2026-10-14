@@ -29,9 +29,9 @@ from __future__ import annotations
 
 import json
 import shutil
-from copy import deepcopy
 from collections import Counter
 from collections.abc import Iterator, Mapping
+from copy import deepcopy
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -384,7 +384,15 @@ def test_incremental_recompile_equals_full_rebuild_oracles(
         ("acl-only", ["projects/board-budget.md"], {"projects/board-budget.md"}),
         ("temporal", ["policies/support-policy.md"], {"policies/support-policy.md"}),
     ],
-    ids=["add", "delete", "rename", "bridge-delete", "authority-two-hop-delete", "acl-only", "temporal-change"],
+    ids=[
+        "add",
+        "delete",
+        "rename",
+        "bridge-delete",
+        "authority-two-hop-delete",
+        "acl-only",
+        "temporal-change",
+    ],
 )
 def test_mutations_match_same_prior_and_clean_rebuilds(
     tmp_path: Path,
@@ -470,9 +478,13 @@ def test_mutations_match_same_prior_and_clean_rebuilds(
     if mutation == "add":
         assert any(row["rel_path"] == "notes/contingency.md" for row in incremental.claims.values())
     elif mutation == "delete":
-        assert all(row["rel_path"] != "notes/roadmap-hints.md" for row in incremental.claims.values())
+        assert all(
+            row["rel_path"] != "notes/roadmap-hints.md" for row in incremental.claims.values()
+        )
     elif mutation == "rename":
-        renamed = [row for row in incremental.claims.values() if row["rel_path"] == "notes/roadmap.md"]
+        renamed = [
+            row for row in incremental.claims.values() if row["rel_path"] == "notes/roadmap.md"
+        ]
         assert renamed
         assert {row["moved_from"] for row in renamed} == {"notes/roadmap-hints.md"}
         old_ids = {
@@ -482,37 +494,59 @@ def test_mutations_match_same_prior_and_clean_rebuilds(
         }
         assert {str(row["logical_id"]) for row in renamed} == old_ids
     elif mutation == "bridge-delete":
-        dependent = [row for row in incremental.claims.values() if row["rel_path"] == "projects/rollout.md"]
+        dependent = [
+            row for row in incremental.claims.values() if row["rel_path"] == "projects/rollout.md"
+        ]
         assert dependent and all(row["invalidated_by"] for row in dependent)
         assert clean.answer("What is the rollout checklist?").outcome is AnswerOutcome.CURRENT
         assert pipeline.answer("What is the rollout checklist?").outcome is AnswerOutcome.UNRESOLVED
     elif mutation == "authority-delete":
-        bridge = [row for row in incremental.claims.values() if row["rel_path"] == "policies/launch-bridge.md"]
-        rollout = [row for row in incremental.claims.values() if row["rel_path"] == "projects/rollout.md"]
+        bridge = [
+            row
+            for row in incremental.claims.values()
+            if row["rel_path"] == "policies/launch-bridge.md"
+        ]
+        rollout = [
+            row for row in incremental.claims.values() if row["rel_path"] == "projects/rollout.md"
+        ]
         assert bridge and all(row["invalidated_by"] for row in bridge)
         assert rollout and all(row["invalidated_by"] for row in rollout)
-        for question in ("What is the launch bridge approved for?", "What is the rollout checklist?"):
+        for question in (
+            "What is the launch bridge approved for?",
+            "What is the rollout checklist?",
+        ):
             assert clean.answer(question).outcome is AnswerOutcome.CURRENT
             assert pipeline.answer(question).outcome is AnswerOutcome.UNRESOLVED
     elif mutation == "acl-only":
         budget_rows = [
-            row for row in incremental.claims.values() if row["rel_path"] == "projects/board-budget.md"
+            row
+            for row in incremental.claims.values()
+            if row["rel_path"] == "projects/board-budget.md"
         ]
-        assert budget_rows and {row["required_permission"] for row in budget_rows} == {"board:budget"}
+        assert budget_rows and {row["required_permission"] for row in budget_rows} == {
+            "board:budget"
+        }
         budget_question = "What is the current board acquisition budget?"
         _assert_refused(pipeline.answer(budget_question))
         _assert_refused(pipeline.answer(budget_question, permissions={"board:chair"}))
-        assert pipeline.answer(budget_question, permissions={"board:budget"}).outcome is AnswerOutcome.CURRENT
+        assert (
+            pipeline.answer(budget_question, permissions={"board:budget"}).outcome
+            is AnswerOutcome.CURRENT
+        )
     elif mutation == "temporal":
         weekend_rows = [
             row
             for row in incremental.claims.values()
-            if row["rel_path"] == "policies/support-policy.md" and "extends to weekends" in str(row["value"])
+            if row["rel_path"] == "policies/support-policy.md"
+            and "extends to weekends" in str(row["value"])
         ]
         assert weekend_rows and {row["valid_from"] for row in weekend_rows} == {
             "2027-02-01T00:00:00+00:00"
         }
-        assert pipeline.answer(temporal_question, as_of=as_of_january).outcome is AnswerOutcome.UNRESOLVED
+        assert (
+            pipeline.answer(temporal_question, as_of=as_of_january).outcome
+            is AnswerOutcome.UNRESOLVED
+        )
 
 
 def test_recompile_with_no_change_is_a_no_op(tmp_path: Path, calls: Invocations) -> None:
