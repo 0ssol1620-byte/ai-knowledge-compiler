@@ -16,7 +16,8 @@ Three entry points matter:
 * :meth:`Pipeline.recompile` -- incremental: hash the tree against the stored
   cursor, diff what changed, rebuild only the dirty claims, prove the result
   equals a full rebuild (the §44 oracle), then promote atomically. Nothing
-  changed? Nothing published -- the active world is retained untouched.
+  changed in source or parser policy? Nothing published -- the active world is
+  retained untouched.
 * :meth:`Pipeline.answer` -- compile a question against the ACTIVE world with
   the closed outcome set (CURRENT / STALE / CONFLICT / UNRESOLVED /
   NOT_AUTHORIZED).
@@ -193,11 +194,23 @@ class Pipeline:
     def recompile(self, source_dir: Path | str) -> WorldResult:
         """Incremental compile against the stored cursor.
 
-        Unchanged trees are a no-op: the active world is retained and nothing
-        -- not a candidate, not a receipt -- is written.
+        Unchanged trees under the same parser context are a no-op: the active
+        world is retained and nothing -- not a candidate, not a receipt -- is
+        written. Legacy or different parser contexts require one full compile.
         """
         previous = self.store.load_world()
         if previous is None:
+            return self.compile_workspace(source_dir)
+
+        # Parse-cache misses only prevent cache reuse; they cannot make old
+        # claim rows reflect a new parser policy. Bind that policy to the
+        # published world and resolve every source against the same prior
+        # world when the marker is absent (legacy) or differs.
+        parser_context_hash = content_hash(self._parser_context())
+        if (
+            previous.manifest.artifact_hashes.get("parser/context") != parser_context_hash
+            or previous.artifact_hashes.get("parser/context") != parser_context_hash
+        ):
             return self.compile_workspace(source_dir)
 
         cached = self.store.load_parsed_cache(previous, context=self._parser_context())
@@ -894,15 +907,17 @@ class Pipeline:
         )
 
         world_state_id = self.store.next_world_state_id
+        parser_context = self._parser_context()
         parsed_cache: dict[str, object] = {
             "world_state_id": world_state_id,
             "workspace_id": self.options.workspace_id,
-            "context": self._parser_context(),
+            "context": parser_context,
             "documents": {
                 doc.file.rel_path: extraction.parsed_document_record(doc) for doc in documents
             },
         }
         artifacts["parsed/documents"] = content_hash(parsed_cache)
+        artifacts["parser/context"] = content_hash(parser_context)
         manifest = publication_manifest(
             world_state_id=world_state_id,
             compiler_version=COMPILER_VERSION,

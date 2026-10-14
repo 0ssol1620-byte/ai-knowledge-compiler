@@ -55,7 +55,7 @@ SCAN_SUFFIXES = MARKDOWN_SUFFIXES | CODE_SUFFIXES
 SKIP_DIRS = {".git", ".venv", "node_modules", "__pycache__", ".obsidian", "dist", "build"}
 
 # Bump when extraction rules, draft schema or source/version identity change.
-PARSER_CACHE_VERSION = 1
+PARSER_CACHE_VERSION = 2
 
 _MONTHS = {
     "january": 1,
@@ -137,6 +137,15 @@ _DEF_RE = re.compile(r"^\s*(?:async\s+)?def\s+(\w+)|^\s*class\s+(\w+)|^\s*functi
 _CLAIM_VERB_RE = re.compile(
     r"\b(is|are|shall|will|must|requires?|covers?|applies|effective|launch"
     r"|deadline|schedule[sd]?|ships?|freeze[n]?|decided|approved|gate)\b",
+    re.IGNORECASE,
+)
+
+# Markdown remaining-state predicates require a complement. Exclude common
+# noun constructions ("remains of/from", "remains were/have ..."); this is a
+# finite extraction rule, not a grammatical or truth/negation classifier.
+# Keep code comments on their existing vocabulary.
+_MD_REMAINING_STATE_RE = re.compile(
+    r"\bremains?\b(?!\s+(?:of|from|was|were|has|have|had)\b)(?=\s+\S)",
     re.IGNORECASE,
 )
 
@@ -590,7 +599,11 @@ def _parse_markdown(
             kind = "dependency"
 
         has_date = _first_date(body) is not None
-        states_something = bool(status_line) or bool(_CLAIM_VERB_RE.search(body))
+        states_something = (
+            bool(status_line)
+            or bool(_CLAIM_VERB_RE.search(body))
+            or bool(_MD_REMAINING_STATE_RE.search(body))
+        )
         # Dependency statements are always claims: they are the graph's edges,
         # and an edge nobody recorded cannot propagate impact.
         if not (has_date or states_something or depends_refs or derived_from_refs):

@@ -40,6 +40,8 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 import { s3Bucket, signV4 } from "./s3-bucket.mjs";
 import { assertAcceptPostBindsEvidence, resolveReviewEvidence, uniquePhraseRegion } from "./review-evidence.mjs";
+import { readG1_11Request, newSevenMemberReport, runSevenMemberScenario,
+  G1_11_RUNTIME_EVIDENCE_KIND, G1_11_COMPLETE_VERDICT, SevenMemberScenarioError } from "./g1-11-seven-member-scenario.mjs";
 
 // >>> joined-diagnostics helpers
 // Self-contained: only spawn from node:child_process, renameSync/rmSync/writeFileSync from node:fs, and globals.
@@ -429,6 +431,8 @@ assert.equal(process.platform, "linux", "The joined proof runs only on the dispo
 assert.equal(process.env.GITHUB_ACTIONS, "true", "The joined proof runs only in GitHub Actions");
 assert.equal(process.env.RUNNER_ENVIRONMENT, "github-hosted", "The joined proof runs only on a GitHub-hosted runner");
 const required = name => { const value = process.env[name]; assert.ok(value, `${name} is required`); return value; };
+// Optional request validation precedes service setup or key creation. No manifest leaves the original journey unchanged.
+const g1_11Request = readG1_11Request(process.env);
 const FOUNDATION = realpathSync(required("TAVONEL_JOINED_FOUNDATION_DIR"));
 const CORE = path.resolve(import.meta.dirname, "../../..");
 const nextRoot = path.join(FOUNDATION, "nextjs");
@@ -1436,6 +1440,46 @@ if(t.origin!==allowed)return Promise.reject(new TypeError('consumer fetch guard:
         ledger.booleans[flag] = true;
       }
       check("failure cases leave the activated World untouched", sql(`select manifest_digest||'@'||revision from public.foundation_active_worlds where ${scope}`), activePointer);
+      // >>> optional G1-11 connection (default OFF; original eleven proof flags above stay independent)
+      if (g1_11Request) {
+        const report = newSevenMemberReport();
+        ledger.observations.g1_11 = report;
+        hop("g1-11-scenario");
+        const persistReport = current => {
+          writeFileAtomic(path.join(outputDir, "g1-11-seven-member-report.json"), redact(`${JSON.stringify(current, null, 2)}\n`));
+          checkpoint("step-end:g1-11-scenario");
+        };
+        try {
+          const { createRuntimeProducer } = await import("./g1-11-runtime-producer.mjs");
+          const { authorizeCompileJobSourceAccess } = await fromFoundation("nextjs/lib/compile-job-authority.ts");
+          await runSevenMemberScenario({ report, request: g1_11Request, evidenceKind: G1_11_RUNTIME_EVIDENCE_KIND,
+            createRuntimeProducer, execution: { runId: process.env.GITHUB_RUN_ID, coreSha, foundationSha },
+            fixture: { owner, workspace, token }, deps: {
+              app, signedPut, deliver, driveJob, jobRow, listKeys, getObject: key => bucket.get(key), reservation, verifyCompileReceipt, trust,
+              deriveFileKey, intakeManifestDigest, newAttemptKey, approvedSourceIdempotencyKey, quoteIntakeManifest, intakePricingFingerprint,
+              // This exact Foundation function derives the actor from durable job rows. No copied server credentials,
+              // invented principal decision or rollout override: UNAVAILABLE remains an incomplete stopped scenario.
+              authorizeCompileJobSourceAccess,
+              ocrCallsFor: digest => ocrProxy.calls.filter(call => call.inputSha256 === digest),
+              checkpointReport: persistReport,
+              writeSidecar: serializedPair => {
+                const pair = JSON.parse(serializedPair);
+                const resultsText = redact(`${JSON.stringify(pair.runtimeResults, null, 2)}\n`);
+                const sidecarText = redact(`${JSON.stringify(pair.sidecar, null, 2)}\n`);
+                writeFileAtomic(path.join(outputDir, "g1-11-runtime-results.json"), resultsText);
+                writeFileAtomic(path.join(outputDir, "g1-11-runtime-producer-sidecar.json"), sidecarText);
+                return sha256(sidecarText); // serialized diagnostic file digest, never a stage receipt
+              },
+            } });
+        } finally {
+          // The structural report lands before the outer failure path, including partial callback/import failures.
+          persistReport(report);
+        }
+        if (report.verdict !== G1_11_COMPLETE_VERDICT || report.producer.output?.structuralStatus !== "COMPLETED") {
+          throw new SevenMemberScenarioError("G1_11_SCENARIO_PARTIAL", "the requested G1-11 scenario has incomplete observations; see its persisted report and sidecar");
+        }
+      }
+      // <<< optional G1-11 connection
       observe("coreCalls", core.calls);
       observe("cdrCalls", cdrProxy.calls);
       observe("ocrCalls", ocrProxy.calls);

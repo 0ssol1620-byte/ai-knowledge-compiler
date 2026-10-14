@@ -287,6 +287,18 @@ def resolve_mention(
     # threshold down merges two entities that share nothing.
     if contextual and contextual[0][0] > 0.0 and contextual[0][0] >= context_threshold:
         score, entity_id = contextual[0]
+        highest_ids = tuple(
+            sorted({candidate_id for overlap, candidate_id in contextual if overlap == score})
+        )
+        if len(highest_ids) > 1:
+            return MergeDecision(
+                verdict=MergeVerdict.REVIEW,
+                entity_id=None,
+                tier=ResolutionTier.CONTEXT_OVERLAP,
+                score=score,
+                reason=f"several entities have equally strong context overlap ({score:.2f})",
+                candidates=highest_ids,
+            )
         return MergeDecision(
             verdict=MergeVerdict.REVIEW if high_risk else MergeVerdict.AUTO_MERGE,
             entity_id=None if high_risk else entity_id,

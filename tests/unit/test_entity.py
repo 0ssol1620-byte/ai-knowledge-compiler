@@ -445,3 +445,150 @@ def test_a_reviewer_approved_merge_is_not_flagged_as_an_automatic_one() -> None:
     )
 
     assert registry.high_risk_auto_merges({"ent_1": "customer"}) == ()
+
+
+# K15: equal context support cannot choose an entity by its identifier.
+def test_k15_context_two_highest_matches_require_review() -> None:
+    incoming = _machine(attributes={}, context_ids=frozenset({"c1", "c2"}))
+    twin = _machine(attributes={}, context_ids=incoming.context_ids)
+    decision = resolve_mention(incoming, [("ent_b", twin), ("ent_a", twin)])
+    assert decision.verdict is MergeVerdict.REVIEW
+    assert decision.entity_id is None
+    assert decision.tier is ResolutionTier.CONTEXT_OVERLAP
+    assert decision.score == 1.0
+    assert decision.candidates == ("ent_a", "ent_b")
+
+
+def test_k15_context_three_highest_matches_retain_every_candidate() -> None:
+    incoming = _machine(attributes={}, context_ids=frozenset({"c1"}))
+    twin = _machine(attributes={}, context_ids=incoming.context_ids)
+    decision = resolve_mention(
+        incoming, [(key, twin) for key in ("ent_c", "ent_a", "ent_b")]
+    )
+    assert decision.verdict is MergeVerdict.REVIEW
+    assert decision.entity_id is None
+    assert decision.candidates == ("ent_a", "ent_b", "ent_c")
+
+
+def test_k15_context_tie_is_invariant_to_input_order_and_lexical_ids() -> None:
+    from itertools import permutations
+
+    incoming = _machine(attributes={}, context_ids=frozenset({"c1", "c2"}))
+    twin = _machine(attributes={}, context_ids=incoming.context_ids)
+    for ids in (("ent_a", "ent_b", "ent_c"), ("zeta", "alpha", "middle")):
+        for order in permutations(ids):
+            decision = resolve_mention(incoming, [(key, twin) for key in order])
+            assert decision.verdict is MergeVerdict.REVIEW
+            assert decision.entity_id is None
+            assert decision.candidates == tuple(sorted(ids))
+
+
+def test_k15_context_tie_excludes_lower_scoring_candidates() -> None:
+    incoming = _machine(attributes={}, context_ids=frozenset({"c1", "c2", "c3"}))
+    twin = _machine(attributes={}, context_ids=incoming.context_ids)
+    lower = _machine(attributes={}, context_ids=frozenset({"c1", "c2"}))
+    decision = resolve_mention(
+        incoming, [("ent_a", twin), ("ent_z", lower), ("ent_b", twin)]
+    )
+    assert decision.verdict is MergeVerdict.REVIEW
+    assert decision.candidates == ("ent_a", "ent_b")
+
+
+def test_k15_context_unique_highest_preserves_auto_merge() -> None:
+    incoming = _machine(attributes={}, context_ids=frozenset({"c1", "c2", "c3"}))
+    best = _machine(attributes={}, context_ids=incoming.context_ids)
+    lower = _machine(attributes={}, context_ids=frozenset({"c1", "c2"}))
+    decision = resolve_mention(incoming, [("ent_z", lower), ("ent_a", best)])
+    assert decision.verdict is MergeVerdict.AUTO_MERGE
+    assert decision.entity_id == "ent_a"
+    assert decision.tier is ResolutionTier.CONTEXT_OVERLAP
+    assert decision.candidates == ("ent_a",)
+
+
+def test_k15_context_duplicate_same_entity_is_not_ambiguity() -> None:
+    incoming = _machine(attributes={}, context_ids=frozenset({"c1", "c2", "c3"}))
+    best = _machine(attributes={}, context_ids=incoming.context_ids)
+    lower = _machine(attributes={}, context_ids=frozenset({"c1", "c2"}))
+    for rows in (
+        [("ent_a", best), ("ent_a", best)],
+        [("ent_a", lower), ("ent_a", best), ("ent_a", best)],
+    ):
+        decision = resolve_mention(incoming, rows)
+        assert decision.verdict is MergeVerdict.AUTO_MERGE
+        assert decision.entity_id == "ent_a"
+        assert decision.candidates == ("ent_a",)
+
+
+def test_k15_context_identifier_match_precedes_context_tie() -> None:
+    incoming = _machine(
+        attributes={}, external_ids={"asset": "12"}, context_ids=frozenset({"c1"})
+    )
+    identified = _machine(
+        attributes={}, external_ids={"asset": "12"}, context_ids=incoming.context_ids
+    )
+    twin = _machine(attributes={}, context_ids=incoming.context_ids)
+    decision = resolve_mention(incoming, [("ent_z", twin), ("ent_a", identified)])
+    assert decision.verdict is MergeVerdict.AUTO_MERGE
+    assert decision.entity_id == "ent_a"
+    assert decision.tier is ResolutionTier.SYSTEM_OF_RECORD
+
+
+def test_k15_context_approved_alias_precedes_context_tie() -> None:
+    incoming = _machine(attributes={}, context_ids=frozenset({"c1"}))
+    twin = _machine(attributes={}, context_ids=incoming.context_ids)
+    decision = resolve_mention(
+        incoming,
+        [("ent_a", twin), ("ent_b", twin)],
+        aliases={incoming.normalized: "ent_a"},
+    )
+    assert decision.verdict is MergeVerdict.AUTO_MERGE
+    assert decision.entity_id == "ent_a"
+    assert decision.tier is ResolutionTier.APPROVED_ALIAS
+
+
+def test_k15_context_composite_key_precedes_context_tie() -> None:
+    incoming = _machine(context_ids=frozenset({"c1"}))
+    identified = _machine(context_ids=incoming.context_ids)
+    twin = _machine(attributes={}, context_ids=incoming.context_ids)
+    decision = resolve_mention(incoming, [("ent_z", twin), ("ent_a", identified)])
+    assert decision.verdict is MergeVerdict.AUTO_MERGE
+    assert decision.entity_id == "ent_a"
+    assert decision.tier is ResolutionTier.COMPOSITE_KEY
+
+
+def test_k15_context_high_risk_tie_retains_candidates_and_unique_top_stays_review() -> None:
+    incoming = _mention(
+        "incoming", "Acme", type_candidate="customer", context_ids=frozenset({"c1"})
+    )
+    twin = _mention(
+        "prior", "Acme", type_candidate="customer", context_ids=incoming.context_ids
+    )
+    for rows, expected in (
+        ([("ent_b", twin), ("ent_a", twin)], ("ent_a", "ent_b")),
+        ([("ent_a", twin)], ("ent_a",)),
+    ):
+        decision = resolve_mention(incoming, rows)
+        assert decision.verdict is MergeVerdict.REVIEW
+        assert decision.entity_id is None
+        assert decision.tier is ResolutionTier.CONTEXT_OVERLAP
+        assert decision.candidates == expected
+
+
+def test_k15_context_review_cannot_execute_system_merge() -> None:
+    incoming = _machine(attributes={}, context_ids=frozenset({"c1"}))
+    twin = _machine(attributes={}, context_ids=incoming.context_ids)
+    decision = resolve_mention(incoming, [("ent_a", twin), ("ent_b", twin)])
+    registry = EntityRegistry()
+    registry.add("ent_a", "m_a")
+    registry.add("ent_b", "m_b")
+    try:
+        registry.merge(
+            merge_id="k15_tie", into="ent_a", absorbed="ent_b", decision=decision
+        )
+    except ValueError as error:
+        assert "named human reviewer" in str(error)
+    else:
+        raise AssertionError("an ambiguous context decision executed a system merge")
+    assert registry.members("ent_a") == ("m_a",)
+    assert registry.members("ent_b") == ("m_b",)
+    assert registry.merges == ()

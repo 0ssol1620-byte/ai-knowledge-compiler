@@ -1,11 +1,12 @@
 # PR91 focused qualification: re-runs only the checks the PR91 batch touches (HWPX/non-PDF parsers and security
 # boundaries, facsimile/visual spec, Next and lockfile changes, application and GPU-worker Dockerfiles, joined harness),
 # against the actual PR head. It is not a replacement for anything:
-#   - ci.yml, security.yml, model-ci.yml and joined-e2e.yml stay required and are not disabled, skipped or inherited;
+#   - unrelated image/web/model/joined jobs are conditionally omitted only for the exact parser delta;
+#   - CI/Security/Model full qualification markers and full release remain separate requirements;
 #   - the full release remains unqualified;
 #   - the known unresolved braces development-dependency audit debt is neither resolved nor suppressed here.
 #
-# Every job checks out github.event.pull_request.head.sha explicitly and asserts it. GITHUB_SHA on a pull_request event
+# Classification and selected focused jobs check out github.event.pull_request.head.sha explicitly and asserts it. GITHUB_SHA on a pull_request event
 # is GitHub's synthetic merge commit; it is recorded as such and never treated as the tested head.
 name: pr91-focused-qualification
 
@@ -25,9 +26,57 @@ env:
   FOUNDATION_PIN_SHA: 5e174884e52ba24be8f6159b4fb044922e3d705b
 
 jobs:
+  scope:
+    name: Classify current changed scope
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      mode: ${{ steps.classify.outputs.mode }}
+      full_qualification: ${{ steps.classify.outputs.full_qualification }}
+      python: ${{ steps.classify.outputs.python }}
+      images: ${{ steps.classify.outputs.images }}
+      web: ${{ steps.classify.outputs.web }}
+      db: ${{ steps.classify.outputs.db }}
+      model: ${{ steps.classify.outputs.model }}
+      joined: ${{ steps.classify.outputs.joined }}
+      security_core: ${{ steps.classify.outputs.security_core }}
+      dependency_audit: ${{ steps.classify.outputs.dependency_audit }}
+      codeql_languages: ${{ steps.classify.outputs.codeql_languages }}
+      tested_head: ${{ steps.identity.outputs.tested_head }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Record the actual checkout identity
+        id: identity
+        run: echo "tested_head=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Classify exact anchor delta separately from cumulative PR scope
+        id: classify
+        run: |
+          python scripts/classify_pr91_affected_scope.py \
+            --repo "$GITHUB_WORKSPACE" --event-path "$GITHUB_EVENT_PATH" \
+            --event-name "${{ github.event_name }}" --workflow-kind focused \
+            --output artifacts/pr91-affected-scope.json --github-output "$GITHUB_OUTPUT"
+      - name: Preserve current classification even on refusal
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: focused-affected-scope-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/pr91-affected-scope.json
+          if-no-files-found: error
+          retention-days: 14
+
   python-focused:
+    needs: scope
+    if: needs.scope.result == 'success' && (needs.scope.outputs.mode == 'parser-delta' || needs.scope.outputs.mode == 'entity-delta' || needs.scope.outputs.mode == 'parser-entity-delta' || needs.scope.outputs.mode == 'full') && github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
+    env:
+      SCOPE_MODE: ${{ needs.scope.outputs.mode }}
     name: Python focused (${{ matrix.python-version }})
-    if: github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     strategy:
@@ -74,15 +123,45 @@ jobs:
         run: python -m uv sync --locked --extra dev
       - name: Verify resolved Python dependencies
         run: python -m uv pip check --python .venv/bin/python
-      # Collection only, over the whole configured tree, so an import or collection break anywhere is caught without
-      # executing the full suite. pyproject's addopts (including --import-mode=importlib) is used as-is.
-      - name: Collect the full test tree (no execution)
+      - name: Recompute the current Python scope receipt at the asserted head
+        run: |
+          python scripts/classify_pr91_affected_scope.py \
+            --repo "$GITHUB_WORKSPACE" --event-path "$GITHUB_EVENT_PATH" \
+            --event-name "${{ github.event_name }}" --workflow-kind focused \
+            --output "$EVIDENCE_DIR/affected-scope.json"
+      - name: Prepare hash-pinned historical parser upgrade fixtures
+        if: needs.scope.outputs.mode != 'entity-delta'
+        run: |
+          python scripts/prepare_parser_upgrade_fixtures.py \
+            --repo "$GITHUB_WORKSPACE" --output "$RUNNER_TEMP/parser-upgrade-fixtures" \
+            --github-env "$GITHUB_ENV"
+      # Collection only: exact required files for parser-delta, whole configured tree for full mode.
+      # pyproject addopts (including --import-mode=importlib) remain active; no broad pytest execution in narrow mode.
+      - name: Collect the selected test tree (no execution)
         id: collect
         continue-on-error: true
         run: |
           set -euo pipefail
           grep -qF -- '--import-mode=importlib' pyproject.toml
-          python -m uv run --locked --extra dev pytest --collect-only -q 2>&1 | tee "$EVIDENCE_DIR/collect-only.log"
+          if [[ "$SCOPE_MODE" == "parser-delta" || "$SCOPE_MODE" == "entity-delta" || "$SCOPE_MODE" == "parser-entity-delta" ]]; then
+            python - <<'PY' 2>&1 | tee "$EVIDENCE_DIR/collect-only.log"
+          import json
+          import os
+          import subprocess
+          import sys
+          from pathlib import Path
+          report = json.loads(Path(os.environ["EVIDENCE_DIR"], "affected-scope.json").read_text())
+          if report["mode"] not in {"parser-delta", "entity-delta", "parser-entity-delta"} or report["identity"]["head_commit"] != os.environ["EXPECTED_CORE_SHA"]:
+              raise ValueError("Python collection scope/head mismatch")
+          files = report["required_tests"]
+          if not files or len(files) != len(set(files)) or any(not Path(f).is_file() for f in files):
+              raise ValueError("Required collection input missing or duplicated")
+          sys.exit(subprocess.run([sys.executable, "-m", "uv", "run", "--locked", "--extra", "dev",
+                                   "pytest", "--collect-only", "-q", *files], check=False).returncode)
+          PY
+          else
+            python -m uv run --locked --extra dev pytest --collect-only -q 2>&1 | tee "$EVIDENCE_DIR/collect-only.log"
+          fi
       - name: Run only the PR91-affected test files
         id: focused
         continue-on-error: true
@@ -93,9 +172,17 @@ jobs:
             tests/unit/test_nonpdf_structured_parsers.py
             tests/unit/test_product_core_native_cir.py
             tests/unit/test_product_core_native_world_manifest.py
+            tests/unit/test_document_remaining_state_extraction.py
+            tests/integration/test_document_parser_policy_upgrade.py
+            tests/unit/test_parser_upgrade_ci_contract.py
             tests/security/test_security_boundaries.py
             services/api/tests/test_native_nonpdf_worker_e2e.py
           )
+          if [[ "$SCOPE_MODE" == "entity-delta" ]]; then
+            files=(tests/unit/test_entity.py)
+          elif [[ "$SCOPE_MODE" == "parser-entity-delta" ]]; then
+            files+=(tests/unit/test_entity.py)
+          fi
           missing=0
           for file in "${files[@]}"; do
             if [ ! -f "$file" ]; then
@@ -113,19 +200,72 @@ jobs:
           BASE_SHA: 956b2efb458bb6062e94f83247acd83696bd3a57
         run: |
           set -euo pipefail
-          git cat-file -e "${BASE_SHA}^{commit}"
-          git merge-base --is-ancestor "$BASE_SHA" HEAD
-          # Qualification-batch baseline (an ancestor of the tested head), not the PR merge base. Deleted files are not lintable.
-          git diff --name-only --diff-filter=d -z "$BASE_SHA" HEAD -- '*.py' > "$RUNNER_TEMP/ruff-changed.z"
-          mapfile -d '' -t files < "$RUNNER_TEMP/ruff-changed.z"
+          lint_basis="$BASE_SHA"
+          if [[ "$SCOPE_MODE" == "parser-delta" || "$SCOPE_MODE" == "entity-delta" || "$SCOPE_MODE" == "parser-entity-delta" ]]; then
+            lint_basis=621b7d692d21ca73e133010e7e234cc0ffe28086
+            python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          report = json.loads(Path(os.environ["EVIDENCE_DIR"], "affected-scope.json").read_text())
+          if report["mode"] not in {"parser-delta", "entity-delta", "parser-entity-delta"} or report["identity"]["head_commit"] != os.environ["EXPECTED_CORE_SHA"]:
+              raise ValueError("Ruff scope/head mismatch")
+          files = report["delta"]["python_paths"]
+          if not files or len(files) != len(set(files)):
+              raise ValueError("No unique current changed Python paths")
+          for file in files:
+              if not isinstance(file, str) or not file.endswith(".py") or Path(file).is_absolute() or ".." in Path(file).parts or not Path(file).is_file():
+                  raise ValueError("Invalid current changed Python path")
+          Path(os.environ["RUNNER_TEMP"], "ruff-changed.z").write_bytes(b"\0".join(f.encode() for f in files) + b"\0")
+          PY
+            mapfile -d '' -t files < "$RUNNER_TEMP/ruff-changed.z"
+          else
+            git cat-file -e "${BASE_SHA}^{commit}"
+            git merge-base --is-ancestor "$BASE_SHA" HEAD
+            # Qualification-batch baseline (an ancestor of the tested head), not the PR merge base. Deleted files are not lintable.
+            git diff --name-only --diff-filter=d -z "$BASE_SHA" HEAD -- '*.py' > "$RUNNER_TEMP/ruff-changed.z"
+            mapfile -d '' -t files < "$RUNNER_TEMP/ruff-changed.z"
+          fi
           printf '%s\n' "${files[@]}" > "$EVIDENCE_DIR/ruff-changed-python-paths.txt"
-          echo "base ${BASE_SHA}; ${#files[@]} changed Python path(s)"
+          echo "base ${lint_basis}; ${#files[@]} Python path/package target(s)"
           if [ "${#files[@]}" -eq 0 ]; then
             echo "No changed Python paths; ruff has nothing to check." | tee "$EVIDENCE_DIR/ruff.log"
             exit 0
           fi
           python -m uv run --locked --extra dev ruff check --force-exclude -- "${files[@]}" 2>&1 \
             | tee "$EVIDENCE_DIR/ruff.log"
+      - name: Run shared parser pipeline and affected routing contracts
+        id: shared
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          if [[ "$SCOPE_MODE" == "entity-delta" ]]; then
+            python -m uv run --locked --extra dev pytest \
+              tests/unit/test_pr91_affected_scope.py \
+              tests/unit/test_pr91_affected_workflow_contract.py \
+              --junitxml="$EVIDENCE_DIR/shared-junit.xml" 2>&1 | tee "$EVIDENCE_DIR/shared.log"
+          else
+            python -m uv run --locked --extra dev pytest \
+              tests/integration/test_core_parser_cache.py \
+              tests/integration/test_core_runtime_history_safety_claude.py \
+              tests/integration/test_core_semantic_incremental_runtime.py \
+              tests/unit/test_answer_compiler.py \
+              tests/unit/test_core_semantic_incremental_fixtures.py \
+              tests/unit/test_pr91_affected_scope.py \
+              tests/unit/test_pr91_affected_workflow_contract.py \
+              --junitxml="$EVIDENCE_DIR/shared-junit.xml" 2>&1 | tee "$EVIDENCE_DIR/shared.log"
+          fi
+      - name: Type check affected compiler and CIR packages
+        id: type
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          packages=(packages/compiler-runtime/src packages/cir-python/src)
+          if [[ "$SCOPE_MODE" == "entity-delta" ]]; then
+            packages=(packages/cir-python/src)
+          fi
+          python -m uv run --locked --extra dev mypy "${packages[@]}" \
+            2>&1 | tee "$EVIDENCE_DIR/type.log"
       - name: Upload Python focused evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -140,6 +280,8 @@ jobs:
           COLLECT_OUTCOME: ${{ steps.collect.outcome }}
           FOCUSED_OUTCOME: ${{ steps.focused.outcome }}
           RUFF_OUTCOME: ${{ steps.ruff.outcome }}
+          SHARED_OUTCOME: ${{ steps.shared.outcome }}
+          TYPE_OUTCOME: ${{ steps.type.outcome }}
         run: |
           failed=0
           check() {
@@ -148,15 +290,22 @@ jobs:
               failed=1
             fi
           }
-          check "Full-tree collection" "$COLLECT_OUTCOME"
+          if [[ "$SCOPE_MODE" == "full" ]]; then
+            check "Full-tree collection" "$COLLECT_OUTCOME"
+          else
+            check "Affected-tree collection" "$COLLECT_OUTCOME"
+          fi
           check "PR91-affected test files" "$FOCUSED_OUTCOME"
           check "Ruff on changed Python paths" "$RUFF_OUTCOME"
+          check "Shared parser pipeline and routing contracts" "$SHARED_OUTCOME"
+          check "Affected compiler and CIR type check" "$TYPE_OUTCOME"
           exit "$failed"
 
   # Same build, Trivy and SBOM policy as security.yml application-images; nothing is pushed to a registry.
   application-images:
+    needs: scope
+    if: needs.scope.result == 'success' && needs.scope.outputs.mode == 'full' && github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
     name: Application image ${{ matrix.image.name }}
-    if: github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     strategy:
@@ -260,8 +409,9 @@ jobs:
   # Same model-free local target, self-test, jq assertion, Trivy and SBOM as model-ci.yml local-images.
   # No CUDA runtime, no provider call, no GPU spend.
   gpu-local-images:
+    needs: scope
+    if: needs.scope.result == 'success' && needs.scope.outputs.mode == 'full' && github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
     name: GPU worker local image ${{ matrix.worker }}
-    if: github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
@@ -357,8 +507,9 @@ jobs:
           exit "$failed"
 
   web-focused:
+    needs: scope
+    if: needs.scope.result == 'success' && needs.scope.outputs.mode == 'full' && github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
     name: Web lockfile, build and full visual-regression spec
-    if: github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 50
     env:
@@ -688,8 +839,9 @@ jobs:
   # sanitized staging record is core/output/logs/foundation-draft-staging.log), and one ledger check runs after both
   # reserved always() steps.
   joined-e2e:
+    needs: scope
+    if: needs.scope.result == 'success' && needs.scope.outputs.mode == 'full' && github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
     name: Joined upload -> CDR -> OCR -> Core -> review -> consumers (pinned Foundation)
-    if: github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 75
     env:
@@ -1315,39 +1467,63 @@ jobs:
   focused-qualification:
     name: PR91 focused qualification (not broad CI, security or release)
     if: always() && github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
-    needs: [python-focused, application-images, gpu-local-images, web-focused, joined-e2e]
+    needs: [scope, python-focused, application-images, gpu-local-images, web-focused, joined-e2e]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - name: Require every expected focused job to have succeeded
+      - name: Validate exact selected current job outcomes
         env:
           NEEDS_JSON: ${{ toJSON(needs) }}
+          SCOPE_MODE: ${{ needs.scope.outputs.mode }}
+          TESTED_HEAD: ${{ needs.scope.outputs.tested_head }}
         run: |
-          set -euo pipefail
-          expected='["application-images","gpu-local-images","joined-e2e","python-focused","web-focused"]'
-          verdict=PASS
-          if ! jq -e --argjson expected "$expected" '(keys | sort) == $expected' <<<"$NEEDS_JSON" >/dev/null; then
-            echo "::error::needs keys $(jq -c 'keys' <<<"$NEEDS_JSON") are not exactly ${expected}"
-            verdict=FAIL
-          fi
-          for job in $(jq -r '.[]' <<<"$expected"); do
-            result="$(jq -r --arg job "$job" '.[$job].result // "missing"' <<<"$NEEDS_JSON")"
-            echo "${job}: ${result}"
-            if [ "$result" != "success" ]; then
-              echo "::error::${job} result is ${result}, not success"
-              verdict=FAIL
-            fi
-          done
-          {
-            echo "## PR91 focused qualification: ${verdict}"
-            echo
-            echo "Tested Core head: \`${EXPECTED_CORE_SHA}\`; pinned Foundation: \`${FOUNDATION_PIN_SHA}\`."
-            echo "Synthetic merge \`${GITHUB_SHA}\` is not the tested head."
-            echo
-            jq -r 'to_entries | sort_by(.key)[] | "- \(.key): \(.value.result)"' <<<"$NEEDS_JSON"
-            echo
-            echo "This is a focused qualification only. CI, Security, Model CI, joined-e2e and the release gates remain"
-            echo "required; the full release remains unqualified. The known unresolved braces development-dependency"
-            echo "audit debt is not resolved or suppressed by this run."
-          } >> "$GITHUB_STEP_SUMMARY"
-          test "$verdict" = PASS
+          python3 - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          def evaluate(needs, mode, expected_jobs, full_jobs, narrow_jobs, exemptions):
+              if set(needs) != {"scope", *expected_jobs}:
+                  raise ValueError("current needs keys differ from the declared job set")
+              if needs["scope"].get("result") != "success":
+                  raise ValueError("scope classification did not succeed")
+              if mode not in {"full", "parser-delta", "entity-delta", "parser-entity-delta"}:
+                  raise ValueError("scope is unknown or requires a separately authorized broad run")
+              if needs["scope"].get("outputs", {}).get("mode") != mode:
+                  raise ValueError("scope output and aggregate mode differ")
+              selected = set(full_jobs if mode == "full" else narrow_jobs)
+              if not selected <= set(expected_jobs) or not set(exemptions) <= selected:
+                  raise ValueError("invalid selected job contract")
+              outcomes = {}
+              for job in expected_jobs:
+                  want = "skipped" if job not in selected or job in exemptions else "success"
+                  actual = needs[job].get("result")
+                  if actual != want:
+                      raise ValueError(f"{job}: expected {want}, got {actual!r}")
+                  outcomes[job] = {"result": actual, "execution": "not-executed" if want == "skipped" else "executed-current-run"}
+              return {"mode": mode, "full_qualified": mode == "full", "outcomes": outcomes}
+
+          if __name__ == "__main__":
+              mode = os.environ["SCOPE_MODE"]
+              exemptions = set()
+              report = evaluate(json.loads(os.environ["NEEDS_JSON"]), mode,
+                                ["python-focused","application-images","gpu-local-images","web-focused","joined-e2e"], ["python-focused","application-images","gpu-local-images","web-focused","joined-e2e"], ["python-focused"], exemptions)
+              report["full_qualified"] = False
+
+              report.update({"run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
+                             "tested_head": os.environ["TESTED_HEAD"], "qualification": "focused-only-not-full-release"})
+              Path("artifacts").mkdir(exist_ok=True)
+              Path("artifacts/focused-qualification.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+              with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+                  summary.write("## PR91 focused qualification (not broad CI, security or release)\n" + json.dumps(report, indent=2) + "\n")
+                  if mode in {"parser-delta", "entity-delta", "parser-entity-delta"}:
+                      summary.write("Omitted jobs were not executed. This result does not qualify a full release or inherit historical PASS.\n")
+              print(json.dumps(report, sort_keys=True))
+          PY
+      - name: Preserve current outcome receipt
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: focused-qualification-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/focused-qualification.json
+          if-no-files-found: error
+          retention-days: 14
