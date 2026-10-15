@@ -1312,13 +1312,24 @@ class ProductCoreCompiler:
                         **(
                             {
                                 "ocrSchemaVersion": "tavonel.ocr_result.v3",
-                                "readerRevision": requested_by_source[item.document_id].reader_revision,
-                                "readerBindingSha256": requested_by_source[item.document_id].reader_binding_sha256,
-                                "recognitionConflictCount": requested_by_source[item.document_id].recognition_conflict_count,
-                                "immutableObjectKey": requested_by_source[item.document_id].immutable_object_key,
-                                "ocrObjectKey": requested_by_source[item.document_id].ocr_object_key,
+                                "readerRevision": requested_by_source[
+                                    item.document_id
+                                ].reader_revision,
+                                "readerBindingSha256": requested_by_source[
+                                    item.document_id
+                                ].reader_binding_sha256,
+                                "recognitionConflictCount": requested_by_source[
+                                    item.document_id
+                                ].recognition_conflict_count,
+                                "immutableObjectKey": requested_by_source[
+                                    item.document_id
+                                ].immutable_object_key,
+                                "ocrObjectKey": requested_by_source[
+                                    item.document_id
+                                ].ocr_object_key,
                             }
-                            if requested_by_source[item.document_id].recognition_conflict_count is not None
+                            if requested_by_source[item.document_id].recognition_conflict_count
+                            is not None
                             else {}
                         ),
                     }

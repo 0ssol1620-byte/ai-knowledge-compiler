@@ -35,8 +35,12 @@ class OcrRecognitionCandidate(ContractModel):
     @model_validator(mode="after")
     def exact_model_and_polygon(self) -> OcrRecognitionCandidate:
         models = {
-            "general-ppocrv6": "sha256:6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884",
-            "korean-ppocrv5": "sha256:cd6e2ea50f6943ca7271eb8c56a877a5a90720b7047fe9c41a2e541a25773c9b",
+            "general-ppocrv6": (
+                "sha256:6f327246b50388f3c176ae304bd95767ea6dc0c9ae92153ef8cbe210b3c14884"
+            ),
+            "korean-ppocrv5": (
+                "sha256:cd6e2ea50f6943ca7271eb8c56a877a5a90720b7047fe9c41a2e541a25773c9b"
+            ),
         }
         if self.model_sha256 != models[self.engine_id]:
             raise ValueError("OCR engine must bind to its exact reviewed model")
@@ -95,7 +99,9 @@ class ProductCoreDocument(ContractModel):
     source_filename: Annotated[str, Field(min_length=1, max_length=500)]
     page_count: Annotated[int, Field(ge=1, le=100_000)]
     reader_revision: Sha256 | None = Field(default=None, exclude_if=lambda value: value is None)
-    reader_binding_sha256: Sha256 | None = Field(default=None, exclude_if=lambda value: value is None)
+    reader_binding_sha256: Sha256 | None = Field(
+        default=None, exclude_if=lambda value: value is None
+    )
     recognition_conflict_count: Annotated[int, Field(ge=0, le=128)] | None = Field(
         default=None, exclude_if=lambda value: value is None
     )
@@ -112,12 +118,24 @@ class ProductCoreDocument(ContractModel):
 
     @model_validator(mode="after")
     def validate_regions(self) -> ProductCoreDocument:
-        if len({self.reader_revision is None, self.reader_binding_sha256 is None,
-                self.recognition_conflict_count is None}) != 1:
-            raise ValueError("OCR reader revision, completed-read binding and count must travel together")
+        if (
+            len(
+                {
+                    self.reader_revision is None,
+                    self.reader_binding_sha256 is None,
+                    self.recognition_conflict_count is None,
+                }
+            )
+            != 1
+        ):
+            raise ValueError(
+                "OCR reader revision, completed-read binding and count must travel together"
+            )
         conflict_count = sum(region.recognition_conflict is not None for region in self.regions)
-        if conflict_count > 128 or (self.recognition_conflict_count is not None and
-                                    self.recognition_conflict_count != conflict_count):
+        if conflict_count > 128 or (
+            self.recognition_conflict_count is not None
+            and self.recognition_conflict_count != conflict_count
+        ):
             raise ValueError("too many OCR recognition conflicts")
         if len({region.region_id for region in self.regions}) != len(self.regions):
             raise ValueError("region IDs must be unique within a document")
@@ -132,7 +150,11 @@ class ProductCoreDocument(ContractModel):
             conflict = region.recognition_conflict
             if conflict is None:
                 continue
-            if self.reader_revision is None or self.reader_binding_sha256 is None or self.recognition_conflict_count is None:
+            if (
+                self.reader_revision is None
+                or self.reader_binding_sha256 is None
+                or self.recognition_conflict_count is None
+            ):
                 raise ValueError("OCR v3 conflict requires qualified completed-read provenance")
             if (
                 conflict.source_sha256 != self.content_sha256
