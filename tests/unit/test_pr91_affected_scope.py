@@ -26,6 +26,34 @@ assert spec is not None and spec.loader is not None
 scope = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(scope)
 
+FULL_SELECTION = {
+    "python": True,
+    "images": True,
+    "web": True,
+    "db": True,
+    "model": True,
+    "joined": True,
+    "security_core": True,
+    "dependency_audit": True,
+    "codeql_languages": ["python", "javascript-typescript"],
+}
+
+
+def assert_full_escalation(case: unittest.TestCase, result: dict, paths: list[str]) -> None:
+    """An unreviewed PR91 path is more risk: it selects the original full policy, says so,
+    and never carries a narrow-route admission into the receipt."""
+    case.assertEqual(result["mode"], "full", result)
+    case.assertTrue(result["full_qualification"])
+    case.assertEqual(result["selection"], FULL_SELECTION)
+    case.assertEqual(result["reason_codes"], ["unknown-path-full-escalation"])
+    case.assertEqual(result["unreviewed_paths"], sorted(paths))
+    for path in paths:
+        case.assertIn(path, result["reasons"][0])
+    case.assertEqual(result["delta"]["base_commit"], scope.ANCHOR_COMMIT)
+    for narrow in ("unchanged_inputs", "entity_sources", "joined_sources", "ocr_v3_product_core"):
+        case.assertIsNone(result[narrow], narrow)
+    case.assertEqual(result["required_joined_tests"], [])
+
 
 class TestPR91AffectedScope(unittest.TestCase):
     @classmethod
@@ -210,20 +238,25 @@ class TestPR91AffectedScope(unittest.TestCase):
                 self.assertEqual(result["mode"], "broad-required")
                 self.assertFalse(result["selection"]["python"])
 
-    def test_unknown_paths_lock_changes_and_ci_control_near_matches_fail_closed(self) -> None:
+    def test_unknown_paths_lock_changes_and_ci_control_near_matches_escalate_to_full(self) -> None:
+        self.assertEqual(self._classify()["mode"], "parser-delta")
         for path in (
             "unexpected.md",
             "uv.lock",
             ".github/workflows/ci.yml.extra",
             "scripts/another_router.py",
         ):
-            with self.subTest(path=path):
-                head = self._changed_head({path: b"Synthetic unknown input\n"})
-                event = self._event()
-                event["pull_request"]["head"]["sha"] = head
-                result = self._classify(event)
-                self.assertEqual(result["mode"], "broad-required")
-                self.assertIn("unknown-path", result["reason_codes"])
+            head = self._changed_head({path: b"Synthetic unknown input\n"})
+            event = self._event()
+            event["pull_request"]["head"]["sha"] = head
+            for kind in sorted(scope.WORKFLOW_KINDS):
+                with self.subTest(path=path, kind=kind):
+                    assert_full_escalation(self, self._classify(event, kind=kind), [path])
+        both = ["docs/unreviewed.md", "packages/unreviewed.py"]
+        head = self._changed_head(dict.fromkeys(both, b"Synthetic unknown input\n"))
+        event = self._event()
+        event["pull_request"]["head"]["sha"] = head
+        assert_full_escalation(self, self._classify(event), both)
 
     def test_k06_exact_test_delta_requires_parser_route(self) -> None:
         path = scope.K06_TEST_DELTA_PATH
@@ -249,25 +282,22 @@ class TestPR91AffectedScope(unittest.TestCase):
         self.assertEqual(result["mode"], "broad-required")
         self.assertIn("unsupported-combination", result["reason_codes"])
 
-    def test_k06_near_match_deletion_and_symlink_still_fail_closed(self) -> None:
+    def test_k06_near_matches_escalate_full_and_deletion_symlink_fail_closed(self) -> None:
         path = scope.K06_TEST_DELTA_PATH
-        for changed, mode, reason in (
-            ({path + ".extra": b"# Near match\n"}, "100644", "unknown-path"),
-            (
-                {"tests/integration/another_runtime_test.py": b"# New path\n"},
-                "100644",
-                "unknown-path",
-            ),
-            ({path: None}, "100644", "unsupported-change"),
-            ({path: b"symlink-target"}, "120000", "unsupported-change"),
-        ):
+        for near in (path + ".extra", "tests/integration/another_runtime_test.py"):
+            with self.subTest(path=near):
+                head = self._changed_head({near: b"# Near match\n"})
+                event = self._event()
+                event["pull_request"]["head"]["sha"] = head
+                assert_full_escalation(self, self._classify(event), [near])
+        for changed, mode in (({path: None}, "100644"), ({path: b"symlink-target"}, "120000")):
             with self.subTest(paths=list(changed), mode=mode):
                 head = self._changed_head(changed, mode=mode)
                 event = self._event()
                 event["pull_request"]["head"]["sha"] = head
                 result = self._classify(event)
                 self.assertEqual(result["mode"], "broad-required")
-                self.assertIn(reason, result["reason_codes"])
+                self.assertIn("unsupported-change", result["reason_codes"])
 
     def test_each_of_six_frozen_payload_blobs_is_mandatory(self) -> None:
         for path in scope.PINNED_PAYLOAD:
@@ -283,7 +313,6 @@ class TestPR91AffectedScope(unittest.TestCase):
         path = "scripts/classify_pr91_affected_scope.py"
         cases = [
             ({path: None}, "100644"),
-            ({path: None, "scripts/renamed_scope.py": b"Synthetic rename\n"}, "100644"),
             ({path: b"synthetic-link-target"}, "120000"),
             ({path: b"Synthetic executable\n"}, "100755"),
         ]
@@ -293,6 +322,11 @@ class TestPR91AffectedScope(unittest.TestCase):
                 event = self._event()
                 event["pull_request"]["head"]["sha"] = head
                 self.assertEqual(self._classify(event)["mode"], "broad-required")
+        renamed = "scripts/renamed_scope.py"
+        head = self._changed_head({path: None, renamed: b"Synthetic rename\n"})
+        event = self._event()
+        event["pull_request"]["head"]["sha"] = head
+        assert_full_escalation(self, self._classify(event), [renamed])
 
     def test_missing_history_bad_anchor_and_divergent_lineage_fail_closed(self) -> None:
         missing = self._event(base="0" * 40)
@@ -538,7 +572,9 @@ class TestPR91AffectedScope(unittest.TestCase):
                 )
                 self.assertEqual(result["required_joined_tests"], [])
 
-    def test_joined_registration_unsafe_modes_deletion_and_rename_fail_closed(self) -> None:
+    def test_joined_registration_unsafe_modes_and_deletion_fail_closed_rename_escalates(
+        self,
+    ) -> None:
         path = "tests/e2e/joined/g1-11-runtime-producer.mjs"
         for mode in ("100755", "120000", "160000"):
             with self.subTest(mode=mode):
@@ -548,19 +584,15 @@ class TestPR91AffectedScope(unittest.TestCase):
                 self.assertIn("unsupported-change", result["reason_codes"])
                 self.assertFalse(result["selection"]["joined"])
         old = "tests/e2e/joined/joined-e2e.mjs"
-        for overrides in (
-            {old: None},
-            {old: None, "tests/e2e/joined/renamed-joined-e2e.mjs": b"// Synthetic rename target\n"},
-        ):
-            with self.subTest(changes=list(overrides)):
-                head = self._joined_registration_head(overrides)
-                result = self._classify(self._joined_registration_event(head))
-                self.assertEqual(result["mode"], "broad-required", result)
-                self.assertTrue(
-                    {"unsupported-change", "unknown-path"}.intersection(result["reason_codes"]),
-                    result,
-                )
-                self.assertFalse(result["selection"]["joined"])
+        head = self._joined_registration_head({old: None})
+        result = self._classify(self._joined_registration_event(head))
+        self.assertEqual(result["mode"], "broad-required", result)
+        self.assertIn("unsupported-change", result["reason_codes"])
+        self.assertFalse(result["selection"]["joined"])
+        renamed = "tests/e2e/joined/renamed-joined-e2e.mjs"
+        head = self._joined_registration_head({old: None, renamed: b"// Synthetic rename target\n"})
+        result = self._classify(self._joined_registration_event(head))
+        assert_full_escalation(self, result, [renamed])
 
     def _joined_registration_raw_path_head(self, path: str, raw: bytes) -> str:
         # Git for Windows refuses LF names in update-index. Preserve the negative
@@ -594,26 +626,26 @@ class TestPR91AffectedScope(unittest.TestCase):
         self._git("update-ref", "refs/heads/synthetic-routing-fixture", head)
         return head
 
-    def test_joined_registration_near_matches_and_linebreak_paths_never_broaden(self) -> None:
-        for path, reason in (
-            ("tests/e2e/joined/g1-11-runtime-producer.mjs.extra", "unknown-path"),
-            ("tests/e2e/joined/another-contract.test.mjs", "unknown-path"),
-            ("tests/e2e/joined/materialize-g1-11-contract-fixture.mjs.extra", "unknown-path"),
-            ("tests/e2e/joined/g1-11-runtime-producer.mjs\nuntrusted", "invalid-path"),
+    def test_joined_registration_near_matches_escalate_full_linebreak_paths_refused(self) -> None:
+        raw = b"// Synthetic unknown source\n"
+        for path in (
+            "tests/e2e/joined/g1-11-runtime-producer.mjs.extra",
+            "tests/e2e/joined/another-contract.test.mjs",
+            "tests/e2e/joined/materialize-g1-11-contract-fixture.mjs.extra",
         ):
             with self.subTest(path=path):
-                raw = b"// Synthetic unknown source\n"
-                head = (
-                    self._joined_registration_raw_path_head(path, raw)
-                    if "\n" in path or "\r" in path
-                    else self._joined_registration_head({path: raw})
-                )
+                head = self._joined_registration_head({path: raw})
                 result = self._classify(self._joined_registration_event(head))
-                self.assertEqual(result["mode"], "broad-required", result)
-                self.assertIn(reason, result["reason_codes"])
-                self.assertFalse(result["selection"]["joined"])
-                self.assertFalse(result["selection"]["python"])
-                self.assertFalse(result["full_qualification"])
+                assert_full_escalation(self, result, [path])
+        # A path that cannot be represented safely is malformed evidence, not a path to route.
+        path = "tests/e2e/joined/g1-11-runtime-producer.mjs\nuntrusted"
+        head = self._joined_registration_raw_path_head(path, raw)
+        result = self._classify(self._joined_registration_event(head))
+        self.assertEqual(result["mode"], "broad-required", result)
+        self.assertIn("invalid-path", result["reason_codes"])
+        self.assertFalse(result["selection"]["joined"])
+        self.assertFalse(result["selection"]["python"])
+        self.assertFalse(result["full_qualification"])
 
     def test_joined_registration_cannot_relax_frozen_parser_payload(self) -> None:
         path = "packages/compiler-runtime/src/akc_compiler_runtime/extraction.py"
@@ -638,17 +670,19 @@ class TestPR91AffectedScope(unittest.TestCase):
                 self.assertIn(reason, result["reason_codes"])
                 self.assertFalse(result["selection"]["joined"])
 
-    def test_joined_registration_cli_exports_true_only_for_valid_finite_sources(self) -> None:
-        for accepted in (True, False):
-            with self.subTest(accepted=accepted):
-                overrides = (
-                    {}
-                    if accepted
-                    else {"tests/e2e/joined/not-registered.mjs": b"// Synthetic unknown source\n"}
-                )
+    def test_joined_registration_cli_exports_narrow_full_escalation_or_nothing(self) -> None:
+        unreviewed = "tests/e2e/joined/not-registered.mjs"
+        cases: dict[str, dict[str, bytes | None]] = {
+            "narrow": {},
+            "unreviewed": {unreviewed: b"// Synthetic unknown source\n"},
+            "refused": {"tests/e2e/joined/joined-e2e.mjs": None},
+        }
+        for case, overrides in cases.items():
+            accepted = case != "refused"
+            with self.subTest(case=case):
                 head = self._joined_registration_head(overrides)
                 event = self._joined_registration_event(head)
-                prefix = self.temp / f"joined-cli-{accepted}"
+                prefix = self.temp / f"joined-cli-{case}"
                 event_path = prefix.with_suffix(".event.json")
                 output = prefix.with_suffix(".receipt.json")
                 github_output = prefix.with_suffix(".github-output.txt")
@@ -678,7 +712,7 @@ class TestPR91AffectedScope(unittest.TestCase):
                 )
                 self.assertEqual(result.returncode, 0 if accepted else 1, result.stderr)
                 record = json.loads(output.read_text(encoding="utf-8"))
-                if accepted:
+                if case == "narrow":
                     values = dict(
                         line.split("=", 1)
                         for line in github_output.read_text(encoding="utf-8").splitlines()
@@ -689,15 +723,38 @@ class TestPR91AffectedScope(unittest.TestCase):
                     for name in ("images", "web", "db", "model", "dependency_audit"):
                         self.assertEqual(values[name], "false")
                     self.assertTrue(record["selection"]["joined"])
+                    self.assertNotIn("Full qualification selected", result.stdout)
+                elif case == "unreviewed":
+                    values = dict(
+                        line.split("=", 1)
+                        for line in github_output.read_text(encoding="utf-8").splitlines()
+                    )
+                    # Exactly what the five workflows read: mode=full runs every job and
+                    # the CI/Security/Model CI "Full qualification" markers.
+                    self.assertEqual(values["mode"], "full")
+                    self.assertEqual(values["full_qualification"], "true")
+                    for name in ("python", "images", "web", "db", "model", "joined"):
+                        self.assertEqual(values[name], "true")
+                    self.assertEqual(values["security_core"], "true")
+                    self.assertEqual(values["dependency_audit"], "true")
+                    self.assertEqual(
+                        json.loads(values["codeql_languages"]),
+                        ["python", "javascript-typescript"],
+                    )
+                    assert_full_escalation(self, record, [unreviewed])
+                    self.assertIn("Full qualification selected", result.stdout)
+                    self.assertIn(unreviewed, result.stdout)
+                    self.assertIn("full: selection only; checks have not run", result.stdout)
                 else:
                     self.assertFalse(github_output.exists())
                     self.assertEqual(record["mode"], "broad-required")
                     self.assertFalse(record["selection"]["joined"])
+                    self.assertIn("Broad qualification required", result.stdout)
                 print(
                     json.dumps(
                         {
                             "synthetic_joined_cli": True,
-                            "accepted": accepted,
+                            "case": case,
                             "exit_code": result.returncode,
                             "runtime_executed": False,
                         }
@@ -843,29 +900,31 @@ class TestK15FiniteEntityAdmission(unittest.TestCase):
                     self.assertFalse(result["selection"]["python"])
                     self.assertIsNone(result["entity_sources"])
 
-    def test_k15_unsafe_type_rename_and_unknown_neighbors_fail_closed(self):
+    def test_k15_unsafe_types_fail_closed_and_unknown_neighbors_escalate_full(self):
         for path in scope.ENTITY_PAYLOAD:
             for mode in ("100755", "120000", "160000"):
                 head = self._k15_head(overrides={path: b"unsafe"}, modes={path: mode})
                 result = self._classify(self._k15_event(head))
                 self.assertEqual(result["mode"], "broad-required", result)
                 self.assertIn("unsupported-change", result["reason_codes"])
-        for changes in (
-            {"packages/cir-python/src/akc_cir/entity.py.extra": b"x"},
-            {"tests/unit/test_entity_extra.py": b"x"},
-            {
-                "packages/cir-python/src/akc_cir/entity.py": None,
-                "packages/cir-python/src/akc_cir/entity-renamed.py": b"x",
-            },
+        for changes, unreviewed in (
+            (
+                {"packages/cir-python/src/akc_cir/entity.py.extra": b"x"},
+                "packages/cir-python/src/akc_cir/entity.py.extra",
+            ),
+            ({"tests/unit/test_entity_extra.py": b"x"}, "tests/unit/test_entity_extra.py"),
+            (
+                {
+                    "packages/cir-python/src/akc_cir/entity.py": None,
+                    "packages/cir-python/src/akc_cir/entity-renamed.py": b"x",
+                },
+                "packages/cir-python/src/akc_cir/entity-renamed.py",
+            ),
         ):
             head = self._k15_head(overrides=changes)
-            result = self._classify(self._k15_event(head))
-            self.assertEqual(result["mode"], "broad-required", result)
-            self.assertTrue(
-                {"unknown-path", "unsupported-change"}.intersection(result["reason_codes"])
-            )
+            assert_full_escalation(self, self._classify(self._k15_event(head)), [unreviewed])
 
-    def test_k15_event_identity_ancestry_and_frozen_inputs_fail_closed(self):
+    def test_k15_identity_ancestry_payload_fail_closed_frozen_inputs_escalate_full(self):
         head = self._k15_head()
         event = self._k15_event(head)
         mismatch = deepcopy(event)
@@ -879,10 +938,12 @@ class TestK15FiniteEntityAdmission(unittest.TestCase):
             self.assertEqual(result["mode"], "broad-required", result)
         with patch.object(scope, "ANCHOR_TREE", "f" * 40):
             self.assertEqual(self._classify(event)["mode"], "broad-required")
-        for path in (next(iter(scope.PINNED_PAYLOAD)), "uv.lock"):
-            head = self._k15_head(overrides={path: b"unreviewed drift"})
-            result = self._classify(self._k15_event(head))
-            self.assertEqual(result["mode"], "broad-required", result)
+        head = self._k15_head(overrides={next(iter(scope.PINNED_PAYLOAD)): b"unreviewed drift"})
+        result = self._classify(self._k15_event(head))
+        self.assertEqual(result["mode"], "broad-required", result)
+        self.assertIn("payload-mismatch", result["reason_codes"])
+        head = self._k15_head(overrides={"uv.lock": b"unreviewed drift"})
+        assert_full_escalation(self, self._classify(self._k15_event(head)), ["uv.lock"])
 
     def test_k15_actual_published_tree_regular_sources_and_cli_receipt(self):
         # Bind the immutable published base available in this PR's object history.
@@ -955,12 +1016,12 @@ class TestK15FiniteEntityAdmission(unittest.TestCase):
                 "test_k15_actual_published_tree_regular_sources_and_cli_receipt",
                 "test_k15_combined_preserves_parser_and_joined_exact_selection",
                 "test_k15_discovery_contains_only_new_methods_and_exact_shared_fixture_helpers",
-                "test_k15_event_identity_ancestry_and_frozen_inputs_fail_closed",
+                "test_k15_identity_ancestry_payload_fail_closed_frozen_inputs_escalate_full",
                 "test_k15_exact_pair_and_entity_only_selection",
                 "test_k15_k06_delta_cannot_sneak_into_entity_only_route",
                 "test_k15_k06_delta_on_combined_route_keeps_k06_mandatory",
                 "test_k15_payload_pair_missing_or_drift_fail_closed",
-                "test_k15_unsafe_type_rename_and_unknown_neighbors_fail_closed",
+                "test_k15_unsafe_types_fail_closed_and_unknown_neighbors_escalate_full",
             },
         )
         self.assertEqual(len(ids), 9)
@@ -1107,12 +1168,12 @@ class TestOcrV3ProductCoreAdmission(unittest.TestCase):
         test_only = self._classify(self._ocr_event(self._ocr_head(ocr=self.FOUR[3:])))
         self.assertEqual(test_only["mode"], self.MODE, test_only)
         self.assertEqual(test_only["ocr_v3_product_core"]["changed_paths"], [self.FOUR[3]])
-        self._refused(
-            self._ocr_head(overrides={"tests/unit/test_product_core_bridge.py": None}),
-            {"unknown-path", "unsupported-change"},
-        )
+        # Deleting a required test outside the four registered paths is unreviewed: full.
+        bridge = "tests/unit/test_product_core_bridge.py"
+        head = self._ocr_head(overrides={bridge: None})
+        assert_full_escalation(self, self._classify(self._ocr_event(head)), [bridge])
 
-    def test_ocr_v3_adjacent_paths_fail_closed(self):
+    def test_ocr_v3_adjacent_paths_escalate_to_full(self):
         for path in (
             "packages/product-core/src/akc_product_core/native_cir.py",
             "packages/product-core/src/akc_product_core/api.py",
@@ -1126,12 +1187,10 @@ class TestOcrV3ProductCoreAdmission(unittest.TestCase):
             "infra/product-core/Dockerfile",
         ):
             with self.subTest(path=path):
-                self._refused(
-                    self._ocr_head(overrides={path: b"# Synthetic adjacent path\n"}),
-                    {"unknown-path"},
-                )
+                head = self._ocr_head(overrides={path: b"# Synthetic adjacent path\n"})
+                assert_full_escalation(self, self._classify(self._ocr_event(head)), [path])
 
-    def test_ocr_v3_unsafe_modes_deletion_and_rename_fail_closed(self):
+    def test_ocr_v3_unsafe_modes_and_deletion_fail_closed_rename_escalates_full(self):
         for path in self.FOUR:
             for mode in ("100755", "120000", "160000"):
                 with self.subTest(path=path, mode=mode):
@@ -1139,14 +1198,10 @@ class TestOcrV3ProductCoreAdmission(unittest.TestCase):
                     self._refused(head, {"unsupported-change"})
         journal = "packages/product-core/src/akc_product_core/journal.py"
         compiler = "packages/product-core/src/akc_product_core/compiler.py"
-        for overrides in (
-            {journal: None},
-            {compiler: None, "packages/product-core/src/akc_product_core/compiler_v3.py": b"x"},
-        ):
-            with self.subTest(changes=list(overrides)):
-                self._refused(
-                    self._ocr_head(overrides=overrides), {"unsupported-change", "unknown-path"}
-                )
+        self._refused(self._ocr_head(overrides={journal: None}), {"unsupported-change"})
+        renamed = "packages/product-core/src/akc_product_core/compiler_v3.py"
+        head = self._ocr_head(overrides={compiler: None, renamed: b"x"})
+        assert_full_escalation(self, self._classify(self._ocr_event(head)), [renamed])
 
     def test_ocr_v3_never_rides_parser_only_or_entity_only_routes(self):
         for parser, entity in ((True, False), (False, True)):
@@ -1162,11 +1217,13 @@ class TestOcrV3ProductCoreAdmission(unittest.TestCase):
         for path, reasons in (
             (parser_path, {"payload-mismatch"}),
             (entity_path, {"entity-payload-mismatch"}),
-            ("uv.lock", {"unknown-path"}),
-            ("pyproject.toml", {"unknown-path"}),
         ):
             with self.subTest(path=path):
                 self._refused(self._ocr_head(overrides={path: b"unreviewed drift\n"}), reasons)
+        for path in ("uv.lock", "pyproject.toml"):
+            with self.subTest(path=path):
+                head = self._ocr_head(overrides={path: b"unreviewed drift\n"})
+                assert_full_escalation(self, self._classify(self._ocr_event(head)), [path])
         head = self._ocr_head()
         event = self._ocr_event(head)
         mismatch = deepcopy(event)

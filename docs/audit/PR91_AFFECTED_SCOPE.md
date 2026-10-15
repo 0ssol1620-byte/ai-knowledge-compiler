@@ -18,10 +18,36 @@ The classifier checks the actual event head and the pinned historical anchor com
 `be7d4a6a5166b4b6a31372d1496fa3d7a26e65c8`. Its fixed-anchor delta and the cumulative PR
 merge-base diff are separate receipts. The remote checkout need not contain the private
 397 tree object: the six reviewed payload blob identities are checked directly at the
-event head. Unknown paths, missing or incorrect identity, unexpected file modes,
-deletion/rename, and malformed PR91 inputs fail with `broad-required`; they do not trigger
-an automatic broad fallback. Other PRs, main pushes, manual runs, and the existing
-Security schedule retain full selection policy within their existing workflow triggers.
+event head. Missing or incorrect identity, unexpected file modes, deletion of a registered
+path, payload drift, and malformed PR91 inputs fail with `broad-required`. A changed path
+outside the reviewed payload escalates to `full` (next section). Other PRs, main pushes,
+manual runs, and the existing Security schedule retain full selection policy within their
+existing workflow triggers.
+
+## Unknown-path escalation to full qualification
+
+Rule: on PR #91, when any path in the fixed-anchor delta lies outside the reviewed narrow
+payload (the six parser payload files, the K15 entity pair, the named CI-control files, the
+K06 test, the eight joined sources and the four OCR v3 paths), the classifier selects
+`mode=full`. Every job runs, exactly as a `workflow_dispatch` run does, and CI, Security
+and Model CI each produce their `Full qualification` marker from that full path. It never
+selects a narrower mode and never refuses for that reason. The receipt and the step log say
+so: `reason_codes` is `["unknown-path-full-escalation"]`, `unreviewed_paths` lists every
+such path, and the CLI prints `Full qualification selected: ...` before the mode line.
+
+Reason: an unknown path is more risk, not less. Refusing it (the earlier
+`broad-required: unknown-path` verdict) failed every pull_request run and left the PR with
+no current qualification at all, while a narrower mode would have omitted the checks that
+an unreviewed path most needs. Full is the original policy every other PR already gets, so
+the escalation removes no guard.
+
+Narrow modes remain only for heads whose every changed path is inside the payload. Those
+heads still pass every existing narrow check (payload and entity blob identity, unchanged
+build inputs, file modes, no deletion or rename, required test presence, route
+combinations); a failure there is still `broad-required`. The escalation happens after the
+event identity, same-repository, anchor-tree and ancestry checks, so a wrong head, a fork or
+missing history still fails closed. A full result inherits no narrow admission: the receipt
+carries no `unchanged_inputs`, `entity_sources`, `joined_sources` or `ocr_v3_product_core`.
 
 Same-repository source checkouts now explicitly use the actual PR source head rather
 than the synthetic merge revision. Existing Foundation repository/ref inputs and the
@@ -58,9 +84,10 @@ focused qualification alone is insufficient for full release qualification.
 `parser-entity-ocr-v3-delta` is a separate finite registration, not the parser/entity route:
 exactly `packages/product-core/src/akc_product_core/{contracts,compiler,journal}.py` and
 `tests/unit/test_product_core_ocr_v3.py`, regular files only, with that test required in the
-change set. It is admitted only on top of the pinned parser and entity payloads. Any other
-combination, adjacent path, deletion, rename or mode change stays `broad-required`, and every
-parser/entity payload, unchanged-input, ancestry and identity check still applies.
+change set. It is admitted only on top of the pinned parser and entity payloads. An adjacent
+path, including a rename target, is outside the payload and escalates to `full`. Any other
+combination, deletion or mode change stays `broad-required`, and every parser/entity
+payload, unchanged-input, ancestry and identity check still applies.
 
 PR91 focused adds the OCR v3 test and the direct journal, journal-maintenance, region-anchor
 and bridge tests to the parser and entity files, and adds `packages/product-core/src` to mypy.

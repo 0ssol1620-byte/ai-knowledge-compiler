@@ -477,6 +477,55 @@ class TestPR91AffectedWorkflowContract(unittest.TestCase):
         )
         self.assertNotEqual(result.returncode, 0)
 
+    def test_pr91_unknown_path_escalation_runs_the_same_full_path_and_markers(self) -> None:
+        # The classifier escalates a PR91 path outside the reviewed payload to mode=full.
+        # On the pull_request event that must be the dispatch full path: every full job and
+        # the exact Full qualification marker, with no PR-number carve-out narrowing it.
+        spec = importlib.util.spec_from_file_location(
+            "pr91_scope_full_escalation", ROOT / "scripts/classify_pr91_affected_scope.py"
+        )
+        if spec is None or spec.loader is None:
+            raise AssertionError("Classifier source is unavailable")
+        classifier = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(classifier)
+        source_text = (ROOT / "scripts/classify_pr91_affected_scope.py").read_text("utf-8")
+        self.assertIn('"unknown-path-full-escalation"', source_text)
+        self.assertNotIn('EvidenceError("unknown-path"', source_text)
+        selection = classifier._selection("full")
+        self.assertTrue(all(value for key, value in selection.items() if key != "codeql_languages"))
+        self.assertEqual(selection["codeql_languages"], ["python", "javascript-typescript"])
+        marker_if = (
+            "    if: always() && needs.scope.result == 'success' && "
+            "needs.scope.outputs.mode == 'full'\n"
+        )
+        groups = (
+            ("ci", CI_JOBS, set(CI_JOBS)),
+            ("security", SECURITY_JOBS, set(SECURITY_JOBS)),
+            ("model-ci", MODEL_JOBS, {"registry", "local-images"}),
+        )
+        for workflow, ids, executed in groups:
+            with self.subTest(workflow=workflow):
+                self.assertIn(marker_if, required_job(workflow, "full-qualification"))
+                for job in ("full-qualification", *ids):
+                    self.assertNotIn("pull_request.number", required_job(workflow, job))
+                needs = outcomes(ids, "full", executed)
+                code = gate_code(workflow, "full-qualification")
+                result, report = run_gate(code, "full", needs, IS_PULL_REQUEST="true")
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(report["mode"], "full")
+                self.assertTrue(report["full_qualified"])
+                self.assertEqual(report["qualification"], "full-current-run")
+                self.assertTrue(
+                    all(
+                        report["outcomes"][job]["execution"] == "executed-current-run"
+                        for job in executed
+                    )
+                )
+        for job in FOCUSED_JOBS[1:]:
+            block = required_job("pr91-focused-qualification", job)
+            self.assertIn("needs.scope.outputs.mode == 'full'", block)
+            self.assertIn("github.event.pull_request.number == 91", block)
+
     def test_focused_original_nine_matrix_and_fixture_preparation_remain_exact(self) -> None:
         block = required_job("pr91-focused-qualification", "python-focused")
         self.assertIn('python-version: ["3.12", "3.13"]', block)

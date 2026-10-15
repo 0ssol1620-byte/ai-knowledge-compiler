@@ -1,6 +1,8 @@
 """Fail-closed PR91 routing over exact Git evidence, without executing checks.
 
 The narrow route describes the reviewed parser successor and finite joined source delta.
+A PR91 path outside that reviewed payload is more risk, so it escalates to the original
+full policy (every job and full marker), never to a refusal or a narrower route.
 A classification is never evidence that a test, audit, image build or release prerequisite passed.
 This helper never fetches, changes Git state or calls an external service.
 """
@@ -14,7 +16,9 @@ import re
 import shutil
 import subprocess
 import tomllib
+from collections.abc import Iterable
 from pathlib import Path
+from typing import Any
 
 ANCHOR_COMMIT = "621b7d692d21ca73e133010e7e234cc0ffe28086"
 ANCHOR_TREE = "be7d4a6a5166b4b6a31372d1496fa3d7a26e65c8"
@@ -170,7 +174,7 @@ def _sha(value: object, field: str) -> str:
     return value
 
 
-def _entries(repo: Path, revision: str, paths: tuple | dict | set) -> dict:
+def _entries(repo: Path, revision: str, paths: Iterable[str]) -> dict[str, dict[str, str]]:
     raw = _git(repo, "ls-tree", "-r", "-z", revision, "--", *sorted(paths))
     entries = {}
     for item in raw.split(b"\0"):
@@ -181,7 +185,7 @@ def _entries(repo: Path, revision: str, paths: tuple | dict | set) -> dict:
     return entries
 
 
-def _changes(repo: Path, base: str, head: str) -> list[dict]:
+def _changes(repo: Path, base: str, head: str) -> list[dict[str, str]]:
     raw = _git(
         repo,
         "diff",
@@ -218,7 +222,7 @@ def _changes(repo: Path, base: str, head: str) -> list[dict]:
     return records
 
 
-def _selection(mode: str, joined: bool = False) -> dict:
+def _selection(mode: str, joined: bool = False) -> dict[str, Any]:
     accepted = mode == "full" or mode in NARROW_MODES
     full = mode == "full"
     return {
@@ -234,13 +238,14 @@ def _selection(mode: str, joined: bool = False) -> dict:
     }
 
 
-def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> dict:
-    report = {
+def classify(repo: Path, event: Any, event_name: str, workflow_kind: str) -> dict[str, Any]:
+    report: dict[str, Any] = {
         "mode": "broad-required",
         "full_qualification": False,
         "selection": _selection("broad-required"),
         "reason_codes": [],
         "reasons": [],
+        "unreviewed_paths": [],
         "identity": {
             "event_name": event_name,
             "workflow_kind": workflow_kind,
@@ -259,6 +264,7 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
         "reviewed_payload_tree_reference": REVIEWED_TREE_REFERENCE,
     }
     joined_active = False
+    unreviewed: list[str] = []
     try:
         if workflow_kind not in WORKFLOW_KINDS:
             raise EvidenceError("invalid-workflow", "Unknown workflow kind")
@@ -332,9 +338,14 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                 )
                 if not changes:
                     raise EvidenceError("empty-delta", "No reviewed parser successor delta")
+                # An unreviewed path is more risk, so it earns more qualification: the original
+                # full policy (every job, every full marker), never a refusal or a narrower mode.
+                unreviewed = sorted({item["path"] for item in changes} - allowed)
+                if unreviewed:
+                    mode = "full"
+            # Narrow routes only: every changed path lies inside the reviewed payload.
+            if number == 91 and not unreviewed:
                 for item in changes:
-                    if item["path"] not in allowed:
-                        raise EvidenceError("unknown-path", f"Unclassified path: {item['path']}")
                     if item["status"] not in {"A", "M"} or item["new_mode"] != "100644":
                         raise EvidenceError(
                             "unsupported-change", "Deletion/rename/type/mode not admitted"
@@ -539,6 +550,13 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
             if mode in NARROW_MODES
             else "Preserve original full workflow policy"
         ]
+        if unreviewed:
+            report["unreviewed_paths"] = unreviewed
+            report["reason_codes"] = ["unknown-path-full-escalation"]
+            report["reasons"] = [
+                "Path(s) outside the reviewed PR91 narrow payload escalate to full "
+                "qualification: " + ", ".join(unreviewed)
+            ]
     except EvidenceError as exc:
         report["reason_codes"].append(exc.code)
         report["reasons"].append(str(exc))
@@ -582,6 +600,8 @@ def main() -> int:
             for key, value in outputs.items():
                 encoded = json.dumps(value) if not isinstance(value, str) else value
                 handle.write(f"{key}={encoded}\n")
+    if report["unreviewed_paths"]:
+        print("Full qualification selected: " + report["reasons"][0])
     print(report["mode"] + ": selection only; checks have not run")
     return 0
 
