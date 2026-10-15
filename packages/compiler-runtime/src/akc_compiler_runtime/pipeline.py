@@ -908,8 +908,12 @@ class Pipeline:
 
         world_state_id = self.store.next_world_state_id
         parser_context = self._parser_context()
+        # The sealed payload holds build output only. world_state_id is build
+        # history: hashing it made a selective publish (WS-2) and a full rebuild
+        # of the same tree (WS-1) disagree on the manifest hash. The world
+        # binding lives in the filename, parsed/<world_state_id>.json, whose
+        # hash this world's manifest seals.
         parsed_cache: dict[str, object] = {
-            "world_state_id": world_state_id,
             "workspace_id": self.options.workspace_id,
             "context": parser_context,
             "documents": {

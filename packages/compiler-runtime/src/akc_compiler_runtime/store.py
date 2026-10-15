@@ -191,7 +191,9 @@ class WorldStore:
                 or expected != world.artifact_hashes.get("parsed/documents")
                 or content_hash(cache) != expected
                 or manifest.manifest_hash != world.manifest.manifest_hash
-                or cache.get("world_state_id") != world.world_state_id
+                # Current payloads are bound by filename + manifest seal; a
+                # legacy payload that still names a world must name this one.
+                or cache.get("world_state_id", world.world_state_id) != world.world_state_id
                 or cache.get("workspace_id") != self.workspace_id
                 or cache.get("context") != context
             ):
