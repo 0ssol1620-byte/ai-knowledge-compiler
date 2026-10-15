@@ -1,17 +1,14 @@
-# -*- coding: utf-8 -*-
 """Build Model Complementarity Matrix from OmniDoc per-page edit distances.
 NO re-inference. Reads existing per-page edit JSONs only.
 """
+
 from __future__ import annotations
 
+import argparse
 import json
 import math
-from collections import defaultdict
+import os
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
-
-ROOT = Path(r"D:\CodexProjects\ai-knowledge-compiler\research\model_arena_20260903\reports\full_compare_20260905\omnidoc_raw")
-OUT = Path(r"D:\CodexProjects\ai-knowledge-compiler\research\model_arena_20260903\reports\complementarity_20260906")
 
 MODELS = [
     "paddleocr_vl_1_6",
@@ -42,8 +39,27 @@ TAU = 0.05
 EPS = 1e-9
 
 
-def find_per_page_file(model: str, element_key: str) -> Path:
-    d = ROOT / model
+def paths(argv: list[str] | None = None) -> tuple[Path, Path]:
+    """Input and output directories come from the caller; there is no default location."""
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--root",
+        default=os.environ.get("COMPLEMENTARITY_ROOT"),
+        help="full_compare_20260905/omnidoc_raw directory (env COMPLEMENTARITY_ROOT)",
+    )
+    parser.add_argument(
+        "--out",
+        default=os.environ.get("COMPLEMENTARITY_OUT"),
+        help="directory the matrices are written to (env COMPLEMENTARITY_OUT)",
+    )
+    args = parser.parse_args(argv)
+    if not args.root or not args.out:
+        parser.error("--root and --out (or COMPLEMENTARITY_ROOT/COMPLEMENTARITY_OUT) are required")
+    return Path(args.root), Path(args.out)
+
+
+def find_per_page_file(root: Path, model: str, element_key: str) -> Path:
+    d = root / model
     # Prefer exact suffix match
     candidates = list(d.glob(f"*{element_key}_per_page_edit.json"))
     if not candidates:
@@ -55,8 +71,8 @@ def find_per_page_file(model: str, element_key: str) -> Path:
     return candidates[0]
 
 
-def load_edits(model: str, element_key: str) -> Dict[str, float]:
-    path = find_per_page_file(model, element_key)
+def load_edits(root: Path, model: str, element_key: str) -> dict[str, float]:
+    path = find_per_page_file(root, model, element_key)
     data = json.loads(path.read_text(encoding="utf-8"))
     out = {}
     for k, v in data.items():
@@ -76,25 +92,25 @@ def clip01(x: float) -> float:
     return max(0.0, min(1.0, float(x)))
 
 
-def mean(xs: List[float]) -> float:
+def mean(xs: list[float]) -> float:
     if not xs:
         return float("nan")
     return sum(xs) / len(xs)
 
 
-def fmt(x: Optional[float], digits: int = 4) -> str:
+def fmt(x: float | None, digits: int = 4) -> str:
     if x is None or (isinstance(x, float) and (math.isnan(x) or math.isinf(x))):
         return "n/a"
     return f"{x:.{digits}f}"
 
 
-def pct(x: Optional[float], digits: int = 1) -> str:
+def pct(x: float | None, digits: int = 1) -> str:
     if x is None or (isinstance(x, float) and (math.isnan(x) or math.isinf(x))):
         return "n/a"
     return f"{100.0 * x:.{digits}f}%"
 
 
-def pair_oracle(edits_a: Dict[str, float], edits_b: Dict[str, float]) -> dict:
+def pair_oracle(edits_a: dict[str, float], edits_b: dict[str, float]) -> dict:
     shared = sorted(set(edits_a) & set(edits_b))
     if not shared:
         return {
@@ -110,7 +126,7 @@ def pair_oracle(edits_a: Dict[str, float], edits_b: Dict[str, float]) -> dict:
         }
     ea = [edits_a[p] for p in shared]
     eb = [edits_b[p] for p in shared]
-    omin = [min(a, b) for a, b in zip(ea, eb)]
+    omin = [min(a, b) for a, b in zip(ea, eb, strict=False)]
     alone_a = mean(ea)
     alone_b = mean(eb)
     oracle_e = mean(omin)
@@ -130,7 +146,9 @@ def pair_oracle(edits_a: Dict[str, float], edits_b: Dict[str, float]) -> dict:
     }
 
 
-def pair_rescue(edits_a: Dict[str, float], edits_b: Dict[str, float], tau: float = TAU, eps: float = EPS) -> dict:
+def pair_rescue(
+    edits_a: dict[str, float], edits_b: dict[str, float], tau: float = TAU, eps: float = EPS
+) -> dict:
     shared = sorted(set(edits_a) & set(edits_b))
     n = len(shared)
     if n == 0:
@@ -181,7 +199,8 @@ def pair_rescue(edits_a: Dict[str, float], edits_b: Dict[str, float], tau: float
     n_aw = sum(a_wrong)
     n_bw = sum(b_wrong)
     # disagreement for conditional: wrong-label disagree OR edit differ by >eps
-    # User asked: P(A wrong | A!=B disagreement) where disagreement = (A wrong)!=(B wrong) OR edits differ by >eps
+    # User asked: P(A wrong | A!=B disagreement) where disagreement =
+    # (A wrong)!=(B wrong) OR edits differ by >eps
     disagree_pages = []
     for p in shared:
         ea = edits_a[p]
@@ -218,7 +237,7 @@ def pair_rescue(edits_a: Dict[str, float], edits_b: Dict[str, float], tau: float
     }
 
 
-def md_table(headers: List[str], rows: List[List[str]]) -> str:
+def md_table(headers: list[str], rows: list[list[str]]) -> str:
     lines = []
     lines.append("| " + " | ".join(headers) + " |")
     lines.append("| " + " | ".join(["---"] * len(headers)) + " |")
@@ -228,10 +247,11 @@ def md_table(headers: List[str], rows: List[List[str]]) -> str:
 
 
 def main():
-    OUT.mkdir(parents=True, exist_ok=True)
+    root, out = paths()
+    out.mkdir(parents=True, exist_ok=True)
 
     # Load all edits
-    data: Dict[str, Dict[str, Dict[str, float]]] = {}  # element -> model -> page -> edit
+    data: dict[str, dict[str, dict[str, float]]] = {}  # element -> model -> page -> edit
     page_counts = {}
     file_map = {}
     for elem_name, elem_key in ELEMENTS.items():
@@ -239,8 +259,8 @@ def main():
         page_counts[elem_name] = {}
         file_map[elem_name] = {}
         for m in MODELS:
-            path = find_per_page_file(m, elem_key)
-            edits = load_edits(m, elem_key)
+            path = find_per_page_file(root, m, elem_key)
+            edits = load_edits(root, m, elem_key)
             data[elem_name][m] = edits
             page_counts[elem_name][m] = len(edits)
             file_map[elem_name][m] = str(path)
@@ -255,7 +275,9 @@ def main():
     # Pairwise oracle & rescue for each element
     oracle_results = {}  # elem -> {pair_key -> metrics}
     rescue_results = {}
-    alone_scores = {}  # elem -> model -> {n, mean_edit, score} on full model pages and on all-model intersection
+    # elem -> model -> {n, mean_edit, score} on full model pages and on
+    # all-model intersection
+    alone_scores = {}
 
     for elem_name in list(ELEMENTS.keys()):
         oracle_results[elem_name] = {}
@@ -317,15 +339,23 @@ def main():
     md_oracle_parts = []
     md_oracle_parts.append("# Complementarity Oracle Matrix")
     md_oracle_parts.append("")
-    md_oracle_parts.append("Continuous oracle (primary router ceiling). Page score = `1 - edit` (edit clipped to [0,1]).")
-    md_oracle_parts.append("`oracle_edit = mean(min(edit_A, edit_B))` on shared pages; `oracle_gain_A = oracle_score - alone_score_A`.")
+    md_oracle_parts.append(
+        "Continuous oracle (primary router ceiling). "
+        "Page score = `1 - edit` (edit clipped to [0,1])."
+    )
+    md_oracle_parts.append(
+        "`oracle_edit = mean(min(edit_A, edit_B))` on shared pages; "
+        "`oracle_gain_A = oracle_score - alone_score_A`."
+    )
     md_oracle_parts.append("")
     md_oracle_parts.append("## Page counts")
     md_oracle_parts.append("")
     pc_headers = ["element"] + [SHORT[m] for m in MODELS] + ["all_intersect"]
     pc_rows = []
     for e in ELEMENTS:
-        pc_rows.append([e] + [str(page_counts[e][m]) for m in MODELS] + [str(len(intersections[e]))])
+        pc_rows.append(
+            [e] + [str(page_counts[e][m]) for m in MODELS] + [str(len(intersections[e]))]
+        )
     md_oracle_parts.append(md_table(pc_headers, pc_rows))
     md_oracle_parts.append("")
 
@@ -337,12 +367,14 @@ def main():
         alone_rows = []
         for m in MODELS:
             s = alone_scores[elem_name][m]
-            alone_rows.append([
-                SHORT[m],
-                str(s["n_pages_all_intersect"]),
-                fmt(s["mean_edit_all_intersect"]),
-                fmt(s["score_all_intersect"]),
-            ])
+            alone_rows.append(
+                [
+                    SHORT[m],
+                    str(s["n_pages_all_intersect"]),
+                    fmt(s["mean_edit_all_intersect"]),
+                    fmt(s["score_all_intersect"]),
+                ]
+            )
         md_oracle_parts.append("### Alone scores (all-model page intersection)")
         md_oracle_parts.append("")
         md_oracle_parts.append(md_table(alone_headers, alone_rows))
@@ -354,7 +386,7 @@ def main():
         for m in MODELS:
             # diagonal = alone on all-intersect
             mat[m][m] = alone_scores[elem_name][m]["score_all_intersect"]
-        for key, oa in oracle_results[elem_name].items():
+        for _key, oa in oracle_results[elem_name].items():
             a, b = oa["model_A"], oa["model_B"]
             mat[a][b] = oa["oracle_score"]
             mat[b][a] = oa["oracle_score"]
@@ -362,7 +394,7 @@ def main():
             SHORT[a]: {SHORT[b]: mat[a][b] for b in MODELS} for a in MODELS
         }
 
-        headers = ["oracle_score"] + labels
+        headers = ["oracle_score", *labels]
         rows = []
         for a in MODELS:
             rows.append([SHORT[a]] + [fmt(mat[a][b]) for b in MODELS])
@@ -374,7 +406,7 @@ def main():
         # Gain vs paddle matrix: for each peer, oracle_gain when paddle is baseline
         # Also full pairwise gain when row is baseline
         gain_mat = {a: {b: 0.0 if a == b else None for b in MODELS} for a in MODELS}
-        for key, oa in oracle_results[elem_name].items():
+        for _key, oa in oracle_results[elem_name].items():
             a, b = oa["model_A"], oa["model_B"]
             # gain for A as baseline pairing with B
             gain_mat[a][b] = oa["oracle_gain_A"]
@@ -384,7 +416,7 @@ def main():
             if m == BASELINE:
                 continue
             # find pair
-            for key, oa in oracle_results[elem_name].items():
+            for _key, oa in oracle_results[elem_name].items():
                 if {oa["model_A"], oa["model_B"]} == {BASELINE, m}:
                     if oa["model_A"] == BASELINE:
                         g = oa["oracle_gain_A"]
@@ -406,10 +438,13 @@ def main():
                         "oracle_gain_vs_paddle": g,
                     }
 
-        headers = ["oracle_gain (row=baseline)"] + labels
+        headers = ["oracle_gain (row=baseline)", *labels]
         rows = []
         for a in MODELS:
-            rows.append([SHORT[a]] + [fmt(gain_mat[a][b]) if gain_mat[a][b] is not None else "—" for b in MODELS])
+            rows.append(
+                [SHORT[a]]
+                + [fmt(gain_mat[a][b]) if gain_mat[a][b] is not None else "—" for b in MODELS]
+            )
         md_oracle_parts.append("### Oracle gain (row = baseline model)")
         md_oracle_parts.append("")
         md_oracle_parts.append(md_table(headers, rows))
@@ -418,25 +453,36 @@ def main():
         # Focus table: paddle + each peer
         md_oracle_parts.append("### Paddle baseline + peer")
         md_oracle_parts.append("")
-        ph = ["peer", "n_pages", "paddle_alone", "peer_alone", "oracle_score", "oracle_gain_vs_paddle"]
+        ph = [
+            "peer",
+            "n_pages",
+            "paddle_alone",
+            "peer_alone",
+            "oracle_score",
+            "oracle_gain_vs_paddle",
+        ]
         pr = []
         for m in MODELS:
             if m == BASELINE:
                 continue
             info = oracle_json["oracle_gain_vs_paddle"][elem_name].get(SHORT[m], {})
-            pr.append([
-                SHORT[m],
-                str(info.get("n_pages", "")),
-                fmt(info.get("paddle_alone_score")),
-                fmt(info.get("peer_alone_score")),
-                fmt(info.get("oracle_score")),
-                fmt(info.get("oracle_gain_vs_paddle")),
-            ])
+            pr.append(
+                [
+                    SHORT[m],
+                    str(info.get("n_pages", "")),
+                    fmt(info.get("paddle_alone_score")),
+                    fmt(info.get("peer_alone_score")),
+                    fmt(info.get("oracle_score")),
+                    fmt(info.get("oracle_gain_vs_paddle")),
+                ]
+            )
         md_oracle_parts.append(md_table(ph, pr))
         md_oracle_parts.append("")
 
-    (OUT / "complementarity_oracle_matrix.md").write_text("\n".join(md_oracle_parts), encoding="utf-8")
-    (OUT / "complementarity_oracle_matrix.json").write_text(
+    (out / "complementarity_oracle_matrix.md").write_text(
+        "\n".join(md_oracle_parts), encoding="utf-8"
+    )
+    (out / "complementarity_oracle_matrix.json").write_text(
         json.dumps(oracle_json, indent=2, ensure_ascii=False), encoding="utf-8"
     )
 
@@ -446,11 +492,16 @@ def main():
             "tau": TAU,
             "wrong": f"edit > {TAU}",
             "rescue_rate": "P(B correct | A wrong) = P(edit_B <= tau | edit_A > tau)",
-            "overlap": f"P(B wrong | A wrong), P(both wrong)",
+            "overlap": "P(B wrong | A wrong), P(both wrong)",
             "disagreement": f"(A wrong)!=(B wrong) OR |edit_A-edit_B| > {EPS}",
             "baseline": BASELINE,
             "models": MODELS,
-            "note_tau0": "Primary discrete tables use tau=0.05. Strict tau=0.0 (any nonzero edit=wrong) is more brittle; continuous oracle is preferred for router ceiling.",
+            "note_tau0": (
+                "Primary discrete tables use tau=0.05. "
+                "Strict tau=0.0 (any nonzero edit=wrong) "
+                "is more brittle; "
+                "continuous oracle is preferred for router ceiling."
+            ),
         },
         "pairwise": rescue_results,
         "rescue_matrices_given_row_wrong": {},
@@ -461,7 +512,9 @@ def main():
     md_rescue_parts.append("# Complementarity Rescue / Overlap Matrix")
     md_rescue_parts.append("")
     md_rescue_parts.append(f"Discrete metrics at **tau={TAU}** (wrong if edit > tau).")
-    md_rescue_parts.append("Rescue rate = `P(B correct | A wrong)`. Overlap = `P(B wrong | A wrong)`.")
+    md_rescue_parts.append(
+        "Rescue rate = `P(B correct | A wrong)`. Overlap = `P(B wrong | A wrong)`."
+    )
     md_rescue_parts.append("")
 
     for elem_name in ELEMENTS:
@@ -483,7 +536,7 @@ def main():
             overlap_mat[m][m] = p_wrong
             both_mat[m][m] = p_wrong
 
-        for key, rb in rescue_results[elem_name].items():
+        for _key, rb in rescue_results[elem_name].items():
             a, b = rb["model_A"], rb["model_B"]
             # P(B correct | A wrong)
             rescue_mat[a][b] = rb["P_B_correct_given_A_wrong"]
@@ -500,13 +553,11 @@ def main():
             "overlap_P_col_wrong_given_row_wrong": {
                 SHORT[a]: {SHORT[b]: overlap_mat[a][b] for b in MODELS} for a in MODELS
             },
-            "P_both_wrong": {
-                SHORT[a]: {SHORT[b]: both_mat[a][b] for b in MODELS} for a in MODELS
-            },
+            "P_both_wrong": {SHORT[a]: {SHORT[b]: both_mat[a][b] for b in MODELS} for a in MODELS},
         }
 
         labels = [SHORT[m] for m in MODELS]
-        headers = ["rescue P(col OK|row wrong); diag=P(wrong)"] + labels
+        headers = ["rescue P(col OK|row wrong); diag=P(wrong)", *labels]
         rows = []
         for a in MODELS:
             rows.append([SHORT[a]] + [pct(rescue_mat[a][b]) for b in MODELS])
@@ -515,7 +566,7 @@ def main():
         md_rescue_parts.append(md_table(headers, rows))
         md_rescue_parts.append("")
 
-        headers = ["overlap P(col wrong|row wrong)"] + labels
+        headers = ["overlap P(col wrong|row wrong)", *labels]
         rows = []
         for a in MODELS:
             rows.append([SHORT[a]] + [pct(overlap_mat[a][b]) for b in MODELS])
@@ -524,7 +575,7 @@ def main():
         md_rescue_parts.append(md_table(headers, rows))
         md_rescue_parts.append("")
 
-        headers = ["P(both wrong)"] + labels
+        headers = ["P(both wrong)", *labels]
         rows = []
         for a in MODELS:
             rows.append([SHORT[a]] + [pct(both_mat[a][b]) for b in MODELS])
@@ -536,18 +587,28 @@ def main():
         # Disagreement conditional
         md_rescue_parts.append("### Disagreement stats (pairwise)")
         md_rescue_parts.append("")
-        dh = ["pair", "n_pages", "P_disagree", "P(A wrong|disagree)", "P_both_wrong", "rescue_B|A_wrong", "rescue_A|B_wrong"]
+        dh = [
+            "pair",
+            "n_pages",
+            "P_disagree",
+            "P(A wrong|disagree)",
+            "P_both_wrong",
+            "rescue_B|A_wrong",
+            "rescue_A|B_wrong",
+        ]
         dr = []
-        for key, rb in sorted(rescue_results[elem_name].items()):
-            dr.append([
-                f"{rb['short_A']}+{rb['short_B']}",
-                str(rb["n_pages"]),
-                pct(rb["P_disagree"]),
-                pct(rb["P_A_wrong_given_disagreement"]),
-                pct(rb["P_both_wrong"]),
-                pct(rb["P_B_correct_given_A_wrong"]),
-                pct(rb["P_A_correct_given_B_wrong"]),
-            ])
+        for _key, rb in sorted(rescue_results[elem_name].items()):
+            dr.append(
+                [
+                    f"{rb['short_A']}+{rb['short_B']}",
+                    str(rb["n_pages"]),
+                    pct(rb["P_disagree"]),
+                    pct(rb["P_A_wrong_given_disagreement"]),
+                    pct(rb["P_both_wrong"]),
+                    pct(rb["P_B_correct_given_A_wrong"]),
+                    pct(rb["P_A_correct_given_B_wrong"]),
+                ]
+            )
         md_rescue_parts.append(md_table(dh, dr))
         md_rescue_parts.append("")
 
@@ -555,12 +616,19 @@ def main():
         rescue_json["paddle_rescue_by_peer"][elem_name] = {}
         md_rescue_parts.append("### When Paddle is wrong: peer rescue")
         md_rescue_parts.append("")
-        ph = ["peer", "n_pages", "n_paddle_wrong", "rescue_rate", "P(peer wrong|paddle wrong)", "P(both wrong)"]
+        ph = [
+            "peer",
+            "n_pages",
+            "n_paddle_wrong",
+            "rescue_rate",
+            "P(peer wrong|paddle wrong)",
+            "P(both wrong)",
+        ]
         pr = []
         for m in MODELS:
             if m == BASELINE:
                 continue
-            for key, rb in rescue_results[elem_name].items():
+            for _key, rb in rescue_results[elem_name].items():
                 if {rb["model_A"], rb["model_B"]} == {BASELINE, m}:
                     if rb["model_A"] == BASELINE:
                         rescue_rate = rb["P_B_correct_given_A_wrong"]
@@ -577,19 +645,23 @@ def main():
                         "P_peer_wrong_given_paddle_wrong": overlap,
                         "P_both_wrong": rb["P_both_wrong"],
                     }
-                    pr.append([
-                        SHORT[m],
-                        str(rb["n_pages"]),
-                        str(n_pw),
-                        pct(rescue_rate),
-                        pct(overlap),
-                        pct(rb["P_both_wrong"]),
-                    ])
+                    pr.append(
+                        [
+                            SHORT[m],
+                            str(rb["n_pages"]),
+                            str(n_pw),
+                            pct(rescue_rate),
+                            pct(overlap),
+                            pct(rb["P_both_wrong"]),
+                        ]
+                    )
         md_rescue_parts.append(md_table(ph, pr))
         md_rescue_parts.append("")
 
-    (OUT / "complementarity_rescue_matrix.md").write_text("\n".join(md_rescue_parts), encoding="utf-8")
-    (OUT / "complementarity_rescue_matrix.json").write_text(
+    (out / "complementarity_rescue_matrix.md").write_text(
+        "\n".join(md_rescue_parts), encoding="utf-8"
+    )
+    (out / "complementarity_rescue_matrix.json").write_text(
         json.dumps(rescue_json, indent=2, ensure_ascii=False), encoding="utf-8"
     )
 
@@ -597,7 +669,10 @@ def main():
     lb_parts = []
     lb_parts.append("# Complementarity Leaderboard")
     lb_parts.append("")
-    lb_parts.append("Peers ranked vs **paddle** baseline. Higher rescue / higher oracle gain = more complementary.")
+    lb_parts.append(
+        "Peers ranked vs **paddle** baseline. "
+        "Higher rescue / higher oracle gain = more complementary."
+    )
     lb_parts.append("")
 
     for elem_name in ELEMENTS:
@@ -615,7 +690,9 @@ def main():
         rh = ["rank", "peer", "rescue_rate", "n_paddle_wrong", "n_pages"]
         rr = []
         for i, (peer, rate, info) in enumerate(peers_rescue, 1):
-            rr.append([str(i), peer, pct(rate), str(info.get("n_paddle_wrong")), str(info.get("n_pages"))])
+            rr.append(
+                [str(i), peer, pct(rate), str(info.get("n_paddle_wrong")), str(info.get("n_pages"))]
+            )
         lb_parts.append(md_table(rh, rr))
         lb_parts.append("")
 
@@ -627,35 +704,66 @@ def main():
 
         lb_parts.append("### Rank by oracle gain vs paddle")
         lb_parts.append("")
-        oh = ["rank", "peer", "oracle_gain", "oracle_score", "paddle_alone", "peer_alone", "n_pages"]
+        oh = [
+            "rank",
+            "peer",
+            "oracle_gain",
+            "oracle_score",
+            "paddle_alone",
+            "peer_alone",
+            "n_pages",
+        ]
         orows = []
         for i, (peer, gain, info) in enumerate(peers_oracle, 1):
-            orows.append([
-                str(i), peer, fmt(gain), fmt(info.get("oracle_score")),
-                fmt(info.get("paddle_alone_score")), fmt(info.get("peer_alone_score")),
-                str(info.get("n_pages")),
-            ])
+            orows.append(
+                [
+                    str(i),
+                    peer,
+                    fmt(gain),
+                    fmt(info.get("oracle_score")),
+                    fmt(info.get("paddle_alone_score")),
+                    fmt(info.get("peer_alone_score")),
+                    str(info.get("n_pages")),
+                ]
+            )
         lb_parts.append(md_table(oh, orows))
         lb_parts.append("")
 
-    (OUT / "complementarity_leaderboard.md").write_text("\n".join(lb_parts), encoding="utf-8")
+    (out / "complementarity_leaderboard.md").write_text("\n".join(lb_parts), encoding="utf-8")
 
     # ---- NOTES ----
     notes = []
     notes.append("# NOTES — Model Complementarity Matrix")
     notes.append("")
     notes.append("## Scope")
-    notes.append("- Built from existing OmniDocBench-style **per-page edit distances** under `omnidoc_raw/`.")
+    notes.append(
+        "- Built from existing OmniDocBench-style **per-page edit distances** under `omnidoc_raw/`."
+    )
     notes.append("- **No re-inference.** Sequential scoring chain left untouched.")
-    notes.append("- Models: paddleocr_vl_1_6, infinity_parser2_flash, deepseek_ocr2, glm_ocr, opus5_subscription.")
+    notes.append(
+        "- Models: paddleocr_vl_1_6, infinity_parser2_flash, deepseek_ocr2, "
+        "glm_ocr, opus5_subscription."
+    )
     notes.append("- Elements: text_block → text, display_formula → formula, table, reading_order.")
-    notes.append("- **ALL / overall** surface: **text_block is primary** (most pages). Separate matrices per element; there is no synthetic average-of-elements ALL matrix — use the `text` section as the overall complementarity surface.")
+    notes.append(
+        "- **ALL / overall** surface: **text_block is primary** (most pages). "
+        "Separate matrices per element; "
+        "there is no synthetic average-of-elements ALL "
+        "matrix — use the `text` section as the overall "
+        "complementarity surface."
+    )
     notes.append("")
     notes.append("## Continuous oracle (primary for router ceiling)")
     notes.append("- Clip each page edit to [0,1].")
-    notes.append("- `alone_mean_edit = mean(edit)` on shared pages of the pair (or all-model intersection for alone tables).")
+    notes.append(
+        "- `alone_mean_edit = mean(edit)` on shared pages of the pair "
+        "(or all-model intersection for alone tables)."
+    )
     notes.append("- `alone_score = 1 - alone_mean_edit`.")
-    notes.append("- `oracle_edit = mean(min(edit_A, edit_B))` — perfect page-wise router picking the better model.")
+    notes.append(
+        "- `oracle_edit = mean(min(edit_A, edit_B))` — "
+        "perfect page-wise router picking the better model."
+    )
     notes.append("- `oracle_score = 1 - oracle_edit`.")
     notes.append("- `oracle_gain_A = oracle_score - alone_score_A` (gain when A is baseline).")
     notes.append("- No hard threshold; uses continuous edits.")
@@ -666,12 +774,28 @@ def main():
     notes.append("- Overlap: `P(B wrong | A wrong)`, `P(both wrong)`.")
     notes.append("- Disagreement: `(A wrong) != (B wrong)` OR `|edit_A - edit_B| > 1e-9`.")
     notes.append("- Report `P(A wrong | disagreement)` on those pages.")
-    notes.append("- **tau=0.0 sensitivity:** any nonzero edit = wrong is extremely strict and noisy for near-zero floating edits; we keep tau=0.05 for discrete tables and rely on continuous oracle for ceiling. Primary tables use tau=0.05.")
+    notes.append(
+        "- **tau=0.0 sensitivity:** any nonzero edit = wrong "
+        "is extremely strict and noisy for "
+        "near-zero floating edits; we keep tau=0.05 "
+        "for discrete tables and rely on continuous oracle "
+        "for ceiling. Primary tables use tau=0.05."
+    )
     notes.append("")
     notes.append("## Pairwise page intersection")
-    notes.append("- Every pair metric uses **intersection of pages present in both models' per-page JSON** for that element.")
-    notes.append("- Alone score tables labeled all-intersect use intersection of **all five** models for that element.")
-    notes.append("- Page-count mismatches across models are expected if some pages failed scoring for one model; see page_counts in JSON.")
+    notes.append(
+        "- Every pair metric uses **intersection of pages present in both models' "
+        "per-page JSON** for that element."
+    )
+    notes.append(
+        "- Alone score tables labeled all-intersect use intersection "
+        "of **all five** models for that element."
+    )
+    notes.append(
+        "- Page-count mismatches across models are expected if some pages "
+        "failed scoring for one model; "
+        "see page_counts in JSON."
+    )
     notes.append("")
     notes.append("## File prefixes")
     notes.append("- paddle / deepseek: `markdown_quick_match_*_per_page_edit.json`")
@@ -683,19 +807,23 @@ def main():
     notes.append("- `complementarity_leaderboard.md`")
     notes.append("- `NOTES.md` (this file)")
     notes.append("")
-    (OUT / "NOTES.md").write_text("\n".join(notes), encoding="utf-8")
+    (out / "NOTES.md").write_text("\n".join(notes), encoding="utf-8")
 
     # ---- ASCII Korean-friendly summary ----
     def best_peer(elem, kind):
         if kind == "rescue":
             items = rescue_json["paddle_rescue_by_peer"][elem]
-            ranked = sorted(items.items(), key=lambda kv: (-(kv[1].get("rescue_rate") or -1), kv[0]))
+            ranked = sorted(
+                items.items(), key=lambda kv: (-(kv[1].get("rescue_rate") or -1), kv[0])
+            )
             if not ranked:
                 return None, None
             return ranked[0][0], ranked[0][1].get("rescue_rate")
         else:
             items = oracle_json["oracle_gain_vs_paddle"][elem]
-            ranked = sorted(items.items(), key=lambda kv: (-(kv[1].get("oracle_gain_vs_paddle") or -1), kv[0]))
+            ranked = sorted(
+                items.items(), key=lambda kv: (-(kv[1].get("oracle_gain_vs_paddle") or -1), kv[0])
+            )
             if not ranked:
                 return None, None
             return ranked[0][0], ranked[0][1].get("oracle_gain_vs_paddle")
@@ -706,18 +834,31 @@ def main():
     print("=" * 60)
     print("COMPLEMENTARITY SUMMARY (Korean-friendly)")
     print("=" * 60)
-    print(f"Paddle alone (text / ALL-primary): score={fmt(paddle_text_alone)}  mean_edit={fmt(paddle_text_edit)}  n={alone_scores['text'][BASELINE]['n_pages_all_intersect']}")
+    print(
+        f"Paddle alone (text / ALL-primary): score={fmt(paddle_text_alone)}  "
+        f"mean_edit={fmt(paddle_text_edit)}  "
+        f"n={alone_scores['text'][BASELINE]['n_pages_all_intersect']}"
+    )
     print()
     print("Oracle gains vs Paddle (text):")
     for peer in ["flash", "deepseek", "glm", "opus"]:
         info = oracle_json["oracle_gain_vs_paddle"]["text"].get(peer, {})
-        print(f"  Paddle+{peer:8s}: gain={fmt(info.get('oracle_gain_vs_paddle'))}  oracle={fmt(info.get('oracle_score'))}  peer_alone={fmt(info.get('peer_alone_score'))}  n={info.get('n_pages')}")
+        print(
+            f"  Paddle+{peer:8s}: gain={fmt(info.get('oracle_gain_vs_paddle'))}  "
+            f"oracle={fmt(info.get('oracle_score'))}  "
+            f"peer_alone={fmt(info.get('peer_alone_score'))}  "
+            f"n={info.get('n_pages')}"
+        )
     print()
     print("Oracle gains vs Paddle by element (gain only):")
     for elem in ELEMENTS:
         bits = []
         for peer in ["flash", "deepseek", "glm", "opus"]:
-            g = oracle_json["oracle_gain_vs_paddle"][elem].get(peer, {}).get("oracle_gain_vs_paddle")
+            g = (
+                oracle_json["oracle_gain_vs_paddle"][elem]
+                .get(peer, {})
+                .get("oracle_gain_vs_paddle")
+            )
             bits.append(f"{peer}={fmt(g)}")
         pa = alone_scores[elem][BASELINE]["score_all_intersect"]
         print(f"  {elem:14s} paddle_alone={fmt(pa)} | " + " ".join(bits))
@@ -731,7 +872,11 @@ def main():
     for e in ELEMENTS:
         counts = [page_counts[e][m] for m in MODELS]
         mismatch = len(set(counts)) > 1
-        print(f"  {e}: { {SHORT[m]: page_counts[e][m] for m in MODELS} } all_intersect={len(intersections[e])} mismatch={mismatch}")
+        print(
+            f"  {e}: { {SHORT[m]: page_counts[e][m] for m in MODELS} }"
+            f" all_intersect={len(intersections[e])}"
+            f" mismatch={mismatch}"
+        )
     print()
     print("Written:")
     for f in [
@@ -742,7 +887,7 @@ def main():
         "complementarity_leaderboard.md",
         "NOTES.md",
     ]:
-        print(f"  {OUT / f}")
+        print(f"  {out / f}")
     print("=" * 60)
 
 
