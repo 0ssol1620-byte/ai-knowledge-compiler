@@ -95,6 +95,17 @@ class TestDocumentParserPolicyUpgrade(unittest.TestCase):
         self._write_sources(empty=empty)
         legacy = Path(self.legacy_v1 if schema == 1 else self.legacy_v2)
         environment = dict(os.environ)
+        # pytest-cov would start coverage in this child from its cwd (a temp
+        # dir without pyproject.toml): statement-only data that cannot combine
+        # with the suite's branch data. The historical compiler is a fixture,
+        # not coverage scope; same opt-out as test_ip_privilege_guard.py.
+        for name in (
+            "COV_CORE_SOURCE",
+            "COV_CORE_CONFIG",
+            "COV_CORE_DATAFILE",
+            "COVERAGE_PROCESS_START",
+        ):
+            environment.pop(name, None)
         environment["PYTHONDONTWRITEBYTECODE"] = "1"
         environment["PYTHONPATH"] = os.pathsep.join((
             str(legacy / "packages/compiler-runtime/src"),

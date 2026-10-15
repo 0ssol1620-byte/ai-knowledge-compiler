@@ -74,6 +74,16 @@ class TestParserUpgradeCIContract(unittest.TestCase):
             root = Path(exports[f"AKC_UPGRADE_LEGACY_V{schema}_ROOT"])
             self.assertEqual(str(root), self.manifest["roots"][str(schema)])
             environment = dict(os.environ)
+            # Same pytest-cov opt-out as the upgrade test: this child runs from
+            # a temp cwd without pyproject.toml, so inherited coverage would
+            # write statement-only data the suite's branch data cannot combine.
+            for name in (
+                "COV_CORE_SOURCE",
+                "COV_CORE_CONFIG",
+                "COV_CORE_DATAFILE",
+                "COVERAGE_PROCESS_START",
+            ):
+                environment.pop(name, None)
             environment["PYTHONDONTWRITEBYTECODE"] = "1"
             environment["PYTHONPATH"] = os.pathsep.join((
                 str(root / "packages/compiler-runtime/src"),
