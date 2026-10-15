@@ -16,7 +16,7 @@ on:
       foundation_ref:
         description: "Foundation (0ssol1620-byte/tavonel-saas-foundation) ref or SHA to check out"
         required: false
-        default: f796c53323bd33cd544088ec1789d9cb34364e43
+        default: 5b4be882e05f9c5b5bf1d1bd497613fbeee87c0e
   pull_request:
     paths:
       - ".github/workflows/joined-e2e.yml"
@@ -32,7 +32,7 @@ concurrency:
 
 env:
   FOUNDATION_REPOSITORY: 0ssol1620-byte/tavonel-saas-foundation
-  FOUNDATION_REF: ${{ inputs.foundation_ref || 'f796c53323bd33cd544088ec1789d9cb34364e43' }}
+  FOUNDATION_REF: ${{ inputs.foundation_ref || '5b4be882e05f9c5b5bf1d1bd497613fbeee87c0e' }}
   SUPABASE_INTERNAL_IMAGE_REGISTRY: docker.io
   # Same digest pin as Foundation's quarantine-sidecar/cdr-cloudrun/service.yaml (asserted below).
   CLAMAV_IMAGE: clamav/clamav:1.5.4
@@ -202,7 +202,7 @@ jobs:
         timeout-minutes: 3
         working-directory: foundation
         env:
-          QUALIFIED_FOUNDATION_SOURCE_SHA: f796c53323bd33cd544088ec1789d9cb34364e43
+          QUALIFIED_FOUNDATION_SOURCE_SHA: 5b4be882e05f9c5b5bf1d1bd497613fbeee87c0e
         run: |
           set -euo pipefail
           record="$GITHUB_WORKSPACE/core/output/logs/foundation-draft-staging.log"
