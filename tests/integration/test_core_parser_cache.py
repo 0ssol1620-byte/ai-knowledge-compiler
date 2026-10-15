@@ -117,7 +117,7 @@ def _reseal(pipeline: Pipeline, cache: dict[str, object]) -> None:
 
 @pytest.mark.parametrize("damage", [
     "missing", "legacy", "json", "tampered", "scope", "schema", "paths", "hash",
-    "source", "version", "claims", "line", "permission", "unknown-field",
+    "source", "version", "claims", "line", "permission", "unknown-field", "foreign-world",
 ])
 def test_unusable_cache_cold_falls_back(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, damage: str
@@ -165,6 +165,9 @@ def test_unusable_cache_cold_falls_back(
             record["required_permission"] = []
         elif damage == "unknown-field":
             record["extra"] = "unexpected"
+        elif damage == "foreign-world":
+            # Legacy payloads carried the field; one naming another world must miss.
+            cache["world_state_id"] = "WS-9"
         path.write_text(json.dumps(cache), encoding="utf-8")
         if damage != "tampered":
             _reseal(pipeline, cache)
@@ -175,10 +178,25 @@ def test_unusable_cache_cold_falls_back(
     assert result.equivalence is not None and result.equivalence.equivalent
     assert calls["plan.md"] == 1
     assert calls["stable.py"] == 1
-    if damage in {"missing", "legacy", "json", "tampered", "scope", "schema", "paths", "hash"}:
+    if damage in {
+        "missing", "legacy", "json", "tampered", "scope", "schema", "paths", "hash",
+        "foreign-world",
+    }:
         assert calls["empty.md"] == 1
     else:
         assert calls["empty.md"] == 0
+
+
+def test_sealed_payload_is_bound_to_its_world_by_filename(tmp_path: Path) -> None:
+    source, pipeline = _workspace(tmp_path)
+    pipeline.compile_workspace(source)
+    world = pipeline.store.load_world()
+    assert world is not None
+    parsed = sorted((pipeline.store.base / "parsed").glob("*.json"))
+    assert [path.name for path in parsed] == [f"{world.world_state_id}.json"]
+    cache = json.loads(parsed[0].read_text(encoding="utf-8"))
+    assert "world_state_id" not in cache
+    assert content_hash(cache) == world.manifest.artifact_hashes["parsed/documents"]
 
 
 @pytest.mark.parametrize("option", ["tenant_id", "workspace_id", "connector_type", "max_depth"])
