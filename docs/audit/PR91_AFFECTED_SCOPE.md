@@ -18,9 +18,13 @@ The classifier checks the actual event head and the pinned historical anchor com
 `be7d4a6a5166b4b6a31372d1496fa3d7a26e65c8`. Its fixed-anchor delta and the cumulative PR
 merge-base diff are separate receipts. The remote checkout need not contain the private
 397 tree object: the six reviewed payload blob identities are checked directly at the
-event head. Missing or incorrect identity, unexpected file modes, deletion of a registered
-path, payload drift, and malformed PR91 inputs fail with `broad-required`. A changed path
-outside the reviewed payload escalates to `full` (next section). Other PRs, main pushes,
+event head. Missing or incorrect event identity (head, same repository, anchor tree,
+ancestry), an empty delta and malformed PR91 inputs always fail with `broad-required`.
+Unexpected file modes, deletion or rename, payload drift and the other narrow-admission
+checks run only when every changed path lies inside the reviewed payload (the classifier's
+`number == 91 and not unreviewed` branch); only then do they fail with `broad-required`.
+When any changed path lies outside the payload, none of those checks runs and the head
+escalates to `full` (next section), whatever else it changes. Other PRs, main pushes,
 manual runs, and the existing Security schedule retain full selection policy within their
 existing workflow triggers.
 
@@ -44,10 +48,22 @@ the escalation removes no guard.
 Narrow modes remain only for heads whose every changed path is inside the payload. Those
 heads still pass every existing narrow check (payload and entity blob identity, unchanged
 build inputs, file modes, no deletion or rename, required test presence, route
-combinations); a failure there is still `broad-required`. The escalation happens after the
-event identity, same-repository, anchor-tree and ancestry checks, so a wrong head, a fork or
-missing history still fails closed. A full result inherits no narrow admission: the receipt
+combinations); a failure there is still `broad-required`. Those checks exist only to admit
+a narrower selection, so they are not run on a head that has an unreviewed path: a
+deletion, rename, mode change or payload drift in such a head is not refused, it runs
+under `full` with everything else. That is not a weakening, because `full` is the
+baseline policy (every job and every full marker, as for every other PR and for a
+`workflow_dispatch` run). The escalation happens after the event identity,
+same-repository, anchor-tree and ancestry checks, so a wrong head, a fork or missing
+history still fails closed. A full result inherits no narrow admission: the receipt
 carries no `unchanged_inputs`, `entity_sources`, `joined_sources` or `ocr_v3_product_core`.
+
+On PR #91 itself the narrow path is effectively unreachable from `45de3ea` on. The delta is
+measured from the fixed anchor `621b7d69`, so it is cumulative: at `f2097273` it already
+holds three paths outside the payload (`docs/adr/ADR-008-entity-tie-review.md`,
+`packages/compiler-runtime/src/akc_compiler_runtime/store.py`, `uv.lock`). Every later head
+of this branch therefore escalates to `full` unless those paths return to their anchor
+content.
 
 Same-repository source checkouts now explicitly use the actual PR source head rather
 than the synthetic merge revision. Existing Foundation repository/ref inputs and the
