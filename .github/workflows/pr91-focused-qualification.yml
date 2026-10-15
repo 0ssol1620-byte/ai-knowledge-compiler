@@ -23,7 +23,7 @@ concurrency:
 
 env:
   EXPECTED_CORE_SHA: ${{ github.event.pull_request.head.sha }}
-  FOUNDATION_PIN_SHA: b3b5f640beef3c659c0bcdb31188d50a4ce726c4
+  FOUNDATION_PIN_SHA: f796c53323bd33cd544088ec1789d9cb34364e43
 
 jobs:
   scope:
@@ -852,7 +852,7 @@ jobs:
     timeout-minutes: 75
     env:
       FOUNDATION_REPOSITORY: 0ssol1620-byte/tavonel-saas-foundation
-      FOUNDATION_REF: b3b5f640beef3c659c0bcdb31188d50a4ce726c4
+      FOUNDATION_REF: f796c53323bd33cd544088ec1789d9cb34364e43
       SUPABASE_INTERNAL_IMAGE_REGISTRY: docker.io
       # Same digest pin as Foundation's quarantine-sidecar/cdr-cloudrun/service.yaml (asserted below).
       CLAMAV_IMAGE: clamav/clamav:1.5.4
@@ -907,7 +907,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: ${{ env.FOUNDATION_REPOSITORY }}
-          ref: b3b5f640beef3c659c0bcdb31188d50a4ce726c4
+          ref: f796c53323bd33cd544088ec1789d9cb34364e43
           path: foundation
           persist-credentials: false
 
