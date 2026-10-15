@@ -970,3 +970,278 @@ class TestK15FiniteEntityAdmission(unittest.TestCase):
         )
         for helper in ("setUpClass", "setUp", "_git", "_add", "_commit", "_event", "_classify"):
             self.assertIs(type(self).__dict__[helper], TestPR91AffectedScope.__dict__[helper])
+
+
+class TestOcrV3ProductCoreAdmission(unittest.TestCase):
+    """OCR v3 product-core is its own finite scope; shared fixture helpers only."""
+
+    setUpClass = TestPR91AffectedScope.__dict__["setUpClass"]
+    setUp = TestPR91AffectedScope.__dict__["setUp"]
+    _git = TestPR91AffectedScope.__dict__["_git"]
+    _add = TestPR91AffectedScope.__dict__["_add"]
+    _commit = TestPR91AffectedScope.__dict__["_commit"]
+    _event = TestPR91AffectedScope.__dict__["_event"]
+    _classify = TestPR91AffectedScope.__dict__["_classify"]
+
+    FOUR = (
+        "packages/product-core/src/akc_product_core/contracts.py",
+        "packages/product-core/src/akc_product_core/compiler.py",
+        "packages/product-core/src/akc_product_core/journal.py",
+        "tests/unit/test_product_core_ocr_v3.py",
+    )
+    MODE = "parser-entity-ocr-v3-delta"
+
+    def _ocr_head(
+        self, *, parser=True, entity=True, joined=False, ocr=FOUR, overrides=None, modes=None
+    ):
+        self._git("read-tree", self.payload_tree if parser else scope.ANCHOR_TREE)
+        for path in (
+            "scripts/classify_pr91_affected_scope.py",
+            "tests/unit/test_pr91_affected_scope.py",
+            "tests/unit/test_pr91_affected_workflow_contract.py",
+        ):
+            self._add(path, b"# Synthetic exact routing control fixture\n")
+        if entity:
+            for path, blob in scope.ENTITY_PAYLOAD.items():
+                self._git("update-index", "--add", "--cacheinfo", "100644", blob, path)
+        if joined:
+            for path in scope.JOINED_SOURCE_PATHS:
+                self._add(path, b"// Synthetic joined source presence, not G1 evidence\n")
+        for path in ocr:
+            self._add(path, b"# Synthetic OCR v3 product-core source; not OCR evidence\n")
+        for path, raw in (overrides or {}).items():
+            if raw is None:
+                self._git("update-index", "--force-remove", path)
+            else:
+                mode = (modes or {}).get(path, "100644")
+                if mode == "160000":
+                    self._git(
+                        "update-index", "--add", "--cacheinfo", mode, scope.ANCHOR_COMMIT, path
+                    )
+                else:
+                    self._add(path, raw, mode)
+        head = self._commit(self._git("write-tree").decode().strip())
+        self._git("update-ref", "refs/heads/synthetic-routing-fixture", head)
+        return head
+
+    def _ocr_event(self, head):
+        event = self._event()
+        event["pull_request"]["head"]["sha"] = head
+        return event
+
+    def _refused(self, head, reasons):
+        result = self._classify(self._ocr_event(head))
+        self.assertEqual(result["mode"], "broad-required", result)
+        self.assertTrue(set(reasons).intersection(result["reason_codes"]), result)
+        self.assertFalse(result["selection"]["python"])
+        self.assertFalse(result["full_qualification"])
+        self.assertIsNone(result["ocr_v3_product_core"])
+        return result
+
+    def test_ocr_v3_exact_four_paths_select_own_scope_in_each_workflow(self):
+        self.assertEqual(scope.OCR_V3_SOURCE_PATHS, self.FOUR)
+        self.assertEqual(scope.OCR_V3_MODE, self.MODE)
+        self.assertEqual(
+            scope.OCR_V3_REQUIRED_TESTS,
+            (
+                "tests/unit/test_product_core_ocr_v3.py",
+                "tests/unit/test_product_core_journal.py",
+                "tests/unit/test_product_core_journal_maintenance.py",
+                "tests/unit/test_product_core_region_anchors.py",
+                "tests/unit/test_product_core_bridge.py",
+            ),
+        )
+        parser_entity = self._classify(self._ocr_event(self._ocr_head(ocr=())))
+        self.assertEqual(parser_entity["mode"], "parser-entity-delta", parser_entity)
+        self.assertIsNone(parser_entity["ocr_v3_product_core"])
+        for joined in (False, True):
+            head = self._ocr_head(joined=joined)
+            for kind in sorted(scope.WORKFLOW_KINDS):
+                with self.subTest(joined=joined, kind=kind):
+                    result = self._classify(self._ocr_event(head), kind=kind)
+                    self.assertEqual(result["mode"], self.MODE, result)
+                    self.assertFalse(result["full_qualification"])
+                    self.assertEqual(result["reason_codes"], ["reviewed-" + self.MODE])
+                    self.assertEqual(
+                        result["selection"], dict(parser_entity["selection"], joined=joined)
+                    )
+                    self.assertFalse(result["selection"]["images"])
+                    self.assertEqual(
+                        result["required_tests"],
+                        [
+                            *scope.REQUIRED_TESTS,
+                            "tests/unit/test_entity.py",
+                            *scope.OCR_V3_REQUIRED_TESTS,
+                        ],
+                    )
+                    self.assertEqual(
+                        result["required_joined_tests"],
+                        list(scope.REQUIRED_JOINED_TESTS) if joined else [],
+                    )
+                    ocr = result["ocr_v3_product_core"]
+                    self.assertEqual(ocr["changed_paths"], sorted(self.FOUR))
+                    self.assertEqual(set(ocr["entries"]), set(self.FOUR))
+                    for path, row in ocr["entries"].items():
+                        self.assertEqual((row["mode"], row["kind"]), ("100644", "blob"))
+                        self.assertEqual(
+                            row["blob"], self._git("rev-parse", f"{head}:{path}").decode().strip()
+                        )
+                    self.assertEqual(ocr["type_check_packages"], ["packages/product-core/src"])
+                    self.assertTrue(ocr["pending_debt"])
+                    self.assertIn("product-core/Dockerfile image", " ".join(ocr["pending_debt"]))
+                    self.assertIn("no OCR accuracy, package, image", ocr["qualification"])
+                    boundary = result["unchanged_inputs"]["image_boundary"]
+                    self.assertIn("packaged wheel", boundary)
+                    self.assertIn("pending debt", boundary)
+                    self.assertNotIn("excludes compiler-runtime", boundary)
+                    for path in self.FOUR:
+                        self.assertIn(path, result["delta"]["python_paths"])
+                    self.assertEqual(
+                        set(result["entity_sources"]["entries"]), set(scope.ENTITY_PAYLOAD)
+                    )
+
+    def test_ocr_v3_requires_its_reviewed_test_in_the_change_set(self):
+        for subset in (self.FOUR[:1], self.FOUR[:3]):
+            with self.subTest(changed=subset):
+                self._refused(self._ocr_head(ocr=subset), {"ocr-test-missing"})
+        test_only = self._classify(self._ocr_event(self._ocr_head(ocr=self.FOUR[3:])))
+        self.assertEqual(test_only["mode"], self.MODE, test_only)
+        self.assertEqual(test_only["ocr_v3_product_core"]["changed_paths"], [self.FOUR[3]])
+        self._refused(
+            self._ocr_head(overrides={"tests/unit/test_product_core_bridge.py": None}),
+            {"unknown-path", "unsupported-change"},
+        )
+
+    def test_ocr_v3_adjacent_paths_fail_closed(self):
+        for path in (
+            "packages/product-core/src/akc_product_core/native_cir.py",
+            "packages/product-core/src/akc_product_core/api.py",
+            "packages/product-core/src/akc_product_core/contracts.py.extra",
+            "packages/product-core/src/akc_product_core/ocr/contracts.py",
+            "packages/product-core/src/akc_product_core/journal_v3.py",
+            "packages/product-core/tests/test_product_core_ocr_v3.py",
+            "tests/unit/test_product_core_ocr_v4.py",
+            "tests/unit/test_product_core_ocr_v3_extra.py",
+            "tests/integration/test_product_core_ocr_v3.py",
+            "infra/product-core/Dockerfile",
+        ):
+            with self.subTest(path=path):
+                self._refused(
+                    self._ocr_head(overrides={path: b"# Synthetic adjacent path\n"}),
+                    {"unknown-path"},
+                )
+
+    def test_ocr_v3_unsafe_modes_deletion_and_rename_fail_closed(self):
+        for path in self.FOUR:
+            for mode in ("100755", "120000", "160000"):
+                with self.subTest(path=path, mode=mode):
+                    head = self._ocr_head(overrides={path: b"unsafe"}, modes={path: mode})
+                    self._refused(head, {"unsupported-change"})
+        journal = "packages/product-core/src/akc_product_core/journal.py"
+        compiler = "packages/product-core/src/akc_product_core/compiler.py"
+        for overrides in (
+            {journal: None},
+            {compiler: None, "packages/product-core/src/akc_product_core/compiler_v3.py": b"x"},
+        ):
+            with self.subTest(changes=list(overrides)):
+                self._refused(
+                    self._ocr_head(overrides=overrides), {"unsupported-change", "unknown-path"}
+                )
+
+    def test_ocr_v3_never_rides_parser_only_or_entity_only_routes(self):
+        for parser, entity in ((True, False), (False, True)):
+            with self.subTest(parser=parser, entity=entity):
+                self._refused(
+                    self._ocr_head(parser=parser, entity=entity), {"unsupported-combination"}
+                )
+        self._refused(self._ocr_head(parser=False, entity=False), {"payload-mismatch"})
+
+    def test_ocr_v3_keeps_pinned_payload_identity_and_frozen_input_guards(self):
+        parser_path = next(iter(scope.PINNED_PAYLOAD))
+        entity_path = next(iter(scope.ENTITY_PAYLOAD))
+        for path, reasons in (
+            (parser_path, {"payload-mismatch"}),
+            (entity_path, {"entity-payload-mismatch"}),
+            ("uv.lock", {"unknown-path"}),
+            ("pyproject.toml", {"unknown-path"}),
+        ):
+            with self.subTest(path=path):
+                self._refused(self._ocr_head(overrides={path: b"unreviewed drift\n"}), reasons)
+        head = self._ocr_head()
+        event = self._ocr_event(head)
+        mismatch = deepcopy(event)
+        mismatch["pull_request"]["head"]["sha"] = scope.ANCHOR_COMMIT
+        fork = deepcopy(event)
+        fork["pull_request"]["head"]["repo"]["full_name"] = "foreign/repo"
+        for bad, reason in ((mismatch, "head-mismatch"), (fork, "fork-or-missing-repo")):
+            result = self._classify(bad)
+            self.assertEqual(result["mode"], "broad-required", result)
+            self.assertIn(reason, result["reason_codes"])
+            self.assertIsNone(result["ocr_v3_product_core"])
+        with patch.object(scope, "ANCHOR_TREE", "f" * 40):
+            result = self._classify(event)
+            self.assertIn("anchor-tree-mismatch", result["reason_codes"])
+            self.assertIsNone(result["ocr_v3_product_core"])
+        other = deepcopy(event)
+        other["number"] = other["pull_request"]["number"] = 92
+        self.assertEqual(self._classify(other)["mode"], "full")
+
+    def test_ocr_v3_actual_c051d2b0_tree_and_cli_receipt(self):
+        # The published commit that added the module; its tree is fixed history.
+        source_tree = self._git(
+            "rev-parse", "c051d2b0cd252686e03b2d1567e1a9867748e03e^{tree}"
+        ).decode().strip()
+        self.assertEqual(source_tree, "ccc4cb89434610f5daf242cf55bae0b35d11e596")
+        head = self._commit(source_tree)
+        self._git("update-ref", "refs/heads/synthetic-routing-fixture", head)
+        event = self._ocr_event(head)
+        result = self._classify(event, kind="focused")
+        self.assertEqual(result["mode"], self.MODE, result)
+        self.assertTrue(result["selection"]["joined"])
+        self.assertEqual(result["ocr_v3_product_core"]["changed_paths"], sorted(self.FOUR))
+        filename = self.temp / "ocr-v3-cli-event.json"
+        for accepted in (True, False):
+            with self.subTest(accepted=accepted):
+                if not accepted:
+                    event["pull_request"]["head"]["sha"] = "0" * 40
+                filename.write_text(json.dumps(event), encoding="utf-8")
+                output = self.temp / f"ocr-v3-cli-{accepted}.json"
+                ghoutput = self.temp / f"ocr-v3-gh-{accepted}.txt"
+                child = subprocess.run(  # noqa: S603 - fixed local classifier CLI, not CI.
+                    [
+                        sys.executable,
+                        str(SCRIPT),
+                        "--repo",
+                        str(self.repo),
+                        "--event-path",
+                        str(filename),
+                        "--event-name",
+                        "pull_request",
+                        "--workflow-kind",
+                        "focused",
+                        "--output",
+                        str(output),
+                        "--github-output",
+                        str(ghoutput),
+                    ],
+                    env=self.environment,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    check=False,
+                )
+                self.assertEqual(child.returncode, 0 if accepted else 1, child.stderr)
+                record = json.loads(output.read_text(encoding="utf-8"))
+                if accepted:
+                    values = dict(
+                        line.split("=", 1) for line in ghoutput.read_text().splitlines()
+                    )
+                    self.assertEqual(values["mode"], self.MODE)
+                    self.assertEqual(values["full_qualification"], "false")
+                    self.assertEqual(values["joined"], "true")
+                    for name in ("images", "web", "db", "model", "dependency_audit"):
+                        self.assertEqual(values[name], "false")
+                else:
+                    self.assertFalse(ghoutput.exists())
+                    self.assertEqual(record["mode"], "broad-required")
+                    self.assertIsNone(record["ocr_v3_product_core"])

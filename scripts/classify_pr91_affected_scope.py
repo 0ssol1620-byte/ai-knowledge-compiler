@@ -44,7 +44,30 @@ ENTITY_REQUIRED_TESTS = (
     "tests/unit/test_pr91_affected_scope.py",
     "tests/unit/test_pr91_affected_workflow_contract.py",
 )
-NARROW_MODES = {"parser-delta", "entity-delta", "parser-entity-delta"}
+# OCR v3 product-core is its own finite scope, never the parser/entity route. Product-core
+# ships in the packaged wheel and the product-core image, so the compiler-runtime
+# wheel-exclusion reasoning never covers it; its omitted package/image checks stay debt.
+OCR_V3_SOURCE_PATHS = (
+    "packages/product-core/src/akc_product_core/contracts.py",
+    "packages/product-core/src/akc_product_core/compiler.py",
+    "packages/product-core/src/akc_product_core/journal.py",
+    "tests/unit/test_product_core_ocr_v3.py",
+)
+OCR_V3_TEST_PATH = "tests/unit/test_product_core_ocr_v3.py"
+OCR_V3_REQUIRED_TESTS = (
+    OCR_V3_TEST_PATH,
+    "tests/unit/test_product_core_journal.py",
+    "tests/unit/test_product_core_journal_maintenance.py",
+    "tests/unit/test_product_core_region_anchors.py",
+    "tests/unit/test_product_core_bridge.py",
+)
+OCR_V3_MODE = "parser-entity-ocr-v3-delta"
+OCR_V3_PENDING_DEBT = (
+    "packaged wheel build containing akc_product_core",
+    "infra/product-core/Dockerfile image build, scan and SBOM",
+    "application and GPU worker images, web, DB, model and dependency-audit jobs",
+)
+NARROW_MODES = {"parser-delta", "entity-delta", "parser-entity-delta", OCR_V3_MODE}
 # Exact repository source registration; no prefix/wildcard or runtime qualification.
 JOINED_SOURCE_PATHS = (
     "tests/e2e/joined/g1-11-runtime-producer.mjs",
@@ -204,7 +227,7 @@ def _selection(mode: str, joined: bool = False) -> dict:
         "web": full,
         "db": full,
         "model": full,
-        "joined": full or (mode in {"parser-delta", "parser-entity-delta"} and joined),
+        "joined": full or (mode in {"parser-delta", "parser-entity-delta", OCR_V3_MODE} and joined),
         "security_core": accepted,
         "dependency_audit": full,
         "codeql_languages": ["python", "javascript-typescript"] if full else ["python"],
@@ -231,6 +254,7 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
         "required_joined_tests": [],
         "joined_sources": None,
         "entity_sources": None,
+        "ocr_v3_product_core": None,
         "qualification_semantics": "Selection only; no test/audit/image/release pass is inherited",
         "reviewed_payload_tree_reference": REVIEWED_TREE_REFERENCE,
     }
@@ -304,6 +328,7 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                     | CI_CONTROL_PATHS
                     | {K06_TEST_DELTA_PATH}
                     | set(JOINED_SOURCE_PATHS)
+                    | set(OCR_V3_SOURCE_PATHS)
                 )
                 if not changes:
                     raise EvidenceError("empty-delta", "No reviewed parser successor delta")
@@ -400,6 +425,48 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                         "Images are omitted by bounded routing; full image/release "
                         "qualification remains unrun."
                     )
+                ocr_changes = [item for item in changes if item["path"] in OCR_V3_SOURCE_PATHS]
+                if ocr_changes:
+                    # Registered only on the route PR91 actually carries; any other
+                    # combination stays unregistered and therefore broad-required.
+                    if not (parser_active and entity_changes):
+                        raise EvidenceError(
+                            "unsupported-combination",
+                            "OCR v3 product-core scope requires the parser and entity routes",
+                        )
+                    if OCR_V3_TEST_PATH not in {item["path"] for item in ocr_changes}:
+                        raise EvidenceError(
+                            "ocr-test-missing",
+                            "OCR v3 product-core change set lacks its reviewed test",
+                        )
+                    ocr_sources = _entries(repo, head, OCR_V3_SOURCE_PATHS)
+                    if any(
+                        ocr_sources.get(path, {}).get("mode") != "100644"
+                        or ocr_sources.get(path, {}).get("kind") != "blob"
+                        for path in OCR_V3_SOURCE_PATHS
+                    ):
+                        raise EvidenceError(
+                            "ocr-source-missing",
+                            "Finite OCR v3 product-core source set must be regular and complete",
+                        )
+                    required = list(dict.fromkeys([*required, *OCR_V3_REQUIRED_TESTS]))
+                    report["required_tests"] = required
+                    report["ocr_v3_product_core"] = {
+                        "changed_paths": sorted(item["path"] for item in ocr_changes),
+                        "entries": ocr_sources,
+                        "required_tests": list(OCR_V3_REQUIRED_TESTS),
+                        "type_check_packages": ["packages/product-core/src"],
+                        "pending_debt": list(OCR_V3_PENDING_DEBT),
+                        "qualification": (
+                            "Regular source presence only; no OCR accuracy, package, image "
+                            "or joined pass is inherited"
+                        ),
+                    }
+                    report["unchanged_inputs"]["image_boundary"] = (
+                        "Build configuration equality only. Product-core ships in the packaged "
+                        "wheel and the product-core image, so wheel exclusion does not apply; "
+                        "package and image qualification are pending debt, not executed here."
+                    )
                 tests = _entries(repo, head, required)
                 if any(
                     tests.get(path, {}).get("mode") != "100644"
@@ -442,7 +509,9 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
                         ),
                     }
                 mode = (
-                    ("parser-entity-delta" if parser_active else "entity-delta")
+                    OCR_V3_MODE
+                    if ocr_changes
+                    else ("parser-entity-delta" if parser_active else "entity-delta")
                     if entity_changes
                     else "parser-delta"
                 )
@@ -480,6 +549,7 @@ def classify(repo: Path, event: dict, event_name: str, workflow_kind: str) -> di
         )
     if report["mode"] == "broad-required":
         report["entity_sources"] = None
+        report["ocr_v3_product_core"] = None
     return report
 
 

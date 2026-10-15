@@ -63,7 +63,13 @@ def checked_fixture_script(path: Path, root: Path, expected: str) -> str:
 
 def checked_bash_environment(environment: dict[str, str]) -> dict[str, str]:
     controls = {
-        "SCOPE_MODE": {"full", "parser-delta", "parser-entity-delta", "entity-delta"},
+        "SCOPE_MODE": {
+            "full",
+            "parser-delta",
+            "parser-entity-delta",
+            "entity-delta",
+            "parser-entity-ocr-v3-delta",
+        },
         "MOCK_MYPY_EXIT": {"0", "23"},
         "TYPE_OUTCOME": {"success", "failure", "skipped", "cancelled", ""},
     }
@@ -1419,3 +1425,224 @@ class TestK15FiniteWorkflowAdmission(unittest.TestCase):
                             else ["packages/compiler-runtime/src", "packages/cir-python/src"]
                         )
                         self.assertEqual([x for x in args if x.startswith("packages/")], expected)
+
+
+OCR_V3_MODE = "parser-entity-ocr-v3-delta"
+OCR_V3_TESTS = [
+    "tests/unit/test_product_core_ocr_v3.py",
+    "tests/unit/test_product_core_journal.py",
+    "tests/unit/test_product_core_journal_maintenance.py",
+    "tests/unit/test_product_core_region_anchors.py",
+    "tests/unit/test_product_core_bridge.py",
+]
+
+
+class TestOcrV3ProductCoreWorkflowAdmission(unittest.TestCase):
+    """The OCR v3 product-core mode: its own selection, omitted jobs are pending debt."""
+
+    def classifier(self):
+        path = ROOT / "scripts/classify_pr91_affected_scope.py"
+        spec = importlib.util.spec_from_file_location("pr91_scope_classifier_ocr_v3", path)
+        if spec is None or spec.loader is None:
+            raise AssertionError("Classifier source is unavailable")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def step_argv(self, label: str, mock_exit: str = "0") -> tuple[int, list[str]]:
+        git = shutil.which("git")
+        self.assertIsNotNone(git, "Existing Git/Bash required; no installation fallback")
+        bash = (
+            Path(git).resolve().parent.parent / "bin/bash.exe"
+            if os.name == "nt"
+            else Path("/bin/bash")
+        )
+        bash_executable = existing_executable(bash, "bash")
+        block = required_job("pr91-focused-qualification", "python-focused")
+        piece = block.split("      - name: " + label + "\n", 1)[1].split("      - name:", 1)[0]
+        body = piece.split("        run: |\n", 1)[1]
+        script = "\n".join(line[10:] for line in body.splitlines()) + "\n"
+        with tempfile.TemporaryDirectory(prefix="ocr-v3-command-selector-") as directory:
+            root = Path(directory)
+            for name in ORIGINAL_NINE + SHARED_SEVEN + ["tests/unit/test_entity.py", *OCR_V3_TESTS]:
+                target = root / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_text("# empty synthetic command-selection input\n")
+            (root / "evidence").mkdir()
+            filename = root / "type.sh"
+            fixture = (
+                'python() { printf "%s\\n" "$@" > "$ARGV_FILE"; return "$MOCK_MYPY_EXIT"; }\n'
+                + script
+            )
+            filename.write_text(fixture, encoding="utf-8")
+            environment = checked_bash_environment(
+                dict(
+                    os.environ,
+                    SCOPE_MODE=OCR_V3_MODE,
+                    EVIDENCE_DIR="evidence",
+                    ARGV_FILE="argv.txt",
+                    MOCK_MYPY_EXIT=mock_exit,
+                )
+            )
+            child = subprocess.run(  # noqa: S603 - installed Bash, owned reviewed fragment
+                [
+                    bash_executable,
+                    "--noprofile",
+                    "--norc",
+                    checked_fixture_script(filename, root, fixture),
+                ],
+                cwd=root,
+                env=environment,
+                capture_output=True,
+                text=True,
+                shell=False,
+                timeout=10,
+                check=False,
+            )
+            self.assertLessEqual(len(child.stdout) + len(child.stderr), 65536)
+            return child.returncode, (root / "argv.txt").read_text().splitlines()
+
+    def test_ocr_v3_every_aggregate_accepts_mode_and_reports_omitted_jobs_as_pending(self):
+        security_selected = {"codeql", "filesystem-and-iac", "ip-privilege-guard"}
+        for workflow, job, ids, selected, joined, extra in (
+            ("ci", "affected-scope", CI_JOBS, set(), "false", {}),
+            ("model-ci", "affected-scope", MODEL_JOBS, set(), "false", {}),
+            ("security", "affected-scope", SECURITY_JOBS, security_selected, "false", {}),
+            (
+                "security",
+                "affected-scope",
+                SECURITY_JOBS,
+                security_selected - {"codeql"},
+                "false",
+                {"GHAS_AVAILABLE": "false"},
+            ),
+            ("joined-e2e", "affected-scope", ["joined-e2e"], {"joined-e2e"}, "true", {}),
+            ("joined-e2e", "affected-scope", ["joined-e2e"], set(), "false", {}),
+            (
+                "pr91-focused-qualification",
+                "focused-qualification",
+                FOCUSED_JOBS,
+                {"python-focused"},
+                "false",
+                {},
+            ),
+        ):
+            with self.subTest(workflow=workflow, selected=sorted(selected), extra=extra):
+                code = gate_code(workflow, job)
+                self.assertIn("every job in pending_debt is open debt, not a pass", code)
+                needs = outcomes(ids, OCR_V3_MODE, selected)
+                needs["scope"]["outputs"]["joined"] = joined
+                result, report = run_gate(code, OCR_V3_MODE, needs, **extra)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertFalse(report["full_qualified"])
+                self.assertNotEqual(report["qualification"], "full-current-run")
+                self.assertEqual(report["pending_debt"], sorted(set(ids) - selected))
+                for name in ids:
+                    self.assertEqual(
+                        report["outcomes"][name]["execution"],
+                        "executed-current-run" if name in selected else "not-executed",
+                    )
+                legacy = outcomes(ids, "parser-entity-delta", selected)
+                legacy["scope"]["outputs"]["joined"] = joined
+                result, previous = run_gate(code, "parser-entity-delta", legacy, **extra)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertNotIn("pending_debt", previous)
+                for broken in ("selected-skipped", "omitted-success", "scope-failure", "mismatch"):
+                    bad = json.loads(json.dumps(needs))
+                    if broken == "selected-skipped":
+                        if not selected:
+                            continue
+                        bad[sorted(selected)[0]]["result"] = "skipped"
+                    elif broken == "omitted-success":
+                        omitted = set(ids) - selected
+                        if not omitted:
+                            continue
+                        bad[sorted(omitted)[0]]["result"] = "success"
+                    elif broken == "scope-failure":
+                        bad["scope"]["result"] = "failure"
+                    else:
+                        bad["scope"]["outputs"]["mode"] = "parser-entity-delta"
+                    failed, receipt = run_gate(code, OCR_V3_MODE, bad, **extra)
+                    self.assertEqual(failed.returncode, 1, broken)
+                    self.assertIsNone(receipt)
+
+    def test_ocr_v3_joined_flag_is_required_and_entity_only_rule_is_unchanged(self):
+        code = gate_code("joined-e2e")
+        for flag in (None, "", "TRUE", "unreviewed"):
+            with self.subTest(flag=flag):
+                needs = outcomes(["joined-e2e"], OCR_V3_MODE, set())
+                if flag is None:
+                    del needs["scope"]["outputs"]["joined"]
+                else:
+                    needs["scope"]["outputs"]["joined"] = flag
+                result, report = run_gate(code, OCR_V3_MODE, needs)
+                self.assertEqual(result.returncode, 1)
+                self.assertIsNone(report)
+        block = required_job("joined-e2e", "joined-e2e")
+        condition = re.findall(r"^    if: ([^\n]+)$", block, re.M)
+        self.assertEqual(len(condition), 1)
+        for result in ("success", "failure", "cancelled", None):
+            for joined in ("true", "false", "invalid", None):
+                self.assertEqual(
+                    joined_condition_selected(condition[0], result, OCR_V3_MODE, joined),
+                    result == "success" and joined == "true",
+                    (result, joined),
+                )
+
+    def test_ocr_v3_focused_python_runs_ocr_tests_product_core_mypy_and_shared(self):
+        classifier = self.classifier()
+        self.assertEqual(list(classifier.OCR_V3_REQUIRED_TESTS), OCR_V3_TESTS)
+        self.assertEqual(classifier.OCR_V3_MODE, OCR_V3_MODE)
+        block = required_job("pr91-focused-qualification", "python-focused")
+        self.assertIn(f"needs.scope.outputs.mode == '{OCR_V3_MODE}'", block)
+        self.assertIn("if: needs.scope.outputs.mode != 'entity-delta'", block)
+        for label in (
+            "Collect the selected test tree (no execution)",
+            "Ruff on the Python paths this PR changes",
+        ):
+            step = block.split("      - name: " + label + "\n", 1)[1].split("      - name:", 1)[0]
+            self.assertIn(f'"$SCOPE_MODE" == "{OCR_V3_MODE}" ]]; then', step)
+            self.assertIn(f'"parser-entity-delta", "{OCR_V3_MODE}"}}', step)
+        code, argv = self.step_argv("Run only the PR91-affected test files")
+        self.assertEqual(code, 0)
+        self.assertEqual(
+            [x for x in argv if x.startswith(("tests/", "services/"))],
+            [*ORIGINAL_NINE, "tests/unit/test_entity.py", *OCR_V3_TESTS],
+        )
+        code, argv = self.step_argv("Run shared parser pipeline and affected routing contracts")
+        self.assertEqual(code, 0)
+        self.assertEqual([x for x in argv if x.startswith("tests/")], SHARED_SEVEN)
+        for mock_exit in ("0", "23"):
+            code, argv = self.step_argv("Type check affected compiler and CIR packages", mock_exit)
+            self.assertEqual(code, int(mock_exit))
+            self.assertEqual(
+                argv,
+                [
+                    "-m",
+                    "uv",
+                    "run",
+                    "--locked",
+                    "--extra",
+                    "dev",
+                    "mypy",
+                    "packages/compiler-runtime/src",
+                    "packages/cir-python/src",
+                    "packages/product-core/src",
+                ],
+            )
+
+    def test_ocr_v3_omitted_image_web_db_model_jobs_stay_full_only(self):
+        for workflow, ids in (
+            ("ci", CI_JOBS),
+            ("model-ci", MODEL_JOBS),
+            ("pr91-focused-qualification", FOCUSED_JOBS[1:]),
+            ("security", ["dependency-review", "dependency-audit", "application-images"]),
+        ):
+            for job in ids:
+                with self.subTest(workflow=workflow, job=job):
+                    block = required_job(workflow, job)
+                    self.assertIn("needs.scope.outputs.mode == 'full'", block)
+                    self.assertNotIn(OCR_V3_MODE, block)
+        for workflow in ("ci", "security", "model-ci"):
+            block = required_job(workflow, "full-qualification")
+            self.assertNotIn(OCR_V3_MODE, block)

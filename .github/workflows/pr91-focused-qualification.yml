@@ -23,7 +23,7 @@ concurrency:
 
 env:
   EXPECTED_CORE_SHA: ${{ github.event.pull_request.head.sha }}
-  FOUNDATION_PIN_SHA: 5e174884e52ba24be8f6159b4fb044922e3d705b
+  FOUNDATION_PIN_SHA: 1ea4750c01b778d457b38cde85e3d49fda4ad38c
 
 jobs:
   scope:
@@ -73,7 +73,7 @@ jobs:
 
   python-focused:
     needs: scope
-    if: needs.scope.result == 'success' && (needs.scope.outputs.mode == 'parser-delta' || needs.scope.outputs.mode == 'entity-delta' || needs.scope.outputs.mode == 'parser-entity-delta' || needs.scope.outputs.mode == 'full') && github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
+    if: needs.scope.result == 'success' && (needs.scope.outputs.mode == 'parser-delta' || needs.scope.outputs.mode == 'entity-delta' || needs.scope.outputs.mode == 'parser-entity-delta' || needs.scope.outputs.mode == 'parser-entity-ocr-v3-delta' || needs.scope.outputs.mode == 'full') && github.event.pull_request.number == 91 && github.event.pull_request.head.repo.full_name == github.repository
     env:
       SCOPE_MODE: ${{ needs.scope.outputs.mode }}
     name: Python focused (${{ matrix.python-version }})
@@ -143,7 +143,7 @@ jobs:
         run: |
           set -euo pipefail
           grep -qF -- '--import-mode=importlib' pyproject.toml
-          if [[ "$SCOPE_MODE" == "parser-delta" || "$SCOPE_MODE" == "entity-delta" || "$SCOPE_MODE" == "parser-entity-delta" ]]; then
+          if [[ "$SCOPE_MODE" == "parser-delta" || "$SCOPE_MODE" == "entity-delta" || "$SCOPE_MODE" == "parser-entity-delta" || "$SCOPE_MODE" == "parser-entity-ocr-v3-delta" ]]; then
             python - <<'PY' 2>&1 | tee "$EVIDENCE_DIR/collect-only.log"
           import json
           import os
@@ -151,7 +151,7 @@ jobs:
           import sys
           from pathlib import Path
           report = json.loads(Path(os.environ["EVIDENCE_DIR"], "affected-scope.json").read_text())
-          if report["mode"] not in {"parser-delta", "entity-delta", "parser-entity-delta"} or report["identity"]["head_commit"] != os.environ["EXPECTED_CORE_SHA"]:
+          if report["mode"] not in {"parser-delta", "entity-delta", "parser-entity-delta", "parser-entity-ocr-v3-delta"} or report["identity"]["head_commit"] != os.environ["EXPECTED_CORE_SHA"]:
               raise ValueError("Python collection scope/head mismatch")
           files = report["required_tests"]
           if not files or len(files) != len(set(files)) or any(not Path(f).is_file() for f in files):
@@ -182,6 +182,9 @@ jobs:
             files=(tests/unit/test_entity.py)
           elif [[ "$SCOPE_MODE" == "parser-entity-delta" ]]; then
             files+=(tests/unit/test_entity.py)
+          elif [[ "$SCOPE_MODE" == "parser-entity-ocr-v3-delta" ]]; then
+            # OCR v3 product-core scope: its own test plus the direct journal/region/bridge tests.
+            files+=(tests/unit/test_entity.py tests/unit/test_product_core_ocr_v3.py tests/unit/test_product_core_journal.py tests/unit/test_product_core_journal_maintenance.py tests/unit/test_product_core_region_anchors.py tests/unit/test_product_core_bridge.py)
           fi
           missing=0
           for file in "${files[@]}"; do
@@ -201,14 +204,14 @@ jobs:
         run: |
           set -euo pipefail
           lint_basis="$BASE_SHA"
-          if [[ "$SCOPE_MODE" == "parser-delta" || "$SCOPE_MODE" == "entity-delta" || "$SCOPE_MODE" == "parser-entity-delta" ]]; then
+          if [[ "$SCOPE_MODE" == "parser-delta" || "$SCOPE_MODE" == "entity-delta" || "$SCOPE_MODE" == "parser-entity-delta" || "$SCOPE_MODE" == "parser-entity-ocr-v3-delta" ]]; then
             lint_basis=621b7d692d21ca73e133010e7e234cc0ffe28086
             python - <<'PY'
           import json
           import os
           from pathlib import Path
           report = json.loads(Path(os.environ["EVIDENCE_DIR"], "affected-scope.json").read_text())
-          if report["mode"] not in {"parser-delta", "entity-delta", "parser-entity-delta"} or report["identity"]["head_commit"] != os.environ["EXPECTED_CORE_SHA"]:
+          if report["mode"] not in {"parser-delta", "entity-delta", "parser-entity-delta", "parser-entity-ocr-v3-delta"} or report["identity"]["head_commit"] != os.environ["EXPECTED_CORE_SHA"]:
               raise ValueError("Ruff scope/head mismatch")
           files = report["delta"]["python_paths"]
           if not files or len(files) != len(set(files)):
@@ -263,6 +266,9 @@ jobs:
           packages=(packages/compiler-runtime/src packages/cir-python/src)
           if [[ "$SCOPE_MODE" == "entity-delta" ]]; then
             packages=(packages/cir-python/src)
+          fi
+          if [[ "$SCOPE_MODE" == "parser-entity-ocr-v3-delta" ]]; then
+            packages+=(packages/product-core/src)
           fi
           python -m uv run --locked --extra dev mypy "${packages[@]}" \
             2>&1 | tee "$EVIDENCE_DIR/type.log"
@@ -846,7 +852,7 @@ jobs:
     timeout-minutes: 75
     env:
       FOUNDATION_REPOSITORY: 0ssol1620-byte/tavonel-saas-foundation
-      FOUNDATION_REF: 5e174884e52ba24be8f6159b4fb044922e3d705b
+      FOUNDATION_REF: 1ea4750c01b778d457b38cde85e3d49fda4ad38c
       SUPABASE_INTERNAL_IMAGE_REGISTRY: docker.io
       # Same digest pin as Foundation's quarantine-sidecar/cdr-cloudrun/service.yaml (asserted below).
       CLAMAV_IMAGE: clamav/clamav:1.5.4
@@ -901,7 +907,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           repository: ${{ env.FOUNDATION_REPOSITORY }}
-          ref: 5e174884e52ba24be8f6159b4fb044922e3d705b
+          ref: 1ea4750c01b778d457b38cde85e3d49fda4ad38c
           path: foundation
           persist-credentials: false
 
@@ -1487,7 +1493,7 @@ jobs:
                   raise ValueError("current needs keys differ from the declared job set")
               if needs["scope"].get("result") != "success":
                   raise ValueError("scope classification did not succeed")
-              if mode not in {"full", "parser-delta", "entity-delta", "parser-entity-delta"}:
+              if mode not in {"full", "parser-delta", "entity-delta", "parser-entity-delta", "parser-entity-ocr-v3-delta"}:
                   raise ValueError("scope is unknown or requires a separately authorized broad run")
               if needs["scope"].get("outputs", {}).get("mode") != mode:
                   raise ValueError("scope output and aggregate mode differ")
@@ -1512,12 +1518,16 @@ jobs:
 
               report.update({"run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
                              "tested_head": os.environ["TESTED_HEAD"], "qualification": "focused-only-not-full-release"})
+              if mode == "parser-entity-ocr-v3-delta":
+                  report["pending_debt"] = sorted(job for job, row in report["outcomes"].items() if row["execution"] == "not-executed")
               Path("artifacts").mkdir(exist_ok=True)
               Path("artifacts/focused-qualification.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
               with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
                   summary.write("## PR91 focused qualification (not broad CI, security or release)\n" + json.dumps(report, indent=2) + "\n")
-                  if mode in {"parser-delta", "entity-delta", "parser-entity-delta"}:
+                  if mode in {"parser-delta", "entity-delta", "parser-entity-delta", "parser-entity-ocr-v3-delta"}:
                       summary.write("Omitted jobs were not executed. This result does not qualify a full release or inherit historical PASS.\n")
+                  if mode == "parser-entity-ocr-v3-delta":
+                      summary.write("OCR v3 product-core ships in the packaged wheel and image; every job in pending_debt is open debt, not a pass.\n")
               print(json.dumps(report, sort_keys=True))
           PY
       - name: Preserve current outcome receipt

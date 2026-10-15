@@ -53,6 +53,23 @@ are recorded as not executed. Failed/cancelled/missing jobs cannot become a pass
 The existing focused aggregate name is retained, and its receipt always states that
 focused qualification alone is insufficient for full release qualification.
 
+## OCR v3 product-core scope
+
+`parser-entity-ocr-v3-delta` is a separate finite registration, not the parser/entity route:
+exactly `packages/product-core/src/akc_product_core/{contracts,compiler,journal}.py` and
+`tests/unit/test_product_core_ocr_v3.py`, regular files only, with that test required in the
+change set. It is admitted only on top of the pinned parser and entity payloads. Any other
+combination, adjacent path, deletion, rename or mode change stays `broad-required`, and every
+parser/entity payload, unchanged-input, ancestry and identity check still applies.
+
+PR91 focused adds the OCR v3 test and the direct journal, journal-maintenance, region-anchor
+and bridge tests to the parser and entity files, and adds `packages/product-core/src` to mypy.
+Changed-path Ruff and the seven shared routing files run as before. Security runs its existing
+core set. Joined E2E runs only when joined sources are selected. Product-core ships in the
+packaged wheel and in its own image, so the compiler-runtime wheel-exclusion argument does not
+apply. Each aggregate receipt lists every omitted job as `pending_debt`, and
+`full_qualification` stays false. No workflow builds `infra/product-core/Dockerfile` in any mode.
+
 ## Full prerequisite and release guard
 
 CI, Security, and Model CI each have an exact `Full qualification` job. It runs only after

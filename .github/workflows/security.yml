@@ -287,7 +287,7 @@ jobs:
                   raise ValueError("current needs keys differ from the declared job set")
               if needs["scope"].get("result") != "success":
                   raise ValueError("scope classification did not succeed")
-              if mode not in {"full", "parser-delta", "entity-delta", "parser-entity-delta"}:
+              if mode not in {"full", "parser-delta", "entity-delta", "parser-entity-delta", "parser-entity-ocr-v3-delta"}:
                   raise ValueError("scope is unknown or requires a separately authorized broad run")
               if needs["scope"].get("outputs", {}).get("mode") != mode:
                   raise ValueError("scope output and aggregate mode differ")
@@ -315,12 +315,16 @@ jobs:
 
               report.update({"run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
                              "tested_head": os.environ["TESTED_HEAD"], "qualification": "full-current-run" if mode == "full" else "affected-only-not-full-qualified"})
+              if mode == "parser-entity-ocr-v3-delta":
+                  report["pending_debt"] = sorted(job for job, row in report["outcomes"].items() if row["execution"] == "not-executed")
               Path("artifacts").mkdir(exist_ok=True)
               Path("artifacts/affected-scope.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
               with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
                   summary.write("## Security selected scope (not full qualification)\n" + json.dumps(report, indent=2) + "\n")
-                  if mode in {"parser-delta", "entity-delta", "parser-entity-delta"}:
+                  if mode in {"parser-delta", "entity-delta", "parser-entity-delta", "parser-entity-ocr-v3-delta"}:
                       summary.write("Omitted jobs were not executed. This result does not qualify a full release or inherit historical PASS.\n")
+                  if mode == "parser-entity-ocr-v3-delta":
+                      summary.write("OCR v3 product-core ships in the packaged wheel and image; every job in pending_debt is open debt, not a pass.\n")
               print(json.dumps(report, sort_keys=True))
           PY
       - name: Preserve current outcome receipt

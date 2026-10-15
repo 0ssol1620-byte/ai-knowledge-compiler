@@ -3,7 +3,7 @@
 # to review/activate in the UI and API/MCP/CLI answers that cite the uploaded document.
 #
 # The private Core repository runs it; the public Foundation repository is checked out at a pinned ref
-# (input `foundation_ref`, default the masterplan checkpoint branch) and its SHA is recorded in the
+# (input `foundation_ref`, default the reviewed PR141 successor SHA) and its SHA is recorded in the
 # ledger. Everything is ephemeral and on this runner: disposable Supabase stack, SeaweedFS, generated
 # TLS, signing keys and HMACs created inside the harness process. No repository secret, no paid
 # service, no customer data. Hops that are simulated (R2 event/queue, R2 binding, Vercel cron, TLS
@@ -16,7 +16,7 @@ on:
       foundation_ref:
         description: "Foundation (0ssol1620-byte/tavonel-saas-foundation) ref or SHA to check out"
         required: false
-        default: codex/masterplan-checkpoint-2026-09-30
+        default: 1ea4750c01b778d457b38cde85e3d49fda4ad38c
   pull_request:
     paths:
       - ".github/workflows/joined-e2e.yml"
@@ -32,7 +32,7 @@ concurrency:
 
 env:
   FOUNDATION_REPOSITORY: 0ssol1620-byte/tavonel-saas-foundation
-  FOUNDATION_REF: ${{ inputs.foundation_ref || 'codex/masterplan-checkpoint-2026-09-30' }}
+  FOUNDATION_REF: ${{ inputs.foundation_ref || '1ea4750c01b778d457b38cde85e3d49fda4ad38c' }}
   SUPABASE_INTERNAL_IMAGE_REGISTRY: docker.io
   # Same digest pin as Foundation's quarantine-sidecar/cdr-cloudrun/service.yaml (asserted below).
   CLAMAV_IMAGE: clamav/clamav:1.5.4
@@ -92,7 +92,7 @@ jobs:
 
   joined-e2e:
     needs: scope
-    if: needs.scope.result == 'success' && (needs.scope.outputs.mode == 'full' || ((needs.scope.outputs.mode == 'parser-delta' || needs.scope.outputs.mode == 'parser-entity-delta') && needs.scope.outputs.joined == 'true'))
+    if: needs.scope.result == 'success' && (needs.scope.outputs.mode == 'full' || ((needs.scope.outputs.mode == 'parser-delta' || needs.scope.outputs.mode == 'parser-entity-delta' || needs.scope.outputs.mode == 'parser-entity-ocr-v3-delta') && needs.scope.outputs.joined == 'true'))
     name: Joined upload -> CDR -> OCR -> Core -> review -> consumers
     runs-on: ubuntu-24.04
     timeout-minutes: 75
@@ -202,7 +202,7 @@ jobs:
         timeout-minutes: 3
         working-directory: foundation
         env:
-          QUALIFIED_FOUNDATION_SOURCE_SHA: 5e174884e52ba24be8f6159b4fb044922e3d705b
+          QUALIFIED_FOUNDATION_SOURCE_SHA: 1ea4750c01b778d457b38cde85e3d49fda4ad38c
         run: |
           set -euo pipefail
           record="$GITHUB_WORKSPACE/core/output/logs/foundation-draft-staging.log"
@@ -625,7 +625,7 @@ jobs:
                   raise ValueError("current needs keys differ from the declared job set")
               if needs["scope"].get("result") != "success":
                   raise ValueError("scope classification did not succeed")
-              if mode not in {"full", "parser-delta", "entity-delta", "parser-entity-delta"}:
+              if mode not in {"full", "parser-delta", "entity-delta", "parser-entity-delta", "parser-entity-ocr-v3-delta"}:
                   raise ValueError("scope is unknown or requires a separately authorized broad run")
               if needs["scope"].get("outputs", {}).get("mode") != mode:
                   raise ValueError("scope output and aggregate mode differ")
@@ -646,7 +646,7 @@ jobs:
               exemptions = set()
               needs = json.loads(os.environ["NEEDS_JSON"])
               joined = needs.get("scope", {}).get("outputs", {}).get("joined")
-              if mode in {"parser-delta", "entity-delta", "parser-entity-delta"} and joined not in {"true", "false"}:
+              if mode in {"parser-delta", "entity-delta", "parser-entity-delta", "parser-entity-ocr-v3-delta"} and joined not in {"true", "false"}:
                   raise ValueError("parser-delta joined selection flag is absent or invalid")
               if mode == "entity-delta" and joined != "false":
                   raise ValueError("entity-only joined selection must be false")
@@ -656,12 +656,16 @@ jobs:
 
               report.update({"run_id": os.environ["GITHUB_RUN_ID"], "run_attempt": os.environ["GITHUB_RUN_ATTEMPT"],
                              "tested_head": os.environ["TESTED_HEAD"], "qualification": "full-current-run" if mode == "full" else "affected-only-not-full-qualified"})
+              if mode == "parser-entity-ocr-v3-delta":
+                  report["pending_debt"] = sorted(job for job, row in report["outcomes"].items() if row["execution"] == "not-executed")
               Path("artifacts").mkdir(exist_ok=True)
               Path("artifacts/affected-scope.json").write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
               with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
                   summary.write("## Joined scope: selected current outcomes\n" + json.dumps(report, indent=2) + "\n")
-                  if mode in {"parser-delta", "entity-delta", "parser-entity-delta"}:
+                  if mode in {"parser-delta", "entity-delta", "parser-entity-delta", "parser-entity-ocr-v3-delta"}:
                       summary.write("Omitted jobs were not executed. This result does not qualify a full release or inherit historical PASS.\n")
+                  if mode == "parser-entity-ocr-v3-delta":
+                      summary.write("OCR v3 product-core ships in the packaged wheel and image; every job in pending_debt is open debt, not a pass.\n")
               print(json.dumps(report, sort_keys=True))
           PY
       - name: Preserve current outcome receipt
