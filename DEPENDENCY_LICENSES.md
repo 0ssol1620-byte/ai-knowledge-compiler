@@ -2,7 +2,7 @@
 
 | Name                       | Version/source   | License observed              | Bundled | Use                        |
 | -------------------------- | ---------------- | ----------------------------- | ------- | -------------------------- |
-| Next.js                    | `16.2.12`        | MIT                           | Yes     | App Router                 |
+| Next.js                    | `16.3.6`         | MIT                           | Yes     | App Router                 |
 | React                      | `19.2.8`         | MIT                           | Yes     | UI runtime                 |
 | Phosphor Icons             | `2.1.10`         | MIT                           | Yes     | Consistent interface icons |
 | Wanted Sans Variable       | `1.0.3`          | SIL OFL 1.1                   | Yes     | Latin and Korean typeface  |

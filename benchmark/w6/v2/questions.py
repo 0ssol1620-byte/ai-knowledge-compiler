@@ -50,7 +50,9 @@ def generate_question(
         "question": question,
         "gold_answer": str(parsed.get("gold_answer", "")).strip(),
         "gold_value_exact": gold_value,
-        "key_facts": [str(fact).strip() for fact in parsed.get("key_facts", []) if str(fact).strip()],
+        "key_facts": [
+            str(fact).strip() for fact in parsed.get("key_facts", []) if str(fact).strip()
+        ],
     }
 
 

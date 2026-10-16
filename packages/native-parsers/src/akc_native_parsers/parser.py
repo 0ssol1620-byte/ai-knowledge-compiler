@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from akc_cir import CanonicalDocument
 
+from .csv_parser import parse_csv
 from .docx_parser import parse_docx
 from .html_parser import parse_html
+from .hwpx_parser import parse_hwpx
 from .models import CirBuilder, ParseContext, ParserLimits, StructuredParseError
 from .pptx_parser import parse_pptx
 from .security import SUPPORTED_EXTENSIONS as _SUPPORTED_EXTENSIONS
@@ -27,7 +29,8 @@ def parse_non_pdf_to_cir(
     """Validate and parse one native non-PDF source into immutable CIR.
 
     The function performs no network calls, subprocess execution, formula
-    calculation, macro execution, or archive extraction.
+    calculation, macro execution, external-link resolution, decryption, or
+    archive extraction.
     """
 
     effective_limits = limits or ParserLimits()
@@ -56,10 +59,18 @@ def parse_non_pdf_to_cir(
             title = parse_pptx(data, builder)
         elif document_type == "xlsx":
             title = parse_xlsx(data, builder)
+        elif document_type == "hwpx":
+            if validated.hwpx is None:
+                raise StructuredParseError("HWPX_PACKAGE_UNAVAILABLE")
+            title = parse_hwpx(validated.hwpx, builder)
         elif document_type == "html":
             if validated.text is None:
                 raise StructuredParseError("HTML_TEXT_UNAVAILABLE")
             title = parse_html(validated.text, builder)
+        elif document_type == "csv":
+            if validated.text is None:
+                raise StructuredParseError("CSV_TEXT_UNAVAILABLE")
+            title = parse_csv(validated.text, builder)
         elif document_type in {"srt", "vtt"}:
             if validated.text is None:
                 raise StructuredParseError("SUBTITLE_TEXT_UNAVAILABLE")

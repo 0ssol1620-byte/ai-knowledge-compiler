@@ -44,6 +44,13 @@ recipes:
     lane: parser
     parser: paddleocr_vl_1_6
     verifier: selective_second_parser
+    # Which second parser is no longer left to the caller. akc_router's
+    # complementarity table picks it from the page's dominant element, measured
+    # on 1,651 OmniDocBench pages: ovisocr2 for text, table and reading order,
+    # infinity_parser2_flash for formula. Neither is servable until its registry
+    # row carries a revision and an image digest, and until then the router
+    # records `cross_check_peer_unavailable` rather than substituting one.
+    second_parser_selection: complementarity_measured_2026_09_06
     fallback: unresolved
     optional_external_fallback: mistral_ocr_4
     external_consent_required: true

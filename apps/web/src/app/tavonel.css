@@ -68,8 +68,83 @@
 }
 
 @layer utilities {
-  /* WCAG-readable leaf copy must not collapse inside dense evidence surfaces. */
-  :where(p, span, strong, b, em, small, code, pre, li, dt, dd, th, td, caption) {
+  /* WCAG-readable leaf copy must not collapse inside dense evidence surfaces.
+     A layered !important outranks every unlayered declaration, !important
+     included, and 1em is the parent's size — so the floor also discards a
+     leaf's own larger size. Leaves whose component size is declared at or
+     above 12px at every breakpoint are exempted by name; everything else,
+     including the legacy sub-12px rules the blueprint ratchet counts, keeps
+     the forced floor. The one non-copy exemption is the aria-hidden hero page
+     facsimile: a proportional picture of a page whose text equivalent is its
+     sr-only sentence, where a floor only clips fixed bbox blocks. */
+  :where(
+    p,
+    span,
+    strong,
+    b,
+    em,
+    small,
+    code,
+    pre,
+    li,
+    dt,
+    dd,
+    th,
+    td,
+    caption
+  ):where(
+    :not(
+      .tv-page-hero-copy > p:not(.tv-context-label),
+      .tv-thesis p,
+      .tv-page-sections p,
+      .tv-accuracy-eyebrow,
+      .tv-accuracy-figure strong,
+      .tv-accuracy-figure span,
+      .tv-accuracy-context p,
+      .tv-accuracy-spread,
+      .tv-accuracy-table thead th,
+      .tv-accuracy-table td,
+      .tv-accuracy-cell b,
+      .tv-accuracy-worst-note,
+      .tv-accuracy-evidence,
+      .tv-recovery-eyebrow,
+      .tv-recovery-lead,
+      .tv-recovery-arm span,
+      .tv-recovery-arm strong,
+      .tv-recovery-arm small,
+      .tv-recovery-context p,
+      .tv-recovery-corroboration dt,
+      .tv-recovery-corroboration dd,
+      .tv-recovery-direction,
+      .tv-campaign-eyebrow,
+      .tv-campaign-rates article span,
+      .tv-campaign-rates article strong,
+      .tv-campaign-rates article p,
+      .tv-campaign-stages li,
+      .tv-campaign-stages li span,
+      .tv-campaign-note,
+      .tv-campaign-guarantees li,
+      .tv-campaign-guarantees b,
+      .tv-campaign-pending span,
+      .tv-campaign-pending p,
+      .tv-hero-comp-lead,
+      .tv-film-lead,
+      .tv-hero-comp-row strong,
+      .tv-hero-comp-paper[aria-hidden="true"] *,
+      .tv-manifesto > p,
+      .tv-chapter-copy p,
+      .tv-cv-knowledge strong,
+      .tv-security-band > div:first-child > span,
+      .tv-policy-orbit strong,
+      .tv-home-final > p,
+      .tv-route-visual-demo > div > strong,
+      .tv-route-visual-index > div strong,
+      .tv-route-proof-heading > p:last-child,
+      .tv-architecture-diagram figcaption p,
+      .app-frame .projects-summary strong,
+      .app-frame .integrity-status-register b
+    )
+  ) {
     font-size: max(12px, 1em) !important;
   }
 
@@ -164,7 +239,7 @@ body.tv-menu-open {
 .tv-brand-copy small {
   margin-top: 5px;
   color: var(--tv-muted);
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 650;
   letter-spacing: 0.13em;
   text-transform: uppercase;
@@ -261,7 +336,7 @@ body.tv-menu-open {
 
 .tv-nav-panel small {
   color: var(--tv-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-header-actions {
@@ -274,7 +349,7 @@ body.tv-menu-open {
 .tv-text-link,
 .tv-text-action {
   color: var(--tv-graphite);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 580;
   text-decoration: none;
 }
@@ -300,7 +375,7 @@ body.tv-menu-open {
   padding: 0 18px;
   border: 1px solid transparent;
   border-radius: 7px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 650;
   text-decoration: none;
   transition:
@@ -367,7 +442,7 @@ body.tv-menu-open {
   grid-column: 1 / -1;
   margin: 0 0 8px;
   color: var(--tv-muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -412,7 +487,7 @@ body.tv-menu-open {
 .tv-context-label {
   margin: 0 0 28px;
   color: var(--tv-brand-deep);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 720;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -662,7 +737,7 @@ body.tv-menu-open {
 .tv-scene-label {
   position: absolute;
   color: var(--tv-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 680;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -682,7 +757,7 @@ body.tv-menu-open {
   right: 4%;
   bottom: 6%;
   color: var(--tv-muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .tv-output-rail {
@@ -696,7 +771,7 @@ body.tv-menu-open {
 .tv-output-rail span {
   padding: 17px 0;
   color: var(--tv-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-output-rail span:not(:first-child) {
@@ -794,7 +869,7 @@ body.tv-menu-open {
 .tv-public-proof article > span,
 .tv-pillars article > span {
   color: var(--tv-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 720;
   letter-spacing: 0.11em;
   text-transform: uppercase;
@@ -803,7 +878,7 @@ body.tv-menu-open {
 .tv-before-after article > p {
   margin: 28px 0 0;
   color: var(--tv-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-fragments {
@@ -898,7 +973,7 @@ body.tv-menu-open {
 .tv-benchmark > div:first-child > p {
   margin: 0 0 20px;
   color: var(--tv-evidence);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.11em;
   text-transform: uppercase;
@@ -954,8 +1029,8 @@ body.tv-menu-open {
 .tv-chapter-copy small {
   display: block;
   margin-top: 32px;
-  color: #8c96aa;
-  font-size: 11px;
+  color: #6f7b91;
+  font-size: 12px;
 }
 
 .tv-chapter-visual {
@@ -1217,7 +1292,7 @@ body.tv-menu-open {
   border: 0;
   background: transparent;
   color: var(--tv-muted);
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -1253,7 +1328,7 @@ body.tv-menu-open {
   padding: 0 18px;
   border-bottom: 1px solid var(--tv-line);
   color: var(--tv-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-proof-rail strong {
@@ -1275,7 +1350,7 @@ body.tv-menu-open {
 .tv-proof-source small,
 .tv-proof-result small {
   color: var(--tv-muted);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.08em;
 }
 
@@ -1308,7 +1383,7 @@ body.tv-menu-open {
   padding: 8px 12px;
   border: solid var(--tv-line);
   border-width: 0 1px 1px 0;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-source-table-row {
@@ -1322,7 +1397,7 @@ body.tv-menu-open {
   padding: 8px 12px;
   border: solid var(--tv-line);
   border-width: 0 1px 1px 0;
-  font-size: 11px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1413,7 +1488,7 @@ body.tv-menu-open {
 
 .tv-proof-evidence span {
   color: var(--tv-brand-deep);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1431,11 +1506,12 @@ body.tv-menu-open {
   padding: 10px 20px;
   border-top: 1px solid var(--tv-line);
   color: var(--tv-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-proof-provenance a {
   color: var(--tv-brand-deep);
+  font-size: 14px;
   font-weight: 650;
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
@@ -1444,7 +1520,7 @@ body.tv-menu-open {
 .tv-proof-provenance code {
   margin-left: auto;
   color: var(--tv-graphite);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .tv-route-proof {
@@ -1522,7 +1598,7 @@ body.tv-menu-open {
   border: 0;
   background: transparent;
   color: var(--tv-muted);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 650;
 }
 
@@ -1553,7 +1629,7 @@ body.tv-menu-open {
 
 .tv-plan-ledger article > span {
   color: var(--tv-muted);
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -1583,7 +1659,7 @@ body.tv-menu-open {
 
 .tv-plan-ledger li {
   color: var(--tv-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-credit-planner {
@@ -1648,7 +1724,7 @@ body.tv-menu-open {
 
 .tv-credit-planner > aside > span {
   color: #90a0b7;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1668,7 +1744,7 @@ body.tv-menu-open {
 
 .tv-credit-planner dt {
   color: #9da9bb;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-credit-planner dd {
@@ -1682,7 +1758,7 @@ body.tv-menu-open {
 .tv-credit-planner aside p {
   margin: 40px 0 0;
   color: #8997aa;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.7;
 }
 
@@ -1699,7 +1775,7 @@ body.tv-menu-open {
   display: inline-flex;
   align-items: center;
   color: var(--tv-brand-deep);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 650;
   text-decoration: none;
 }
@@ -1804,7 +1880,7 @@ body.tv-menu-open {
 
 .tv-metric-table > div:first-child span {
   color: var(--tv-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1837,7 +1913,7 @@ body.tv-menu-open {
 
 .tv-use-cases article > span {
   color: var(--tv-muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .tv-use-cases article h3 {
@@ -1868,7 +1944,7 @@ body.tv-menu-open {
 .tv-security-band > div:first-child > p {
   margin: 18px 0;
   color: var(--tv-evidence);
-  font-size: 11px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -1907,7 +1983,7 @@ body.tv-menu-open {
   border: 1px solid var(--tv-night-line);
   background: var(--tv-midnight);
   color: #aeb9cd;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-policy-orbit span:nth-of-type(1) {
@@ -1982,7 +2058,7 @@ body.tv-menu-open {
   gap: 8px;
   margin-top: 34px;
   color: var(--tv-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-footer {
@@ -2046,7 +2122,7 @@ body.tv-menu-open {
 
 .tv-footer-brand small {
   color: #8993a7;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .tv-footer .tv-brand-copy small {
@@ -2062,7 +2138,7 @@ body.tv-menu-open {
 .tv-footer-grid nav strong {
   margin-bottom: 12px;
   color: #e7ebf1;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-footer-grid nav a {
@@ -2082,7 +2158,7 @@ body.tv-menu-open {
   padding-top: 28px;
   border-top: 1px solid var(--tv-night-line);
   color: #8993a7;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 /* Public route pages */
@@ -2135,7 +2211,7 @@ body.tv-menu-open {
 .tv-route-visual > p {
   margin: 0;
   color: var(--tv-muted);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -2143,7 +2219,7 @@ body.tv-menu-open {
 
 .tv-route-visual > small {
   color: var(--tv-muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .tv-route-visual-journey {
@@ -2172,7 +2248,7 @@ body.tv-menu-open {
 
 .tv-route-visual-journey li span {
   color: var(--tv-brand-deep);
-  font-size: 10px;
+  font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -2216,7 +2292,7 @@ body.tv-menu-open {
   gap: 16px;
   padding: 0 24px;
   border-bottom: 1px solid #2a3342;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-route-visual-code header span {
@@ -2275,7 +2351,7 @@ body.tv-menu-open {
 .tv-route-visual-ledger > div span,
 .tv-route-visual-index > div span {
   color: var(--tv-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-route-visual-ledger > div strong {
@@ -2319,7 +2395,7 @@ body.tv-menu-open {
 
 .tv-route-visual-demo > div span {
   color: var(--tv-muted);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -2382,7 +2458,7 @@ body.tv-menu-open {
   gap: 24px;
   padding: 14px 0;
   color: var(--tv-muted);
-  font-size: 10px;
+  font-size: 12px;
   letter-spacing: 0.04em;
 }
 
@@ -2403,7 +2479,7 @@ body.tv-menu-open {
 
 .tv-architecture-diagram figcaption > span {
   color: var(--tv-brand-deep);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 720;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -2424,14 +2500,18 @@ body.tv-menu-open {
   line-height: 1.65;
 }
 
+/* Inline padding and the column gap are percentages so each inter-node gap
+   sits at a fixed fraction of the canvas: 26.34%, 50%, 73.66%. The stretched
+   SVG (preserveAspectRatio="none") draws its arrowheads at those fractions,
+   so they stay in the gaps instead of under an opaque node at any width. */
 .tv-diagram-canvas {
   position: relative;
   min-height: 340px;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 22px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4%;
   align-items: center;
-  padding: 44px;
+  padding: 44px 4.5%;
   border: 1px solid var(--tv-line);
   background-image: var(--tv-texture-coordinate);
   background-size: 42px 42px;
@@ -2451,9 +2531,10 @@ body.tv-menu-open {
   position: relative;
   z-index: 1;
   width: auto;
+  min-width: 0;
   min-height: 114px;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr);
   align-content: center;
   gap: 10px;
   padding: 18px;
@@ -2467,13 +2548,17 @@ body.tv-menu-open {
 }
 
 .tv-diagram-canvas > div span {
+  min-width: 0;
   color: var(--tv-muted);
-  font-size: 9px;
+  font-size: 12px;
+  overflow-wrap: anywhere;
 }
 
 .tv-diagram-canvas > div strong {
+  min-width: 0;
   font-size: 12px;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .tv-diagram-equivalent {
@@ -2511,7 +2596,7 @@ body.tv-menu-open {
 .tv-page-sheet span,
 .tv-page-output span {
   color: var(--tv-muted);
-  font-size: 10px;
+  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
@@ -2570,7 +2655,7 @@ body.tv-menu-open {
   right: 18px;
   bottom: 18px;
   color: var(--tv-muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .tv-thesis {
@@ -2594,7 +2679,7 @@ body.tv-menu-open {
 .tv-thesis span {
   align-self: end;
   color: var(--tv-brand-deep);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-page-sections {
@@ -2613,7 +2698,7 @@ body.tv-menu-open {
   display: flex;
   gap: 12px;
   color: var(--tv-muted);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-page-sections article > div:last-child {
@@ -2669,7 +2754,7 @@ body.tv-menu-open {
 
 .tv-route-cta p {
   color: #7f8ba1;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-route-cta h2 {
@@ -3063,7 +3148,7 @@ body.tv-menu-open {
   .tv-source-table > *,
   .tv-source-table-row > * {
     padding: 6px;
-    font-size: 9px;
+    font-size: 12px;
   }
 
   .tv-proof-provenance {
@@ -3326,7 +3411,7 @@ body.tv-menu-open {
 }
 
 .app-frame .sidebar {
-  width: 240px;
+  width: min(100%, 240px);
   background: #e7e9eb;
   border-right: 1px solid #d3d6d9;
   color: #25292f;
@@ -3440,7 +3525,7 @@ body.tv-menu-open {
 .tv-app-context p {
   margin: 0 0 9px;
   color: #5f6670;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .tv-app-context h1 {
@@ -3522,7 +3607,7 @@ body.tv-menu-open {
 
 .tv-app-command span {
   color: #5b626d;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-app-command a {
@@ -3534,7 +3619,7 @@ body.tv-menu-open {
   border-radius: 6px;
   background: #fff;
   color: #22262c;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 620;
   text-decoration: none;
 }
@@ -3559,7 +3644,7 @@ body.tv-menu-open {
 
 .tv-app-metrics span {
   color: #5b626d;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 630;
 }
 
@@ -3573,7 +3658,7 @@ body.tv-menu-open {
 
 .tv-app-metrics small {
   color: #626a74;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .tv-app-split {
@@ -3607,7 +3692,7 @@ body.tv-menu-open {
 
 .tv-app-panel > header span {
   color: #5f6670;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -3622,7 +3707,7 @@ body.tv-menu-open {
 
 .tv-app-panel > header a {
   color: #5c6470;
-  font-size: 10px;
+  font-size: 12px;
   text-decoration: none;
 }
 
@@ -3678,7 +3763,7 @@ body.tv-menu-open {
 .tv-feature-ledger header span,
 .tv-version-ledger header span {
   color: #5b626d;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -3695,7 +3780,7 @@ body.tv-menu-open {
 
 .tv-home-lower header a {
   color: var(--tv-brand-deep);
-  font-size: 11px;
+  font-size: 12px;
   text-decoration: none;
 }
 
@@ -3718,7 +3803,7 @@ body.tv-menu-open {
 .tv-home-lower p {
   margin: 4px 0 0;
   color: #5f6670;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.5;
 }
 
@@ -3751,7 +3836,7 @@ body.tv-menu-open {
   background: transparent;
   color: #69707c;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-view-switch button:last-child {
@@ -3789,7 +3874,7 @@ body.tv-menu-open {
 
 .tv-project-health > div span {
   color: #5b626d;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .tv-project-health > div strong {
@@ -3813,7 +3898,7 @@ body.tv-menu-open {
   background: transparent;
   color: #69707c;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 620;
 }
 
@@ -3832,7 +3917,7 @@ body.tv-menu-open {
   border-top: 1px solid #d9dcde;
   background: #f3f4f3;
   color: #646b75;
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1.55;
 }
 
@@ -3858,7 +3943,7 @@ body.tv-menu-open {
 
 .tv-version-ledger > div small {
   color: #7a818b;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .tv-version-ledger button,
@@ -3869,7 +3954,7 @@ body.tv-menu-open {
   background: #f9f9f7;
   color: #282c32;
   font: inherit;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .tv-editor-layout {
@@ -3903,7 +3988,7 @@ body.tv-menu-open {
 .tv-editor-layout article > header {
   margin-bottom: 18px;
   color: #5b626d;
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -3942,7 +4027,7 @@ body.tv-menu-open {
 
 .tv-editor-kicker {
   color: var(--tv-brand-deep);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -3953,7 +4038,7 @@ body.tv-menu-open {
   padding: 18px;
   border: 1px solid #d7dade;
   color: #69707c;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1.6;
 }
 
@@ -3964,7 +4049,7 @@ body.tv-menu-open {
   gap: 8px;
   padding: 0 14px;
   color: #565d67;
-  font-size: 10px;
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -3980,7 +4065,7 @@ body.tv-menu-open {
 
 .tv-data-head span {
   color: #565e68 !important;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 650 !important;
   text-transform: uppercase;
   letter-spacing: 0.055em;
@@ -4006,17 +4091,17 @@ body.tv-menu-open {
 }
 
 .tv-review-summary article strong {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-review-summary article span {
   color: #5f6670;
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .tv-review-summary article a {
   color: var(--tv-brand-deep);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
   text-decoration: none;
 }
@@ -4048,7 +4133,7 @@ body.tv-menu-open {
   outline: 0;
   background: transparent;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-app-tools > button {
@@ -4062,7 +4147,7 @@ body.tv-menu-open {
   background: #fff;
   color: #4f5660;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-project-table {
@@ -4089,7 +4174,7 @@ body.tv-menu-open {
   display: block;
   margin-bottom: 14px;
   color: #7b828b;
-  font-size: 9px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -4106,7 +4191,7 @@ body.tv-menu-open {
   background: transparent;
   color: #606771;
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
   text-align: left;
 }
 
@@ -4140,7 +4225,7 @@ body.tv-menu-open {
   background: #fff;
   color: #343a42;
   font: inherit;
-  font-size: 10px;
+  font-size: 12px;
   box-shadow: var(--tv-shadow-low);
 }
 
@@ -4182,7 +4267,7 @@ body.tv-menu-open {
 
 .tv-proof-panel > strong {
   color: var(--tv-brand-deep);
-  font-size: 10px;
+  font-size: 12px;
   text-transform: uppercase;
 }
 
@@ -4191,14 +4276,14 @@ body.tv-menu-open {
   padding-bottom: 12px;
   border-bottom: 1px solid #e1e3e4;
   color: #535b65;
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .tv-proof-panel small {
   display: block;
   margin-top: 22px;
   color: #7b828b;
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .tv-proof-panel a {
@@ -4207,7 +4292,7 @@ body.tv-menu-open {
   align-items: center;
   margin-top: 24px;
   color: var(--tv-brand-deep);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 650;
   text-decoration: none;
 }
@@ -4233,17 +4318,17 @@ body.tv-menu-open {
 
 .tv-policy-table strong,
 .tv-policy-table b {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-policy-table small {
   color: #5d6570;
-  font-size: 9px;
+  font-size: 12px;
 }
 
 .tv-policy-table em {
   color: var(--tv-verified);
-  font-size: 9px;
+  font-size: 12px;
   font-style: normal;
   font-weight: 650;
 }
@@ -4282,7 +4367,7 @@ body.tv-menu-open {
 .tv-onboarding > header span,
 .tv-onboarding > header small {
   color: var(--tv-muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .tv-onboarding > header small {
@@ -4307,7 +4392,7 @@ body.tv-menu-open {
   gap: 8px;
   padding: 0 0 18px;
   color: var(--tv-muted);
-  font-size: 10px;
+  font-size: 12px;
 }
 
 .tv-onboarding-progress span[data-active="true"] {
@@ -4336,7 +4421,7 @@ body.tv-menu-open {
 .tv-onboarding-copy > p {
   margin: 0 0 18px;
   color: var(--tv-brand-deep);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -4406,7 +4491,7 @@ body.tv-menu-open {
   background: transparent;
   color: var(--tv-muted);
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .tv-auth-simple {
@@ -4437,7 +4522,7 @@ body.tv-menu-open {
 .tv-auth-simple form > p {
   margin: 0;
   color: var(--tv-brand-deep);
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -4461,7 +4546,7 @@ body.tv-menu-open {
 }
 
 .tv-auth-simple label span {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 650;
 }
 
@@ -4476,7 +4561,7 @@ body.tv-menu-open {
 
 .tv-auth-simple form > a {
   color: var(--tv-brand-deep);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 /* Authentication follows the same editorial split as the public site. */

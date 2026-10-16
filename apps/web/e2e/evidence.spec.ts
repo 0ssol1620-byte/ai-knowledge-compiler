@@ -16,10 +16,29 @@ const ROUTES = [
   "/benchmarks",
   "/security",
   "/pricing",
+  "/solutions/enterprise",
   "/quick-convert",
   "/app/home",
   "/documents/sample-dart/processing",
 ] as const;
+
+for (const [name, route] of [
+  ["marketing-home", "/"],
+  ["enterprise", "/solutions/enterprise"],
+] as const) {
+  test(`${name} responsive evidence`, async ({ page }, testInfo) => {
+    await page.emulateMedia({ reducedMotion: "reduce", colorScheme: "light" });
+    const response = await page.goto(route, { waitUntil: "networkidle" });
+    expect(response?.status()).toBeLessThan(400);
+    await expect(page.locator("main")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+    await page.screenshot({
+      path: testInfo.outputPath(`${name}-${testInfo.project.name}.png`),
+      fullPage: true,
+      animations: "disabled",
+    });
+  });
+}
 
 for (const route of ROUTES) {
   test(`${route} has no horizontal overflow`, async ({ page }) => {

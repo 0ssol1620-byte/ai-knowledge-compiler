@@ -58,7 +58,7 @@ class WatcherConfig:
         text = file_path.read_text(encoding="utf-8")
         if suffix in {".yaml", ".yml"}:
             try:
-                import yaml  # type: ignore[import-untyped]
+                import yaml  # type: ignore[import-untyped,unused-ignore]
             except ImportError as exc:  # pragma: no cover - env dependent
                 raise ConfigError(
                     f"YAML config requires PyYAML ({exc}); install extra 'yaml' or use JSON"

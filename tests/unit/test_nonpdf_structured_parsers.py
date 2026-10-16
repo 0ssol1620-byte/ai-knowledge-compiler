@@ -1,27 +1,55 @@
 from __future__ import annotations
 
+import csv
 import io
+import json
+import re
+import struct
 import zipfile
-from collections.abc import Callable
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 import pytest
-from akc_cir import BlockType, CanonicalDocument, canonical_json
+from akc_cir import BlockType, CanonicalCell, CanonicalDocument, CanonicalTable, canonical_json
 from akc_native_parsers import (
+    SUPPORTED_EXTENSIONS,
     ParseContext,
     ParserLimits,
     StructuredParseError,
+    csv_parser,
     parse_non_pdf_to_cir,
 )
+from akc_native_parsers.csv_parser import CsvPreflight, preflight_csv
+from akc_native_parsers.models import normalize_text
 from docx import Document as WordDocument
+from docx.oxml.ns import qn
+from docx.shared import Inches as WordInches
+from docx.table import _Row
+from jsonschema import Draft202012Validator
 from openpyxl import Workbook
+from openpyxl.worksheet.formula import ArrayFormula, DataTableFormula
 from openpyxl.worksheet.table import Table as WorksheetTable
 from pptx import Presentation
 from pptx.util import Inches
+from pydantic import ValidationError
 
 FIXTURES = Path(__file__).parents[1] / "fixtures" / "nonpdf"
+CANONICAL_DOCUMENT_SCHEMA = (
+    Path(__file__).parents[2]
+    / "packages"
+    / "contracts"
+    / "schemas"
+    / "canonical-document.schema.json"
+)
+GENERATED_CONTRACTS = (
+    Path(__file__).parents[2] / "packages" / "contracts" / "src" / "generated-contracts.ts"
+)
+# The optional native-fidelity cell fields: absent and null both mean the
+# source did not provide the fact.
+NULLABLE_CELL_FIELDS = ("valueType", "numberFormat", "formula")
 MIME = {
     "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
@@ -29,7 +57,39 @@ MIME = {
     "html": "text/html",
     "srt": "application/x-subrip",
     "vtt": "text/vtt",
+    "csv": "text/csv",
 }
+# Synthetic CSV, written for this test file: quoted delimiter, embedded
+# newline, a blank record, spreadsheet formula prefixes, padded and empty
+# fields, and one record wider than the rest.
+CSV_SOURCE = (
+    "name,amount,note\r\n"
+    '"Kim, J.",=1+2,"multi\nline"\r\n'
+    "\r\n"
+    "Lee,-5,@SUM(A1)\r\n"
+    'Park,"  spaced  ",\r\n'
+    "Choi,1,2,extra\r\n"
+)
+# Synthetic CSV boundary cases, written for this test file: a quoted
+# delimiter, CRLF and LF inside quotes, doubled quotes (one closing a field),
+# an empty quoted field, empty fields, blank records ended by CRLF, LF and a
+# lone CR, a quote inside an unquoted field, and records ended by the end of
+# the text.
+CSV_BOUNDARY_SOURCES = (
+    CSV_SOURCE,
+    'a,"b,c",d\r\n',
+    '"x\r\ny","p\nq",z\n',
+    '"say ""hi""","""",""\r\n',
+    '"a""",b\r\n',
+    ",,\r\n,\r\n",
+    ",a\r\n",
+    "\r\n\n\r\r\nlast",
+    "a\rb\r\nc\nd",
+    'ab"c,d"e\r\n',
+    "a,",
+    '"trailing line\r\n"\r\n',
+    '"\r\n"',
+)
 
 
 @pytest.fixture
@@ -124,6 +184,53 @@ def xlsx_bytes() -> bytes:
     workbook.save(output)
     workbook.close()
     return output.getvalue()
+
+
+@pytest.fixture
+def rich_xlsx_bytes() -> bytes:
+    """Synthetic multi-sheet workbook built for the native-fidelity tests."""
+
+    workbook = Workbook()
+    summary = workbook.active
+    assert summary is not None
+    summary.title = "Summary"
+    summary["A1"] = "분기 실적"
+    summary.merge_cells("A1:C1")
+    summary.append(["항목", "값", "형식"])
+    summary["A3"], summary["B3"] = "중량", 12.5
+    summary["B3"].number_format = '#,##0.0" kg"'
+    summary["A4"], summary["B4"] = "수량", 1234567
+    summary["B4"].number_format = "#,##0"
+    summary["A5"], summary["B5"] = "비율", 0.25
+    summary["B5"].number_format = "0.00%"
+    summary["A6"], summary["B6"] = "기준일", datetime(2026, 3, 31)
+    summary["B6"].number_format = "yyyy-mm-dd"
+    summary["A7"], summary["B7"] = "검증", True
+    summary["A8"], summary["B8"] = "합계", "=SUM(B3:B4)"
+    summary["B8"].number_format = "#,##0.0"
+    summary["A9"], summary["B9"] = "두 배", "=B3*2"
+    summary["E12"] = "sparse"
+    archive = workbook.create_sheet("Archive")
+    archive.sheet_state = "hidden"
+    archive.append(["보관", 1])
+    notes = workbook.create_sheet("Notes")
+    notes.sheet_state = "veryHidden"
+    notes.append(["메모"])
+    output = io.BytesIO()
+    workbook.save(output)
+    workbook.close()
+
+    def add_one_formula_cache(value: bytes) -> bytes:
+        # openpyxl never writes a cached result. Inject one for B8 only, so the
+        # same sheet holds a cached and an uncached formula.
+        needle = b"<f>SUM(B3:B4)</f><v></v>"
+        assert value.count(needle) == 1
+        return value.replace(needle, b"<f>SUM(B3:B4)</f><v>1234579.5</v>")
+
+    return _rewrite_zip(
+        output.getvalue(),
+        transform={"xl/worksheets/sheet1.xml": add_one_formula_cache},
+    )
 
 
 def _parse(
@@ -337,6 +444,7 @@ def test_all_real_minimal_samples_reach_canonical_cir(
         ("sample.html", (FIXTURES / "sample.html").read_bytes()),
         ("sample.srt", (FIXTURES / "sample.srt").read_bytes()),
         ("sample.vtt", (FIXTURES / "sample.vtt").read_bytes()),
+        ("sample.csv", CSV_SOURCE.encode("utf-8")),
     ]
     for filename, payload in sources:
         document = _parse(
@@ -530,6 +638,1354 @@ def test_malformed_ooxml_is_reported_as_stable_parse_failure(
             context=parse_context,
         )
     assert failure.value.code == "DOCX_PARSE_FAILED"
+
+
+def test_docx_table_and_pptx_slides_keep_source_order_without_omission(
+    parse_context: ParseContext,
+    docx_bytes: bytes,
+    pptx_bytes: bytes,
+) -> None:
+    docx = _parse(filename="order.docx", data=docx_bytes, context=parse_context)
+    table_block = next(block for block in docx.blocks if block.type == BlockType.TABLE)
+    assert table_block.table is not None
+    first_row = sorted(
+        (cell for cell in table_block.table.cells if cell.row_index0 == 0),
+        key=lambda cell: cell.column_index0,
+    )
+    assert [cell.raw_text for cell in first_row] == ["구성", "점수", "비고"]
+
+    pptx = _parse(filename="order.pptx", data=pptx_bytes, context=parse_context)
+    assert [slide["pageIndex0"] for slide in pptx.metadata["slides"]] == [0, 1]
+    pages = [block.source_refs[0].page_index0 for block in pptx.blocks]
+    assert pages == sorted(pages)
+    texts = [block.raw_text for block in pptx.blocks]
+    assert texts.index("두 번째 슬라이드") < texts.index("슬라이드 순서를 보존합니다.")
+
+
+def test_docx_header_footer_tables_keep_cells_anchors_and_story_order(
+    parse_context: ParseContext,
+) -> None:
+    # Synthetic in-memory DOCX: a header of paragraph, table, paragraph and a
+    # footer of paragraph, table, table.
+    word = WordDocument()
+    word.add_paragraph("본문")
+    header = word.sections[0].header
+    header.paragraphs[0].text = "머리말 앞"
+    _story_table(header, "문서 번호", "AKC-001")
+    header.add_paragraph("머리말 뒤")
+    footer = word.sections[0].footer
+    footer.paragraphs[0].text = "꼬리말"
+    _story_table(footer, "쪽", "1")
+    _story_table(footer, "판", "2")
+
+    document = _parse(filename="story.docx", data=_word_bytes(word), context=parse_context)
+
+    assert _story_refs(document) == [
+        (BlockType.HEADER, "docx/section/0000/header/p/000000"),
+        (BlockType.TABLE, "docx/section/0000/header/tbl/000000"),
+        (BlockType.HEADER, "docx/section/0000/header/p/000001"),
+        (BlockType.FOOTER, "docx/section/0000/footer/p/000000"),
+        (BlockType.TABLE, "docx/section/0000/footer/tbl/000000"),
+        (BlockType.TABLE, "docx/section/0000/footer/tbl/000001"),
+    ]
+    header_texts = [block.raw_text for block in document.blocks if block.type == BlockType.HEADER]
+    assert header_texts == ["머리말 앞", "머리말 뒤"]
+    for table_id, texts in (
+        ("docx/section/0000/header/tbl/000000", ("문서 번호", "AKC-001")),
+        ("docx/section/0000/footer/tbl/000000", ("쪽", "1")),
+        ("docx/section/0000/footer/tbl/000001", ("판", "2")),
+    ):
+        table = _table_at(document, table_id)
+        assert (table.row_count, table.column_count) == (1, 2)
+        assert [(cell.source_refs[0].native_object_id, cell.raw_text) for cell in table.cells] == [
+            (f"{table_id}/r/000000/c/{column:06d}", text) for column, text in enumerate(texts)
+        ]
+
+
+def test_docx_header_footer_tables_share_the_document_table_budget(
+    parse_context: ParseContext,
+) -> None:
+    word = WordDocument()
+    word.add_table(rows=1, cols=1).cell(0, 0).text = "본문 표"
+    _story_table(word.sections[0].header, "머리말 표")
+    _story_table(word.sections[0].footer, "꼬리말 표")
+    data = _word_bytes(word)
+
+    at_bound = _parse(
+        filename="budget.docx",
+        data=data,
+        context=parse_context,
+        limits=replace(ParserLimits(), max_docx_tables=3),
+    )
+    table_ids = _table_ids(at_bound)
+    assert len(table_ids) == 3
+    assert table_ids[0].startswith("docx/body/table/")
+    assert table_ids[1:] == [
+        "docx/section/0000/header/tbl/000000",
+        "docx/section/0000/footer/tbl/000000",
+    ]
+    # The body table alone is under the bound; the story tables carry it over.
+    with pytest.raises(StructuredParseError) as failure:
+        _parse(
+            filename="budget.docx",
+            data=data,
+            context=parse_context,
+            limits=replace(ParserLimits(), max_docx_tables=2),
+        )
+    assert failure.value.code == "DOCX_TABLE_LIMIT"
+
+
+def test_docx_linked_header_footer_tables_are_emitted_and_counted_once(
+    parse_context: ParseContext,
+) -> None:
+    word = WordDocument()
+    word.add_paragraph("첫 구역")
+    _story_table(word.sections[0].header, "공유 머리말")
+    _story_table(word.sections[0].footer, "공유 꼬리말")
+    word.add_section()
+    word.add_paragraph("둘째 구역")
+    second = word.sections[1]
+    assert second.header.is_linked_to_previous
+    assert second.footer.is_linked_to_previous
+
+    # Both sections resolve to the same parts; counted twice this would need
+    # a budget of four.
+    linked = _parse(
+        filename="linked.docx",
+        data=_word_bytes(word),
+        context=parse_context,
+        limits=replace(ParserLimits(), max_docx_tables=2),
+    )
+    assert _table_ids(linked) == [
+        "docx/section/0000/header/tbl/000000",
+        "docx/section/0000/footer/tbl/000000",
+    ]
+    assert not any(ref.startswith("docx/section/0001/") for _, ref in _story_refs(linked))
+
+    # Unlinking the second header gives it its own part and its own count.
+    second.header.is_linked_to_previous = False
+    _story_table(second.header, "둘째 머리말")
+    data = _word_bytes(word)
+    unlinked = _parse(
+        filename="unlinked.docx",
+        data=data,
+        context=parse_context,
+        limits=replace(ParserLimits(), max_docx_tables=3),
+    )
+    assert _table_ids(unlinked) == [
+        "docx/section/0000/header/tbl/000000",
+        "docx/section/0000/footer/tbl/000000",
+        "docx/section/0001/header/tbl/000000",
+    ]
+    second_header = _table_at(unlinked, "docx/section/0001/header/tbl/000000")
+    assert [cell.raw_text for cell in second_header.cells] == ["둘째 머리말"]
+    with pytest.raises(StructuredParseError) as failure:
+        _parse(
+            filename="unlinked.docx",
+            data=data,
+            context=parse_context,
+            limits=replace(ParserLimits(), max_docx_tables=2),
+        )
+    assert failure.value.code == "DOCX_TABLE_LIMIT"
+
+
+def test_docx_story_table_grid_span_width_is_refused_before_cells_expand(
+    parse_context: ParseContext,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # A two-cell header table whose first cell claims a billion grid columns;
+    # python-docx would build one cell object for each of them.
+    word = WordDocument()
+    word.add_paragraph("본문")
+    huge = _story_table(word.sections[0].header, "a", "b")
+    _set_grid_span(huge.cell(0, 0), "1000000000")
+    data = _word_bytes(word)
+    assert _refusal_before_cell_expansion(monkeypatch, data, parse_context) == "TABLE_COLUMN_LIMIT"
+
+    # At-bound control: an ordinary horizontal merge is two grid columns
+    # wide, so the row is three wide and fits a three-column bound exactly.
+    # Its span is rewritten with XML Schema whitespace around the integer.
+    word = WordDocument()
+    word.add_paragraph("본문")
+    merged = _story_table(word.sections[0].header, "a", "b", "c")
+    merged.cell(0, 0).merge(merged.cell(0, 1)).text = "ab"
+    _set_grid_span(merged.cell(0, 0), " \t2\n ")
+    assert merged.cell(0, 0)._tc.tcPr.gridSpan.get(qn("w:val")) == " \t2\n "
+    data = _word_bytes(word)
+    document = _parse(
+        filename="bounded.docx",
+        data=data,
+        context=parse_context,
+        limits=replace(ParserLimits(), max_table_columns=3),
+    )
+    table_id = "docx/section/0000/header/tbl/000000"
+    table = _table_at(document, table_id)
+    assert (table.row_count, table.column_count) == (1, 3)
+    assert [
+        (cell.source_refs[0].native_object_id, cell.column_span, cell.raw_text)
+        for cell in table.cells
+    ] == [
+        (f"{table_id}/r/000000/c/000000", 2, "ab"),
+        (f"{table_id}/r/000000/c/000002", 1, "c"),
+    ]
+    limits = replace(ParserLimits(), max_table_columns=2)
+    code = _refusal_before_cell_expansion(monkeypatch, data, parse_context, limits)
+    assert code == "TABLE_COLUMN_LIMIT"
+
+
+def test_docx_story_table_rectangular_area_is_refused_before_cells_expand(
+    parse_context: ParseContext,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    word = WordDocument()
+    word.add_paragraph("본문")
+    grid = word.sections[0].footer.add_table(rows=2, cols=3, width=WordInches(6))
+    for row in range(2):
+        for column in range(3):
+            grid.cell(row, column).text = f"{row}{column}"
+    data = _word_bytes(word)
+
+    # At-bound control: two rows of three is exactly six cells.
+    document = _parse(
+        filename="bounded.docx",
+        data=data,
+        context=parse_context,
+        limits=replace(ParserLimits(), max_table_cells=6),
+    )
+    table = _table_at(document, "docx/section/0000/footer/tbl/000000")
+    assert (table.row_count, table.column_count) == (2, 3)
+    assert [cell.raw_text for cell in table.cells] == ["00", "01", "02", "10", "11", "12"]
+
+    limits = replace(ParserLimits(), max_table_cells=5)
+    code = _refusal_before_cell_expansion(monkeypatch, data, parse_context, limits)
+    assert code == "TABLE_CELL_LIMIT"
+
+
+def test_docx_story_table_invalid_grid_span_is_a_stable_parse_failure(
+    parse_context: ParseContext,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # None leaves the w:gridSpan element without the w:val it requires.
+    for value in ("0", "-1", "+0", "two", "", "1.5", None):
+        word = WordDocument()
+        word.add_paragraph("본문")
+        table = _story_table(word.sections[0].footer, "a", "b")
+        _set_grid_span(table.cell(0, 1), value)
+        data = _word_bytes(word)
+        code = _refusal_before_cell_expansion(monkeypatch, data, parse_context)
+        assert code == "DOCX_PARSE_FAILED", value
+
+
+def test_docx_story_table_keeps_horizontal_and_vertical_merges(
+    parse_context: ParseContext,
+) -> None:
+    word = WordDocument()
+    word.add_paragraph("본문")
+    table = word.sections[0].header.add_table(rows=2, cols=3, width=WordInches(6))
+    table.cell(0, 0).merge(table.cell(1, 0)).text = "세로"
+    table.cell(0, 1).merge(table.cell(0, 2)).text = "가로"
+    table.cell(1, 1).text = "e"
+    table.cell(1, 2).text = "f"
+    _story_table(word.sections[0].footer, "쪽", "1")
+
+    document = _parse(filename="merged.docx", data=_word_bytes(word), context=parse_context)
+
+    assert _table_ids(document) == [
+        "docx/section/0000/header/tbl/000000",
+        "docx/section/0000/footer/tbl/000000",
+    ]
+    table_id = "docx/section/0000/header/tbl/000000"
+    merged = _table_at(document, table_id)
+    assert (merged.row_count, merged.column_count) == (2, 3)
+    assert [
+        (cell.source_refs[0].native_object_id, cell.row_span, cell.column_span, cell.raw_text)
+        for cell in merged.cells
+    ] == [
+        (f"{table_id}/r/000000/c/000000", 2, 1, "세로"),
+        (f"{table_id}/r/000000/c/000001", 1, 2, "가로"),
+        (f"{table_id}/r/000001/c/000001", 1, 1, "e"),
+        (f"{table_id}/r/000001/c/000002", 1, 1, "f"),
+    ]
+    assert not any("irregular_merge_geometry" in cell.quality_flags for cell in merged.cells)
+    footer = _table_at(document, "docx/section/0000/footer/tbl/000000")
+    assert [cell.raw_text for cell in footer.cells] == ["쪽", "1"]
+
+
+def test_xlsx_keeps_sheet_order_state_sparse_cells_types_and_number_formats(
+    parse_context: ParseContext,
+    rich_xlsx_bytes: bytes,
+) -> None:
+    document = _parse(filename="fidelity.xlsx", data=rich_xlsx_bytes, context=parse_context)
+
+    sheets = document.metadata["sheets"]
+    assert [(sheet["name"], sheet["state"]) for sheet in sheets] == [
+        ("Summary", "visible"),
+        ("Archive", "hidden"),
+        ("Notes", "veryHidden"),
+    ]
+    headings = [block for block in document.blocks if block.type == BlockType.HEADING]
+    assert [block.raw_text for block in headings] == ["Summary", "Archive", "Notes"]
+    assert [block.source_refs[0].page_index0 for block in headings] == [0, 1, 2]
+    assert ["hidden_sheet" in block.quality_flags for block in headings] == [False, True, True]
+
+    summary = _sheet_table(document, 0)
+    assert summary.row_count == 12
+    assert summary.column_count == 5
+    assert len(summary.cells) == 19
+    assert summary.source_refs[0].native_object_id == "xlsx/sheet/0000/range/A1:E12"
+    assert not any(cell.row_index0 == 9 and cell.column_index0 == 3 for cell in summary.cells)
+
+    header = _cell(summary, "xlsx/sheet/0000/cell/A1")
+    assert (header.raw_text, header.row_span, header.column_span) == ("분기 실적", 1, 3)
+    assert header.value_type == "string"
+    sparse = _cell(summary, "xlsx/sheet/0000/cell/E12")
+    assert (sparse.row_index0, sparse.column_index0) == (11, 4)
+
+    # Each value keeps its stored text; the format code is carried verbatim
+    # beside it and never applied, so 0.25 is not rendered as "25.00%" and the
+    # quoted " kg" literal is not split out as an inferred unit.
+    expected = {
+        "B3": ("12.5", "number", '#,##0.0" kg"'),
+        "B4": ("1234567", "number", "#,##0"),
+        "B5": ("0.25", "number", "0.00%"),
+        "B6": ("2026-03-31T00:00:00", "datetime", "yyyy-mm-dd"),
+        "B7": ("TRUE", "boolean", None),
+        "A3": ("중량", "string", None),
+    }
+    for coordinate, (text, value_type, number_format) in expected.items():
+        cell = _cell(summary, f"xlsx/sheet/0000/cell/{coordinate}")
+        assert (cell.raw_text, cell.normalized_text) == (text, text), coordinate
+        assert cell.value_type == value_type, coordinate
+        assert cell.number_format == number_format, coordinate
+        assert cell.formula is None, coordinate
+
+    archive = _sheet_table(document, 1)
+    assert archive.cells[0].source_refs[0].native_object_id == "xlsx/sheet/0001/cell/A1"
+
+
+def test_xlsx_formula_text_is_kept_and_only_an_existing_cache_is_displayed(
+    parse_context: ParseContext,
+    rich_xlsx_bytes: bytes,
+) -> None:
+    document = _parse(filename="formulas.xlsx", data=rich_xlsx_bytes, context=parse_context)
+    summary = _sheet_table(document, 0)
+
+    cached = _cell(summary, "xlsx/sheet/0000/cell/B8")
+    assert cached.formula == "=SUM(B3:B4)"
+    assert cached.raw_text == "=SUM(B3:B4)"
+    assert cached.normalized_text == "1234579.5"
+    assert cached.value_type == "number"
+    assert cached.number_format == "#,##0.0"
+    assert "formula_preserved_not_executed" in cached.quality_flags
+    assert "formula_cached_value_missing" not in cached.quality_flags
+
+    uncached = _cell(summary, "xlsx/sheet/0000/cell/B9")
+    assert uncached.formula == "=B3*2"
+    # Nothing computes 12.5 * 2: without a cache the display text stays the
+    # formula and the value type stays absent.
+    assert uncached.normalized_text == "=B3*2"
+    assert uncached.value_type is None
+    assert "formula_cached_value_missing" in uncached.quality_flags
+    assert "25" not in uncached.normalized_text
+
+    formulas = {item["cell"]: item for item in document.metadata["sheets"][0]["formulas"]}
+    assert formulas["B8"]["cachedValuePresent"] is True
+    assert formulas["B8"]["cachedValue"] == "1234579.5"
+    assert formulas["B9"]["cachedValuePresent"] is False
+    assert formulas["B9"]["cachedValue"] is None
+    assert "xlsx_formulas_not_executed" in document.metadata["warnings"]
+
+
+def test_xlsx_cell_fidelity_and_anchors_survive_canonical_json_round_trip(
+    parse_context: ParseContext,
+    rich_xlsx_bytes: bytes,
+) -> None:
+    first = _parse(filename="stable.xlsx", data=rich_xlsx_bytes, context=parse_context)
+    second = _parse(filename="stable.xlsx", data=rich_xlsx_bytes, context=parse_context)
+    wire = canonical_json(first)
+    assert wire == canonical_json(second)
+
+    restored = CanonicalDocument.model_validate_json(wire)
+    assert restored == first
+    original_cells = {
+        cell.source_refs[0].native_object_id: cell
+        for block in first.blocks
+        if block.table is not None
+        for cell in block.table.cells
+    }
+    restored_cells = {
+        cell.source_refs[0].native_object_id: cell
+        for block in restored.blocks
+        if block.table is not None
+        for cell in block.table.cells
+    }
+    assert restored_cells == original_cells
+    for anchor in ("xlsx/sheet/0000/cell/B3", "xlsx/sheet/0000/cell/B8"):
+        assert restored_cells[anchor].id == original_cells[anchor].id
+    assert restored_cells["xlsx/sheet/0000/cell/B3"].number_format == '#,##0.0" kg"'
+    assert restored_cells["xlsx/sheet/0000/cell/B8"].formula == "=SUM(B3:B4)"
+
+    payload = json.loads(wire)
+    validator = _cell_schema_validator()
+    wire_cells = [
+        cell for block in payload["blocks"] if "table" in block for cell in block["table"]["cells"]
+    ]
+    assert wire_cells
+    for cell in wire_cells:
+        validator.validate(cell)
+    b3 = next(
+        cell
+        for cell in wire_cells
+        if cell["sourceRefs"][0]["nativeObjectId"] == "xlsx/sheet/0000/cell/B3"
+    )
+    assert (b3["valueType"], b3["numberFormat"]) == ("number", '#,##0.0" kg"')
+    assert "formula" not in b3
+
+
+def test_xlsx_array_formula_object_keeps_its_ooxml_text_and_cached_value_apart(
+    parse_context: ParseContext,
+) -> None:
+    # Synthetic workbook: one single-cell array formula, which openpyxl reads
+    # back as an ArrayFormula object rather than a string.
+    workbook = Workbook()
+    sheet = workbook.active
+    assert sheet is not None
+    sheet.title = "Arrays"
+    sheet.append(["a", "b", "sumproduct"])
+    sheet.append([2, 3, None])
+    sheet.append([4, 5, None])
+    sheet["C2"] = ArrayFormula("C2", "=SUM(A2:A3*B2:B3)")
+    output = io.BytesIO()
+    workbook.save(output)
+    workbook.close()
+
+    def add_array_formula_cache(value: bytes) -> bytes:
+        # openpyxl never writes a cached result; inject the one Excel would
+        # have stored so the display value and the formula can be told apart.
+        rewritten, count = re.subn(
+            rb'(<f [^>]*t="array"[^>]*>[^<]*</f>)<v\s*(?:/>|></v>)',
+            rb"\1<v>26</v>",
+            value,
+        )
+        assert count == 1
+        return rewritten
+
+    data = _rewrite_zip(
+        output.getvalue(),
+        transform={"xl/worksheets/sheet1.xml": add_array_formula_cache},
+    )
+    document = _parse(filename="arrays.xlsx", data=data, context=parse_context)
+    table = _sheet_table(document, 0)
+
+    cell = _cell(table, "xlsx/sheet/0000/cell/C2")
+    assert cell.formula == "=SUM(A2:A3*B2:B3)"
+    assert cell.raw_text == cell.formula
+    # The cached result is display text only; nothing evaluated the formula.
+    assert cell.normalized_text == "26"
+    assert cell.value_type == "number"
+    assert "formula_preserved_not_executed" in cell.quality_flags
+    assert "formula_text_unavailable" not in cell.quality_flags
+    assert "formula_cached_value_missing" not in cell.quality_flags
+    assert document.metadata["sheets"][0]["formulas"] == [
+        {
+            "cell": "C2",
+            "formula": "=SUM(A2:A3*B2:B3)",
+            "cachedValue": "26",
+            "cachedValuePresent": True,
+        }
+    ]
+
+    wire = canonical_json(document)
+    assert "ArrayFormula" not in wire
+    assert " object at 0x" not in wire
+    assert canonical_json(_parse(filename="arrays.xlsx", data=data, context=parse_context)) == wire
+    restored = CanonicalDocument.model_validate_json(wire)
+    assert restored == document
+    validator = _cell_schema_validator()
+    for wire_cell in (
+        wire_cell
+        for block in json.loads(wire)["blocks"]
+        if "table" in block
+        for wire_cell in block["table"]["cells"]
+    ):
+        validator.validate(wire_cell)
+
+
+def test_xlsx_data_table_formula_without_text_is_flagged_and_never_stringified(
+    parse_context: ParseContext,
+) -> None:
+    # A data-table formula carries no formula text at all. The cell keeps its
+    # anchor, says the text is unavailable, and invents nothing in its place.
+    workbook = Workbook()
+    sheet = workbook.active
+    assert sheet is not None
+    sheet.title = "Sensitivity"
+    sheet["A1"], sheet["B1"] = "rate", 0.05
+    sheet["B2"] = DataTableFormula(ref="B2", r1="B1")
+    output = io.BytesIO()
+    workbook.save(output)
+    workbook.close()
+
+    document = _parse(filename="table.xlsx", data=output.getvalue(), context=parse_context)
+    cell = _cell(_sheet_table(document, 0), "xlsx/sheet/0000/cell/B2")
+    assert cell.formula is None
+    assert (cell.raw_text, cell.normalized_text) == ("", "")
+    assert cell.value_type is None
+    assert {
+        "formula_preserved_not_executed",
+        "formula_text_unavailable",
+        "formula_cached_value_missing",
+    } <= set(cell.quality_flags)
+    assert document.metadata["sheets"][0]["formulas"] == [
+        {
+            "cell": "B2",
+            "formula": None,
+            "cachedValue": None,
+            "cachedValuePresent": False,
+        }
+    ]
+    wire = canonical_json(document)
+    assert "DataTableFormula" not in wire
+    assert " object at 0x" not in wire
+
+
+def test_canonical_cell_fidelity_fields_are_optional_and_verbatim() -> None:
+    legacy: dict[str, Any] = {
+        "id": "cell_legacy",
+        "rowIndex0": 0,
+        "columnIndex0": 0,
+        "rowSpan": 1,
+        "columnSpan": 1,
+        "rawText": "x",
+        "normalizedText": "x",
+        "origin": "native_extracted",
+        "sourceRefs": [
+            {
+                "documentId": "document_fixture",
+                "documentVersionId": "version_fixture",
+                "pageIndex0": 0,
+                "pageNumber1": 1,
+            }
+        ],
+        "qualityFlags": [],
+    }
+    validator = _cell_schema_validator()
+    validator.validate(legacy)
+    cell = CanonicalCell.model_validate(legacy)
+    assert (cell.value_type, cell.number_format, cell.formula) == (None, None, None)
+    assert cell.model_dump(mode="json", by_alias=True, exclude_none=True) == legacy
+
+    # The contract strips surrounding whitespace from ordinary strings; source
+    # format codes and formulas must survive byte-for-byte instead.
+    extended = {
+        **legacy,
+        "valueType": "number",
+        "numberFormat": ' 0.0" kg" ',
+        "formula": "=A1 ",
+    }
+    validator.validate(extended)
+    restored = CanonicalCell.model_validate_json(
+        canonical_json(CanonicalCell.model_validate(extended))
+    )
+    assert restored.number_format == ' 0.0" kg" '
+    assert restored.formula == "=A1 "
+
+    for invalid in ({"valueType": "currency"}, {"numberFormat": ""}, {"formula": ""}):
+        with pytest.raises(ValidationError):
+            CanonicalCell.model_validate({**legacy, **invalid})
+
+
+def test_ocr_cell_raw_text_keeps_contract_strip_and_hash_unless_producer_opts_in() -> None:
+    # Shaped like workers/gpu-parser/paddleocr_adapter.py output, which does
+    # not normalize rawText itself.
+    ocr_cell: dict[str, Any] = {
+        "id": "tbl_ocr_cell_0",
+        "rowIndex0": 0,
+        "columnIndex0": 0,
+        "rowSpan": 1,
+        "columnSpan": 1,
+        "rawText": "  42 ",
+        "normalizedText": "  42 ",
+        "origin": "ocr_extracted",
+        "sourceRefs": [
+            {
+                "documentId": "document_fixture",
+                "documentVersionId": "version_fixture",
+                "pageIndex0": 0,
+                "pageNumber1": 1,
+            }
+        ],
+        "confidence": 0.9,
+        "qualityFlags": [],
+    }
+    table = CanonicalTable.model_validate(
+        {
+            "id": "tbl_ocr",
+            "rowCount": 1,
+            "columnCount": 1,
+            "cells": [ocr_cell],
+            "sourceRefs": ocr_cell["sourceRefs"],
+        }
+    )
+    cell = table.cells[0]
+    assert (cell.raw_text, cell.normalized_text) == ("42", "42")
+    assert cell.raw_text_verbatim is None
+    # The wire form, and so the content hash, is what it was before the
+    # native-fidelity fields existed: no new key, stripped text.
+    wire = json.loads(canonical_json(cell))
+    assert "rawTextVerbatim" not in wire
+    assert wire["rawText"] == "42"
+    assert CanonicalCell.model_validate(wire) == cell
+
+    # Only an explicit opt-in keeps the source whitespace, and it survives
+    # the wire round trip and the static schema.
+    verbatim = CanonicalCell.model_validate({**ocr_cell, "rawTextVerbatim": True})
+    assert verbatim.raw_text == "  42 "
+    assert verbatim.normalized_text == "42"
+    restored = CanonicalCell.model_validate_json(canonical_json(verbatim))
+    assert restored == verbatim
+    _cell_schema_validator().validate(json.loads(canonical_json(verbatim)))
+    # False is not an opt-in.
+    assert CanonicalCell.model_validate({**ocr_cell, "rawTextVerbatim": False}).raw_text == "42"
+    with pytest.raises(ValidationError):
+        CanonicalCell.model_validate({**ocr_cell, "rawTextVerbatim": "maybe"})
+
+
+def test_native_csv_cells_opt_in_to_verbatim_raw_text(parse_context: ParseContext) -> None:
+    data = b"  lead,trail  \r\n"
+    document = _parse(filename="optin.csv", data=data, context=parse_context)
+    table = document.blocks[0].table
+    assert table is not None
+    assert [(c.raw_text, c.raw_text_verbatim) for c in table.cells] == [
+        ("  lead", True),
+        ("trail  ", True),
+    ]
+
+
+def test_cell_fidelity_nullability_agrees_across_python_static_schema_and_typescript() -> None:
+    static_cell = json.loads(CANONICAL_DOCUMENT_SCHEMA.read_text(encoding="utf-8"))["$defs"]["cell"]
+    model_cell = CanonicalDocument.model_json_schema(by_alias=True, mode="serialization")["$defs"][
+        "CanonicalCell"
+    ]
+
+    # The static schema states exactly what the Python model accepts:
+    # nullability, the value-type enum and the non-empty verbatim strings.
+    for field in (*NULLABLE_CELL_FIELDS, "rawText", "rawTextVerbatim"):
+        generated = {
+            key: value
+            for key, value in model_cell["properties"][field].items()
+            if key not in {"default", "title"}
+        }
+        assert static_cell["properties"][field] == generated, field
+    for field in NULLABLE_CELL_FIELDS:
+        assert field not in static_cell["required"], field
+        assert field not in model_cell.get("required", []), field
+
+    # The checked-in TypeScript (kept current by test_contract_examples)
+    # renders the same optional, nullable members.
+    lines = GENERATED_CONTRACTS.read_text(encoding="utf-8").splitlines()
+    start = lines.index("export namespace CanonicalDocumentContract {")
+    cell_type = next(
+        line for line in lines[start:] if line.startswith("  export type CanonicalCell = ")
+    )
+    for field in NULLABLE_CELL_FIELDS:
+        members: list[str] = []
+        for variant in static_cell["properties"][field]["anyOf"]:
+            if "enum" in variant:
+                members.extend(json.dumps(item) for item in variant["enum"])
+            else:
+                members.append(variant["type"])
+        assert members[-1] == "null", field
+        assert f"readonly {field}?: {' | '.join(members)};" in cell_type, field
+
+    # Python serialization, with the fields both null and populated, is
+    # accepted by the static schema and restores the same cell.
+    validator = _cell_schema_validator()
+    base: dict[str, Any] = {
+        "id": "cell_nullability",
+        "rowIndex0": 0,
+        "columnIndex0": 0,
+        "rawText": "x",
+        "normalizedText": "x",
+        "origin": "native_extracted",
+        "sourceRefs": [
+            {
+                "documentId": "document_fixture",
+                "documentVersionId": "version_fixture",
+                "pageIndex0": 0,
+                "pageNumber1": 1,
+            }
+        ],
+    }
+    cases: list[tuple[dict[str, Any], tuple[str | None, ...]]] = [
+        ({}, (None, None, None)),
+        (dict.fromkeys(NULLABLE_CELL_FIELDS), (None, None, None)),
+        (
+            {"valueType": "number", "numberFormat": "0.00%", "formula": "=A1*2"},
+            ("number", "0.00%", "=A1*2"),
+        ),
+    ]
+    for overrides, expected in cases:
+        cell = CanonicalCell.model_validate({**base, **overrides})
+        dumped = cell.model_dump(mode="json", by_alias=True)
+        assert tuple(dumped[field] for field in NULLABLE_CELL_FIELDS) == expected
+        # Only the three fidelity fields stay explicitly null on the wire;
+        # unrelated optional nulls, including nested source refs, are omitted.
+        wire = {
+            key: value
+            for key, value in dumped.items()
+            if value is not None or key in NULLABLE_CELL_FIELDS
+        }
+        wire["sourceRefs"] = [
+            ref.model_dump(mode="json", by_alias=True, exclude_none=True)
+            for ref in cell.source_refs
+        ]
+        assert tuple(wire[field] for field in NULLABLE_CELL_FIELDS) == expected
+        validator.validate(wire)
+        assert CanonicalCell.model_validate_json(json.dumps(wire)) == cell
+
+    # Both sides reject the same malformed values.
+    for invalid in (
+        {"valueType": "currency"},
+        {"valueType": ""},
+        {"numberFormat": ""},
+        {"formula": ""},
+        {"formula": 1},
+    ):
+        payload = {**base, "rowSpan": 1, "columnSpan": 1, "qualityFlags": [], **invalid}
+        assert not validator.is_valid(payload), invalid
+        with pytest.raises(ValidationError):
+            CanonicalCell.model_validate(payload)
+
+
+def test_csv_preserves_records_anchors_and_never_evaluates_formula_text(
+    parse_context: ParseContext,
+) -> None:
+    source = CSV_SOURCE.encode("utf-8-sig")
+    document = _parse(filename="ledger.csv", data=source, context=parse_context)
+
+    assert document.metadata["documentType"] == "csv"
+    assert document.metadata["sourceLocationScheme"].startswith("csv/")
+    assert document.metadata["csv"]["dialect"]["delimiter"] == ","
+    assert document.metadata["csv"]["recordCount"] == 6
+    assert document.metadata["csv"]["recordWidths"] == [3, 4]
+    assert "csv_formula_prefixed_text_not_executed" in document.metadata["warnings"]
+    assert [block.type for block in document.blocks] == [BlockType.TABLE]
+    table = document.blocks[0].table
+    assert table is not None
+    assert (table.row_count, table.column_count, table.header_row_count) == (6, 4, 0)
+    assert table.source_refs[0].native_object_id == "csv/table/range/A1:D6"
+    assert {"csv_header_not_declared", "csv_ragged_records"} <= set(table.quality_flags)
+
+    def at(coordinate: str, record_index0: int) -> CanonicalCell:
+        return _cell(table, f"csv/row/{record_index0:06d}/cell/{coordinate}")
+
+    assert at("A1", 0).raw_text == "name"
+    assert at("A2", 1).raw_text == "Kim, J."
+    assert at("C2", 1).raw_text == "multi\nline"
+    formula_like = at("B2", 1)
+    assert (formula_like.raw_text, formula_like.normalized_text) == ("=1+2", "=1+2")
+    assert "spreadsheet_formula_prefix_preserved_as_text" in formula_like.quality_flags
+    assert at("C4", 3).raw_text == "@SUM(A1)"
+    assert at("D6", 5).raw_text == "extra"
+    padded = at("B5", 4)
+    assert "csv_field_whitespace_normalized" in padded.quality_flags
+    assert not any(cell.row_index0 == 2 for cell in table.cells)
+    assert not any(cell.row_index0 == 4 and cell.column_index0 == 2 for cell in table.cells)
+    assert all(cell.value_type == "string" for cell in table.cells)
+    assert all(cell.number_format is None and cell.formula is None for cell in table.cells)
+    joined = "\n".join(cell.normalized_text for cell in table.cells)
+    assert "\n3\n" not in f"\n{joined}\n"
+
+    again = _parse(filename="ledger.csv", data=source, context=parse_context)
+    assert canonical_json(again) == canonical_json(document)
+    restored = CanonicalDocument.model_validate_json(canonical_json(document))
+    assert restored == document
+    restored_table = restored.blocks[0].table
+    assert restored_table is not None
+    assert [cell.id for cell in restored_table.cells] == [cell.id for cell in table.cells]
+
+
+def test_csv_fails_closed_on_limits_encoding_binary_and_malformed_quotes(
+    parse_context: ParseContext,
+) -> None:
+    source = CSV_SOURCE.encode("utf-8")
+    cases: list[tuple[ParserLimits, str]] = [
+        (replace(ParserLimits(), max_csv_rows=5), "CSV_ROW_LIMIT"),
+        (replace(ParserLimits(), max_csv_columns=3), "CSV_COLUMN_LIMIT"),
+        (replace(ParserLimits(), max_csv_cells=4), "CSV_CELL_LIMIT"),
+        (replace(ParserLimits(), max_csv_field_chars=4), "CSV_FIELD_LIMIT"),
+    ]
+    for limits, code in cases:
+        with pytest.raises(StructuredParseError) as failure:
+            _parse(filename="ledger.csv", data=source, context=parse_context, limits=limits)
+        assert failure.value.code == code
+
+    rejected: list[tuple[bytes, str]] = [
+        (b'a,"never closed\n', "CSV_MALFORMED"),
+        (b'"ab"c,d\n', "CSV_MALFORMED"),
+        (b"a,\x00b\n", "BINARY_TEXT_FILE"),
+        (b"a,\xff\xfe\n", "FILE_SIGNATURE_MISMATCH"),
+        (b",,\r\n\r\n", "CSV_EMPTY_DOCUMENT"),
+    ]
+    for payload, code in rejected:
+        with pytest.raises(StructuredParseError) as failure:
+            _parse(filename="broken.csv", data=payload, context=parse_context)
+        assert failure.value.code == code
+
+    with pytest.raises(StructuredParseError, match="MIME_MISMATCH"):
+        parse_non_pdf_to_cir(
+            filename="ledger.csv",
+            declared_mime="application/vnd.ms-excel",
+            data=source,
+            context=parse_context,
+        )
+
+
+def test_csv_trailing_empty_fields_keep_their_columns_without_cells(
+    parse_context: ParseContext,
+) -> None:
+    document = _parse(
+        filename="trailing.csv",
+        data=b"a,b,,\r\nc,d,,\r\n",
+        context=parse_context,
+    )
+
+    table = document.blocks[0].table
+    assert table is not None
+    assert (table.row_count, table.column_count) == (2, 4)
+    assert table.source_refs[0].native_object_id == "csv/table/range/A1:D2"
+    assert document.metadata["csv"]["columnCount"] == 4
+    assert document.metadata["csv"]["range"] == "A1:D2"
+    assert document.metadata["csv"]["recordWidths"] == [4]
+    assert "csv_ragged_records" not in table.quality_flags
+    # The empty trailing fields widen the grid but are never emitted as cells.
+    assert document.metadata["csv"]["cellCount"] == 4
+    assert sorted((cell.row_index0, cell.column_index0) for cell in table.cells) == [
+        (0, 0),
+        (0, 1),
+        (1, 0),
+        (1, 1),
+    ]
+
+
+def test_csv_cell_limit_counts_empty_fields(parse_context: ParseContext) -> None:
+    # One non-empty field and three empty ones: four parsed fields.
+    one_value = b"a,,,\r\n"
+    accepted = _parse(
+        filename="sparse.csv",
+        data=one_value,
+        context=parse_context,
+        limits=replace(ParserLimits(), max_csv_cells=4),
+    )
+    table = accepted.blocks[0].table
+    assert table is not None
+    assert table.column_count == 4
+    assert [cell.raw_text for cell in table.cells] == ["a"]
+
+    # The single emitted cell is well under the bound; the empty fields
+    # alone carry the parsed field count past it.
+    with pytest.raises(StructuredParseError) as failure:
+        _parse(
+            filename="sparse.csv",
+            data=one_value,
+            context=parse_context,
+            limits=replace(ParserLimits(), max_csv_cells=2),
+        )
+    assert failure.value.code == "CSV_CELL_LIMIT"
+
+    # A record of nothing but empty fields hits the bound before the
+    # empty-document check is ever reached.
+    with pytest.raises(StructuredParseError) as failure:
+        _parse(
+            filename="blank.csv",
+            data=b",,,,\r\n",
+            context=parse_context,
+            limits=replace(ParserLimits(), max_csv_cells=3),
+        )
+    assert failure.value.code == "CSV_CELL_LIMIT"
+
+
+def test_csv_raw_text_is_the_exact_field_and_only_normalized_text_is_normalized(
+    parse_context: ParseContext,
+) -> None:
+    # Synthetic CSV: padded fields, an embedded CRLF and an embedded LF, a
+    # decomposed "e" + COMBINING ACUTE ACCENT, tabs, and a field that ends in
+    # a quoted CRLF.
+    decomposed = "Café"
+    text = (
+        '  lead,trail  ,"  both  "\r\n'
+        f'"line one\r\nline two","lf\nonly",{decomposed}\r\n'
+        '"\t tab \t",plain,"trailing line\r\n"\r\n'
+    )
+    data = text.encode("utf-8")
+    document = _parse(filename="verbatim.csv", data=data, context=parse_context)
+    table = document.blocks[0].table
+    assert table is not None
+
+    def at(coordinate: str, record_index0: int) -> CanonicalCell:
+        return _cell(table, f"csv/row/{record_index0:06d}/cell/{coordinate}")
+
+    expected = {
+        ("A1", 0): ("  lead", "lead"),
+        ("B1", 0): ("trail  ", "trail"),
+        ("C1", 0): ("  both  ", "both"),
+        ("A2", 1): ("line one\r\nline two", "line one\nline two"),
+        ("B2", 1): ("lf\nonly", "lf\nonly"),
+        ("C2", 1): ("Café", "Café"),
+        ("A3", 2): ("\t tab \t", "tab"),
+        ("B3", 2): ("plain", "plain"),
+        ("C3", 2): ("trailing line\r\n", "trailing line"),
+    }
+    for (coordinate, record_index0), (raw, normalized) in expected.items():
+        cell = at(coordinate, record_index0)
+        assert (cell.raw_text, cell.normalized_text) == (raw, normalized), coordinate
+        flagged = "csv_field_whitespace_normalized" in cell.quality_flags
+        assert flagged is (raw != normalized), coordinate
+
+    # No source value is lost: every non-empty field the stdlib reader yields
+    # is a cell whose raw text is that field, character for character.
+    records = list(csv.reader(io.StringIO(text, newline=""), strict=True))
+    fields = {
+        f"csv/row/{row:06d}/cell/{chr(ord('A') + column)}{row + 1}": field
+        for row, record in enumerate(records)
+        for column, field in enumerate(record)
+        if field
+    }
+    assert {cell.source_refs[0].native_object_id: cell.raw_text for cell in table.cells} == fields
+    assert all(cell.normalized_text == normalize_text(cell.raw_text) for cell in table.cells)
+    # Derived block text is built from normalized text only.
+    block = document.blocks[0]
+    assert block.normalized_text is not None
+    assert "\r" not in block.normalized_text
+    assert "Café" in block.normalized_text
+
+    # IDs and anchors are deterministic, and the verbatim text survives the
+    # wire round trip and the static schema.
+    again = _parse(filename="verbatim.csv", data=data, context=parse_context)
+    wire = canonical_json(document)
+    assert canonical_json(again) == wire
+    again_table = again.blocks[0].table
+    assert again_table is not None
+    assert [cell.id for cell in again_table.cells] == [cell.id for cell in table.cells]
+    restored = CanonicalDocument.model_validate_json(wire)
+    assert restored == document
+    restored_table = restored.blocks[0].table
+    assert restored_table is not None
+    assert [
+        (cell.id, cell.source_refs[0].native_object_id, cell.raw_text)
+        for cell in restored_table.cells
+    ] == [(cell.id, cell.source_refs[0].native_object_id, cell.raw_text) for cell in table.cells]
+    validator = _cell_schema_validator()
+    for wire_cell in json.loads(wire)["blocks"][0]["table"]["cells"]:
+        validator.validate(wire_cell)
+
+
+@pytest.mark.parametrize("text", CSV_BOUNDARY_SOURCES)
+def test_csv_preflight_counts_the_same_records_and_fields_as_the_strict_reader(
+    text: str,
+) -> None:
+    expected = _reader_shape(text)
+    limits = ParserLimits()
+    # One chunk, as parse_csv passes the text; then chunkings that split
+    # CRLFs and doubled quotes. Single characters split every one of them.
+    assert preflight_csv((text,), limits) == expected
+    for size in (1, 2, 3):
+        chunks = [text[start : start + size] for start in range(0, len(text), size)]
+        assert preflight_csv(chunks, limits) == expected, size
+
+
+def test_csv_preflight_stops_at_a_syntax_error_and_leaves_the_verdict_to_the_reader(
+    parse_context: ParseContext,
+) -> None:
+    # A character after a closing quote, a quote never closed, and a space
+    # after a closing quote in a later record.
+    for text in ('"ab"c,d\n', 'a,"never closed\n', 'ok\r\n"x" ,y\r\n'):
+        assert preflight_csv((text,), ParserLimits()).stopped_at_syntax_error, text
+        with pytest.raises(csv.Error):
+            list(csv.reader(io.StringIO(text, newline=""), strict=True))
+        with pytest.raises(StructuredParseError) as failure:
+            _parse(filename="broken.csv", data=text.encode("utf-8"), context=parse_context)
+        assert failure.value.code == "CSV_MALFORMED", text
+
+
+def test_csv_preflight_accepts_text_at_each_bound_and_refuses_one_past_it() -> None:
+    # (limits, at the bound, one past the bound, code). Blank records count
+    # as records, empty fields as fields, a doubled quote as one character
+    # and a quoted CRLF as two.
+    cases: list[tuple[ParserLimits, str, str, str]] = [
+        (replace(ParserLimits(), max_csv_rows=2), "a\r\n\r\n", "a\r\n\r\n\r\n", "CSV_ROW_LIMIT"),
+        (
+            replace(ParserLimits(), max_csv_columns=3),
+            'a,"b,c",\r\n',
+            'a,"b,c",,\r\n',
+            "CSV_COLUMN_LIMIT",
+        ),
+        (
+            replace(ParserLimits(), max_csv_cells=4),
+            "a,b\r\n,\r\n",
+            "a,b\r\n,,\r\n",
+            "CSV_CELL_LIMIT",
+        ),
+        (replace(ParserLimits(), max_csv_field_chars=3), '"a""b"', '"a""bc"', "CSV_FIELD_LIMIT"),
+        (replace(ParserLimits(), max_csv_field_chars=3), '"\r\nx"', '"\r\nxy"', "CSV_FIELD_LIMIT"),
+    ]
+    for limits, at_bound, past_bound, code in cases:
+        assert preflight_csv((at_bound,), limits) == _reader_shape(at_bound), at_bound
+        with pytest.raises(StructuredParseError) as failure:
+            preflight_csv((past_bound,), limits)
+        assert failure.value.code == code, past_bound
+
+
+def test_csv_preflight_refuses_a_delimiter_flood_after_reading_only_the_column_bound() -> None:
+    limits = replace(ParserLimits(), max_csv_columns=16)
+    consumed = 0
+
+    def one_row_of_delimiters() -> Iterator[str]:
+        # A single record of 10**12 delimiters, produced lazily: neither the
+        # text nor any record of it is ever materialized.
+        nonlocal consumed
+        for _ in range(10**12):
+            consumed += 1
+            yield ","
+
+    with pytest.raises(StructuredParseError) as failure:
+        preflight_csv(one_row_of_delimiters(), limits)
+    assert failure.value.code == "CSV_COLUMN_LIMIT"
+    # The refusal comes at the delimiter that opens one field too many. Each
+    # character here is one ASCII byte, so this bounds the bytes read too.
+    assert 0 < consumed <= limits.max_csv_columns
+
+
+def test_csv_preflight_refuses_an_oversized_quoted_field_without_reading_past_the_bound() -> None:
+    limits = replace(ParserLimits(), max_csv_field_chars=64)
+    consumed = 0
+
+    def one_quoted_field(unit: str) -> Iterator[str]:
+        # An opening quote, then field text that never ends, one character
+        # at a time so every doubled quote is split across two chunks.
+        nonlocal consumed
+        consumed += 1
+        yield '"'
+        for _ in range(10**12):
+            for char in unit:
+                consumed += 1
+                yield char
+
+    with pytest.raises(StructuredParseError) as failure:
+        preflight_csv(one_quoted_field("x"), limits)
+    assert failure.value.code == "CSV_FIELD_LIMIT"
+    # The opening quote plus one character more than a field may hold.
+    assert 0 < consumed <= limits.max_csv_field_chars + 2
+
+    # Doubled quotes are one field character for two source characters.
+    consumed = 0
+    with pytest.raises(StructuredParseError) as failure:
+        preflight_csv(one_quoted_field('""'), limits)
+    assert failure.value.code == "CSV_FIELD_LIMIT"
+    assert 0 < consumed <= 2 * (limits.max_csv_field_chars + 1) + 1
+
+
+def test_parse_csv_runs_the_preflight_before_the_reader_is_built(
+    parse_context: ParseContext,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[str] = []
+    original_preflight = csv_parser.preflight_csv
+    original_reader = csv.reader
+
+    def recording_preflight(chunks: Iterable[str], limits: ParserLimits) -> CsvPreflight:
+        calls.append("preflight")
+        return original_preflight(chunks, limits)
+
+    def recording_reader(*args: Any, **kwargs: Any) -> Any:
+        calls.append("reader")
+        return original_reader(*args, **kwargs)
+
+    monkeypatch.setattr(csv_parser, "preflight_csv", recording_preflight)
+    monkeypatch.setattr(csv, "reader", recording_reader)
+
+    _parse(filename="ledger.csv", data=CSV_SOURCE.encode("utf-8"), context=parse_context)
+    assert calls == ["preflight", "reader"]
+
+    # Under the default bounds: one record of four million delimiters, and one
+    # quoted field a character longer than a field may hold. Both are refused
+    # by the preflight; the reader that would build them is never created.
+    oversized: list[tuple[bytes, str]] = [
+        (b"," * 4_000_000 + b"\r\n", "CSV_COLUMN_LIMIT"),
+        (b'"' + b"x" * (ParserLimits().max_csv_field_chars + 1) + b'"\r\n', "CSV_FIELD_LIMIT"),
+    ]
+    for payload, code in oversized:
+        calls.clear()
+        with pytest.raises(StructuredParseError) as failure:
+            _parse(filename="flood.csv", data=payload, context=parse_context)
+        assert failure.value.code == code
+        assert calls == ["preflight"]
+
+
+def test_legacy_hwp_stays_unsupported_and_renamed_ooxml_is_not_hwpx(
+    parse_context: ParseContext,
+    docx_bytes: bytes,
+) -> None:
+    assert "csv" in SUPPORTED_EXTENSIONS
+    assert "hwpx" in SUPPORTED_EXTENSIONS
+    assert "hwp" not in SUPPORTED_EXTENSIONS
+    sources = [
+        (
+            "report.hwp",
+            "application/x-hwp",
+            b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + b"\x00" * 504,
+            "UNSUPPORTED_NON_PDF_TYPE",
+        ),
+        # A DOCX renamed .hwpx is refused by the HWPX package check, not parsed.
+        ("report.hwpx", "application/hwp+zip", docx_bytes, "HWPX_PACKAGE_KIND_MISMATCH"),
+    ]
+    for filename, declared_mime, payload, code in sources:
+        with pytest.raises(StructuredParseError) as failure:
+            parse_non_pdf_to_cir(
+                filename=filename,
+                declared_mime=declared_mime,
+                data=payload,
+                context=parse_context,
+            )
+        assert failure.value.code == code
+
+
+@pytest.mark.parametrize("filename", ["report.hwp", "REPORT.HWP"])
+def test_legacy_hwp_is_rejected_by_extension_before_any_content_check(
+    parse_context: ParseContext,
+    filename: str,
+) -> None:
+    # Placeholder bytes, not a real HWP file: the extension alone, in any
+    # case, is refused before MIME or magic bytes are looked at.
+    assert not {"hwp", ".hwp"} & SUPPORTED_EXTENSIONS
+    with pytest.raises(StructuredParseError) as failure:
+        parse_non_pdf_to_cir(
+            filename=filename,
+            declared_mime="application/octet-stream",
+            data=b"placeholder, not a real document",
+            context=parse_context,
+        )
+    assert failure.value.code == "UNSUPPORTED_NON_PDF_TYPE"
+
+
+@pytest.mark.parametrize(
+    ("filename", "declared_mime", "code"),
+    [
+        ("report.hwpx", "application/octet-stream", "MIME_MISMATCH"),
+        ("REPORT.HWPX", "application/hwp+zip", "HWPX_MAGIC_MISMATCH"),
+    ],
+)
+def test_hwpx_placeholder_bytes_never_reach_the_parser(
+    parse_context: ParseContext,
+    filename: str,
+    declared_mime: str,
+    code: str,
+) -> None:
+    with pytest.raises(StructuredParseError) as failure:
+        parse_non_pdf_to_cir(
+            filename=filename,
+            declared_mime=declared_mime,
+            data=b"placeholder, not a real document",
+            context=parse_context,
+        )
+    assert failure.value.code == code
+
+
+def test_cfb_containers_are_unsupported_and_never_classified_by_content(
+    parse_context: ParseContext,
+) -> None:
+    # The parser does not walk the compound file directory, so it cannot
+    # tell an encrypted OOXML package from a legacy binary workbook or an HWP
+    # file. A stream name appearing anywhere in the bytes proves nothing.
+    cfb_header = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + b"\x00" * 120
+    payloads = {
+        "encrypted_package_name": cfb_header
+        + "EncryptedPackage".encode("utf-16-le")
+        + b"\x00" * 64,
+        "legacy_xls_workbook_name": cfb_header + "Workbook".encode("utf-16-le") + b"\x00" * 64,
+        "hwp_file_header_name": cfb_header + "FileHeader".encode("utf-16-le") + b"\x00" * 64,
+        "bare_header": cfb_header,
+    }
+    for filename in ("workbook.xlsx", "document.docx", "deck.pptx"):
+        for label, payload in payloads.items():
+            with pytest.raises(StructuredParseError) as failure:
+                _parse(filename=filename, data=payload, context=parse_context)
+            code = failure.value.code
+            assert code == "OFFICE_CFB_CONTAINER_UNSUPPORTED", (filename, label)
+            # No claim of encryption, and no claim of a decrypted or parsed body.
+            assert "ENCRYPT" not in code, (filename, label)
+
+    # Legacy binary XLS is not an accepted type at all; it is never parsed.
+    assert "xls" not in SUPPORTED_EXTENSIONS
+    with pytest.raises(StructuredParseError) as failure:
+        parse_non_pdf_to_cir(
+            filename="legacy.xls",
+            declared_mime="application/vnd.ms-excel",
+            data=payloads["legacy_xls_workbook_name"],
+            context=parse_context,
+        )
+    assert failure.value.code == "UNSUPPORTED_NON_PDF_TYPE"
+
+
+def test_encrypted_corrupt_macro_and_external_link_workbooks_fail_closed(
+    parse_context: ParseContext,
+    xlsx_bytes: bytes,
+) -> None:
+    rejected: list[tuple[bytes, str]] = [
+        (_flag_first_zip_entry_encrypted(xlsx_bytes), "ARCHIVE_ENCRYPTED_ENTRY"),
+        (xlsx_bytes[: len(xlsx_bytes) // 2], "INVALID_OFFICE_ARCHIVE"),
+        (
+            _rewrite_zip(
+                xlsx_bytes,
+                additions={"xl/externalLinks/externalLink1.xml": b"<externalLink/>"},
+            ),
+            "OFFICE_EMBEDDED_OBJECT",
+        ),
+        (
+            _rewrite_zip(
+                xlsx_bytes,
+                transform={
+                    "xl/_rels/workbook.xml.rels": lambda value: value.replace(
+                        b"</Relationships>",
+                        (
+                            b'<Relationship Id="rIdExternal" '
+                            b'Type="http://schemas.openxmlformats.org/officeDocument/'
+                            b'2006/relationships/externalLink" '
+                            b'Target="https://example.invalid/book.xlsx" '
+                            b'TargetMode="External"/></Relationships>'
+                        ),
+                    )
+                },
+            ),
+            "OFFICE_EXTERNAL_RELATION",
+        ),
+        (
+            _rewrite_zip(xlsx_bytes, additions={"xl/vbaProject.bin": b"not a macro"}),
+            "OFFICE_ACTIVE_CONTENT",
+        ),
+    ]
+    for payload, code in rejected:
+        with pytest.raises(StructuredParseError) as failure:
+            _parse(filename="workbook.xlsx", data=payload, context=parse_context)
+        assert failure.value.code == code, code
+
+
+def _sheet_table(document: CanonicalDocument, sheet_index0: int) -> CanonicalTable:
+    for block in document.blocks:
+        if block.table is not None and block.source_refs[0].page_index0 == sheet_index0:
+            return block.table
+    raise AssertionError(f"no table for sheet {sheet_index0}")
+
+
+def _story_table(story: Any, *texts: str) -> Any:
+    table = story.add_table(rows=1, cols=len(texts), width=WordInches(6))
+    for column, text in enumerate(texts):
+        table.cell(0, column).text = text
+    return table
+
+
+def _set_grid_span(cell: Any, value: str | None) -> None:
+    # The raw attribute text, so invalid lexical values reach the parser as-is.
+    grid_span = cell._tc.get_or_add_tcPr().get_or_add_gridSpan()
+    if value is not None:
+        grid_span.set(qn("w:val"), value)
+
+
+def _refusal_before_cell_expansion(
+    monkeypatch: pytest.MonkeyPatch,
+    data: bytes,
+    context: ParseContext,
+    limits: ParserLimits | None = None,
+) -> str:
+    """Parse with python-docx row.cells disabled and return the refusal code."""
+
+    expanded: list[Any] = []
+
+    def refuse(row: Any) -> Any:
+        expanded.append(row)
+        raise AssertionError("row.cells expanded before the table bounds were checked")
+
+    with monkeypatch.context() as patch:
+        patch.setattr(_Row, "cells", property(refuse))
+        with pytest.raises(StructuredParseError) as failure:
+            _parse(filename="bounded.docx", data=data, context=context, limits=limits)
+    assert not expanded
+    return failure.value.code
+
+
+def _word_bytes(word: Any) -> bytes:
+    output = io.BytesIO()
+    word.save(output)
+    return output.getvalue()
+
+
+def _story_refs(document: CanonicalDocument) -> list[tuple[BlockType, str]]:
+    return [
+        (block.type, native_id)
+        for block in document.blocks
+        if (native_id := block.source_refs[0].native_object_id or "").startswith("docx/section/")
+    ]
+
+
+def _table_ids(document: CanonicalDocument) -> list[str]:
+    return [
+        block.source_refs[0].native_object_id or ""
+        for block in document.blocks
+        if block.type == BlockType.TABLE
+    ]
+
+
+def _table_at(document: CanonicalDocument, native_object_id: str) -> CanonicalTable:
+    for block in document.blocks:
+        if block.table is not None and block.source_refs[0].native_object_id == native_object_id:
+            return block.table
+    raise AssertionError(f"no table at {native_object_id}")
+
+
+def _cell(table: CanonicalTable, native_object_id: str) -> CanonicalCell:
+    matches = [
+        cell for cell in table.cells if cell.source_refs[0].native_object_id == native_object_id
+    ]
+    assert len(matches) == 1, native_object_id
+    return matches[0]
+
+
+def _cell_schema_validator() -> Draft202012Validator:
+    schema = json.loads(CANONICAL_DOCUMENT_SCHEMA.read_text(encoding="utf-8"))
+    return Draft202012Validator(
+        {
+            "$schema": schema["$schema"],
+            "$defs": schema["$defs"],
+            "$ref": "#/$defs/cell",
+        }
+    )
+
+
+def _reader_shape(text: str) -> CsvPreflight:
+    """The counts the preflight must reach, taken from what csv.reader yields."""
+
+    records = list(csv.reader(io.StringIO(text, newline=""), strict=True))
+    return CsvPreflight(
+        record_count=len(records),
+        field_count=sum(len(record) for record in records),
+        widest_record=max((len(record) for record in records), default=0),
+        longest_field=max((len(field) for record in records for field in record), default=0),
+        stopped_at_syntax_error=False,
+    )
+
+
+def _flag_first_zip_entry_encrypted(source: bytes) -> bytes:
+    """Set the encryption bit on the first central-directory record only."""
+
+    payload = bytearray(source)
+    end_of_directory = payload.rfind(b"PK\x05\x06")
+    assert end_of_directory >= 0
+    (directory_offset,) = struct.unpack_from("<I", payload, end_of_directory + 16)
+    assert payload[directory_offset : directory_offset + 4] == b"PK\x01\x02"
+    (flags,) = struct.unpack_from("<H", payload, directory_offset + 8)
+    struct.pack_into("<H", payload, directory_offset + 8, flags | 0x1)
+    return bytes(payload)
 
 
 def _rewrite_zip(

@@ -24,6 +24,7 @@ export default defineConfig([
     ".next-e2e-live/**",
     ".next-*/**",
     "coverage/**",
+    "storybook-static/**",
     "playwright-report/**",
     "test-results/**",
     // The PDF.js worker is a vendored, minified third-party bundle served as a

@@ -67,7 +67,7 @@ class OpenRouterClient:
         environment: dict[str, str] | None = None,
         credential_file=None,
         timeout_s: float = 45.0,
-    ) -> tuple["OpenRouterClient", str]:
+    ) -> tuple[OpenRouterClient, str]:
         """Return (client, pinned_model_id); fallbacks only on auth/model errors."""
         try:
             api_key = load_openrouter_key(environment=environment, credential_file=credential_file)
@@ -84,7 +84,7 @@ class OpenRouterClient:
                     phase="probe",
                 )
                 return client, model_id
-            except ModelAuthError as exc:
+            except ModelAuthError:
                 last_error = f"{model_id}: auth/model error"
                 client.usage.events.append({"event": "probe_fallback", "from": model_id})
                 continue
@@ -108,31 +108,45 @@ class OpenRouterClient:
             "temperature": 0,
             "max_tokens": max_tokens,
         }
-        backoffs = [2.0, 4.0, 8.0]
         for attempt in range(1, self._max_attempts + 1):
             self.usage.calls += 1
             started = time.monotonic()
             try:
-                response = httpx.post(API_URL, headers=headers, json=payload, timeout=self._timeout_s)
+                response = httpx.post(
+                    API_URL, headers=headers, json=payload, timeout=self._timeout_s
+                )
             except (httpx.TimeoutException, httpx.TransportError) as exc:
-                self._record(phase, attempt, "transport_error", round(time.monotonic() - started, 2))
+                self._record(
+                    phase, attempt, "transport_error", round(time.monotonic() - started, 2)
+                )
                 if attempt < self._max_attempts:
                     self._sleep(attempt)
                     continue
                 self.usage.hard_failures += 1
-                raise ModelTransientError(f"{phase}: transport failed after {attempt} attempts") from exc
+                raise ModelTransientError(
+                    f"{phase}: transport failed after {attempt} attempts"
+                ) from exc
             if response.status_code in (401, 403) or (
                 response.status_code == 400 and "not a valid model" in response.text.lower()
             ):
                 self.usage.hard_failures += 1
-                raise ModelAuthError(f"{phase}: rejected by provider (status {response.status_code})")
+                raise ModelAuthError(
+                    f"{phase}: rejected by provider (status {response.status_code})"
+                )
             if response.status_code == 429 or response.status_code >= 500:
-                self._record(phase, attempt, f"http_{response.status_code}", round(time.monotonic() - started, 2))
+                self._record(
+                    phase,
+                    attempt,
+                    f"http_{response.status_code}",
+                    round(time.monotonic() - started, 2),
+                )
                 if attempt < self._max_attempts:
                     self._sleep(attempt)
                     continue
                 self.usage.hard_failures += 1
-                raise ModelTransientError(f"{phase}: http {response.status_code} after {attempt} attempts")
+                raise ModelTransientError(
+                    f"{phase}: http {response.status_code} after {attempt} attempts"
+                )
             if response.status_code != 200:
                 self.usage.hard_failures += 1
                 raise ModelHardError(f"{phase}: unexpected http {response.status_code}")

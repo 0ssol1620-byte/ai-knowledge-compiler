@@ -36,8 +36,12 @@ every refusal is an explicit UNRESOLVED (Contract A) rather than a guess.
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
+from typing import Protocol
 
-from mcp.server.fastmcp import FastMCP
+# The ``mcp`` package is optional at runtime; mypy may see its untyped
+# registration decorators depending on the selected environment.
+from mcp.server.fastmcp import FastMCP  # type: ignore[import-not-found,unused-ignore]
 
 from .settings import LocalMcpSettings
 from .store import LocalWorldStore
@@ -69,6 +73,17 @@ def _outside_scope(tool_name: str) -> str:
 
 __all__ = ["build_server", "main"]
 
+_Handler = Callable[..., str]
+
+
+class _Registrar(Protocol):
+    """The two FastMCP registration hooks used here, typed locally so the
+    handlers stay typed whether or not ``mcp`` is installed."""
+
+    def tool(self, name: str) -> Callable[[_Handler], _Handler]: ...
+
+    def resource(self, uri: str) -> Callable[[_Handler], _Handler]: ...
+
 SERVER_NAME = "akc-local-mcp"
 
 _INSTRUCTIONS = (
@@ -95,8 +110,9 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
     resolved = settings or LocalMcpSettings()
     store = LocalWorldStore(resolved.world_state_dir)
     server: FastMCP = FastMCP(name=SERVER_NAME, instructions=_INSTRUCTIONS)
+    registry: _Registrar = server
 
-    @server.tool(name="get_current_truth")
+    @registry.tool(name="get_current_truth")
     def get_current_truth_tool(topic: str) -> str:
         """Return the current-truth record for one topic, with its claims.
 
@@ -108,7 +124,7 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
             return _outside_scope("get_current_truth")
         return _to_json(get_current_truth(store, topic))
 
-    @server.tool(name="get_evidence")
+    @registry.tool(name="get_evidence")
     def get_evidence_tool(claim_id: str) -> str:
         """Return one claim's evidence chain from the ACTIVE world.
 
@@ -119,7 +135,7 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
             return _outside_scope("get_evidence")
         return _to_json(get_evidence(store, claim_id))
 
-    @server.tool(name="search_world")
+    @registry.tool(name="search_world")
     def search_world_tool(query: str, limit: int = 10) -> str:
         """Search topics and claims by case-insensitive substring.
 
@@ -130,7 +146,7 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
             return _outside_scope("search_world")
         return _to_json(search_world(store, query, limit=limit))
 
-    @server.tool(name="ask_as_of")
+    @registry.tool(name="ask_as_of")
     def ask_as_of_tool(topic: str, as_of_date: str) -> str:
         """Answer a topic's truth as it stood at a past date.
 
@@ -141,7 +157,7 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
         """
         return _to_json(ask_as_of(store, topic, as_of_date))
 
-    @server.tool(name="get_entity")
+    @registry.tool(name="get_entity")
     def get_entity_tool(entity_id: str) -> str:
         """Return one resolved entity with its claims from the ACTIVE world.
 
@@ -150,7 +166,7 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
         """
         return _to_json(get_entity(store, entity_id))
 
-    @server.tool(name="get_claim")
+    @registry.tool(name="get_claim")
     def get_claim_tool(claim_id: str) -> str:
         """Return one claim's compiled record (text, status, evidence).
 
@@ -158,7 +174,7 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
         """
         return _to_json(get_claim(store, claim_id))
 
-    @server.tool(name="get_change")
+    @registry.tool(name="get_change")
     def get_change_tool(change_id: str | None = None, source_path: str | None = None) -> str:
         """Look up one recorded source change by change_id or by source_path.
 
@@ -167,7 +183,7 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
         """
         return _to_json(get_change(store, change_id, source_path=source_path))
 
-    @server.tool(name="trace_impact")
+    @registry.tool(name="trace_impact")
     def trace_impact_tool(
         entity_or_claim_id: str, direction: str = "downstream", max_depth: int | None = None
     ) -> str:
@@ -179,7 +195,7 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
         """
         return _to_json(trace_impact(store, entity_or_claim_id, direction, max_depth=max_depth))
 
-    @server.tool(name="get_world")
+    @registry.tool(name="get_world")
     def get_world_tool(world_id: str | None = None) -> str:
         """Summarize one world's manifest and composition.
 
@@ -188,7 +204,7 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
         """
         return _to_json(get_world(store, world_id))
 
-    @server.tool(name="compare_worlds")
+    @registry.tool(name="compare_worlds")
     def compare_worlds_tool(world_a: str, world_b: str) -> str:
         """Diff two worlds' claims: added in B, removed from A, values changed.
 
@@ -197,7 +213,7 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
         """
         return _to_json(compare_worlds(store, world_a, world_b))
 
-    @server.resource("worlds://index")
+    @registry.resource("worlds://index")
     def worlds_index() -> str:
         """List every world directory that declares a readable manifest."""
         manifests = store.list_worlds()
@@ -207,7 +223,7 @@ def build_server(settings: LocalMcpSettings | None = None) -> FastMCP:
         }
         return json.dumps(payload, ensure_ascii=False, indent=2)
 
-    @server.resource("worlds://{world_id}/manifest")
+    @registry.resource("worlds://{world_id}/manifest")
     def world_manifest(world_id: str) -> str:
         """Read one world's published manifest verbatim."""
         manifest = store.load_manifest(world_id)

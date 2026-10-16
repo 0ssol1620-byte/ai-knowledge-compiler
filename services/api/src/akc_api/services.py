@@ -154,6 +154,15 @@ from akc_api.visual_gpu import (
 
 logger = logging.getLogger(__name__)
 
+_INTERNAL_CROSS_CHECK_REASONS = frozenset(
+    {"cross_check_peer_measured", "cross_check_peer_unavailable"}
+)
+
+
+def _public_route_reasons(reason_codes: Sequence[str]) -> list[str]:
+    """Keep measured second-reader readiness out of customer DTOs and events."""
+    return [code for code in reason_codes if code not in _INTERNAL_CROSS_CHECK_REASONS]
+
 
 async def audit(
     session: AsyncSession,
@@ -485,7 +494,7 @@ async def analyze_document(
                 "suspected_prompt_injection": injection.suspected,
                 "prompt_injection_risk": injection.risk.value,
                 "prompt_injection_rules": [signal.rule_id for signal in injection.signals],
-                "route_reasons": list(route_decision.reason_codes),
+                "route_reasons": _public_route_reasons(route_decision.reason_codes),
                 "route_profile": route_decision.route_profile.value,
                 "expected_credits": route_decision.expected_credits,
             },
@@ -3906,7 +3915,7 @@ async def _run_compile_job_impl(
                     "route_profile": route_profile,
                     "processing_mode": page_context.mode.value,
                     "sensitive_data_detected": has_sensitive_secret,
-                    "reasons": list(route_reasons),
+                    "reasons": _public_route_reasons(route_reasons),
                     "estimated_credits": expected_credits,
                     **(
                         {
@@ -3982,14 +3991,14 @@ async def _run_compile_job_impl(
                         max_attempts=max_attempts,
                         job_id=job.id,
                         reason="compile_route_selected",
-                        payload={"reason_codes": list(route_reasons)},
+                        payload={"reason_codes": _public_route_reasons(route_reasons)},
                     )
                 await transition_page_attempt(
                     session,
                     page_attempt,
                     (PageState.QUARANTINED if route == Route.QUARANTINE else PageState.UNRESOLVED),
                     reason="automatic_route_isolated",
-                    payload={"reason_codes": list(route_reasons)},
+                    payload={"reason_codes": _public_route_reasons(route_reasons)},
                 )
                 await emit_event(
                     session,
@@ -4047,7 +4056,7 @@ async def _run_compile_job_impl(
                         max_attempts=max_attempts,
                         job_id=job.id,
                         reason="compile_route_selected",
-                        payload={"reason_codes": list(route_reasons)},
+                        payload={"reason_codes": _public_route_reasons(route_reasons)},
                     )
                 state = PageState(page_attempt.status)
                 if state == PageState.PREFLIGHTED:
@@ -4120,7 +4129,7 @@ async def _run_compile_job_impl(
                         max_attempts=max_attempts,
                         job_id=job.id,
                         reason="compile_route_selected",
-                        payload={"reason_codes": list(route_reasons)},
+                        payload={"reason_codes": _public_route_reasons(route_reasons)},
                     )
                 state = PageState(page_attempt.status)
                 if state == PageState.PREFLIGHTED:

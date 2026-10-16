@@ -40,6 +40,25 @@ GUARD = REPO_ROOT / "scripts" / "ip_privilege_guard.py"
 IP_GITIGNORE = REPO_ROOT / "docs" / "ip" / ".gitignore"
 HOOK = REPO_ROOT / ".githooks" / "pre-commit"
 
+
+@pytest.fixture(autouse=True)
+def _do_not_trace_guard_subprocesses(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The fixture's throwaway git hooks are outside the core coverage scope.
+
+    pytest-cov propagates its subprocess startup settings into git hooks. The
+    copied guard then starts in a scratch repository without pyproject.toml and
+    writes statement-only data, which cannot combine with our branch coverage.
+    The outer test remains covered; only these isolated child processes opt out.
+    """
+
+    for name in (
+        "COV_CORE_SOURCE",
+        "COV_CORE_CONFIG",
+        "COV_CORE_DATAFILE",
+        "COVERAGE_PROCESS_START",
+    ):
+        monkeypatch.delenv(name, raising=False)
+
 #: Stand-in for a claim chart. Deliberately not a real analysis -- the test only
 #: needs the shape that must never be committed.
 PRIVILEGED_BODY = """\

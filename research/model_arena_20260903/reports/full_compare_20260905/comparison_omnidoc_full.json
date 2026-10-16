@@ -1,0 +1,182 @@
+{
+  "generated_at_kst": "2026-09-06 06:59 KST",
+  "cloud_cost_usd": 0,
+  "gt_full_pages": 1651,
+  "settled_leaderboard": [
+    {
+      "model": "paddleocr_vl_1_6",
+      "tag": "settled_full_1651",
+      "gt": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\acquired\\public-core\\omnidocbench\\OmniDocBench.json",
+      "page_count": 1651,
+      "elapsed_seconds": 3862.162483692169,
+      "returncode": 0,
+      "error": null,
+      "text_edit": 0.04258990084547369,
+      "formula_edit": 0.08675582063822039,
+      "table_edit": 0.05127512718920824,
+      "table_teds": 0.9343771234810438,
+      "reading_order_edit": 0.1303752613462286
+    },
+    {
+      "model": "infinity_parser2_flash",
+      "tag": "settled_full_1651_priority_flash",
+      "gt": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\acquired\\public-core\\omnidocbench\\OmniDocBench.json",
+      "page_count": 1651,
+      "elapsed_seconds": 40919.370594501495,
+      "returncode": 0,
+      "error": null,
+      "text_edit": 0.04486710197411037,
+      "formula_edit": 0.14073222469775745,
+      "table_edit": 0.12926098809663256,
+      "table_teds": 0.820213653204851,
+      "reading_order_edit": 0.1376551902112244
+    },
+    {
+      "model": "deepseek_ocr2",
+      "tag": "settled_full_1651",
+      "gt": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\acquired\\public-core\\omnidocbench\\OmniDocBench.json",
+      "page_count": 1651,
+      "elapsed_seconds": null,
+      "returncode": 0,
+      "error": null,
+      "text_edit": 0.058428365213310136,
+      "formula_edit": 0.12590957002015002,
+      "table_edit": 0.11777843053928444,
+      "table_teds": 0.784612185551888,
+      "reading_order_edit": 0.1499599214925253
+    }
+  ],
+  "reference": [
+    {
+      "model": "glm_ocr",
+      "tag": "settled_full_1651_parallel",
+      "gt": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\acquired\\public-core\\omnidocbench\\OmniDocBench.json",
+      "page_count": 1651,
+      "elapsed_seconds": 15255.281249523163,
+      "returncode": 0,
+      "error": null,
+      "text_edit": 0.08458447244961506,
+      "formula_edit": 0.2960040257800328,
+      "table_edit": 0.5013872217801912,
+      "table_teds": 0.4873975975975486,
+      "reading_order_edit": 0.2126865436083129
+    },
+    {
+      "model": "opus5_subscription",
+      "tag": "settled_full_1651_parallel",
+      "gt": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\acquired\\public-core\\omnidocbench\\OmniDocBench.json",
+      "page_count": 1651,
+      "elapsed_seconds": 16664.917875766754,
+      "returncode": 0,
+      "error": null,
+      "text_edit": 0.0896186246104797,
+      "formula_edit": 0.14578510130063985,
+      "table_edit": 0.5402926750449081,
+      "table_teds": 0.8283613154045,
+      "reading_order_edit": 0.1674707928556213
+    }
+  ],
+  "pending": [
+    "hpd_parsing",
+    "infinity_parser2_pro",
+    "mineru_pipeline",
+    "mineru_vlm",
+    "monkeyocrv2_b",
+    "olmocr2",
+    "ovisocr2",
+    "unlimited_ocr"
+  ],
+  "raw_rows_debug": [
+    {
+      "model": "hpd_parsing",
+      "tag": "settled_full_1651_parallel",
+      "gt": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\acquired\\public-core\\omnidocbench\\OmniDocBench.json",
+      "page_count": null,
+      "elapsed_seconds": 42698.71677327156,
+      "returncode": 0,
+      "error": null,
+      "text_edit": null,
+      "formula_edit": null,
+      "table_edit": null,
+      "table_teds": null,
+      "reading_order_edit": null
+    },
+    {
+      "model": "mineru_vlm",
+      "tag": "settled_full_1651_parallel",
+      "gt": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\acquired\\public-core\\omnidocbench\\OmniDocBench.json",
+      "page_count": null,
+      "elapsed_seconds": 41739.14698815346,
+      "returncode": 0,
+      "error": null,
+      "text_edit": null,
+      "formula_edit": null,
+      "table_edit": null,
+      "table_teds": null,
+      "reading_order_edit": null
+    },
+    {
+      "model": "monkeyocrv2_b",
+      "tag": "settled_full_1651_parallel",
+      "gt": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\acquired\\public-core\\omnidocbench\\OmniDocBench.json",
+      "page_count": null,
+      "elapsed_seconds": 46141.24590539932,
+      "returncode": 0,
+      "error": null,
+      "text_edit": null,
+      "formula_edit": null,
+      "table_edit": null,
+      "table_teds": null,
+      "reading_order_edit": null
+    },
+    {
+      "model": "olmocr2",
+      "tag": "settled_full_1651_parallel",
+      "gt": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\acquired\\public-core\\omnidocbench\\OmniDocBench.json",
+      "page_count": null,
+      "elapsed_seconds": 16844.410573482513,
+      "returncode": 0,
+      "error": null,
+      "text_edit": null,
+      "formula_edit": null,
+      "table_edit": null,
+      "table_teds": null,
+      "reading_order_edit": null
+    },
+    {
+      "model": "ovisocr2",
+      "tag": "settled_full_1651_parallel",
+      "gt": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\acquired\\public-core\\omnidocbench\\OmniDocBench.json",
+      "page_count": null,
+      "elapsed_seconds": 41246.18236517906,
+      "returncode": 0,
+      "error": null,
+      "text_edit": null,
+      "formula_edit": null,
+      "table_edit": null,
+      "table_teds": null,
+      "reading_order_edit": null
+    },
+    {
+      "model": "unlimited_ocr",
+      "tag": "settled_full_1651_parallel",
+      "gt": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\acquired\\public-core\\omnidocbench\\OmniDocBench.json",
+      "page_count": null,
+      "elapsed_seconds": 18208.024232387543,
+      "returncode": 0,
+      "error": null,
+      "text_edit": null,
+      "formula_edit": null,
+      "table_edit": null,
+      "table_teds": null,
+      "reading_order_edit": null
+    }
+  ],
+  "methodology": {
+    "evaluator": "OmniDocBench end2end quick_match",
+    "driver": "reports/full_compare_20260905/_win_omnidoc_score_full.py",
+    "gt": "D:\\CodexProjects\\ai-knowledge-compiler\\benchmark\\datasets\\acquired\\public-core\\omnidocbench\\OmniDocBench.json",
+    "no_capture_output": true,
+    "gpu_spend_usd": 0
+  }
+}

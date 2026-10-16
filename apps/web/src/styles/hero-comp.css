@@ -189,6 +189,15 @@
    * luck. §5 makes the source side warm paper and the output side white, so
    * the two are distinguishable in greyscale (§25.4 squint test).
    */
+  /*
+   * The facsimile is aria-hidden: an image of a page, not text to read. Its
+   * type scales with the page (cqw) and has no px floor, because a floor
+   * inside fixed bbox blocks with overflow: hidden does not make the page
+   * readable — it clips the title and drops table rows, so the picture stops
+   * matching the coordinates it illustrates. The sr-only sentence beside it
+   * and the recto output carry the content at readable sizes. tavonel.css
+   * exempts this subtree from the leaf floor for the same reason.
+   */
   .tv-hero-comp-paper {
     position: absolute;
     inset: 0;
@@ -203,21 +212,32 @@
     container-type: inline-size;
   }
 
+  /*
+   * The running head is two labels whose combined mono width is wider than the
+   * text column at any page width, since both scale with cqw. They wrap rather
+   * than clip: the journal name stays left, the demo disclaimer sits right on
+   * its own line, and both lines still end above the title's bbox.
+   */
   .tv-hero-comp-paper-head {
     position: absolute;
     top: 3.2%;
     right: 11%;
     left: 11%;
     display: flex;
-    justify-content: space-between;
-    gap: var(--s-3);
+    flex-wrap: wrap;
+    gap: 0.2em var(--s-3);
     padding-bottom: 0.6%;
     white-space: nowrap;
     border-bottom: 1px solid var(--rule-paper-2);
     color: var(--ink-3);
     font-family: var(--font-mono);
-    font-size: max(12px, 2.1cqw);
+    font-size: 2.1cqw;
     letter-spacing: 0.06em;
+    line-height: 1.3;
+  }
+
+  .tv-hero-comp-paper-head > span {
+    margin-left: auto;
   }
 
   .tv-hero-comp-block {
@@ -230,25 +250,30 @@
 
   .tv-hero-comp-block[data-kind="title"] {
     align-items: center;
-    font-size: max(16px, 3.6cqw);
+    font-size: 3.6cqw;
     font-weight: 700;
     line-height: 1.18;
   }
 
+  /* The heading bbox is a single line 34.6% of the page wide. 2.5cqw keeps
+     "4.2 Experimental results" on that line in a wide serif (Georgia bold),
+     just above the paragraph's 2.4cqw; nowrap means a wider fallback face can
+     at worst run long, never drop to a second line the bbox cannot hold. */
   .tv-hero-comp-block[data-kind="heading"] {
     align-items: center;
-    font-size: max(14px, 2.8cqw);
+    font-size: 2.5cqw;
     font-weight: 700;
+    white-space: nowrap;
   }
 
   .tv-hero-comp-block[data-kind="paragraph"] {
-    font-size: max(12px, 2.4cqw);
+    font-size: 2.4cqw;
     text-align: justify;
   }
 
   .tv-hero-comp-block[data-kind="table"] {
     flex-direction: column;
-    font-size: max(12px, 2.1cqw);
+    font-size: 2.1cqw;
   }
 
   .tv-hero-comp-block table {
@@ -284,7 +309,7 @@
     bottom: 3.5%;
     left: 50%;
     color: var(--ink-3);
-    font-size: max(12px, 2.1cqw);
+    font-size: 2.1cqw;
     translate: -50%;
   }
 

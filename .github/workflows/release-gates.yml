@@ -77,6 +77,7 @@ jobs:
           verify_run() {
             local expected_name="$1"
             local run_id="$2"
+            local expected_path="$3"
             local payload
             payload="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}")"
             jq -e \
@@ -84,15 +85,55 @@ jobs:
               --arg name "$expected_name" \
               '.head_sha == $sha and .name == $name and .conclusion == "success"' \
               <<<"$payload" >/dev/null
+            local attempt jobs_payload latest_payload
+            attempt="$(jq -er '.run_attempt | select(type == "number" and . >= 1 and . == floor)' <<<"$payload")"
+            # Use the latest run attempt only; refuse a truncated/paginated job list rather than
+            # accepting a marker from an older attempt or an arbitrary first hundred jobs.
+            jobs_payload="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}/attempts/${attempt}/jobs?per_page=100")"
+            latest_payload="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${run_id}")"
+            RUN_PAYLOAD="$payload" JOBS_PAYLOAD="$jobs_payload" LATEST_PAYLOAD="$latest_payload" \
+              EXPECTED_WORKFLOW="$expected_name" EXPECTED_PATH="$expected_path" EXPECTED_RUN_ID="$run_id" EXPECTED_ATTEMPT="$attempt" \
+              python3 - <<'PY'
+          import json
+          import os
+
+          def validate_prerequisite(run, jobs, latest, name, run_id, attempt, sha, workflow_path):
+              for payload in (run, latest):
+                  if (payload.get("head_sha") != sha or payload.get("name") != name
+                          or payload.get("status") != "completed" or payload.get("conclusion") != "success"
+                          or payload.get("run_attempt") != attempt
+                          or str(payload.get("path", "")).split("@", 1)[0] != workflow_path):
+                      raise ValueError("Prerequisite run identity/status/latest attempt differs")
+              total = jobs.get("total_count")
+              records = jobs.get("jobs")
+              if type(total) is not int or total < 1 or total > 100 or not isinstance(records, list) or len(records) != total:
+                  raise ValueError("Prerequisite jobs list is missing, paginated or truncated")
+              markers = [job for job in records if job.get("name") == "Full qualification"]
+              if len(markers) != 1:
+                  raise ValueError("Unique Full qualification marker is required")
+              marker = markers[0]
+              # Attempt identity is bound by the requested attempt endpoint plus latest-run
+              # recheck. The official job schema does not require a run_attempt field.
+              if (marker.get("run_id") != run_id or marker.get("head_sha") != sha
+                      or marker.get("status") != "completed" or marker.get("conclusion") != "success"):
+                  raise ValueError("Full qualification marker identity/status differs")
+
+          if __name__ == "__main__":
+              validate_prerequisite(json.loads(os.environ["RUN_PAYLOAD"]), json.loads(os.environ["JOBS_PAYLOAD"]),
+                                    json.loads(os.environ["LATEST_PAYLOAD"]), os.environ["EXPECTED_WORKFLOW"],
+                                    int(os.environ["EXPECTED_RUN_ID"]), int(os.environ["EXPECTED_ATTEMPT"]),
+                                    os.environ["RELEASE_REVISION"], os.environ["EXPECTED_PATH"])
+          PY
           }
-          verify_run "CI" "$CI_RUN_ID"
-          verify_run "Security" "$SECURITY_RUN_ID"
+          verify_run "CI" "$CI_RUN_ID" ".github/workflows/ci.yml"
+          verify_run "Security" "$SECURITY_RUN_ID" ".github/workflows/security.yml"
           if [[ "$MODEL_CI_RUN_ID" != "0" ]]; then
-            verify_run "Model CI" "$MODEL_CI_RUN_ID"
+            verify_run "Model CI" "$MODEL_CI_RUN_ID" ".github/workflows/model-ci.yml"
           fi
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           ref: ${{ inputs.release_revision }}
+          fetch-depth: 0
           persist-credentials: false
       - name: Verify checkout revision and source archive
         env:
@@ -109,6 +150,11 @@ jobs:
           python -m pip install "uv==0.12.0"
           python -m uv sync --locked --extra dev
           python -m uv pip check --python .venv/bin/python
+      - name: Prepare hash-pinned historical parser upgrade fixtures
+        run: |
+          python scripts/prepare_parser_upgrade_fixtures.py \
+            --repo "$GITHUB_WORKSPACE" --output "$RUNNER_TEMP/parser-upgrade-fixtures" \
+            --github-env "$GITHUB_ENV"
       - name: Re-run local source and contract gates
         run: |
           .venv/bin/ruff check packages services workers benchmark infra tests

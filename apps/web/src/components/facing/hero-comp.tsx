@@ -199,7 +199,18 @@ export function HeroComp({
 function VersoPage() {
   return (
     <div className="tv-hero-comp-page">
-      <article className="tv-hero-comp-paper">
+      {/*
+        The facsimile is drawn at page scale, well under the 12px text floor,
+        so it is an image of a page rather than text to read. Its content is
+        the compiled output on the recto; this names what the picture is.
+      */}
+      <p className="sr-only">
+        Sample source page 8, a demo document and not an actual source:
+        &ldquo;Evaluating evidence fidelity in retrieval-augmented
+        generation&rdquo;, section 4.2 Experimental results, with Table 3
+        comparing a baseline and a verification-enabled configuration.
+      </p>
+      <article className="tv-hero-comp-paper" aria-hidden="true">
         <div className="tv-hero-comp-paper-head">
           SAMPLE · JOURNAL OF RELIABLE AI SYSTEMS
           <span>Demo document · not an actual source</span>

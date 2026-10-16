@@ -178,7 +178,8 @@ def test_world_change_rewrites_only_the_changed_entity(tmp_path: Path) -> None:
     assert rerun.files_written == 1
     assert rerun.files_unchanged == 5
     changed = out_dir / "People" / "ent_ada.md"
-    assert changed.stat().st_mtime_ns > before[changed]
+    # The content and write count prove replacement; some filesystems report
+    # the same timestamp for two writes within one clock tick.
     assert 'authority_state: "REVISED"' in changed.read_text(encoding="utf-8")
     after = _mtimes(out_dir)
     untouched = [path for path in before if path != changed]

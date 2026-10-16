@@ -13,6 +13,7 @@ from pathlib import Path
 
 import bleach
 import filetype
+from akc_security.hwpx import HwpxLimits, HwpxPackageError, inspect_hwpx_package
 from bs4 import BeautifulSoup
 from docx import Document as DocxDocument
 from openpyxl import load_workbook
@@ -33,6 +34,7 @@ ALLOWED_EXTENSIONS = {
     ".docx",
     ".pptx",
     ".xlsx",
+    ".hwpx",
     ".csv",
     ".html",
     ".htm",
@@ -42,7 +44,9 @@ ALLOWED_EXTENSIONS = {
     ".srt",
 }
 TEXT_EXTENSIONS = {".csv", ".html", ".htm", ".txt", ".md", ".vtt", ".srt"}
-ZIP_EXTENSIONS = {".docx", ".pptx", ".xlsx"}
+ZIP_EXTENSIONS = {".docx", ".pptx", ".xlsx", ".hwpx"}
+# Formats with no legacy page extractor: only the native structured parser reads them.
+NATIVE_ONLY_EXTENSIONS = {".hwpx"}
 MIME_BY_EXTENSION = {
     ".pdf": {"application/pdf"},
     ".png": {"image/png"},
@@ -54,6 +58,7 @@ MIME_BY_EXTENSION = {
     ".docx": {"application/vnd.openxmlformats-officedocument.wordprocessingml.document"},
     ".pptx": {"application/vnd.openxmlformats-officedocument.presentationml.presentation"},
     ".xlsx": {"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},
+    ".hwpx": {"application/hwp+zip"},
     ".csv": {"text/csv", "text/plain", "application/csv"},
     ".html": {"text/html", "application/xhtml+xml"},
     ".htm": {"text/html", "application/xhtml+xml"},
@@ -126,6 +131,24 @@ def _check_archive(data: bytes, settings: Settings) -> None:
         raise FileValidationError("INVALID_OFFICE_ARCHIVE", "invalid Office archive") from exc
 
 
+def _check_hwpx(data: bytes, settings: Settings) -> None:
+    # The shared inspector, with configured archive limits that may tighten its
+    # ceilings but never widen them.
+    ceiling = HwpxLimits()
+    limits = HwpxLimits(
+        max_input_bytes=min(settings.max_upload_bytes, ceiling.max_input_bytes),
+        max_entries=min(settings.max_archive_files, ceiling.max_entries),
+        max_uncompressed_bytes=min(
+            settings.max_archive_uncompressed_bytes, ceiling.max_uncompressed_bytes
+        ),
+        max_compression_ratio=min(settings.max_archive_ratio, ceiling.max_compression_ratio),
+    )
+    try:
+        inspect_hwpx_package(data, limits)
+    except HwpxPackageError as exc:
+        raise FileValidationError(exc.code.upper(), "HWPX package rejected") from exc
+
+
 def validate_file(
     *, filename: str, declared_mime: str, data: bytes, expected_sha256: str, settings: Settings
 ) -> tuple[str, str]:
@@ -144,7 +167,9 @@ def validate_file(
     kind = filetype.guess(data[:8192])
     if extension == ".pdf" and (kind is None or kind.mime != "application/pdf"):
         raise FileValidationError("MAGIC_MISMATCH", "PDF magic bytes are invalid")
-    if extension in ZIP_EXTENSIONS:
+    if extension == ".hwpx":
+        _check_hwpx(data, settings)
+    elif extension in ZIP_EXTENSIONS:
         if not data.startswith(b"PK"):
             raise FileValidationError("MAGIC_MISMATCH", "Office magic bytes are invalid")
         _check_archive(data, settings)
@@ -290,6 +315,13 @@ def parse_document(
     pdf_password: bytes | None = None,
 ) -> ParsedDocument:
     extension = Path(filename).suffix.lower()
+    if extension in NATIVE_ONLY_EXTENSIONS:
+        # Never fall through to text decoding: a ZIP package decoded as text
+        # would look like a successful parse of garbage.
+        raise FileValidationError(
+            "STRUCTURED_PARSER_REQUIRED",
+            "this format is read only by the native structured parser",
+        )
     if extension == ".pdf":
         parsed = _parse_pdf(data, settings.max_pages, password=pdf_password)
     elif extension == ".docx":

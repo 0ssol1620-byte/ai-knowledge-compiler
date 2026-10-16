@@ -24,7 +24,7 @@ import threading
 import time
 from collections.abc import Callable
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, TextIO
 
 from .config import DesktopAppConfig
 from .ttfw import PHASE_WORLD_DETECTED, TtfwLog, find_worlds
@@ -106,7 +106,7 @@ def detect_and_log_worlds(config: DesktopAppConfig) -> list[str]:
     return [world.world_id for world in worlds]
 
 
-def _wait_for_interrupt(err) -> None:  # type: ignore[no-untyped-def]
+def _wait_for_interrupt(err: TextIO) -> None:
     """Sleep until Ctrl+C; periodic wakeups keep signals deliverable."""
     stop = threading.Event()
     print("(waiting — Ctrl+C to stop)", file=err)
@@ -120,8 +120,8 @@ def _wait_for_interrupt(err) -> None:  # type: ignore[no-untyped-def]
 def run_serve(
     config: DesktopAppConfig,
     *,
-    out,
-    err,
+    out: TextIO,
+    err: TextIO,
     dry_run: bool = False,
     watch_only: bool = False,
     watcher_factory: Callable[[], WatcherLike] | None = None,

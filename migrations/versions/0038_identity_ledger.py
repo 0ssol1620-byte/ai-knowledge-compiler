@@ -131,8 +131,7 @@ def _grant_api_plane() -> None:
         "IF EXISTS (\n"
         f"    SELECT 1 FROM pg_roles WHERE rolname = '{_API_PLANE_ROLE}'\n"
         ") THEN\n"
-        'EXECUTE \'GRANT SELECT, INSERT ON TABLE "{_TABLE}" TO\'\n'
-        f"       '{_API_PLANE_ROLE}';\n"
+        f'EXECUTE \'GRANT SELECT, INSERT ON TABLE "{_TABLE}" TO "{_API_PLANE_ROLE}"\';\n'
         "END IF;\n"
         "END $$;"
     )

@@ -15,7 +15,14 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
 import { apiRequest } from "@/lib/api-client";
 import type { StructaraLocale } from "@/lib/locale";
@@ -392,6 +399,11 @@ export function KnowledgeStudio({
   const [tab, setTab] = useState<Tab>("Graph");
   const [perspective, setPerspective] = useState<Perspective>("Document");
   const [query, setQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement>(null);
+  // Text typed before hydration sits in the DOM without reaching state.
+  useEffect(() => {
+    if (searchRef.current?.value) setQuery(searchRef.current.value);
+  }, []);
   const [selectedId, setSelectedId] = useState("company:jtc");
 
   const provenance = useQuery({
@@ -592,6 +604,7 @@ export function KnowledgeStudio({
           <label>
             <MagnifyingGlass size={15} />
             <input
+              ref={searchRef}
               value={query}
               onInput={(event) => setQuery(event.currentTarget.value)}
               placeholder={copy.searchPlaceholder}
@@ -728,8 +741,17 @@ export function KnowledgeStudio({
           )}
 
           {tab === "Relations" && (
-            <div className="knowledge-table-wrap">
-              <table className="knowledge-accessible-table">
+            // Focusable so keyboard users can scroll it; it has no controls.
+            <div
+              className="knowledge-table-wrap"
+              role="region"
+              aria-label={copy.relationsCaption}
+              tabIndex={0}
+            >
+              <table
+                className="knowledge-accessible-table"
+                data-table="relations"
+              >
                 <caption>{copy.relationsCaption}</caption>
                 <thead>
                   <tr>
@@ -744,7 +766,7 @@ export function KnowledgeStudio({
                     <tr key={relation.id}>
                       <td>{nodeTitle(nodes, relation.subjectId)}</td>
                       <td>
-                        <code>{relation.predicate}</code>
+                        <code>{breakableIdentifier(relation.predicate)}</code>
                       </td>
                       <td>{nodeTitle(nodes, relation.objectId)}</td>
                       <td>{relation.evidenceBlockIds.length}</td>
@@ -756,7 +778,12 @@ export function KnowledgeStudio({
           )}
 
           {tab === "Evidence" && (
-            <div className="knowledge-evidence-ledger">
+            <div
+              className="knowledge-evidence-ledger"
+              role="region"
+              aria-label={copy.tabs.Evidence}
+              tabIndex={0}
+            >
               {blocks.map((block) => (
                 <article
                   key={block.block_id}
@@ -886,6 +913,20 @@ export function KnowledgeStudio({
       </div>
     </div>
   );
+}
+
+/** Offers a line break after each underscore without altering the text. */
+function breakableIdentifier(value: string): ReactNode {
+  return value.split("_").map((part, index, parts) => (
+    <Fragment key={index}>
+      {part}
+      {index < parts.length - 1 && (
+        <>
+          _<wbr />
+        </>
+      )}
+    </Fragment>
+  ));
 }
 
 function nodeTitle(nodes: KnowledgeNode[], id: string): string {

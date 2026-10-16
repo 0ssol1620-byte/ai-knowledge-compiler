@@ -17,8 +17,38 @@ DIMENSION = 4096
 _WORD_PATTERN = re.compile(r"[a-z0-9]+")
 
 _STOPWORDS = frozenset(
-    """a an and are as at be by for from has have in is it its of on or that the
-    this to was were what which who will with""".split()
+    [
+        "a",
+        "an",
+        "and",
+        "are",
+        "as",
+        "at",
+        "be",
+        "by",
+        "for",
+        "from",
+        "has",
+        "have",
+        "in",
+        "is",
+        "it",
+        "its",
+        "of",
+        "on",
+        "or",
+        "that",
+        "the",
+        "this",
+        "to",
+        "was",
+        "were",
+        "what",
+        "which",
+        "who",
+        "will",
+        "with",
+    ]
 )
 
 
@@ -28,7 +58,7 @@ def content_tokens(text: str) -> list[str]:
 
 
 def _slot(token: str) -> int:
-    digest = hashlib.sha1(token.encode("utf-8")).digest()
+    digest = hashlib.sha1(token.encode("utf-8"), usedforsecurity=False).digest()
     return int.from_bytes(digest[:4], "big") % DIMENSION
 
 
@@ -114,14 +144,18 @@ class RagIndex:
         self.chunk_sources: dict[str, tuple[str, int]] = {}
         for source_id in sorted(documents):
             text = documents[source_id]["text"]
-            for position, chunk in enumerate(chunk_text(text, chunk_chars=chunk_chars, overlap_chars=overlap_chars)):
+            for position, chunk in enumerate(
+                chunk_text(text, chunk_chars=chunk_chars, overlap_chars=overlap_chars)
+            ):
                 chunk_id = f"{source_id}#c{position:03d}"
                 items.append((chunk_id, chunk))
                 self.chunk_sources[chunk_id] = (source_id, position)
         self._retriever = LexicalRetriever(items)
         self.chunk_count = len(items)
 
-    def context_for(self, documents: dict[str, dict], question: str, *, top_k: int = 5) -> tuple[str, list[str]]:
+    def context_for(
+        self, documents: dict[str, dict], question: str, *, top_k: int = 5
+    ) -> tuple[str, list[str]]:
         hits = self._retriever.search(question, top_k=top_k)
         lines: list[str] = []
         source_ids: list[str] = []

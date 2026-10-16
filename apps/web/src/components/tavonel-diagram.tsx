@@ -25,7 +25,16 @@ export function TavonelDiagram({ id }: { id: TavonelDiagramId }) {
       <div className="tv-diagram-canvas" aria-hidden="true">
         <svg viewBox="0 0 960 280" preserveAspectRatio="none">
           <path d="M120 140H840" />
-          <path d="M275 140l-18-12v24zM495 140l-18-12v24zM715 140l-18-12v24z" />
+          {/* Tips sit 9 units past each gap centre (26.34%, 50%, 73.66% of
+              960), so each 18-unit head is centred in its inter-node gap. */}
+          {[262, 489, 716].map((tip, index) => (
+            <path
+              key={tip}
+              className="tv-diagram-arrowhead"
+              data-arrow={index + 1}
+              d={`M${tip} 140l-18-12v24z`}
+            />
+          ))}
         </svg>
         {diagram.nodes.map((node, index) => (
           <div key={node}>
