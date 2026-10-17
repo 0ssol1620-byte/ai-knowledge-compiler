@@ -19,6 +19,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
+import re
 from pathlib import Path
 from typing import Any
 
@@ -109,7 +111,8 @@ def _group_metric(payload: dict[str, Any], group: str, metric: str) -> float:
     """
     for entry in payload["groups"]:
         if entry["group"] == group:
-            return round(entry["aggregate_metrics"][metric], 4)
+            value: float = entry["aggregate_metrics"][metric]
+            return round(value, 4)
     raise KeyError(f"ParseBench group {group!r} not present in the summary")
 
 
@@ -127,6 +130,67 @@ def _check_evidence_is_bound(claims: list[dict[str, Any]]) -> None:
             raise ValueError(
                 f"claim {claim['id']!r} is publishable but cites no evidence"
             )
+
+
+def _count_rate(part: int, whole: int) -> str:
+    """A rate written with its denominator: the one form a must_say may use."""
+    if whole <= 0 or not 0 <= part <= whole:
+        raise ValueError(f"{part}/{whole} is not a rate")
+    return f"{part:,}/{whole:,} ({part / whole:.1%})"
+
+
+_RATE = re.compile(r"\d+(?:\.\d+)?%")
+_COUNTED_RATE = re.compile(r"\d[\d,]*/\d[\d,]* \(\d+(?:\.\d+)?%\)")
+
+# Claims whose must_say still states a bare rate. Rewording a public claim is a
+# founder decision and FD-9 covers benchmark-accuracy only, so these two wait for
+# their own. The set may only shrink: a claim that no longer needs it fails.
+_BARE_RATE_PENDING = frozenset({"accuracy-by-document-type", "customer-facing-fidelity"})
+
+
+def _check_rates_carry_denominators(claims: list[dict[str, Any]]) -> None:
+    """Refuse a must_say that states a percentage without the count behind it.
+
+    benchmark-accuracy shipped "the pass rate over 8,413 checks" beside 80.6,
+    which is a mean of eight per-type rates; the check-level rate is 84.8%. A
+    rate that has to be written as part/whole cannot pick up the wrong whole.
+    """
+    for claim in claims:
+        bare = [
+            rate
+            for field in ("must_say", "must_say_en")
+            for rate in _RATE.findall(_COUNTED_RATE.sub("", claim.get(field, "")))
+        ]
+        if claim["id"] in _BARE_RATE_PENDING:
+            if not bare:
+                raise ValueError(
+                    f"claim {claim['id']!r} now states its denominators; "
+                    "remove it from _BARE_RATE_PENDING"
+                )
+            continue
+        if bare:
+            raise ValueError(
+                f"claim {claim['id']!r} states {bare} in its must_say without a "
+                "denominator; write the rate with _count_rate()"
+            )
+
+
+def _olmocr_score_definition(summary: dict[str, Any]) -> dict[str, int]:
+    """Confirm what olmOCR-Bench's overall_score is before a sentence names it.
+
+    It is the unweighted mean of the per-type pass rates, not passed/total over
+    every check. Both readings are recomputed here, so a summary that does not
+    fit the sentence stops the build instead of publishing it.
+    """
+    types = list(summary["per_jsonl"].values())
+    mean = sum(t["pass_rate"] for t in types) / len(types)
+    if not math.isclose(mean, summary["overall_score"], rel_tol=0, abs_tol=1e-9):
+        raise ValueError("olmOCR-Bench overall_score is not the mean of the per-type pass rates")
+    passed = sum(t["passed"] for t in types)
+    total = sum(t["total"] for t in types)
+    if total != summary["test_count"] or passed != total - summary["rule_failure_count"]:
+        raise ValueError("olmOCR-Bench per-type check counts do not add up to test_count")
+    return {"types": len(types), "checks_passed": passed, "checks_total": total}
 
 
 def _check_evidence_is_readable(repository: Path, claims: list[dict[str, Any]]) -> None:
@@ -160,7 +224,8 @@ def _check_evidence_is_readable(repository: Path, claims: list[dict[str, Any]]) 
 
 
 def _load(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8-sig"))
+    payload: dict[str, Any] = json.loads(path.read_text(encoding="utf-8-sig"))
+    return payload
 
 
 def _canonical_hash(payload: dict[str, Any]) -> str:
@@ -177,7 +242,8 @@ def _blueprint_summary(repository: Path) -> list[dict[str, Any]]:
         sys.path.insert(0, str(source))
     from akc_domain_packs.blueprints import builtin_blueprints
 
-    return builtin_blueprints().model_dump()["blueprints"]
+    blueprints: list[dict[str, Any]] = builtin_blueprints().model_dump()["blueprints"]
+    return blueprints
 
 
 def build_claims(repository: Path) -> dict[str, Any]:
@@ -227,8 +293,16 @@ def build_claims(repository: Path) -> dict[str, Any]:
     omni_with = _load(omni_with_path)
     omni_without = _load(omni_without_path)
 
+    olm_score = _olmocr_score_definition(olm_with)
+    olm_overall = f"{olm_with['overall_score'] * 100:.1f}"
+    olm_checks = _count_rate(olm_score["checks_passed"], olm_score["checks_total"])
+    failing_documents = _count_rate(
+        blind["cases_with_official_failures"], blind["corpus_cases"]
+    )
+
     def edit(payload: dict[str, Any], section: str) -> float:
-        return payload[section]["all"]["Edit_dist"]["ALL_page_avg"]
+        value: float = payload[section]["all"]["Edit_dist"]["ALL_page_avg"]
+        return value
 
     group_metric = _group_metric
 
@@ -443,21 +517,29 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 ),
             },
             "must_say": (
-                "이 점수는 적대적으로 설계된 개별 검사 8,413개의 통과율이며, 공개 "
-                "리더보드 최상위도 83.1입니다. 비교 기준은 100이 아닙니다. 문서의 "
-                "72.3%에는 최소 하나의 오류가 있으므로 무결성을 암시해서는 안 됩니다."
+                f"{olm_overall}은 문서 유형 {olm_score['types']}개의 통과율을 단순 "
+                "평균한 값입니다. 적대적으로 설계된 개별 검사 기준으로는 "
+                f"{olm_checks}가 통과했습니다. 공개 리더보드 최상위도 83.1이므로 "
+                "비교 기준은 100이 아닙니다. 캠페인 실패 분석에서 채점한 문서 "
+                f"{failing_documents}에 최소 하나의 오류가 있으며, 이는 olmOCR-Bench "
+                "문서만의 비율이 아닙니다. 무결성을 암시해서는 안 됩니다."
             ),
             "must_say_en": (
-                "This is the pass rate over 8,413 adversarially chosen checks; the top "
+                f"{olm_overall} is the unweighted mean of the pass rates of the "
+                f"{olm_score['types']} document types. Counted check by check, "
+                f"{olm_checks} of the adversarially chosen checks pass. The top "
                 "published system scores 83.1, so the reference point is not 100. "
-                "72.3% of documents carry at least one failure, so nothing here should "
+                f"{failing_documents} of the documents scored in the campaign's "
+                "failure study carry at least one failure, a rate over the whole "
+                "campaign rather than olmOCR-Bench alone, so nothing here should "
                 "imply flawless output."
             ),
             "forbidden": [
                 "정확도 100% / 무오류 / 완벽한 추출",
                 "80.6%를 단독 헤드라인으로 제시하고 유형별 편차를 생략하는 구성",
+                "80.6을 8,413개 검사의 통과율로 표기하는 표현 (검사 기준 통과율은 별도 수치)",
             ],
-            **_evidence(repository, olm_with_path),
+            **_evidence(repository, olm_with_path, blind_path),
         },
         {
             "id": "customer-facing-fidelity",
@@ -682,6 +764,7 @@ def build_claims(repository: Path) -> dict[str, Any]:
 
     _check_evidence_is_bound(claims)
     _check_evidence_is_readable(repository, claims)
+    _check_rates_carry_denominators(claims)
 
     return {
         "schema": "folynta.public-claims-pack.v1",
