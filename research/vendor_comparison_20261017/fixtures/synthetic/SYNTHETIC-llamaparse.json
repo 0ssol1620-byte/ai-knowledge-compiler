@@ -1,0 +1,78 @@
+{
+  "label": "SYNTHETIC",
+  "note": "SYNTHETIC LlamaParse replay of the documented upload -> create job -> poll flow (llamaparse-tiers.html sha256 a12df665...). Ids, texts and the in-progress status name are invented; 2026-01-08 is the dated version the vendor doc uses as its example, not a chosen pin.",
+  "vendor": "llamaparse",
+  "pin": {"arm_id": "D-V-llamaparse", "api_key_env": "SYNTHETIC_LLAMAPARSE_KEY_NAME", "timeout_s": 300, "config": {"tier": "agentic", "version": "2026-01-08"}},
+  "document": {"doc_id": "SYNTHETIC-doc-001", "pages": 2, "pdf_text": "%PDF-1.7\n% SYNTHETIC harness bytes, not a real document\n%%EOF\n"},
+  "scenarios": [
+    {
+      "name": "ok",
+      "exchanges": [
+        {"status": 200, "json": {"id": "SYNTHETIC-file-1"}},
+        {"status": 200, "json": {"id": "SYNTHETIC-job-1"}},
+        {"status": 200, "json": {"job": {"status": "SYNTHETIC_IN_PROGRESS"}}},
+        {"status": 200, "json": {
+          "job": {"status": "COMPLETED"},
+          "markdown": {"pages": [{"markdown": "# SYNTHETIC page one"}, {"markdown": "SYNTHETIC page two text."}]},
+          "metadata": {"version": "2026-01-08", "usage": {"num_pages_billed": 2}}
+        }}
+      ],
+      "expected": {
+        "status": "ok", "attempts": 4, "page_count": 2,
+        "markdown": "# SYNTHETIC page one\n\nSYNTHETIC page two text.",
+        "usage": {"num_pages_billed": 2, "version": "2026-01-08"},
+        "requests": ["upload_file", "create_job", "get_job", "get_job"],
+        "cost": {"snapshot_usd": "0.025000", "metadata_usd": "0.025000", "charged_usd": "0.025000"}
+      }
+    },
+    {
+      "name": "cached_parse_bills_zero_pages",
+      "exchanges": [
+        {"status": 200, "json": {"id": "SYNTHETIC-file-1"}},
+        {"status": 200, "json": {"id": "SYNTHETIC-job-2"}},
+        {"status": 200, "json": {
+          "job": {"status": "COMPLETED"},
+          "markdown": {"pages": [{"markdown": "SYNTHETIC cached text."}]},
+          "metadata": {"version": "2026-01-08", "usage": {"num_pages_billed": 0}}
+        }}
+      ],
+      "expected": {"status": "ok", "attempts": 3, "page_count": 1, "cost": {"snapshot_usd": "0.025000", "metadata_usd": "0.000000", "charged_usd": "0.025000"}}
+    },
+    {
+      "name": "poll_rate_limited_then_completed",
+      "exchanges": [
+        {"status": 200, "json": {"id": "SYNTHETIC-file-1"}},
+        {"status": 200, "json": {"id": "SYNTHETIC-job-3"}},
+        {"status": 429, "text": "SYNTHETIC rate limit"},
+        {"status": 200, "json": {"job": {"status": "COMPLETED"}, "markdown": {"pages": [{"markdown": "SYNTHETIC text."}]}}}
+      ],
+      "expected": {"status": "ok", "attempts": 4, "usage": {}, "cost": {"snapshot_usd": "0.025000", "metadata_usd": null, "charged_usd": "0.025000"}}
+    },
+    {
+      "name": "job_failed",
+      "exchanges": [
+        {"status": 200, "json": {"id": "SYNTHETIC-file-1"}},
+        {"status": 200, "json": {"id": "SYNTHETIC-job-4"}},
+        {"status": 200, "json": {"job": {"status": "FAILED", "error_message": "SYNTHETIC failure message"}}}
+      ],
+      "expected": {"status": "vendor_job_failed", "failure_class": "operational", "attempts": 3, "markdown": "", "detail": "job FAILED: SYNTHETIC failure message"}
+    },
+    {
+      "name": "empty_output",
+      "exchanges": [
+        {"status": 200, "json": {"id": "SYNTHETIC-file-1"}},
+        {"status": 200, "json": {"id": "SYNTHETIC-job-5"}},
+        {"status": 200, "json": {"job": {"status": "COMPLETED"}, "markdown": {"pages": [{"markdown": ""}, {"markdown": " "}]}}}
+      ],
+      "expected": {"status": "empty_output", "failure_class": "semantic", "attempts": 3, "markdown": "", "page_count": 2}
+    },
+    {
+      "name": "create_job_without_id",
+      "exchanges": [
+        {"status": 200, "json": {"id": "SYNTHETIC-file-1"}},
+        {"status": 200, "json": {"SYNTHETIC_unexpected": true}}
+      ],
+      "expected": {"status": "malformed_response", "attempts": 2, "requests": ["upload_file", "create_job"]}
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "label": "SYNTHETIC",
+  "note": "SYNTHETIC transport-level failures replayed against the FIRST request of every adapter (cases() in run.py). No byte here came from a vendor. Each scenario scripts exactly the exchanges the adapter must consume.",
+  "scenarios": [
+    {
+      "name": "rate_limited_exhausted",
+      "exchanges": [
+        {"status": 429, "text": "SYNTHETIC rate limit"},
+        {"status": 429, "text": "SYNTHETIC rate limit"},
+        {"status": 429, "text": "SYNTHETIC rate limit"}
+      ],
+      "expected": {"status": "rate_limited", "failure_class": "operational", "attempts": 3, "markdown": ""}
+    },
+    {
+      "name": "server_error_exhausted",
+      "exchanges": [
+        {"status": 503, "text": "SYNTHETIC unavailable"},
+        {"status": 500, "text": "SYNTHETIC internal error"},
+        {"status": 502, "text": "<html>SYNTHETIC bad gateway</html>"}
+      ],
+      "expected": {"status": "server_error", "failure_class": "operational", "attempts": 3, "markdown": ""}
+    },
+    {
+      "name": "timeout_not_retried",
+      "exchanges": [{"timeout": true}],
+      "expected": {"status": "timeout", "failure_class": "operational", "attempts": 1, "raw_sha256": null, "markdown": ""}
+    },
+    {
+      "name": "size_rejected_413",
+      "exchanges": [{"status": 413, "text": "SYNTHETIC payload too large"}],
+      "expected": {"status": "size_rejected", "failure_class": "limit", "attempts": 1, "markdown": ""}
+    },
+    {
+      "name": "broken_json",
+      "exchanges": [{"status": 200, "text": "{\"markdown\": \"SYNTHETIC truncated"}],
+      "expected": {"status": "malformed_response", "failure_class": "operational", "attempts": 1, "markdown": ""}
+    },
+    {
+      "name": "unauthorized_401",
+      "exchanges": [{"status": 401, "text": "SYNTHETIC unauthorized"}],
+      "expected": {"status": "http_error", "failure_class": "operational", "attempts": 1, "markdown": ""}
+    }
+  ]
+}
