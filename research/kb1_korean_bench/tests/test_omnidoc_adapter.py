@@ -4,14 +4,24 @@ Internal cross-validation only: OmniDocBench is research-only-non-commercial and
 dataset is never touched here. Every page is the SYNTHETIC KS fixture or a SYNTHETIC
 mutation of it, and every "evaluator output" below is a SYNTHETIC file shaped like the
 pinned evaluator's (receipt core-lanes/KB-A4). No number in this file is a measured result.
+
+The ``*_evaluator`` tests run the pinned evaluator's own ``normalized_text`` from an
+unmodified local checkout at the pin (``KB1_OMNIDOC_EVALUATOR``, default
+``benchmark/cache/omnidoc``; interpreter ``KB1_OMNIDOC_PYTHON``, default ``py -3.10``)
+and compare it with the adapter's restatement. Without the checkout they skip and
+say where they looked; the ``*_restatement`` tests still pin the restatement.
 """
 
 from __future__ import annotations
 
 import copy
 import json
+import os
+import shutil
+import subprocess
 import unicodedata
 from collections import Counter
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any
 
@@ -131,32 +141,120 @@ def test_run_predictions_send_empty_pages_for_failed_rows(gold: dict[str, Any]) 
 # ------------------------------------------------------ pinned blind spot (I-10)
 
 
-def test_m6_symbols_fold_or_vanish_in_the_evaluator() -> None:
-    for char in harness.M6_SYMBOLS:
-        view = oa.omnidoc_text_view(char)
-        if char in CIRCLED_1_TO_20:
-            assert view == str(ord(char) - 0x2460 + 1)  # ① -> "1", ⑳ -> "20"
-        else:
-            assert view == "", char
+M6_VIEWS = {c: str(ord(c) - 0x2460 + 1) if c in CIRCLED_1_TO_20 else "" for c in harness.M6_SYMBOLS}
+NUMERIC_PAIRS = [("1,234,000원", "1234000원"), ("-2.50%", "250%"), ("2026. 10. 17.", "20261017")]
+SURVIVORS = ("대한민국", "大韓", "ㆍ", "本文書", chr(0xF900))
+QUIRKS = {"a/nb\tc\nd": "abcd", "\\textcircled{7}": "7", "x_y": "x_y"}  # underscore is \w
+
+EVALUATOR_ENV, PYTHON_ENV = "KB1_OMNIDOC_EVALUATOR", "KB1_OMNIDOC_PYTHON"
+EVALUATOR = Path(
+    os.environ.get(EVALUATOR_ENV)
+    or Path(__file__).resolve().parents[3] / "benchmark" / "cache" / "omnidoc"
+)
+# Runs inside the checkout; imports the evaluator's code as it is, edits nothing.
+_NORMALIZE = (
+    "import json, sys\n"
+    "from src.core.preprocess.data_preprocess import normalized_text\n"
+    "json.dump({p: normalized_text(p) for p in json.load(sys.stdin)}, sys.stdout)\n"
+)
+Evaluator = Callable[[Iterable[str]], dict[str, str]]
+
+
+def _git(*args: str) -> str:
+    done = subprocess.run(  # noqa: S603 - fixed argv, no shell
+        ["git", "-C", str(EVALUATOR), *args],  # noqa: S607 - git from PATH
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return done.stdout.strip()
+
+
+@pytest.fixture(scope="module")
+def evaluator() -> Evaluator:
+    """The pinned evaluator's ``normalized_text``, from an unmodified checkout at the pin."""
+    if not (EVALUATOR / "src" / "core" / "preprocess" / "data_preprocess.py").is_file():
+        pytest.skip(f"no OmniDocBench evaluator checkout at {EVALUATOR} (set {EVALUATOR_ENV})")
+    configured = os.environ.get(PYTHON_ENV)
+    python = [configured] if configured else ["py", "-3.10"]
+    if shutil.which(python[0]) is None:
+        pytest.skip(f"evaluator interpreter {python[0]!r} not on PATH (set {PYTHON_ENV})")
+    head = _git("rev-parse", "HEAD")
+    if head != oa.EVALUATOR_PIN:
+        pytest.fail(f"{EVALUATOR} is at {head}, not the pin {oa.EVALUATOR_PIN}")
+    if changed := _git("status", "--porcelain", "--untracked-files=no"):
+        pytest.fail(f"{EVALUATOR} is modified; the evaluator must run unmodified:\n{changed}")
+    env = {**os.environ, "PYTHONDONTWRITEBYTECODE": "1", "PYTHONIOENCODING": "utf-8"}
+
+    def run(probes: Iterable[str]) -> dict[str, str]:
+        done = subprocess.run(  # noqa: S603 - fixed argv, no shell
+            [*python, "-B", "-c", _NORMALIZE],
+            cwd=EVALUATOR,
+            env=env,
+            input=json.dumps(sorted(set(probes))),
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=300,
+            check=False,
+        )
+        assert done.returncode == 0, done.stderr
+        views: dict[str, str] = json.loads(done.stdout)
+        return views
+
+    return run
+
+
+def test_m6_symbols_fold_or_vanish_in_the_restatement() -> None:
+    assert {c: oa.omnidoc_text_view(c) for c in harness.M6_SYMBOLS} == M6_VIEWS
     assert CIRCLED_1_TO_20 < harness.M6_SYMBOLS
 
 
-def test_hangul_hanja_and_araea_survive_the_evaluator() -> None:
-    for text in ("대한민국", "大韓", "ㆍ", "本文書", chr(0xF900)):
+def test_m6_symbols_fold_or_vanish_in_the_evaluator(evaluator: Evaluator) -> None:
+    views = evaluator(harness.M6_SYMBOLS)
+    for char in harness.M6_SYMBOLS:
+        assert (char, views[char]) == (char, oa.omnidoc_text_view(char))
+    assert views == M6_VIEWS  # ① -> "1", ⑳ -> "20", the rest deleted
+
+
+def test_hangul_hanja_and_araea_survive_the_restatement() -> None:
+    for text in SURVIVORS:
         assert oa.omnidoc_text_view(text) == text
 
 
-def test_korean_numerics_lose_their_punctuation_in_the_evaluator() -> None:
-    pairs = [("1,234,000원", "1234000원"), ("-2.50%", "250%"), ("2026. 10. 17.", "20261017")]
-    for gold_text, output in pairs:
+def test_korean_numerics_lose_their_punctuation_in_the_restatement() -> None:
+    for gold_text, output in NUMERIC_PAIRS:
         assert oa.omnidoc_text_view(gold_text) == oa.omnidoc_text_view(output)
         assert extract(gold_text) != extract(output)  # M3 sees what Edit_dist cannot
 
 
+def test_korean_numerics_lose_their_punctuation_in_the_evaluator(evaluator: Evaluator) -> None:
+    views = evaluator(text for pair in NUMERIC_PAIRS for text in pair)
+    for gold_text, output in NUMERIC_PAIRS:
+        assert views[gold_text] == oa.omnidoc_text_view(gold_text)
+        assert views[output] == oa.omnidoc_text_view(output)
+        assert views[gold_text] == views[output]
+
+
 def test_restated_quirks_of_the_pinned_clean_string() -> None:
-    assert oa.omnidoc_text_view("a/nb\tc\nd") == "abcd"
-    assert oa.omnidoc_text_view("\\textcircled{7}") == "7"
-    assert oa.omnidoc_text_view("x_y") == "x_y"  # underscore is \w
+    for text, view in QUIRKS.items():
+        assert oa.omnidoc_text_view(text) == view
+
+
+def test_restated_quirks_and_survivors_match_the_evaluator(evaluator: Evaluator) -> None:
+    views = evaluator([*QUIRKS, *SURVIVORS])
+    for text in [*QUIRKS, *SURVIVORS]:
+        assert views[text] == oa.omnidoc_text_view(text), text
+    assert views == {**QUIRKS, **{text: text for text in SURVIVORS}}
+
+
+def test_ks_gold_text_matches_the_evaluator(gold: dict[str, Any], evaluator: Evaluator) -> None:
+    texts = [p["text"] for p in gold["pages"]]
+    probes = {*texts, *(char for text in texts for char in text)}
+    views = evaluator(probes)
+    mismatched = {p: (views[p], oa.omnidoc_text_view(p)) for p in probes}
+    assert {p: v for p, v in mismatched.items() if v[0] != v[1]} == {}
 
 
 def test_ks_blind_spot_is_pinned(gold: dict[str, Any]) -> None:

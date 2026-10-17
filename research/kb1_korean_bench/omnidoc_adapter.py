@@ -34,7 +34,8 @@ everything outside ``[\w\u4e00-\u9fff]`` is *deleted*, which includes ``※ 「 
 punctuation, so ``1,234,000원`` and ``1234000원``, or ``-2.50%`` and ``250%``,
 are the same text to it. Hangul, hanja and ``ㆍ`` (U+318D, a Hangul letter)
 survive. ``omnidoc_text_view`` restates that rule so CI can pin it without the
-evaluator; the KB-A4 receipt checks the restatement against the pinned code.
+evaluator; the ``*_evaluator`` tests in ``tests/test_omnidoc_adapter.py`` check the
+restatement against the pinned code whenever a checkout at the pin is present.
 """
 
 from __future__ import annotations

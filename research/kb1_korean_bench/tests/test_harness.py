@@ -7,12 +7,12 @@ this file is a measured result.
 from __future__ import annotations
 
 import json
-import re
 import unicodedata
 from pathlib import Path
 from typing import Any
 
 import pytest
+from akc_quality.numeric import compare_numeric_tokens, extract_numeric_tokens
 
 from research.kb1_korean_bench import harness
 from research.kb1_korean_bench.harness import (
@@ -30,31 +30,15 @@ from research.kb1_korean_bench.harness import (
 )
 from research.kb1_korean_bench.ko_tokens import Token, extract
 
+
 # --------------------------------------------------------------- §2.3 receipts
-# The naive pattern is copied verbatim from korean-benchmark-receipts/KO-NUMERIC-PROBE.py
-# (sha256 e8ee7e1c99f9b100634eb59db9e59f8616ce241cbc4a46e3e4a4496a4a7b2e68), itself a
-# verbatim copy of packages/quality/src/akc_quality/numeric.py:10-23.
-_NAIVE = re.compile(
-    r"""
-    (?<![\w])
-    (?:
-        \d{4}[-/.]\d{1,2}[-/.]\d{1,2}
-        |
-        (?:[$€£¥₩]\s*)?[+-]?
-        (?:\d{1,3}(?:,\d{3})+|\d+)
-        (?:\.\d+)?
-        (?:\s*%)?
-    )
-    (?![\w])
-    """,
-    re.VERBOSE,
-)
-
-
+# The "naive pattern" is the shipped checker: akc_quality.numeric in its default
+# "legacy" mode, which KB-A6 kept byte-identical. The defect is reproduced against
+# that code, not against a copy of its regex. KO-NUMERIC-PROBE.py (sha256
+# e8ee7e1c99f9b100634eb59db9e59f8616ce241cbc4a46e3e4a4496a4a7b2e68) ran the same
+# pattern, copied verbatim, to produce the receipt below.
 def _naive(text: str) -> tuple[str, ...]:
-    return tuple(
-        "".join(unicodedata.normalize("NFKC", m.group(0)).split()) for m in _NAIVE.finditer(text)
-    )
+    return extract_numeric_tokens(text, mode="legacy")
 
 
 # Naive output exactly as KO-NUMERIC-PROBE.out.txt recorded it
@@ -97,7 +81,8 @@ DEFECTS = sorted(set(RECEIPT) - CONTROLS)
 
 @pytest.mark.parametrize("case", list(RECEIPT))
 def test_naive_pattern_reproduces_the_receipt(case: str) -> None:
-    assert _naive(case) == RECEIPT[case]
+    # A caller that passes no mode gets the same defect.
+    assert extract_numeric_tokens(case) == _naive(case) == RECEIPT[case]
 
 
 @pytest.mark.parametrize("case", list(RECEIPT))
@@ -117,7 +102,9 @@ def test_naive_pattern_agrees_on_the_control_case(case: str) -> None:
 
 def test_seven_of_the_ten_receipt_cases_are_defects() -> None:
     assert len(RECEIPT) == 10
-    assert len(DEFECTS) == 7
+    misread = sorted(c for c in RECEIPT if _naive(c) != tuple(t.surface for t in EXPECTED[c]))
+    assert misread == DEFECTS
+    assert len(misread) == 7
 
 
 def test_ko_tokens_never_truncates_and_reads_more_korean_forms() -> None:
@@ -454,6 +441,7 @@ def test_m2_spacing_f1() -> None:
 
 def test_m3_catches_a_wrong_amount_the_naive_pattern_accepts() -> None:
     assert _naive("1,000원") == _naive("1,999원") == ("1",)
+    assert compare_numeric_tokens("1,000원", "1,999원").score == 1.0  # legacy calls it exact
     metrics = _ks(_score(_gold(_gold_page("p1", "1,000원")), _run(_row("p1", "1,999원"))))
     assert metrics["M3"]["amount"]["recall"] == {"numerator": 0, "denominator": 1, "value": 0.0}
 

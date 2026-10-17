@@ -44,11 +44,13 @@ REAL_NAMES = (
 
 
 def _gold() -> dict[str, Any]:
-    return json.loads((OUT / gen.GOLD_NAME).read_text(encoding="utf-8"))
+    data: dict[str, Any] = json.loads((OUT / gen.GOLD_NAME).read_text(encoding="utf-8"))
+    return data
 
 
 def _manifest() -> dict[str, Any]:
-    return json.loads((OUT / gen.MANIFEST_NAME).read_text(encoding="utf-8"))
+    data: dict[str, Any] = json.loads((OUT / gen.MANIFEST_NAME).read_text(encoding="utf-8"))
+    return data
 
 
 def _all_text(gold: dict[str, Any]) -> str:

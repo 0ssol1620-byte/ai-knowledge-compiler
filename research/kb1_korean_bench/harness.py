@@ -683,8 +683,13 @@ def score_page(
         out_to_gold = {o: g for g, o in enumerate(al.gold_to_out) if o >= 0}
         tp = sum(1 for j in out_bounds if out_to_gold.get(j, -1) in gold_bounds)
         fp, fn = len(out_bounds) - tp, len(gold_bounds) - tp
-        metrics["M2"] = {"tp": tp, "predicted": tp + fp, "gold": tp + fn, "f1_num": 2 * tp,
-                         "f1_den": 2 * tp + fp + fn}
+        metrics["M2"] = {
+            "tp": tp,
+            "predicted": tp + fp,
+            "gold": tp + fn,
+            "f1_num": 2 * tp,
+            "f1_den": 2 * tp + fp + fn,
+        }
 
         excess = Counter(out_ns) - Counter(gold_ns)
         metrics["M8"] = {
@@ -784,9 +789,7 @@ def _m6_counts(gold_ns: str, al: Alignment) -> dict[str, float]:
     }
 
 
-def _span_errors(
-    gold_nfc: str, spans: Sequence[tuple[int, int]], al: Alignment
-) -> tuple[int, int]:
+def _span_errors(gold_nfc: str, spans: Sequence[tuple[int, int]], al: Alignment) -> tuple[int, int]:
     """Substituted or deleted gold characters inside ``spans``, and the characters there.
 
     Insertions have no gold position, so they are not attributed to a span (M8 has them).
@@ -931,8 +934,20 @@ def _render(metric: str, combined: dict[str, Any]) -> dict[str, Any]:
 
 
 _INTERNAL = (
-    "M1", "M1-nfkc", "M1-s", "M2", "M3", "M4", "M4-text", "M5", "M6", "M6-raw", "M7", "M7c",
-    "M8", "M9",
+    "M1",
+    "M1-nfkc",
+    "M1-s",
+    "M2",
+    "M3",
+    "M4",
+    "M4-text",
+    "M5",
+    "M6",
+    "M6-raw",
+    "M7",
+    "M7c",
+    "M8",
+    "M9",
     "completion",
 )
 
@@ -1003,15 +1018,20 @@ def _category_report(
     latencies = sorted(lat for pid in ids if (lat := rows[pid].latency_ms) is not None)
     latency: dict[str, Any] = {"pages_reporting": _ratio(len(latencies), len(ids))}
     if latencies:
-        latency.update(status=MEASURED, p50_ms=_nearest_rank(latencies, 0.5),
-                       p95_ms=_nearest_rank(latencies, 0.95))
+        latency.update(
+            status=MEASURED,
+            p50_ms=_nearest_rank(latencies, 0.5),
+            p95_ms=_nearest_rank(latencies, 0.95),
+        )
     else:
         latency["status"] = NOT_MEASURED
     operational = {
         "completion": rendered.pop("completion"),
         "latency": latency,
-        "cost": {"status": NOT_MEASURED, "reason": "receipt-based (price snapshot sha256); outside"
-                 " the offline harness"},
+        "cost": {
+            "status": NOT_MEASURED,
+            "reason": "receipt-based (price snapshot sha256); outside the offline harness",
+        },
     }
     return {
         "publication_status": status,
