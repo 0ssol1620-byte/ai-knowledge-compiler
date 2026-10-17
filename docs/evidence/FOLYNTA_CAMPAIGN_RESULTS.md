@@ -75,6 +75,19 @@ This is a pass rate over 8,413 adversarially chosen checks. The highest publishe
 system scores 83.1, so the reference point is not 100. **72.3% of documents carry
 at least one failure**, which is why nothing here implies flawless output.
 
+> **Correction (D-36, adopted by the founder 2026-10-17).** The figures above are
+> left as first published; this note corrects how they read. 80.6 is the
+> unweighted mean of the pass rates of the eight document types in the table
+> below (olmOCR-Bench `overall_score` 0.8060). It is not a pass rate over
+> checks, and 7,137 of 8,413 does not give 80.6. Counted check by check,
+> 7,137/8,413 (84.8%) of the checks pass (`test_count` 8,413 less
+> `rule_failure_count` 1,276). The same applies wherever this document calls
+> 80.6 a check pass rate, including the OmniDocBench paragraph below. Source:
+> `docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__olmocr-bench__evaluation-summary.json`,
+> sha256 `4d75ae96e70c7c1c425b991df0f1c356ec6393e73914aaed27f5f54b0048a559`. This is
+> the artifact the `benchmark-accuracy` claim binds in
+> `docs/evidence/folynta-public-claims-pack.json`.
+
 Per document type, because a single average hides a 99% to 36.9% spread:
 
 | document type | checks passed | accuracy |

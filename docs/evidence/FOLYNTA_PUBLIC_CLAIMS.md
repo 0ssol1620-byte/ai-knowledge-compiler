@@ -190,14 +190,15 @@
 }
 ```
 
-**반드시 함께 표기**: 이 점수는 적대적으로 설계된 개별 검사 8,413개의 통과율이며, 공개 리더보드 최상위도 83.1입니다. 비교 기준은 100이 아닙니다. 문서의 72.3%에는 최소 하나의 오류가 있으므로 무결성을 암시해서는 안 됩니다.
+**반드시 함께 표기**: 80.6은 문서 유형 8개의 통과율을 단순 평균한 값입니다. 적대적으로 설계된 개별 검사 기준으로는 7,137/8,413 (84.8%)가 통과했습니다. 공개 리더보드 최상위도 83.1이므로 비교 기준은 100이 아닙니다. 캠페인 실패 분석에서 채점한 문서 3,698/5,116 (72.3%)에 최소 하나의 오류가 있으며, 이는 olmOCR-Bench 문서만의 비율이 아닙니다. 무결성을 암시해서는 안 됩니다.
 
-**Must accompany the number**: This is the pass rate over 8,413 adversarially chosen checks; the top published system scores 83.1, so the reference point is not 100. 72.3% of documents carry at least one failure, so nothing here should imply flawless output.
+**Must accompany the number**: 80.6 is the unweighted mean of the pass rates of the 8 document types. Counted check by check, 7,137/8,413 (84.8%) of the adversarially chosen checks pass. The top published system scores 83.1, so the reference point is not 100. 3,698/5,116 (72.3%) of the documents scored in the campaign's failure study carry at least one failure, a rate over the whole campaign rather than olmOCR-Bench alone, so nothing here should imply flawless output.
 
 - 금지 표현: 정확도 100% / 무오류 / 완벽한 추출
 - 금지 표현: 80.6%를 단독 헤드라인으로 제시하고 유형별 편차를 생략하는 구성
+- 금지 표현: 80.6을 8,413개 검사의 통과율로 표기하는 표현 (검사 기준 통과율은 별도 수치)
 
-근거: `docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__olmocr-bench__evaluation-summary.json`
+근거: `['docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__olmocr-bench__evaluation-summary.json', 'docs/evidence/artifacts/folynta-blind-quality-detection-2026-08-08.json']`
 
 ### 본문 문자 일치율 94.2%, 표 구조 정확도 95.5%
 
