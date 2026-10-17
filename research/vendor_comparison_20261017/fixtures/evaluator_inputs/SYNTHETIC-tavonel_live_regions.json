@@ -1,0 +1,547 @@
+{
+  "label": "SYNTHETIC",
+  "note": "SYNTHETIC D-T-live response bodies for lane AT-6. Field names follow Foundation CollectionOcrRegion (nextjs/lib/collection-compiler.ts:106-117); every text, box, confidence and id is invented for the test and measures nothing.",
+  "responses": {
+    "two_page_pdf": {
+      "regions": [
+        {
+          "regionId": "SYNTHETIC-r3",
+          "pageIndex0": 1,
+          "pageNumber1": 2,
+          "order": 2,
+          "blockType": "paragraph",
+          "text": "SYNTHETIC page two paragraph.",
+          "bbox1000": [
+            100,
+            100,
+            900,
+            160
+          ],
+          "confidence": 0.5,
+          "authority": "unknown"
+        },
+        {
+          "regionId": "SYNTHETIC-r2",
+          "pageIndex0": 0,
+          "pageNumber1": 1,
+          "order": 1,
+          "blockType": "paragraph",
+          "text": "SYNTHETIC second paragraph.",
+          "bbox1000": [
+            100,
+            300,
+            900,
+            360
+          ],
+          "confidence": 0.5,
+          "authority": "unknown"
+        },
+        {
+          "regionId": "SYNTHETIC-r1",
+          "pageIndex0": 0,
+          "pageNumber1": 1,
+          "order": 0,
+          "blockType": "paragraph",
+          "text": "SYNTHETIC heading-like line",
+          "bbox1000": [
+            100,
+            100,
+            900,
+            140
+          ],
+          "confidence": 0.5,
+          "authority": "unknown"
+        }
+      ]
+    },
+    "one_page_image": {
+      "regions": [
+        {
+          "regionId": "SYNTHETIC-p2",
+          "pageIndex0": 0,
+          "pageNumber1": 1,
+          "order": 1,
+          "blockType": "paragraph",
+          "text": "SYNTHETIC body | not a table",
+          "bbox1000": [
+            100,
+            500,
+            600,
+            750
+          ],
+          "confidence": 0.5,
+          "authority": "unknown"
+        },
+        {
+          "regionId": "SYNTHETIC-p1",
+          "pageIndex0": 0,
+          "pageNumber1": 1,
+          "order": 0,
+          "blockType": "paragraph",
+          "text": "SYNTHETIC 표 제목처럼 보이는 문단",
+          "bbox1000": [
+            0,
+            0,
+            1000,
+            100
+          ],
+          "confidence": 0.5,
+          "authority": "unknown"
+        }
+      ]
+    }
+  },
+  "malformed": [
+    {
+      "name": "not_an_object",
+      "payload": [
+        "SYNTHETIC"
+      ]
+    },
+    {
+      "name": "regions_missing",
+      "payload": {
+        "pages": []
+      }
+    },
+    {
+      "name": "regions_empty",
+      "payload": {
+        "regions": []
+      }
+    },
+    {
+      "name": "region_not_object",
+      "payload": {
+        "regions": [
+          "SYNTHETIC"
+        ]
+      }
+    },
+    {
+      "name": "bbox_missing",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "paragraph",
+            "text": "SYNTHETIC text.",
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bbox_three_values",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "paragraph",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              10,
+              20,
+              30
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bbox_above_1000",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "paragraph",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              10,
+              20,
+              1001,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bbox_negative",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "paragraph",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              -1,
+              20,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bbox_inverted_x",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "paragraph",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              30,
+              20,
+              10,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bbox_zero_height",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "paragraph",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              10,
+              40,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bbox_float",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "paragraph",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              10.5,
+              20,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bbox_bool",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "paragraph",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              true,
+              20,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "page_zero",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": -1,
+            "pageNumber1": 0,
+            "order": 0,
+            "blockType": "paragraph",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              10,
+              20,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "page_bool",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": true,
+            "order": 0,
+            "blockType": "paragraph",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              10,
+              20,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "page_index_mismatch",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 3,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "paragraph",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              10,
+              20,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "order_negative",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": -1,
+            "blockType": "paragraph",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              10,
+              20,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "text_blank",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "paragraph",
+            "text": "   ",
+            "bbox1000": [
+              10,
+              20,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "text_missing",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "paragraph",
+            "bbox1000": [
+              10,
+              20,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "block_type_missing",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              10,
+              20,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "page_order_repeats",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "paragraph",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              10,
+              20,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          },
+          {
+            "regionId": "SYNTHETIC-m2",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "paragraph",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              10,
+              20,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    }
+  ],
+  "structure": [
+    {
+      "name": "table_block",
+      "reason_code": "BLOCK_TYPE_NOT_CONVERTED",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "table",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              10,
+              20,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    },
+    {
+      "name": "formula_block",
+      "reason_code": "BLOCK_TYPE_NOT_CONVERTED",
+      "payload": {
+        "regions": [
+          {
+            "regionId": "SYNTHETIC-m1",
+            "pageIndex0": 0,
+            "pageNumber1": 1,
+            "order": 0,
+            "blockType": "formula",
+            "text": "SYNTHETIC text.",
+            "bbox1000": [
+              10,
+              20,
+              30,
+              40
+            ],
+            "confidence": 0.5,
+            "authority": "unknown"
+          }
+        ]
+      }
+    }
+  ]
+}
