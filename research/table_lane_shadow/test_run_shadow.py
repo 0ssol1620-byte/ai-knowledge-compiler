@@ -10,6 +10,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import json
+import os
 import shutil
 import socket
 import sys
@@ -21,6 +22,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent))
 
+import omnidoc_teds
 import run_shadow
 from run_shadow import REFUSAL_CODES, ShadowRefused, build_receipt, main, receipt_bytes
 
@@ -74,9 +76,22 @@ def test_every_fixture_is_labelled_synthetic_in_name_and_data() -> None:
 def test_receipt_carries_the_section_c9_r2_fields() -> None:
     receipt = build_receipt(FIXTURES / MANIFEST)
     assert set(receipt) == {
-        "schemaVersion", "synthetic", "note", "rightsStatus", "corpora", "conditions", "harness",
-        "inputs", "ocrJsonByteCompare", "pages", "pageStatusCounts", "reasonCodeCounts", "rates",
-        "teds", "readerWallSecondsPerPage", "doesNotProve",
+        "schemaVersion",
+        "synthetic",
+        "note",
+        "rightsStatus",
+        "corpora",
+        "conditions",
+        "harness",
+        "inputs",
+        "ocrJsonByteCompare",
+        "pages",
+        "pageStatusCounts",
+        "reasonCodeCounts",
+        "rates",
+        "teds",
+        "readerWallSecondsPerPage",
+        "doesNotProve",
     }
     assert receipt["schemaVersion"] == "tavonel.table_lane_shadow.v1"
     assert receipt["synthetic"] is True and receipt["rightsStatus"] == "synthetic"
@@ -87,12 +102,15 @@ def test_receipt_carries_the_section_c9_r2_fields() -> None:
     doc = receipt["inputs"]["documents"][0]
     for key in ("baselineOcrJson", "shadowOcrJson", "gold"):
         name = doc[key]["path"]
-        assert doc[key]["sha256"] == "sha256:" + hashlib.sha256(
-            (FIXTURES / name).read_bytes()
-        ).hexdigest()
+        assert (
+            doc[key]["sha256"]
+            == "sha256:" + hashlib.sha256((FIXTURES / name).read_bytes()).hexdigest()
+        )
     assert [ref["path"] for ref in doc["tableRead"]] == [
-        "SYNTHETIC-table-read-p0.json", "SYNTHETIC-table-read-p1.json",
-        "SYNTHETIC-table-read-p2.json", None,
+        "SYNTHETIC-table-read-p0.json",
+        "SYNTHETIC-table-read-p1.json",
+        "SYNTHETIC-table-read-p2.json",
+        None,
     ]
     # Per-page status and reasonCode counts.
     assert receipt["pageStatusCounts"] == {"read": 1, "no_table": 1, "unreadable": 1, "failed": 1}
@@ -107,7 +125,10 @@ def test_receipt_carries_the_section_c9_r2_fields() -> None:
     assert "value" not in receipt["teds"]
     # Wall seconds: nothing was timed, so nothing is reported, with the page denominator.
     assert receipt["readerWallSecondsPerPage"] == {
-        "measuredPages": 0, "pages": 4, "medianSeconds": None, "p90Seconds": None,
+        "measuredPages": 0,
+        "pages": 4,
+        "medianSeconds": None,
+        "p90Seconds": None,
         "maxSeconds": None,
     }
     assert receipt["harness"]["network"] is False and receipt["harness"]["gpu"] is False
@@ -184,7 +205,10 @@ def test_a_changed_shadow_ocr_json_is_a_recorded_byte_difference(corpus: Path) -
 
 def test_timed_pages_report_median_p90_and_max() -> None:
     assert run_shadow._wall([3.0, 1.0, 10.0, 2.0], 5) == {
-        "measuredPages": 4, "pages": 5, "medianSeconds": 2.5, "p90Seconds": 10.0,
+        "measuredPages": 4,
+        "pages": 5,
+        "medianSeconds": 2.5,
+        "p90Seconds": 10.0,
         "maxSeconds": 10.0,
     }
 
@@ -311,7 +335,9 @@ def test_a_page_canonical_tables_rejects_is_counted_with_its_code(corpus: Path) 
     row = page(receipt, 0)
     assert (row["status"], row["reasonCode"]) == ("failed", "TABLE_READ_SCHEMA_INVALID")
     assert receipt["rates"]["cellExactMatch"] == {
-        "numerator": 0, "denominator": 14, "of": "gold cells"
+        "numerator": 0,
+        "denominator": 14,
+        "of": "gold cells",
     }
 
 
@@ -343,8 +369,17 @@ def test_the_harness_imports_nothing_that_reaches_a_network_or_a_process() -> No
     }
     roots = {name.split(".")[0] for name in imported}
     assert roots <= {
-        "__future__", "argparse", "hashlib", "json", "math", "statistics", "sys", "collections",
-        "pathlib", "typing", "akc_product_core",
+        "__future__",
+        "argparse",
+        "hashlib",
+        "json",
+        "math",
+        "statistics",
+        "sys",
+        "collections",
+        "pathlib",
+        "typing",
+        "akc_product_core",
     }, roots
 
 
@@ -357,3 +392,196 @@ def test_a_build_with_sockets_disabled_still_writes_the_receipt(
     monkeypatch.setattr(socket, "socket", no_network)
     monkeypatch.setattr(socket, "create_connection", no_network)
     assert build_receipt(FIXTURES / MANIFEST)["rates"]["cellExactMatch"]["denominator"] == 14
+
+
+# --- TEDS: the pinned evaluator, or EVALUATOR_BLOCKED and no value -----------------------------
+
+PIN = "193627ae9e97d89188468ed1ee3b7a856ff76044"
+
+
+def no_number(block: Json) -> None:
+    """A blocked teds block carries a reason and nothing a reader could take for a score."""
+    assert block["status"] == "EVALUATOR_BLOCKED" and block["computed"] is False
+    assert set(block) == {"status", "computed", "evaluator", "evaluatorCommit", "reason"}
+    assert [value for value in block.values() if type(value) in (int, float)] == []
+
+
+def test_without_an_evaluator_teds_is_blocked_with_no_value() -> None:
+    receipt = build_receipt(FIXTURES / MANIFEST)
+    no_number(receipt["teds"])
+    assert receipt["teds"]["evaluatorCommit"] == PIN
+    assert "TEDS: not computed (EVALUATOR_BLOCKED)." in receipt["doesNotProve"]
+
+
+def test_an_absent_evaluator_path_is_evaluator_blocked_never_zero(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    out = tmp_path / "receipt.json"
+    absent = tmp_path / "no-omnidocbench-here"
+    code = omnidoc_teds.main(
+        [str(FIXTURES / MANIFEST), "--out", str(out), "--evaluator", str(absent)]
+    )
+    assert code == 3  # the receipt is written, and the run says TEDS is blocked
+    teds = json.loads(out.read_text(encoding="utf-8"))["teds"]
+    no_number(teds)
+    assert teds["reason"] == "the evaluator checkout is not on disk"
+    assert "EVALUATOR_BLOCKED" in capsys.readouterr().err
+    assert str(tmp_path).encode() not in out.read_bytes()
+
+
+def test_a_manifest_without_an_evaluator_commit_is_blocked(corpus: Path, tmp_path: Path) -> None:
+    edit(corpus / MANIFEST, lambda m: m["conditions"].update(evaluatorCommit=None))
+    (tmp_path / "pdf_validation.py").write_text("raise SystemExit(9)\n", encoding="utf-8")
+
+    def teds(pages: list[Json], commit: object, synthetic: bool) -> Json:
+        return omnidoc_teds.run_evaluator(
+            pages, commit, synthetic, evaluator=tmp_path, python=[sys.executable]
+        )
+
+    block = build_receipt(corpus / MANIFEST, teds=teds)["teds"]
+    no_number(block)
+    assert block["reason"] == "the manifest names no evaluatorCommit"
+
+
+def test_table_html_is_the_rule_the_receipt_states() -> None:
+    table = {
+        "rowCount": 2,
+        "columnCount": 2,
+        "cells": [
+            {"rowIndex0": 1, "columnIndex0": 1, "rowSpan": 1, "columnSpan": 1, "text": "<7 & 8>"},
+            {"rowIndex0": 0, "columnIndex0": 0, "rowSpan": 2, "columnSpan": 1, "text": "Region"},
+            {"rowIndex0": 0, "columnIndex0": 1, "rowSpan": 1, "columnSpan": 1, "text": "Units"},
+        ],
+    }
+    assert omnidoc_teds.table_html(table) == (
+        '<table><tr><td rowspan="2">Region</td><td>Units</td></tr>'
+        "<tr><td>&lt;7 &amp; 8&gt;</td></tr></table>"
+    )
+
+
+def fake_result(tmp_path: Path, errors: list[Json]) -> tuple[list[Json], list[Json], Path, str]:
+    """Evaluator-shaped output for one SYNTHETIC page holding gold table g0 of the fixtures."""
+    gold = json.loads((FIXTURES / GOLD).read_text(encoding="utf-8"))["pages"][0]["tables"]
+    pages = [{"documentId": "SYNTHETIC-doc-0001", "pageIndex0": 0, "gold": gold, "read": gold}]
+    work = tmp_path / "work"
+    work.mkdir()
+    gt, _ = omnidoc_teds.write_inputs(pages, work, "SYNTHETIC-")
+    result = work / "result"
+    result.mkdir()
+    debug = {"TEDS": {"error_cases": errors, "timeout_cases": []}}
+    metric = json.dumps({"table": {"metric_debug": debug}})
+    (result / "S_metric_result.json").write_text(metric, encoding="utf-8")
+    (result / "S_table_result.json").write_text("[]", encoding="utf-8")
+    return pages, gt, result, gt[0]["layout_dets"][0]["html"]
+
+
+def rows(result: Path, *table_rows: Json) -> None:
+    (result / "S_table_result.json").write_text(json.dumps(list(table_rows)), encoding="utf-8")
+
+
+IMAGE = "SYNTHETIC-page-0000.png"
+
+
+def test_a_teds_error_the_evaluator_logged_is_blocked_not_zero(tmp_path: Path) -> None:
+    pages, gt, result, html = fake_result(tmp_path, [{"img_id": IMAGE}])
+    # The evaluator writes 0.0 for a pair it could not score; that 0.0 is not a score.
+    rows(
+        result,
+        {
+            "img_id": IMAGE,
+            "gt": html,
+            "pred": html,
+            "metric": {"TEDS": 0.0, "TEDS_structure_only": 0.0},
+        },
+    )
+    scores = omnidoc_teds.read_scores(pages, gt, result, "S")
+    assert scores["scored"] == []
+    assert scores["blocked"] == [
+        {
+            "documentId": "SYNTHETIC-doc-0001",
+            "pageIndex0": 0,
+            "goldTableId": "g0",
+            "reason": "evaluator logged a TEDS error or timeout",
+        }
+    ]
+
+
+def test_evaluator_output_without_teds_debug_is_an_error(tmp_path: Path) -> None:
+    pages, gt, result, _ = fake_result(tmp_path, [])
+    (result / "S_metric_result.json").write_text(json.dumps({"table": {}}), encoding="utf-8")
+    assert "error" in omnidoc_teds.read_scores(pages, gt, result, "S")
+    (result / "S_metric_result.json").unlink()
+    assert omnidoc_teds.read_scores(pages, gt, result, "S") == {
+        "error": "the evaluator wrote no table result"
+    }
+
+
+def test_a_gold_table_with_no_or_two_teds_rows_is_blocked(tmp_path: Path) -> None:
+    pages, gt, result, html = fake_result(tmp_path, [])
+    reason = omnidoc_teds.read_scores(pages, gt, result, "S")["blocked"][0]["reason"]
+    assert reason == "0 TEDS rows for one gold table"
+    row = {
+        "img_id": IMAGE,
+        "gt": html,
+        "pred": "",
+        "metric": {"TEDS": 0.5, "TEDS_structure_only": 1.0},
+    }
+    rows(result, row, row)
+    reason = omnidoc_teds.read_scores(pages, gt, result, "S")["blocked"][0]["reason"]
+    assert reason == "2 TEDS rows for one gold table"
+    rows(result, row)
+    (scored,) = omnidoc_teds.read_scores(pages, gt, result, "S")["scored"]
+    assert (scored["teds"], scored["tedsStructureOnly"], scored["predEmpty"]) == (0.5, 1.0, True)
+
+
+def test_the_evaluator_runner_imports_nothing_that_reaches_a_network() -> None:
+    tree = ast.parse(Path(omnidoc_teds.__file__).read_text(encoding="utf-8"))
+    roots = {
+        ((node.module or "") if isinstance(node, ast.ImportFrom) else alias.name).split(".")[0]
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Import | ast.ImportFrom)
+        for alias in node.names
+    }
+    # One process (git, then the evaluator); no socket, http, urllib or ssl.
+    assert roots <= {
+        "__future__",
+        "argparse",
+        "hashlib",
+        "html",
+        "json",
+        "os",
+        "shlex",
+        "subprocess",
+        "sys",
+        "tempfile",
+        "collections",
+        "pathlib",
+        "typing",
+        "run_shadow",
+    }, roots
+
+
+EVALUATOR = os.environ.get("TAVONEL_OMNIDOC_EVALUATOR")
+
+
+@pytest.mark.skipif(
+    not EVALUATOR, reason="opt-in: TAVONEL_OMNIDOC_EVALUATOR names a checkout at the pin"
+)
+def test_the_pinned_evaluator_scores_the_fixtures_the_same_twice(corpus: Path) -> None:
+    def teds(pages: list[Json], commit: object, synthetic: bool) -> Json:
+        return omnidoc_teds.run_evaluator(
+            pages, commit, synthetic, evaluator=Path(str(EVALUATOR)), python=["py", "-3.10"]
+        )
+
+    first = receipt_bytes(build_receipt(FIXTURES / MANIFEST, teds=teds))
+    assert receipt_bytes(build_receipt(corpus / MANIFEST, teds=teds)) == first
+    block = json.loads(first)["teds"]
+    assert (block["status"], block["computed"], block["evaluatorHead"]) == ("COMPUTED", True, PIN)
+    by_table = {row["goldTableId"]: row for row in block["tables"]}
+    # g0: same 3x2 grid, one cell "Soutn" for "South": 1 edit / 5 chars over 9 nodes (3 tr, 6 td).
+    assert by_table["g0"]["teds"] == pytest.approx(1 - (1 / 5) / 9)
+    assert (by_table["g0"]["tedsStructureOnly"], by_table["g0"]["predEmpty"]) == (1.0, False)
+    for empty in ("g1", "g3"):  # refused, and no reader output: scored against nothing
+        assert (by_table[empty]["teds"], by_table[empty]["predEmpty"]) == (0.0, True)
+    assert block["blockedTables"] == []
+    assert (block["tedsSum"]["scoredTables"], block["tedsSum"]["goldTables"]) == (3, 3)

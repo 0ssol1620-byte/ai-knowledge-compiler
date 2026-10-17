@@ -32,19 +32,20 @@ internal research diagnostic on a dataset licensed `research-only-non-commercial
 (`EVALREG` `evaluators.omnidoc.dataset_license`). They are not measurements of TAVONEL
 documents or of customer documents.
 
-| Alias        | File                                                                                                                  | sha256                                                             |
-| ------------ | --------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `PLAN`       | `outputs/tavonel-research-replan-20261013/ux-program-20261017/TABLE-EXTRACTION-AND-LIMITS-DESIGN-2026-10-17.md`       | `09e20ffed8904fa0cea70c3454604b836df00a47df5c5cffe795dd22ba77c132` |
-| `CRITIC`     | `outputs/tavonel-research-replan-20261013/ux-program-20261017/PHASE1-CRITIC-2026-10-17.md`                            | `667010c53a226f980241fc61b3581112cabae954867affc35e24eebf3f8efa81` |
-| `ARENA`      | `research/model_arena_20260903/reports/full_compare_20260905/comparison_omnidoc_full.md`                              | `39a9fd275b1b8f001803c6b830f79317903834dd94f7e1d488f4c49880d99014` |
-| `EVALREG`    | `research/model_arena_20260903/evaluator_registry.json`                                                               | `668eaa0fb6fc7f823ac88cb20b692dc4d45a2c114fd4d7a6e0f5457b454a380b` |
-| `PADDLE`     | `infra/model-registry/serving-receipts/paddleocr_vl_1_6.serving-qualification.json` at commit `d6f77b8`               | `6dbfffd6d10a2d9e2715ee1535a1c7f96c213244769609b8be90b037ec8d6747` |
-| `F5C`        | `outputs/tavonel-research-replan-20261013/resume-20261015/gdp-20261015/F5C-IMAGE-ROLLOUT-RECEIPT.json`                | `817db99ec9044af069888d323db9d687d93e318f7c7f39ae01ce87d3f8481399` |
-| `T3R`        | `outputs/tavonel-research-replan-20261013/ux-program-20261017/core-lanes/T3/T3-RECEIPT.json`                          | `20db47bec16c4186bc3d415f21cd108b581ce59966f420a45a79e34f2ac8aa3c` |
-| `T4R`        | `outputs/tavonel-research-replan-20261013/ux-program-20261017/core-lanes/T4/T4-LANE-RECEIPT.json`                     | `6a8a6c09c49ce7011683e791a3c8f91615beb028aed3861fc2e927d6dec6f8ac` |
-| `SHADOW-SYN` | `outputs/tavonel-research-replan-20261013/ux-program-20261017/core-lanes/T4/TABLE-LANE-SHADOW-RECEIPT.SYNTHETIC.json` | `8be776ee5a44c2fc5a08fe927d5169f4b69e3dcc2f1dc5dae62fabffed2bf271` |
-| `ADR-0004`   | `FND-TAB:docs/adr/0004-page-range-processing-and-ceiling.md`                                                          | `c28bd546321e0af5a4f37c917a9edc5748c812bb8d7f0535aa7bb7282339225c` |
-| `CONTRACT`   | `FND-TAB:shared/tableReadContract.ts` (unchanged since `922e950c`, where it was written)                              | `5b47899f9a495f6e2badf2082c1de5d9e6dfc0fee4a1750e006b5ca833b2e669` |
+| Alias        | File                                                                                                                      | sha256                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `PLAN`       | `outputs/tavonel-research-replan-20261013/ux-program-20261017/TABLE-EXTRACTION-AND-LIMITS-DESIGN-2026-10-17.md`           | `09e20ffed8904fa0cea70c3454604b836df00a47df5c5cffe795dd22ba77c132` |
+| `CRITIC`     | `outputs/tavonel-research-replan-20261013/ux-program-20261017/PHASE1-CRITIC-2026-10-17.md`                                | `667010c53a226f980241fc61b3581112cabae954867affc35e24eebf3f8efa81` |
+| `ARENA`      | `research/model_arena_20260903/reports/full_compare_20260905/comparison_omnidoc_full.md`                                  | `39a9fd275b1b8f001803c6b830f79317903834dd94f7e1d488f4c49880d99014` |
+| `EVALREG`    | `research/model_arena_20260903/evaluator_registry.json`                                                                   | `668eaa0fb6fc7f823ac88cb20b692dc4d45a2c114fd4d7a6e0f5457b454a380b` |
+| `PADDLE`     | `infra/model-registry/serving-receipts/paddleocr_vl_1_6.serving-qualification.json` at commit `d6f77b8`                   | `6dbfffd6d10a2d9e2715ee1535a1c7f96c213244769609b8be90b037ec8d6747` |
+| `F5C`        | `outputs/tavonel-research-replan-20261013/resume-20261015/gdp-20261015/F5C-IMAGE-ROLLOUT-RECEIPT.json`                    | `817db99ec9044af069888d323db9d687d93e318f7c7f39ae01ce87d3f8481399` |
+| `T3R`        | `outputs/tavonel-research-replan-20261013/ux-program-20261017/core-lanes/T3/T3-RECEIPT.json`                              | `20db47bec16c4186bc3d415f21cd108b581ce59966f420a45a79e34f2ac8aa3c` |
+| `T4R`        | `outputs/tavonel-research-replan-20261013/ux-program-20261017/core-lanes/T4/T4-LANE-RECEIPT.json`                         | `6a8a6c09c49ce7011683e791a3c8f91615beb028aed3861fc2e927d6dec6f8ac` |
+| `SHADOW-SYN` | `outputs/tavonel-research-replan-20261013/ux-program-20261017/core-lanes/T4/TABLE-LANE-SHADOW-RECEIPT.SYNTHETIC.json`     | `8be776ee5a44c2fc5a08fe927d5169f4b69e3dcc2f1dc5dae62fabffed2bf271` |
+| `TEDS-SYN`   | `outputs/tavonel-research-replan-20261013/ux-program-20261017/core-lanes/FIX-T4/TABLE-LANE-SHADOW-RECEIPT.SYNTHETIC.json` | `2345aed408c25fddc5b74de2c878c59d8328f4577fb571c0d5ba0825e1fd7fc6` |
+| `ADR-0004`   | `FND-TAB:docs/adr/0004-page-range-processing-and-ceiling.md`                                                              | `c28bd546321e0af5a4f37c917a9edc5748c812bb8d7f0535aa7bb7282339225c` |
+| `CONTRACT`   | `FND-TAB:shared/tableReadContract.ts` (unchanged since `922e950c`, where it was written)                                  | `5b47899f9a495f6e2badf2082c1de5d9e6dfc0fee4a1750e006b5ca833b2e669` |
 
 `outputs/` and `research/model_arena_20260903/` are paths in the founder's Core working tree,
 `D:/CodexProjects/ai-knowledge-compiler`. They are not on this branch. `ARENA` and `EVALREG`
@@ -291,10 +292,16 @@ a legal check (`CRITIC:271`). Which corpus is used is F4.
   CanonicalTable mapping and the cell-claim rule, all shadow only. Nothing in the compile path
   imports them (`packages/product-core/src/akc_product_core/table_claims.py:3-7`).
 - Stage shadow, offline: a harness that reads files on disk and writes a
-  `tavonel.table_lane_shadow.v1` receipt (`research/table_lane_shadow/run_shadow.py:56`). Its
-  only receipt so far is `SHADOW-SYN`, built from SYNTHETIC fixtures, in which no reader ran
-  (`T4R` `합성 영수증`). TEDS is marked not computed, because the pinned evaluator is not on
-  disk and is not run offline (`research/table_lane_shadow/run_shadow.py:519-524`).
+  `tavonel.table_lane_shadow.v1` receipt (`research/table_lane_shadow/run_shadow.py:59`). Its
+  receipts are built from SYNTHETIC fixtures, in which no reader ran (`T4R` `합성 영수증`).
+  The first, `SHADOW-SYN`, has no TEDS (`SHADOW-SYN` `teds.reason`). An earlier version of
+  this record gave the cause as the pinned evaluator not being on disk. That was wrong: a
+  checkout at the pin sits in the founder tree under `benchmark/cache/omnidoc`. The second,
+  `TEDS-SYN`, has TEDS from that evaluator, run offline on the same fixtures (`TEDS-SYN`
+  `teds.status`; `research/table_lane_shadow/omnidoc_teds.py:262`). Without a checkout the
+  `teds` block is `EVALUATOR_BLOCKED` and holds no value
+  (`research/table_lane_shadow/omnidoc_teds.py:248`;
+  `research/table_lane_shadow/run_shadow.py:432-440`).
 - No reader has produced a single `table_read.v1` page. No benchmark exists.
 
 ## What this does not change

@@ -19,8 +19,11 @@ an input that is not on disk, an `ocr.json` bound to other bytes. A page the rea
 read is not a refusal: it is counted with its reasonCode, and its gold cells stay in every
 denominator.
 
-Not in the receipt: TEDS (the pinned OmniDocBench evaluator is not run offline, so the field
-says so), the §C5 fact-recall verdict (R3, the benchmark receipt) and any threshold.
+TEDS comes from the pinned OmniDocBench evaluator, never from this file: `omnidoc_teds.py` runs
+it (one process, offline) and passes its block in through `build_receipt(teds=...)`. Without an
+evaluator the `teds` block is `EVALUATOR_BLOCKED` with a reason and no value, never 0.
+
+Not in the receipt: the §C5 fact-recall verdict (R3, the benchmark receipt) and any threshold.
 """
 
 from __future__ import annotations
@@ -68,32 +71,61 @@ LABEL_METHODS = frozenset({"synthetic_construction", "human_annotation"})
 #: The §C5 conditions that must hold between the two sides. Null means not applicable/unknown.
 CONDITION_KEYS = frozenset(
     {
-        "renderScale", "gpuType", "readerImageDigest", "modelId", "modelRevision", "inputMode",
-        "promptSha256", "outputSchemaSha256", "priceSnapshot", "evaluatorCommit",
-        "existingLaneImageDigest", "readerRevision", "readerBindingSha256",
+        "renderScale",
+        "gpuType",
+        "readerImageDigest",
+        "modelId",
+        "modelRevision",
+        "inputMode",
+        "promptSha256",
+        "outputSchemaSha256",
+        "priceSnapshot",
+        "evaluatorCommit",
+        "existingLaneImageDigest",
+        "readerRevision",
+        "readerBindingSha256",
     }
 )
 REFUSAL_CODES = frozenset(
     {
-        "SHADOW_MANIFEST_INVALID", "SHADOW_INPUT_MISSING", "SHADOW_GOLD_UNLABELLED",
-        "SHADOW_GOLD_INVALID", "SHADOW_CORPUS_RIGHTS_MIXED", "SHADOW_OCR_INVALID",
+        "SHADOW_MANIFEST_INVALID",
+        "SHADOW_INPUT_MISSING",
+        "SHADOW_GOLD_UNLABELLED",
+        "SHADOW_GOLD_INVALID",
+        "SHADOW_CORPUS_RIGHTS_MIXED",
+        "SHADOW_OCR_INVALID",
         "SHADOW_OCR_BINDING_MISMATCH",
     }
 )
 _MANIFEST_KEYS = {"manifestSchema", "synthetic", "note", "corpora", "conditions", "documents"}
 _DOCUMENT_KEYS = {
-    "documentId", "documentVersionId", "corpusId", "sourceImmutableKey", "inputSha256",
-    "baselineOcrJson", "shadowOcrJson", "gold", "pages",
+    "documentId",
+    "documentVersionId",
+    "corpusId",
+    "sourceImmutableKey",
+    "inputSha256",
+    "baselineOcrJson",
+    "shadowOcrJson",
+    "gold",
+    "pages",
 }
 _PAGE_KEYS = {"pageIndex0", "tableRead", "readerWallSeconds"}
 _GOLD_KEYS = {
-    "goldSchema", "synthetic", "note", "documentId", "inputSha256", "labelProvenance", "pages",
+    "goldSchema",
+    "synthetic",
+    "note",
+    "documentId",
+    "inputSha256",
+    "labelProvenance",
+    "pages",
 }
 _GOLD_TABLE_KEYS = {"tableId", "bbox1000", "rowCount", "columnCount", "headerRowCount", "cells"}
 _GOLD_CELL_KEYS = {"cellId", "rowIndex0", "columnIndex0", "rowSpan", "columnSpan", "text"}
 _PAGE_STATUSES = ("read", "no_table", "unreadable", "failed")
 
 Json = dict[str, Any]
+#: (pages with their gold and read tables, the manifest's evaluatorCommit, synthetic) -> teds.
+TedsRunner = Callable[[list[Json], object, bool], Json]
 
 
 class ShadowRefused(Exception):
@@ -154,9 +186,15 @@ def _check_manifest(manifest: object) -> Json:
     if manifest["manifestSchema"] != MANIFEST_SCHEMA or type(manifest["synthetic"]) is not bool:
         raise bad("manifestSchema or synthetic is wrong")
     corpora = manifest["corpora"]
-    if not isinstance(corpora, list) or not corpora or not all(
-        isinstance(c, dict) and set(c) == {"corpusId", "rightsStatus"} and _is_text(c["corpusId"])
-        for c in corpora
+    if (
+        not isinstance(corpora, list)
+        or not corpora
+        or not all(
+            isinstance(c, dict)
+            and set(c) == {"corpusId", "rightsStatus"}
+            and _is_text(c["corpusId"])
+            for c in corpora
+        )
     ):
         raise bad("corpora must list corpusId and rightsStatus")
     if len({c["corpusId"] for c in corpora}) != len(corpora):
@@ -226,9 +264,10 @@ def _ocr_regions(ocr: object, doc: Json) -> tuple[int, list[OcrRegion]]:
         raise bad("has no ok status or pageCount")
     if not isinstance(regions, list):
         raise bad("has no regions")
-    if ocr.get("inputSha256") != doc["inputSha256"] or ocr.get(
-        "sourceImmutableKey", doc["sourceImmutableKey"]
-    ) != doc["sourceImmutableKey"]:
+    if (
+        ocr.get("inputSha256") != doc["inputSha256"]
+        or ocr.get("sourceImmutableKey", doc["sourceImmutableKey"]) != doc["sourceImmutableKey"]
+    ):
         raise ShadowRefused(
             "SHADOW_OCR_BINDING_MISMATCH",
             f"{doc['documentId']} baseline ocr.json is bound to other source bytes",
@@ -390,8 +429,23 @@ def _code_ref(path: Path) -> Json:
     return {"path": path.resolve().relative_to(ROOT).as_posix(), "sha256": _sha256(data)}
 
 
-def build_receipt(manifest_path: Path) -> Json:
-    """Read the manifest and every file it names; return the receipt or raise ShadowRefused."""
+def teds_blocked(commit: object, reason: str) -> Json:
+    """The `teds` block when the evaluator did not run: a reason, and no value at all."""
+    return {
+        "status": "EVALUATOR_BLOCKED",
+        "computed": False,
+        "evaluator": EVALUATOR,
+        "evaluatorCommit": commit,
+        "reason": reason,
+    }
+
+
+def build_receipt(manifest_path: Path, teds: TedsRunner | None = None) -> Json:
+    """Read the manifest and every file it names; return the receipt or raise ShadowRefused.
+
+    `teds` runs the pinned evaluator over every page's gold and read tables (`omnidoc_teds`).
+    Without it the receipt's `teds` block is EVALUATOR_BLOCKED.
+    """
     base = manifest_path.parent
     manifest_ref, manifest_raw = _read(base, manifest_path.name, "manifest")
     manifest = _check_manifest(_json(manifest_raw, "SHADOW_MANIFEST_INVALID", "manifest"))
@@ -412,6 +466,7 @@ def build_receipt(manifest_path: Path) -> Json:
     page_rows: list[Json] = []
     reasons: Counter[str] = Counter()
     walls: list[float] = []
+    teds_pages: list[Json] = []
     n = Counter[str]()  # numerators and denominators, named below
     for doc in manifest["documents"]:
         name = doc["documentId"]
@@ -459,7 +514,12 @@ def build_receipt(manifest_path: Path) -> Json:
                     payload = raw.decode("utf-8", "replace")
             else:
                 read_refs.append({"pageIndex0": index, "path": None, "sha256": None, "bytes": None})
-            row = _page(doc, index, payload, regions, conditions, gold[index], reasons, n)
+            row, read_tables = _page(
+                doc, index, payload, regions, conditions, gold[index], reasons, n
+            )
+            teds_pages.append(
+                {"documentId": name, "pageIndex0": index, "gold": gold[index], "read": read_tables}
+            )
             row["readerWallSeconds"] = page["readerWallSeconds"]
             if page["readerWallSeconds"] is not None:
                 walls.append(page["readerWallSeconds"])
@@ -478,6 +538,11 @@ def build_receipt(manifest_path: Path) -> Json:
         )
 
     statuses = Counter(row["status"] for row in page_rows)
+    teds_block = (
+        teds(teds_pages, conditions["evaluatorCommit"], synthetic)
+        if teds is not None
+        else teds_blocked(conditions["evaluatorCommit"], "no evaluator was given to this run")
+    )
     return {
         "schemaVersion": RECEIPT_SCHEMA,
         "synthetic": synthetic,
@@ -516,15 +581,15 @@ def build_receipt(manifest_path: Path) -> Json:
                 n["claims"], n["dataCells"], "data cells below a header row in tables read"
             ),
         },
-        "teds": {
-            "computed": False,
-            "evaluator": EVALUATOR,
-            "evaluatorCommit": conditions["evaluatorCommit"],
-            "reason": "This offline harness does not run the TEDS evaluator; no TEDS value exists.",
-        },
+        "teds": teds_block,
         "readerWallSecondsPerPage": _wall(walls, len(page_rows)),
         "doesNotProve": [
-            "TEDS: not computed here.",
+            (
+                "TEDS: the pinned evaluator's score of the tables on disk; on a SYNTHETIC corpus"
+                " it measures no reader."
+                if teds_block["computed"]
+                else "TEDS: not computed (EVALUATOR_BLOCKED)."
+            ),
             "The §C5 verdict (fact recall, unsupported claims against the existing World): R3.",
             "That a reader ran: a page whose readerWallSeconds is null was never timed.",
             "Any threshold: no rate here is compared with a pass mark; none is calibrated.",
@@ -541,8 +606,8 @@ def _page(
     gold_tables: list[Json],
     reasons: Counter[str],
     n: Counter[str],
-) -> Json:
-    """One page through T3; a page that cannot be read is counted, never dropped."""
+) -> tuple[Json, list[Json]]:
+    """One page through T3, and the tables it read; a failed page is counted, never dropped."""
     expected: TableReadExpectation = {
         "sourceImmutableKey": doc["sourceImmutableKey"],
         "inputSha256": doc["inputSha256"],
@@ -574,9 +639,7 @@ def _page(
             refusals.update(refusal["reasonCode"] for refusal in page["refusals"])
             for table in tables:
                 claims += len(table_cell_claims(table))
-                data_cells += sum(
-                    cell.row_index0 >= table.header_row_count for cell in table.cells
-                )
+                data_cells += sum(cell.row_index0 >= table.header_row_count for cell in table.cells)
     if row["reasonCode"] is not None:
         reasons[row["reasonCode"]] += 1
     reasons.update(refusals)
@@ -600,11 +663,21 @@ def _page(
     n.update(counts)
     n["pages"] += 1
     n["pagesOk"] += row["status"] != "failed"
-    return {**row, "refusalCounts": dict(sorted(refusals.items())), **counts}
+    return {**row, "refusalCounts": dict(sorted(refusals.items())), **counts}, read_tables
 
 
 def receipt_bytes(receipt: Json) -> bytes:
     return (json.dumps(receipt, indent=2, sort_keys=True, ensure_ascii=False) + "\n").encode()
+
+
+def write_receipt(receipt: Json, out: Path) -> None:
+    """The receipt and its `.sha256` beside it; prints the digest."""
+    data = receipt_bytes(receipt)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    out.write_bytes(data)
+    digest = hashlib.sha256(data).hexdigest()
+    Path(f"{out}.sha256").write_bytes(f"{digest}  {out.name}\n".encode())
+    print(f"sha256:{digest}  {out.name}")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -617,12 +690,7 @@ def main(argv: list[str] | None = None) -> int:
     except ShadowRefused as refused:
         print(f"refused {refused.reason_code}: {refused.detail}", file=sys.stderr)
         return 2
-    data = receipt_bytes(receipt)
-    args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_bytes(data)
-    digest = hashlib.sha256(data).hexdigest()
-    Path(f"{args.out}.sha256").write_bytes(f"{digest}  {args.out.name}\n".encode())
-    print(f"sha256:{digest}  {args.out.name}")
+    write_receipt(receipt, args.out)
     return 0
 
 
