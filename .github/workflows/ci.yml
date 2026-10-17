@@ -93,9 +93,14 @@ jobs:
       # fails closed: a present suite whose tests do not run fails, because pytest exits 5 when
       # it collects nothing and the junit count refuses a run in which every test skipped. The
       # runner sits in a variable because this scoped run is not a third whole-tree pytest gate.
+      # mypy treats a first-party package it finds through the uv editable .pth as installed and
+      # refuses it without py.typed, so MYPYPATH points mypy at the source instead: the src
+      # directories pytest puts on sys.path, read from pyproject.toml so the two cannot drift.
       - name: Research suites when present - ruff, mypy, pytest (KB render tests skip on Ubuntu without Noto Sans KR; evaluator-dependent tests skip without benchmark/cache; -ra lists every skip)
         run: |
           uvrun="python -m uv run --locked --extra dev"
+          mypypath=$(python -c 'import os, sys, tomllib; d = [os.path.abspath(p) for p in tomllib.load(open("pyproject.toml", "rb"))["tool"]["pytest"]["ini_options"]["pythonpath"] if p.endswith("/src")]; sys.exit("::error::no src directory in [tool.pytest.ini_options].pythonpath") if not d else print(os.pathsep.join(d))')
+          export MYPYPATH="$mypypath"
           for suite in research/kb1_korean_bench research/vendor_comparison_20261017 research/table_lane_shadow; do
             if [[ ! -e "$suite" ]]; then
               echo "::notice::$suite is not in this tree; not checked"
