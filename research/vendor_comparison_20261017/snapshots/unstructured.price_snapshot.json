@@ -1,0 +1,42 @@
+{
+  "schema": "tavonel.vendor_comparison.price_snapshot.v1",
+  "protocol": "tavonel.vendor_comparison.v1",
+  "vendor": "unstructured",
+  "arm_id": "D-V-unstructured",
+  "price_point": "unstructured_default",
+  "price_point_definition": "API default partition strategy, pinned from the response (COMPETITOR-PROTOCOL §2.1)",
+  "currency": "USD",
+  "captured_at": "2026-10-17T01:24:55.572Z",
+  "source": "vendor_public_web_pages",
+  "manifest": {
+    "file": "competitor-protocol-receipts/WEB-RECEIPTS-MANIFEST.json",
+    "sha256": "8b095f3801a545ce534ceef1ba3b4128e2b10032869a4d865bf1aeae384bb37c"
+  },
+  "prices": [
+    {
+      "name": "usd_per_page",
+      "value": 0.015,
+      "unit": "usd_per_page",
+      "quoted_text": "Pay only $0.015 a page after your first 10,000 free pages.",
+      "file": "competitor-protocol-receipts/web/unstructured-pricing.html",
+      "url": "https://unstructured.io/pricing",
+      "sha256": "dcf420b91189d7ed0e14ecd5cbc9e3899721dffb643a3ea8480339396870d8bf",
+      "fetched_at": "2026-10-17T01:24:55.572Z"
+    }
+  ],
+  "conditions": [],
+  "terms": {
+    "quoted_text": "Customer grants Unstructured a worldwide, perpetual, irrevocable, royalty-free, sublicensable, transferable license to use, reproduce, modify, create derivative works of, and otherwise process Customer Data for purposes of developing, training, improving, testing, and operating",
+    "file": "competitor-protocol-receipts/web/unstructured-platform-terms.html",
+    "url": "https://unstructured.io/platform-terms-of-service",
+    "sha256": "ff78dc866b7e4b1e835e307fe224af0171e3909c84e1cbdf9b8e3c3f88b224e4",
+    "fetched_at": "2026-10-17T01:26:59.741Z"
+  },
+  "warnings": [
+    "List price quoted from the vendor's public web page on the fetched_at date. It is not an invoice, not a contract and not a measured cost.",
+    "Free usage, free pages and free credits are not applied (COMPETITOR-PROTOCOL §5).",
+    "Usable for a run only within 7 days of captured_at and only while terms.sha256 equals the sha256 the FD-1 receipt recorded. Before a run, re-fetch every page into a new WEB-RECEIPTS-MANIFEST and rebuild this file; validate.py refuses otherwise.",
+    "terms.quoted_text is the clause verbatim. It is not a legal reading; FD-1 is counsel's and the founder's decision (COMPETITOR-PROTOCOL §2.2, §8).",
+    "Arm blocked on FD-1 and FD-3: Platform Terms 3.2(a) takes a perpetual training licence over Customer Data, so no corpus can be sent (COMPETITOR-PROTOCOL §3)."
+  ]
+}
