@@ -1,0 +1,186 @@
+{
+  "goldSchema": "tavonel.table_lane_gold.v1",
+  "synthetic": true,
+  "note": "SYNTHETIC. Hand-specified for the offline table-lane shadow harness test (T4). No document, reader or model produced it; no number in it is a measurement. inputSha256 and every reader digest are placeholders that name no real file.",
+  "documentId": "SYNTHETIC-doc-0001",
+  "inputSha256": "sha256:5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e",
+  "labelProvenance": {
+    "method": "synthetic_construction",
+    "labelledBy": "T4 fixture author (the cells were written, not read)"
+  },
+  "pages": [
+    {
+      "pageIndex0": 0,
+      "tables": [
+        {
+          "tableId": "g0",
+          "bbox1000": [
+            80,
+            180,
+            520,
+            330
+          ],
+          "rowCount": 3,
+          "columnCount": 2,
+          "headerRowCount": 1,
+          "cells": [
+            {
+              "cellId": "g0-c00",
+              "rowIndex0": 0,
+              "columnIndex0": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "Region"
+            },
+            {
+              "cellId": "g0-c01",
+              "rowIndex0": 0,
+              "columnIndex0": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "Units"
+            },
+            {
+              "cellId": "g0-c10",
+              "rowIndex0": 1,
+              "columnIndex0": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "North"
+            },
+            {
+              "cellId": "g0-c11",
+              "rowIndex0": 1,
+              "columnIndex0": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "12"
+            },
+            {
+              "cellId": "g0-c20",
+              "rowIndex0": 2,
+              "columnIndex0": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "South"
+            },
+            {
+              "cellId": "g0-c21",
+              "rowIndex0": 2,
+              "columnIndex0": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "7"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pageIndex0": 1,
+      "tables": [
+        {
+          "tableId": "g1",
+          "bbox1000": [
+            80,
+            180,
+            920,
+            330
+          ],
+          "rowCount": 2,
+          "columnCount": 2,
+          "headerRowCount": 1,
+          "cells": [
+            {
+              "cellId": "g1-c00",
+              "rowIndex0": 0,
+              "columnIndex0": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "Quarter"
+            },
+            {
+              "cellId": "g1-c01",
+              "rowIndex0": 0,
+              "columnIndex0": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "Revenue"
+            },
+            {
+              "cellId": "g1-c10",
+              "rowIndex0": 1,
+              "columnIndex0": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "Q1"
+            },
+            {
+              "cellId": "g1-c11",
+              "rowIndex0": 1,
+              "columnIndex0": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "40"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pageIndex0": 2,
+      "tables": []
+    },
+    {
+      "pageIndex0": 3,
+      "tables": [
+        {
+          "tableId": "g3",
+          "bbox1000": [
+            80,
+            180,
+            520,
+            290
+          ],
+          "rowCount": 2,
+          "columnCount": 2,
+          "headerRowCount": 1,
+          "cells": [
+            {
+              "cellId": "g3-c00",
+              "rowIndex0": 0,
+              "columnIndex0": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "Item"
+            },
+            {
+              "cellId": "g3-c01",
+              "rowIndex0": 0,
+              "columnIndex0": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "Count"
+            },
+            {
+              "cellId": "g3-c10",
+              "rowIndex0": 1,
+              "columnIndex0": 0,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "Bolts"
+            },
+            {
+              "cellId": "g3-c11",
+              "rowIndex0": 1,
+              "columnIndex0": 1,
+              "rowSpan": 1,
+              "columnSpan": 1,
+              "text": "3"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

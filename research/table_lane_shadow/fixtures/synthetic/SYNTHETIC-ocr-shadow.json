@@ -1,0 +1,317 @@
+{
+  "schemaVersion": "tavonel.ocr_result.v3",
+  "status": "ok",
+  "text": "SYNTHETIC table page, not a measurement\nRegion\nUnits\nNorth\n12\nSouth\n7\nSYNTHETIC dense table page, not a measurement\nQuarter\nRevenue\nQ1\n40\nSYNTHETIC prose page with no table.\nA second line of synthetic prose.\nSYNTHETIC page the table reader never answered\nItem\nCount\nBolts\n3",
+  "pageCount": 4,
+  "inputSha256": "sha256:5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e",
+  "regions": [
+    {
+      "regionId": "r-0001",
+      "pageIndex0": 0,
+      "pageNumber1": 1,
+      "order": 0,
+      "blockType": "paragraph",
+      "text": "SYNTHETIC table page, not a measurement",
+      "bbox1000": [
+        100,
+        100,
+        900,
+        140
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-0002",
+      "pageIndex0": 0,
+      "pageNumber1": 1,
+      "order": 1,
+      "blockType": "paragraph",
+      "text": "Region",
+      "bbox1000": [
+        100,
+        200,
+        300,
+        240
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-0003",
+      "pageIndex0": 0,
+      "pageNumber1": 1,
+      "order": 2,
+      "blockType": "paragraph",
+      "text": "Units",
+      "bbox1000": [
+        300,
+        200,
+        500,
+        240
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-0004",
+      "pageIndex0": 0,
+      "pageNumber1": 1,
+      "order": 3,
+      "blockType": "paragraph",
+      "text": "North",
+      "bbox1000": [
+        100,
+        240,
+        300,
+        280
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-0005",
+      "pageIndex0": 0,
+      "pageNumber1": 1,
+      "order": 4,
+      "blockType": "paragraph",
+      "text": "12",
+      "bbox1000": [
+        300,
+        240,
+        500,
+        280
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-0006",
+      "pageIndex0": 0,
+      "pageNumber1": 1,
+      "order": 5,
+      "blockType": "paragraph",
+      "text": "South",
+      "bbox1000": [
+        100,
+        280,
+        300,
+        320
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-0007",
+      "pageIndex0": 0,
+      "pageNumber1": 1,
+      "order": 6,
+      "blockType": "paragraph",
+      "text": "7",
+      "bbox1000": [
+        300,
+        280,
+        500,
+        320
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-1001",
+      "pageIndex0": 1,
+      "pageNumber1": 2,
+      "order": 7,
+      "blockType": "paragraph",
+      "text": "SYNTHETIC dense table page, not a measurement",
+      "bbox1000": [
+        100,
+        100,
+        900,
+        140
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-1002",
+      "pageIndex0": 1,
+      "pageNumber1": 2,
+      "order": 8,
+      "blockType": "paragraph",
+      "text": "Quarter",
+      "bbox1000": [
+        100,
+        200,
+        500,
+        260
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-1003",
+      "pageIndex0": 1,
+      "pageNumber1": 2,
+      "order": 9,
+      "blockType": "paragraph",
+      "text": "Revenue",
+      "bbox1000": [
+        500,
+        200,
+        900,
+        260
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-1004",
+      "pageIndex0": 1,
+      "pageNumber1": 2,
+      "order": 10,
+      "blockType": "paragraph",
+      "text": "Q1",
+      "bbox1000": [
+        100,
+        260,
+        500,
+        320
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-1005",
+      "pageIndex0": 1,
+      "pageNumber1": 2,
+      "order": 11,
+      "blockType": "paragraph",
+      "text": "40",
+      "bbox1000": [
+        500,
+        260,
+        900,
+        320
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-2001",
+      "pageIndex0": 2,
+      "pageNumber1": 3,
+      "order": 12,
+      "blockType": "paragraph",
+      "text": "SYNTHETIC prose page with no table.",
+      "bbox1000": [
+        100,
+        100,
+        900,
+        140
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-2002",
+      "pageIndex0": 2,
+      "pageNumber1": 3,
+      "order": 13,
+      "blockType": "paragraph",
+      "text": "A second line of synthetic prose.",
+      "bbox1000": [
+        100,
+        150,
+        900,
+        190
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-3001",
+      "pageIndex0": 3,
+      "pageNumber1": 4,
+      "order": 14,
+      "blockType": "paragraph",
+      "text": "SYNTHETIC page the table reader never answered",
+      "bbox1000": [
+        100,
+        100,
+        900,
+        140
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-3002",
+      "pageIndex0": 3,
+      "pageNumber1": 4,
+      "order": 15,
+      "blockType": "paragraph",
+      "text": "Item",
+      "bbox1000": [
+        100,
+        200,
+        300,
+        240
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-3003",
+      "pageIndex0": 3,
+      "pageNumber1": 4,
+      "order": 16,
+      "blockType": "paragraph",
+      "text": "Count",
+      "bbox1000": [
+        300,
+        200,
+        500,
+        240
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-3004",
+      "pageIndex0": 3,
+      "pageNumber1": 4,
+      "order": 17,
+      "blockType": "paragraph",
+      "text": "Bolts",
+      "bbox1000": [
+        100,
+        240,
+        300,
+        280
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    },
+    {
+      "regionId": "r-3005",
+      "pageIndex0": 3,
+      "pageNumber1": 4,
+      "order": 18,
+      "blockType": "paragraph",
+      "text": "3",
+      "bbox1000": [
+        300,
+        240,
+        500,
+        280
+      ],
+      "confidence": 0.9,
+      "authority": "unknown"
+    }
+  ],
+  "recognitionConflictCount": 0,
+  "sourceImmutableKey": "SYNTHETIC/table-lane-shadow/doc-0001/sanitized.pdf",
+  "readerRevision": "sha256:0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c",
+  "readerBindingSha256": "sha256:0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d"
+}

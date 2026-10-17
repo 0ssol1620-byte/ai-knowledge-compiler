@@ -1,0 +1,60 @@
+{
+  "manifestSchema": "tavonel.table_lane_shadow_manifest.v1",
+  "synthetic": true,
+  "note": "SYNTHETIC. Hand-specified for the offline table-lane shadow harness test (T4). No document, reader or model produced it; no number in it is a measurement. inputSha256 and every reader digest are placeholders that name no real file.",
+  "corpora": [
+    {
+      "corpusId": "SYNTHETIC-table-lane-shadow-0001",
+      "rightsStatus": "synthetic"
+    }
+  ],
+  "conditions": {
+    "renderScale": null,
+    "gpuType": null,
+    "readerImageDigest": null,
+    "modelId": null,
+    "modelRevision": null,
+    "inputMode": null,
+    "promptSha256": null,
+    "outputSchemaSha256": null,
+    "priceSnapshot": null,
+    "evaluatorCommit": "193627ae9e97d89188468ed1ee3b7a856ff76044",
+    "existingLaneImageDigest": null,
+    "readerRevision": "sha256:7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a",
+    "readerBindingSha256": "sha256:b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1"
+  },
+  "documents": [
+    {
+      "documentId": "SYNTHETIC-doc-0001",
+      "documentVersionId": "SYNTHETIC-doc-0001-v1",
+      "corpusId": "SYNTHETIC-table-lane-shadow-0001",
+      "sourceImmutableKey": "SYNTHETIC/table-lane-shadow/doc-0001/sanitized.pdf",
+      "inputSha256": "sha256:5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e",
+      "baselineOcrJson": "SYNTHETIC-ocr-baseline.json",
+      "shadowOcrJson": "SYNTHETIC-ocr-shadow.json",
+      "gold": "SYNTHETIC-gold.json",
+      "pages": [
+        {
+          "pageIndex0": 0,
+          "tableRead": "SYNTHETIC-table-read-p0.json",
+          "readerWallSeconds": null
+        },
+        {
+          "pageIndex0": 1,
+          "tableRead": "SYNTHETIC-table-read-p1.json",
+          "readerWallSeconds": null
+        },
+        {
+          "pageIndex0": 2,
+          "tableRead": "SYNTHETIC-table-read-p2.json",
+          "readerWallSeconds": null
+        },
+        {
+          "pageIndex0": 3,
+          "tableRead": null,
+          "readerWallSeconds": null
+        }
+      ]
+    }
+  ]
+}
