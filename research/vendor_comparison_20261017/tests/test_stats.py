@@ -235,6 +235,34 @@ def test_bootstrap_ignores_input_order(
     assert _boot(units) == _boot(shuffled)
 
 
+def test_input_order_does_not_reach_an_order_sensitive_aggregate() -> None:
+    # Naive float addition depends on order: (0.1 + 0.2) + 0.3 != (0.3 + 0.2) + 0.1 (the builtin
+    # sum compensates since 3.12, so it is spelled out). Units are sorted inside each cluster
+    # before aggregating, so the order they were handed in cannot matter.
+    def plain_mean(values: Sequence[float | None]) -> float:
+        total = 0.0
+        for v in values:
+            total += 0.0 if v is None else v
+        return total / len(values)
+
+    units = [PairedUnit(f"task-{i}", "pdf-0", x, 0.0) for i, x in enumerate((0.1, 0.2, 0.3))]
+
+    def run(given_units: Sequence[PairedUnit[float]]) -> stats.PairedDifference:
+        return paired_cluster_bootstrap(
+            given_units,
+            aggregate=plain_mean,
+            direction="higher",
+            denominator=3,
+            seed=SEED,
+            resamples=20,
+            level=0.95,
+        )
+
+    assert plain_mean([0.1, 0.2, 0.3]) != plain_mean([0.3, 0.2, 0.1])
+    assert run(units) == run(units[::-1])
+    assert run(units).point == plain_mean([0.1, 0.2, 0.3])
+
+
 @PROPERTY
 @given(st.lists(st.tuples(scores, scores), min_size=1, max_size=25))
 def test_lower_is_better_flips_the_sign(pairs: list[tuple[float, float]]) -> None:
@@ -425,6 +453,13 @@ def test_answer_axis_scores_failed_epochs_zero_and_uses_the_majority() -> None:
     assert (result.tavonel_only, result.vendor_only) == (2, 1)
     assert result.mcnemar_p == exact_mcnemar_p(2, 1)
     assert (result.difference.units, result.difference.clusters) == (4, 3)
+
+
+def test_a_tied_epoch_count_is_not_a_majority() -> None:
+    # Two epochs, one pass: half is not more than half, so neither task is discordant.
+    result = _answer([_task(0, "pdf-a", "PF", "FF"), _task(1, "pdf-b", "FF", "PF")])
+    assert (result.tavonel_only, result.vendor_only, result.mcnemar_p) == (0, 0, 1.0)
+    assert result.difference.point == 0.0
 
 
 def test_answer_axis_refuses_a_dropped_epoch_or_task() -> None:
