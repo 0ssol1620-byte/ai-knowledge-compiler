@@ -76,6 +76,8 @@ def test_committed_outputs_come_from_this_generator_and_these_fonts() -> None:
     }, "generate.py changed after the outputs were rendered; re-run it with py -3.13"
     assert manifest["seed"] == _gold()["seed"] == gen.DEFAULT_SEED
     assert set(manifest["environment"]) >= {"python", "pillow", "freetype2", "zlib", "libjpeg"}
+    # The interpreter by name only: a local path carries the builder's user name.
+    assert not set("/\\:") & set(manifest["environment"]["python_executable"])
     for font in manifest["fonts"]:
         assert Path(font["path"]) in gen.ALLOWED_FONTS
         assert "malgun" not in font["path"].lower()

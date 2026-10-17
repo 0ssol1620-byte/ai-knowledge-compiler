@@ -776,7 +776,8 @@ def generate(out_dir: Path, seed: int = DEFAULT_SEED) -> dict[str, Any]:
         "generator": {"path": GENERATOR_PATH, "sha256_lf": generator_sha256()},
         "environment": {
             "python": sys.version,
-            "python_executable": sys.executable,
+            # By name only: the full path carries the builder's user name.
+            "python_executable": Path(sys.executable).name,
             "pillow": pil.version,
             "freetype2": pil.features.version("freetype2"),
             "zlib": pil.features.version("zlib"),

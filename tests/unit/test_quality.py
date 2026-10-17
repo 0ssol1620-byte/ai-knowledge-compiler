@@ -137,6 +137,22 @@ def test_legacy_default_is_unchanged_on_korean_receipt(text: str) -> None:
     assert extract_numeric_tokens(text) == KO_LEGACY_RECEIPT[text]
 
 
+# Legacy never NFC-normalises. A combining mark is not \w, so in NFD "é5" the digit
+# has a boundary before it and is read, while precomposed "é5" glues it and reads
+# nothing. Pinned so legacy cannot quietly start normalising (PR #109 review, N2).
+LEGACY_NFD_PINS: dict[str, tuple[str, ...]] = {
+    "e\u03015": ("5",),
+    "\u00e95": (),
+    "\u0456\u03085": ("5",),
+}
+
+
+@pytest.mark.parametrize("text", list(LEGACY_NFD_PINS))
+def test_legacy_default_does_not_normalise_combining_marks(text: str) -> None:
+    assert extract_numeric_tokens(text) == LEGACY_NFD_PINS[text]
+    assert compare_numeric_tokens(text, "5").reference_tokens == LEGACY_NFD_PINS[text]
+
+
 @pytest.mark.parametrize("text", [*KO_LEGACY_RECEIPT, *EN_NO_REGRESSION])
 def test_explicit_legacy_mode_is_the_default(text: str) -> None:
     assert extract_numeric_tokens(text, mode="legacy") == extract_numeric_tokens(text)

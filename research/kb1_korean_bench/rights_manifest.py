@@ -69,11 +69,14 @@ Other rules the code enforces:
   ``MARKING_SCOPE_NOT_ITEM`` until the founder accepts it.
 * ``url`` must be an absolute http(s) URL with a host and an item path or query (a
   bare site root is not an item), no user-info and no whitespace or control character:
-  ``ITEM_URL_INVALID``. A URL on ``aihub.or.kr`` is ``AI_HUB_TERMS`` whatever
-  ``kogl_type`` claims. A URL on a dataset mirror (``huggingface.co``, ``hf.co``) is
-  ``ITEM_URL_NOT_ORIGINAL_SOURCE``: KB-F2 says KoOCR-Bench originals are re-fetched
-  from the government source, and a page already public in a benchmark may have leaked
-  into training (§5.11).
+  ``ITEM_URL_INVALID``. The host is checked in one spelling (IDNA, lower case, no
+  trailing root dot), so ``AIHUB.or.kr.`` and a fullwidth or ideographic-full-stop
+  spelling are all ``aihub.or.kr``; a host that is not then letters, digits, hyphens
+  and dots (a percent-escape, an empty label) is ``ITEM_URL_INVALID``. A URL on
+  ``aihub.or.kr`` is ``AI_HUB_TERMS`` whatever ``kogl_type`` claims. A URL on a dataset
+  mirror (``huggingface.co``, ``hf.co``) is ``ITEM_URL_NOT_ORIGINAL_SOURCE``: KB-F2 says
+  KoOCR-Bench originals are re-fetched from the government source, and a page already
+  public in a benchmark may have leaked into training (§5.11).
 * ``retrieved_on`` is ``YYYY-MM-DD``; ``sha256`` is 64 lower-case hex; every field is a
   non-empty string with no surrounding whitespace; no field outside the schema.
 * An ``item_id`` or ``sha256`` that appears in more than one entry rejects every one of
@@ -157,6 +160,7 @@ DENIED_HOSTS = {
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 _DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
 _URL_FORBIDDEN = re.compile(r"[\s\x00-\x1f\x7f]")
+_HOST = re.compile(r"[a-z0-9-]+(?:\.[a-z0-9-]+)*")
 
 
 class ManifestInputError(ValueError):
@@ -172,14 +176,16 @@ def _url_reasons(url: str) -> list[dict[str, str]]:
         return [_reason(Reject.ITEM_URL_INVALID, "url")]
     try:
         parts = urlsplit(url)
-        host = (parts.hostname or "").lower()
+        # One spelling per host before any host check; a bad IDNA label raises
+        # UnicodeError, which is a ValueError.
+        host = (parts.hostname or "").encode("idna").decode("ascii").lower().rstrip(".")
         has_userinfo = parts.username is not None or parts.password is not None
         _ = parts.port  # raises ValueError on a malformed port
     except ValueError:
         return [_reason(Reject.ITEM_URL_INVALID, "url")]
     if (
         parts.scheme not in ("http", "https")
-        or not host
+        or not _HOST.fullmatch(host)
         or has_userinfo
         or (parts.path in ("", "/") and not parts.query)
     ):

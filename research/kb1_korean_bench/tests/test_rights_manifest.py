@@ -157,6 +157,53 @@ def test_denied_hosts_are_rejected_whatever_kogl_type_claims(url: str, code: Rej
     assert _codes(manifest, 0) == {(code.value, "url")}
 
 
+_DENIED_HOST_CODES = [
+    ("aihub.or.kr", Reject.AI_HUB_TERMS),
+    ("www.aihub.or.kr", Reject.AI_HUB_TERMS),
+    ("huggingface.co", Reject.ITEM_URL_NOT_ORIGINAL_SOURCE),
+    ("hf.co", Reject.ITEM_URL_NOT_ORIGINAL_SOURCE),
+]
+
+
+@pytest.mark.parametrize("spelling", ["{h}.", "{H}", "{H}.", "{h}.:443"])
+@pytest.mark.parametrize(("host", "code"), _DENIED_HOST_CODES)
+def test_denied_hosts_are_rejected_in_every_spelling_of_the_host(
+    host: str, code: Reject, spelling: str
+) -> None:
+    # A trailing root dot names the same host (aihub.or.kr. is aihub.or.kr), and so does
+    # upper case. Either one passing the denial would be fail-open.
+    netloc = spelling.format(h=host, H=host.upper())
+    url = f"https://{netloc}/datasets/SYNTHETIC/item.do"
+    manifest = rm.build_manifest(_doc(_entry(1, url=url, kogl_type="1")), "0" * 64)
+    assert _codes(manifest, 0) == {(code.value, "url")}
+
+
+@pytest.mark.parametrize(
+    ("netloc", "code"),
+    [
+        # IDNA maps the ideographic full stop and fullwidth letters to aihub.or.kr.
+        ("aihub\u3002or\u3002kr", Reject.AI_HUB_TERMS),
+        ("\uff41\uff49hub.or.kr", Reject.AI_HUB_TERMS),
+        ("HF\uff0eCO", Reject.ITEM_URL_NOT_ORIGINAL_SOURCE),
+        # A percent-escape in the host is not a host this tool can name: refuse it.
+        ("aihub%2Eor.kr", Reject.ITEM_URL_INVALID),
+        ("huggingface%2eco", Reject.ITEM_URL_INVALID),
+        ("synthetic_agency.invalid", Reject.ITEM_URL_INVALID),
+        ("synthetic-agency..invalid", Reject.ITEM_URL_INVALID),
+        (".", Reject.ITEM_URL_INVALID),
+    ],
+)
+def test_a_host_is_compared_in_one_spelling_or_refused(netloc: str, code: Reject) -> None:
+    url = f"https://{netloc}/datasets/SYNTHETIC/item.do"
+    manifest = rm.build_manifest(_doc(_entry(1, url=url, kogl_type="1")), "0" * 64)
+    assert _codes(manifest, 0) == {(code.value, "url")}
+
+
+def test_an_idn_item_host_is_not_refused() -> None:
+    url = "https://가상기관.invalid/board/view.do?id=SYNTHETIC-1"
+    assert rm.build_manifest(_doc(_entry(1, url=url)), "0" * 64)["rejected"] == []
+
+
 def test_lookalike_host_is_not_denied() -> None:
     url = "https://notaihub.or.kr.invalid/SYNTHETIC/item.do"
     assert rm.build_manifest(_doc(_entry(1, url=url)), "0" * 64)["rejected"] == []
