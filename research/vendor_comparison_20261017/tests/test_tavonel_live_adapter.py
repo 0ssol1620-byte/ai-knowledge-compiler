@@ -232,12 +232,35 @@ def test_a_body_that_is_not_the_recorded_one_is_refused() -> None:
         tl.live_regions(result, None)
 
 
-def test_a_body_the_stub_accepts_but_lacks_boxes_is_refused_not_scored() -> None:
+def test_a_body_without_boxes_is_malformed_at_the_stub_and_never_scored() -> None:
     body = b'{"regions": [{"pageNumber1": 1, "order": 0, "text": "SYNTHETIC"}]}'
     result, raw = _stub_result(Document("SYNTHETIC-doc", b"%PDF SYNTHETIC", 1), body)
-    assert result.status.value == "ok"
+    assert result.status.value == "malformed_response"
+    assert tl.live_regions(result, raw) == []
     with pytest.raises(tl.MalformedLiveOutput):
-        tl.live_regions(result, raw)
+        tl.read_regions(json.loads(body))
+
+
+@pytest.mark.parametrize(
+    "case",
+    [c for c in REGIONS["malformed"] if c["name"].startswith("bbox_")],
+    ids=lambda c: c["name"],
+)
+def test_the_stub_refuses_every_bbox_the_adapter_refuses(case: dict[str, Any]) -> None:
+    body = json.dumps(case["payload"]).encode("utf-8")
+    result, _ = _stub_result(Document("SYNTHETIC-doc", b"%PDF SYNTHETIC", 1), body)
+    assert (result.status.value, result.markdown) == ("malformed_response", "")
+    with pytest.raises(tl.MalformedLiveOutput, match="bbox1000"):
+        tl.read_regions(case["payload"])
+
+
+def test_the_stub_accepts_the_bodies_the_adapter_accepts() -> None:
+    assert len([c for c in REGIONS["malformed"] if c["name"].startswith("bbox_")]) == 8
+    for name, pages in (("two_page_pdf", 2), ("one_page_image", 1)):
+        body = json.dumps(REGIONS["responses"][name]).encode("utf-8")
+        result, raw = _stub_result(Document("SYNTHETIC-doc", b"%PDF SYNTHETIC", pages), body)
+        assert result.status.value == "ok", name
+        assert tl.live_regions(result, raw) == _regions(name)
 
 
 @pytest.mark.parametrize("case", REGIONS["malformed"], ids=lambda c: c["name"])

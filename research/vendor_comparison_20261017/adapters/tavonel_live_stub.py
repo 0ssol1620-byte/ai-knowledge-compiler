@@ -4,8 +4,11 @@ Product limits are the live capability manifest's (``at_most_5_mib_per_source``,
 ``at_most_80_pages_per_source``; VENDOR-COMPARISON-PREREG arms D-T-live) and refuse a document
 before any request, as the product does. The response is read as Foundation's
 ``CollectionOcrRegion`` list (nextjs/lib/collection-compiler.ts:106-117): paragraph text ordered
-by page and reading order. This joins text only; converting page, paragraph and bbox1000 into
-each evaluator's input format is lane AT-6. The endpoint is FD-10's to decide, so it is None.
+by page and reading order. Every region's ``bbox1000`` is checked by the rule the D-T-live
+evaluator adapter applies (``tavonel_live.read_regions``, after Foundation
+collection-compiler.ts:520-541), so a body the adapter would refuse is never an OK result here.
+This joins text only; converting page, paragraph and bbox1000 into each evaluator's input format
+is lane AT-6. The endpoint is FD-10's to decide, so it is None.
 """
 
 from __future__ import annotations
@@ -48,6 +51,17 @@ class TavonelLiveStub(Adapter):
             ):
                 raise Failure(
                     Status.MALFORMED_RESPONSE, "region needs int pageNumber1, int order, str text"
+                )
+            bbox = region.get("bbox1000")
+            if not (
+                isinstance(bbox, list)
+                and len(bbox) == 4
+                and all(type(v) is int and 0 <= v <= 1000 for v in bbox)
+                and bbox[0] < bbox[2]
+                and bbox[1] < bbox[3]
+            ):
+                raise Failure(
+                    Status.MALFORMED_RESPONSE, "region bbox1000 needs 4 ints 0-1000, x1<x2, y1<y2"
                 )
             rows.append((page, order, text))
         return "\n\n".join(text for _, _, text in sorted(rows)), None, {}
