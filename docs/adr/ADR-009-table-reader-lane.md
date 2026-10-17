@@ -122,15 +122,17 @@ output enters CIR with origin `ai_reconstructed` (`PLAN:210`).
 The lane must never take the shape "run reader A, score its output, then conditionally run
 reader B". The intake register holds that shape as `DESIGN_AROUND` for IBM US11605028B2
 (`docs/ip/TECHNOLOGY_INTAKE_REGISTER.yaml:43-48`), and the constitution forbids routing on a
-scalar blind quality score. Whether this design reads onto that patent is for counsel, under
-FTO-1 (`docs/ip/TECHNOLOGY_INTAKE_REGISTER.yaml:153-154`), founder decision F2.
+scalar blind quality score. Whether this design stays outside that `DESIGN_AROUND` family is
+counsel's question, not this ADR's, under FTO-1
+(`docs/ip/TECHNOLOGY_INTAKE_REGISTER.yaml:153-154`), founder decision F2.
 
 The plan names the trigger as the element type that layout detects (`PLAN:209`). Nothing in
 the pipeline detects a table region today: the existing reader emits paragraph lines only
 (`CRITIC:60`). So:
 
 - In shadow, the lane reads every page it is given, and `no_table` is an ordinary answer. There
-  is no trigger yet, so there is nothing for the trigger to read onto.
+  is no trigger yet, so there is no conditional execution for the `DESIGN_AROUND` gate to
+  examine.
 - Before canary, the layout source that finds table regions must be named, along with the
   input mode it implies (whole page or table crop). Both are same-condition fields, and both
   go to counsel with F2.
