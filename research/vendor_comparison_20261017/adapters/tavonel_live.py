@@ -94,8 +94,13 @@ class Region:
 
 
 def adapter_digest() -> str:
-    """The pin ``adapter_digest`` (VENDOR-COMPARISON-PREREG D-T-live ``pins_required``)."""
-    return "sha256:" + hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    """The pin ``adapter_digest`` (VENDOR-COMPARISON-PREREG D-T-live ``pins_required``).
+
+    The sha256 of this module with LF line ends, i.e. of its git blob content, so a Windows
+    checkout that writes CRLF pins the same adapter as any other checkout.
+    """
+    source = Path(__file__).read_bytes().replace(b"\r\n", b"\n")
+    return "sha256:" + hashlib.sha256(source).hexdigest()
 
 
 def live_regions(result: ParseResult, raw_body: bytes | None) -> list[Region]:

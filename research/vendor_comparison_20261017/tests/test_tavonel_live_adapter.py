@@ -299,9 +299,10 @@ def test_a_table_read_page_is_refused_wherever_it_sits() -> None:
         assert "'tables': 1, 'formulas': 1, 'refusals': 0" in str(raised.value)
 
 
-def test_adapter_digest_is_the_module_bytes() -> None:
-    expected = hashlib.sha256(Path(tl.__file__).read_bytes()).hexdigest()
-    assert tl.adapter_digest() == f"sha256:{expected}"
+def test_adapter_digest_is_the_module_bytes_with_lf_line_ends() -> None:
+    lf = Path(tl.__file__).read_bytes().replace(b"\r\n", b"\n")
+    assert b"\r" not in lf
+    assert tl.adapter_digest() == f"sha256:{hashlib.sha256(lf).hexdigest()}"
 
 
 def test_conversion_runs_with_the_network_unplugged() -> None:
