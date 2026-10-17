@@ -64,7 +64,9 @@ _FULLWIDTH_WON, _FULLWIDTH_PERCENT = chr(0xFFE6), chr(0xFF05)
 _KOREAN_V1_PATTERN = re.compile(
     "(?<!" + _WORD_NOT_GLUED + ")"
     r"(?:"
-    r"\d{4}[-/.]\s*\d{1,2}[-/.]\s*\d{1,2}(?!" + _WORD_NOT_GLUED + ")"
+    # 2026.10.17 as in legacy, or the Korean 2026. 10. 17 with exactly one space after
+    # each dot; any wider gap (2024.\n1/7 at a sentence end) is not a date.
+    r"\d{4}(?:[-/.]\d{1,2}[-/.]|\. \d{1,2}\. )\d{1,2}(?!" + _WORD_NOT_GLUED + ")"
     r"|"
     r"(?:[$€£¥₩" + _FULLWIDTH_WON + r"]\s*)?"
     # A sign glued to a preceding word is a separator (1월-3월, 가-1호), as in legacy.

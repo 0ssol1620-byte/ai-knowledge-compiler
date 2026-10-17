@@ -126,6 +126,9 @@ EN_NO_REGRESSION = (
     "Revenue rose 10% to $1,234.50 on 2026-10-17 and 2026/1/5.",
     "Pages 1,2,3 and items 12,3456; A123, 12abc, v2.0, 5kg, 3 %.",
     "Total: € 1,000,000 (-0.5%) vs £ 12.75; ¥300 and ₩ 5,000.",
+    # Found by the KB-A6 shadow run on OmniDocBench gold: a sentence-final year followed
+    # by a line break is not the start of a spaced date.
+    "December 26, 2024.\n1/7, 1/8, 1/9/25 and 2024.  1. 5",
 )
 
 
