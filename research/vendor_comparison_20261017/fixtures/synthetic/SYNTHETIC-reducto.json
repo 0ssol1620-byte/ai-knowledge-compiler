@@ -1,0 +1,33 @@
+{
+  "label": "SYNTHETIC",
+  "note": "SYNTHETIC Reducto replay. Reducto's request/response shape was not captured in competitor-protocol-receipts on 2026-10-17, so the response shape below is invented for harness tests only (SYNTHETIC_ field names) and must be replaced by a docs-receipt shape before any execution.",
+  "vendor": "reducto",
+  "pin": {"arm_id": "D-V-reducto", "api_key_env": "SYNTHETIC_REDUCTO_KEY_NAME", "timeout_s": 120, "config": {}},
+  "response_shape": {
+    "source": "SYNTHETIC: Reducto response shape not captured; invented for harness tests",
+    "markdown": ["SYNTHETIC_markdown"],
+    "page_count": ["SYNTHETIC_page_count"],
+    "usage": {}
+  },
+  "document": {"doc_id": "SYNTHETIC-doc-001", "pages": 2, "pdf_text": "%PDF-1.7\n% SYNTHETIC harness bytes, not a real document\n%%EOF\n"},
+  "scenarios": [
+    {
+      "name": "ok",
+      "exchanges": [{"status": 200, "json": {"SYNTHETIC_markdown": "SYNTHETIC parsed text.", "SYNTHETIC_page_count": 2}}],
+      "expected": {
+        "status": "ok", "attempts": 1, "page_count": 2, "markdown": "SYNTHETIC parsed text.", "usage": {},
+        "cost": {"snapshot_usd": "0.020000", "metadata_usd": null, "charged_usd": "0.020000"}
+      }
+    },
+    {
+      "name": "empty_output",
+      "exchanges": [{"status": 200, "json": {"SYNTHETIC_markdown": "", "SYNTHETIC_page_count": 2}}],
+      "expected": {"status": "empty_output", "failure_class": "semantic", "attempts": 1, "markdown": ""}
+    },
+    {
+      "name": "markdown_not_text",
+      "exchanges": [{"status": 200, "json": {"SYNTHETIC_markdown": 42}}],
+      "expected": {"status": "malformed_response", "attempts": 1, "markdown": ""}
+    }
+  ]
+}

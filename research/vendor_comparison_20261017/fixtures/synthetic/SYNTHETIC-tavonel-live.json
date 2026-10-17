@@ -1,0 +1,54 @@
+{
+  "label": "SYNTHETIC",
+  "note": "SYNTHETIC D-T-live replay. Regions follow Foundation CollectionOcrRegion field names (collection-compiler.ts:106-117) with invented text and invented bbox1000 boxes (the stub checks bbox1000 by the D-T-live adapter's rule). timeout_s 85 is the OCR client timeout of COMPETITOR-PROTOCOL §4.4; the key name is a placeholder.",
+  "vendor": "tavonel_live",
+  "pin": {"arm_id": "D-T-live", "api_key_env": "SYNTHETIC_TAVONEL_EVAL_KEY_NAME", "timeout_s": 85, "config": {}},
+  "document": {"doc_id": "SYNTHETIC-doc-001", "pages": 2, "pdf_text": "%PDF-1.7\n% SYNTHETIC harness bytes, not a real document\n%%EOF\n"},
+  "scenarios": [
+    {
+      "name": "ok_regions_reordered",
+      "exchanges": [{"status": 200, "json": {"regions": [
+        {"regionId": "SYNTHETIC-r3", "pageNumber1": 2, "order": 0, "blockType": "paragraph", "text": "SYNTHETIC page two.", "bbox1000": [100, 100, 900, 160]},
+        {"regionId": "SYNTHETIC-r2", "pageNumber1": 1, "order": 1, "blockType": "paragraph", "text": "SYNTHETIC second paragraph.", "bbox1000": [100, 300, 900, 360]},
+        {"regionId": "SYNTHETIC-r1", "pageNumber1": 1, "order": 0, "blockType": "paragraph", "text": "SYNTHETIC first paragraph.", "bbox1000": [100, 100, 900, 140]}
+      ]}}],
+      "expected": {
+        "status": "ok", "attempts": 1, "page_count": null, "cost": "not_applicable",
+        "markdown": "SYNTHETIC first paragraph.\n\nSYNTHETIC second paragraph.\n\nSYNTHETIC page two."
+      }
+    },
+    {
+      "name": "at_byte_limit_is_sent",
+      "document": {"pad_to_bytes": 5242880},
+      "exchanges": [{"status": 200, "json": {"regions": [{"pageNumber1": 1, "order": 0, "text": "SYNTHETIC text.", "bbox1000": [0, 0, 1000, 1000]}]}}],
+      "expected": {"status": "ok", "attempts": 1}
+    },
+    {
+      "name": "over_byte_limit_refused_before_send",
+      "document": {"pad_to_bytes": 5242881},
+      "exchanges": [],
+      "expected": {"status": "size_rejected", "failure_class": "limit", "attempts": 0, "requests": [], "raw_sha256": null, "markdown": ""}
+    },
+    {
+      "name": "over_page_limit_refused_before_send",
+      "document": {"pages": 81},
+      "exchanges": [],
+      "expected": {"status": "size_rejected", "failure_class": "limit", "attempts": 0, "requests": [], "detail": "81 pages > 80 limit"}
+    },
+    {
+      "name": "empty_output",
+      "exchanges": [{"status": 200, "json": {"regions": []}}],
+      "expected": {"status": "empty_output", "failure_class": "semantic", "attempts": 1, "markdown": ""}
+    },
+    {
+      "name": "region_without_text",
+      "exchanges": [{"status": 200, "json": {"regions": [{"pageNumber1": 1, "order": 0}]}}],
+      "expected": {"status": "malformed_response", "attempts": 1, "markdown": ""}
+    },
+    {
+      "name": "region_without_bbox",
+      "exchanges": [{"status": 200, "json": {"regions": [{"pageNumber1": 1, "order": 0, "blockType": "paragraph", "text": "SYNTHETIC text."}]}}],
+      "expected": {"status": "malformed_response", "failure_class": "operational", "attempts": 1, "markdown": ""}
+    }
+  ]
+}

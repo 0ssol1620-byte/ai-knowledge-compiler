@@ -1,0 +1,97 @@
+{
+  "schema": "tavonel.vendor_comparison.price_snapshot.v1",
+  "protocol": "tavonel.vendor_comparison.v1",
+  "vendor": "llamaparse",
+  "arm_id": "D-V-llamaparse",
+  "price_point": "llamaparse_agentic",
+  "price_point_definition": "v2 tier agentic with a dated version pin; other tiers are listed for the D-S-sensitivity arm (COMPETITOR-PROTOCOL §2.1)",
+  "currency": "USD",
+  "captured_at": "2026-10-17T01:24:52.374Z",
+  "source": "vendor_public_web_pages",
+  "manifest": {
+    "file": "competitor-protocol-receipts/WEB-RECEIPTS-MANIFEST.json",
+    "sha256": "8b095f3801a545ce534ceef1ba3b4128e2b10032869a4d865bf1aeae384bb37c"
+  },
+  "prices": [
+    {
+      "name": "usd_per_1000_credits",
+      "value": 1.25,
+      "unit": "usd_per_1000_credits",
+      "quoted_text": "$1.25 per 1,000 credits.",
+      "file": "competitor-protocol-receipts/web/llamaparse-docs-pricing.html",
+      "url": "https://developers.llamaindex.ai/llamaparse/general/pricing/",
+      "sha256": "2eabf853344060b989e7a6740447a18ef6ddbcf63bada2eeeb371a6511717d8b",
+      "fetched_at": "2026-10-17T01:25:48.240Z"
+    },
+    {
+      "name": "fast_credits_per_page",
+      "value": 1,
+      "unit": "credits_per_page",
+      "quoted_text": "Fast 1",
+      "file": "competitor-protocol-receipts/web/llamaparse-docs-pricing.html",
+      "url": "https://developers.llamaindex.ai/llamaparse/general/pricing/",
+      "sha256": "2eabf853344060b989e7a6740447a18ef6ddbcf63bada2eeeb371a6511717d8b",
+      "fetched_at": "2026-10-17T01:25:48.240Z"
+    },
+    {
+      "name": "cost_effective_credits_per_page",
+      "value": 3,
+      "unit": "credits_per_page",
+      "quoted_text": "Cost-effective 3",
+      "file": "competitor-protocol-receipts/web/llamaparse-docs-pricing.html",
+      "url": "https://developers.llamaindex.ai/llamaparse/general/pricing/",
+      "sha256": "2eabf853344060b989e7a6740447a18ef6ddbcf63bada2eeeb371a6511717d8b",
+      "fetched_at": "2026-10-17T01:25:48.240Z"
+    },
+    {
+      "name": "agentic_credits_per_page",
+      "value": 10,
+      "unit": "credits_per_page",
+      "quoted_text": "Agentic 10",
+      "file": "competitor-protocol-receipts/web/llamaparse-docs-pricing.html",
+      "url": "https://developers.llamaindex.ai/llamaparse/general/pricing/",
+      "sha256": "2eabf853344060b989e7a6740447a18ef6ddbcf63bada2eeeb371a6511717d8b",
+      "fetched_at": "2026-10-17T01:25:48.240Z"
+    },
+    {
+      "name": "agentic_plus_credits_per_page",
+      "value": 45,
+      "unit": "credits_per_page",
+      "quoted_text": "Agentic Plus 45",
+      "file": "competitor-protocol-receipts/web/llamaparse-docs-pricing.html",
+      "url": "https://developers.llamaindex.ai/llamaparse/general/pricing/",
+      "sha256": "2eabf853344060b989e7a6740447a18ef6ddbcf63bada2eeeb371a6511717d8b",
+      "fetched_at": "2026-10-17T01:25:48.240Z"
+    }
+  ],
+  "conditions": [
+    {
+      "quoted_text": "tier and version are both required on every parse request.",
+      "file": "competitor-protocol-receipts/web/llamaparse-tiers.html",
+      "url": "https://developers.llamaindex.ai/llamaparse/parse/guides/tiers/",
+      "sha256": "a12df6658d25b8952417a90950cc62b4f8d9238a0514041195958e77fa0705f3",
+      "fetched_at": "2026-10-17T01:29:12.696Z"
+    },
+    {
+      "note": "A cached re-parse bills zero credits; record cache state per document.",
+      "quoted_text": "Parsed files are cached for 48 hours. Re-parsing the same file within that window is free.",
+      "file": "competitor-protocol-receipts/web/llamaparse-docs-pricing.html",
+      "url": "https://developers.llamaindex.ai/llamaparse/general/pricing/",
+      "sha256": "2eabf853344060b989e7a6740447a18ef6ddbcf63bada2eeeb371a6511717d8b",
+      "fetched_at": "2026-10-17T01:25:48.240Z"
+    }
+  ],
+  "terms": {
+    "quoted_text": "for benchmarking or competitive analysis of the Service",
+    "file": "competitor-protocol-receipts/web/llamaindex-terms.html",
+    "url": "https://www.llamaindex.ai/legal/terms-of-service",
+    "sha256": "fa5926b82bb89924b6eb63a224ef7e66c3147ca2a6b3e3a8731f7fd949a056c4",
+    "fetched_at": "2026-10-17T01:24:52.374Z"
+  },
+  "warnings": [
+    "List price quoted from the vendor's public web page on the fetched_at date. It is not an invoice, not a contract and not a measured cost.",
+    "Free usage, free pages and free credits are not applied (COMPETITOR-PROTOCOL §5).",
+    "Usable for a run only within 7 days of captured_at and only while terms.sha256 equals the sha256 the FD-1 receipt recorded. Before a run, re-fetch every page into a new WEB-RECEIPTS-MANIFEST and rebuild this file; validate.py refuses otherwise.",
+    "terms.quoted_text is the clause verbatim. It is not a legal reading; FD-1 is counsel's and the founder's decision (COMPETITOR-PROTOCOL §2.2, §8)."
+  ]
+}

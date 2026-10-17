@@ -1,0 +1,57 @@
+{
+  "label": "SYNTHETIC",
+  "note": "SYNTHETIC LandingAI replay. Field names follow landingai-credit-consumption.html (sha256 64a6eeedb133...); every value is invented for the harness. timeout_s and the key name are placeholders, not decisions.",
+  "vendor": "landingai",
+  "pin": {"arm_id": "D-V-landingai", "api_key_env": "SYNTHETIC_LANDINGAI_KEY_NAME", "timeout_s": 120, "config": {}},
+  "document": {"doc_id": "SYNTHETIC-doc-001", "pages": 2, "pdf_text": "%PDF-1.7\n% SYNTHETIC harness bytes, not a real document\n%%EOF\n"},
+  "scenarios": [
+    {
+      "name": "ok",
+      "exchanges": [
+        {"status": 200, "json": {
+          "markdown": "# SYNTHETIC heading\n\nSYNTHETIC paragraph on page one.\n\nSYNTHETIC paragraph on page two.",
+          "metadata": {"page_count": 2, "output_markdown_chars": 87, "billing": {"service_tier": "priority", "total_credits": 2.1}}
+        }}
+      ],
+      "expected": {
+        "status": "ok", "failure_class": null, "attempts": 1, "page_count": 2,
+        "markdown": "# SYNTHETIC heading\n\nSYNTHETIC paragraph on page one.\n\nSYNTHETIC paragraph on page two.",
+        "usage": {"output_markdown_chars": 87, "service_tier": "priority", "total_credits": 2.1},
+        "cost": {"snapshot_usd": "0.021000", "metadata_usd": "0.021000", "charged_usd": "0.021000"}
+      }
+    },
+    {
+      "name": "metadata_above_snapshot_charges_metadata",
+      "exchanges": [
+        {"status": 200, "json": {
+          "markdown": "# SYNTHETIC heading\n\nSYNTHETIC paragraph on page one.\n\nSYNTHETIC paragraph on page two.",
+          "metadata": {"page_count": 2, "output_markdown_chars": 87, "billing": {"service_tier": "priority", "total_credits": 3.5}}
+        }}
+      ],
+      "expected": {"status": "ok", "cost": {"snapshot_usd": "0.021000", "metadata_usd": "0.035000", "charged_usd": "0.035000"}}
+    },
+    {
+      "name": "rate_limited_then_ok",
+      "exchanges": [
+        {"status": 429, "text": "SYNTHETIC rate limit"},
+        {"status": 200, "json": {"markdown": "SYNTHETIC text after one retry.", "metadata": {"page_count": 2}}}
+      ],
+      "expected": {"status": "ok", "attempts": 2, "usage": {}, "cost": {"snapshot_usd": "0.021000", "metadata_usd": null, "charged_usd": "0.021000"}}
+    },
+    {
+      "name": "empty_output",
+      "exchanges": [
+        {"status": 200, "json": {"markdown": "  \n ", "metadata": {"page_count": 2, "output_markdown_chars": 4, "billing": {"service_tier": "priority", "total_credits": 2.1}}}}
+      ],
+      "expected": {
+        "status": "empty_output", "failure_class": "semantic", "attempts": 1, "markdown": "", "page_count": 2,
+        "cost": {"snapshot_usd": "0.020000", "metadata_usd": "0.021000", "charged_usd": "0.021000"}
+      }
+    },
+    {
+      "name": "success_without_markdown_field",
+      "exchanges": [{"status": 200, "json": {"metadata": {"page_count": 2}}}],
+      "expected": {"status": "malformed_response", "failure_class": "operational", "attempts": 1, "markdown": ""}
+    }
+  ]
+}
