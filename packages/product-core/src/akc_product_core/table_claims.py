@@ -310,9 +310,17 @@ def _check_shape(doc: _Row) -> tuple[list[_Row], list[_Row], list[_Row]]:
     if not _exact_keys(
         doc,
         (
-            "schemaVersion", "sourceImmutableKey", "inputSha256", "readerRevision",
-            "readerBindingSha256", "pageIndex0", "pageNumber1", "pageStatus", "tables",
-            "formulas", "refusals",
+            "schemaVersion",
+            "sourceImmutableKey",
+            "inputSha256",
+            "readerRevision",
+            "readerBindingSha256",
+            "pageIndex0",
+            "pageNumber1",
+            "pageStatus",
+            "tables",
+            "formulas",
+            "refusals",
         ),
     ):
         raise _invalid("document keys are not the table_read.v1 set")
@@ -332,8 +340,10 @@ def _check_shape(doc: _Row) -> tuple[list[_Row], list[_Row], list[_Row]]:
 
     def bounded(name: str, limit: int) -> list[_Row]:
         value = doc[name]
-        if not isinstance(value, list) or len(value) > limit or not all(
-            isinstance(item, dict) for item in value
+        if (
+            not isinstance(value, list)
+            or len(value) > limit
+            or not all(isinstance(item, dict) for item in value)
         ):
             raise _invalid(f"{name} is not a bounded list of objects")
         return value
@@ -361,7 +371,12 @@ def _check_shape(doc: _Row) -> tuple[list[_Row], list[_Row], list[_Row]]:
         if not _exact_keys(
             table,
             (
-                "tableId", "bbox1000", "rowCount", "columnCount", "headerRowCount", "cells",
+                "tableId",
+                "bbox1000",
+                "rowCount",
+                "columnCount",
+                "headerRowCount",
+                "cells",
                 "qualityFlags",
             ),
         ):
@@ -376,16 +391,24 @@ def _check_shape(doc: _Row) -> tuple[list[_Row], list[_Row], list[_Row]]:
             raise _invalid(f"table {table['tableId']} dimensions are not bounded integers")
         flags(table["qualityFlags"], f"table {table['tableId']}")
         cells = table["cells"]
-        if not isinstance(cells, list) or len(cells) > _MAX_CELLS or not all(
-            isinstance(cell, dict) for cell in cells
+        if (
+            not isinstance(cells, list)
+            or len(cells) > _MAX_CELLS
+            or not all(isinstance(cell, dict) for cell in cells)
         ):
             raise _invalid(f"table {table['tableId']} cells are not a bounded list")
         for cell in cells:
             if not _exact_keys(
                 cell,
                 (
-                    "cellId", "rowIndex0", "columnIndex0", "rowSpan", "columnSpan", "text",
-                    "bbox1000", "confirmedBy",
+                    "cellId",
+                    "rowIndex0",
+                    "columnIndex0",
+                    "rowSpan",
+                    "columnSpan",
+                    "text",
+                    "bbox1000",
+                    "confirmedBy",
                 ),
             ):
                 raise _invalid("cell keys are not the table_read.v1 set")
@@ -439,9 +462,7 @@ def _check_shape(doc: _Row) -> tuple[list[_Row], list[_Row], list[_Row]]:
                 for table in tables
             )
         ):
-            raise _invalid(
-                f"a {refusal['reasonCode']} refusal overlaps a table the reader emitted"
-            )
+            raise _invalid(f"a {refusal['reasonCode']} refusal overlaps a table the reader emitted")
     if _status_of(len(tables), refusals) != doc["pageStatus"]:
         raise _invalid("pageStatus contradicts the tables and refusals")
     return tables, formulas, refusals
@@ -450,7 +471,11 @@ def _check_shape(doc: _Row) -> tuple[list[_Row], list[_Row], list[_Row]]:
 def _check_binding(doc: _Row, expected: TableReadExpectation) -> None:
     """The document is about the bytes, reader and page the caller holds."""
     for field in (
-        "sourceImmutableKey", "inputSha256", "readerRevision", "readerBindingSha256", "pageIndex0",
+        "sourceImmutableKey",
+        "inputSha256",
+        "readerRevision",
+        "readerBindingSha256",
+        "pageIndex0",
     ):
         if doc[field] != expected[field]:
             raise _mismatch(f"{field} does not match the expected binding")

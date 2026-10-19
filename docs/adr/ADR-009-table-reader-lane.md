@@ -152,16 +152,16 @@ and contract changes need a new ADR and a schema version bump (`docs/adr/README.
 ### 4. One claim per confirmed data cell
 
 As built in shadow by `table_cell_claims`
-(`packages/product-core/src/akc_product_core/table_claims.py:701-749`):
+(`packages/product-core/src/akc_product_core/table_claims.py:726-774`):
 
 - One claim per data cell whose text an existing OCR line region confirmed (`confirmedBy`) and
   whose column header path is confirmed too. The text is composed deterministically as
   `{column header path, joined by " / "}: {cell text}`
-  (`packages/product-core/src/akc_product_core/table_claims.py:733`).
+  (`packages/product-core/src/akc_product_core/table_claims.py:758`).
 - The evidence is the value cell's source references first, then those of the header cells it
   used. `numeric_values` apply the sentence path's `_NUMBER` rule to the value text only, so a
   year in a header is context, not the cell's value
-  (`packages/product-core/src/akc_product_core/table_claims.py:742-746`).
+  (`packages/product-core/src/akc_product_core/table_claims.py:767-771`).
 - An unconfirmed cell, a table with no header row, and a value under an unconfirmed or missing
   header produce no claim. Such a cell is shown as evidence and never promoted to a fact
   (`PLAN:250-251`).
@@ -217,7 +217,7 @@ One document per page, with exact keys at every level
 
 The Foundation validator is `qualifyTableRead`
 (`FND-TAB:shared/tableReadContract.ts:350`). Core mirrors it as `qualify_table_read`
-(`packages/product-core/src/akc_product_core/table_claims.py:548`), with the same keys, bounds,
+(`packages/product-core/src/akc_product_core/table_claims.py:573`), with the same keys, bounds,
 reason codes and refusal order, pinned to the same three SYNTHETIC fixtures by sha256
 (`tests/unit/test_product_core_table_claims.py:34-42`).
 
