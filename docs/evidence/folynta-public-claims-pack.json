@@ -163,15 +163,18 @@
     {
       "evidence": [
         "docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__olmocr-bench__evaluation-summary.json",
-        "docs/evidence/artifacts/folynta-blind-quality-detection-2026-08-08.json"
+        "docs/evidence/artifacts/folynta-blind-quality-detection-2026-08-08.json",
+        "docs/evidence/artifacts/folynta-published-leaderboard-context-2026-08-08.json"
       ],
       "evidence_sha256": [
         "sha256:4d75ae96e70c7c1c425b991df0f1c356ec6393e73914aaed27f5f54b0048a559",
-        "sha256:287532aece64e8973bb95fe244c5cb41dc93517b683f24c7262ac547add6b3e7"
+        "sha256:287532aece64e8973bb95fe244c5cb41dc93517b683f24c7262ac547add6b3e7",
+        "sha256:5ca45e22fb737840860da3a8d202937b88a4c8ff18ef405cf2da50110ca65d84"
       ],
       "evidence_source": [
         "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/olmocr-bench/evaluation-summary.json",
-        "benchmark/reports/generated/folynta-blind-quality-detection-2026-08-08.json"
+        "benchmark/reports/generated/folynta-blind-quality-detection-2026-08-08.json",
+        "benchmark/reports/generated/folynta-published-leaderboard-context-2026-08-08.json"
       ],
       "forbidden": [
         "정확도 100% / 무오류 / 완벽한 추출",
@@ -181,8 +184,8 @@
       "headline_en": "80.6% on the official benchmark",
       "headline_ko": "공식 벤치마크 정확도 80.6%",
       "id": "benchmark-accuracy",
-      "must_say": "80.6은 문서 유형 8개의 통과율을 단순 평균한 값입니다. 적대적으로 설계된 개별 검사 기준으로는 7,137/8,413 (84.8%)가 통과했습니다. 공개 리더보드 최상위도 83.1이므로 비교 기준은 100이 아닙니다. 캠페인 실패 분석에서 채점한 문서 3,698/5,116 (72.3%)에 최소 하나의 오류가 있으며, 이는 olmOCR-Bench 문서만의 비율이 아닙니다. 무결성을 암시해서는 안 됩니다.",
-      "must_say_en": "80.6 is the unweighted mean of the pass rates of the 8 document types. Counted check by check, 7,137/8,413 (84.8%) of the adversarially chosen checks pass. The top published system scores 83.1, so the reference point is not 100. 3,698/5,116 (72.3%) of the documents scored in the campaign's failure study carry at least one failure, a rate over the whole campaign rather than olmOCR-Bench alone, so nothing here should imply flawless output.",
+      "must_say": "80.6은 문서 유형 8개의 통과율을 단순 평균한 값입니다. 적대적으로 설계된 개별 검사 기준으로는 7,137/8,413 (84.8%)가 통과했습니다. 공개 리더보드 최상위 시스템의 점수도 83.1(재현하지 않은 공개 자료 인용값)이므로 비교 기준은 만점이 아닙니다. 캠페인 실패 분석에서 채점한 문서 3,698/5,116 (72.3%)에 최소 하나의 오류가 있으며, 이는 olmOCR-Bench 문서만의 비율이 아닙니다. 무결성을 암시해서는 안 됩니다.",
+      "must_say_en": "80.6 is the unweighted mean of the pass rates of the 8 document types. Counted check by check, 7,137/8,413 (84.8%) of the adversarially chosen checks pass. The top published system scores 83.1, a figure quoted from the public leaderboard and not reproduced by us, so the reference point is not a perfect score. 3,698/5,116 (72.3%) of the documents scored in the campaign's failure study carry at least one failure, a rate over the whole campaign rather than olmOCR-Bench alone, so nothing here should imply flawless output.",
       "numbers": {
         "benchmark": "olmOCR-Bench",
         "checks_passed": 7137,
@@ -197,14 +200,23 @@
       "status": "approved"
     },
     {
-      "evidence": "docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__omnidocbench__repeat-1__metric-result.json",
-      "evidence_sha256": "sha256:bab2df526db11fbcd87b1a026a223d8b8a7ce03ba1b4f99a9899b4c34f4c731a",
-      "evidence_source": "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/omnidocbench/repeat-1/metric-result.json",
+      "evidence": [
+        "docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__omnidocbench__repeat-1__metric-result.json",
+        "docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__olmocr-bench__evaluation-summary.json"
+      ],
+      "evidence_sha256": [
+        "sha256:bab2df526db11fbcd87b1a026a223d8b8a7ce03ba1b4f99a9899b4c34f4c731a",
+        "sha256:4d75ae96e70c7c1c425b991df0f1c356ec6393e73914aaed27f5f54b0048a559"
+      ],
+      "evidence_source": [
+        "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/omnidocbench/repeat-1/metric-result.json",
+        "benchmark/reports/generated/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04/olmocr-bench/evaluation-summary.json"
+      ],
       "headline_en": "94.2% character-level text fidelity, 95.5% table structure accuracy",
       "headline_ko": "본문 문자 일치율 94.2%, 표 구조 정확도 95.5%",
       "id": "customer-facing-fidelity",
-      "must_say": "이 수치는 벤치마크 검사 통과율(80.6%)과 다른 척도입니다. 같은 화면에 둘 다 실을 때는 무엇을 재는 값인지 구분해 표기하십시오.",
-      "must_say_en": "These are a different measure from the 80.6% check pass rate. If both appear on one page, label what each one measures.",
+      "must_say": "이 수치는 olmOCR-Bench 점수 80.6(문서 유형 8개 통과율의 단순 평균)과 다른 척도입니다. 같은 화면에 둘 다 실을 때는 무엇을 재는 값인지 구분해 표기하십시오.",
+      "must_say_en": "These are a different measure from the olmOCR-Bench score of 80.6, the unweighted mean of the pass rates of the 8 document types. If both appear on one page, label what each one measures.",
       "numbers": {
         "reading_order_match_percent": 85.9,
         "table_full_percent": 92.6,
@@ -466,6 +478,6 @@
     "수치를 바꾸려면 이 파일이 아니라 근거 영수증을 다시 생성하십시오."
   ],
   "purpose": "웹사이트에 게시할 수 있는 주장과 게시할 수 없는 주장을 증거와 함께 구분합니다. 수치는 영수증에서 생성되며 손으로 수정해서는 안 됩니다.",
-  "receipt_sha256": "sha256:05560cda6049d4d34594720f6a3b989bbdfe71fda32e8aa01f31a243b5689af4",
+  "receipt_sha256": "sha256:f78acd9f8748cf1ed1460740344cb2a75f4f7a71927d9c948de042cbb990946d",
   "schema": "folynta.public-claims-pack.v1"
 }

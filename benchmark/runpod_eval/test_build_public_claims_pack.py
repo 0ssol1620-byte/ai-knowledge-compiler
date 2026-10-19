@@ -9,15 +9,21 @@ figure next to a citation that still looks legitimate.
 
 from __future__ import annotations
 
+import hashlib
 import json
+import re
 from pathlib import Path
+from typing import Any
 
 import pytest
 from build_public_claims_pack import (
+    _BARE_RATE_PENDING,
     APPROVED,
     CONDITIONAL,
     WITHHELD,
     _check_evidence_is_bound,
+    _check_must_say_numbers_are_cited,
+    _check_pending_ids_exist,
     _check_rates_carry_denominators,
     _count_rate,
     _evidence,
@@ -34,6 +40,15 @@ OLMOCR_SUMMARY = (
     / "folynta-mineru344-public-core-official-evaluations-r1-2026-08-04"
     "__olmocr-bench__evaluation-summary.json"
 )
+
+
+def _shipped_pack() -> tuple[Path, dict[str, Any]]:
+    repository = Path(__file__).resolve().parents[2]
+    pack_path = repository / "docs" / "evidence" / "folynta-public-claims-pack.json"
+    if not pack_path.is_file():
+        pytest.skip("claims pack has not been generated in this checkout")
+    pack: dict[str, Any] = json.loads(pack_path.read_text(encoding="utf-8"))
+    return repository, pack
 
 
 def _summary() -> dict[str, object]:
@@ -200,8 +215,152 @@ def test_an_impossible_rate_is_refused(part: int, whole: int) -> None:
 def test_a_pending_claim_that_no_longer_needs_the_exemption_fails() -> None:
     with pytest.raises(ValueError, match="remove it from _BARE_RATE_PENDING"):
         _check_rates_carry_denominators(
-            [{"id": "customer-facing-fidelity", "status": APPROVED, "must_say_en": "x"}]
+            [{"id": "accuracy-by-document-type", "status": APPROVED, "must_say_en": "x"}]
         )
+
+
+def test_a_pending_id_that_names_no_claim_fails() -> None:
+    # An exemption left behind for a renamed or deleted claim would never be noticed.
+    with pytest.raises(ValueError, match="names no claim"):
+        _check_pending_ids_exist([{"id": "x", "status": APPROVED}])
+
+
+def test_pending_ids_that_name_claims_pass() -> None:
+    _check_pending_ids_exist([{"id": claim_id} for claim_id in _BARE_RATE_PENDING])
+
+
+@pytest.mark.parametrize(
+    "spelled",
+    ["84.8 %", "84.8\u00a0%", "84.8\u2009%", "84.8\uff05", "84.8 퍼센트", "84.8 percent"],
+)
+def test_a_spaced_or_spelled_out_percent_is_still_a_bare_rate(spelled: str) -> None:
+    with pytest.raises(ValueError, match="without a denominator"):
+        _check_rates_carry_denominators(
+            [{"id": "x", "status": APPROVED, "must_say_en": f"{spelled} of the checks pass."}]
+        )
+
+
+@pytest.mark.parametrize(
+    "stated",
+    [
+        "7,137/8,413 (90.0%)",
+        "7,137/8,413 (84.9%)",
+        "7,137/8,413 (8.5%)",
+        "9/8 (112.5%)",
+        "1/0 (0%)",
+    ],
+)
+def test_a_counted_rate_whose_percent_does_not_follow_is_refused(stated: str) -> None:
+    with pytest.raises(ValueError, match="does not equal"):
+        _check_rates_carry_denominators(
+            [
+                {
+                    "id": "x",
+                    "status": APPROVED,
+                    "must_say": f"검사 기준으로는 {stated}가 통과했습니다.",
+                }
+            ]
+        )
+
+
+@pytest.mark.parametrize(
+    "stated", ["7,137/8,413 (84.8%)", "7,137/8,413 (85%)", "3,698/5,116 (72.28%)"]
+)
+def test_a_counted_rate_within_rounding_passes(stated: str) -> None:
+    _check_rates_carry_denominators([{"id": "x", "status": APPROVED, "must_say_en": stated}])
+
+
+def test_a_must_say_number_no_cited_artifact_states_is_refused(tmp_path: Path) -> None:
+    # benchmark-accuracy typed 83.1 into a sentence whose citations never held it.
+    (tmp_path / "a.json").write_text(json.dumps({"overall_score": 0.806}), encoding="utf-8")
+    with pytest.raises(ValueError, match=r"\['83\.1'\]"):
+        _check_must_say_numbers_are_cited(
+            tmp_path,
+            [
+                {
+                    "id": "x",
+                    "status": APPROVED,
+                    "evidence": "a.json",
+                    "must_say_en": "80.6, against a top published score of 83.1.",
+                }
+            ],
+        )
+
+
+def test_must_say_numbers_read_from_the_cited_artifacts_pass(tmp_path: Path) -> None:
+    summary = {
+        "overall_score": 0.806,
+        "per_type": {"a": {"passed": 3, "total": 4}, "b": {"passed": 4, "total": 6}},
+    }
+    (tmp_path / "a.json").write_text(json.dumps(summary), encoding="utf-8")
+    (tmp_path / "b.json").write_text(json.dumps({"rows": [{"overall": 83.1}]}), encoding="utf-8")
+    _check_must_say_numbers_are_cited(
+        tmp_path,
+        [
+            {
+                "id": "x",
+                "status": APPROVED,
+                "evidence": ["a.json", "b.json"],
+                # 2 is the number of types, 7/10 the column totals; neither is
+                # a leaf, and both are what the sentence is about.
+                "must_say": "80.6은 유형 2개의 평균이고, 검사 기준으로는 7/10 (70.0%)입니다. "
+                "최상위 인용값은 83.1입니다.",
+            }
+        ],
+    )
+
+
+def test_no_shipped_must_say_states_a_number_its_citations_do_not() -> None:
+    repository, pack = _shipped_pack()
+    _check_must_say_numbers_are_cited(repository, pack["claims"])
+    _check_pending_ids_exist(pack["claims"])
+
+
+_CHECK_PASS_RATE = re.compile(r"check pass rate|pass rate over|검사\s*통과율|검사의 통과율", re.I)
+
+
+def test_no_shipped_must_say_calls_the_olmocr_score_a_check_pass_rate() -> None:
+    # 80.6 is the mean of eight per-type pass rates; by check it is 7,137/8,413 (84.8%).
+    _, pack = _shipped_pack()
+    accuracy = next(c for c in pack["claims"] if c["id"] == "benchmark-accuracy")
+    score = f"{accuracy['numbers']['overall_percent']:.1f}"
+    offending = [
+        (claim["id"], sentence)
+        for claim in pack["claims"]
+        for field in ("must_say", "must_say_en")
+        for sentence in re.split(r"(?<=\.)\s+", claim.get(field, ""))
+        if score in sentence and _CHECK_PASS_RATE.search(sentence)
+    ]
+    assert offending == []
+
+
+def test_every_shipped_digest_matches_its_artifact_up_to_line_endings() -> None:
+    """The pack hashes the CRLF receipt the campaign wrote, and git stores it LF.
+
+    So for most citations a clone's sha256 differs from the pack's: a defect in
+    how the artifacts were committed, left to the founder because both fixes
+    touch hashes the disclosure registry calls immutable. A digest that matches
+    neither form is a different thing -- the content changed -- and fails here.
+    """
+    repository, pack = _shipped_pack()
+    unmatched = []
+    for claim in pack["claims"]:
+        cited = claim.get("evidence")
+        if not cited:
+            continue
+        entries = cited if isinstance(cited, list) else [cited]
+        digests = claim["evidence_sha256"]
+        if not isinstance(cited, list):
+            digests = [digests]
+        for entry, digest in zip(entries, digests, strict=True):
+            lf = (repository / entry).read_bytes().replace(b"\r\n", b"\n")
+            forms = {
+                "sha256:" + hashlib.sha256(form).hexdigest()
+                for form in (lf, lf.replace(b"\n", b"\r\n"))
+            }
+            if digest not in forms:
+                unmatched.append((claim["id"], entry))
+    assert unmatched == []
 
 
 def _synthetic_olmocr_summary(overall: float) -> dict[str, object]:
@@ -279,9 +438,7 @@ def test_the_shipped_pack_has_a_constraint_on_every_publishable_number() -> None
 
     _check_rates_carry_denominators(pack["claims"])
     accuracy = next(c for c in pack["claims"] if c["id"] == "benchmark-accuracy")
-    checks = _count_rate(
-        accuracy["numbers"]["checks_passed"], accuracy["numbers"]["checks_total"]
-    )
+    checks = _count_rate(accuracy["numbers"]["checks_passed"], accuracy["numbers"]["checks_total"])
     assert checks in accuracy["must_say"]
     assert checks in accuracy["must_say_en"]
     assert "unweighted mean" in accuracy["must_say_en"]
