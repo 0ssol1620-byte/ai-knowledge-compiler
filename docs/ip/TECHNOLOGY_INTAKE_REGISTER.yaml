@@ -89,6 +89,142 @@ yellow:
   - { id: tech_memlineage,     reference: "MemLineage / StateAuditor implementation",     status: CLEAN_ROOM_ONLY }
 
 # ---------------------------------------------------------------------------
+# Intake records (§15.1). One row per component under evaluation for use. A row
+# records what was read and pinned. It is not a legal opinion, and a permissive
+# licence on a row is still not patent freedom to operate (§2.1). Code, model
+# weights, dataset and hosted-API terms are four separate licences: clearing
+# one clears none of the others.
+# ---------------------------------------------------------------------------
+technology_intake:
+  - id: tech_paddleocr_vl_1_6
+    name: "PaddleOCR-VL 1.6, table-reader candidate (model registry provider_key paddleocr_vl_1_6)"
+    classification: ORANGE
+    source_type: OSS
+    decision: >-
+      D-25 in outputs/tavonel-research-replan-20261013/ux-program-20261017/
+      DECISION-REGISTER-2026-10-17.md (aliases T-F1, T-F3; executes as lane T8a):
+      review paddleocr_vl_1_6 alone, for shadow use only; build the image
+      ourselves and pin the weights revision; mineru_vlm stays on hold.
+    adopted: >-
+      The founder adopted every register default on 2026-10-17 (the message is
+      quoted in the register header). That adopts the direction. It is not a
+      wording approval and not counsel review.
+    source_urls:
+      code: "https://github.com/PaddlePaddle/PaddleOCR"
+      weights: "https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6"
+      runtime: "https://github.com/PaddlePaddle/Paddle"
+      datasets_named_by_model_card:
+        - "https://huggingface.co/datasets/PaddlePaddle/Real5-OmniDocBench"
+        - "https://github.com/opendatalab/OmniDocBench"
+    snapshot_date: "2026-10-19"
+    exact_commit_or_version:
+      code: "PaddlePaddle/PaddleOCR 2661c7c0ef5c613e8f93c6e93b2e052399f0f854 (2026-07-22; the Model Arena's code_repository_revision)"
+      weights: "PaddlePaddle/PaddleOCR-VL-1.6 c5630abae1d940eafe0697512a0325494b02ab42 (the Hub API returned the sha requested); model.safetensors sha256 85a479d506a11e724e7285d395c551be69f41dbc16b6342d3cacfb189aed71db"
+      runtime: "paddlepaddle-gpu==3.2.1 from the cu126 index the model card names; source tag v3.2.1 = 659ebc95069b4a5f34cf8102f0d0474fad5696c0"
+      runtime_transitive: "paddlex==3.7.2, tag v3.7.2 = ffb64904d23708863ff5b8da312a5cbd52a7f462 (the code commit requires >=3.7.0,<3.8.0). The rest of the dependency tree has no SBOM yet."
+    code_license: >-
+      Apache-2.0. LICENSE at the code commit, sha256
+      3840c5c0c61c294264d2dd77b8777be6ddd90121ef4e0e64abcd22edea581d6e;
+      pyproject.toml declares "Apache License 2.0".
+    model_license: >-
+      Apache-2.0 text. The weights repository's LICENSE at the revision (sha256
+      b8c4d7deccd236af023af1c88c4d4e8f0fc2f41914e0fb23a3ec9678fb5a8456) and the
+      model card's front matter "license: apache-2.0" (card sha256
+      d6c5b77a660577f6e18021defccd835bdc93a8c6538f5a479d597f3e94288abf, the same
+      bytes as the 2026-09-23 PR #76 snapshot). The repository also ships four
+      Python files: configuration_, image_processing_, modeling_ and
+      processing_paddleocr_vl.py.
+    upstream_weights: >-
+      OPEN. The card tags ERNIE4.5 and thanks PaddleFormers, Keye, MinerU and
+      OmniDocBench for "code, model weights and benchmarks" without saying which
+      supplied what. No upstream weight terms were captured. This is a question
+      for counsel, not something to infer from the names.
+    dataset_license: >-
+      OPEN. The card names no training data ("curated data selection"), so there
+      are no training-data terms to capture. The two datasets it names are
+      evaluation benchmarks. Real5-OmniDocBench declares Apache-2.0, but its own
+      card says the annotations it inherits from OmniDocBench v1.5 "remain
+      subject to the applicable OmniDocBench and source-document terms".
+      OmniDocBench's Copyright Statement says the dataset "is for research
+      purposes only and not for commercial use" (dataset card at the Arena
+      revision aa1ee96d106dbe53d0ae59474d75c6e6d9b53fec, and the GitHub README at
+      193627ae9e97d89188468ed1ee3b7a856ff76044). The OmniDocBench repository's
+      code LICENSE is Apache-2.0; its data terms are not.
+    runtime_license: >-
+      Apache-2.0. PaddlePaddle LICENSE at v3.2.1, sha256
+      ff6311c56c1b22c9209c96cc8afc16da91c24ee55a15e14ebc46fe1960dbd856. PaddleX
+      LICENSE at v3.7.2 is also Apache-2.0 (sha256
+      accc36c817ac5ede473d05732e14afc11cb6e55ef5919bc826b653f631165043). The
+      transitive tree that paddlex[ocr] pulls in (opencv-contrib-python,
+      modelscope, aistudio-sdk and others) has not been scanned.
+    hosted_api_terms: "Not used. The image runs the weights locally and calls no hosted API."
+    patent_family_refs:
+      - "tech_ibm_sequential_inference, through the table-lane trigger that would call this reader, not through the model itself. The trigger is designed in docs/adr/ADR-009-table-reader-lane.md (lane T6, branch agent/table-lane-20261017, not on this base; the decision register's FH-13 still calls it ADR-008, the number before T6 renumbered it). Counsel review of that trigger is D-26 / FH-13."
+    patent_note: >-
+      No patent search has been made for this model or its methods. A permissive
+      licence is copyright permission from its contributors and settles nothing
+      about third-party patents (§2.1).
+    intended_use: DEPENDENCY
+    scope: >-
+      Shadow only. A self-built image outside the product path, rollout 0, run
+      on a rights-cleared corpus. No public claim, no customer document, no
+      route eligibility.
+    approval_state: SHADOW_ONLY_PENDING_COUNSEL
+    data_policy_review: >-
+      PENDING. D-31 (docs/compliance/CORPUS_RIGHTS_POLICY_2026-10-17.md) limits
+      what the shadow may read to synthetic tables and the allowed rows.
+      OmniDocBench is internal diagnosis only. Real5-OmniDocBench is not on the
+      allowed list, so the policy's default deny applies to it.
+    security_review: >-
+      PENDING. The weights repository ships executable Python, and whether the
+      native runtime imports it has not been established (license-register.yaml
+      obligation custom_code_scan). The image downloads only at build time and
+      runs with the Hub offline. Denying egress at run time is the runner's job
+      and has not been tested.
+    owner: "FOUNDER-SET. FTO-3 asks who owns the intake record for each new dependency (§15.1)."
+    status: REVIEWED
+    status_note: >-
+      REVIEWED means an agent lane read and pinned the four licence texts. It is
+      not APPROVED. §2 ORANGE requires commercial terms, a data policy and a
+      model licence review, and §15.4 step 6 puts counsel review before
+      commercial activation.
+    counsel_before_any_non_shadow_use:
+      - "upstream weight terms (ERNIE4.5 and the projects the card thanks)"
+      - "training-data terms, which the card does not name"
+      - "the OmniDocBench research-only statement, for any use of the model's published benchmark results"
+      - "the table-lane trigger against the RED family above (D-26 / FH-13)"
+    evidence:
+      licence_snapshots: >-
+        D:/CodexProjects/ai-knowledge-compiler/outputs/tavonel-research-replan-20261013/ux-program-20261017/records/T8a/licences/
+        (RETRIEVED.json gives the URL, server date and sha256 of each file;
+        SHA256SUMS.txt). Captured by HTTPS GET on 2026-10-19. Not yet in
+        version control.
+      image: >-
+        tavonel-saas-foundation workers/foundation-table-gpu/Dockerfile and
+        weights.manifest (branch codex/records-20261017). Text only, never built.
+    open_before_a_shadow_run:
+      - "FH-17: GHCR write credential, to push the image"
+      - "C7: the shadow GPU spend cap, FOUNDER-SET. GPU spend stays 0 until it exists."
+      - "The model registry row (infra/model-registry/models.yaml) on this base still carries upstream_revision null and review_required licence fields, and validate_registry.py has no approval_state field. Recording the shadow-only approval there is a registry and validator change for a code lane."
+
+  - id: tech_mineru_vlm
+    name: "MinerU VLM (model registry provider_key mineru_vlm)"
+    classification: ORANGE
+    source_type: OSS
+    decision: "D-25: hold."
+    status: BLOCKED
+    approval_state: HOLD
+    reason: >-
+      The runtime licence is not plain Apache-2.0. It adds a commercial-licence
+      threshold, an online-service attribution duty and automatic termination
+      on breach. Source: branch agent/router-second-reader-20260923 (d6f77b8,
+      PR #76), infra/model-registry/license-snapshots/mineru_vlm.runtime-LICENSE.md,
+      sha256 2d9aeb5d15159329a20dd804f251c64860ba954fbd26ec02f802220e6d71cf5c,
+      MinerU tag mineru-3.4.5-released. T8a did not fetch it again.
+    reopens_when: "The founder accepts those runtime terms (TABLE-EXTRACTION-AND-LIMITS-DESIGN-2026-10-17 F1)."
+    owner: "FOUNDER-SET. FTO-3."
+
+# ---------------------------------------------------------------------------
 # What binds the tracks currently in flight
 # ---------------------------------------------------------------------------
 binding_now:
