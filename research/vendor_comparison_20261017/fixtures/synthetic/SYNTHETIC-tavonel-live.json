@@ -1,6 +1,6 @@
 {
   "label": "SYNTHETIC",
-  "note": "SYNTHETIC D-T-live replay. Regions follow Foundation CollectionOcrRegion field names (collection-compiler.ts:106-117) with invented text and invented bbox1000 boxes (the stub checks bbox1000 by the D-T-live adapter's rule). timeout_s 85 is the OCR client timeout of COMPETITOR-PROTOCOL §4.4; the key name is a placeholder.",
+  "note": "SYNTHETIC D-T-live replay. Regions follow Foundation CollectionOcrRegion field names (collection-compiler.ts:106-117) with invented text and invented bbox1000 boxes (the stub reads every body with the D-T-live adapter's read_regions). timeout_s 85 is the OCR client timeout of COMPETITOR-PROTOCOL §4.4; the key name is a placeholder.",
   "vendor": "tavonel_live",
   "pin": {"arm_id": "D-T-live", "api_key_env": "SYNTHETIC_TAVONEL_EVAL_KEY_NAME", "timeout_s": 85, "config": {}},
   "document": {"doc_id": "SYNTHETIC-doc-001", "pages": 2, "pdf_text": "%PDF-1.7\n% SYNTHETIC harness bytes, not a real document\n%%EOF\n"},
@@ -20,7 +20,7 @@
     {
       "name": "at_byte_limit_is_sent",
       "document": {"pad_to_bytes": 5242880},
-      "exchanges": [{"status": 200, "json": {"regions": [{"pageNumber1": 1, "order": 0, "text": "SYNTHETIC text.", "bbox1000": [0, 0, 1000, 1000]}]}}],
+      "exchanges": [{"status": 200, "json": {"regions": [{"pageNumber1": 1, "order": 0, "blockType": "paragraph", "text": "SYNTHETIC text.", "bbox1000": [0, 0, 1000, 1000]}]}}],
       "expected": {"status": "ok", "attempts": 1}
     },
     {
@@ -42,7 +42,7 @@
     },
     {
       "name": "region_without_text",
-      "exchanges": [{"status": 200, "json": {"regions": [{"pageNumber1": 1, "order": 0}]}}],
+      "exchanges": [{"status": 200, "json": {"regions": [{"pageNumber1": 1, "order": 0, "blockType": "paragraph"}]}}],
       "expected": {"status": "malformed_response", "attempts": 1, "markdown": ""}
     },
     {

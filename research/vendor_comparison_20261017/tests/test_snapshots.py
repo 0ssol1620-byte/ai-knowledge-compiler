@@ -224,6 +224,53 @@ def test_page_text_follows_html2txt() -> None:
 
 
 @pytest.mark.parametrize(
+    "hidden",
+    [
+        b"<script>var p = '$99 per page';</script >",
+        b"<SCRIPT type=\"text/javascript\">var p = '$99 per page';</SCRIPT\n>",
+        b"<script>var p = '$99 per page';</script\tdata-x=\"y\">",
+        b"<style>.p::after { content: '$99 per page' }</style >",
+        b"<Style media=\"all\">.p::after { content: '$99 per page' }</STYLE\r\n>",
+        # Text that only resembles an end tag does not end the element early.
+        b"<script>var s = '<script>', t = '</scripts>'; var p = '$99 per page';</script>",
+        b"<script>var t = '</script-x>'; var p = '$99 per page';</script>",
+        # A browser folds tag names in ASCII only: U+017F LONG S is not "s".
+        "<script>var t = '</\u017fcript>'; var p = '$99 per page';</script>".encode(),
+    ],
+    ids=[
+        "space",
+        "upper_newline",
+        "attribute",
+        "style_space",
+        "style_mixed_crlf",
+        "nested_like",
+        "dash_like",
+        "non_ascii_fold",
+    ],
+)
+def test_script_and_style_bodies_are_not_text_whatever_the_end_tag(hidden: bytes) -> None:
+    """CodeQL py/bad-tag-filter: ``</script >`` ends a script for a browser, so it does here."""
+    assert validate.page_text(b"<p>Visible</p>" + hidden + b"<p>After</p>") == "Visible\nAfter"
+
+
+def test_an_unclosed_script_runs_to_the_end_of_the_page() -> None:
+    page = b"<p>Visible</p><script>var p = '$99 per page';<p>still script</p>"
+    assert validate.page_text(page) == "Visible"
+
+
+def test_a_quote_hidden_in_a_script_is_refused_whatever_its_end_tag(world: World) -> None:
+    page = PAGES["SYNTHETIC-pricing.html"].replace(b"</script>", b"</script >")
+    world.put_page("SYNTHETIC-pricing.html", page)
+    price = world.row("SYNTHETIC-pricing.html", "Parse $10 per 1,000 pages")
+    world.snapshot["prices"][0].update(price)
+    world.snapshot["conditions"].append(world.row("SYNTHETIC-pricing.html", "$99 per page"))
+    problems = validate.binding_problems(world.write(), world.root)
+    assert problems == [
+        "receipts/web/SYNTHETIC-pricing.html: quoted_text not found: '$99 per page'"
+    ]
+
+
+@pytest.mark.parametrize(
     ("change", "reason"),
     [
         (lambda w: w.fd1.update(decision="FD-2"), "does not record decision FD-1"),

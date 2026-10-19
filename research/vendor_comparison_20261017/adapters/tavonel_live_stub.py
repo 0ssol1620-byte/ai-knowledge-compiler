@@ -2,13 +2,15 @@
 
 Product limits are the live capability manifest's (``at_most_5_mib_per_source``,
 ``at_most_80_pages_per_source``; VENDOR-COMPARISON-PREREG arms D-T-live) and refuse a document
-before any request, as the product does. The response is read as Foundation's
-``CollectionOcrRegion`` list (nextjs/lib/collection-compiler.ts:106-117): paragraph text ordered
-by page and reading order. Every region's ``bbox1000`` is checked by the rule the D-T-live
-evaluator adapter applies (``tavonel_live.read_regions``, after Foundation
-collection-compiler.ts:520-541), so a body the adapter would refuse is never an OK result here.
-This joins text only; converting page, paragraph and bbox1000 into each evaluator's input format
-is lane AT-6. The endpoint is FD-10's to decide, so it is None.
+before any request, as the product does. The response is Foundation's ``CollectionOcrRegion``
+list (nextjs/lib/collection-compiler.ts:106-117), read by the D-T-live evaluator adapter's own
+``tavonel_live.read_regions`` (after collection-compiler.ts:520-541), so a body the adapter
+would refuse is never an OK result here: an empty region list is ``EMPTY_OUTPUT``, any other body
+it calls malformed is ``MALFORMED_RESPONSE``, and a table read or a non-paragraph block raises
+``StructureNotImplemented`` out of ``parse``, because the status it maps to is the
+preregistration's to decide, not this stub's. The markdown is the paragraph text in page and
+reading order; converting page, paragraph and bbox1000 into each evaluator's input format is
+lane AT-6. The endpoint is FD-10's to decide, so it is None.
 """
 
 from __future__ import annotations
@@ -16,6 +18,7 @@ from __future__ import annotations
 from typing import Any
 
 from .base import Adapter, Document, Failure, ResponseShape, Status, UsageValue
+from .tavonel_live import MalformedLiveOutput, read_regions
 
 MAX_SOURCE_BYTES = 5 * 1024 * 1024
 MAX_PAGES = 80
@@ -38,30 +41,10 @@ class TavonelLiveStub(Adapter):
     def decode(
         self, payload: Any, shape: ResponseShape
     ) -> tuple[str, int | None, dict[str, UsageValue]]:
-        regions = payload.get("regions") if isinstance(payload, dict) else None
-        if not isinstance(regions, list):
-            raise Failure(Status.MALFORMED_RESPONSE, "regions: not a list")
-        rows = []
-        for region in regions:
-            if not isinstance(region, dict):
-                raise Failure(Status.MALFORMED_RESPONSE, "region: not an object")
-            page, order, text = region.get("pageNumber1"), region.get("order"), region.get("text")
-            if not (
-                type(page) is int and type(order) is int and isinstance(text, str) and page >= 1
-            ):
-                raise Failure(
-                    Status.MALFORMED_RESPONSE, "region needs int pageNumber1, int order, str text"
-                )
-            bbox = region.get("bbox1000")
-            if not (
-                isinstance(bbox, list)
-                and len(bbox) == 4
-                and all(type(v) is int and 0 <= v <= 1000 for v in bbox)
-                and bbox[0] < bbox[2]
-                and bbox[1] < bbox[3]
-            ):
-                raise Failure(
-                    Status.MALFORMED_RESPONSE, "region bbox1000 needs 4 ints 0-1000, x1<x2, y1<y2"
-                )
-            rows.append((page, order, text))
-        return "\n\n".join(text for _, _, text in sorted(rows)), None, {}
+        try:
+            regions = read_regions(payload)  # StructureNotImplemented propagates
+        except MalformedLiveOutput as exc:
+            if isinstance(payload, dict) and payload.get("regions") == []:
+                return "", None, {}  # a success with no content: EMPTY_OUTPUT
+            raise Failure(Status.MALFORMED_RESPONSE, str(exc)) from exc
+        return "\n\n".join(region.text for region in regions), None, {}

@@ -47,13 +47,34 @@ _ENTITIES = (
     (r"&lt;", "<"),
     (r"&gt;", ">"),
 )
+# A tag name ends at whitespace, "/" or ">" and matches ASCII case-insensitively, so
+# ``</script >`` and ``</SCRIPT\n>`` end a script but ``</scripts>`` and ``</script-x>`` do not;
+# an unclosed element runs to the end of the page.
+_SCRIPT = re.compile(
+    r"<script(?:[\t\n\f\r /][^>]*)?>[\s\S]*?(?:</script(?:[\t\n\f\r /][^>]*)?>|\Z)",
+    re.IGNORECASE | re.ASCII,
+)
+_STYLE = re.compile(
+    r"<style(?:[\t\n\f\r /][^>]*)?>[\s\S]*?(?:</style(?:[\t\n\f\r /][^>]*)?>|\Z)",
+    re.IGNORECASE | re.ASCII,
+)
 
 
 def page_text(raw: bytes) -> str:
-    """``competitor-protocol-receipts/html2txt.js`` in Python: the manifest's reading method."""
+    """``competitor-protocol-receipts/html2txt.js`` in Python: the manifest's reading method.
+
+    One deliberate divergence. html2txt.js ends a script or style element only at a bare
+    ``</script>`` or ``</style>``, so a body closed by ``</script >``, ``</SCRIPT foo>`` or not
+    closed at all would read as page text, and a quote no reader can see would bind (CodeQL
+    py/bad-tag-filter). Here the element ends where a browser's tokenizer ends it: at
+    ``</script`` or ``</style`` followed by whitespace, ``/`` or ``>``, matched ASCII
+    case-insensitively, else at the end of the page. html2txt.js stays as it is: it is a
+    hash-bound receipt (COMPETITOR-PROTOCOL-2026-10-17 §0.1) of how the 2026-10-17 pages were
+    read, and on those pages both give the same text.
+    """
     text = raw.decode("utf-8", errors="replace")
-    text = re.sub(r"<script[\s\S]*?</script>", " ", text, flags=re.IGNORECASE)
-    text = re.sub(r"<style[\s\S]*?</style>", " ", text, flags=re.IGNORECASE)
+    text = _SCRIPT.sub(" ", text)
+    text = _STYLE.sub(" ", text)
     text = re.sub(r"<br\s*/?>", "\n", text, flags=re.IGNORECASE)
     text = re.sub(r"</(p|div|li|h[1-6]|tr|section)>", "\n", text, flags=re.IGNORECASE)
     text = re.sub(r"<[^>]+>", " ", text)

@@ -264,6 +264,24 @@ def test_the_stub_accepts_the_bodies_the_adapter_accepts() -> None:
 
 
 @pytest.mark.parametrize("case", REGIONS["malformed"], ids=lambda c: c["name"])
+def test_the_stub_never_returns_ok_for_a_body_the_adapter_refuses(case: dict[str, Any]) -> None:
+    body = json.dumps(case["payload"]).encode("utf-8")
+    result, raw = _stub_result(Document("SYNTHETIC-doc", b"%PDF SYNTHETIC", 1), body)
+    empty = case["payload"] == {"regions": []}  # a success with no content: semantic
+    want = "empty_output" if empty else "malformed_response"
+    assert (result.status.value, result.markdown) == (want, "")
+    assert tl.live_regions(result, raw) == []
+
+
+@pytest.mark.parametrize("case", REGIONS["structure"], ids=lambda c: c["name"])
+def test_the_stub_raises_on_structure_the_adapter_cannot_convert(case: dict[str, Any]) -> None:
+    body = json.dumps(case["payload"]).encode("utf-8")
+    with pytest.raises(tl.StructureNotImplemented) as raised:
+        _stub_result(Document("SYNTHETIC-doc", b"%PDF SYNTHETIC", 1), body)
+    assert raised.value.reason_code == case["reason_code"]
+
+
+@pytest.mark.parametrize("case", REGIONS["malformed"], ids=lambda c: c["name"])
 def test_malformed_output_fails_closed(case: dict[str, Any]) -> None:
     with pytest.raises(tl.MalformedLiveOutput):
         tl.read_regions(case["payload"])

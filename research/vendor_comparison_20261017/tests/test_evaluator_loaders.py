@@ -14,9 +14,11 @@ pinned evaluator itself runs to find and read a candidate, taken by path from a 
   and the layout-detection evaluator's adapter and label projection, imported in the checkout's
   own ``.venv``.
 
-A missing checkout, interpreter or git skips with the missing path named. A checkout that is
-present but not at the pin, or whose tracked files differ from it, fails. Nothing is written into
-a checkout: subprocesses run with ``-B`` and git with ``--no-optional-locks``.
+Checkouts are looked for under ``TAVONEL_EVALUATOR_CACHE`` when it is set, then under this
+checkout's own git-ignored ``benchmark/cache``. A checkout in neither, or a missing interpreter or
+git, skips with every path looked at named. A checkout that is present but not at the pin, or
+whose tracked files differ from it, fails. Nothing is written into a checkout: subprocesses run
+with ``-B`` and git with ``--no-optional-locks``.
 """
 
 from __future__ import annotations
@@ -29,7 +31,7 @@ import os
 import shutil
 import subprocess
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -38,11 +40,14 @@ import pytest
 
 from research.vendor_comparison_20261017.adapters import tavonel_live as tl
 
-CACHE = Path(
-    os.environ.get(
-        "TAVONEL_EVALUATOR_CACHE", r"D:\CodexProjects\ai-knowledge-compiler\benchmark\cache"
-    )
-)
+
+def _caches(environ: Mapping[str, str]) -> list[Path]:
+    local = Path(tl.__file__).resolve().parents[3] / "benchmark" / "cache"
+    override = environ.get("TAVONEL_EVALUATOR_CACHE")
+    return [Path(override), local] if override else [local]
+
+
+CACHES = _caches(os.environ)
 PINS = {
     "olmocr": "cfa88c1eb1c2ec4495c84d6820ffe85d33b7408c",
     "omnidoc": "193627ae9e97d89188468ed1ee3b7a856ff76044",
@@ -126,9 +131,14 @@ def _git(root: Path, *args: str) -> str:
 
 
 def _checkout(name: str, loader: str) -> Path:
-    root = CACHE / name
-    if not (root / loader).is_file():
-        pytest.skip(f"evaluator checkout absent: {root / loader} not found")
+    found = [cache / name for cache in CACHES if (cache / name / loader).is_file()]
+    if not found:
+        looked = ", ".join(str(cache / name / loader) for cache in CACHES)
+        pytest.skip(
+            f"evaluator checkout absent: {looked} not found; "
+            "set TAVONEL_EVALUATOR_CACHE to the directory that holds the pinned checkouts"
+        )
+    root = found[0]
     head = _git(root, "rev-parse", "HEAD").strip()
     assert head == PINS[name], f"{root} is at {head}, not the pin {PINS[name]}"
     dirty = _git(root, "status", "--porcelain", "--untracked-files=no")
@@ -378,7 +388,7 @@ def test_parsebench_refuses_the_empty_envelope_exactly_like_the_frozen_campaign_
 def test_an_absent_checkout_skips_naming_the_missing_path(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(sys.modules[__name__], "CACHE", tmp_path / "SYNTHETIC-no-cache")
+    monkeypatch.setattr(sys.modules[__name__], "CACHES", [tmp_path / "SYNTHETIC-no-cache"])
     with pytest.raises(pytest.skip.Exception, match="SYNTHETIC-no-cache") as skipped:
         _checkout("olmocr", "benchmark.py")
     assert str(tmp_path / "SYNTHETIC-no-cache" / "olmocr" / "benchmark.py") in str(skipped.value)
@@ -399,7 +409,7 @@ def test_a_checkout_off_its_pin_or_edited_fails_instead_of_skipping(
         [*identity, "commit", "-qm", "SYNTHETIC"],
     ):
         _git(root, *args)
-    monkeypatch.setattr(sys.modules[__name__], "CACHE", tmp_path)
+    monkeypatch.setattr(sys.modules[__name__], "CACHES", [tmp_path])
     with pytest.raises(AssertionError, match="not the pin cfa88c1e"):
         _checkout("olmocr", "benchmark.py")
     head = _git(root, "rev-parse", "HEAD").strip()
@@ -408,3 +418,24 @@ def test_a_checkout_off_its_pin_or_edited_fails_instead_of_skipping(
     (root / "benchmark.py").write_bytes(b"# SYNTHETIC edit\n")
     with pytest.raises(AssertionError, match="tracked files differ from the pin"):
         _checkout("olmocr", "benchmark.py")
+
+
+def test_the_cache_is_the_env_override_then_this_checkout_and_never_a_fixed_drive() -> None:
+    local = Path(tl.__file__).resolve().parents[3] / "benchmark" / "cache"
+    assert _caches({}) == [local]
+    assert _caches({"TAVONEL_EVALUATOR_CACHE": "SYNTHETIC-cache"}) == [
+        Path("SYNTHETIC-cache"),
+        local,
+    ]
+    assert _caches({"TAVONEL_EVALUATOR_CACHE": ""}) == [local]
+
+
+def test_the_skip_names_every_cache_looked_in(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    caches = [tmp_path / "SYNTHETIC-env-cache", tmp_path / "SYNTHETIC-local-cache"]
+    monkeypatch.setattr(sys.modules[__name__], "CACHES", caches)
+    with pytest.raises(pytest.skip.Exception, match="TAVONEL_EVALUATOR_CACHE") as skipped:
+        _checkout("omnidoc", "src/dataset/end2end_dataset.py")
+    for cache in caches:
+        assert str(cache / "omnidoc" / "src/dataset/end2end_dataset.py") in str(skipped.value)
