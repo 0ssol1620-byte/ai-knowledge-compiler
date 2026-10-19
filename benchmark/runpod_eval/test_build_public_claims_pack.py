@@ -26,6 +26,7 @@ from build_public_claims_pack import (
     _check_pending_ids_exist,
     _check_rates_carry_denominators,
     _count_rate,
+    _declared_denominator,
     _evidence,
     _group_metric,
     _olmocr_score_definition,
@@ -217,6 +218,32 @@ def test_a_rate_written_with_its_denominator_passes() -> None:
 def test_an_impossible_rate_is_refused(part: int, whole: int) -> None:
     with pytest.raises(ValueError, match="is not a rate"):
         _count_rate(part, whole)
+
+
+def test_a_declared_denominator_is_read_from_its_artifact_and_bound_by_hash(
+    tmp_path: Path,
+) -> None:
+    # verify-claims allows a withheld claim's number only as a denominator the
+    # pack declares, and only from the artifact with this digest.
+    study = tmp_path / "study.json"
+    study.write_bytes(b'{"failed": 3, "cases": 8}\r\n')
+
+    declared = _declared_denominator(tmp_path, study, "failed", "cases")
+
+    assert declared == {
+        "numerator": 3,
+        "denominator": 8,
+        "evidence": "study.json",
+        "evidence_sha256": "sha256:" + hashlib.sha256(study.read_bytes()).hexdigest(),
+        "evidence_source": "study.json",
+    }
+
+
+def test_a_declared_denominator_that_is_not_a_rate_is_refused(tmp_path: Path) -> None:
+    study = tmp_path / "study.json"
+    study.write_text('{"failed": 9, "cases": 8}', encoding="utf-8")
+    with pytest.raises(ValueError, match="is not a rate"):
+        _declared_denominator(tmp_path, study, "failed", "cases")
 
 
 def test_a_pending_claim_that_no_longer_needs_the_exemption_fails() -> None:
