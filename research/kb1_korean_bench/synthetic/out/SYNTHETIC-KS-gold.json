@@ -1,0 +1,1196 @@
+{
+ "schema": "tavonel.kb1.gold.v1",
+ "label": "SYNTHETIC",
+ "synthetic": true,
+ "publishable": false,
+ "dataset_revision": "kb1-ks-synthetic-r1",
+ "gold_source": "Written by generate.py at render time from the strings and boxes it drew; never OCR'd back.",
+ "seed": 20261017,
+ "coordinate_frame": {
+  "unit": "pixel",
+  "dpi": 150,
+  "origin": "top-left",
+  "page_size_px": [
+   1240,
+   1754
+  ]
+ },
+ "pages": [
+  {
+   "page_id": "SYNTHETIC-KS-p01-statute-table",
+   "family_id": "SYNTHETIC-KS-family-p01-statute-table",
+   "category": "KS",
+   "synthetic": true,
+   "label": "SYNTHETIC",
+   "image": "SYNTHETIC-KS-p01-statute-table.png",
+   "features": [
+    "statute_text",
+    "merged_cell_table",
+    "korean_numerics"
+   ],
+   "text": "SYNTHETIC · KB1 KS 합성 대조군 · 실제 문서 아님\n저작권법 제7조 각 호 (인용, 공식 원문과 대조 전)\n1. 헌법·법률·조약·명령·조례 및 규칙\n2. 국가 또는 지방자치단체의 고시·공고·훈령 그 밖에 이와 유사한 것\n3. 법원의 판결·결정·명령 및 심판이나 행정심판절차 그 밖에\n이와 유사한 절차에 따른 의결·결정 등\n4. 국가 또는 지방자치단체가 작성한 것으로서 위에 규정된 것의\n편집물 또는 번역물\n5. 사실의 전달에 불과한 시사보도\n표 1. 가상 수치로 만든 병합 셀 표 (직접 작성)\n구분\n연도별 금액\n2025년\n2026년\n수입\n사용료\n1,234,000원\n1,500,000원\n수수료\n30,000원\n35,000원\n합계\n1,264,000원\n1,535,000원\n비고: 2026. 10. 17. 기준 가상 수치, 전년 대비 10% 이상 증가",
+   "blocks": [
+    "SYNTHETIC · KB1 KS 합성 대조군 · 실제 문서 아님",
+    "저작권법 제7조 각 호 (인용, 공식 원문과 대조 전)",
+    "1. 헌법·법률·조약·명령·조례 및 규칙\n2. 국가 또는 지방자치단체의 고시·공고·훈령 그 밖에 이와 유사한 것\n3. 법원의 판결·결정·명령 및 심판이나 행정심판절차 그 밖에\n이와 유사한 절차에 따른 의결·결정 등\n4. 국가 또는 지방자치단체가 작성한 것으로서 위에 규정된 것의\n편집물 또는 번역물\n5. 사실의 전달에 불과한 시사보도",
+    "표 1. 가상 수치로 만든 병합 셀 표 (직접 작성)",
+    "구분\n연도별 금액\n2025년\n2026년\n수입\n사용료\n1,234,000원\n1,500,000원\n수수료\n30,000원\n35,000원\n합계\n1,264,000원\n1,535,000원\n비고: 2026. 10. 17. 기준 가상 수치, 전년 대비 10% 이상 증가"
+   ],
+   "lines": [
+    {
+     "text": "SYNTHETIC · KB1 KS 합성 대조군 · 실제 문서 아님",
+     "bbox": [
+      110,
+      113,
+      586,
+      134
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "저작권법 제7조 각 호 (인용, 공식 원문과 대조 전)",
+     "bbox": [
+      110,
+      171,
+      718,
+      203
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "1. 헌법·법률·조약·명령·조례 및 규칙",
+     "bbox": [
+      110,
+      248,
+      483,
+      271
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "저작권법 제7조 item wording as quoted from easylaw.go.kr in korean-benchmark-receipts/TERMS-QUOTES-20261017.json (sha256 2f29a94901aa959261978be79c50a945deedf8983851fe81d24c62240acb5e7e); not checked against law.go.kr"
+    },
+    {
+     "text": "2. 국가 또는 지방자치단체의 고시·공고·훈령 그 밖에 이와 유사한 것",
+     "bbox": [
+      110,
+      286,
+      773,
+      309
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "저작권법 제7조 item wording as quoted from easylaw.go.kr in korean-benchmark-receipts/TERMS-QUOTES-20261017.json (sha256 2f29a94901aa959261978be79c50a945deedf8983851fe81d24c62240acb5e7e); not checked against law.go.kr"
+    },
+    {
+     "text": "3. 법원의 판결·결정·명령 및 심판이나 행정심판절차 그 밖에",
+     "bbox": [
+      110,
+      324,
+      697,
+      347
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "저작권법 제7조 item wording as quoted from easylaw.go.kr in korean-benchmark-receipts/TERMS-QUOTES-20261017.json (sha256 2f29a94901aa959261978be79c50a945deedf8983851fe81d24c62240acb5e7e); not checked against law.go.kr"
+    },
+    {
+     "text": "이와 유사한 절차에 따른 의결·결정 등",
+     "bbox": [
+      144,
+      363,
+      512,
+      385
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "저작권법 제7조 item wording as quoted from easylaw.go.kr in korean-benchmark-receipts/TERMS-QUOTES-20261017.json (sha256 2f29a94901aa959261978be79c50a945deedf8983851fe81d24c62240acb5e7e); not checked against law.go.kr"
+    },
+    {
+     "text": "4. 국가 또는 지방자치단체가 작성한 것으로서 위에 규정된 것의",
+     "bbox": [
+      110,
+      400,
+      720,
+      423
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "저작권법 제7조 item wording as quoted from easylaw.go.kr in korean-benchmark-receipts/TERMS-QUOTES-20261017.json (sha256 2f29a94901aa959261978be79c50a945deedf8983851fe81d24c62240acb5e7e); not checked against law.go.kr"
+    },
+    {
+     "text": "편집물 또는 번역물",
+     "bbox": [
+      144,
+      439,
+      330,
+      461
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "저작권법 제7조 item wording as quoted from easylaw.go.kr in korean-benchmark-receipts/TERMS-QUOTES-20261017.json (sha256 2f29a94901aa959261978be79c50a945deedf8983851fe81d24c62240acb5e7e); not checked against law.go.kr"
+    },
+    {
+     "text": "5. 사실의 전달에 불과한 시사보도",
+     "bbox": [
+      110,
+      477,
+      436,
+      499
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "저작권법 제7조 item wording as quoted from easylaw.go.kr in korean-benchmark-receipts/TERMS-QUOTES-20261017.json (sha256 2f29a94901aa959261978be79c50a945deedf8983851fe81d24c62240acb5e7e); not checked against law.go.kr"
+    },
+    {
+     "text": "표 1. 가상 수치로 만든 병합 셀 표 (직접 작성)",
+     "bbox": [
+      110,
+      538,
+      543,
+      564
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "구분",
+     "bbox": [
+      275,
+      647,
+      315,
+      668
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "연도별 금액",
+     "bbox": [
+      727,
+      616,
+      833,
+      638
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "2025년",
+     "bbox": [
+      596,
+      676,
+      664,
+      698
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "2026년",
+     "bbox": [
+      896,
+      676,
+      964,
+      698
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "수입",
+     "bbox": [
+      175,
+      767,
+      215,
+      788
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "사용료",
+     "bbox": [
+      350,
+      736,
+      410,
+      758
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "1,234,000원",
+     "bbox": [
+      572,
+      737,
+      688,
+      761
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "1,500,000원",
+     "bbox": [
+      872,
+      737,
+      988,
+      761
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "수수료",
+     "bbox": [
+      350,
+      797,
+      410,
+      818
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "30,000원",
+     "bbox": [
+      587,
+      797,
+      673,
+      821
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "35,000원",
+     "bbox": [
+      887,
+      797,
+      973,
+      821
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "합계",
+     "bbox": [
+      275,
+      856,
+      315,
+      878
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "1,264,000원",
+     "bbox": [
+      572,
+      857,
+      688,
+      881
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "1,535,000원",
+     "bbox": [
+      872,
+      857,
+      988,
+      881
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "비고: 2026. 10. 17. 기준 가상 수치, 전년 대비 10% 이상 증가",
+     "bbox": [
+      320,
+      916,
+      870,
+      941
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    }
+   ],
+   "table_count": 1,
+   "table_text_spans": [
+    [
+     285,
+     424
+    ]
+   ],
+   "tables": [
+    {
+     "role": "table",
+     "bbox": [
+      110,
+      597,
+      1080,
+      957
+     ],
+     "rows": 6,
+     "cols": 4,
+     "html": "<table><tr><td rowspan=\"2\" colspan=\"2\">구분</td><td colspan=\"2\">연도별 금액</td></tr><tr><td>2025년</td><td>2026년</td></tr><tr><td rowspan=\"2\">수입</td><td>사용료</td><td>1,234,000원</td><td>1,500,000원</td></tr><tr><td>수수료</td><td>30,000원</td><td>35,000원</td></tr><tr><td colspan=\"2\">합계</td><td>1,264,000원</td><td>1,535,000원</td></tr><tr><td colspan=\"4\">비고: 2026. 10. 17. 기준 가상 수치, 전년 대비 10% 이상 증가</td></tr></table>",
+     "cells": [
+      {
+       "row": 0,
+       "col": 0,
+       "rowspan": 2,
+       "colspan": 2,
+       "text": "구분",
+       "bbox": [
+        110,
+        597,
+        480,
+        717
+       ],
+       "text_bbox": [
+        275,
+        647,
+        315,
+        668
+       ]
+      },
+      {
+       "row": 0,
+       "col": 2,
+       "rowspan": 1,
+       "colspan": 2,
+       "text": "연도별 금액",
+       "bbox": [
+        480,
+        597,
+        1080,
+        657
+       ],
+       "text_bbox": [
+        727,
+        616,
+        833,
+        638
+       ]
+      },
+      {
+       "row": 1,
+       "col": 2,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "2025년",
+       "bbox": [
+        480,
+        657,
+        780,
+        717
+       ],
+       "text_bbox": [
+        596,
+        676,
+        664,
+        698
+       ]
+      },
+      {
+       "row": 1,
+       "col": 3,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "2026년",
+       "bbox": [
+        780,
+        657,
+        1080,
+        717
+       ],
+       "text_bbox": [
+        896,
+        676,
+        964,
+        698
+       ]
+      },
+      {
+       "row": 2,
+       "col": 0,
+       "rowspan": 2,
+       "colspan": 1,
+       "text": "수입",
+       "bbox": [
+        110,
+        717,
+        280,
+        837
+       ],
+       "text_bbox": [
+        175,
+        767,
+        215,
+        788
+       ]
+      },
+      {
+       "row": 2,
+       "col": 1,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "사용료",
+       "bbox": [
+        280,
+        717,
+        480,
+        777
+       ],
+       "text_bbox": [
+        350,
+        736,
+        410,
+        758
+       ]
+      },
+      {
+       "row": 2,
+       "col": 2,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "1,234,000원",
+       "bbox": [
+        480,
+        717,
+        780,
+        777
+       ],
+       "text_bbox": [
+        572,
+        737,
+        688,
+        761
+       ]
+      },
+      {
+       "row": 2,
+       "col": 3,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "1,500,000원",
+       "bbox": [
+        780,
+        717,
+        1080,
+        777
+       ],
+       "text_bbox": [
+        872,
+        737,
+        988,
+        761
+       ]
+      },
+      {
+       "row": 3,
+       "col": 1,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "수수료",
+       "bbox": [
+        280,
+        777,
+        480,
+        837
+       ],
+       "text_bbox": [
+        350,
+        797,
+        410,
+        818
+       ]
+      },
+      {
+       "row": 3,
+       "col": 2,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "30,000원",
+       "bbox": [
+        480,
+        777,
+        780,
+        837
+       ],
+       "text_bbox": [
+        587,
+        797,
+        673,
+        821
+       ]
+      },
+      {
+       "row": 3,
+       "col": 3,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "35,000원",
+       "bbox": [
+        780,
+        777,
+        1080,
+        837
+       ],
+       "text_bbox": [
+        887,
+        797,
+        973,
+        821
+       ]
+      },
+      {
+       "row": 4,
+       "col": 0,
+       "rowspan": 1,
+       "colspan": 2,
+       "text": "합계",
+       "bbox": [
+        110,
+        837,
+        480,
+        897
+       ],
+       "text_bbox": [
+        275,
+        856,
+        315,
+        878
+       ]
+      },
+      {
+       "row": 4,
+       "col": 2,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "1,264,000원",
+       "bbox": [
+        480,
+        837,
+        780,
+        897
+       ],
+       "text_bbox": [
+        572,
+        857,
+        688,
+        881
+       ]
+      },
+      {
+       "row": 4,
+       "col": 3,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "1,535,000원",
+       "bbox": [
+        780,
+        837,
+        1080,
+        897
+       ],
+       "text_bbox": [
+        872,
+        857,
+        988,
+        881
+       ]
+      },
+      {
+       "row": 5,
+       "col": 0,
+       "rowspan": 1,
+       "colspan": 4,
+       "text": "비고: 2026. 10. 17. 기준 가상 수치, 전년 대비 10% 이상 증가",
+       "bbox": [
+        110,
+        897,
+        1080,
+        957
+       ],
+       "text_bbox": [
+        320,
+        916,
+        870,
+        941
+       ]
+      }
+     ],
+     "text_span": [
+      285,
+      424
+     ]
+    }
+   ],
+   "seal": null,
+   "approval_box": false,
+   "image_sha256": "bd1990f7d76d585ed13a69b4d81b35f253653737a5caa26106981f7a1c2dd8f1",
+   "pdf": "SYNTHETIC-KS-pages.pdf",
+   "pdf_page_index": 0
+  },
+  {
+   "page_id": "SYNTHETIC-KS-p02-vertical-hanja",
+   "family_id": "SYNTHETIC-KS-family-p02-vertical-hanja",
+   "category": "KS",
+   "synthetic": true,
+   "label": "SYNTHETIC",
+   "image": "SYNTHETIC-KS-p02-vertical-hanja.png",
+   "features": [
+    "vertical_writing",
+    "hanja",
+    "reading_order"
+   ],
+   "text": "SYNTHETIC · KB1 KS 합성 대조군 · 실제 문서 아님\n세로쓰기·국한문 혼용 시험 (직접 작성)\n本 文書는 試驗用 見本이다\n세로쓰기는 오른쪽 줄부터 읽는다\n各 줄은 위에서 아래로 읽는다\n漢字와 한글을 섞어 쓴다\n合成 對照群은 公開 數値가 아니다\n읽기 순서: 오른쪽 열에서 왼쪽 열로, 각 열은 위에서 아래로.\n본 시험(試驗)은 한자(漢字) 판독(判讀)을 확인(確認)한다.\n法令 用語: 條約·命令·條例 및 規則",
+   "blocks": [
+    "SYNTHETIC · KB1 KS 합성 대조군 · 실제 문서 아님",
+    "세로쓰기·국한문 혼용 시험 (직접 작성)",
+    "本 文書는 試驗用 見本이다",
+    "세로쓰기는 오른쪽 줄부터 읽는다",
+    "各 줄은 위에서 아래로 읽는다",
+    "漢字와 한글을 섞어 쓴다",
+    "合成 對照群은 公開 數値가 아니다",
+    "읽기 순서: 오른쪽 열에서 왼쪽 열로, 각 열은 위에서 아래로.\n본 시험(試驗)은 한자(漢字) 판독(判讀)을 확인(確認)한다.\n法令 用語: 條約·命令·條例 및 規則"
+   ],
+   "lines": [
+    {
+     "text": "SYNTHETIC · KB1 KS 합성 대조군 · 실제 문서 아님",
+     "bbox": [
+      110,
+      113,
+      586,
+      134
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "세로쓰기·국한문 혼용 시험 (직접 작성)",
+     "bbox": [
+      110,
+      171,
+      597,
+      203
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "本 文書는 試驗用 見本이다",
+     "bbox": [
+      1076,
+      250,
+      1112,
+      752
+     ],
+     "writing_mode": "vertical-rl",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "세로쓰기는 오른쪽 줄부터 읽는다",
+     "bbox": [
+      1009,
+      251,
+      1043,
+      877
+     ],
+     "writing_mode": "vertical-rl",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "各 줄은 위에서 아래로 읽는다",
+     "bbox": [
+      940,
+      250,
+      976,
+      812
+     ],
+     "writing_mode": "vertical-rl",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "漢字와 한글을 섞어 쓴다",
+     "bbox": [
+      872,
+      250,
+      908,
+      711
+     ],
+     "writing_mode": "vertical-rl",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "合成 對照群은 公開 數値가 아니다",
+     "bbox": [
+      804,
+      250,
+      840,
+      895
+     ],
+     "writing_mode": "vertical-rl",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "읽기 순서: 오른쪽 열에서 왼쪽 열로, 각 열은 위에서 아래로.",
+     "bbox": [
+      110,
+      948,
+      683,
+      974
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "본 시험(試驗)은 한자(漢字) 판독(判讀)을 확인(確認)한다.",
+     "bbox": [
+      110,
+      986,
+      679,
+      1012
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "法令 用語: 條約·命令·條例 및 規則",
+     "bbox": [
+      110,
+      1024,
+      473,
+      1048
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    }
+   ],
+   "table_count": 0,
+   "table_text_spans": [],
+   "tables": [],
+   "seal": null,
+   "approval_box": false,
+   "image_sha256": "4e96c793dd467f5119b7d50ce6b3801a42e1f118be1bfbea616d59aefd79382f",
+   "pdf": "SYNTHETIC-KS-pages.pdf",
+   "pdf_page_index": 1
+  },
+  {
+   "page_id": "SYNTHETIC-KS-p03-symbols",
+   "family_id": "SYNTHETIC-KS-family-p03-symbols",
+   "category": "KS",
+   "synthetic": true,
+   "label": "SYNTHETIC",
+   "image": "SYNTHETIC-KS-p03-symbols.png",
+   "features": [
+    "special_characters",
+    "hanja",
+    "korean_numerics"
+   ],
+   "text": "SYNTHETIC · KB1 KS 합성 대조군 · 실제 문서 아님\n특수문자 시험 (직접 작성)\n①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳\n※ 참고 표시는 줄의 맨 앞에 온다.\n「홑낫표」와 『겹낫표』, 〔거북 괄호〕를 함께 쓴다.\n㈜가상견본상사는 실재하지 않는 회사다.\n가·나·다 라 ○ 마 □ 바\n헌법ㆍ법률ㆍ조약 (아래아 가운뎃점)\n가상 예시: 제7조 제1항 제2호, 2026. 10. 17., 3억 5천만원, 10%가 적용된다.",
+   "blocks": [
+    "SYNTHETIC · KB1 KS 합성 대조군 · 실제 문서 아님",
+    "특수문자 시험 (직접 작성)",
+    "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳\n※ 참고 표시는 줄의 맨 앞에 온다.\n「홑낫표」와 『겹낫표』, 〔거북 괄호〕를 함께 쓴다.\n㈜가상견본상사는 실재하지 않는 회사다.\n가·나·다 라 ○ 마 □ 바\n헌법ㆍ법률ㆍ조약 (아래아 가운뎃점)\n가상 예시: 제7조 제1항 제2호, 2026. 10. 17., 3억 5천만원, 10%가 적용된다."
+   ],
+   "lines": [
+    {
+     "text": "SYNTHETIC · KB1 KS 합성 대조군 · 실제 문서 아님",
+     "bbox": [
+      110,
+      113,
+      586,
+      134
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "특수문자 시험 (직접 작성)",
+     "bbox": [
+      110,
+      171,
+      433,
+      203
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳",
+     "bbox": [
+      110,
+      249,
+      590,
+      271
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "※ 참고 표시는 줄의 맨 앞에 온다.",
+     "bbox": [
+      110,
+      286,
+      435,
+      309
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "「홑낫표」와 『겹낫표』, 〔거북 괄호〕를 함께 쓴다.",
+     "bbox": [
+      110,
+      324,
+      646,
+      350
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "㈜가상견본상사는 실재하지 않는 회사다.",
+     "bbox": [
+      110,
+      362,
+      508,
+      386
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "가·나·다 라 ○ 마 □ 바",
+     "bbox": [
+      110,
+      401,
+      341,
+      423
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "헌법ㆍ법률ㆍ조약 (아래아 가운뎃점)",
+     "bbox": [
+      110,
+      438,
+      466,
+      464
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "가상 예시: 제7조 제1항 제2호, 2026. 10. 17., 3억 5천만원, 10%가 적용된다.",
+     "bbox": [
+      110,
+      477,
+      859,
+      502
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    }
+   ],
+   "table_count": 0,
+   "table_text_spans": [],
+   "tables": [],
+   "seal": null,
+   "approval_box": false,
+   "image_sha256": "aa33639d6109dc259b396d9c58c2fb04b2837ed897fab1e6b4fff908eb609347",
+   "pdf": "SYNTHETIC-KS-pages.pdf",
+   "pdf_page_index": 2
+  },
+  {
+   "page_id": "SYNTHETIC-KS-p04-seal-approval",
+   "family_id": "SYNTHETIC-KS-family-p04-seal-approval",
+   "category": "KS",
+   "synthetic": true,
+   "label": "SYNTHETIC",
+   "image": "SYNTHETIC-KS-p04-seal-approval.png",
+   "features": [
+    "seal_overlay",
+    "approval_box",
+    "fictional_institution"
+   ],
+   "text": "SYNTHETIC · KB1 KS 합성 대조군 · 실제 문서 아님\n가상기관 견본청 공고 제2026-1호\n이 문서는 KB1 합성 대조군을 위해 직접 작성한 가상 공고문이다.\n실제 기관, 실제 직인, 실제 사건과 관계가 없다.\n직인 아래에 가려진 글자도 정답에는 그대로 남는다.\n담당\n검토\n승인\n2026. 10. 17.\n가상기관 견본청장",
+   "blocks": [
+    "SYNTHETIC · KB1 KS 합성 대조군 · 실제 문서 아님",
+    "가상기관 견본청 공고 제2026-1호",
+    "이 문서는 KB1 합성 대조군을 위해 직접 작성한 가상 공고문이다.\n실제 기관, 실제 직인, 실제 사건과 관계가 없다.\n직인 아래에 가려진 글자도 정답에는 그대로 남는다.",
+    "담당\n검토\n승인",
+    "2026. 10. 17.\n가상기관 견본청장"
+   ],
+   "lines": [
+    {
+     "text": "SYNTHETIC · KB1 KS 합성 대조군 · 실제 문서 아님",
+     "bbox": [
+      110,
+      113,
+      586,
+      134
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "가상기관 견본청 공고 제2026-1호",
+     "bbox": [
+      110,
+      171,
+      534,
+      199
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "이 문서는 KB1 합성 대조군을 위해 직접 작성한 가상 공고문이다.",
+     "bbox": [
+      110,
+      248,
+      733,
+      271
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "실제 기관, 실제 직인, 실제 사건과 관계가 없다.",
+     "bbox": [
+      110,
+      287,
+      564,
+      312
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "직인 아래에 가려진 글자도 정답에는 그대로 남는다.",
+     "bbox": [
+      110,
+      325,
+      609,
+      347
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "담당",
+     "bbox": [
+      160,
+      397,
+      200,
+      419
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "검토",
+     "bbox": [
+      300,
+      397,
+      340,
+      419
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "승인",
+     "bbox": [
+      440,
+      398,
+      480,
+      419
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "2026. 10. 17.",
+     "bbox": [
+      110,
+      590,
+      274,
+      611
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    },
+    {
+     "text": "가상기관 견본청장",
+     "bbox": [
+      110,
+      632,
+      324,
+      658
+     ],
+     "writing_mode": "horizontal-tb",
+     "provenance": "self-written for KB1 KS"
+    }
+   ],
+   "table_count": 1,
+   "table_text_spans": [
+    [
+     154,
+     162
+    ]
+   ],
+   "tables": [
+    {
+     "role": "approval_box",
+     "bbox": [
+      110,
+      383,
+      530,
+      543
+     ],
+     "rows": 2,
+     "cols": 3,
+     "html": "<table><tr><td>담당</td><td>검토</td><td>승인</td></tr><tr><td></td><td></td><td></td></tr></table>",
+     "cells": [
+      {
+       "row": 0,
+       "col": 0,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "담당",
+       "bbox": [
+        110,
+        383,
+        250,
+        433
+       ],
+       "text_bbox": [
+        160,
+        397,
+        200,
+        419
+       ]
+      },
+      {
+       "row": 0,
+       "col": 1,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "검토",
+       "bbox": [
+        250,
+        383,
+        390,
+        433
+       ],
+       "text_bbox": [
+        300,
+        397,
+        340,
+        419
+       ]
+      },
+      {
+       "row": 0,
+       "col": 2,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "승인",
+       "bbox": [
+        390,
+        383,
+        530,
+        433
+       ],
+       "text_bbox": [
+        440,
+        398,
+        480,
+        419
+       ]
+      },
+      {
+       "row": 1,
+       "col": 0,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "",
+       "bbox": [
+        110,
+        433,
+        250,
+        543
+       ]
+      },
+      {
+       "row": 1,
+       "col": 1,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "",
+       "bbox": [
+        250,
+        433,
+        390,
+        543
+       ]
+      },
+      {
+       "row": 1,
+       "col": 2,
+       "rowspan": 1,
+       "colspan": 1,
+       "text": "",
+       "bbox": [
+        390,
+        433,
+        530,
+        543
+       ]
+      }
+     ],
+     "text_span": [
+      154,
+      162
+     ]
+    }
+   ],
+   "seal": {
+    "text": "견본",
+    "fictional": true,
+    "angle_deg": 1.792,
+    "bbox": [
+     188,
+     580,
+     334,
+     726
+    ],
+    "occluded_spans": [
+     [
+      170,
+      171
+     ],
+     [
+      173,
+      175
+     ],
+     [
+      180,
+      181
+     ],
+     [
+      182,
+      186
+     ]
+    ]
+   },
+   "approval_box": true,
+   "image_sha256": "16c2896e62245fc24321996e6d88d6ce41c5eef06f28ece68acde3fdb1649191",
+   "pdf": "SYNTHETIC-KS-pages.pdf",
+   "pdf_page_index": 3
+  }
+ ]
+}
