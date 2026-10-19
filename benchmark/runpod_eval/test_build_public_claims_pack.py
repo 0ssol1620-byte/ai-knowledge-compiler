@@ -21,6 +21,7 @@ from build_public_claims_pack import (
     APPROVED,
     CONDITIONAL,
     WITHHELD,
+    _canonical_hash,
     _check_evidence_is_bound,
     _check_must_say_numbers_are_cited,
     _check_pending_ids_exist,
@@ -224,7 +225,8 @@ def test_a_declared_denominator_is_read_from_its_artifact_and_bound_by_hash(
     tmp_path: Path,
 ) -> None:
     # verify-claims allows a withheld claim's number only as a denominator the
-    # pack declares, and only from the artifact with this digest.
+    # pack declares, and only from the artifact with this digest. It names the
+    # fields it read so verify-claims can read them again from those bytes.
     study = tmp_path / "study.json"
     study.write_bytes(b'{"failed": 3, "cases": 8}\r\n')
 
@@ -232,7 +234,9 @@ def test_a_declared_denominator_is_read_from_its_artifact_and_bound_by_hash(
 
     assert declared == {
         "numerator": 3,
+        "numerator_field": "failed",
         "denominator": 8,
+        "denominator_field": "cases",
         "evidence": "study.json",
         "evidence_sha256": "sha256:" + hashlib.sha256(study.read_bytes()).hexdigest(),
         "evidence_source": "study.json",
@@ -457,22 +461,83 @@ def test_every_shipped_digest_is_the_sha256_of_the_file_bytes() -> None:
     in a clone disagreed with the published digest for twelve of nineteen
     citations. The bytes are read with no line-ending normalisation on purpose:
     "equal up to line endings" is not a hash match.
+
+    A declared denominator cites a file too, and it is the one citation that
+    lets a withheld number onto the page, so it is hashed the same way.
     """
     mismatched = []
     for pack_path in SHIPPED_PACKS:
         pack = json.loads((REPOSITORY / pack_path).read_bytes())
-        for claim in pack["claims"]:
-            cited = claim.get("evidence")
-            if not cited:
+        mismatched += [(pack_path, *found) for found in _digest_mismatches(REPOSITORY, pack)]
+    assert mismatched == []
+
+
+def _digest_mismatches(repository: Path, pack: dict[str, Any]) -> list[tuple[str, ...]]:
+    mismatched = []
+    for claim in pack["claims"]:
+        cited = [(claim.get("evidence"), claim.get("evidence_sha256"))] + [
+            (declared["evidence"], declared["evidence_sha256"])
+            for declared in claim.get("declared_denominators", [])
+        ]
+        for paths, digests in cited:
+            if not paths:
                 continue
-            paths = cited if isinstance(cited, list) else [cited]
-            digests = claim["evidence_sha256"]
+            paths = paths if isinstance(paths, list) else [paths]
             digests = digests if isinstance(digests, list) else [digests]
             for path, digest in zip(paths, digests, strict=True):
-                actual = "sha256:" + hashlib.sha256((REPOSITORY / path).read_bytes()).hexdigest()
+                actual = "sha256:" + hashlib.sha256((repository / path).read_bytes()).hexdigest()
                 if actual != digest:
-                    mismatched.append((pack_path, claim["id"], path, digest, actual))
-    assert mismatched == []
+                    mismatched.append((claim["id"], path, digest, actual))
+    return mismatched
+
+
+def test_a_declared_denominator_whose_file_does_not_hash_to_its_digest_is_found(
+    tmp_path: Path,
+) -> None:
+    (tmp_path / "study.json").write_bytes(b'{"failed": 3, "cases": 8}\n')
+    stale = "sha256:" + hashlib.sha256(b'{"failed": 3, "cases": 9}\n').hexdigest()
+    pack = {
+        "claims": [
+            {
+                "id": "x",
+                "declared_denominators": [
+                    {"evidence": "study.json", "evidence_sha256": stale},
+                ],
+            }
+        ]
+    }
+
+    assert [found[:3] for found in _digest_mismatches(tmp_path, pack)] == [
+        ("x", "study.json", stale)
+    ]
+
+
+def _sealed(pack: dict[str, Any]) -> bool:
+    """Whether receipt_sha256 is the hash main() would write over the rest."""
+    body = {key: value for key, value in pack.items() if key != "receipt_sha256"}
+    return bool(pack.get("receipt_sha256")) and pack["receipt_sha256"] == _canonical_hash(body)
+
+
+def test_every_shipped_pack_carries_the_receipt_hash_of_its_own_content() -> None:
+    # A hand-edit to either copy -- a must_say, a declared numerator, a status --
+    # leaves the receipt the generator wrote, so it no longer matches. This
+    # catches the edit without the generator's gitignored inputs.
+    unsealed = [
+        pack_path
+        for pack_path in SHIPPED_PACKS
+        if not _sealed(json.loads((REPOSITORY / pack_path).read_bytes()))
+    ]
+    assert unsealed == []
+
+
+def test_a_pack_edited_after_its_receipt_was_written_is_unsealed() -> None:
+    _, pack = _shipped_pack()
+    assert _sealed(pack)
+    claim = next(c for c in pack["claims"] if c.get("declared_denominators"))
+    claim["declared_denominators"][0]["numerator"] = 1
+
+    assert not _sealed(pack)
+    assert not _sealed({key: value for key, value in pack.items() if key != "receipt_sha256"})
 
 
 def _generated_receipt(repository: Path, payload: bytes) -> Path:
