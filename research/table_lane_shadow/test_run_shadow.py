@@ -131,7 +131,12 @@ def test_receipt_carries_the_section_c9_r2_fields() -> None:
         "p90Seconds": None,
         "maxSeconds": None,
     }
-    assert receipt["harness"]["network"] is False and receipt["harness"]["gpu"] is False
+    # No evaluator ran: the harness states what its own code does, and that no process started.
+    assert receipt["harness"]["network"] == {
+        "harnessProcess": run_shadow.HARNESS_NETWORK,
+        "evaluatorSubprocess": None,
+    }
+    assert receipt["harness"]["gpu"] is False
 
 
 def test_rates_are_numerator_over_denominator_counted_by_hand() -> None:
@@ -155,6 +160,19 @@ def test_every_rate_has_an_integer_numerator_and_denominator() -> None:
         assert type(rate["numerator"]) is int and type(rate["denominator"]) is int, name
         assert 0 <= rate["numerator"] <= rate["denominator"], name
         assert isinstance(rate["of"], str) and rate["of"], name
+
+
+def test_data_cells_of_a_table_without_header_rows_stay_in_the_denominator(corpus: Path) -> None:
+    # No header row: no cell has a column header path, so none is a claim, and all six count.
+    edit(corpus / "SYNTHETIC-table-read-p0.json", lambda d: d["tables"][0].update(headerRowCount=0))
+    assert build_receipt(corpus / MANIFEST)["rates"]["dataCellsPromotedToClaims"] == {
+        "numerator": 0,
+        "denominator": 6,
+        "of": (
+            "cells outside the header rows of the tables read; every cell of a table with no"
+            " header row, which yields no claim"
+        ),
+    }
 
 
 def test_an_unreadable_table_is_reported_with_its_gold_never_filled_in() -> None:
@@ -310,6 +328,26 @@ def test_an_ocr_json_for_other_bytes_is_refused(corpus: Path) -> None:
         lambda ocr: ocr.update(inputSha256="sha256:" + "00" * 32),
     )
     assert refused(corpus / MANIFEST) == "SHADOW_OCR_BINDING_MISMATCH"
+
+
+def test_an_ocr_json_without_a_source_immutable_key_is_refused(corpus: Path) -> None:
+    # Without the key the binding cannot be checked, so it is refused, never assumed to hold.
+    edit(corpus / "SYNTHETIC-ocr-baseline.json", lambda ocr: ocr.pop("sourceImmutableKey"))
+    with pytest.raises(ShadowRefused) as caught:
+        build_receipt(corpus / MANIFEST)
+    assert caught.value.reason_code == "SHADOW_OCR_INVALID"
+    assert "sourceImmutableKey" in caught.value.detail
+
+
+def test_invariants_are_raised_not_asserted() -> None:
+    # `python -O` strips assert statements; these checks must survive it.
+    for module in (run_shadow, omnidoc_teds):
+        tree = ast.parse(Path(str(module.__file__)).read_text(encoding="utf-8"))
+        assert not [node.lineno for node in ast.walk(tree) if isinstance(node, ast.Assert)]
+    with pytest.raises(ValueError, match="NOT_A_REFUSAL_CODE"):
+        ShadowRefused("NOT_A_REFUSAL_CODE", "detail")
+    with pytest.raises(ValueError, match="3 of 2"):
+        run_shadow._rate(3, 2, "gold cells")
 
 
 def test_a_refused_run_writes_no_receipt(
@@ -534,6 +572,140 @@ def test_a_gold_table_with_no_or_two_teds_rows_is_blocked(tmp_path: Path) -> Non
     assert (scored["teds"], scored["tedsStructureOnly"], scored["predEmpty"]) == (0.5, 1.0, True)
 
 
+# A stand-in for pdf_validation.py: one TEDS row of 0.5 for every gold table it is given.
+FAKE_EVALUATOR = """import json, pathlib, re, sys
+gt_path, pred_path = re.findall(r"data_path: '(.+)'", pathlib.Path(sys.argv[2]).read_text("utf-8"))
+pred = pathlib.Path(pred_path)
+rows = [
+    {
+        "img_id": page["page_info"]["image_path"],
+        "gt": det["html"],
+        "pred": (pred / page["page_info"]["image_path"].replace(".png", ".md")).read_text("utf-8"),
+        "metric": {"TEDS": 0.5, "TEDS_structure_only": 0.5},
+    }
+    for page in json.loads(pathlib.Path(gt_path).read_text("utf-8"))
+    for det in page["layout_dets"]
+]
+out = pathlib.Path("result")
+out.mkdir()
+debug = {"TEDS": {"error_cases": [], "timeout_cases": []}}
+(out / f"{pred.name}_quick_match_metric_result.json").write_text(
+    json.dumps({"table": {"metric_debug": debug}})
+)
+(out / f"{pred.name}_quick_match_table_result.json").write_text(json.dumps(rows))
+"""
+
+
+def fake_evaluator(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, script: str = FAKE_EVALUATOR
+) -> Callable[[list[Json], object, bool], Json]:
+    """run_evaluator over a stand-in checkout that git reports at the pin and unmodified."""
+    checkout = tmp_path / "fake-omnidocbench"
+    checkout.mkdir(parents=True)
+    (checkout / "pdf_validation.py").write_text(script, encoding="utf-8")
+    monkeypatch.setattr(
+        omnidoc_teds, "_git", lambda _checkout, *args: PIN if args[0] == "rev-parse" else ""
+    )
+
+    def teds(pages: list[Json], commit: object, synthetic: bool) -> Json:
+        return omnidoc_teds.run_evaluator(
+            pages, commit, synthetic, evaluator=checkout, python=[sys.executable]
+        )
+
+    return teds
+
+
+def test_a_page_the_reader_never_ran_is_not_a_teds_zero(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    block = build_receipt(FIXTURES / MANIFEST, teds=fake_evaluator(tmp_path, monkeypatch))["teds"]
+    assert block["status"] == "COMPUTED"
+    # Page 3 has no reader output (TABLE_READER_UNAVAILABLE, operational). Its gold table g3 is
+    # not a reader that scored 0.0: it is never sent to the evaluator and never summed.
+    assert [row["goldTableId"] for row in block["tables"]] == ["g0", "g1"]
+    assert block["excludedTables"] == [
+        {
+            "documentId": "SYNTHETIC-doc-0001",
+            "pageIndex0": 3,
+            "goldTableId": "g3",
+            "reasonCode": "TABLE_READER_UNAVAILABLE",
+            "reasonClass": "operational",
+        }
+    ]
+    assert block["blockedTables"] == []
+    summed = {key: value for key, value in block["tedsSum"].items() if key != "of"}
+    assert summed == {
+        "teds": 1.0,
+        "tedsStructureOnly": 1.0,
+        "scoredTables": 2,
+        "excludedTables": 1,
+        "blockedTables": 0,
+        "goldTables": 3,
+    }
+
+
+def test_a_page_bound_to_another_reader_is_excluded_as_an_evidence_failure(
+    corpus: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    edit(
+        corpus / "SYNTHETIC-table-read-p0.json",
+        lambda d: d.update(readerBindingSha256="sha256:" + "ee" * 32),
+    )
+    block = build_receipt(corpus / MANIFEST, teds=fake_evaluator(tmp_path, monkeypatch))["teds"]
+    assert [row["goldTableId"] for row in block["tables"]] == ["g1"]
+    assert [(row["goldTableId"], row["reasonClass"]) for row in block["excludedTables"]] == [
+        ("g0", "evidence"),
+        ("g3", "operational"),
+    ]
+
+
+def test_teds_is_blocked_when_every_gold_table_is_on_a_failed_page(
+    corpus: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def no_output(manifest: Json) -> None:
+        for row in manifest["documents"][0]["pages"]:
+            row["tableRead"] = None
+
+    edit(corpus / MANIFEST, no_output)
+    block = build_receipt(corpus / MANIFEST, teds=fake_evaluator(tmp_path, monkeypatch))["teds"]
+    no_number(block)
+    assert (
+        block["reason"] == "every gold table is on a page that failed operationally or on evidence"
+    )
+
+
+def test_the_receipt_says_what_kept_the_evaluator_offline_and_no_more(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    started = {
+        "started": True,
+        "offlineEnv": {
+            "HF_HUB_OFFLINE": "1",
+            "HF_DATASETS_OFFLINE": "1",
+            "TRANSFORMERS_OFFLINE": "1",
+        },
+        "networkIsolated": False,
+    }
+    receipt = build_receipt(FIXTURES / MANIFEST, teds=fake_evaluator(tmp_path / "a", monkeypatch))
+    assert receipt["harness"]["network"] == {
+        "harnessProcess": run_shadow.HARNESS_NETWORK,
+        "evaluatorSubprocess": started,
+    }
+    assert "evaluatorSubprocess" not in receipt["teds"]
+    # A run that started the evaluator and then failed still says the process started.
+    failing = fake_evaluator(tmp_path / "b", monkeypatch, script="raise SystemExit(1)\n")
+    receipt = build_receipt(FIXTURES / MANIFEST, teds=failing)
+    no_number(receipt["teds"])
+    assert receipt["harness"]["network"]["evaluatorSubprocess"] == started
+    # Refused before any process started: nothing is claimed about one.
+    absent = fake_evaluator(tmp_path / "c", monkeypatch, script="")
+    receipt = build_receipt(
+        FIXTURES / MANIFEST,
+        teds=lambda pages, commit, synthetic: absent(pages, None, synthetic),
+    )
+    assert receipt["harness"]["network"]["evaluatorSubprocess"] is None
+
+
 def test_the_evaluator_runner_imports_nothing_that_reaches_a_network() -> None:
     tree = ast.parse(Path(omnidoc_teds.__file__).read_text(encoding="utf-8"))
     roots = {
@@ -581,7 +753,13 @@ def test_the_pinned_evaluator_scores_the_fixtures_the_same_twice(corpus: Path) -
     # g0: same 3x2 grid, one cell "Soutn" for "South": 1 edit / 5 chars over 9 nodes (3 tr, 6 td).
     assert by_table["g0"]["teds"] == pytest.approx(1 - (1 / 5) / 9)
     assert (by_table["g0"]["tedsStructureOnly"], by_table["g0"]["predEmpty"]) == (1.0, False)
-    for empty in ("g1", "g3"):  # refused, and no reader output: scored against nothing
-        assert (by_table[empty]["teds"], by_table[empty]["predEmpty"]) == (0.0, True)
+    # g1: the reader refused it as truncated (semantic), so it is scored against nothing.
+    assert (by_table["g1"]["teds"], by_table["g1"]["predEmpty"]) == (0.0, True)
+    # g3: no reader output at all (operational): never scored, listed with its reason.
+    assert set(by_table) == {"g0", "g1"}
+    assert [(row["goldTableId"], row["reasonCode"]) for row in block["excludedTables"]] == [
+        ("g3", "TABLE_READER_UNAVAILABLE")
+    ]
     assert block["blockedTables"] == []
-    assert (block["tedsSum"]["scoredTables"], block["tedsSum"]["goldTables"]) == (3, 3)
+    counts = ("scoredTables", "excludedTables", "blockedTables", "goldTables")
+    assert tuple(block["tedsSum"][key] for key in counts) == (2, 1, 0, 3)

@@ -6,8 +6,10 @@
 The receipt is `run_shadow.build_receipt` with its `teds` block filled in here. The evaluator is
 run the way the KB-A4 lane ran it (`research/kb1_korean_bench/omnidoc_adapter.py` on the KB
 branch; nothing is imported from there): `pdf_validation.py --config <end2end config>` under a
-separate Python 3.10, offline, its code unmodified. Its cwd is a fresh temporary directory, so
-the `result/` and `logs/` it writes never land in the checkout. One process, no network.
+separate Python 3.10, its code unmodified. Its cwd is a fresh temporary directory, so the
+`result/` and `logs/` it writes never land in the checkout. One process, offline only by the
+environment variables in OFFLINE_ENV: nothing isolates it from the network, and the receipt
+says so (`harness.network.evaluatorSubprocess`).
 
 It does not score anything itself. Gold tables and the tables the reader read become
 OmniDocBench end2end inputs (one GT table det per gold table, its box from bbox1000 in a
@@ -20,7 +22,11 @@ for those) is listed as blocked, not scored.
 
 A gold table the reader produced no table for is scored by the evaluator against an empty
 prediction, which its TEDS defines as 0.0 (`src/metrics/table_metric.py`, `evaluate`). That row
-is kept, marked `predEmpty`, and stays in the denominator.
+is kept, marked `predEmpty`, and stays in the denominator. This holds only where the reader's
+own output is what failed (a semantic failure, or a refusal). A gold table on a page that failed
+operationally (no reader output) or on evidence (output bound to other bytes) is not the reader
+being wrong: it is listed in `excludedTables` with its reasonCode, never sent to the evaluator,
+never 0.0, and counted in `goldTables` beside the scored ones.
 
 OmniDocBench: evaluator code Apache-2.0; the dataset is research-only-non-commercial and is never
 read here. Neither licence is patent freedom to operate.
@@ -53,6 +59,13 @@ ENV = {
     "HF_HUB_OFFLINE": "1",
     "HF_DATASETS_OFFLINE": "1",
     "TRANSFORMERS_OFFLINE": "1",
+}
+#: What keeps the evaluator off the network: these variables, nothing else.
+OFFLINE_ENV = ("HF_HUB_OFFLINE", "HF_DATASETS_OFFLINE", "TRANSFORMERS_OFFLINE")
+EVALUATOR_SUBPROCESS = {
+    "started": True,
+    "offlineEnv": {key: ENV[key] for key in OFFLINE_ENV},
+    "networkIsolated": False,
 }
 RUN_TIMEOUT_SECONDS = 600
 HTML_RULE = (
@@ -238,6 +251,11 @@ def _interpreter(result: Path, save_name: str) -> Json | None:
         return None
 
 
+def _started(block: Json) -> Json:
+    """A teds block from a run that started the evaluator, with what kept it offline."""
+    return {**block, "evaluatorSubprocess": EVALUATOR_SUBPROCESS}
+
+
 def run_evaluator(
     pages: list[Json], commit: object, synthetic: bool, *, evaluator: Path, python: list[str]
 ) -> Json:
@@ -246,7 +264,25 @@ def run_evaluator(
         return teds_blocked(commit, "the manifest names no evaluatorCommit")
     if not (evaluator / "pdf_validation.py").is_file():
         return teds_blocked(commit, "the evaluator checkout is not on disk")
+    # No reader output of this source to score: listed, never sent, never 0.0.
+    excluded = [
+        {
+            "documentId": page["documentId"],
+            "pageIndex0": page["pageIndex0"],
+            "goldTableId": gold["tableId"],
+            "reasonCode": page["reasonCode"],
+            "reasonClass": page["reasonClass"],
+        }
+        for page in pages
+        if page["reasonClass"] not in (None, "semantic")
+        for gold in page["gold"]
+    ]
+    gold_tables = sum(len(page["gold"]) for page in pages)
+    pages = [page for page in pages if page["reasonClass"] in (None, "semantic")]
     if not any(page["gold"] for page in pages):
+        if excluded:
+            reason = "every gold table is on a page that failed operationally or on evidence"
+            return teds_blocked(commit, reason)
         return teds_blocked(commit, "no gold table to score")
     head = _git(evaluator, "rev-parse", "HEAD")
     if head != commit:
@@ -276,20 +312,19 @@ def run_evaluator(
             reason = f"the evaluator interpreter did not start: {type(error).__name__}"
             return teds_blocked(commit, reason)
         except subprocess.TimeoutExpired:
-            return teds_blocked(commit, f"the evaluator ran past {RUN_TIMEOUT_SECONDS} s")
+            return _started(teds_blocked(commit, f"the evaluator ran past {RUN_TIMEOUT_SECONDS} s"))
         if done.returncode != 0:
             print(done.stdout[-4000:], done.stderr[-4000:], sep="\n", file=sys.stderr)
-            return teds_blocked(commit, f"the evaluator exited {done.returncode}")
+            return _started(teds_blocked(commit, f"the evaluator exited {done.returncode}"))
         scores = read_scores(pages, gt, work / "result", f"{label}markdown_quick_match")
     if "error" in scores:
-        return teds_blocked(commit, scores["error"])
+        return _started(teds_blocked(commit, scores["error"]))
     if _git(evaluator, "status", "--porcelain", "--untracked-files=no") != "":
-        return teds_blocked(commit, "evaluator tracked files changed during the run")
+        return _started(teds_blocked(commit, "evaluator tracked files changed during the run"))
     scored, unscored = scores["scored"], scores["blocked"]
     if not scored:
-        return teds_blocked(commit, "the evaluator scored no gold table")
-    gold_tables = sum(len(page["gold"]) for page in pages)
-    return {
+        return _started(teds_blocked(commit, "the evaluator scored no gold table"))
+    block: Json = {
         "status": "COMPUTED",
         "computed": True,
         "evaluator": run_shadow.EVALUATOR,
@@ -311,14 +346,23 @@ def run_evaluator(
         "htmlRule": HTML_RULE,
         "tables": scored,
         "blockedTables": unscored,
+        "excludedTables": excluded,
         "tedsSum": {
             "teds": sum(row["teds"] for row in scored),
             "tedsStructureOnly": sum(row["tedsStructureOnly"] for row in scored),
             "scoredTables": len(scored),
+            "excludedTables": len(excluded),
+            "blockedTables": len(unscored),
             "goldTables": gold_tables,
-            "of": "gold tables the evaluator scored; predEmpty rows are 0.0 by its rule",
+            "of": (
+                "teds and tedsStructureOnly sum the tables the evaluator scored (predEmpty rows"
+                " are 0.0 by its rule) over scoredTables. goldTables = scoredTables +"
+                " excludedTables (on a page that failed operationally or on evidence, never"
+                " scored) + blockedTables (the evaluator could not score them)"
+            ),
         },
     }
+    return _started(block)
 
 
 def main(argv: Sequence[str] | None = None) -> int:

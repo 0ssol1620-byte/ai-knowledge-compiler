@@ -17,11 +17,13 @@ The whole run is refused, with a reasonCode, rather than written up as a mislead
 gold without labels, corpora of different rights status in one run, a page the manifest skips,
 an input that is not on disk, an `ocr.json` bound to other bytes. A page the reader could not
 read is not a refusal: it is counted with its reasonCode, and its gold cells stay in every
-denominator.
+cell-rate denominator. TEDS lists the gold tables of a page that failed operationally or on
+evidence apart from the scored ones (`omnidoc_teds.py`).
 
 TEDS comes from the pinned OmniDocBench evaluator, never from this file: `omnidoc_teds.py` runs
-it (one process, offline) and passes its block in through `build_receipt(teds=...)`. Without an
-evaluator the `teds` block is `EVALUATOR_BLOCKED` with a reason and no value, never 0.
+it (one process, kept offline by environment variables only) and passes its block in through
+`build_receipt(teds=...)`. Without an evaluator the `teds` block is `EVALUATOR_BLOCKED` with a
+reason and no value, never 0.
 
 Not in the receipt: the §C5 fact-recall verdict (R3, the benchmark receipt) and any threshold.
 """
@@ -122,9 +124,19 @@ _GOLD_KEYS = {
 _GOLD_TABLE_KEYS = {"tableId", "bbox1000", "rowCount", "columnCount", "headerRowCount", "cells"}
 _GOLD_CELL_KEYS = {"cellId", "rowIndex0", "columnIndex0", "rowSpan", "columnSpan", "text"}
 _PAGE_STATUSES = ("read", "no_table", "unreadable", "failed")
+#: What is checked about the network in the harness process. Not enforced at run time.
+HARNESS_NETWORK = (
+    "run_shadow.py and omnidoc_teds.py import no network module (AST guards in"
+    " test_run_shadow.py), and a receipt without TEDS builds with sockets disabled (a test)."
+    " Checked by tests, not enforced at run time: no sandbox. Child processes, only when"
+    " omnidoc_teds.py runs: `git -C` on the local evaluator checkout, and the evaluator"
+    " (evaluatorSubprocess)"
+)
 
 Json = dict[str, Any]
-#: (pages with their gold and read tables, the manifest's evaluatorCommit, synthetic) -> teds.
+#: (pages with their reasonCode, gold and read tables, the manifest's evaluatorCommit,
+#: synthetic) -> teds. A runner that started a process adds `evaluatorSubprocess`, which the
+#: receipt moves to `harness.network`.
 TedsRunner = Callable[[list[Json], object, bool], Json]
 
 
@@ -132,7 +144,8 @@ class ShadowRefused(Exception):
     """The harness will not write a receipt for these inputs."""
 
     def __init__(self, reason_code: str, detail: str) -> None:
-        assert reason_code in REFUSAL_CODES, reason_code
+        if reason_code not in REFUSAL_CODES:
+            raise ValueError(f"{reason_code!r} is not a refusal code")
         super().__init__(f"{reason_code}: {detail}")
         self.reason_code = reason_code
         self.detail = detail
@@ -264,9 +277,11 @@ def _ocr_regions(ocr: object, doc: Json) -> tuple[int, list[OcrRegion]]:
         raise bad("has no ok status or pageCount")
     if not isinstance(regions, list):
         raise bad("has no regions")
+    if not _is_text(ocr.get("sourceImmutableKey")):
+        raise bad("has no sourceImmutableKey, so its binding to the source cannot be checked")
     if (
         ocr.get("inputSha256") != doc["inputSha256"]
-        or ocr.get("sourceImmutableKey", doc["sourceImmutableKey"]) != doc["sourceImmutableKey"]
+        or ocr["sourceImmutableKey"] != doc["sourceImmutableKey"]
     ):
         raise ShadowRefused(
             "SHADOW_OCR_BINDING_MISMATCH",
@@ -408,7 +423,8 @@ def _cell_matches(gold: Json, read: Json) -> int:
 
 
 def _rate(numerator: int, denominator: int, of: str) -> Json:
-    assert 0 <= numerator <= denominator, (numerator, denominator, of)
+    if not 0 <= numerator <= denominator:
+        raise ValueError(f"rate {numerator} of {denominator} {of} is not a share")
     return {"numerator": numerator, "denominator": denominator, "of": of}
 
 
@@ -517,8 +533,16 @@ def build_receipt(manifest_path: Path, teds: TedsRunner | None = None) -> Json:
             row, read_tables = _page(
                 doc, index, payload, regions, conditions, gold[index], reasons, n
             )
+            code = row["reasonCode"]
             teds_pages.append(
-                {"documentId": name, "pageIndex0": index, "gold": gold[index], "read": read_tables}
+                {
+                    "documentId": name,
+                    "pageIndex0": index,
+                    "reasonCode": code,
+                    "reasonClass": table_claims.TABLE_READ_REASON_CLASS[code] if code else None,
+                    "gold": gold[index],
+                    "read": read_tables,
+                }
             )
             row["readerWallSeconds"] = page["readerWallSeconds"]
             if page["readerWallSeconds"] is not None:
@@ -539,10 +563,12 @@ def build_receipt(manifest_path: Path, teds: TedsRunner | None = None) -> Json:
 
     statuses = Counter(row["status"] for row in page_rows)
     teds_block = (
-        teds(teds_pages, conditions["evaluatorCommit"], synthetic)
+        dict(teds(teds_pages, conditions["evaluatorCommit"], synthetic))
         if teds is not None
         else teds_blocked(conditions["evaluatorCommit"], "no evaluator was given to this run")
     )
+    # None: no evaluator process was started by this run.
+    evaluator_process = teds_block.pop("evaluatorSubprocess", None)
     return {
         "schemaVersion": RECEIPT_SCHEMA,
         "synthetic": synthetic,
@@ -556,7 +582,10 @@ def build_receipt(manifest_path: Path, teds: TedsRunner | None = None) -> Json:
         "conditions": {**conditions, "corpusManifestSha256": manifest_ref["sha256"]},
         "harness": {
             "code": [_code_ref(Path(__file__)), _code_ref(Path(table_claims.__file__))],
-            "network": False,
+            "network": {
+                "harnessProcess": HARNESS_NETWORK,
+                "evaluatorSubprocess": evaluator_process,
+            },
             "gpu": False,
         },
         "inputs": {"manifest": manifest_ref, "documents": inputs},
@@ -578,7 +607,10 @@ def build_receipt(manifest_path: Path, teds: TedsRunner | None = None) -> Json:
                 n["cellsConfirmed"], n["cellsRead"], "cells in tables the reader read"
             ),
             "dataCellsPromotedToClaims": _rate(
-                n["claims"], n["dataCells"], "data cells below a header row in tables read"
+                n["claims"],
+                n["dataCells"],
+                "cells outside the header rows of the tables read; every cell of a table with no"
+                " header row, which yields no claim",
             ),
         },
         "teds": teds_block,
