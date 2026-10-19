@@ -425,7 +425,7 @@ def test_the_shipped_pack_has_a_constraint_on_every_publishable_number() -> None
 def test_every_shipped_digest_is_the_sha256_of_the_file_bytes() -> None:
     """The exact check a reader of the pack runs: sha256sum the cited file.
 
-    Fourteen campaign receipts were hashed as the CRLF bytes they were written
+    Eight campaign receipt files were hashed as the CRLF bytes they were written
     with, then stored by git as LF under `* text=auto eol=lf`, so `sha256sum`
     in a clone disagreed with the published digest for twelve of nineteen
     citations. The bytes are read with no line-ending normalisation on purpose:
