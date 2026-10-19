@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "tavonel.table_read.v1",
+  "sourceImmutableKey": "SYNTHETIC/table-lane-shadow/doc-0001/sanitized.pdf",
+  "inputSha256": "sha256:5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e",
+  "readerRevision": "sha256:7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a",
+  "readerBindingSha256": "sha256:b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1",
+  "pageIndex0": 1,
+  "pageNumber1": 2,
+  "pageStatus": "unreadable",
+  "tables": [],
+  "formulas": [],
+  "refusals": [
+    {
+      "bbox1000": [
+        80,
+        180,
+        920,
+        330
+      ],
+      "reasonCode": "TABLE_OUTPUT_TRUNCATED"
+    }
+  ]
+}
