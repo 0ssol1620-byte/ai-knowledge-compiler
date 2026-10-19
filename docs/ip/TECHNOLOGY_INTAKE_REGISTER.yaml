@@ -143,8 +143,9 @@ technology_intake:
       OPEN. The card names no training data ("curated data selection"), so there
       are no training-data terms to capture. The two datasets it names are
       evaluation benchmarks. Real5-OmniDocBench declares Apache-2.0, but its own
-      card says the annotations it inherits from OmniDocBench v1.5 "remain
-      subject to the applicable OmniDocBench and source-document terms".
+      card says that, for the annotations it inherits from OmniDocBench v1.5,
+      "use of those materials remains subject to the applicable OmniDocBench
+      and source-document terms".
       OmniDocBench's Copyright Statement says the dataset "is for research
       purposes only and not for commercial use" (dataset card at the Arena
       revision aa1ee96d106dbe53d0ae59474d75c6e6d9b53fec, and the GitHub README at
@@ -212,17 +213,89 @@ technology_intake:
     classification: ORANGE
     source_type: OSS
     decision: "D-25: hold."
+    source_urls:
+      weights: "https://huggingface.co/opendatalab/MinerU2.5-Pro-2605-1.2B"
+      code_and_runtime: "https://github.com/opendatalab/MinerU"
+      runtime_client_named_by_model_card: "https://github.com/opendatalab/mineru-vl-utils"
+    snapshot_date: "2026-10-19"
+    snapshot_note: >-
+      First captured 2026-09-23 by PR #76 (branch agent/router-second-reader-20260923,
+      d6f77b8, infra/model-registry/license-snapshots/). Fetched again by HTTPS GET
+      on 2026-10-19; the model card and the runtime LICENSE.md are byte for byte the
+      PR #76 snapshots.
+    exact_commit_or_version:
+      weights: "opendatalab/MinerU2.5-Pro-2605-1.2B bff20d4ae2bf202df9f45284b4d43681555a97ed (the Hub API returned the sha requested; lastModified 2026-06-16T05:59:05Z; 13 files); model.safetensors LFS sha256 abf8681ca63b8dec7b67de257af47b821f179442f72998d0696ae2ed9232a5f0, 2,312,126,640 bytes"
+      code_and_runtime: "opendatalab/MinerU tag mineru-3.4.5-released = commit fbb1257a555a3fde78ae5aaaa931e3b3f8fb2883 (GitHub git ref API, object type commit; the Model Arena registry resolved the same sha)"
+      runtime_client: "NOT_PINNED. infra/model-registry/models.yaml names mineru-vl-utils[vllm] and vllm >= 0.10.1 with no exact version."
+    code_license: >-
+      MinerU Open Source License, which is Apache-2.0 plus additional terms.
+      LICENSE.md at fbb1257a (and at the tag), sha256
+      2d9aeb5d15159329a20dd804f251c64860ba954fbd26ec02f802220e6d71cf5c. Section 1:
+      a separate commercial licence from the MinerU Team is required "before
+      continuing such use" once you and your Affiliates, on a consolidated basis,
+      exceed 100 million MAU or USD 20 million total monthly revenue. Section 2:
+      online services to third parties must "clearly and prominently indicate"
+      that MinerU is used. Section 3: breach of either terminates the licence
+      automatically. GitHub's licence detection reports NOASSERTION for the
+      repository (Model Arena registry).
+    model_license: >-
+      Apache-2.0 by declaration only. The model card's front matter says
+      "license: apache-2.0" (card sha256
+      8f829b69be518375b02023f795b3898adec98f5ac37208239884ad88e9a21cb7) and the Hub
+      API cardData agrees. The weights repository ships no LICENSE file at the
+      revision (Hub API siblings) and no Python file.
+    upstream_weights: >-
+      OPEN. The Hub tags the model qwen2_vl, the card loads it with
+      Qwen2VLForConditionalGeneration, and it thanks the Qwen Team and others for
+      "valuable code and models" without saying which supplied what. No upstream
+      weight terms were captured. A question for counsel, not something to infer
+      from the names.
+    dataset_license: >-
+      OPEN, NOT_SNAPSHOTTED. The card says the training corpus grew "from under
+      10M to 65.5M pages" and names no dataset, so there are no training-data
+      terms to capture. The card reports OmniDocBench results; OmniDocBench's
+      research-only data terms are recorded on tech_paddleocr_vl_1_6 above.
+    runtime_license: >-
+      The code_license file: the MinerU repository is the runtime that loads the
+      weights (Arena registry role official_runtime). mineru-vl-utils and vLLM:
+      NOT_SNAPSHOTTED, because no version is pinned.
+    hosted_api_terms: "Not used. No hosted MinerU API is in any path."
+    patent_family_refs:
+      - "tech_ibm_sequential_inference, on the same terms as tech_paddleocr_vl_1_6: through the table-lane trigger that would call a table reader, not through the model itself. Relevant only if the hold lifts. Counsel review of that trigger is D-26 / FH-13."
+    patent_note: >-
+      No patent search has been made for this model or its methods. A licence,
+      permissive or not, is copyright permission and settles nothing about
+      third-party patents (§2.1).
+    intended_use: DEPENDENCY
+    scope: >-
+      None while the row is on hold. DEPENDENCY names what D-25 evaluated it for,
+      a table-reader candidate; it is not in use.
+    research_use_note: >-
+      The Model Arena registry (research/model_arena_20260903/model_registry.json,
+      sha256 292fd6f6176b017b0288dd6634d77f2be58c9c118d9a01bd3c91799a1570aa48,
+      license_detail) records a 2026-09-03 founder clearance for research benchmark
+      execution. The receipt it names (receipts/registry-updates/license-mineru_vlm.json)
+      is not in this repository's history. That clearance is research only and is
+      not this row's approval.
+    data_policy_review: "NOT_STARTED. The row is on hold. Any corpus it would read falls under D-31 (docs/compliance/CORPUS_RIGHTS_POLICY_2026-10-17.md)."
+    security_review: "NOT_STARTED. The weights repository ships no Python file at the revision (Hub API siblings). The runtime packages have not been scanned."
     status: BLOCKED
     approval_state: HOLD
     reason: >-
       The runtime licence is not plain Apache-2.0. It adds a commercial-licence
       threshold, an online-service attribution duty and automatic termination
-      on breach. Source: branch agent/router-second-reader-20260923 (d6f77b8,
-      PR #76), infra/model-registry/license-snapshots/mineru_vlm.runtime-LICENSE.md,
+      on breach (code_license above). Source: branch agent/router-second-reader-20260923
+      (d6f77b8, PR #76), infra/model-registry/license-snapshots/mineru_vlm.runtime-LICENSE.md,
       sha256 2d9aeb5d15159329a20dd804f251c64860ba954fbd26ec02f802220e6d71cf5c,
-      MinerU tag mineru-3.4.5-released. T8a did not fetch it again.
+      MinerU tag mineru-3.4.5-released.
     reopens_when: "The founder accepts those runtime terms (TABLE-EXTRACTION-AND-LIMITS-DESIGN-2026-10-17 F1)."
     owner: "FOUNDER-SET. FTO-3."
+    evidence:
+      licence_snapshots: >-
+        D:/CodexProjects/ai-knowledge-compiler/outputs/tavonel-research-replan-20261013/ux-program-20261017/records/PR/mineru-intake/
+        (RETRIEVED.json gives the URL, server date and sha256 of each file;
+        SHA256SUMS.txt). Captured by HTTPS GET on 2026-10-19. Not yet in
+        version control; the PR #76 snapshots of the same bytes are.
 
 # ---------------------------------------------------------------------------
 # What binds the tracks currently in flight

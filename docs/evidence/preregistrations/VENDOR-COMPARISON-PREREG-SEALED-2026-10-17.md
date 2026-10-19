@@ -15,6 +15,7 @@ public sentence and no evidence artifact.
 | Draft | `UX\VENDOR-COMPARISON-PREREG.json`, sha256 `d68e0027e8c43fbcbe5c7bdfb77a27ee6ebf6ba5292b8ef992cde0c6354916c9`, 56,223 bytes, 1,272 lines, LF. Matches its sidecar `UX\VENDOR-COMPARISON-PREREG.json.sha256`. The draft file is not changed |
 | State at sealing | No vendor, model or judge call; no account; no terms accepted (draft `measured_numbers`, line 12; register D-34 `statusToday`, "벤더 계정·약관 수락·키 0", `REG.md` row D-34) |
 | Change rule | **Changes after sealing require a new version.** A changed margin, rule, metric or corpus is `tavonel.vendor_comparison.v2`, registered as a new file before its first run; this file stays as it is (draft `sealing.rule_ko`, line 23) |
+| Header correction | 2026-10-19, before the file was first pushed (independent review finding N-5): section 3 cited the FD-2 caps as `CP:350`; the FD-2 row is `CP:351`. Header text only. The verbatim draft, its sha256 and every sealed value are unchanged |
 
 Short paths: `UX` = `D:\CodexProjects\ai-knowledge-compiler\outputs\tavonel-research-replan-20261013\ux-program-20261017`;
 `REG` = `UX\DECISION-REGISTER-2026-10-17`; `CP` = `UX\COMPETITOR-PROTOCOL-2026-10-17.md`;
@@ -69,7 +70,7 @@ The draft lists four sealing requirements (`PRE:17-22`). This seal meets the fir
 | --- | --- |
 | "FD-6 δ·판정 규칙·다중성 처리 승인" | **Met** by the D-10 adoption (above) |
 | "독립 리뷰(구현한 세션은 자기 결과를 승인하지 않는다)" | **Open.** An independent reviewer with no implementation context confirms this file against the draft before the first vendor call |
-| "cost_estimate 재계산으로 FD-2 상한 갱신" | **Open.** The draft already recomputed the rows on the lock's 384 audit pages per corpus (`PRE:705-710`); the FD-2 caps (USD 130 / 165 / 390, `CP:350`) were set on a 768-page basis and must be reset. New caps are FOUNDER-SET (question below) |
+| "cost_estimate 재계산으로 FD-2 상한 갱신" | **Open.** The draft already recomputed the rows on the lock's 384 audit pages per corpus (`PRE:705-710`); the FD-2 caps (USD 130 / 165 / 390, `CP:351`) were set on a 768-page basis and must be reset. New caps are FOUNDER-SET (question below) |
 | "실행 7일 이내 가격·약관 snapshot(AT-3)" | **Open by construction.** It can only be taken once an execution date exists |
 
 - **No vendor arm may run.** `vendor_execution_allowed` stays `false` (`PRE:26`); register D-34 is
