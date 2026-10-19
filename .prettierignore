@@ -13,3 +13,4 @@ packages/contracts/src/generated-contracts.ts
 **/*.webp
 **/*.webm
 **/*.sha256
+docs/evidence/artifacts/
