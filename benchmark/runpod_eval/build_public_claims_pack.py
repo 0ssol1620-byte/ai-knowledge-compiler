@@ -58,16 +58,32 @@ def _publish(repository: Path, source: Path) -> Path:
     machine, a patent examiner, a reviewer -- would find each citation pointing
     at a file that does not exist. The summaries are small; the multi-megabyte
     failure dumps they derive from stay out.
+
+    An artifact that already exists is never rewritten. This function used to
+    overwrite any copy whose bytes differed from the receipt, and that is how
+    the published digests drifted: the receipts were written on Windows as CRLF,
+    the copy and its digest kept CRLF, and git stored LF under
+    `* text=auto eol=lf`. Every later run on the generating machine rewrote the
+    LF checkout back to CRLF, so the hashes verified there and in no clone.
+    `.gitattributes` now stores docs/evidence/artifacts byte-exact; a copy that
+    still differs from its receipt is a broken chain of custody, and it fails.
     """
     relative = source.relative_to(repository)
     if relative.parts[: len(GENERATED_PREFIX)] != GENERATED_PREFIX:
         return source
     flattened = "__".join(relative.parts[len(GENERATED_PREFIX) :])
     destination = repository / ARTIFACT_DIRECTORY / flattened
-    destination.parent.mkdir(parents=True, exist_ok=True)
     payload = source.read_bytes()
-    if not destination.is_file() or destination.read_bytes() != payload:
-        destination.write_bytes(payload)
+    if destination.is_file():
+        if destination.read_bytes() != payload:
+            raise ValueError(
+                f"{destination.relative_to(repository).as_posix()} differs from its "
+                f"receipt {relative.as_posix()}; published evidence is immutable, so "
+                "it is not overwritten"
+            )
+        return destination
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_bytes(payload)
     return destination
 
 

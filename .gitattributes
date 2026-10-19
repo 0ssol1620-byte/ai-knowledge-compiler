@@ -11,3 +11,9 @@
 *.glb binary
 *.zip binary
 *.zst binary
+
+# Cited evidence is stored byte-exact. The claims pack binds each artifact by the
+# sha256 of its bytes, and several receipts were written as CRLF; normalising
+# them to LF made every clone disagree with the published digest. Never let git,
+# an editor or a formatter rewrite these files.
+docs/evidence/artifacts/** -text
