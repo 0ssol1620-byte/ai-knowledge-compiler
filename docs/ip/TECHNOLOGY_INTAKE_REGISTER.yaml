@@ -160,7 +160,7 @@ technology_intake:
       modelscope, aistudio-sdk and others) has not been scanned.
     hosted_api_terms: "Not used. The image runs the weights locally and calls no hosted API."
     patent_family_refs:
-      - "tech_ibm_sequential_inference, through the table-lane trigger that would call this reader, not through the model itself. The trigger is designed in docs/adr/ADR-009-table-reader-lane.md (lane T6, branch agent/table-lane-20261017, not on this base; the decision register's FH-13 still calls it ADR-008, the number before T6 renumbered it). Counsel review of that trigger is D-26 / FH-13."
+      - "tech_ibm_sequential_inference, through the table-lane trigger that would call this reader, not through the model itself. The trigger is designed in docs/adr/ADR-009-table-reader-lane.md (lane T6, merged into this base by PR #112 at 4b8f89d; the decision register's FH-13 still calls it ADR-008, the number before T6 renumbered it). Counsel review of that trigger is D-26 / FH-13."
     patent_note: >-
       No patent search has been made for this model or its methods. A permissive
       licence is copyright permission from its contributors and settles nothing
