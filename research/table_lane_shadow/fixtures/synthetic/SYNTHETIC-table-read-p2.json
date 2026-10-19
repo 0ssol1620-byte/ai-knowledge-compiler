@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "tavonel.table_read.v1",
+  "sourceImmutableKey": "SYNTHETIC/table-lane-shadow/doc-0001/sanitized.pdf",
+  "inputSha256": "sha256:5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e",
+  "readerRevision": "sha256:7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a",
+  "readerBindingSha256": "sha256:b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1",
+  "pageIndex0": 2,
+  "pageNumber1": 3,
+  "pageStatus": "no_table",
+  "tables": [],
+  "formulas": [],
+  "refusals": []
+}

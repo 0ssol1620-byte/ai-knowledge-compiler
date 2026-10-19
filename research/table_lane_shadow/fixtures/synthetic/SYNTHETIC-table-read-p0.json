@@ -1,0 +1,119 @@
+{
+  "schemaVersion": "tavonel.table_read.v1",
+  "sourceImmutableKey": "SYNTHETIC/table-lane-shadow/doc-0001/sanitized.pdf",
+  "inputSha256": "sha256:5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e",
+  "readerRevision": "sha256:7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a",
+  "readerBindingSha256": "sha256:b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1",
+  "pageIndex0": 0,
+  "pageNumber1": 1,
+  "pageStatus": "read",
+  "tables": [
+    {
+      "tableId": "t1",
+      "bbox1000": [
+        80,
+        180,
+        520,
+        330
+      ],
+      "rowCount": 3,
+      "columnCount": 2,
+      "headerRowCount": 1,
+      "qualityFlags": [],
+      "cells": [
+        {
+          "cellId": "t1-c1",
+          "rowIndex0": 0,
+          "columnIndex0": 0,
+          "rowSpan": 1,
+          "columnSpan": 1,
+          "text": "Region",
+          "bbox1000": [
+            100,
+            200,
+            300,
+            240
+          ],
+          "confirmedBy": [
+            "r-0002"
+          ]
+        },
+        {
+          "cellId": "t1-c2",
+          "rowIndex0": 0,
+          "columnIndex0": 1,
+          "rowSpan": 1,
+          "columnSpan": 1,
+          "text": "Units",
+          "bbox1000": [
+            300,
+            200,
+            500,
+            240
+          ],
+          "confirmedBy": [
+            "r-0003"
+          ]
+        },
+        {
+          "cellId": "t1-c3",
+          "rowIndex0": 1,
+          "columnIndex0": 0,
+          "rowSpan": 1,
+          "columnSpan": 1,
+          "text": "North",
+          "bbox1000": null,
+          "confirmedBy": [
+            "r-0004"
+          ]
+        },
+        {
+          "cellId": "t1-c4",
+          "rowIndex0": 1,
+          "columnIndex0": 1,
+          "rowSpan": 1,
+          "columnSpan": 1,
+          "text": "12",
+          "bbox1000": null,
+          "confirmedBy": [
+            "r-0005"
+          ]
+        },
+        {
+          "cellId": "t1-c5",
+          "rowIndex0": 2,
+          "columnIndex0": 0,
+          "rowSpan": 1,
+          "columnSpan": 1,
+          "text": "Soutn",
+          "bbox1000": [
+            100,
+            280,
+            300,
+            320
+          ],
+          "confirmedBy": []
+        },
+        {
+          "cellId": "t1-c6",
+          "rowIndex0": 2,
+          "columnIndex0": 1,
+          "rowSpan": 1,
+          "columnSpan": 1,
+          "text": "7",
+          "bbox1000": [
+            300,
+            280,
+            500,
+            320
+          ],
+          "confirmedBy": [
+            "r-0007"
+          ]
+        }
+      ]
+    }
+  ],
+  "formulas": [],
+  "refusals": []
+}

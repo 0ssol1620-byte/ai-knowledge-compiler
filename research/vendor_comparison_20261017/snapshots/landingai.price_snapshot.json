@@ -1,0 +1,87 @@
+{
+  "schema": "tavonel.vendor_comparison.price_snapshot.v1",
+  "protocol": "tavonel.vendor_comparison.v1",
+  "vendor": "landingai",
+  "arm_id": "D-V-landingai",
+  "price_point": "landingai_dpt3pro_priority",
+  "price_point_definition": "DPT-3 Pro, synchronous call = priority tier (COMPETITOR-PROTOCOL §2.1); cost also depends on output characters",
+  "currency": "USD",
+  "captured_at": "2026-10-17T01:24:58.435Z",
+  "source": "vendor_public_web_pages",
+  "manifest": {
+    "file": "competitor-protocol-receipts/WEB-RECEIPTS-MANIFEST.json",
+    "sha256": "8b095f3801a545ce534ceef1ba3b4128e2b10032869a4d865bf1aeae384bb37c"
+  },
+  "prices": [
+    {
+      "name": "credits_per_usd",
+      "value": 100,
+      "unit": "credits_per_usd",
+      "quoted_text": "$1 buys 100 credits.",
+      "file": "competitor-protocol-receipts/web/landingai-pricing.html",
+      "url": "https://landing.ai/pricing-agentic-apis",
+      "sha256": "a8cf10851a3622a3f3c8578edba63a8b832c275788046426f05dd7d2c716a084",
+      "fetched_at": "2026-10-17T01:24:58.435Z"
+    },
+    {
+      "name": "dpt3_pro_priority_credits_per_page",
+      "value": 1,
+      "unit": "credits_per_page",
+      "quoted_text": "Page 1 credit per page 0.5 credits per page",
+      "file": "competitor-protocol-receipts/web/landingai-credit-consumption.html",
+      "url": "https://docs.landing.ai/dpt3/credit-consumption",
+      "sha256": "64a6eeedb1339919031867b415ebef1bc9bec92f902e4700db273687e8254db8",
+      "fetched_at": "2026-10-17T01:27:20.821Z"
+    },
+    {
+      "name": "dpt3_pro_priority_credits_per_1000_output_characters",
+      "value": 0.5,
+      "unit": "credits_per_1000_output_characters",
+      "quoted_text": "Output characters 0.5 credits per 1,000 output characters 0.25 credits per 1,000 output characters",
+      "file": "competitor-protocol-receipts/web/landingai-credit-consumption.html",
+      "url": "https://docs.landing.ai/dpt3/credit-consumption",
+      "sha256": "64a6eeedb1339919031867b415ebef1bc9bec92f902e4700db273687e8254db8",
+      "fetched_at": "2026-10-17T01:27:20.821Z"
+    },
+    {
+      "name": "credit_total_rounding_up_increment",
+      "value": 0.1,
+      "unit": "credits",
+      "quoted_text": "All credit totals are rounded up to the nearest 0.1 credit.",
+      "file": "competitor-protocol-receipts/web/landingai-credit-consumption.html",
+      "url": "https://docs.landing.ai/dpt3/credit-consumption",
+      "sha256": "64a6eeedb1339919031867b415ebef1bc9bec92f902e4700db273687e8254db8",
+      "fetched_at": "2026-10-17T01:27:20.821Z"
+    }
+  ],
+  "conditions": [
+    {
+      "quoted_text": "Synchronous Parse requests run on the priority tier.",
+      "file": "competitor-protocol-receipts/web/landingai-credit-consumption.html",
+      "url": "https://docs.landing.ai/dpt3/credit-consumption",
+      "sha256": "64a6eeedb1339919031867b415ebef1bc9bec92f902e4700db273687e8254db8",
+      "fetched_at": "2026-10-17T01:27:20.821Z"
+    },
+    {
+      "quoted_text": "DPT-3 Pro is the default, highest-quality parsing model.",
+      "file": "competitor-protocol-receipts/web/landingai-credit-consumption.html",
+      "url": "https://docs.landing.ai/dpt3/credit-consumption",
+      "sha256": "64a6eeedb1339919031867b415ebef1bc9bec92f902e4700db273687e8254db8",
+      "fetched_at": "2026-10-17T01:27:20.821Z"
+    }
+  ],
+  "terms": {
+    "quoted_text": "for benchmarking or competitive analysis with respect to competitive or related products or services",
+    "file": "competitor-protocol-receipts/web/landingai-terms.html",
+    "url": "https://landing.ai/terms-of-service",
+    "sha256": "da40a0c2c96b640c9da65038b5e09cfcce7be0d975c1d5e6dc404d782a939be5",
+    "fetched_at": "2026-10-17T01:24:59.579Z"
+  },
+  "warnings": [
+    "List price quoted from the vendor's public web page on the fetched_at date. It is not an invoice, not a contract and not a measured cost.",
+    "Free usage, free pages and free credits are not applied (COMPETITOR-PROTOCOL §5).",
+    "Usable for a run only within 7 days of captured_at and only while terms.sha256 equals the sha256 the FD-1 receipt recorded. Before a run, re-fetch every page into a new WEB-RECEIPTS-MANIFEST and rebuild this file; validate.py refuses otherwise.",
+    "terms.quoted_text is the clause verbatim. It is not a legal reading; FD-1 is counsel's and the founder's decision (COMPETITOR-PROTOCOL §2.2, §8).",
+    "Each credit row quotes one line of the DPT-3 Pro table, whose header is 'Component Priority (sync and jobs) Standard (jobs only)': the first figure is the priority column. A substring check cannot prove the column; read it in the saved page."
+  ]
+}

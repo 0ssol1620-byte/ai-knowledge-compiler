@@ -29,7 +29,14 @@ from build_public_claims_pack import (
     _evidence,
     _group_metric,
     _olmocr_score_definition,
+    _publish,
     render_markdown,
+)
+
+REPOSITORY = Path(__file__).resolve().parents[2]
+SHIPPED_PACKS = (
+    "docs/evidence/folynta-public-claims-pack.json",
+    "apps/web/src/data/claims/public-claims-pack.json",
 )
 
 OLMOCR_SUMMARY = (
@@ -334,35 +341,6 @@ def test_no_shipped_must_say_calls_the_olmocr_score_a_check_pass_rate() -> None:
     assert offending == []
 
 
-def test_every_shipped_digest_matches_its_artifact_up_to_line_endings() -> None:
-    """The pack hashes the CRLF receipt the campaign wrote, and git stores it LF.
-
-    So for most citations a clone's sha256 differs from the pack's: a defect in
-    how the artifacts were committed, left to the founder because both fixes
-    touch hashes the disclosure registry calls immutable. A digest that matches
-    neither form is a different thing -- the content changed -- and fails here.
-    """
-    repository, pack = _shipped_pack()
-    unmatched = []
-    for claim in pack["claims"]:
-        cited = claim.get("evidence")
-        if not cited:
-            continue
-        entries = cited if isinstance(cited, list) else [cited]
-        digests = claim["evidence_sha256"]
-        if not isinstance(cited, list):
-            digests = [digests]
-        for entry, digest in zip(entries, digests, strict=True):
-            lf = (repository / entry).read_bytes().replace(b"\r\n", b"\n")
-            forms = {
-                "sha256:" + hashlib.sha256(form).hexdigest()
-                for form in (lf, lf.replace(b"\n", b"\r\n"))
-            }
-            if digest not in forms:
-                unmatched.append((claim["id"], entry))
-    assert unmatched == []
-
-
 def _synthetic_olmocr_summary(overall: float) -> dict[str, object]:
     return {
         "label": "SYNTHETIC",
@@ -442,3 +420,73 @@ def test_the_shipped_pack_has_a_constraint_on_every_publishable_number() -> None
     assert checks in accuracy["must_say"]
     assert checks in accuracy["must_say_en"]
     assert "unweighted mean" in accuracy["must_say_en"]
+
+
+def test_every_shipped_digest_is_the_sha256_of_the_file_bytes() -> None:
+    """The exact check a reader of the pack runs: sha256sum the cited file.
+
+    Fourteen campaign receipts were hashed as the CRLF bytes they were written
+    with, then stored by git as LF under `* text=auto eol=lf`, so `sha256sum`
+    in a clone disagreed with the published digest for twelve of nineteen
+    citations. The bytes are read with no line-ending normalisation on purpose:
+    "equal up to line endings" is not a hash match.
+    """
+    mismatched = []
+    for pack_path in SHIPPED_PACKS:
+        pack = json.loads((REPOSITORY / pack_path).read_bytes())
+        for claim in pack["claims"]:
+            cited = claim.get("evidence")
+            if not cited:
+                continue
+            paths = cited if isinstance(cited, list) else [cited]
+            digests = claim["evidence_sha256"]
+            digests = digests if isinstance(digests, list) else [digests]
+            for path, digest in zip(paths, digests, strict=True):
+                actual = "sha256:" + hashlib.sha256((REPOSITORY / path).read_bytes()).hexdigest()
+                if actual != digest:
+                    mismatched.append((pack_path, claim["id"], path, digest, actual))
+    assert mismatched == []
+
+
+def _generated_receipt(repository: Path, payload: bytes) -> Path:
+    source = repository / "benchmark" / "reports" / "generated" / "receipt.json"
+    source.parent.mkdir(parents=True)
+    source.write_bytes(payload)
+    return source
+
+
+def test_a_new_artifact_is_published_with_the_source_bytes_unchanged(tmp_path: Path) -> None:
+    source = _generated_receipt(tmp_path, b'{\r\n  "rate": 0.9998\r\n}\r\n')
+
+    published = _publish(tmp_path, source)
+
+    assert published == tmp_path / "docs" / "evidence" / "artifacts" / "receipt.json"
+    assert published.read_bytes() == source.read_bytes()
+
+
+def test_a_published_artifact_that_differs_from_its_source_is_not_rewritten(
+    tmp_path: Path,
+) -> None:
+    # This is how the digests drifted: the generator rewrote an LF checkout back
+    # to the CRLF receipt, hashed that, and git stored LF again. Published
+    # evidence is immutable, so a difference is refused, not overwritten.
+    source = _generated_receipt(tmp_path, b'{\r\n  "rate": 0.9998\r\n}\r\n')
+    published = tmp_path / "docs" / "evidence" / "artifacts" / "receipt.json"
+    published.parent.mkdir(parents=True)
+    published.write_bytes(b'{\n  "rate": 0.9998\n}\n')
+
+    with pytest.raises(ValueError, match="immutable"):
+        _publish(tmp_path, source)
+
+    assert published.read_bytes() == b'{\n  "rate": 0.9998\n}\n'
+
+
+def test_a_published_artifact_equal_to_its_source_is_reused(tmp_path: Path) -> None:
+    payload = b'{\r\n  "rate": 0.9998\r\n}\r\n'
+    source = _generated_receipt(tmp_path, payload)
+    published = tmp_path / "docs" / "evidence" / "artifacts" / "receipt.json"
+    published.parent.mkdir(parents=True)
+    published.write_bytes(payload)
+
+    assert _publish(tmp_path, source) == published
+    assert published.read_bytes() == payload

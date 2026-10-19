@@ -1,0 +1,32 @@
+{
+  "label": "SYNTHETIC",
+  "note": "SYNTHETIC Unstructured replay. No Unstructured API shape was captured in competitor-protocol-receipts on 2026-10-17; the response shape below is invented for harness tests only (SYNTHETIC_ field names). The arm itself is blocked by FD-1 and Platform Terms 3.2(a).",
+  "vendor": "unstructured",
+  "pin": {"arm_id": "D-V-unstructured", "api_key_env": "SYNTHETIC_UNSTRUCTURED_KEY_NAME", "timeout_s": 120, "config": {}},
+  "response_shape": {
+    "source": "SYNTHETIC: Unstructured response shape not captured; invented for harness tests",
+    "markdown": ["SYNTHETIC_elements", "*", "SYNTHETIC_text"],
+    "usage": {}
+  },
+  "document": {"doc_id": "SYNTHETIC-doc-001", "pages": 2, "pdf_text": "%PDF-1.7\n% SYNTHETIC harness bytes, not a real document\n%%EOF\n"},
+  "scenarios": [
+    {
+      "name": "ok",
+      "exchanges": [{"status": 200, "json": {"SYNTHETIC_elements": [{"SYNTHETIC_text": "SYNTHETIC title"}, {"SYNTHETIC_text": "SYNTHETIC body."}]}}],
+      "expected": {
+        "status": "ok", "attempts": 1, "page_count": null, "markdown": "SYNTHETIC title\n\nSYNTHETIC body.",
+        "cost": {"snapshot_usd": "0.030000", "metadata_usd": null, "charged_usd": "0.030000"}
+      }
+    },
+    {
+      "name": "empty_output",
+      "exchanges": [{"status": 200, "json": {"SYNTHETIC_elements": []}}],
+      "expected": {"status": "empty_output", "failure_class": "semantic", "attempts": 1, "markdown": ""}
+    },
+    {
+      "name": "elements_not_a_list",
+      "exchanges": [{"status": 200, "json": {"SYNTHETIC_elements": {"SYNTHETIC_text": "x"}}}],
+      "expected": {"status": "malformed_response", "attempts": 1, "markdown": ""}
+    }
+  ]
+}

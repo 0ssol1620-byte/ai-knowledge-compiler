@@ -1,0 +1,48 @@
+{
+  "synthetic": true,
+  "fixtureSchema": "tavonel.table_read_fixture.v1",
+  "note": "Synthetic. Written by hand for the table_read.v1 contract test; no document, reader or model produced it, and no number in it is a measurement.",
+  "purpose": "A page the reader read and found no table or formula on.",
+  "expected": {
+    "sourceImmutableKey": "synthetic/table-read/source-0001/sanitized.pdf",
+    "inputSha256": "sha256:5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e",
+    "readerRevision": "sha256:7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a",
+    "readerBindingSha256": "sha256:b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1",
+    "pageIndex0": 2,
+    "ocrRegions": [
+      {
+        "regionId": "r-0201",
+        "pageIndex0": 2,
+        "text": "Prose only",
+        "bbox1000": [
+          100,
+          100,
+          900,
+          140
+        ]
+      }
+    ]
+  },
+  "document": {
+    "schemaVersion": "tavonel.table_read.v1",
+    "sourceImmutableKey": "synthetic/table-read/source-0001/sanitized.pdf",
+    "inputSha256": "sha256:5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e",
+    "readerRevision": "sha256:7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a",
+    "readerBindingSha256": "sha256:b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1",
+    "pageIndex0": 2,
+    "pageNumber1": 3,
+    "pageStatus": "no_table",
+    "tables": [],
+    "formulas": [],
+    "refusals": []
+  },
+  "qualification": {
+    "ok": true,
+    "pageIndex0": 2,
+    "pageNumber1": 3,
+    "pageStatus": "no_table",
+    "tables": [],
+    "formulas": [],
+    "refusals": []
+  }
+}

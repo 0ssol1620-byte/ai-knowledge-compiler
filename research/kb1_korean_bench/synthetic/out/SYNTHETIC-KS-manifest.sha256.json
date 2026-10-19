@@ -1,0 +1,58 @@
+{
+ "schema": "tavonel.kb1.synthetic_manifest.v1",
+ "label": "SYNTHETIC",
+ "synthetic": true,
+ "publishable": false,
+ "note": "KS is a harness control: never a headline, never a public number (design §4).",
+ "dataset_revision": "kb1-ks-synthetic-r1",
+ "seed": 20261017,
+ "generator": {
+  "path": "research/kb1_korean_bench/synthetic/generate.py",
+  "sha256_lf": "0d3b9177a373978343a6f299272ca9c155134e3d3ff4448f0d41330b467e6c0e"
+ },
+ "environment": {
+  "python": "3.13.0 (tags/v3.13.0:60403a5, Oct  7 2024, 09:38:07) [MSC v.1941 64 bit (AMD64)]",
+  "python_executable": "python.exe",
+  "pillow": "12.3.0",
+  "freetype2": "2.14.3",
+  "zlib": "1.3.1.zlib-ng",
+  "libjpeg": "8.0"
+ },
+ "fonts": [
+  {
+   "path": "C:\\Windows\\Fonts\\NotoSansKR-VF.ttf",
+   "sha256": "018174e8cdd366aff67c8d366c7dc806a7babbe7f2819fc23b00d59f7b8353d0",
+   "bytes": 10415532,
+   "licence_name_id_13": "This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software.",
+   "variation": {
+    "wght": 400
+   }
+  }
+ ],
+ "files": {
+  "SYNTHETIC-KS-p01-statute-table.png": {
+   "sha256": "bd1990f7d76d585ed13a69b4d81b35f253653737a5caa26106981f7a1c2dd8f1",
+   "bytes": 92574
+  },
+  "SYNTHETIC-KS-p02-vertical-hanja.png": {
+   "sha256": "4e96c793dd467f5119b7d50ce6b3801a42e1f118be1bfbea616d59aefd79382f",
+   "bytes": 86819
+  },
+  "SYNTHETIC-KS-p03-symbols.png": {
+   "sha256": "aa33639d6109dc259b396d9c58c2fb04b2837ed897fab1e6b4fff908eb609347",
+   "bytes": 58214
+  },
+  "SYNTHETIC-KS-p04-seal-approval.png": {
+   "sha256": "16c2896e62245fc24321996e6d88d6ce41c5eef06f28ece68acde3fdb1649191",
+   "bytes": 61107
+  },
+  "SYNTHETIC-KS-pages.pdf": {
+   "sha256": "58ce8fce63a6a97942055034114223d21d59670921add0195d6e7e00fee863c0",
+   "bytes": 376004
+  },
+  "SYNTHETIC-KS-gold.json": {
+   "sha256": "fc6f32fa532fb134d0a8a0001c9cda2cc91a7bd2f2850a6711b820b7ed73ec96",
+   "bytes": 28108
+  }
+ }
+}

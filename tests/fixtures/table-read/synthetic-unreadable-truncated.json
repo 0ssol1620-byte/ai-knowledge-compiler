@@ -1,0 +1,68 @@
+{
+  "synthetic": true,
+  "fixtureSchema": "tavonel.table_read_fixture.v1",
+  "note": "Synthetic. Written by hand for the table_read.v1 contract test; no document, reader or model produced it, and no number in it is a measurement.",
+  "purpose": "A page whose only table the reader refused because its output hit the token limit. Zero tables, zero cells; the refusal keeps the table's box.",
+  "expected": {
+    "sourceImmutableKey": "synthetic/table-read/source-0001/sanitized.pdf",
+    "inputSha256": "sha256:5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e",
+    "readerRevision": "sha256:7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a",
+    "readerBindingSha256": "sha256:b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1",
+    "pageIndex0": 1,
+    "ocrRegions": [
+      {
+        "regionId": "r-0101",
+        "pageIndex0": 1,
+        "text": "Next page text",
+        "bbox1000": [
+          100,
+          100,
+          900,
+          140
+        ]
+      }
+    ]
+  },
+  "document": {
+    "schemaVersion": "tavonel.table_read.v1",
+    "sourceImmutableKey": "synthetic/table-read/source-0001/sanitized.pdf",
+    "inputSha256": "sha256:5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e",
+    "readerRevision": "sha256:7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a",
+    "readerBindingSha256": "sha256:b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1",
+    "pageIndex0": 1,
+    "pageNumber1": 2,
+    "pageStatus": "unreadable",
+    "tables": [],
+    "formulas": [],
+    "refusals": [
+      {
+        "bbox1000": [
+          80,
+          180,
+          920,
+          700
+        ],
+        "reasonCode": "TABLE_OUTPUT_TRUNCATED"
+      }
+    ]
+  },
+  "qualification": {
+    "ok": true,
+    "pageIndex0": 1,
+    "pageNumber1": 2,
+    "pageStatus": "unreadable",
+    "tables": [],
+    "formulas": [],
+    "refusals": [
+      {
+        "bbox1000": [
+          80,
+          180,
+          920,
+          700
+        ],
+        "reasonCode": "TABLE_OUTPUT_TRUNCATED"
+      }
+    ]
+  }
+}
