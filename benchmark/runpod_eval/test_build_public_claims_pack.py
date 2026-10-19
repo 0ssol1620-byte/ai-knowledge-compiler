@@ -473,7 +473,7 @@ def test_every_shipped_digest_is_the_sha256_of_the_file_bytes() -> None:
 
 
 def _digest_mismatches(repository: Path, pack: dict[str, Any]) -> list[tuple[str, ...]]:
-    mismatched = []
+    mismatched: list[tuple[str, ...]] = []
     for claim in pack["claims"]:
         cited = [(claim.get("evidence"), claim.get("evidence_sha256"))] + [
             (declared["evidence"], declared["evidence_sha256"])
