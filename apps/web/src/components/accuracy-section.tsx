@@ -30,6 +30,8 @@ export function AccuracySection() {
   const corpus = claimFigure<CorpusScale>("corpus-scale");
   const rows = documentTypeRows();
   const [low, high] = accuracy.numbers.confidence_interval_95;
+  const { checks_passed: passed, checks_total: total } = accuracy.numbers;
+  const byCheck = `${passed.toLocaleString("en-US")}/${total.toLocaleString("en-US")} (${((passed / total) * 100).toFixed(1)}%)`;
 
   return (
     <section className="tv-accuracy" id="accuracy">
@@ -41,11 +43,16 @@ export function AccuracySection() {
       <div className="tv-accuracy-headline">
         <div className="tv-accuracy-figure">
           <strong>{accuracy.numbers.overall_percent}%</strong>
+          {/*
+            80.6 is the mean of the per-type pass rates, not a share of the
+            checks; by check it is 84.8%. The pack's must_say says both and
+            accuracy-section.test.tsx holds these captions to it.
+          */}
           <span>
-            {accuracy.numbers.benchmark} · {""}
-            {accuracy.numbers.checks_passed.toLocaleString("en-US")} of{" "}
-            {accuracy.numbers.checks_total.toLocaleString("en-US")} checks
+            {accuracy.numbers.benchmark} · unweighted mean of the pass rates of
+            the {rows.length} document types
           </span>
+          <span>Counted check by check, {byCheck}</span>
           <span>
             95% CI {low}–{high}
           </span>
@@ -53,9 +60,9 @@ export function AccuracySection() {
 
         {/*
           The pack's must_say, rendered from the pack rather than retyped. It
-          is the difference between a pass rate and a grade out of 100, and
-          between "accurate" and "72.3% of documents carry at least one
-          failure".
+          is the difference between a mean of per-type pass rates and a grade
+          out of 100, and between "accurate" and "72.3% of documents carry at
+          least one failure".
         */}
         <div className="tv-accuracy-context">
           {accuracy.context.map((sentence) => (

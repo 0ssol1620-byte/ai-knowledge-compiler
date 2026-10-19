@@ -18,10 +18,15 @@ import pack from "@/data/claims/public-claims-pack.json";
  *   completion-rate            99.98% is the share that produced output. It is
  *                              not accuracy, and calling it accuracy is listed
  *                              as forbidden.
- *   benchmark-accuracy         80.6% is a pass rate over 8,413 adversarial
- *                              checks. The top published system scores 83.1,
- *                              so the reference point is not 100, and 72.3% of
- *                              documents carry at least one failure.
+ *   benchmark-accuracy         80.6 is the unweighted mean of the pass rates
+ *                              of the 8 document types; counted check by
+ *                              check, 7,137/8,413 (84.8%) pass. The top
+ *                              published system scores 83.1, quoted from the
+ *                              public leaderboard and not reproduced by us, so
+ *                              the reference point is not 100. 72.3% of the
+ *                              documents in the campaign's failure study (the
+ *                              pack states the denominator) carry at least one
+ *                              failure.
  *   accuracy-by-document-type  the spread runs 99.0% to 36.9%. Omitting the
  *                              low-quality scan row is forbidden outright.
  *

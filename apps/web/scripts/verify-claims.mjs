@@ -5,9 +5,10 @@
  * The pack ships editorial rules alongside its numbers — `forbidden` phrasings
  * per claim, `must_say` context, and two claims marked `withheld`. Those rules
  * exist because the numbers are easy to misuse in specific, predictable ways: a
- * 99.98% completion rate reads as accuracy, an 80.6% pass rate reads as a grade
- * out of 100, and an average of 99.0%-to-36.9% reads as a promise to whoever is
- * scanning degraded paper.
+ * 99.98% completion rate reads as accuracy, 80.6 (the unweighted mean of the 8
+ * per-type pass rates, not the 7,137/8,413 (84.8%) check pass rate) reads as a
+ * grade out of 100, and an average of 99.0%-to-36.9% reads as a promise to
+ * whoever is scanning degraded paper.
  *
  * Left to review, those rules hold until someone writes a headline in a hurry.
  * So the mechanical half runs here:

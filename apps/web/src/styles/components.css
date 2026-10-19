@@ -224,12 +224,19 @@
     text-wrap: pretty;
   }
 
+  /* One path per row: several adjacent <code>s otherwise run together. */
   .tv-accuracy-evidence {
+    display: grid;
+    gap: var(--s-1);
     margin: var(--s-7) 0 0;
     color: var(--inst-ink-2);
     font-family: var(--font-mono);
     font-size: var(--fs-label);
     line-height: var(--lh-label);
+  }
+
+  .tv-accuracy-evidence code {
+    overflow-wrap: anywhere;
   }
 
   .tv-accuracy-evidence span {

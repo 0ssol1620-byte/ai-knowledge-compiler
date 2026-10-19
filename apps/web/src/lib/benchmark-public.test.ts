@@ -163,8 +163,9 @@ describe("homepage metric table", () => {
     }
   });
 
-  it("keeps the check pass rate off it too", () => {
-    // 80.6% measures something different from 94.2%, and the pack requires
+  it("keeps the olmOCR-Bench score off it too", () => {
+    // 80.6 (the mean of the 8 per-type pass rates) measures something
+    // different from 94.2%, and the pack requires
     // labelling which is which when both appear. They are kept apart instead.
     for (const row of homepageMetricRows()) {
       expect(row.status).not.toContain("80.6");
