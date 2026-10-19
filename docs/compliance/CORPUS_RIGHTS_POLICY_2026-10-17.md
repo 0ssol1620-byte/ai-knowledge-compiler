@@ -136,7 +136,7 @@ Neither tool was edited. Both were read at their pull-request heads.
 
 ### KB1 `research/kb1_korean_bench/rights_manifest.py` — Core PR #109
 
-Read at the head of PR #109 (open, not merged), `559aad611e76369d12e8e32f5dfc6a096344ee87` (branch `agent/kb1-korean-bench-20261017`,
+Read at the head of PR #109 (merged 2026-10-19 as `f421895`, head `559aad61`), `559aad611e76369d12e8e32f5dfc6a096344ee87` (branch `agent/kb1-korean-bench-20261017`,
 worktree `D:\CodexProjects\handoff-1002\core-KB`). The file's sha256 is in Sources. The tool reads a
 person's per-item input (`item_id`, `url`, `kogl_type`, `marking_scope`, `retrieved_on`, `sha256`,
 `family_id`, line 115) and gives each item a verdict of accept or reject. There is no third
@@ -161,7 +161,7 @@ verdict.
 
 ### Table lane `research/table_lane_shadow/run_shadow.py` — Core PR #112
 
-Read at the head of PR #112 (open, not merged), `4390083b1105d870ed77bb3fe9c96f5ad8ccb140` (branch `agent/table-lane-20261017`, worktree
+Read at the head of PR #112 (merged 2026-10-19 as `4b8f89d`, head `ab149f5c`), `4390083b1105d870ed77bb3fe9c96f5ad8ccb140` (branch `agent/table-lane-20261017`, worktree
 `D:\CodexProjects\handoff-1002\core-TB`, whose unpushed tip `ab149f5` has the same rights set). The
 harness takes a corpus-level label, `RIGHTS_STATUSES` = `synthetic`, `research_only_non_commercial`,
 `rights_to_confirm`, `customer_consented` (lines 66-67). It refuses one run that mixes rights statuses
