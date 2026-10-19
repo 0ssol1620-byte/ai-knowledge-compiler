@@ -531,10 +531,13 @@ def test_every_shipped_pack_carries_the_receipt_hash_of_its_own_content() -> Non
 
 
 def test_a_pack_edited_after_its_receipt_was_written_is_unsealed() -> None:
-    _, pack = _shipped_pack()
+    pack: dict[str, Any] = {
+        "claims": [{"id": "x", "declared_denominators": [{"numerator": 3, "denominator": 8}]}]
+    }
+    pack["receipt_sha256"] = _canonical_hash(pack)
     assert _sealed(pack)
-    claim = next(c for c in pack["claims"] if c.get("declared_denominators"))
-    claim["declared_denominators"][0]["numerator"] = 1
+
+    pack["claims"][0]["declared_denominators"][0]["numerator"] = 1
 
     assert not _sealed(pack)
     assert not _sealed({key: value for key, value in pack.items() if key != "receipt_sha256"})
