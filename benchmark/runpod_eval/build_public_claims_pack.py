@@ -166,12 +166,20 @@ def _declared_denominator(
     verify-claims refuses a withheld claim's numbers anywhere on the site, so
     the pack declares where this one may appear -- as this denominator, in the
     counted-rate form, from the artifact with this hash -- instead of the
-    script keeping an allowlist.
+    script keeping an allowlist. The declaration names the two fields it read,
+    and verify-claims reads them again from the hashed bytes, so a numerator
+    edited by hand together with its must_say fails there.
     """
     payload = _load(source)
     part, whole = payload[part_field], payload[whole_field]
     _count_rate(part, whole)
-    return {"numerator": part, "denominator": whole, **_evidence(repository, source)}
+    return {
+        "numerator": part,
+        "numerator_field": part_field,
+        "denominator": whole,
+        "denominator_field": whole_field,
+        **_evidence(repository, source),
+    }
 
 
 # \uff05 is the fullwidth percent sign a Korean IME types.

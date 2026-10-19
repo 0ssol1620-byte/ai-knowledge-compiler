@@ -164,10 +164,12 @@
       "declared_denominators": [
         {
           "denominator": 5116,
+          "denominator_field": "corpus_cases",
           "evidence": "docs/evidence/artifacts/folynta-blind-quality-detection-2026-08-08.json",
           "evidence_sha256": "sha256:287532aece64e8973bb95fe244c5cb41dc93517b683f24c7262ac547add6b3e7",
           "evidence_source": "benchmark/reports/generated/folynta-blind-quality-detection-2026-08-08.json",
-          "numerator": 3698
+          "numerator": 3698,
+          "numerator_field": "cases_with_official_failures"
         }
       ],
       "evidence": [
@@ -487,6 +489,6 @@
     "수치를 바꾸려면 이 파일이 아니라 근거 영수증을 다시 생성하십시오."
   ],
   "purpose": "웹사이트에 게시할 수 있는 주장과 게시할 수 없는 주장을 증거와 함께 구분합니다. 수치는 영수증에서 생성되며 손으로 수정해서는 안 됩니다.",
-  "receipt_sha256": "sha256:b42ec38348f222382a8d7432da783b97236e374196fa3947b38d1e3347d4fcbd",
+  "receipt_sha256": "sha256:0d095cf4022cea814e993b8407319cde7d5ae0137c8561b6c651bfcc67cd5497",
   "schema": "folynta.public-claims-pack.v1"
 }

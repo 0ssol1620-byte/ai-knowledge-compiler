@@ -16,27 +16,42 @@
  *   forbidden phrasing   the pack lists exact strings. Grep for them.
  *   withheld figures     a withheld claim's numbers appear nowhere — not in the
  *                        site's sources and not in a published claim's
- *                        headline, must_say, conditions or numbers — except
- *                        as a declared denominator of an approved claim's rate.
+ *                        headline, must_say, conditions or numbers, in any
+ *                        digit-group form — except as a declared denominator
+ *                        of an approved claim's rate.
  *   pack integrity       the file is generated; a hand-edit is a defect.
+ *
+ * "Any digit-group form": 5,116 reads the same written with a space, a no-break,
+ * narrow no-break or thin space, a period, an apostrophe or U+2019, an
+ * underscore, or in fullwidth digits. So the text and each rendering are folded
+ * the same way before matching — NFKC, then one separator between two digits is
+ * dropped — and the match stays a substring test. It over-matches on purpose:
+ * 5116 is found inside 15116, and a withheld decimal would fold to its bare
+ * digits. A false alarm fails the build where someone sees it; a miss
+ * publishes the number.
  *
  * The exception exists because two rules meet. Every rate carries its
  * denominator, and benchmark-accuracy's failure-study rate is written over the
  * corpus that blind-quality-detection, a withheld claim, also counts. So the
  * generator emits the count with the claim: `declared_denominators` lists each
- * {numerator, denominator} read from an artifact, with that artifact's path and
- * sha256. A withheld number is allowed only inside the counted rate
- * "numerator/denominator (" of an approved claim, only when the declaration's
- * hash is the withheld claim's own evidence hash and one the approved claim
- * cites, and a declaration that no must_say writes any more fails. There is no
- * allowlist in this script; the only way to allow a number is to regenerate
- * the pack with a declaration bound to its receipt.
+ * {numerator, denominator} read from an artifact, with the two fields it read
+ * and that artifact's path and sha256. A withheld number is allowed only inside
+ * the counted rate "numerator/denominator (" of an approved claim, only when
+ * the declaration's hash is the withheld claim's own evidence hash and one the
+ * approved claim cites, and a declaration that no must_say writes any more
+ * fails. The declaration is checked against its artifact, not trusted: the
+ * cited file must hash to the declared sha256 and its numerator_field and
+ * denominator_field must hold the declared counts, so a count edited together
+ * with the sentence that writes it fails here. There is no allowlist in this
+ * script. A hand-edit anywhere else in the pack fails the generator's tests,
+ * which recompute receipt_sha256 over both shipped copies.
  *
  * The half that cannot be grepped — whether a number appears *with* its
  * must_say — is enforced structurally instead: lib/claims.ts returns the two
  * together and the components take both. See the note there.
  */
 
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { globSync } from "node:fs";
 import path from "node:path";
@@ -60,13 +75,29 @@ const SOURCES = globSync("src/**/*.{ts,tsx,md,mdx,json}", { cwd: ROOT })
 
 const failures = [];
 
-function scan(needle, describe) {
-  for (const relative of SOURCES) {
-    const text = readFileSync(path.join(ROOT, relative), "utf8");
+/**
+ * One spelling for every way a number can be typed, applied to text and
+ * renderings alike: NFKC turns fullwidth digits into ASCII and a no-break,
+ * narrow no-break or thin space into a space, then a single separator between
+ * two digits goes. No digit is removed, so whatever the plain text matched, the
+ * folded text still matches.
+ */
+const fold = (text) =>
+  text.normalize("NFKC").replace(/(?<=\d)[    .,'’_](?=\d)/g, "");
+
+const TEXTS = SOURCES.map((relative) => {
+  const raw = readFileSync(path.join(ROOT, relative), "utf8");
+  return { relative, raw, folded: fold(raw) };
+});
+
+function scan(needle, describe, form = "raw") {
+  for (const file of TEXTS) {
+    const text = file[form];
     const index = text.indexOf(needle);
     if (index === -1) continue;
+    // fold() keeps every newline, so the line number holds in either form.
     const line = text.slice(0, index).split("\n").length;
-    failures.push(`${relative}:${line}  ${describe}`);
+    failures.push(`${file.relative}:${line}  ${describe}`);
   }
 }
 
@@ -84,9 +115,12 @@ for (const claim of pack.claims) {
 /* ── 2. withheld figures ─────────────────────────────────────────────────── */
 const asList = (value) => (value === undefined ? [] : [value].flat());
 const enUS = (value) => value.toLocaleString("en-US");
-/** Both plain and thousands-separated, since either could be typed. */
-const renderings = (value) =>
-  [String(value), enUS(value)].filter((rendering) => rendering.length >= 4);
+/** Plain and thousands-separated, folded: what fold() makes of any form typed. */
+const renderings = (value) => [
+  ...new Set(
+    [String(value), enUS(value)].filter((rendering) => rendering.length >= 4).map(fold),
+  ),
+];
 const counted = (declared) => `${enUS(declared.numerator)}/${enUS(declared.denominator)} (`;
 const leaves = (node) =>
   node !== null && typeof node === "object" ? Object.values(node).flatMap(leaves) : [node];
@@ -106,7 +140,14 @@ for (const held of pack.claims.filter((c) => c.status === "withheld")) {
     if (typeof value !== "number") continue;
     const exposes = `withheld claim ${held.id} exposes ${key}=`;
     const why = held.why_withheld ?? "not publishable";
-    for (const rendering of renderings(value)) scan(rendering, `${exposes}${rendering} — ${why}`);
+    for (const rendering of renderings(value)) {
+      scan(rendering, `${exposes}${rendering} — ${why}`, "folded");
+    }
+    const exposedIn = (leaf) =>
+      typeof leaf === "number"
+        ? leaf === value
+        : typeof leaf === "string" &&
+          renderings(value).some((rendering) => fold(leaf).includes(rendering));
 
     for (const claim of published) {
       const allowed = (claim.declared_denominators ?? []).filter(
@@ -117,9 +158,10 @@ for (const held of pack.claims.filter((c) => c.status === "withheld")) {
           asList(claim.evidence_sha256).includes(declared.evidence_sha256),
       );
       for (const [field, text] of publishedText(claim)) {
-        const rest = allowed.reduce(
-          (left, declared) => left.replaceAll(counted(declared), ""),
-          text,
+        // Only the exact counted rate the generator writes is allowed; the
+        // rest is folded, so a second spelling of the number is still found.
+        const rest = fold(
+          allowed.reduce((left, declared) => left.replaceAll(counted(declared), ""), text),
         );
         for (const rendering of renderings(value)) {
           if (!rest.includes(rendering)) continue;
@@ -129,7 +171,7 @@ for (const held of pack.claims.filter((c) => c.status === "withheld")) {
           );
         }
       }
-      if (renderings(value).length > 0 && leaves(claim.numbers).includes(value)) {
+      if (renderings(value).length > 0 && leaves(claim.numbers).some(exposedIn)) {
         failures.push(`public-claims-pack.json ${claim.id}.numbers  ${exposes}${value} — ${why}`);
       }
     }
@@ -146,6 +188,40 @@ for (const claim of published) {
             `${enUS(declared.denominator)} is declared but not written as ${counted(declared)}`,
         );
       }
+    }
+  }
+}
+
+// The declaration is the one allowance above, so it is read back from the
+// bytes it cites rather than trusted: the file must hash to the declared
+// digest, and the fields the generator read must still hold the counts.
+const REPOSITORY = path.resolve(ROOT, "../..");
+for (const claim of pack.claims) {
+  for (const declared of claim.declared_denominators ?? []) {
+    const where = `public-claims-pack.json ${claim.id}.declared_denominators`;
+    const file = path.join(REPOSITORY, String(declared.evidence));
+    if (typeof declared.evidence !== "string" || !existsSync(file)) {
+      failures.push(`${where}  cites ${declared.evidence}, which does not exist in this checkout`);
+      continue;
+    }
+    const bytes = readFileSync(file);
+    const digest = `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+    if (digest !== declared.evidence_sha256) {
+      failures.push(
+        `${where}  ${declared.evidence} hashes to ${digest}, not ${declared.evidence_sha256}`,
+      );
+      continue;
+    }
+    const artifact = JSON.parse(bytes.toString("utf8").replace(/^﻿/, ""));
+    for (const side of ["numerator", "denominator"]) {
+      const field = declared[`${side}_field`];
+      if (typeof field === "string" && Object.hasOwn(artifact, field)) {
+        if (artifact[field] === declared[side]) continue;
+      }
+      failures.push(
+        `${where}  ${side} ${declared[side]} is not what ${declared.evidence} holds ` +
+          `in ${field ?? "(no field named)"}`,
+      );
     }
   }
 }

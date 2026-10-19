@@ -2,6 +2,7 @@
 import { spawnSync } from "node:child_process";
 import {
   copyFileSync,
+  cpSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -25,14 +26,27 @@ import { afterEach, describe, expect, it } from "vitest";
  *
  * The script resolves everything from its own location, so each case copies it
  * into a throwaway apps/web whose src/ holds the pack and whatever the case
- * writes.
+ * writes, beside a copy of docs/evidence/artifacts for the declarations to be
+ * checked against.
+ *
+ * Review of #119, non-blocking 1, 2 and 4: a withheld number typed with a digit
+ * group separator other than a comma ("5 116", "5.116", fullwidth digits)
+ * passed; a declaration whose numerator was edited together with the must_say
+ * passed; and a string inside a published claim's numbers was never compared.
  */
 
 type Claim = Record<string, unknown> & { id: string };
 type Pack = { claims: Claim[] };
-type Declared = { denominator: number; evidence_sha256: string };
+type Declared = {
+  numerator: number;
+  numerator_field?: string;
+  denominator: number;
+  evidence: string;
+  evidence_sha256: string;
+};
 
 const WEB = fileURLToPath(new URL("../..", import.meta.url));
+const ARTIFACTS = path.resolve(WEB, "..", "..", "docs", "evidence", "artifacts");
 const SCRIPT = path.join(WEB, "scripts", "verify-claims.mjs");
 const PACK = path.join(WEB, "src", "data", "claims", "public-claims-pack.json");
 
@@ -61,9 +75,12 @@ afterEach(() => {
   for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true });
 });
 
-function verify(pack: Pack, sources: Record<string, string> = {}) {
+function verify(pack: Pack, sources: Record<string, string> = {}, artifacts = true) {
   const root = mkdtempSync(path.join(tmpdir(), "verify-claims-"));
   roots.push(root);
+  if (artifacts) {
+    cpSync(ARTIFACTS, path.join(root, "docs", "evidence", "artifacts"), { recursive: true });
+  }
   const web = path.join(root, "apps", "web");
   const files: Record<string, string> = {
     "src/data/claims/public-claims-pack.json": JSON.stringify(pack),
@@ -155,5 +172,114 @@ describe("verify-claims: withheld figures", () => {
 
     expect(result.status).toBe(1);
     expect(result.output).toContain("benchmark-accuracy.numbers");
+  });
+});
+
+/** Every way 5,116 can be typed and still read as 5,116. */
+const SEPARATED = [
+  ["an ASCII space", "5 116"],
+  ["a no-break space", "5 116"],
+  ["a narrow no-break space", "5 116"],
+  ["a thin space", "5 116"],
+  ["a period", "5.116"],
+  ["an apostrophe", "5'116"],
+  ["a right single quotation mark", "5’116"],
+  ["an underscore", "5_116"],
+  ["fullwidth digits", "５１１６"],
+  ["fullwidth digits and a fullwidth comma", "５，１１６"],
+] as const;
+
+describe("verify-claims: a withheld number in any digit-group form", () => {
+  it.each(SEPARATED)("fails it in a must_say when written with %s", (_, written) => {
+    const pack = shippedPack();
+    const accuracy = claim(pack, "benchmark-accuracy");
+    accuracy.must_say = `${accuracy.must_say as string} ${written}건.`;
+
+    const result = verify(pack);
+
+    expect(result.status).toBe(1);
+    expect(result.output).toMatch(/benchmark-accuracy\.must_say .*blind-quality-detection/);
+  });
+
+  it.each(SEPARATED)("fails it in a source comment when written with %s", (_, written) => {
+    const result = verify(shippedPack(), {
+      "src/lib/note.ts": `// the failure study scored ${written} documents\n`,
+    });
+
+    expect(result.status).toBe(1);
+    expect(result.output).toContain("src/lib/note.ts:1");
+  });
+
+  it("still over-matches: 5116 inside 15116 fails closed", () => {
+    const result = verify(shippedPack(), { "src/lib/note.ts": "// 15116\n" });
+
+    expect(result.status).toBe(1);
+    expect(result.output).toContain("src/lib/note.ts:1");
+  });
+
+  it.each(["3,698/5,116", "5 116 cases"])(
+    "fails it in a string inside a published claim's numbers: %s",
+    (written) => {
+      const pack = shippedPack();
+      const numbers = claim(pack, "benchmark-accuracy").numbers as Record<string, unknown>;
+      numbers.failure_study = written;
+
+      const result = verify(pack);
+
+      expect(result.status).toBe(1);
+      expect(result.output).toContain("benchmark-accuracy.numbers");
+    },
+  );
+});
+
+describe("verify-claims: a declaration is its artifact's own count", () => {
+  function declared(pack: Pack): Declared {
+    const [first] = declarations(pack);
+    if (!first) throw new Error("the shipped pack declares no denominator");
+    return first;
+  }
+
+  it("fails a numerator edited together with the must_say that writes it", () => {
+    const pack = shippedPack();
+    const accuracy = claim(pack, "benchmark-accuracy");
+    const declaration = declared(pack);
+    const before = `${declaration.numerator.toLocaleString("en-US")}/`;
+    declaration.numerator = 1;
+    for (const field of ["must_say", "must_say_en"]) {
+      accuracy[field] = (accuracy[field] as string).replace(before, "1/");
+    }
+
+    const result = verify(pack);
+
+    expect(result.status).toBe(1);
+    expect(result.output).toMatch(/benchmark-accuracy\.declared_denominators .*numerator 1 /);
+  });
+
+  it("fails a declaration that names no field to read its count from", () => {
+    const pack = shippedPack();
+    delete declared(pack).numerator_field;
+
+    const result = verify(pack);
+
+    expect(result.status).toBe(1);
+    expect(result.output).toMatch(/benchmark-accuracy\.declared_denominators .*numerator/);
+  });
+
+  it("fails a declaration whose file does not hash to its digest", () => {
+    const pack = shippedPack();
+    // Another file the claim cites, under the digest of the one it should be.
+    declared(pack).evidence = (claim(pack, "benchmark-accuracy").evidence as string[])[0] as string;
+
+    const result = verify(pack);
+
+    expect(result.status).toBe(1);
+    expect(result.output).toMatch(/benchmark-accuracy\.declared_denominators .*hashes to/);
+  });
+
+  it("fails a declaration whose artifact is not in the checkout", () => {
+    const result = verify(shippedPack(), {}, false);
+
+    expect(result.status).toBe(1);
+    expect(result.output).toMatch(/benchmark-accuracy\.declared_denominators .*does not exist/);
   });
 });
