@@ -1,0 +1,220 @@
+{
+  "label": "SYNTHETIC",
+  "note": "SYNTHETIC. The 'document' below is copied byte-for-value from the P2-19 tavonel.table_read.v1 contract fixture so the AT-6 test can show what a table page will look like once the table lane exists, and that this adapter refuses it. No reader produced it.",
+  "copied_from": {
+    "path": "D:/CodexProjects/handoff-1002/fnd-UX-tab/nextjs/lib/fixtures/table-read/synthetic-read-table-and-formula.json",
+    "commit": "922e950c",
+    "sha256": "sha256:dcc6b83578172b7c1bb089d7571f619c7e6e8653d063caa15f12c97958e10919",
+    "pointer": "/document"
+  },
+  "document": {
+    "schemaVersion": "tavonel.table_read.v1",
+    "sourceImmutableKey": "synthetic/table-read/source-0001/sanitized.pdf",
+    "inputSha256": "sha256:5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e",
+    "readerRevision": "sha256:7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a",
+    "readerBindingSha256": "sha256:b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1",
+    "pageIndex0": 0,
+    "pageNumber1": 1,
+    "pageStatus": "read",
+    "tables": [
+      {
+        "tableId": "t1",
+        "bbox1000": [
+          80,
+          180,
+          520,
+          330
+        ],
+        "rowCount": 3,
+        "columnCount": 2,
+        "headerRowCount": 1,
+        "cells": [
+          {
+            "cellId": "t1-c1",
+            "rowIndex0": 0,
+            "columnIndex0": 0,
+            "rowSpan": 1,
+            "columnSpan": 1,
+            "text": "Region",
+            "bbox1000": [
+              100,
+              200,
+              300,
+              240
+            ],
+            "confirmedBy": [
+              "r-0002"
+            ]
+          },
+          {
+            "cellId": "t1-c2",
+            "rowIndex0": 0,
+            "columnIndex0": 1,
+            "rowSpan": 1,
+            "columnSpan": 1,
+            "text": "Units",
+            "bbox1000": [
+              300,
+              200,
+              500,
+              240
+            ],
+            "confirmedBy": [
+              "r-0003"
+            ]
+          },
+          {
+            "cellId": "t1-c3",
+            "rowIndex0": 1,
+            "columnIndex0": 0,
+            "rowSpan": 1,
+            "columnSpan": 1,
+            "text": "North",
+            "bbox1000": [
+              100,
+              240,
+              300,
+              280
+            ],
+            "confirmedBy": [
+              "r-0004"
+            ]
+          },
+          {
+            "cellId": "t1-c4",
+            "rowIndex0": 1,
+            "columnIndex0": 1,
+            "rowSpan": 1,
+            "columnSpan": 1,
+            "text": "12",
+            "bbox1000": null,
+            "confirmedBy": [
+              "r-0005"
+            ]
+          },
+          {
+            "cellId": "t1-c5",
+            "rowIndex0": 2,
+            "columnIndex0": 0,
+            "rowSpan": 1,
+            "columnSpan": 1,
+            "text": "South",
+            "bbox1000": [
+              100,
+              280,
+              300,
+              320
+            ],
+            "confirmedBy": [
+              "r-0006"
+            ]
+          },
+          {
+            "cellId": "t1-c6",
+            "rowIndex0": 2,
+            "columnIndex0": 1,
+            "rowSpan": 1,
+            "columnSpan": 1,
+            "text": "7",
+            "bbox1000": null,
+            "confirmedBy": []
+          }
+        ],
+        "qualityFlags": []
+      }
+    ],
+    "formulas": [
+      {
+        "formulaId": "f1",
+        "bbox1000": [
+          100,
+          400,
+          600,
+          460
+        ],
+        "latex": "x = \\frac{a}{b}",
+        "display": "block"
+      }
+    ],
+    "refusals": []
+  },
+  "ocr_regions": [
+    {
+      "regionId": "r-0001",
+      "pageIndex0": 0,
+      "text": "Synthetic page heading",
+      "bbox1000": [
+        100,
+        100,
+        900,
+        140
+      ]
+    },
+    {
+      "regionId": "r-0002",
+      "pageIndex0": 0,
+      "text": "Region",
+      "bbox1000": [
+        100,
+        200,
+        300,
+        240
+      ]
+    },
+    {
+      "regionId": "r-0003",
+      "pageIndex0": 0,
+      "text": "Units",
+      "bbox1000": [
+        300,
+        200,
+        500,
+        240
+      ]
+    },
+    {
+      "regionId": "r-0004",
+      "pageIndex0": 0,
+      "text": "North",
+      "bbox1000": [
+        100,
+        240,
+        300,
+        280
+      ]
+    },
+    {
+      "regionId": "r-0005",
+      "pageIndex0": 0,
+      "text": "12",
+      "bbox1000": [
+        300,
+        240,
+        500,
+        280
+      ]
+    },
+    {
+      "regionId": "r-0006",
+      "pageIndex0": 0,
+      "text": "South",
+      "bbox1000": [
+        100,
+        280,
+        300,
+        320
+      ]
+    },
+    {
+      "regionId": "r-0101",
+      "pageIndex0": 1,
+      "text": "Next page text",
+      "bbox1000": [
+        100,
+        100,
+        900,
+        140
+      ]
+    }
+  ]
+}

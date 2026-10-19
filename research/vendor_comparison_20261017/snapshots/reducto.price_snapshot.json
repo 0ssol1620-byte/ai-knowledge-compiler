@@ -1,0 +1,50 @@
+{
+  "schema": "tavonel.vendor_comparison.price_snapshot.v1",
+  "protocol": "tavonel.vendor_comparison.v1",
+  "vendor": "reducto",
+  "arm_id": "D-V-reducto",
+  "price_point": "reducto_parse_default",
+  "price_point_definition": "/parse default, no options, synchronous call, no batch discount (COMPETITOR-PROTOCOL §2.1)",
+  "currency": "USD",
+  "captured_at": "2026-10-17T01:24:50.789Z",
+  "source": "vendor_public_web_pages",
+  "manifest": {
+    "file": "competitor-protocol-receipts/WEB-RECEIPTS-MANIFEST.json",
+    "sha256": "8b095f3801a545ce534ceef1ba3b4128e2b10032869a4d865bf1aeae384bb37c"
+  },
+  "prices": [
+    {
+      "name": "r1_parse_per_1000_pages",
+      "value": 10,
+      "unit": "usd_per_1000_pages",
+      "quoted_text": "Standard rates start at $10 per 1,000 pages for r-1 Parse",
+      "file": "competitor-protocol-receipts/web/reducto-pricing.html",
+      "url": "https://reducto.ai/pricing",
+      "sha256": "db2496594aabf5e779eec25e7826be12d8fbd359aba55f4672ff9498d264e667",
+      "fetched_at": "2026-10-17T01:24:50.789Z"
+    }
+  ],
+  "conditions": [
+    {
+      "note": "Not applied: the price point is a synchronous call.",
+      "quoted_text": "Batch processing (−20% on Parse and Extract)",
+      "file": "competitor-protocol-receipts/web/reducto-pricing.html",
+      "url": "https://reducto.ai/pricing",
+      "sha256": "db2496594aabf5e779eec25e7826be12d8fbd359aba55f4672ff9498d264e667",
+      "fetched_at": "2026-10-17T01:24:50.789Z"
+    }
+  ],
+  "terms": {
+    "quoted_text": "Access or use the Services for any competitive purpose.",
+    "file": "competitor-protocol-receipts/web/reducto-terms.html",
+    "url": "https://reducto.ai/terms",
+    "sha256": "919f09b87a532f6b55a95d32aceaba2d2fd8ef79c98d6ab4777f3a48981ea062",
+    "fetched_at": "2026-10-17T01:24:51.540Z"
+  },
+  "warnings": [
+    "List price quoted from the vendor's public web page on the fetched_at date. It is not an invoice, not a contract and not a measured cost.",
+    "Free usage, free pages and free credits are not applied (COMPETITOR-PROTOCOL §5).",
+    "Usable for a run only within 7 days of captured_at and only while terms.sha256 equals the sha256 the FD-1 receipt recorded. Before a run, re-fetch every page into a new WEB-RECEIPTS-MANIFEST and rebuild this file; validate.py refuses otherwise.",
+    "terms.quoted_text is the clause verbatim. It is not a legal reading; FD-1 is counsel's and the founder's decision (COMPETITOR-PROTOCOL §2.2, §8)."
+  ]
+}
