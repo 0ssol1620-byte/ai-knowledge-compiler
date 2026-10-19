@@ -14,10 +14,25 @@
  * So the mechanical half runs here:
  *
  *   forbidden phrasing   the pack lists exact strings. Grep for them.
- *   withheld figures     a withheld claim's numbers must appear nowhere.
+ *   withheld figures     a withheld claim's numbers appear nowhere — not in the
+ *                        site's sources and not in a published claim's
+ *                        headline, must_say, conditions or numbers — except
+ *                        as a declared denominator of an approved claim's rate.
  *   pack integrity       the file is generated; a hand-edit is a defect.
  *
- * The half that cannot be greppd — whether a number appears *with* its
+ * The exception exists because two rules meet. Every rate carries its
+ * denominator, and benchmark-accuracy's failure-study rate is written over the
+ * corpus that blind-quality-detection, a withheld claim, also counts. So the
+ * generator emits the count with the claim: `declared_denominators` lists each
+ * {numerator, denominator} read from an artifact, with that artifact's path and
+ * sha256. A withheld number is allowed only inside the counted rate
+ * "numerator/denominator (" of an approved claim, only when the declaration's
+ * hash is the withheld claim's own evidence hash and one the approved claim
+ * cites, and a declaration that no must_say writes any more fails. There is no
+ * allowlist in this script; the only way to allow a number is to regenerate
+ * the pack with a declaration bound to its receipt.
+ *
+ * The half that cannot be grepped — whether a number appears *with* its
  * must_say — is enforced structurally instead: lib/claims.ts returns the two
  * together and the components take both. See the note there.
  */
@@ -39,6 +54,7 @@ const SOURCES = globSync("src/**/*.{ts,tsx,md,mdx,json}", { cwd: ROOT })
   // Windows and the scanner reported the pack as violating itself.
   .map((file) => file.replaceAll("\\", "/"))
   // The pack states the forbidden phrasings, so of course it contains them.
+  // What it publishes is scanned field by field in section 2 instead.
   .filter((file) => !file.startsWith("src/data/claims/"))
   .filter((file) => !file.endsWith(".test.ts") && !file.endsWith(".test.tsx"));
 
@@ -66,18 +82,70 @@ for (const claim of pack.claims) {
 }
 
 /* ── 2. withheld figures ─────────────────────────────────────────────────── */
-for (const claim of pack.claims.filter((c) => c.status === "withheld")) {
-  const numbers = claim.numbers ?? {};
-  for (const [key, value] of Object.entries(numbers)) {
+const asList = (value) => (value === undefined ? [] : [value].flat());
+const enUS = (value) => value.toLocaleString("en-US");
+/** Both plain and thousands-separated, since either could be typed. */
+const renderings = (value) =>
+  [String(value), enUS(value)].filter((rendering) => rendering.length >= 4);
+const counted = (declared) => `${enUS(declared.numerator)}/${enUS(declared.denominator)} (`;
+const leaves = (node) =>
+  node !== null && typeof node === "object" ? Object.values(node).flatMap(leaves) : [node];
+
+const published = pack.claims.filter((claim) => claim.status !== "withheld");
+// What a published claim puts in front of a visitor, field by field.
+const publishedText = (claim) => [
+  ...["headline_ko", "headline_en", "must_say", "must_say_en"].map((field) => [
+    field,
+    claim[field] ?? "",
+  ]),
+  ...(claim.conditions ?? []).map((text, index) => [`conditions[${index}]`, text]),
+];
+
+for (const held of pack.claims.filter((c) => c.status === "withheld")) {
+  for (const [key, value] of Object.entries(held.numbers ?? {})) {
     if (typeof value !== "number") continue;
-    // Both plain and thousands-separated, since either could be typed.
-    for (const rendering of [String(value), value.toLocaleString("en-US")]) {
-      if (rendering.length < 4) continue;
-      scan(
-        rendering,
-        `withheld claim ${claim.id} exposes ${key}=${rendering} — ` +
-          `${claim.why_withheld ?? "not publishable"}`,
+    const exposes = `withheld claim ${held.id} exposes ${key}=`;
+    const why = held.why_withheld ?? "not publishable";
+    for (const rendering of renderings(value)) scan(rendering, `${exposes}${rendering} — ${why}`);
+
+    for (const claim of published) {
+      const allowed = (claim.declared_denominators ?? []).filter(
+        (declared) =>
+          claim.status === "approved" &&
+          declared.denominator === value &&
+          asList(held.evidence_sha256).includes(declared.evidence_sha256) &&
+          asList(claim.evidence_sha256).includes(declared.evidence_sha256),
       );
+      for (const [field, text] of publishedText(claim)) {
+        const rest = allowed.reduce(
+          (left, declared) => left.replaceAll(counted(declared), ""),
+          text,
+        );
+        for (const rendering of renderings(value)) {
+          if (!rest.includes(rendering)) continue;
+          failures.push(
+            `public-claims-pack.json ${claim.id}.${field}  ${exposes}${rendering} ` +
+              `outside a declared denominator — ${why}`,
+          );
+        }
+      }
+      if (renderings(value).length > 0 && leaves(claim.numbers).includes(value)) {
+        failures.push(`public-claims-pack.json ${claim.id}.numbers  ${exposes}${value} — ${why}`);
+      }
+    }
+  }
+}
+
+// A declaration no sentence uses is an allowance nobody needs; it goes.
+for (const claim of published) {
+  for (const declared of claim.declared_denominators ?? []) {
+    for (const field of ["must_say", "must_say_en"]) {
+      if (claim[field] && !claim[field].includes(counted(declared))) {
+        failures.push(
+          `public-claims-pack.json ${claim.id}.${field}  denominator ` +
+            `${enUS(declared.denominator)} is declared but not written as ${counted(declared)}`,
+        );
+      }
     }
   }
 }

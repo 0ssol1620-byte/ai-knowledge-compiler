@@ -155,6 +155,25 @@ def _count_rate(part: int, whole: int) -> str:
     return f"{part:,}/{whole:,} ({part / whole:.1%})"
 
 
+def _declared_denominator(
+    repository: Path, source: Path, part_field: str, whole_field: str
+) -> dict[str, Any]:
+    """A rate's counts, read from one artifact and bound to it by hash.
+
+    Every rate carries its denominator, and sometimes the denominator is a
+    number a withheld claim also states: benchmark-accuracy writes its
+    failure-study rate over the corpus that blind-quality-detection counts.
+    verify-claims refuses a withheld claim's numbers anywhere on the site, so
+    the pack declares where this one may appear -- as this denominator, in the
+    counted-rate form, from the artifact with this hash -- instead of the
+    script keeping an allowlist.
+    """
+    payload = _load(source)
+    part, whole = payload[part_field], payload[whole_field]
+    _count_rate(part, whole)
+    return {"numerator": part, "denominator": whole, **_evidence(repository, source)}
+
+
 # \uff05 is the fullwidth percent sign a Korean IME types.
 _RATE = re.compile(r"\d+(?:\.\d+)?\s*(?:%|\uff05|퍼센트|percent\b)", re.IGNORECASE)
 _COUNTED_RATE = re.compile(r"(\d[\d,]*)/(\d[\d,]*) \((\d+(?:\.\d+)?)%\)")
@@ -392,7 +411,10 @@ def build_claims(repository: Path) -> dict[str, Any]:
     olm_score = _olmocr_score_definition(olm_with)
     olm_overall = f"{olm_with['overall_score'] * 100:.1f}"
     olm_checks = _count_rate(olm_score["checks_passed"], olm_score["checks_total"])
-    failing_documents = _count_rate(blind["cases_with_official_failures"], blind["corpus_cases"])
+    failure_study = _declared_denominator(
+        repository, blind_path, "cases_with_official_failures", "corpus_cases"
+    )
+    failing_documents = _count_rate(failure_study["numerator"], failure_study["denominator"])
     # A quoted leaderboard row, not a result we reproduced; the sentence says so.
     published_top = max(
         row["overall"] for row in _load(leaderboard_path)["published_leaderboard"]["rows"]
@@ -635,6 +657,7 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 "campaign rather than olmOCR-Bench alone, so nothing here should "
                 "imply flawless output."
             ),
+            "declared_denominators": [failure_study],
             "forbidden": [
                 "정확도 100% / 무오류 / 완벽한 추출",
                 "80.6%를 단독 헤드라인으로 제시하고 유형별 편차를 생략하는 구성",
