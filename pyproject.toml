@@ -34,7 +34,7 @@ dependencies = [
   "opentelemetry-instrumentation-fastapi>=0.56b0,<1",
   "opentelemetry-sdk>=1.35,<2",
   "orjson>=3.11,<4",
-  "pillow>=12.3,<13",
+  "pillow>=12.3,<14",
   "prometheus-client>=0.22,<1",
   "pydantic==2.13.4",
   "pydantic-settings>=2.10,<3",
