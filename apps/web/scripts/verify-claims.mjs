@@ -28,12 +28,16 @@
  * matching — NFKC, then a thousands-grouped numeral loses its separators — and
  * the match stays a substring test against the plain and the folded spelling.
  * A numeral is thousands-grouped when it is one to three digits, then groups
- * of exactly three, every group joined by the same separator, and it is not
- * the head or tail of a longer chain of that separator: 1 005 116 folds, and
- * 2015.11.6, v5.1.16 and 1.5.116 are left as typed. It still over-matches on
- * purpose: 5116 is found inside 15116 and inside 5,116.0, and a withheld
- * decimal such as 0.723 also matches its bare digits. A false alarm fails the
- * build where someone sees it; a miss publishes the number.
+ * of exactly three, every group joined by the same separator. It folds
+ * wherever it stands, whatever sits beside it: 1 005 116, "In 2024 5 116",
+ * "3 698 5 116" and 2024.5.116 all hold 5116 once folded. A date or a version
+ * string is left as typed because its later parts are not three digits
+ * (2015.11.6, v5.1.16). A withheld decimal is also matched with a decimal
+ * comma (1234,5), which a de-DE or fr-FR grouping folds to. It still
+ * over-matches on purpose: 5116 is found inside 15116 and inside 5,116.0, a
+ * withheld decimal such as 0.723 also matches its bare digits, and a dotted
+ * chain with a three-digit part (v1.5.116, 10.5.116.2) folds too. A false
+ * alarm fails the build where someone sees it; a miss publishes the number.
  *
  * The exception exists because two rules meet. Every rate carries its
  * denominator, and benchmark-accuracy's failure-study rate is written over the
@@ -99,16 +103,11 @@ const failures = [];
  * everything the plain text matched.
  */
 const GROUPED =
-  /(?<!\d)\d{1,3}([ \t   .,'’_·٬])\d{3}(?:\1\d{3})*(?!\d|\1\d)/g;
-const fold = (text) => {
-  const normal = text.normalize("NFKC");
-  return normal.replace(GROUPED, (numeral, separator, at) =>
-    // The tail of a longer chain: 1.5.116 is not 1 and 5,116.
-    normal[at - 1] === separator && /\d/.test(normal[at - 2] ?? "")
-      ? numeral
-      : numeral.replaceAll(separator, ""),
-  );
-};
+  /(?<!\d)\d{1,3}([ \t   .,'’_·٬])\d{3}(?:\1\d{3})*(?!\d)/g;
+const fold = (text) =>
+  text
+    .normalize("NFKC")
+    .replace(GROUPED, (numeral, separator) => numeral.replaceAll(separator, ""));
 
 const TEXTS = SOURCES.map((relative) => {
   const raw = readFileSync(path.join(ROOT, relative), "utf8");
@@ -140,10 +139,13 @@ for (const claim of pack.claims) {
 /* ── 2. withheld figures ─────────────────────────────────────────────────── */
 const asList = (value) => (value === undefined ? [] : [value].flat());
 const enUS = (value) => value.toLocaleString("en-US");
-/** Plain and thousands-separated, as typed and folded: matched against folded text. */
+/**
+ * Plain, thousands-separated and with a decimal comma, as typed and folded:
+ * matched against folded text, where 1 234,5 and 1.234,5 are 1234,5.
+ */
 const renderings = (value) => [
   ...new Set(
-    [String(value), enUS(value)]
+    [String(value), enUS(value), String(value).replace(".", ",")]
       .filter((rendering) => rendering.length >= 4)
       .flatMap((rendering) => [rendering, fold(rendering)]),
   ),
