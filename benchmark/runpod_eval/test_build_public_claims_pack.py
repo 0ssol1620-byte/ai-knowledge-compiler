@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +33,7 @@ from build_public_claims_pack import (
     _group_metric,
     _olmocr_score_definition,
     _publish,
+    main,
     render_markdown,
 )
 
@@ -248,6 +250,15 @@ def test_a_declared_denominator_that_is_not_a_rate_is_refused(tmp_path: Path) ->
     study.write_text('{"failed": 9, "cases": 8}', encoding="utf-8")
     with pytest.raises(ValueError, match="is not a rate"):
         _declared_denominator(tmp_path, study, "failed", "cases")
+
+
+def test_a_declared_denominator_read_from_one_field_is_refused(tmp_path: Path) -> None:
+    # Review of #120 R18: 5,116/5,116 (100.0%) is a rate, and both of its
+    # counts read back correctly from corpus_cases, so only the fields show it.
+    study = tmp_path / "study.json"
+    study.write_text('{"failed": 3, "cases": 8}', encoding="utf-8")
+    with pytest.raises(ValueError, match="both read from 'cases'"):
+        _declared_denominator(tmp_path, study, "cases", "cases")
 
 
 def test_a_pending_claim_that_no_longer_needs_the_exemption_fails() -> None:
@@ -541,6 +552,31 @@ def test_a_pack_edited_after_its_receipt_was_written_is_unsealed() -> None:
 
     assert not _sealed(pack)
     assert not _sealed({key: value for key, value in pack.items() if key != "receipt_sha256"})
+
+
+def test_the_pack_and_its_markdown_are_written_as_lf_on_every_platform(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # git stores both as LF (`* text=auto eol=lf`). Written as CRLF on Windows,
+    # a regenerated pack matched the shipped one only after normalising line
+    # endings; written as LF, the comparison is byte for byte on any platform.
+    pack = {
+        "claim_count": 0,
+        "counts_by_status": {},
+        "how_to_use": ["a"],
+        "global_rules": ["b"],
+        "claims": [],
+    }
+    monkeypatch.setattr("build_public_claims_pack.build_claims", lambda repository: dict(pack))
+    output_json, output_markdown = tmp_path / "pack.json", tmp_path / "claims.md"
+    arguments = ["--repository-root", str(tmp_path), "--output-json", str(output_json)]
+    monkeypatch.setattr(sys, "argv", ["build", *arguments, "--output-markdown", str(output_markdown)])
+
+    assert main() == 0
+
+    for written in (output_json, output_markdown):
+        assert b"\n" in written.read_bytes()
+        assert b"\r" not in written.read_bytes()
 
 
 def _generated_receipt(repository: Path, payload: bytes) -> Path:

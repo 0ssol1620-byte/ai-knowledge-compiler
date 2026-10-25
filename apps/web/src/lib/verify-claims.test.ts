@@ -33,6 +33,11 @@ import { afterEach, describe, expect, it } from "vitest";
  * group separator other than a comma ("5 116", "5.116", fullwidth digits)
  * passed; a declaration whose numerator was edited together with the must_say
  * passed; and a string inside a published claim's numbers was never compared.
+ *
+ * Review of #120, residuals 1-3: a declaration that read both counts from one
+ * field ("5,116/5,116 (100.0%)") passed; an Arabic thousands separator, a
+ * middle dot and a tab were not separators; and a date or a version string
+ * such as 2015.11.6 or v5.1.16 folded to 5116 and failed the build.
  */
 
 type Claim = Record<string, unknown> & { id: string };
@@ -41,6 +46,7 @@ type Declared = {
   numerator: number;
   numerator_field?: string;
   denominator: number;
+  denominator_field?: string;
   evidence: string;
   evidence_sha256: string;
 };
@@ -185,6 +191,9 @@ const SEPARATED = [
   ["an apostrophe", "5'116"],
   ["a right single quotation mark", "5’116"],
   ["an underscore", "5_116"],
+  ["an Arabic thousands separator", "5٬116"],
+  ["a middle dot", "5·116"],
+  ["a tab", "5\t116"],
   ["fullwidth digits", "５１１６"],
   ["fullwidth digits and a fullwidth comma", "５，１１６"],
 ] as const;
@@ -215,6 +224,30 @@ describe("verify-claims: a withheld number in any digit-group form", () => {
 
     expect(result.status).toBe(1);
     expect(result.output).toContain("src/lib/note.ts:1");
+  });
+
+  it.each(["5,116.0", "5.116,0", "3.698 5.116", "1 005 116"])(
+    "still finds it inside a decimal, a longer numeral or beside another: %s",
+    (written) => {
+      const result = verify(shippedPack(), { "src/lib/note.ts": `// ${written}\n` });
+
+      expect(result.status).toBe(1);
+      expect(result.output).toContain("src/lib/note.ts:1");
+    },
+  );
+
+  // Only a thousands-grouped numeral folds: one to three digits, then groups of
+  // exactly three joined by one separator, not inside a longer chain of it.
+  it.each([
+    ["a Korean-style date", "2015.11.6"],
+    ["a version string", "v5.1.16"],
+    ["the tail of a longer dotted chain", "1.5.116"],
+    ["the head of a longer dotted chain", "5.116.2"],
+  ])("does not read %s as the number: %s", (_, written) => {
+    const result = verify(shippedPack(), { "src/lib/note.ts": `// released ${written}\n` });
+
+    expect(result.output).toContain("verify-claims: passed");
+    expect(result.status).toBe(0);
   });
 
   it.each(["3,698/5,116", "5 116 cases"])(
@@ -253,6 +286,62 @@ describe("verify-claims: a declaration is its artifact's own count", () => {
 
     expect(result.status).toBe(1);
     expect(result.output).toMatch(/benchmark-accuracy\.declared_denominators .*numerator 1 /);
+  });
+
+  /** Rewrite the counted rate both must_say fields write for the declaration. */
+  function rewriteRate(pack: Pack, rate: string) {
+    const accuracy = claim(pack, "benchmark-accuracy");
+    const { numerator, denominator } = declared(pack);
+    const written = `${numerator.toLocaleString("en-US")}/${denominator.toLocaleString("en-US")} (`;
+    for (const field of ["must_say", "must_say_en"]) {
+      const text = accuracy[field] as string;
+      const at = text.indexOf(written);
+      if (at === -1) throw new Error(`${field} does not write ${written}`);
+      accuracy[field] = text.slice(0, at) + rate + text.slice(text.indexOf(")", at) + 1);
+    }
+  }
+
+  it("fails a declaration that reads its numerator and denominator from one field", () => {
+    // Review of #120 R18: both counts read back correctly from corpus_cases.
+    const pack = shippedPack();
+    const declaration = declared(pack);
+    rewriteRate(pack, "5,116/5,116 (100.0%)");
+    declaration.numerator_field = declaration.denominator_field as string;
+    declaration.numerator = declaration.denominator;
+
+    const result = verify(pack);
+
+    expect(result.status).toBe(1);
+    expect(result.output).toMatch(/benchmark-accuracy\.declared_denominators .*both read from/);
+  });
+
+  it("fails a declaration whose numerator exceeds its denominator", () => {
+    // Review of #120 R17: a real field of the artifact, read back correctly.
+    const pack = shippedPack();
+    const declaration = declared(pack);
+    rewriteRate(pack, "42,506/5,116 (830.8%)");
+    declaration.numerator_field = "total_official_failure_records";
+    declaration.numerator = 42506;
+
+    const result = verify(pack);
+
+    expect(result.status).toBe(1);
+    expect(result.output).toMatch(/benchmark-accuracy\.declared_denominators .*is not a rate/);
+  });
+
+  it("fails a declaration whose denominator is not the field the withheld claim withholds", () => {
+    // The withheld claim names the field it withholds, from the artifact both
+    // cite. A declaration lets that number through only when it reads its
+    // denominator from that same field.
+    const pack = shippedPack();
+    const numbers = claim(pack, "blind-quality-detection").numbers as Record<string, unknown>;
+    numbers.documents_scored = numbers.corpus_cases;
+    delete numbers.corpus_cases;
+
+    const result = verify(pack);
+
+    expect(result.status).toBe(1);
+    expect(result.output).toMatch(/benchmark-accuracy\.must_say_en .*documents_scored/);
   });
 
   it("fails a declaration that names no field to read its count from", () => {
