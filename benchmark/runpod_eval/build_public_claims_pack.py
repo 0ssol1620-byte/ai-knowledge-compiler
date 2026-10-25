@@ -168,8 +168,11 @@ def _declared_denominator(
     counted-rate form, from the artifact with this hash -- instead of the
     script keeping an allowlist. The declaration names the two fields it read,
     and verify-claims reads them again from the hashed bytes, so a numerator
-    edited by hand together with its must_say fails there.
+    edited by hand together with its must_say fails there. One field read
+    twice would read back correctly too, so the two must differ.
     """
+    if part_field == whole_field:
+        raise ValueError(f"numerator and denominator are both read from {part_field!r}")
     payload = _load(source)
     part, whole = payload[part_field], payload[whole_field]
     _count_rate(part, whole)
@@ -181,6 +184,11 @@ def _declared_denominator(
         **_evidence(repository, source),
     }
 
+
+# benchmark-accuracy's failure-study rate: the fields of the blind-quality
+# artifact its numerator and denominator are read from. A test rebuilds the
+# shipped declaration from these and the committed artifact.
+FAILURE_STUDY_FIELDS = ("cases_with_official_failures", "corpus_cases")
 
 # \uff05 is the fullwidth percent sign a Korean IME types.
 _RATE = re.compile(r"\d+(?:\.\d+)?\s*(?:%|\uff05|퍼센트|percent\b)", re.IGNORECASE)
@@ -419,9 +427,7 @@ def build_claims(repository: Path) -> dict[str, Any]:
     olm_score = _olmocr_score_definition(olm_with)
     olm_overall = f"{olm_with['overall_score'] * 100:.1f}"
     olm_checks = _count_rate(olm_score["checks_passed"], olm_score["checks_total"])
-    failure_study = _declared_denominator(
-        repository, blind_path, "cases_with_official_failures", "corpus_cases"
-    )
+    failure_study = _declared_denominator(repository, blind_path, *FAILURE_STUDY_FIELDS)
     failing_documents = _count_rate(failure_study["numerator"], failure_study["denominator"])
     # A quoted leaderboard row, not a result we reproduced; the sentence says so.
     published_top = max(
@@ -988,11 +994,14 @@ def main() -> int:
     pack = build_claims(args.repository_root)
     pack["receipt_sha256"] = _canonical_hash(pack)
     args.output_json.parent.mkdir(parents=True, exist_ok=True)
+    # LF on every platform: git stores both as LF, so a regenerated pack is
+    # compared with the shipped one byte for byte, not up to line endings.
     args.output_json.write_text(
         json.dumps(pack, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
+        newline="\n",
     )
-    args.output_markdown.write_text(render_markdown(pack), encoding="utf-8")
+    args.output_markdown.write_text(render_markdown(pack), encoding="utf-8", newline="\n")
     print(
         json.dumps(
             {
