@@ -21,6 +21,7 @@ from build_public_claims_pack import (
     _BARE_RATE_PENDING,
     APPROVED,
     CONDITIONAL,
+    FAILURE_STUDY_FIELDS,
     WITHHELD,
     _canonical_hash,
     _check_evidence_is_bound,
@@ -541,6 +542,32 @@ def test_every_shipped_pack_carries_the_receipt_hash_of_its_own_content() -> Non
     assert unsealed == []
 
 
+def test_every_shipped_declaration_is_the_one_the_generator_reads() -> None:
+    # The receipt is a hash of the pack's own content, so an edit that
+    # recomputes it passes the test above. Review of #120 R18 did that with a
+    # declaration reading corpus_cases twice, which reads back correctly from
+    # the artifact. The fields are the generator's, so the shipped declaration
+    # is rebuilt from them and the committed artifact. evidence_source names
+    # the gitignored receipt the generator read, which a clone does not have.
+    def comparable(declared: dict[str, Any]) -> dict[str, Any]:
+        return {key: value for key, value in declared.items() if key != "evidence_source"}
+
+    for pack_path in SHIPPED_PACKS:
+        pack = json.loads((REPOSITORY / pack_path).read_bytes())
+        shipped = {
+            claim["id"]: claim["declared_denominators"]
+            for claim in pack["claims"]
+            if "declared_denominators" in claim
+        }
+        assert list(shipped) == ["benchmark-accuracy"], pack_path
+        [declared] = shipped["benchmark-accuracy"]
+        # A committed artifact, so rebuilding it can never publish a new one.
+        assert declared["evidence"].startswith("docs/evidence/artifacts/"), pack_path
+        source = REPOSITORY / declared["evidence"]
+        rebuilt = _declared_denominator(REPOSITORY, source, *FAILURE_STUDY_FIELDS)
+        assert comparable(declared) == comparable(rebuilt), pack_path
+
+
 def test_a_pack_edited_after_its_receipt_was_written_is_unsealed() -> None:
     pack: dict[str, Any] = {
         "claims": [{"id": "x", "declared_denominators": [{"numerator": 3, "denominator": 8}]}]
@@ -570,7 +597,8 @@ def test_the_pack_and_its_markdown_are_written_as_lf_on_every_platform(
     monkeypatch.setattr("build_public_claims_pack.build_claims", lambda repository: dict(pack))
     output_json, output_markdown = tmp_path / "pack.json", tmp_path / "claims.md"
     arguments = ["--repository-root", str(tmp_path), "--output-json", str(output_json)]
-    monkeypatch.setattr(sys, "argv", ["build", *arguments, "--output-markdown", str(output_markdown)])
+    arguments += ["--output-markdown", str(output_markdown)]
+    monkeypatch.setattr(sys, "argv", ["build", *arguments])
 
     assert main() == 0
 

@@ -22,13 +22,18 @@
  *   pack integrity       the file is generated; a hand-edit is a defect.
  *
  * "Any digit-group form": 5,116 reads the same written with a space, a no-break,
- * narrow no-break or thin space, a period, an apostrophe or U+2019, an
- * underscore, or in fullwidth digits. So the text and each rendering are folded
- * the same way before matching — NFKC, then one separator between two digits is
- * dropped — and the match stays a substring test. It over-matches on purpose:
- * 5116 is found inside 15116, and a withheld decimal would fold to its bare
- * digits. A false alarm fails the build where someone sees it; a miss
- * publishes the number.
+ * narrow no-break, thin, figure or ideographic space, a tab, a period, an
+ * apostrophe or U+2019, an underscore, a middle dot, an Arabic thousands
+ * separator (U+066C), or in fullwidth digits. So the text is folded before
+ * matching — NFKC, then a thousands-grouped numeral loses its separators — and
+ * the match stays a substring test against the plain and the folded spelling.
+ * A numeral is thousands-grouped when it is one to three digits, then groups
+ * of exactly three, every group joined by the same separator, and it is not
+ * the head or tail of a longer chain of that separator: 1 005 116 folds, and
+ * 2015.11.6, v5.1.16 and 1.5.116 are left as typed. It still over-matches on
+ * purpose: 5116 is found inside 15116 and inside 5,116.0, and a withheld
+ * decimal such as 0.723 also matches its bare digits. A false alarm fails the
+ * build where someone sees it; a miss publishes the number.
  *
  * The exception exists because two rules meet. Every rate carries its
  * denominator, and benchmark-accuracy's failure-study rate is written over the
@@ -38,13 +43,22 @@
  * and that artifact's path and sha256. A withheld number is allowed only inside
  * the counted rate "numerator/denominator (" of an approved claim, only when
  * the declaration's hash is the withheld claim's own evidence hash and one the
- * approved claim cites, and a declaration that no must_say writes any more
- * fails. The declaration is checked against its artifact, not trusted: the
- * cited file must hash to the declared sha256 and its numerator_field and
- * denominator_field must hold the declared counts, so a count edited together
- * with the sentence that writes it fails here. There is no allowlist in this
- * script. A hand-edit anywhere else in the pack fails the generator's tests,
- * which recompute receipt_sha256 over both shipped copies.
+ * approved claim cites, only when the declaration reads its denominator from
+ * the field the withheld claim withholds (its numbers key), and a declaration
+ * that no must_say writes any more fails. The declaration is checked against
+ * its artifact, not trusted: numerator_field and denominator_field must be two
+ * different fields, the counts must be a rate (0 <= numerator <= denominator,
+ * denominator > 0), the cited file must hash to the declared sha256, and the
+ * two fields must hold the declared counts. So a count edited together with
+ * the sentence that writes it fails here, and so does a declaration that reads
+ * both counts from corpus_cases ("5,116/5,116 (100.0%)"). There is no
+ * allowlist in this script.
+ *
+ * receipt_sha256 is a hash of the pack's own content, not a signature. The
+ * generator's tests recompute it over both shipped copies, which catches a
+ * hand-edit that leaves the old receipt in place; an edit that recomputes it
+ * passes that test and is caught only by the checks here and the generator's
+ * other tests, or not at all.
  *
  * The half that cannot be grepped — whether a number appears *with* its
  * must_say — is enforced structurally instead: lib/claims.ts returns the two
@@ -76,14 +90,25 @@ const SOURCES = globSync("src/**/*.{ts,tsx,md,mdx,json}", { cwd: ROOT })
 const failures = [];
 
 /**
- * One spelling for every way a number can be typed, applied to text and
- * renderings alike: NFKC turns fullwidth digits into ASCII and a no-break,
- * narrow no-break or thin space into a space, then a single separator between
- * two digits goes. No digit is removed, so whatever the plain text matched, the
- * folded text still matches.
+ * One spelling for every way a number can be typed: NFKC turns fullwidth
+ * digits into ASCII and a no-break, narrow no-break, thin, figure or
+ * ideographic space into a space, then a thousands-grouped numeral (see the
+ * header) loses its separators. Only separators inside such a numeral go, so a
+ * plain 5116 or 5,116 is either left as typed or folded to a string that
+ * contains 5116: matching both spellings against the folded text finds
+ * everything the plain text matched.
  */
-const fold = (text) =>
-  text.normalize("NFKC").replace(/(?<=\d)[    .,'’_](?=\d)/g, "");
+const GROUPED =
+  /(?<!\d)\d{1,3}([ \t   .,'’_·٬])\d{3}(?:\1\d{3})*(?!\d|\1\d)/g;
+const fold = (text) => {
+  const normal = text.normalize("NFKC");
+  return normal.replace(GROUPED, (numeral, separator, at) =>
+    // The tail of a longer chain: 1.5.116 is not 1 and 5,116.
+    normal[at - 1] === separator && /\d/.test(normal[at - 2] ?? "")
+      ? numeral
+      : numeral.replaceAll(separator, ""),
+  );
+};
 
 const TEXTS = SOURCES.map((relative) => {
   const raw = readFileSync(path.join(ROOT, relative), "utf8");
@@ -115,10 +140,12 @@ for (const claim of pack.claims) {
 /* ── 2. withheld figures ─────────────────────────────────────────────────── */
 const asList = (value) => (value === undefined ? [] : [value].flat());
 const enUS = (value) => value.toLocaleString("en-US");
-/** Plain and thousands-separated, folded: what fold() makes of any form typed. */
+/** Plain and thousands-separated, as typed and folded: matched against folded text. */
 const renderings = (value) => [
   ...new Set(
-    [String(value), enUS(value)].filter((rendering) => rendering.length >= 4).map(fold),
+    [String(value), enUS(value)]
+      .filter((rendering) => rendering.length >= 4)
+      .flatMap((rendering) => [rendering, fold(rendering)]),
   ),
 ];
 const counted = (declared) => `${enUS(declared.numerator)}/${enUS(declared.denominator)} (`;
@@ -154,6 +181,7 @@ for (const held of pack.claims.filter((c) => c.status === "withheld")) {
         (declared) =>
           claim.status === "approved" &&
           declared.denominator === value &&
+          declared.denominator_field === key &&
           asList(held.evidence_sha256).includes(declared.evidence_sha256) &&
           asList(claim.evidence_sha256).includes(declared.evidence_sha256),
       );
@@ -193,12 +221,23 @@ for (const claim of published) {
 }
 
 // The declaration is the one allowance above, so it is read back from the
-// bytes it cites rather than trusted: the file must hash to the declared
-// digest, and the fields the generator read must still hold the counts.
+// bytes it cites rather than trusted: two different fields, a rate, a file
+// that hashes to the declared digest, and fields that still hold the counts.
+// Reading one field twice reads back correctly (review of #120 R18), so the
+// fields have to differ.
 const REPOSITORY = path.resolve(ROOT, "../..");
 for (const claim of pack.claims) {
   for (const declared of claim.declared_denominators ?? []) {
     const where = `public-claims-pack.json ${claim.id}.declared_denominators`;
+    const { numerator, denominator } = declared;
+    if (declared.numerator_field === declared.denominator_field) {
+      failures.push(
+        `${where}  numerator and denominator are both read from ${declared.denominator_field}`,
+      );
+    }
+    if (!(0 <= numerator && numerator <= denominator && 0 < denominator)) {
+      failures.push(`${where}  ${numerator}/${denominator} is not a rate`);
+    }
     const file = path.join(REPOSITORY, String(declared.evidence));
     if (typeof declared.evidence !== "string" || !existsSync(file)) {
       failures.push(`${where}  cites ${declared.evidence}, which does not exist in this checkout`);
