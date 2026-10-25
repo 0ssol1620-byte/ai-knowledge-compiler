@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 ARG MODEL_REVISION=1111111111111111111111111111111111111111
 
-FROM python:3.12-slim-bookworm@sha256:d50fb7611f86d04a3b0471b46d7557818d88983fc3136726336b2a4c657aa30b AS local
+FROM python:3.15-slim-bookworm@sha256:575f8bc12ec26542e0678bc6b60e385218248019d433157ec327264a78c3a853 AS local
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends libpcre2-8-0 \
     && rm -rf /var/lib/apt/lists/*
