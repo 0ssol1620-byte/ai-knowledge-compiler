@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.7
-FROM python:3.13-slim-bookworm@sha256:9d7f287598e1a5a978c015ee176d8216435aaf335ed69ac3c38dd1bbb10e8d64 AS builder
+FROM python:3.15-slim-bookworm@sha256:575f8bc12ec26542e0678bc6b60e385218248019d433157ec327264a78c3a853 AS builder
 
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
@@ -17,7 +17,7 @@ RUN python -m pip install "uv==0.12.0" \
     && python -m uv sync --locked --no-dev --no-editable \
     && python -m uv pip check --python /build/.venv/bin/python
 
-FROM python:3.13-slim-bookworm@sha256:9d7f287598e1a5a978c015ee176d8216435aaf335ed69ac3c38dd1bbb10e8d64 AS runtime
+FROM python:3.15-slim-bookworm@sha256:575f8bc12ec26542e0678bc6b60e385218248019d433157ec327264a78c3a853 AS runtime
 RUN apt-get update \
     && apt-get install --yes --no-install-recommends libpcre2-8-0 \
     && rm -rf /var/lib/apt/lists/*
