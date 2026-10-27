@@ -54,6 +54,7 @@ from akc_cir.semantic_diff import (
     diff_documents,
 )
 from akc_domain_packs import ArchitecturePlan, ArchitectureProfile, plan_architecture
+from pydantic import BaseModel
 
 from .contracts import (
     CandidateArtifact,
@@ -157,16 +158,14 @@ def _json_bytes(value: object) -> bytes:
 
 
 def _wire_numbers(value: Any) -> Any:
-    """Write an integral float the way the caller re-serialises it: `1`, not `1.0`.
+    """Write an integral float as an int: `1`, not `1.0`.
 
-    The site verifies `outputSha256` over its own canonical form of the parsed response, and a
-    JavaScript number has no `1.0`. Hashed as Python writes it, any integral float in the
-    candidate -- `authorityScore` 1.0 for official sources, 0.0 for unclassified ones, an OCR
-    confidence of 1.0 -- made the receipt disagree with the World it describes
-    (CORE_V2_RECEIPT_INVALID). The value is unchanged; only its spelling in the digest is.
+    Any integral float in the candidate -- `authorityScore` 1.0 for official sources, 0.0 for
+    unclassified ones, an OCR confidence of 1.0 -- is spelled `1`. The value is unchanged; only
+    its spelling is. Apply it through `wire_payload`, so the digest and the wire never differ.
     """
-    # ponytail: integral floats only; exponent spelling (1e-07 vs 1e-7) is not normalised,
-    # add it if a score or confidence below 1e-4 ever reaches the candidate.
+    # ponytail: integral floats only; exponent spelling (1e-07 vs 1e-7) is not normalised. The
+    # wire carries the digest's own spelling, so the site's wire-preserving check agrees.
     if isinstance(value, float) and value.is_integer() and abs(value) < 2**53:
         return int(value)
     if isinstance(value, dict):
@@ -174,6 +173,19 @@ def _wire_numbers(value: Any) -> Any:
     if isinstance(value, list):
         return [_wire_numbers(item) for item in value]
     return value
+
+
+def wire_payload(model: BaseModel) -> dict[str, Any]:
+    """`model` exactly as Core hashes it and as it goes on the wire.
+
+    The site verifies `outputSha256` over the candidate as it arrives, number tokens unchanged
+    (Foundation `canonicalJsonWireField`). The receipt digest and the `/v2/compile` body both
+    come from here: a candidate hashed as `1` but sent as `1.0` is CORE_V2_RECEIPT_INVALID.
+    """
+    payload: dict[str, Any] = _wire_numbers(
+        model.model_dump(mode="json", by_alias=True, exclude_none=True)
+    )
+    return payload
 
 
 def _shape(units: Iterable[UnitSnapshot]) -> DocumentShape:
@@ -520,9 +532,7 @@ class ProductCoreCompiler:
             recompilation=plan.as_record(),
             review_reasons=tuple(sorted(set(review_reasons))),
         )
-        candidate_bytes = _json_bytes(
-            _wire_numbers(candidate.model_dump(mode="json", by_alias=True, exclude_none=True))
-        )
+        candidate_bytes = _json_bytes(wire_payload(candidate))
         artifact_rows = self._candidate_artifacts(
             canonical_documents,
             knowledge_model,

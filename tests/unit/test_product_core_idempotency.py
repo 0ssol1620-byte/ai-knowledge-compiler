@@ -138,9 +138,12 @@ def test_receipt_digest_matches_the_sites_form_when_scores_and_confidence_are_in
     status, payload = _post(_client(), "attempt-1", body.encode())
 
     assert status == 200
-    python_form = sha256_digest(canonical_json(payload["candidate"]))
+    wire_form = canonical_json(payload["candidate"])
     receipt = payload["receipt"]
     assert isinstance(receipt, dict)
-    assert '"authorityScore":1.0' in canonical_json(payload["candidate"])
+    # Sent as hashed: the wire spells the integral scores `1`, so the candidate as it arrived
+    # is the receipted one (test_product_core_receipt_wire checks the site's exact rule).
+    assert '"authorityScore":1.0' not in wire_form
+    assert '"authorityScore":1,' in wire_form or '"authorityScore":1}' in wire_form
     assert receipt["outputSha256"] == _site_digest(payload["candidate"])
-    assert receipt["outputSha256"] != python_form
+    assert receipt["outputSha256"] == sha256_digest(wire_form)

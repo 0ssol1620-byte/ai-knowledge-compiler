@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
 from .auth import ProductCoreAuthenticationError, verify_product_core_request
-from .compiler import ProductCoreCompiler
+from .compiler import ProductCoreCompiler, wire_payload
 from .contracts import ProductCoreCompileRequest, ProductCoreCompileResponse
 
 MAX_REQUEST_BYTES = 32 * 1024 * 1024
@@ -116,7 +116,7 @@ class ProductCoreService:
                         )
                     }
                 )
-                return 200, replay.model_dump(mode="json", by_alias=True, exclude_none=True)
+                return 200, wire_payload(replay)
             try:
                 response = self.compiler.compile(
                     compile_request,
@@ -125,7 +125,8 @@ class ProductCoreService:
             except ValueError as exc:
                 return 422, {"code": "CORE_COMPILE_REJECTED", "reason": str(exc)}
             self._cache[cache_key] = _CachedResponse(work_sha256=work_sha256, response=response)
-            return 200, response.model_dump(mode="json", by_alias=True, exclude_none=True)
+            # The bytes the receipt digest was computed over: the site hashes them as sent.
+            return 200, wire_payload(response)
 
 
 def create_product_core_app(
