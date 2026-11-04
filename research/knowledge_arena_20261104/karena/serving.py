@@ -234,10 +234,17 @@ def wait_until_ready(
     *,
     deadline_seconds: float,
     progress: Any,
+    check: Any = None,
 ) -> tuple[str, tuple[str, ...]]:
-    """The Arena's readiness poll, unchanged, with this pod's status and log readers."""
+    """The Arena's readiness poll, unchanged, with this pod's status and log readers.
+
+    ``check`` runs before every poll (STOP file, budget); an exception from it ends
+    the wait and the caller deletes the pod.
+    """
 
     def status() -> str | None:
+        if check is not None:
+            check()
         current = client.get_pod(pod.pod_id)
         if current is None:
             return POD_MISSING

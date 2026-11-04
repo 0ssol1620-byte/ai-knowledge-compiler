@@ -24,7 +24,11 @@ RETRY_STATUSES: Final = frozenset({429, 500, 502, 503, 504})
 
 
 class FetchError(RuntimeError):
-    pass
+    """``status`` is the HTTP answer, or None for transport/offline failures."""
+
+    def __init__(self, message: str, status: int | None = None) -> None:
+        super().__init__(message)
+        self.status = status
 
 
 @dataclass(frozen=True, slots=True)
@@ -132,5 +136,5 @@ class Fetcher:
             if response.status_code in RETRY_STATUSES and attempt < 2:
                 time.sleep(5.0 * (attempt + 1))
                 continue
-            raise FetchError(f"{url}: HTTP {response.status_code}")
+            raise FetchError(f"{url}: HTTP {response.status_code}", response.status_code)
         raise FetchError(f"{url}: gave up")  # pragma: no cover - loop always returns or raises

@@ -80,13 +80,22 @@ def test_grounded_answer_citations_abstention_and_unsupported_claims() -> None:
             "excerpts": excerpts,
             "output": {"status": "ABSTAINED", "claims": []},
         },
+        {
+            # answering an unanswerable question: its citation is a false positive
+            "truth": {"answerable": False, "value": None, "citation_ids": []},
+            "excerpts": excerpts,
+            "output": {
+                "status": "ANSWERED",
+                "claims": [{"value": 10, "citations": ["E1"], "quote": "Revenue was 10"}],
+            },
+        },
     ]
     scores = ev.grounded_answer_scores(rows)
     assert scores["answer_exact_match"]["point"] == pytest.approx(0.5)
-    assert scores["citations"]["precision"] == {"value": pytest.approx(1 / 3), "tp": 1, "fp": 2}
+    assert scores["citations"]["precision"] == {"value": pytest.approx(1 / 4), "tp": 1, "fp": 3}
     assert scores["citations"]["recall"]["value"] == pytest.approx(0.5)
-    assert scores["abstained_when_unanswerable"] == {"count": 1, "of": 1}
-    assert scores["unsupported_claims"] == {"count": 1, "of": 2}
+    assert scores["abstained_when_unanswerable"] == {"count": 1, "of": 2}
+    assert scores["unsupported_claims"] == {"count": 1, "of": 3}
 
 
 def test_schema_induction_scores_and_recall_not_estimated_without_reference() -> None:

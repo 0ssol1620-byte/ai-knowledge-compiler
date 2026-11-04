@@ -28,6 +28,7 @@ def main(argv: list[str] | None = None) -> int:
     stage0 = sub.add_parser("stage0", help="Stage 0 smoke for one candidate")
     stage0.add_argument("--model", required=True)
     stage0.add_argument("--execute", action="store_true")
+    stage0.add_argument("--allow-dirty", action="store_true")
     stage0.add_argument("--budget", type=float, default=60.0)
     stage0.add_argument("--cloud", default="SECURE", choices=("SECURE", "COMMUNITY"))
     score = sub.add_parser("score", help="re-score a run directory offline")
@@ -70,7 +71,13 @@ def main(argv: list[str] | None = None) -> int:
         from karena.stage0 import run_stage0
 
         print(
-            run_stage0(args.model, execute=args.execute, budget_usd=args.budget, cloud=args.cloud)
+            run_stage0(
+                args.model,
+                execute=args.execute,
+                budget_usd=args.budget,
+                cloud=args.cloud,
+                allow_dirty=args.allow_dirty,
+            )
         )
     elif args.command == "score":
         from karena.stage0 import score_run

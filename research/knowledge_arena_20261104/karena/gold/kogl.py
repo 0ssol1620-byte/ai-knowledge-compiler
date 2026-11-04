@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import html
 import re
+from collections import Counter
 from collections.abc import Iterator
 from typing import Final
 
@@ -45,7 +46,10 @@ def pdf_text(data: bytes) -> str:
         document.close()
 
 
-def kogl_press_releases(fetcher: Fetcher, *, list_pages: int, limit: int) -> Iterator[Document]:
+def kogl_press_releases(
+    fetcher: Fetcher, *, list_pages: int, limit: int, drops: Counter[str] | None = None
+) -> Iterator[Document]:
+    skipped: Counter[str] = Counter() if drops is None else drops
     produced = 0
     for page_index in range(1, list_pages + 1):
         listing = fetcher.get(f"{BASE}/briefing/pressReleaseList.do?pageIndex={page_index}")
@@ -56,21 +60,26 @@ def kogl_press_releases(fetcher: Fetcher, *, list_pages: int, limit: int) -> Ite
             try:
                 page = fetcher.get(url)
             except FetchError:
+                skipped["kogl:view_fetch_failed"] += 1
                 continue
             body = page.text()
             if f'alt="{KOGL_TYPE1_MARK}"' not in body:
+                skipped["kogl:no_type1_mark"] += 1
                 continue
             link = PDF_LINK.search(body)
             ministry = MINISTRY.search(body)
             if link is None or ministry is None:
+                skipped["kogl:no_pdf_or_ministry"] += 1
                 continue
             pdf_url = BASE + html.unescape(link.group(1))
             try:
                 pdf = fetcher.get(pdf_url)
                 text = pdf_text(pdf.read())
             except (FetchError, pdfium.PdfiumError):
+                skipped["kogl:pdf_failed"] += 1
                 continue
             if len(text.strip()) < 300:
+                skipped["kogl:too_short"] += 1
                 continue
             title = re.search(r"<title>(.*?)</title>", body, re.S)
             yield Document(

@@ -30,6 +30,9 @@ def frozen_paths() -> list[Path]:
     paths = sorted((NAMESPACE_ROOT / "prompt_registry").glob("*.txt"))
     paths += sorted((NAMESPACE_ROOT / "schemas").glob("*.json"))
     paths.append(NAMESPACE_ROOT / "config" / "tasks.json")
+    paths.append(NAMESPACE_ROOT / "config" / "model_candidates.json")
+    # The code that renders, serves, normalises and scores is part of what is measured.
+    paths += sorted((NAMESPACE_ROOT / "karena").rglob("*.py"))
     paths += [
         NAMESPACE_ROOT / "cases" / f"{task}.{split}.jsonl"
         for task in ("doc_type", "schema_induction", "typed_extraction", "grounded_answer")

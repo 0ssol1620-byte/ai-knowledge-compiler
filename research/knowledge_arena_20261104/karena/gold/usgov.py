@@ -8,6 +8,7 @@ no annotation and carries no judgement of ours.
 from __future__ import annotations
 
 import json
+from collections import Counter
 from collections.abc import Iterator
 from typing import Any, Final
 from urllib.parse import urlencode
@@ -63,8 +64,15 @@ def family_of(item: dict[str, Any]) -> str:
 
 
 def fr_documents(
-    fetcher: Fetcher, type_code: str, *, start: str, end: str, limit: int
+    fetcher: Fetcher,
+    type_code: str,
+    *,
+    start: str,
+    end: str,
+    limit: int,
+    drops: Counter[str] | None = None,
 ) -> Iterator[Document]:
+    skipped: Counter[str] = Counter() if drops is None else drops
     produced = 0
     for page in range(1, 6):
         body = json.loads(fetcher.get(fr_search_url(type_code, start, end, page)).text())
@@ -73,13 +81,16 @@ def fr_documents(
                 return
             raw_url = item.get("raw_text_url")
             if not raw_url:
+                skipped["fr:no_raw_text_url"] += 1
                 continue
             try:
                 fetched = fetcher.get(raw_url)
             except FetchError:
+                skipped["fr:fetch_failed"] += 1
                 continue
             text = html_to_text(fetched.text()).text.strip()
             if len(text) < 500:
+                skipped["fr:too_short"] += 1
                 continue
             yield Document(
                 doc_id=f"fr:{item['document_number']}",

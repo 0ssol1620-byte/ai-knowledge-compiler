@@ -14,7 +14,7 @@ over the same cache produces byte-identical case files.
 
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Final
@@ -151,6 +151,7 @@ def build_gold(fetcher: Fetcher, config: BuildConfig) -> dict[str, Any]:
         "drops": {},
     }
     documents, facts = _sec(fetcher, config, receipt)
+    skipped: Counter[str] = Counter()
     for type_code in usgov.FR_TYPES:
         pool = list(
             usgov.fr_documents(
@@ -159,6 +160,7 @@ def build_gold(fetcher: Fetcher, config: BuildConfig) -> dict[str, Any]:
                 start=config.fr_window[0],
                 end=config.fr_window[1],
                 limit=config.fr_per_type,
+                drops=skipped,
             )
         )
         documents += [
@@ -167,13 +169,17 @@ def build_gold(fetcher: Fetcher, config: BuildConfig) -> dict[str, Any]:
         ]
     pool = list(
         kogl.kogl_press_releases(
-            fetcher, list_pages=config.kogl_list_pages, limit=config.kogl_limit
+            fetcher,
+            list_pages=config.kogl_list_pages,
+            limit=config.kogl_limit,
+            drops=skipped,
         )
     )
     documents += [
         Document.from_dict({**d.to_dict(), "text": tidy(d.text)})
         for d in _fill(pool, config.kogl_quota)
     ]
+    receipt["drops"].update(skipped)
     gold_dir = NAMESPACE_ROOT / "gold"
     receipt["documents_sha256"] = write_jsonl(
         gold_dir / "documents.jsonl", (d.to_dict() for d in documents)

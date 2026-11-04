@@ -15,8 +15,8 @@ from arena.provider.worker_client import WorkerHTTPError
 from karena import freeze as freeze_module
 from karena import table_track
 from karena.corpus import Case
-from karena.serving import ChatResult, LlmPodSpec, VllmEndpoint, vllm_args
-from karena.stage0 import Guard, StopRun, run_tasks
+from karena.serving import ChatResult, LlmPodSpec, VllmEndpoint, vllm_args, wait_until_ready
+from karena.stage0 import Guard, StopRun, ledger_problem, require_runnable, run_tasks
 from karena.tasks import load_task
 
 ROW = {
@@ -278,3 +278,75 @@ def test_numeric_cells_exact_multiset() -> None:
     assert table_track.numeric_cell_match(gold, None)["matched"] == 0
     swapped = gold.replace("(56)", "56")
     assert table_track.numeric_cell_match(gold, swapped)["matched"] == 1
+
+
+def _runnable_row(**changes: Any) -> dict[str, Any]:
+    row: dict[str, Any] = {
+        "model_key": "m",
+        "role": "CANDIDATE",
+        "gated": False,
+        "licences": {"weights": {"status": "DECLARED_NOT_REVIEWED"}},
+    }
+    row.update(changes)
+    return row
+
+
+def test_paid_run_refuses_gated_weights_dirty_tree_and_non_candidates() -> None:
+    clean = {"harness_dirty": []}
+    require_runnable(_runnable_row(), clean, allow_dirty=False)
+    with pytest.raises(StopRun, match="founder review"):
+        require_runnable(_runnable_row(gated="manual"), clean, allow_dirty=False)
+    custom = _runnable_row(
+        licences={"weights": {"status": "CUSTOM_OR_GATED_TERMS_REVIEW_REQUIRED"}}
+    )
+    with pytest.raises(StopRun, match="founder review"):
+        require_runnable(custom, clean, allow_dirty=False)
+    with pytest.raises(StopRun, match="candidates only"):
+        require_runnable(_runnable_row(role="REFERENCE_ONLY"), clean, allow_dirty=False)
+    dirty = {"harness_dirty": [" M karena/stage0.py"]}
+    with pytest.raises(StopRun, match="uncommitted"):
+        require_runnable(_runnable_row(), dirty, allow_dirty=False)
+    require_runnable(_runnable_row(), dirty, allow_dirty=True)
+
+
+def test_readiness_wait_honours_the_guard_before_every_poll(tmp_path: Path) -> None:
+    (tmp_path / "STOP").write_text("")
+    guard = _guard(tmp_path)
+
+    class Pod:
+        pod_id = "never-read"
+
+    with pytest.raises(StopRun, match="STOP"):
+        wait_until_ready(
+            None,  # type: ignore[arg-type]
+            Pod(),  # type: ignore[arg-type]
+            None,  # type: ignore[arg-type]
+            deadline_seconds=60,
+            progress=None,
+            check=guard.check,
+        )
+
+
+def test_ledger_rows_are_checked_against_the_arena_contract() -> None:
+    assert "required property" in (ledger_problem({"schema": "tavonel.arena.pod-ledger.v1"}) or "")
+
+
+def test_arena_root_must_be_set_and_be_the_pinned_tree(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import karena
+
+    monkeypatch.delenv("KARENA_ARENA_ROOT")
+    with pytest.raises(ImportError, match="KARENA_ARENA_ROOT"):
+        karena._arena_root()
+    (tmp_path / "arena").mkdir()
+    (tmp_path / "arena" / "__init__.py").write_text("")
+    monkeypatch.setenv("KARENA_ARENA_ROOT", str(tmp_path))
+    with pytest.raises(ImportError, match="not the pinned"):
+        karena._arena_root()
+
+
+def test_teds_needs_an_explicit_omnidoc_root(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("KARENA_OMNIDOC_ROOT", raising=False)
+    with pytest.raises(table_track.TableTrackError, match="no default"):
+        table_track._omnidoc_root()

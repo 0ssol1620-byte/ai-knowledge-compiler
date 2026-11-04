@@ -218,7 +218,14 @@ def gold_facts(
 ) -> tuple[list[SecFact], dict[str, int]]:
     """Facts both SEC sources agree on, first occurrence per concept, in document order."""
 
-    counts = {"tagged": 0, "dimensional": 0, "unreadable": 0, "api_missing": 0, "disagree": 0}
+    counts = {
+        "tagged": 0,
+        "dimensional": 0,
+        "unreadable": 0,
+        "api_fetch_failed": 0,
+        "api_missing": 0,
+        "disagree": 0,
+    }
     chosen: list[SecFact] = []
     seen: set[str] = set()
     cik = int(document.meta["cik"])
@@ -241,7 +248,13 @@ def gold_facts(
         api_url = (
             f"https://data.sec.gov/api/xbrl/companyconcept/CIK{cik:010d}/us-gaap/{concept}.json"
         )
-        api_value = _companyconcept_value(fetcher, api_url, unit, accession, context.start, end)
+        try:
+            api_value = _companyconcept_value(fetcher, api_url, unit, accession, context.start, end)
+        except FetchError as exc:
+            if exc.status != 404:
+                counts["api_fetch_failed"] += 1  # operational, not a semantic absence
+                continue
+            api_value = None  # 404: the API has no such concept for this filer
         if api_value is None:
             counts["api_missing"] += 1
             continue
@@ -278,7 +291,7 @@ def _companyconcept_value(
 ) -> Decimal | None:
     try:
         body = json.loads(fetcher.get(url).text())
-    except (FetchError, json.JSONDecodeError):
+    except json.JSONDecodeError:
         return None
     rows: Sequence[dict[str, Any]] = body.get("units", {}).get(unit, [])
     for row in rows:

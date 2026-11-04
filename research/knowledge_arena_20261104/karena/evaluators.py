@@ -221,6 +221,12 @@ def grounded_answer_scores(rows: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
         correct.append(1.0 if ok else 0.0)
         predicted = {cid for c in claims for cid in c.get("citations", [])}
         citation_pairs.append((set(row["truth"]["citation_ids"]), predicted))
+    for row in unanswerable:
+        if row["output"] is not None:
+            predicted = {
+                cid for c in row["output"].get("claims", []) for cid in c.get("citations", [])
+            }
+            citation_pairs.append((set(), predicted))
     abstained_correctly = sum(
         1
         for r in unanswerable

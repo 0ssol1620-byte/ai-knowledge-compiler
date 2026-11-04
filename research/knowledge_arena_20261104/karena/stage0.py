@@ -17,7 +17,10 @@ Stop conditions, checked between every batch of cases:
 
 from __future__ import annotations
 
+import copy
 import json
+import subprocess
+from collections import Counter
 from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, replace
@@ -25,9 +28,10 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Final, Protocol
 
-from arena.controller.cost import build_ledger_row
+from arena.controller.cost import build_ledger_row, pod_ledger_record
 from arena.controller.queue import PodRecord
 from arena.controller.watchdogs import BudgetWatchdog, CircuitBreaker
+from arena.core.receipts import load_schema
 from arena.provider.runpod_pods import Pod, PriceSnapshot, RunPodPodsClient, pod_name
 from arena.provider.safety import (
     atomic_write_bytes,
@@ -40,8 +44,9 @@ from arena.provider.safety import (
     write_jsonl_append,
 )
 from arena.provider.secrets import runpod_api_key
+from jsonschema import Draft202012Validator
 
-from karena import CAMPAIGN_ID, CAMPAIGN_SHORT, NAMESPACE_ROOT
+from karena import ARENA_ROOT, ARENA_TREE_PIN, CAMPAIGN_ID, CAMPAIGN_SHORT, NAMESPACE_ROOT
 from karena.corpus import Case, check_split_integrity, read_jsonl
 from karena.freeze import verify_frozen
 from karena.registry import load_registry
@@ -60,11 +65,12 @@ __all__ = ["Guard", "StopRun", "load_cases", "run_stage0", "run_tasks", "score_r
 LEDGER: Final = NAMESPACE_ROOT / "cost" / "pod_ledger.jsonl"
 GLOBAL_STOP: Final = NAMESPACE_ROOT / "STOP"
 FREEZE_VERSION: Final = "v1"
-#: Measured, not assumed: on 2026-11-04 pod njcoez8hxpyahs (A100-SXM4-80GB, host CUDA
+#: One observation, n=1: on 2026-11-04 pod njcoez8hxpyahs (A100-SXM4-80GB, host CUDA
 #: 13.2) died in vLLM warm-up with "CUDA error: no kernel image is available for
-#: execution on the device" on this image, so Ampere is not in the list. Ada (sm_89)
-#: ran this exact image for the 2026-09-03 Arena; Hopper and Blackwell are tried
-#: when Ada has no stock on a CUDA >= 12.9 host.
+#: execution on the device" on this image. The cause (sm_80 kernels, host driver,
+#: attention backend) is not isolated; Ampere is left out until it is, rather than
+#: paying to find out again. Ada (sm_89) ran this exact image (2026-09-03 Arena and
+#: this campaign); Hopper and Blackwell are tried when Ada has no stock.
 GPU_PRIORITY: Final = (
     "NVIDIA GeForce RTX 4090",
     "NVIDIA L40S",
@@ -78,6 +84,25 @@ GPU_PRIORITY: Final = (
 ALLOWED_CUDA: Final = ("12.9", "13.0", "13.1", "13.2")
 CHAT_TEMPLATE_KWARGS: Final = {"enable_thinking": False}
 MAX_MODEL_LEN: Final = 16384
+#: Only these weights-licence states may be served; a gated or custom licence is a
+#: founder review, not a runner decision.
+RUNNABLE_WEIGHTS_STATUS: Final = "DECLARED_NOT_REVIEWED"
+RECEIPT_REQUIRED: Final = (
+    "case_id",
+    "task",
+    "split",
+    "model_registry_id",
+    "exact_model_id",
+    "exact_revision",
+    "prompt_sha256",
+    "schema_sha256",
+    "rendered_messages_sha256",
+    "input_artifact_sha256",
+    "raw_output_sha256",
+    "normalized_output_sha256",
+    "status",
+    "harness",
+)
 
 
 class StopRun(RuntimeError):
@@ -134,6 +159,51 @@ class Guard:
             raise StopRun(self.reason)
 
 
+def provenance() -> dict[str, Any]:
+    """Everything outside the freeze file that changes what a run measures."""
+
+    def git(*argv: str) -> str:
+        return subprocess.run(  # noqa: S603 - fixed argv, no shell
+            ["git", "-C", str(NAMESPACE_ROOT), *argv],  # noqa: S607
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+
+    dirty = [line for line in git("status", "--porcelain", "--", ".").splitlines() if line]
+    return {
+        "harness_commit": git("rev-parse", "HEAD").strip(),
+        "harness_dirty": dirty,
+        "arena_root": str(ARENA_ROOT),
+        "arena_tree_sha256": ARENA_TREE_PIN,
+        "code_sha256": {
+            p.relative_to(NAMESPACE_ROOT).as_posix(): sha256_file(p)
+            for p in sorted((NAMESPACE_ROOT / "karena").rglob("*.py"))
+        },
+        "registry_sha256": sha256_file(NAMESPACE_ROOT / "config" / "model_candidates.json"),
+        "chat_template_kwargs": CHAT_TEMPLATE_KWARGS,
+        "max_model_len": MAX_MODEL_LEN,
+    }
+
+
+def require_runnable(row: Mapping[str, Any], prov: Mapping[str, Any], *, allow_dirty: bool) -> None:
+    """Refuse a paid run whose code is not in a commit, or whose weights terms are unreviewed."""
+
+    if row["role"] != "CANDIDATE":
+        raise StopRun(f"{row['model_key']} is {row['role']}; Stage 0 runs candidates only")
+    status = row["licences"]["weights"]["status"]
+    if row.get("gated") or status != RUNNABLE_WEIGHTS_STATUS:
+        raise StopRun(
+            f"{row['model_key']}: weights {status}, gated={row.get('gated')!r}; "
+            "the terms need a founder review before a pod serves it"
+        )
+    if prov["harness_dirty"] and not allow_dirty:
+        raise StopRun(
+            f"working tree has {len(prov['harness_dirty'])} uncommitted change(s) under the "
+            "namespace; commit first or pass --allow-dirty (recorded in every receipt)"
+        )
+
+
 def load_cases(task: str, split: str, limit: int) -> list[Case]:
     path = NAMESPACE_ROOT / "cases" / f"{task}.{split}.jsonl"
     cases = [Case.from_dict(row) for row in read_jsonl(path)][:limit]
@@ -167,6 +237,7 @@ def run_one(
     run_dir: Path,
     row: Mapping[str, Any],
     price_snapshot_sha256: str | None,
+    harness: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     messages = adapter.messages(case)
     result = endpoint.chat(
@@ -232,8 +303,12 @@ def run_one(
             "method": "pod time; allocated per task in summary.json",
             "price_snapshot_id": price_snapshot_sha256,
         },
+        "harness": dict(harness or {"commit": None, "dirty": None}),
         "finished_at": utc_now_iso(),
     }
+    missing = [k for k in RECEIPT_REQUIRED if receipt.get(k) in (None, "")]
+    if missing:
+        raise ValueError(f"run receipt for {case.case_id} lacks {missing}")
     return receipt
 
 
@@ -249,6 +324,7 @@ def run_tasks(
     repeat_subset: int,
     repeats: int,
     price_snapshot_sha256: str | None = None,
+    harness: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run every task's cases, then the repeat subset. Returns per-task wall seconds."""
 
@@ -279,6 +355,7 @@ def run_tasks(
                     run_dir=run_dir,
                     row=row,
                     price_snapshot_sha256=price_snapshot_sha256,
+                    harness=harness,
                 )
                 for adapter, case, repeat in batch
             ]
@@ -341,7 +418,11 @@ def score_run(run_dir: Path) -> dict[str, Any]:
             "scores": adapter.score(rows),
             "reproducibility": {
                 "cases_repeated": len(repeated),
-                "repeats_per_case": max((len(v) for v in repeated.values()), default=0),
+                # performed, not planned: {repeats: number of cases}
+                "repeats_performed": {
+                    str(n): count
+                    for n, count in sorted(Counter(len(v) for v in repeated.values()).items())
+                },
                 "raw_body_identical": "not comparable: the envelope carries ids and timestamps",
                 "normalized_identical": sum(
                     1 for v in repeated.values() if len({n for _, n in v}) == 1
@@ -388,11 +469,16 @@ def run_stage0(
     max_pod_hours: int = 3,
     readiness_minutes: float = 40.0,
     progress: Callable[[str], None] = print,
+    allow_dirty: bool = False,
 ) -> Path:
     frozen = verify_frozen(FREEZE_VERSION)
     row = load_registry()[model_key]
-    if row["role"] != "CANDIDATE":
-        raise StopRun(f"{model_key} is {row['role']}; Stage 0 runs candidates only")
+    prov = provenance()
+    served = model_key.replace("_", "-")
+    prov["vllm_args"] = list(vllm_args(row, served_name=served, max_model_len=MAX_MODEL_LEN))
+    if execute:
+        require_runnable(row, prov, allow_dirty=allow_dirty)
+    harness = {"commit": prov["harness_commit"], "dirty": bool(prov["harness_dirty"])}
     stage = task_config()["stage0"]
     adapters = [load_task(task) for task in TASKS]
     cases = {task: load_cases(task, stage["split"], stage["cases_per_task"]) for task in TASKS}
@@ -413,6 +499,7 @@ def run_stage0(
         "freeze": {"version": frozen["version"], "sha256": frozen["freeze_file_sha256"]},
         "cases": {task: len(items) for task, items in cases.items()},
         "stage": stage,
+        "provenance": prov,
         "budget_usd": budget_usd,
         "prior_spend_usd": spent_before,
         "runpod_key_source": key.label,
@@ -442,7 +529,6 @@ def run_stage0(
         write_json_atomic(run_dir / "plan.refused.json", plan, context="stage0 plan")
         raise StopRun(f"worst case ${worst_case:.2f} exceeds the ${budget_usd:.2f} lane cap")
     write_json_atomic(run_dir / "plan.json", plan, context="stage0 plan")
-    served = model_key.replace("_", "-")
     api_key = new_api_key()
     spec = LlmPodSpec(
         name=pod_name(model_key, 0, campaign_short=CAMPAIGN_SHORT),
@@ -474,12 +560,6 @@ def run_stage0(
         record["pod"] = pod.to_summary()
         progress(f"pod {pod.pod_id} created on {pod.gpu_type_id} at ${pod.cost_usd_per_hour}/h")
         endpoint = VllmEndpoint(pod.pod_id, api_key=api_key, served_name=served)
-        stage_name, observed = wait_until_ready(
-            client, pod, endpoint, deadline_seconds=readiness_minutes * 60, progress=progress
-        )
-        record["model_ready_at"] = utc_now_iso()
-        record["readiness"] = {"stage": stage_name, "observed": list(observed)}
-        progress(f"vLLM READY; running {sum(len(v) for v in cases.values())} cases")
         guard = Guard(
             run_dir=run_dir,
             budget_usd=budget_usd,
@@ -489,6 +569,17 @@ def run_stage0(
             max_seconds=max_pod_hours * 3600.0,
             breaker=CircuitBreaker(model_key),
         )
+        stage_name, observed = wait_until_ready(
+            client,
+            pod,
+            endpoint,
+            deadline_seconds=readiness_minutes * 60,
+            progress=progress,
+            check=guard.check,
+        )
+        record["model_ready_at"] = utc_now_iso()
+        record["readiness"] = {"stage": stage_name, "observed": list(observed)}
+        progress(f"vLLM READY; running {sum(len(v) for v in cases.values())} cases")
         outcome = run_tasks(
             endpoint,
             adapters,
@@ -500,6 +591,7 @@ def run_stage0(
             repeat_subset=int(stage["repeat_subset"]),
             repeats=int(stage["repeats"]),
             price_snapshot_sha256=snapshot.snapshot_sha256(),
+            harness=harness,
         )
         record["last_job_finished_at"] = utc_now_iso()
     except Exception as exc:
@@ -516,7 +608,7 @@ def run_stage0(
             record["terminated_at"] = record["deleted_at"]
             remaining = [p.pod_id for p in client.campaign_pods(live_only=True)]
             record["live_campaign_pods_after_delete"] = remaining
-            _ledger(pod, record, outcome, str(pod.gpu_type_id), rate, snapshot)
+            record["ledger"] = _ledger(pod, record, outcome, str(pod.gpu_type_id), rate, snapshot)
         record["outcome"] = outcome
         write_json_atomic(run_dir / "pod_record.json", record, context="stage0 pod record")
         client.close()
@@ -527,6 +619,7 @@ def run_stage0(
             "schema": "tavonel.karena.stage0_summary.v1",
             "campaign_id": CAMPAIGN_ID,
             "model_registry_id": row["registry_id"],
+            "harness": harness,
             "status_vocabulary": "RUNPOD_E2E_SMOKE only when real GPU inference happened",
             "pod_record": "pod_record.json",
             "tasks": summary,
@@ -545,11 +638,13 @@ def _ledger(
     gpu: str,
     rate: float,
     snapshot: PriceSnapshot,
-) -> None:
+) -> str:
     """The Arena's billed/useful/idle split, written to this namespace's own ledger.
 
     ``append_pod_ledger`` is not used: its schema enumerates the OCR Arena's model
-    keys and would route every row here to the rejected file.
+    keys. The row is checked against that same contract with only ``model_key``
+    widened; a row that fails goes to ``pod_ledger_rejected.jsonl``, as the Arena's
+    does, and is never dropped or coerced.
     """
 
     pod_record = PodRecord(
@@ -579,4 +674,20 @@ def _ledger(
         ),
         campaign_id=CAMPAIGN_ID,
     )
+    problem = ledger_problem(pod_ledger_record(row, campaign_id=CAMPAIGN_ID))
+    if problem is not None:
+        write_jsonl_append(
+            LEDGER.with_name("pod_ledger_rejected.jsonl"),
+            {**row.to_dict(), "validation_error": problem},
+            context="karena rejected pod ledger row",
+        )
+        return f"REJECTED: {problem}"
     write_jsonl_append(LEDGER, row.to_dict(), context="karena pod ledger")
+    return "VALIDATED"
+
+
+def ledger_problem(record: Mapping[str, Any]) -> str | None:
+    schema = copy.deepcopy(dict(load_schema("pod-ledger")))
+    schema["properties"]["model_key"] = {"type": "string", "minLength": 1}
+    errors = list(Draft202012Validator(schema).iter_errors(dict(record)))
+    return "; ".join(sorted(e.message for e in errors)) or None

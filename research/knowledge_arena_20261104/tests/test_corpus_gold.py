@@ -128,6 +128,8 @@ def _fetcher(tmp_path, routes: dict[str, object]) -> Fetcher:  # type: ignore[no
         body = routes.get(str(request.url))
         if body is None:
             return httpx.Response(404)
+        if isinstance(body, int):
+            return httpx.Response(body)
         return httpx.Response(200, content=json.dumps(body).encode())
 
     return Fetcher(
@@ -172,6 +174,9 @@ def test_gold_fact_needs_both_sec_sources_to_agree(tmp_path) -> None:  # type: i
     missing = _fetcher(tmp_path / "c", {})
     facts, counts = sec.gold_facts(missing, document, parsed, per_filing=4)  # type: ignore[arg-type]
     assert facts == [] and counts["api_missing"] == 1
+    refused = _fetcher(tmp_path / "d", {url: 403})
+    facts, counts = sec.gold_facts(refused, document, parsed, per_filing=4)  # type: ignore[arg-type]
+    assert facts == [] and counts["api_fetch_failed"] == 1 and counts["api_missing"] == 0
 
 
 def test_fetcher_caches_and_refuses_offline_misses(tmp_path) -> None:  # type: ignore[no-untyped-def]

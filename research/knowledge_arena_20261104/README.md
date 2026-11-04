@@ -141,9 +141,12 @@ latency, tokens, sampling, price snapshot id).
 - **D3** — build the slice (`case_id, pdf, page_index, gold_html, licence`),
   pass a reader callable to `table_track.score_tables(..., dpi=108)`; the
   baseline arm is `lambda image: None`.
-- **E3** — `grounded_answer` cases + `evaluators.grounded_answer_scores`; the
-  post-verification in the product (every claim has a real excerpt, numeric
-  anchors present) is what `unsupported_claims` measures here.
+- **E3** — `grounded_answer` cases + `evaluators.grounded_answer_scores`.
+  `unsupported_claims` counts a claim as supported when it cites at least one
+  excerpt that exists and its quote (3+ characters, whitespace-normalised)
+  appears verbatim in one of the cited excerpts. It does **not** check that the
+  quote contains the claimed value; a numeric-anchor check is E3's to add (new
+  version, new freeze) before this is used as a grounding gate.
 
 New prompts or schemas are a new version (`*_v2.*`) and a new freeze; a freeze
 whose bytes moved stops the runner.

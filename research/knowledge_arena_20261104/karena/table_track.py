@@ -55,9 +55,6 @@ MAX_PIXELS_PER_PAGE: Final = 30_000_000
 MAX_PIXELS_TOTAL: Final = 80_000_000
 PRODUCT_PYPDFIUM2: Final = "5.13.0"
 OMNIDOC_COMMIT: Final = "193627ae9e97d89188468ed1ee3b7a856ff76044"
-DEFAULT_OMNIDOC_ROOT: Final = Path(
-    r"D:\CodexProjects\ai-knowledge-compiler\benchmark\cache\omnidoc"
-)
 NUMBER: Final = re.compile(r"\(?-?\$?\d[\d,]*\.?\d*\)?")
 
 
@@ -125,7 +122,13 @@ def product_raster(pdf: bytes, page_index: int, *, dpi: float = 108.0) -> Raster
 
 
 def _omnidoc_root() -> Path:
-    root = Path(os.environ.get("KARENA_OMNIDOC_ROOT", str(DEFAULT_OMNIDOC_ROOT)))
+    configured = os.environ.get("KARENA_OMNIDOC_ROOT")
+    if not configured:
+        raise TableTrackError(
+            "KARENA_OMNIDOC_ROOT must point at an OmniDocBench clone at "
+            f"{OMNIDOC_COMMIT} (with its venv); there is no default"
+        )
+    root = Path(configured)
     head = subprocess.run(  # noqa: S603 - fixed argv, no shell
         ["git", "-C", str(root), "rev-parse", "HEAD"],  # noqa: S607
         capture_output=True,
