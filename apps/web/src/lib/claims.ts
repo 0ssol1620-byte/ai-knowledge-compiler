@@ -186,6 +186,7 @@ export interface BenchmarkAccuracy {
   confidence_interval_95: [number, number];
   checks_passed: number;
   checks_total: number;
+  category_count: number;
   documents_with_at_least_one_failure_percent: number;
 }
 

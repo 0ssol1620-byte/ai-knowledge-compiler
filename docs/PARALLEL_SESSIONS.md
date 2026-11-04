@@ -113,7 +113,7 @@ lib/claims.ts       claimFigure() returns the numbers and the mandatory
 `benchmark-public.test.ts` pins the specifics that matter most: the low-quality
 scan row stays in the document-type table (removing it is forbidden), the 99.98%
 completion rate never appears in an accuracy table (calling it accuracy is
-forbidden), and the 80.6% check pass rate is kept away from the 94.2% character
+forbidden), and the 80.6 olmOCR-Bench overall score is kept away from the 94.2% character
 match unless both are labelled.
 
 ### When the next pack arrives

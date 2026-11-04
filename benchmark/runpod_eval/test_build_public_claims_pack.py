@@ -209,7 +209,7 @@ def test_every_cited_hash_matches_the_bytes_a_clone_checks_out() -> None:
 
 
 def test_the_overall_score_is_not_described_as_a_pass_rate_over_checks() -> None:
-    """80.6 is the mean of per-category pass rates; 7,137/8,413 is 84.8%.
+    """80.6 is the mean of per-category pass rates; 7,137/8,413 is a different ratio.
 
     Calling 80.6 "the pass rate over 8,413 checks" gave it a denominator it was
     not computed over. The check count must appear as a count beside it.
@@ -222,5 +222,8 @@ def test_the_overall_score_is_not_described_as_a_pass_rate_over_checks() -> None
     assert "mean of the pass rates" in claim["must_say_en"]
     assert "This is the pass rate over" not in claim["must_say_en"]
     assert "통과율이며" not in claim["must_say"]
+    assert numbers["category_count"] == 8
+    assert claim["must_say_en"].startswith(f"{numbers['overall_percent']:.1f} is ")
     for other in pack["claims"]:
         assert "80.6% check pass rate" not in other.get("must_say_en", ""), other["id"]
+        assert "검사 통과율(80.6%)" not in other.get("must_say", ""), other["id"]

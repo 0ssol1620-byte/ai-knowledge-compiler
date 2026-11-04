@@ -438,6 +438,7 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 ],
                 "checks_passed": olm_with["test_count"] - olm_with["rule_failure_count"],
                 "checks_total": olm_with["test_count"],
+                "category_count": len(olm_with["per_jsonl"]),
                 "documents_with_at_least_one_failure_percent": round(
                     blind["cases_with_official_failures"] / blind["corpus_cases"] * 100, 1
                 ),
@@ -446,7 +447,8 @@ def build_claims(repository: Path) -> dict[str, Any]:
             # pass rates, not checks passed over checks run. The check count is
             # printed as a count, so the text cannot pass it off as the denominator.
             "must_say": (
-                f"80.6은 olmOCR-Bench의 공식 overall 점수로, 문서 유형 "
+                f"{olm_with['overall_score'] * 100:.1f}은 olmOCR-Bench의 공식 overall "
+                "점수로, 문서 유형 "
                 f"{len(olm_with['per_jsonl'])}개 각각의 통과율을 평균한 값이며 개별 검사 "
                 f"단위의 통과율이 아닙니다. 적대적으로 설계된 개별 검사 "
                 f"{olm_with['test_count']:,}개 중 "
@@ -456,7 +458,8 @@ def build_claims(repository: Path) -> dict[str, Any]:
                 "문서의 72.3%에는 최소 하나의 오류가 있으므로 무결성을 암시해서는 안 됩니다."
             ),
             "must_say_en": (
-                "80.6 is olmOCR-Bench's official overall score: the mean of the pass "
+                f"{olm_with['overall_score'] * 100:.1f} is olmOCR-Bench's official "
+                "overall score: the mean of the pass "
                 f"rates of its {len(olm_with['per_jsonl'])} document categories, not a "
                 "pass rate over individual checks. "
                 f"{olm_with['test_count'] - olm_with['rule_failure_count']:,} of "

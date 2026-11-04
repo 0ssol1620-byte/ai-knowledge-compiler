@@ -175,6 +175,7 @@
       "must_say_en": "80.6 is olmOCR-Bench's official overall score: the mean of the pass rates of its 8 document categories, not a pass rate over individual checks. 7,137 of 8,413 adversarially chosen checks passed. The top system on the published leaderboard scores 83.1 on the same overall metric (a quoted figure, not one we reproduced), so the reference point is not 100. 72.3% of documents carry at least one failure, so nothing here should imply flawless output.",
       "numbers": {
         "benchmark": "olmOCR-Bench",
+        "category_count": 8,
         "checks_passed": 7137,
         "checks_total": 8413,
         "confidence_interval_95": [
@@ -456,6 +457,6 @@
     "수치를 바꾸려면 이 파일이 아니라 근거 영수증을 다시 생성하십시오."
   ],
   "purpose": "웹사이트에 게시할 수 있는 주장과 게시할 수 없는 주장을 증거와 함께 구분합니다. 수치는 영수증에서 생성되며 손으로 수정해서는 안 됩니다.",
-  "receipt_sha256": "sha256:79e84ef2e6cdf0eb422aaac7be058c51fd21692969c87e01d771fd97d6da0ee7",
+  "receipt_sha256": "sha256:ee259abb07a9d5daf9e165d4f195feef7e37f11d4a3a190225dc84aca1efa81e",
   "schema": "folynta.public-claims-pack.v1"
 }

@@ -186,6 +186,7 @@
   ],
   "checks_passed": 7137,
   "checks_total": 8413,
+  "category_count": 8,
   "documents_with_at_least_one_failure_percent": 72.3
 }
 ```
