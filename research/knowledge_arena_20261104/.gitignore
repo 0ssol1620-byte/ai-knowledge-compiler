@@ -1,0 +1,21 @@
+# Same convention as research/model_arena_20260903: code, frozen prompts,
+# schemas, configs and the candidate registry are tracked; every generated
+# campaign byte (fetched documents, gold, cases, runs, receipts, cost) is not.
+# The repository is public: none of it may enter git.
+
+/inputs/
+/gold/
+/cases/
+/runs/
+/receipts/
+/cost/
+/evidence/
+/reports/
+/STOP
+__pycache__/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.sqlite
+*.tmp
+*.log

@@ -1,0 +1,8 @@
+Field: $field_name ($field_description)
+Entity: $entity
+Period: $period
+Unit: $unit
+
+<excerpt>
+$excerpt
+</excerpt>

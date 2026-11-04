@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "karena.grounded_answer.output.v1",
+  "type": "object",
+  "properties": {
+    "status": {
+      "enum": [
+        "ANSWERED",
+        "ABSTAINED"
+      ]
+    },
+    "claims": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "maxLength": 400
+          },
+          "value": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "citations": {
+            "type": "array",
+            "maxItems": 4,
+            "items": {
+              "enum": [
+                "E1",
+                "E2",
+                "E3",
+                "E4"
+              ]
+            }
+          },
+          "quote": {
+            "type": "string",
+            "maxLength": 400
+          }
+        },
+        "required": [
+          "text",
+          "value",
+          "citations",
+          "quote"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "status",
+    "claims"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,29 @@
+{
+  "campaign_id": "TAVONEL-KNOWLEDGE-ARENA-20261104-V1",
+  "files": {
+    "cases/doc_type.CALIBRATION.jsonl": "sha256:b0bf1869af8d65bca8cbb5e5883a75f5e5d08b0277a1f772d19af98523f0936b",
+    "cases/doc_type.EVALUATION.jsonl": "sha256:a39b2bb98072c2ad83675d983370bf01354a88c194a86d2a52236a3c1b6ba9df",
+    "cases/grounded_answer.CALIBRATION.jsonl": "sha256:5343a350af4c09ce1c1a0f2006888b37641cf189ca1ef3f6b917259a9127e3d1",
+    "cases/grounded_answer.EVALUATION.jsonl": "sha256:91cd9aa0ee2bc7c05dfda7eea492221cf33974a88c613fd885dc0a43ed913cae",
+    "cases/schema_induction.CALIBRATION.jsonl": "sha256:8c2224d7e34b94eeddacc7797b765cec7976426c7e93628a9cca6675f7801c8a",
+    "cases/schema_induction.EVALUATION.jsonl": "sha256:538a90b4a7754afb9cb9bc28bc061d89dcead590b9f941995dc40fa23c9c7bf7",
+    "cases/typed_extraction.CALIBRATION.jsonl": "sha256:8118ac822dd1e5fdcf7029e500c2163484a886d80ef27541822396a99ee086c8",
+    "cases/typed_extraction.EVALUATION.jsonl": "sha256:102f0b460f511b5dc3e0c532c0ba281e39bcea2e5104e6893881ce67a4bf0e9e",
+    "config/tasks.json": "sha256:1a92aa9b0c25f7f8b84e3da3425062c9d48afef88b5597be47c858a228b073ed",
+    "prompt_registry/doc_type_v1.system.txt": "sha256:95ad5fc47ee4acc9b0f72f62077c71cd49f3c7aab67fe03578b01a96cc154b63",
+    "prompt_registry/doc_type_v1.user.txt": "sha256:6ef6011579aa8253b4d392721ad48c0d7b1564142a551fc51fb75910a7f05e21",
+    "prompt_registry/grounded_answer_v1.system.txt": "sha256:381a158633c43cdba0ad11baacaf705424cd978347038751a16994d093bf81d9",
+    "prompt_registry/grounded_answer_v1.user.txt": "sha256:fb97934ea8d0664c5e3dc0a918ae9987e213e9307a6a20d19ee2d7eb2789e86a",
+    "prompt_registry/schema_induction_v1.system.txt": "sha256:e1192d6955113d90c27272cd7c97dbd5870aad34d222cd8ef1a86cd8bc06ad3a",
+    "prompt_registry/schema_induction_v1.user.txt": "sha256:5ba7cc4e3f8613c79e8b2ec03ee14f49c8e7ffafffdda4befc811c85eec90c58",
+    "prompt_registry/typed_extraction_v1.system.txt": "sha256:20cd6efb250960a645a7e133283e767bb537a9cbf65549cc66dddeb20222b8ad",
+    "prompt_registry/typed_extraction_v1.user.txt": "sha256:9c43ef6d89a935f11a52fa160364a7650bd778f00c5524601f32f5bffe44458d",
+    "schemas/doc_type.output.schema.json": "sha256:4f42cfe675a24f5ff059fffcb198994e83f0a6c22f4849f86d73bb3fff820beb",
+    "schemas/grounded_answer.output.schema.json": "sha256:a87912211153786dcdf64f9a7ef7f0cb7405752e58d9fe7dcb5aeb0e89d4099b",
+    "schemas/schema_induction.output.schema.json": "sha256:d0fdf1bdc726f89a8adbd1bbc5938675b34224b213ad0c18b3170dc3af699c5b",
+    "schemas/typed_extraction.output.schema.json": "sha256:6e2cf125646540e9ff51ac7281e2b569bb9727419043890e081dc94de0eeb610"
+  },
+  "frozen_at": "2026-11-04T09:29:38Z",
+  "schema": "tavonel.karena.freeze.v1",
+  "version": "v1"
+}
