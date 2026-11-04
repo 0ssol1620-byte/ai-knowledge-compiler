@@ -190,9 +190,9 @@
 }
 ```
 
-**반드시 함께 표기**: 이 점수는 적대적으로 설계된 개별 검사 8,413개의 통과율이며, 공개 리더보드 최상위도 83.1입니다. 비교 기준은 100이 아닙니다. 문서의 72.3%에는 최소 하나의 오류가 있으므로 무결성을 암시해서는 안 됩니다.
+**반드시 함께 표기**: 80.6은 olmOCR-Bench의 공식 overall 점수로, 문서 유형 8개 각각의 통과율을 평균한 값이며 개별 검사 단위의 통과율이 아닙니다. 적대적으로 설계된 개별 검사 8,413개 중 7,137개를 통과했습니다. 공개 리더보드 최상위 시스템도 같은 overall 지표로 83.1입니다(인용 수치이며 우리가 재현하지 않았습니다). 비교 기준은 100이 아닙니다. 문서의 72.3%에는 최소 하나의 오류가 있으므로 무결성을 암시해서는 안 됩니다.
 
-**Must accompany the number**: This is the pass rate over 8,413 adversarially chosen checks; the top published system scores 83.1, so the reference point is not 100. 72.3% of documents carry at least one failure, so nothing here should imply flawless output.
+**Must accompany the number**: 80.6 is olmOCR-Bench's official overall score: the mean of the pass rates of its 8 document categories, not a pass rate over individual checks. 7,137 of 8,413 adversarially chosen checks passed. The top system on the published leaderboard scores 83.1 on the same overall metric (a quoted figure, not one we reproduced), so the reference point is not 100. 72.3% of documents carry at least one failure, so nothing here should imply flawless output.
 
 - 금지 표현: 정확도 100% / 무오류 / 완벽한 추출
 - 금지 표현: 80.6%를 단독 헤드라인으로 제시하고 유형별 편차를 생략하는 구성
@@ -212,9 +212,9 @@
 }
 ```
 
-**반드시 함께 표기**: 이 수치는 벤치마크 검사 통과율(80.6%)과 다른 척도입니다. 같은 화면에 둘 다 실을 때는 무엇을 재는 값인지 구분해 표기하십시오.
+**반드시 함께 표기**: 이 수치는 olmOCR-Bench overall 점수(80.6)와 다른 척도입니다. 같은 화면에 둘 다 실을 때는 무엇을 재는 값인지 구분해 표기하십시오.
 
-**Must accompany the number**: These are a different measure from the 80.6% check pass rate. If both appear on one page, label what each one measures.
+**Must accompany the number**: These are a different measure from the 80.6 olmOCR-Bench overall score. If both appear on one page, label what each one measures.
 
 
 근거: `docs/evidence/artifacts/folynta-mineru344-public-core-official-evaluations-r1-2026-08-04__omnidocbench__repeat-1__metric-result.json`

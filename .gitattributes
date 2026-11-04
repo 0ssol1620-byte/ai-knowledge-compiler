@@ -10,3 +10,8 @@
 *.zip binary
 *.zst binary
 
+
+# Cited evidence is stored byte-for-byte. The claims pack binds each artifact by
+# the sha256 of the bytes the generator hashed (CRLF, written on Windows);
+# normalising them to LF on commit left a clone unable to verify eight of them.
+docs/evidence/artifacts/** -text

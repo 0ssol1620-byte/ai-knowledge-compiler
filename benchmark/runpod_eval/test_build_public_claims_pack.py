@@ -10,6 +10,8 @@ figure next to a citation that still looks legitimate.
 from __future__ import annotations
 
 import json
+from pathlib import Path
+from typing import Any
 
 import pytest
 from build_public_claims_pack import (
@@ -171,3 +173,54 @@ def test_the_shipped_pack_has_a_constraint_on_every_publishable_number() -> None
         if bool(claim.get("evidence")) != bool(claim.get("evidence_sha256"))
     ]
     assert unbound == []
+
+
+def _shipped_pack() -> tuple[Path, dict[str, Any]]:
+    repository = Path(__file__).resolve().parents[2]
+    pack_path = repository / "docs" / "evidence" / "folynta-public-claims-pack.json"
+    if not pack_path.is_file():
+        pytest.skip("claims pack has not been generated in this checkout")
+    return repository, json.loads(pack_path.read_text(encoding="utf-8"))
+
+
+def test_every_cited_hash_matches_the_bytes_a_clone_checks_out() -> None:
+    """A hash that only verifies on the machine that generated it binds nothing.
+
+    The receipts were written on Windows with CRLF line endings and hashed as
+    written; committed through `text=auto eol=lf`, a clone got LF bytes and eight
+    of the cited artifacts stopped matching their claim. The artifacts are now
+    stored byte-for-byte, and this re-hashes every citation from disk.
+    """
+    import hashlib
+
+    repository, pack = _shipped_pack()
+    mismatched = []
+    for claim in pack["claims"]:
+        cited, digests = claim.get("evidence"), claim.get("evidence_sha256")
+        if not cited:
+            continue
+        paths = cited if isinstance(cited, list) else [cited]
+        expected = digests if isinstance(digests, list) else [digests]
+        for entry, digest in zip(paths, expected, strict=True):
+            actual = "sha256:" + hashlib.sha256((repository / entry).read_bytes()).hexdigest()
+            if actual != digest:
+                mismatched.append(f"{claim['id']}: {entry}")
+    assert mismatched == []
+
+
+def test_the_overall_score_is_not_described_as_a_pass_rate_over_checks() -> None:
+    """80.6 is the mean of per-category pass rates; 7,137/8,413 is 84.8%.
+
+    Calling 80.6 "the pass rate over 8,413 checks" gave it a denominator it was
+    not computed over. The check count must appear as a count beside it.
+    """
+    _, pack = _shipped_pack()
+    claim = next(c for c in pack["claims"] if c["id"] == "benchmark-accuracy")
+    numbers = claim["numbers"]
+    counted = f"{numbers['checks_passed']:,} of {numbers['checks_total']:,}"
+    assert counted in claim["must_say_en"]
+    assert "mean of the pass rates" in claim["must_say_en"]
+    assert "This is the pass rate over" not in claim["must_say_en"]
+    assert "통과율이며" not in claim["must_say"]
+    for other in pack["claims"]:
+        assert "80.6% check pass rate" not in other.get("must_say_en", ""), other["id"]

@@ -67,12 +67,15 @@ would be absent from the corpus, not merely lower quality.
 ### olmOCR-Bench — 80.6%
 
 ```
-overall            80.6%        (7,137 of 8,413 checks)
+overall            80.6%        (mean of 8 per-category pass rates)
+checks passed      7,137 of 8,413
 95% CI             79.62–81.57
 ```
 
-This is a pass rate over 8,413 adversarially chosen checks. The highest published
-system scores 83.1, so the reference point is not 100. **72.3% of documents carry
+80.6 is olmOCR-Bench's official overall score: the mean of the pass rates of its
+8 document categories, not a pass rate over individual checks. 7,137 of 8,413
+adversarially chosen checks passed. The highest published system scores 83.1 on
+the same overall metric (quoted, not reproduced), so the reference point is not 100. **72.3% of documents carry
 at least one failure**, which is why nothing here implies flawless output.
 
 Per document type, because a single average hides a 99% to 36.9% spread:
@@ -100,7 +103,7 @@ table structure accuracy      95.5%     (TEDS structure-only)
 table full accuracy           92.6%     (TEDS)
 ```
 
-These measure something different from the 80.6% check pass rate. Where both
+These measure something different from the 80.6 olmOCR-Bench overall score. Where both
 appear, each must be labelled.
 
 ### ParseBench
