@@ -177,6 +177,24 @@ def test_run_writes_raw_normalised_and_a2_receipts_with_repeats(tmp_path: Path) 
     assert len(list((tmp_path / "normalized" / "doc_type").iterdir())) == 10
 
 
+def test_every_call_gets_exactly_one_receipt_under_concurrency(tmp_path: Path) -> None:
+    endpoint = FakeEndpoint(GOOD)
+    run_tasks(
+        endpoint,
+        [load_task("doc_type")],
+        {"doc_type": _doc_type_cases(200)},
+        run_dir=tmp_path,
+        row=ROW,
+        guard=_guard(tmp_path),
+        concurrency=8,
+        repeat_subset=0,
+        repeats=1,
+    )
+    lines = (tmp_path / "receipts.jsonl").read_text().splitlines()
+    assert len(lines) == endpoint.calls == 200
+    assert len({json.loads(line)["case_id"] for line in lines}) == 200
+
+
 def test_stop_file_halts_before_the_next_batch(tmp_path: Path) -> None:
     (tmp_path / "STOP").write_text("")
     endpoint = FakeEndpoint(GOOD)

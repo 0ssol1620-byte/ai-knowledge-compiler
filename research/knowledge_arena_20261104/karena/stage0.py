@@ -234,7 +234,6 @@ def run_one(
         },
         "finished_at": utc_now_iso(),
     }
-    write_jsonl_append(run_dir / "receipts.jsonl", receipt, context="run receipt")
     return receipt
 
 
@@ -285,6 +284,9 @@ def run_tasks(
             ]
             for future in futures:
                 receipt = future.result()
+                # Written here, on one thread: concurrent appends from the pool lost one
+                # line of 280 in the first Stage 0 run (Windows, 2026-11-04).
+                write_jsonl_append(run_dir / "receipts.jsonl", receipt, context="run receipt")
                 operational = receipt["status"] == "PROVIDER_ERROR"
                 guard.breaker.record(failed=operational, error_signature=receipt["problem"])
             seconds = (datetime.now(tz=UTC) - began).total_seconds()
