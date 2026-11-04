@@ -42,9 +42,12 @@ export function AccuracySection() {
         <div className="tv-accuracy-figure">
           <strong>{accuracy.numbers.overall_percent}%</strong>
           <span>
-            {accuracy.numbers.benchmark} · {""}
+            {accuracy.numbers.benchmark} overall · mean of{" "}
+            {accuracy.numbers.category_count} category pass rates
+          </span>
+          <span>
             {accuracy.numbers.checks_passed.toLocaleString("en-US")} of{" "}
-            {accuracy.numbers.checks_total.toLocaleString("en-US")} checks
+            {accuracy.numbers.checks_total.toLocaleString("en-US")} checks passed
           </span>
           <span>
             95% CI {low}–{high}
@@ -53,7 +56,7 @@ export function AccuracySection() {
 
         {/*
           The pack's must_say, rendered from the pack rather than retyped. It
-          is the difference between a pass rate and a grade out of 100, and
+          is the difference between a category average and a grade out of 100, and
           between "accurate" and "72.3% of documents carry at least one
           failure".
         */}

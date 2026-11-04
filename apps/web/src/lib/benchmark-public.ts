@@ -111,10 +111,10 @@ export function formatBenchmarkCost(value: number | null | undefined): string {
  *   produced output, the pack forbids calling that accuracy, and a row in an
  *   accuracy table is exactly the position that would.
  *
- *   the 80.6% check pass rate and the 94.2% character match are different
+ *   the 80.6 olmOCR-Bench overall score and the 94.2% character match are different
  *   measures, and customer-facing-fidelity requires labelling which is which
  *   when both appear. This table carries the fidelity figures, which are the
- *   ones a reader can act on; the pass rate lives in the accuracy section with
+ *   ones a reader can act on; the overall score lives in the accuracy section with
  *   its own context.
  */
 export interface HomepageMetricRow {
