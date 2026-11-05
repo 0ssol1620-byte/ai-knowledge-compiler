@@ -190,9 +190,93 @@ releases:
     rollout:
       traffic_percent: 0
       fallback_recipe: parse_balanced_v1
+  - provider_key: ovisocr2
+    # Measured as a potential second reader for a PaddleOCR-VL baseline on the
+    # committed same-page text, table and reading-order overlap. The full-compare
+    # summary has no settled OvisOCR2 score, so no full-benchmark rank is claimed.
+    # It was missing from this file, so no route could have named it.
+    upstream_id: ATH-MaaS/OvisOCR2
+    upstream_revision: "1fc9221b7823a371d6e97f92d527cc847e24e107"
+    revision_source:
+      registry: research/model_arena_20260903/model_registry.json
+      registry_sha256: "sha256:292fd6f6176b017b0288dd6634d77f2be58c9c118d9a01bd3c91799a1570aa48"
+      method: official_huggingface_and_github_api_read_only
+      resolved_at: "2026-09-05T03:01:01Z"
+      weights_largest_file_sha256: "sha256:9270560288656ece5cb3a6989001afcf5af8d223bceed4a423c33a008861d009"
+      weights_file_count: 16
+    # The Arena resolved identity read-only and recorded no parameter count or
+    # dtype for this repository. Nothing here has checked the model card for
+    # them, so neither is stated.
+    model_size: null
+    weight_dtype: null
+    quantization: null
+    licenses:
+      weight_license: review_required
+      code_license: review_required
+      dataset_license: review_required
+      runtime_license: review_required
+      license_snapshot_sha256: null
+    runtime:
+      engine: vllm
+      version: "vllm==0.22.1"
+      # The Arena ran it from weights rather than a published image, so there is
+      # no immutable digest to pin. Route eligibility requires one.
+      image_digest: null
+    claimed_languages: [multilingual]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: native_v1
+  - provider_key: mineru_vlm
+    # Not a variant of the `mineru` entry below: a different repository. The
+    # score artifacts for the earlier olmOCR-Bench and ParseBench comparisons
+    # are absent from this release, so this row records identity only.
+    upstream_id: opendatalab/MinerU2.5-Pro-2605-1.2B
+    upstream_revision: "bff20d4ae2bf202df9f45284b4d43681555a97ed"
+    revision_source:
+      registry: research/model_arena_20260903/model_registry.json
+      registry_sha256: "sha256:292fd6f6176b017b0288dd6634d77f2be58c9c118d9a01bd3c91799a1570aa48"
+      method: official_huggingface_and_github_api_read_only
+      resolved_at: "2026-09-05T03:01:01Z"
+      weights_largest_file_sha256: "sha256:abf8681ca63b8dec7b67de257af47b821f179442f72998d0696ae2ed9232a5f0"
+      weights_file_count: 13
+    # 1.2B is the repository's own name, not a measurement of the checkpoint.
+    model_size: "1.2B"
+    weight_dtype: null
+    quantization: null
+    licenses:
+      weight_license: review_required
+      code_license: MinerU-Open-Source-License
+      dataset_license: review_required
+      runtime_license: review_required
+      license_snapshot_sha256: null
+    runtime:
+      engine: vllm
+      version: "mineru-vl-utils[vllm], vllm >= 0.10.1 for MinerULogitsProcessor"
+      image_digest: null
+    claimed_languages: [multilingual]
+    internal_validation:
+      corpus: akc-golden-2026q3-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: native_v1
   - provider_key: mineru
-    upstream_id: opendatalab/MinerU
-    upstream_revision: null
+    # This is the pipeline variant specifically -- `engine: mineru_pipeline`
+    # below was already saying so while `upstream_id` named the umbrella
+    # repository. This correction records the pipeline's exact identity without
+    # asserting a quality comparison that lacks a committed score artifact.
+    upstream_id: opendatalab/PDF-Extract-Kit-1.0
+    upstream_revision: "ed6b654c018d742e65a17671e379c5e6ecc87ec9"
+    revision_source:
+      registry: research/model_arena_20260903/model_registry.json
+      registry_sha256: "sha256:292fd6f6176b017b0288dd6634d77f2be58c9c118d9a01bd3c91799a1570aa48"
+      method: official_huggingface_and_github_api_read_only
+      resolved_at: "2026-09-05T03:01:01Z"
+      weights_largest_file_sha256: "sha256:6c80486e05b8cfbb48324a8802a2909221d219dd46aa6a936b92f2225555935e"
+      weights_file_count: 187
     model_size: suite
     weight_dtype: mixed
     quantization: null

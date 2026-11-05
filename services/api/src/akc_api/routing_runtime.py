@@ -122,6 +122,14 @@ def _registry_route(row: ModelRegistry) -> Route | None:
         return Route.PADDLE_FAST
     if "paddle" in identity and ("vl" in identity or "ocr" in identity):
         return Route.PADDLE_VL
+    # Added 2026-09-23 with the complementarity table. These two are second
+    # readers rather than first ones: `select_cross_check_peer` names them, and
+    # they only become selectable once a registry row carries a revision and an
+    # image digest like any other route.
+    if re.search(r"(?<![a-z0-9])(?:ovisocr2|ovis_vl)(?![a-z0-9])", identity):
+        return Route.OVIS_VL
+    if re.search(r"(?<![a-z0-9])infinity_parser2_flash(?![a-z0-9])", identity):
+        return Route.INFINITY_FLASH
     return None
 
 
@@ -159,6 +167,23 @@ def validate_registry_binding(row: ModelRegistry) -> ProviderBinding:
     if not row.benchmark_report.strip():
         raise ValueError("model recipe requires a benchmark report reference")
     return binding
+
+
+def _route_enabled(route: Route, flags: FeatureFlags, *, external_allowed: bool) -> bool:
+    """A ready registry recipe does not by itself authorize tenant traffic."""
+    if route == Route.HPD_FAST:
+        return bool(flags.hpd_enabled)
+    if route == Route.PADDLE_FAST:
+        return bool(flags.paddle_fast_enabled)
+    if route == Route.OVIS_VL:
+        return bool(flags.ovis_vl_enabled)
+    if route == Route.INFINITY_FLASH:
+        return bool(flags.infinity_flash_enabled)
+    if route == Route.UNLIMITED_LONG:
+        return bool(flags.unlimited_long_enabled)
+    if route == Route.MISTRAL_FALLBACK:
+        return bool(flags.external_fallback_enabled) and external_allowed
+    return True
 
 
 async def load_routing_runtime(
@@ -253,6 +278,8 @@ async def load_routing_runtime(
     flags = FeatureFlags(
         hpd_enabled=effective_flags.get("hpd_fast_route", False),
         paddle_fast_enabled=effective_flags.get("paddle_fast_route", False),
+        ovis_vl_enabled=effective_flags.get("ovis_vl_second_reader", False),
+        infinity_flash_enabled=effective_flags.get("infinity_flash_second_reader", False),
         unlimited_long_enabled=effective_flags.get("unlimited_long_doc", False),
         external_fallback_enabled=effective_flags.get(
             "external_mistral_fallback",
@@ -261,15 +288,7 @@ async def load_routing_runtime(
     )
     ready_routes: set[Route] = {Route.NATIVE}
     for route in bindings:
-        if route == Route.HPD_FAST and not flags.hpd_enabled:
-            continue
-        if route == Route.PADDLE_FAST and not flags.paddle_fast_enabled:
-            continue
-        if route == Route.UNLIMITED_LONG and not flags.unlimited_long_enabled:
-            continue
-        if route == Route.MISTRAL_FALLBACK and (
-            not flags.external_fallback_enabled or not external_allowed
-        ):
+        if not _route_enabled(route, flags, external_allowed=external_allowed):
             continue
         ready_routes.add(route)
 

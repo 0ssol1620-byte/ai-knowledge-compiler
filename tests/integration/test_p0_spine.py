@@ -322,6 +322,12 @@ def test_ambiguous_identity_is_quarantined_for_review(
     assert launch.outcome is AnswerOutcome.CURRENT
     assert "October 15" in str(result.claims[launch.claim_ids[0]]["value"])
 
+    # An unchanged tree is a no-op that carries the held review item forward
+    # as the same typed ReviewItem, not its stored record.
+    noop = pipeline.recompile(workspace)
+    assert noop.no_op
+    assert noop.review_queue == result.review_queue
+
 
 # ---------------------------------------------------------------------------
 # (g) selective == full oracle; unchanged tree is a no-op

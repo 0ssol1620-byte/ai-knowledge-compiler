@@ -18,8 +18,9 @@ import pack from "@/data/claims/public-claims-pack.json";
  *   completion-rate            99.98% is the share that produced output. It is
  *                              not accuracy, and calling it accuracy is listed
  *                              as forbidden.
- *   benchmark-accuracy         80.6% is a pass rate over 8,413 adversarial
- *                              checks. The top published system scores 83.1,
+ *   benchmark-accuracy         80.6 is the mean of 8 per-category pass rates,
+ *                              not checks passed over checks run (7,137 of
+ *                              8,413). The top published system scores 83.1,
  *                              so the reference point is not 100, and 72.3% of
  *                              documents carry at least one failure.
  *   accuracy-by-document-type  the spread runs 99.0% to 36.9%. Omitting the
@@ -185,6 +186,7 @@ export interface BenchmarkAccuracy {
   confidence_interval_95: [number, number];
   checks_passed: number;
   checks_total: number;
+  category_count: number;
   documents_with_at_least_one_failure_percent: number;
 }
 

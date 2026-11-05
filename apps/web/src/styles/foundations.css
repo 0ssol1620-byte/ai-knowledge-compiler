@@ -145,6 +145,15 @@
     }
   }
 
+  /*
+   * §7.3 — the UA sizes <small> as `smaller`, which under a 14px parent is
+   * 11.67px. Keep the step down, never below the floor. Any rule that sizes a
+   * <small> explicitly still wins; this only replaces the browser default.
+   */
+  small {
+    font-size: max(var(--fs-min), 0.8333em);
+  }
+
   /* §7.5 — prose measure only, never on cards. */
   .prose {
     max-width: var(--measure);

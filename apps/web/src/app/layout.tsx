@@ -19,6 +19,7 @@ import "./globals.css";
 import "./product-shell.css";
 import "./enterprise-refresh.css";
 import "./tavonel.css";
+import "./operations-surfaces.css";
 import "@/styles/components.css";
 import "@/styles/facing.css";
 import "@/styles/hero-comp.css";

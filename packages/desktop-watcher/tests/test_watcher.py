@@ -208,7 +208,8 @@ def test_restart_resumes_without_duplicate_events(watch_env) -> None:  # type: i
     try:
         target.write_text("payload-1", encoding="utf-8")
         assert wait_until(lambda: len(session1.records) == 1)
-        assert session1.watcher.stats()["emitted"] == 1
+        # The sink callback records the event before the watcher increments its counter.
+        assert wait_until(lambda: session1.watcher.stats()["emitted"] == 1)
     finally:
         session1.stop()
     assert len(events_file.read_text(encoding="utf-8").splitlines()) == 1

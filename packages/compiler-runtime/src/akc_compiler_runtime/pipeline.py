@@ -37,6 +37,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import cast
 
 from akc_cir.answer_compiler import CompiledAnswer, DraftClaim, compile_answer
 from akc_cir.authority import AuthorityClass, ClaimContext, SourceStatus
@@ -118,6 +119,19 @@ class ReviewItem:
         }
 
 
+def _review_item(record: Mapping[str, object]) -> ReviewItem:
+    """Rehydrate a stored review record (``ReviewItem.as_record``)."""
+    candidates = record["candidates"]
+    assert isinstance(candidates, list | tuple)
+    return ReviewItem(
+        subject=str(record["subject"]),
+        reason=str(record["reason"]),
+        candidates=tuple(str(candidate) for candidate in candidates),
+        rel_path=str(record["rel_path"]),
+        text=str(record["text"]),
+    )
+
+
 class OracleRefused(RuntimeError):
     """A selective rebuild failed to match a full rebuild; nothing published."""
 
@@ -139,7 +153,8 @@ def _from_iso(raw: object) -> datetime | None:
 
 
 def _jsonable(row: Mapping[str, object]) -> dict[str, object]:
-    return json.loads(json.dumps(dict(row), ensure_ascii=False))
+    restored: dict[str, object] = json.loads(json.dumps(dict(row), ensure_ascii=False))
+    return restored
 
 
 class Pipeline:
@@ -197,7 +212,7 @@ class Pipeline:
                 no_op=True,
                 claims=dict(previous.claims),
                 evidence_index=dict(previous.evidence_index),
-                review_queue=tuple(previous.review_queue),
+                review_queue=tuple(_review_item(record) for record in previous.review_queue),
                 invalidated=(),
                 renames=(),
                 plan=None,
@@ -336,8 +351,8 @@ class Pipeline:
 
         decisions = (
             assign_one_to_one(
-                [snapshot.fingerprint(source_lineage=lineage_source) for snapshot in after_snapshots],
-                [snapshot.fingerprint(source_lineage=lineage_source) for snapshot in before_snapshots],
+                [snap.fingerprint(source_lineage=lineage_source) for snap in after_snapshots],
+                [snap.fingerprint(source_lineage=lineage_source) for snap in before_snapshots],
             )
             if (after_snapshots or before_snapshots)
             else []
@@ -581,7 +596,7 @@ class Pipeline:
             return f"doc:{self._source_of(ref)}"
 
         for row in rows:
-            refs = row["dep_refs"]  # type: ignore[union-attr]
+            refs = cast(list[str], row["dep_refs"])
             targets = {resolve(ref) for ref in refs}
             targets.discard(str(row["doc_node"]))
             row["dependencies"] = sorted(targets)
@@ -651,7 +666,7 @@ class Pipeline:
             doc_node = str(row["doc_node"])
             add(logical_id, doc_node, EdgeType.CONSUMED_BY)
             add(doc_node, logical_id, EdgeType.INVALIDATES)
-            for target in row["dependencies"]:  # type: ignore[union-attr]
+            for target in cast(list[str], row["dependencies"]):
                 add(doc_node, str(target), EdgeType.DEPENDS_ON)
         for unit_id, lineage_path in removed_units:
             add(unit_id, f"doc:{self._source_of(lineage_path)}", EdgeType.CONSUMED_BY)
