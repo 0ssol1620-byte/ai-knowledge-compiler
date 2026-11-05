@@ -15,7 +15,7 @@ overrides:
   sharp: 0.35.5
   source-map-js: 1.2.2
   vite: 7.3.7
-  basic-ftp: 6.2.6
+  basic-ftp: 6.2.1
 
 patchedDependencies:
   minimatch@3.1.5: 7c1cdb6f213845604c8ff090dee5ff253e34bc9b2989cbca0c7e35575a76d424
@@ -2362,8 +2362,8 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  basic-ftp@6.2.6:
-    resolution: {integrity: sha512-0EjZCaodOz6yiokv2JA1VyKGNdGxULZ+GGlPgG9tm4d+T/bHtX1hUch8CumDneBfpIbiSdn7TaCGwpM+gwsOlw==}
+  basic-ftp@6.2.1:
+    resolution: {integrity: sha512-bK67isD+lKq46AU8vNtjvMaT2ZqAOAmNCbxUHlFBRD4k15NWxyEjmaKtZPlgce58So4BNTjITGQOVTjL9y0ECA==}
     engines: {node: '>=10.0.0'}
 
   bidi-js@1.0.3:
@@ -6954,7 +6954,7 @@ snapshots:
 
   baseline-browser-mapping@2.11.5: {}
 
-  basic-ftp@6.2.6: {}
+  basic-ftp@6.2.1: {}
 
   bidi-js@1.0.3:
     dependencies:
@@ -7956,7 +7956,7 @@ snapshots:
 
   get-uri@6.0.5:
     dependencies:
-      basic-ftp: 6.2.6
+      basic-ftp: 6.2.1
       data-uri-to-buffer: 6.0.2
       debug: 4.4.3
     transitivePeerDependencies:
