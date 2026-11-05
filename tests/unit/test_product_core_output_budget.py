@@ -8,7 +8,7 @@ import json
 
 import pytest
 from akc_cir.base import canonical_json
-from akc_product_core import ProductCoreCompiler, ProductCoreCompileRequest
+from akc_product_core import ProductCoreCompiler, ProductCoreCompileRequest, api
 from akc_product_core.api import ProductCoreService
 from akc_product_core.compiler import (
     OUTPUT_BUDGET_BYTES,
@@ -204,3 +204,46 @@ def test_environment_budget_lowering_is_applied(monkeypatch: pytest.MonkeyPatch)
     monkeypatch.setenv("TAVONEL_CORE_OUTPUT_BUDGET_BYTES", "1024")
     main = importlib.reload(importlib.import_module("akc_product_core.__main__"))
     assert main.app.state.product_core_service.compiler.output_budget_bytes == 1024
+
+
+def _post(service: ProductCoreService, request_id: str) -> int:
+    request = _request(
+        (_document("filing-a", f"Revenue for {request_id} is 1 won."),), request_id=request_id
+    )
+    body = canonical_json(
+        request.model_dump(mode="json", by_alias=True, exclude_none=True)
+    ).encode()
+    status, _ = service.compile(body=body, headers=_signed(body, request_id))
+    return status
+
+
+def test_idempotency_cache_evicts_least_recently_used_by_entries(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(api, "CACHE_MAX_ENTRIES", 2)
+    service = ProductCoreService(hmac_secret=SECRET, core_release_digest=RELEASE)
+
+    assert [_post(service, rid) for rid in ("c-1", "c-2")] == [200, 200]
+    assert _post(service, "c-1") == 200  # replay: c-1 becomes the most recently used
+    assert _post(service, "c-3") == 200
+
+    assert [key[2] for key in service._cache] == ["idem-c-1", "idem-c-3"]
+    assert service._cache_bytes == sum(entry.size_bytes for entry in service._cache.values())
+
+
+def test_idempotency_cache_evicts_by_total_bytes(monkeypatch: pytest.MonkeyPatch) -> None:
+    service = ProductCoreService(hmac_secret=SECRET, core_release_digest=RELEASE)
+    assert _post(service, "b-1") == 200
+    one_entry = service._cache_bytes
+    assert one_entry > 0
+    monkeypatch.setattr(api, "CACHE_MAX_BYTES", one_entry + one_entry // 2)
+
+    assert _post(service, "b-2") == 200
+
+    assert [key[2] for key in service._cache] == ["idem-b-2"]
+    assert (
+        service._cache_bytes
+        == service._cache[
+            "tenant-foundation-pilot", "workspace-foundation-pilot", "idem-b-2"
+        ].size_bytes
+    )
