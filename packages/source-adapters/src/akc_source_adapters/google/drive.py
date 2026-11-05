@@ -8,7 +8,7 @@ from __future__ import annotations
 import urllib.parse
 from collections.abc import Mapping
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, cast
 
 from akc_source_adapters.envelope import ChangeEvent, Cursor, FetchResult
 from akc_source_adapters.google._common import GoogleTokenProvider, get_json
@@ -45,8 +45,7 @@ class DriveAdapter:
             f"{self.api_base}/about?fields=storageQuota,user&pageSize=1",
             self.token_provider,
         )
-        user_value = about.get("user")
-        user = user_value if isinstance(user_value, Mapping) else {}
+        user = about.get("user") or {}
         return {
             "provider": PROVIDER,
             "account": user.get("emailAddress", ""),
@@ -59,13 +58,6 @@ class DriveAdapter:
         page_token = str(state.get("delta_token") or "")
         observed_at = datetime.now(UTC)
         events: list[ChangeEvent] = []
-        files_value = state.get("files")
-        files = (
-            {str(path): str(revision) for path, revision in files_value.items()}
-            if isinstance(files_value, Mapping)
-            else {}
-        )
-        state["files"] = files
 
         while True:
             params: dict[str, str] = {
@@ -90,10 +82,9 @@ class DriveAdapter:
                 path = str(file_meta.get("name") or change.get("fileId"))
                 revision = f"{change.get('fileId')}@{file_meta.get('modifiedTime', '')}"
                 removed = bool(change.get("removed")) or bool(file_meta.get("trashed"))
-                kind = (
-                    "file_removed"
-                    if removed
-                    else ("file_changed" if files.get(path) else "file_added")
+                known_files = cast(dict[str, str], state.get("files", {}))
+                kind = "file_removed" if removed else (
+                    "file_changed" if known_files.get(path) else "file_added"
                 )
                 event_payload: dict[str, object] = {"path": path}
                 if not removed:
@@ -103,9 +94,9 @@ class DriveAdapter:
                             "modifiedTime": file_meta.get("modifiedTime", ""),
                         }
                     )
-                    files[path] = revision
-                else:
-                    files.pop(path, None)
+                    cast(dict[str, str], state.setdefault("files", {}))[path] = revision
+                elif "files" in state:
+                    cast(dict[str, str], state["files"]).pop(path, None)
                 events.append(
                     ChangeEvent(
                         source_id=self.source_id,
@@ -131,9 +122,9 @@ class DriveAdapter:
         return FetchResult(events=tuple(events), cursor=cursor_out)
 
     def checkpoint(self) -> Cursor:
-        start = get_json(f"{self.api_base}/changes/startPageToken", self.token_provider).get(
-            "startPageToken", ""
-        )
+        start = get_json(
+            f"{self.api_base}/changes/startPageToken", self.token_provider
+        ).get("startPageToken", "")
         return Cursor(
             provider=PROVIDER,
             source_id=self.source_id,

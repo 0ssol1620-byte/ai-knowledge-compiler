@@ -408,7 +408,7 @@
   white-space: nowrap;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 760px) {
   .composition {
     min-height: 0;
     padding: 24px 16px;

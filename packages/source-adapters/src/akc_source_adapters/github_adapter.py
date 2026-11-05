@@ -41,7 +41,7 @@ import urllib.request
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Any
+from typing import Any, cast
 
 from akc_source_adapters.envelope import ChangeEvent, Cursor, FetchResult, utc_now
 
@@ -57,18 +57,6 @@ RATE_LIMIT_MARGIN = 10  # sleep until reset once fewer than this many calls rema
 RATE_LIMIT_MAX_WAIT_SECONDS = 3600.0
 REQUEST_TIMEOUT_SECONDS = 30.0
 _SINCE_BACKSTEP = timedelta(seconds=1)  # widens `since=` so the anchor stays in the window
-
-
-def _is_safe_api_base(value: str) -> bool:
-    try:
-        parsed = urllib.parse.urlsplit(value)
-    except ValueError:
-        return False
-    if not parsed.hostname or parsed.username is not None or parsed.password is not None:
-        return False
-    return parsed.scheme == "https" or (
-        parsed.scheme == "http" and parsed.hostname in {"localhost", "127.0.0.1", "::1"}
-    )
 
 
 class GitHubAdapterError(RuntimeError):
@@ -113,8 +101,6 @@ class GitHubAdapter:
         owner, _, name = repo.partition("/")
         if not owner or not name or "/" in name:
             raise ValueError(f"repo must look like 'owner/name', got {repo!r}")
-        if not _is_safe_api_base(api_base):
-            raise ValueError("api_base must use HTTPS (or exact loopback for tests)")
         self.repo = f"{owner}/{name}"
         self.token_provider = token_provider
         self.source_id = source_id or f"github:{self.repo}"
@@ -180,9 +166,8 @@ class GitHubAdapter:
         new_commits.reverse()  # oldest first so consumers apply history order
 
         events: list[ChangeEvent] = []
-        files_value = state.get("files")
-        files_source = files_value if isinstance(files_value, Mapping) else {}
-        files = {str(path): str(sha) for path, sha in files_source.items()}
+        prior_files = cast(Mapping[str, object], state.get("files") or {})
+        files: dict[str, str] = {str(path): str(sha) for path, sha in dict(prior_files).items()}
         for summary in new_commits:
             detail = self._request_json(f"/repos/{self.repo}/commits/{summary.sha}", {})
             added, modified, removed = _split_files(detail.get("files"))
@@ -286,42 +271,43 @@ class GitHubAdapter:
             return None  # unparsable anchor date: widen to a fuller listing instead
         return (moment.astimezone(UTC) - _SINCE_BACKSTEP).isoformat().replace("+00:00", "Z")
 
+
+
     def _request_json(self, path: str, params: Mapping[str, str | int]) -> Any:
-        query = urllib.parse.urlencode(params, doseq=True)
-        url = f"{self.api_base}{path}{'?' + query if query else ''}"
-        for attempt in (1, 2):
-            request = urllib.request.Request(  # noqa: S310 -- operator-configured base
-                url, method="GET"
-            )
-            request.add_header("Accept", "application/vnd.github+json")
-            request.add_header("User-Agent", f"akc-source-adapters/{PROVIDER}")
-            request.add_header("X-GitHub-Api-Version", API_VERSION)
-            token = self.token_provider() if self.token_provider is not None else None
-            if token:
-                request.add_header("Authorization", f"Bearer {token}")
-            try:
-                with urllib.request.urlopen(  # noqa: S310 -- same operator-configured base
-                    request, timeout=REQUEST_TIMEOUT_SECONDS
-                ) as response:
-                    body = response.read()
-                    self._respect_rate_limit(dict(response.headers))
-                    return json.loads(body.decode("utf-8"))
-            except urllib.error.HTTPError as exc:
-                headers = dict(exc.headers or {})
-                retry_after = headers.get("Retry-After")
-                rate_limited = exc.code in (403, 429) and (
-                    retry_after is not None or headers.get("X-RateLimit-Remaining") == "0"
-                )
-                if attempt == 1 and rate_limited and retry_after is not None:
-                    self._sleep(min(float(retry_after), RATE_LIMIT_MAX_WAIT_SECONDS))
-                    continue  # secondary rate limit: one patient retry, then give up
-                raise GitHubAdapterError(
-                    f"GET {path} failed (HTTP {exc.code}): {_body_hint(exc.read())}",
-                    status=exc.code,
-                ) from exc
-            except urllib.error.URLError as exc:
-                raise GitHubAdapterError(f"GET {path} failed: {exc.reason}") from exc
-        raise GitHubAdapterError(f"GET {path} failed: retries exhausted")  # pragma: no cover
+            query = urllib.parse.urlencode(params, doseq=True)
+            url = f"{self.api_base}{path}{'?' + query if query else ''}"
+            for attempt in (1, 2):
+                request = urllib.request.Request(url, method="GET")  # noqa: S310 -- api_base is operator-configured
+                request.add_header("Accept", "application/vnd.github+json")
+                request.add_header("User-Agent", f"akc-source-adapters/{PROVIDER}")
+                request.add_header("X-GitHub-Api-Version", API_VERSION)
+                token = self.token_provider() if self.token_provider is not None else None
+                if token:
+                    request.add_header("Authorization", f"Bearer {token}")
+                try:
+                    # same operator-configured base
+                    with urllib.request.urlopen(  # noqa: S310
+                        request, timeout=REQUEST_TIMEOUT_SECONDS
+                    ) as response:
+                        body = response.read()
+                        self._respect_rate_limit(dict(response.headers))
+                        return json.loads(body.decode("utf-8"))
+                except urllib.error.HTTPError as exc:
+                    headers = dict(exc.headers or {})
+                    retry_after = headers.get("Retry-After")
+                    rate_limited = exc.code in (403, 429) and (
+                        retry_after is not None or headers.get("X-RateLimit-Remaining") == "0"
+                    )
+                    if attempt == 1 and rate_limited and retry_after is not None:
+                        self._sleep(min(float(retry_after), RATE_LIMIT_MAX_WAIT_SECONDS))
+                        continue  # secondary rate limit: one patient retry, then give up
+                    raise GitHubAdapterError(
+                        f"GET {path} failed (HTTP {exc.code}): {_body_hint(exc.read())}",
+                        status=exc.code,
+                    ) from exc
+                except urllib.error.URLError as exc:
+                    raise GitHubAdapterError(f"GET {path} failed: {exc.reason}") from exc
+            raise GitHubAdapterError(f"GET {path} failed: retries exhausted")  # pragma: no cover
 
     def _respect_rate_limit(self, headers: Mapping[str, str]) -> None:
         remaining = headers.get("X-RateLimit-Remaining")
@@ -406,6 +392,8 @@ def _body_hint(raw: bytes | str, limit: int = 120) -> str:
     except Exception:  # pragma: no cover - decode with replace cannot raise
         return ""
     return " ".join(text.split())[:limit]
+
+
 
 
 def _next_state(
