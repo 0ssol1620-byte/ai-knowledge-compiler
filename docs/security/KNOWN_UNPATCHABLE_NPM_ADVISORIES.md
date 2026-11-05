@@ -1,5 +1,11 @@
 # Known unpatchable npm advisories — 2026-08-23
 
+> **Status 2026-11-05:** both entries are closed. `image-size` is pinned to
+> 2.0.3 by override, and `extract-zip` left the lockfile with the
+> @lhci/cli 0.16.0 / puppeteer 25.16 update. The two `extract-zip` audit
+> exceptions (GHSA-jmr9-qjv8-65gv, GHSA-7pqw-9j4j-h8q3) were removed from
+> `security.yml` and `pnpm-workspace.yaml`, so a re-entry fails the audit.
+
 `pnpm audit` reports three high-severity advisories whose "patched" versions do
 not exist on the npm registry as of this date. They cannot be fixed by an
 override without pinning a version that was never published:
