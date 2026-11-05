@@ -38,8 +38,7 @@ for (const route of visualRoutes) {
           transition-duration: 0s !important;
         }
         .st-home > section,
-        .folynta-v4-home > section,
-        .tv-home > section {
+        .folynta-v4-home > section {
           content-visibility: visible !important;
         }
       `,

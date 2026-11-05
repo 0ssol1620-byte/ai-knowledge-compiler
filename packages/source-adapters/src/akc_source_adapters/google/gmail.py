@@ -42,7 +42,10 @@ class GmailAdapter:
     def _message(self, message_id: str) -> dict[str, Any]:
         params = {"format": "metadata", "metadataHeaders": "Subject"}
         query = urllib.parse.urlencode(params)
-        return get_json(f"{self.api_base}/messages/{message_id}?{query}", self.token_provider)
+        message: dict[str, Any] = get_json(
+            f"{self.api_base}/messages/{message_id}?{query}", self.token_provider
+        )
+        return message
 
     @staticmethod
     def _subject(message: dict[str, Any]) -> str:
@@ -52,11 +55,7 @@ class GmailAdapter:
         return ""
 
     def _emit_message(
-        self,
-        message_id: str,
-        removed: bool,
-        observed_at: datetime,
-        history_id: Any = "",
+        self, message_id: str, removed: bool, observed_at: datetime, history_id: Any = ""
     ) -> ChangeEvent:
         revision = f"{message_id}@{history_id}"
         if removed:

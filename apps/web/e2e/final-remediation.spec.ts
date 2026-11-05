@@ -1,20 +1,6 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 import benchmarkSnapshot from "../src/data/benchmark-public-snapshot.json";
-
-async function expectAppHydrated(page: Page) {
-  await expect(page.locator(".app-frame")).toHaveAttribute(
-    "data-app-hydrated",
-    "true",
-    { timeout: 15_000 },
-  );
-}
-
-async function expectSiteHydrated(page: Page) {
-  await expect(page.locator("html")).toHaveAttribute("data-hydrated", "true", {
-    timeout: 15_000,
-  });
-}
 
 // Every assertion in this file targets English product copy. The merged app
 // renders Korean until a locale cookie exists (DEFAULT_STRUCTARA_LOCALE is
@@ -66,7 +52,6 @@ test("Reduced-motion home keeps the proof demo fully operable", async ({
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  await expectSiteHydrated(page);
 
   // The paper hero does its work without animation machinery: no canvas may
   // appear when the visitor prefers reduced motion.
@@ -99,7 +84,7 @@ test("Reduced-motion home keeps the proof demo fully operable", async ({
 test("Public filing demo preserves one receipt through every transformation", async ({
   page,
 }) => {
-  await page.goto("/demo/dart", { waitUntil: "domcontentloaded" });
+  await page.goto("/demo/dart");
   await expect(
     page.getByRole("heading", {
       level: 1,
@@ -111,9 +96,7 @@ test("Public filing demo preserves one receipt through every transformation", as
   // verifiable at the original archive.
   const demo = page.locator(".tv-proof-demo");
   await expect(demo).toContainText("OPENDART RECEIPT 20260730000413");
-  await expect(
-    demo.getByRole("link", { name: /Verify receipt/ }),
-  ).toHaveAttribute(
+  await expect(demo.getByRole("link", { name: /Verify receipt/ })).toHaveAttribute(
     "href",
     "https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260730000413",
   );
@@ -131,9 +114,7 @@ test("Public filing demo preserves one receipt through every transformation", as
 
   await demo.getByRole("tab", { name: "Markdown" }).click();
   await expect(result).toContainText("4,902,490,901 JPY for 2026 Q1");
-  await expect(result).toContainText(
-    "| Revenue | 4,902,490,901 | 10,048,464,180 |",
-  );
+  await expect(result).toContainText("| Revenue | 4,902,490,901 | 10,048,464,180 |");
 
   await demo.getByRole("tab", { name: "Vault" }).click();
   await expect(result).toContainText("JTC — 2026 Q1 revenue");
@@ -152,7 +133,6 @@ test("legacy review links enter the Integrity Console without leaking unsafe con
   test.setTimeout(90_000);
   await page.goto(
     "/review?project=project-7&token=secret&redirect_uri=https%3A%2F%2Fevil.example",
-    { waitUntil: "domcontentloaded" },
   );
   // The legacy route redirects client-side after the shell hydrates; on a
   // cold dev compile that hand-off can outlive the default assertion window.
@@ -170,8 +150,7 @@ test("legacy review links enter the Integrity Console without leaking unsafe con
 test("Knowledge Studio filters, changes perspective, and exposes accessible relations", async ({
   page,
 }) => {
-  await page.goto("/knowledge-bases", { waitUntil: "domcontentloaded" });
-  await expectAppHydrated(page);
+  await page.goto("/knowledge-bases");
   await expect(
     page.getByRole("heading", { name: "Knowledge Studio" }),
   ).toBeVisible();
@@ -196,8 +175,7 @@ test("Knowledge Studio filters, changes perspective, and exposes accessible rela
 test("Projects operates independently with filters, grid view, and bulk actions", async ({
   page,
 }) => {
-  await page.goto("/projects", { waitUntil: "domcontentloaded" });
-  await expectAppHydrated(page);
+  await page.goto("/projects");
   await expect(page.getByRole("heading", { name: "Projects" })).toBeVisible();
   await page
     .getByRole("textbox", { name: "Search projects" })
@@ -228,8 +206,7 @@ test("Command menu filters quick navigation and closes on Escape", async ({
     testInfo.project.name === "mobile",
     "Desktop command surface is tested separately from mobile navigation.",
   );
-  await page.goto("/projects", { waitUntil: "domcontentloaded" });
-  await expectAppHydrated(page);
+  await page.goto("/projects");
   const trigger = page.getByRole("button", {
     name: /Search projects, documents, or evidence/,
   });
@@ -270,7 +247,7 @@ test("Command menu filters quick navigation and closes on Escape", async ({
 test("Legal routes are independent and never claim unapproved legal effect", async ({
   page,
 }) => {
-  await page.goto("/legal/privacy", { waitUntil: "domcontentloaded" });
+  await page.goto("/legal/privacy");
   await expect(
     page.getByRole("heading", { level: 1, name: "Privacy principles." }),
   ).toBeVisible();
@@ -298,13 +275,12 @@ test("Legal routes are independent and never claim unapproved legal effect", asy
   ] as const) {
     // exact: true — "Contact privacy" on the page must not match the footer
     // link that merely reads "privacy".
-    await expect(page.getByRole("link", { name, exact: true })).toHaveAttribute(
-      "href",
-      href,
-    );
+    await expect(
+      page.getByRole("link", { name, exact: true }),
+    ).toHaveAttribute("href", href);
   }
 
-  await page.goto("/legal/terms", { waitUntil: "domcontentloaded" });
+  await page.goto("/legal/terms");
   await expect(
     page.getByRole("heading", { level: 1, name: "Terms of service." }),
   ).toBeVisible();
@@ -313,7 +289,7 @@ test("Legal routes are independent and never claim unapproved legal effect", asy
 test("Security architecture exposes real trust boundaries and honest evidence status", async ({
   page,
 }) => {
-  await page.goto("/security", { waitUntil: "domcontentloaded" });
+  await page.goto("/security");
   await expect(
     page.getByRole("heading", {
       level: 1,
@@ -338,9 +314,7 @@ test("Security architecture exposes real trust boundaries and honest evidence st
   await expect(ledger.getByText("External transfer")).toBeVisible();
   await expect(ledger.getByText("Blocked", { exact: true })).toBeVisible();
   await expect(ledger.getByText("Retention")).toBeVisible();
-  await expect(
-    ledger.getByText("No hidden policy · no unregistered claim"),
-  ).toBeVisible();
+  await expect(ledger.getByText("No hidden policy · no unregistered claim")).toBeVisible();
 
   for (const section of [
     "Encryption and isolation",
@@ -356,30 +330,22 @@ test("Security architecture exposes real trust boundaries and honest evidence st
   ).toHaveAttribute("href", "/legal/privacy");
 });
 
-test("Processing workspace presents a demo snapshot without pretending it is live", async ({
+test("Processing workspace presents a paused demo snapshot without pretending it is live", async ({
   page,
-  isMobile,
 }) => {
-  await page.goto("/documents/sample-dart/processing", {
-    waitUntil: "domcontentloaded",
-  });
-  await expectAppHydrated(page);
+  await page.goto("/documents/sample-dart/processing");
   await expect(
     page.getByText(
       "Demo workspace · No documents are processed and no credits are used.",
     ),
   ).toBeVisible();
 
-  // The sample is a preflight snapshot: it reports facts and never invents
-  // live progress before the user approves processing.
-  const badge = page.getByLabel(/demo snapshot, not a live connection/i);
-  if (isMobile) {
-    await expect(badge).toBeHidden();
-  } else {
-    await expect(badge).toBeVisible();
-  }
-  await expect(badge).toContainText("Demo snapshot");
-  await expect(page.locator(".pipeline-summary")).toContainText("Paused demo");
+  // The demo is an explicitly paused snapshot: a badge says so, and the stage
+  // track carries finished/not-finished state instead of invented progress.
+  const badge = page.getByLabel("Demo snapshot, not a live connection");
+  await expect(badge).toBeVisible();
+  await expect(badge).toHaveText("Demo snapshot");
+  await expect(page.locator(".pipeline-summary")).toContainText("Paused demo ·");
 
   const stages = page.locator(".stage-track .stage-item");
   const stageLabels = [
@@ -404,8 +370,7 @@ test("Processing workspace presents a demo snapshot without pretending it is liv
 test("Collection intake preserves manifest truth and cannot start before signed preflight", async ({
   page,
 }) => {
-  await page.goto("/intake", { waitUntil: "domcontentloaded" });
-  await expectAppHydrated(page);
+  await page.goto("/intake");
   await expect(
     page.getByRole("heading", {
       name: "Bring a document collection in without losing its structure",
@@ -448,10 +413,7 @@ test("Collection intake preserves manifest truth and cannot start before signed 
 test("Integrity Console leads with automatic history and keeps override secondary", async ({
   page,
 }) => {
-  await page.goto("/integrity?reference=1", {
-    waitUntil: "domcontentloaded",
-  });
-  await expectAppHydrated(page);
+  await page.goto("/integrity?reference=1");
   await expect(
     page.getByRole("heading", {
       name: /Automatic recovery first/,
@@ -497,7 +459,7 @@ test("Integrity Console leads with automatic history and keeps override secondar
 test("Public benchmark route commits to demonstrated accuracy, not declared numbers", async ({
   page,
 }) => {
-  await page.goto("/benchmarks", { waitUntil: "domcontentloaded" });
+  await page.goto("/benchmarks");
   await expect(
     page.getByRole("heading", {
       level: 1,
@@ -538,9 +500,7 @@ test("Public benchmark route commits to demonstrated accuracy, not declared numb
 test("Evidence film exposes the signed model portfolio with real controls", async ({
   page,
 }) => {
-  await page.goto("/film?scene=4&static=1", {
-    waitUntil: "domcontentloaded",
-  });
+  await page.goto("/film?scene=4&static=1");
   await expect(
     page.getByRole("heading", {
       name: "Different strengths become one routing advantage.",
@@ -583,15 +543,9 @@ test("Signup keeps the Google-centered entry contract while the retired compile 
 }) => {
   // G0 retired the standalone compile product page. The catch-all must keep
   // returning 404 instead of reviving orphaned marketing copy.
-  expect(
-    (
-      await page.goto("/product/compile", {
-        waitUntil: "domcontentloaded",
-      })
-    )?.status(),
-  ).toBe(404);
+  expect((await page.goto("/product/compile"))?.status()).toBe(404);
 
-  await page.goto("/signup", { waitUntil: "domcontentloaded" });
+  await page.goto("/signup");
   await expect(
     page.getByRole("button", { name: "Continue with Google" }),
   ).toBeVisible();

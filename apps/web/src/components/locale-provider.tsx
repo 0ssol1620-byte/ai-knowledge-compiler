@@ -4,7 +4,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   type ReactNode,
 } from "react";
@@ -26,10 +25,6 @@ export function LocaleProvider({
   locale: StructaraLocale;
   children: ReactNode;
 }) {
-  useEffect(() => {
-    document.documentElement.dataset.hydrated = "true";
-  }, []);
-
   const setLocale = useCallback((nextLocale: StructaraLocale) => {
     document.documentElement.lang = nextLocale;
     const returnTo = `${window.location.pathname}${window.location.search}${window.location.hash}`;
