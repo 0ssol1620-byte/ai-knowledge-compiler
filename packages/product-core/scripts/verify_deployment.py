@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import os
@@ -102,6 +103,11 @@ def _body_and_headers(
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    # No default: whether a deployment accepts customer data is a release decision, so the
+    # operator states which one is expected and a mismatch fails either way.
+    parser.add_argument("--expect-customer-data", required=True, choices=("true", "false"))
+    expect_customer_data = parser.parse_args().expect_customer_data == "true"
     base_url = _required_env("TAVONEL_PRODUCT_CORE_URL").rstrip("/")
     secret = _required_env("TAVONEL_PRODUCT_CORE_HMAC").encode()
     expected_release = _required_env("TAVONEL_CORE_RELEASE_DIGEST")
@@ -116,7 +122,7 @@ def main() -> None:
             "coreReleaseDigest": expected_release,
             "matchingPolicy": "legacy",
             "candidatePromotion": False,
-            "customerDataEnabled": False,
+            "customerDataEnabled": expect_customer_data,
         }:
             raise RuntimeError("Product-Core health contract does not match the release")
 
@@ -149,7 +155,12 @@ def main() -> None:
         customer_response = client.post(
             "/v2/compile", content=customer_body, headers=customer_headers
         )
-        if customer_response.status_code != 403 or customer_response.json().get("code") != (
+        if expect_customer_data:
+            if customer_response.status_code != 200:
+                raise RuntimeError(
+                    f"customer-data compile returned {customer_response.status_code}, expected 200"
+                )
+        elif customer_response.status_code != 403 or customer_response.json().get("code") != (
             "CORE_CUSTOMER_DATA_DISABLED"
         ):
             raise RuntimeError("customer-data compile was not rejected fail-closed")

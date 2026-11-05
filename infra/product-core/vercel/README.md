@@ -27,4 +27,7 @@ Required production environment variables:
   source digest.
 
 Do not set `TAVONEL_CORE_ALLOW_CUSTOMER_DATA` for Foundation qualification.
+Production (`tavonel-product-core-v2`) has had it `true` since 2026-11-03, under the
+founder's go-live approval for direct upload; verify with
+`verify_deployment.py --expect-customer-data true`.
 The service exposes `GET /health` and HMAC-authenticated `POST /v2/compile`.
