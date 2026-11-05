@@ -9,7 +9,7 @@ in one review.
 
 The root Python application and GPU runtime use separate `uv.lock` files.
 Images and CI must run `uv sync --locked`; production images exclude development
-dependencies. A pinned `uv==0.12.0` bootstrap is the only allowed pre-lock Python
+dependencies. A pinned `uv==0.13.4` bootstrap is the only allowed pre-lock Python
 installation.
 
 `docker-compose.dev.yml` intentionally retains readable upstream tags because it
