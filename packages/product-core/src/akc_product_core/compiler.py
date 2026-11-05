@@ -77,6 +77,21 @@ from .semantics import (
     semantic_tokens,
 )
 
+# The largest package Core returns. Foundation inlines every package file into
+# candidate-world.json and refuses that object above 32 MiB (`MAX_COLLECTION_JSON_BYTES`), so a
+# package whose files alone exceed it can never be stored: refusing here names the cause before
+# the candidate is serialised, hashed, sent, receipted and registered for nothing.
+OUTPUT_BUDGET_BYTES = 32 * 1024 * 1024
+
+
+class CoreOutputTooLargeError(Exception):
+    """The compiled package exceeds the output budget. Nothing is truncated; nothing is sent."""
+
+    def __init__(self, detail: dict[str, object]) -> None:
+        super().__init__(f"package of {detail['bytes']} B exceeds budget {detail['budget']} B")
+        self.detail = detail
+
+
 _RETRIEVAL_MIN_CHARS = 180
 _RETRIEVAL_MAX_CHARS = 720
 _RETRIEVAL_TAIL_MAX_CHARS = 900
@@ -281,10 +296,20 @@ def _link_predicate(source_kind: str, target_kind: str, link_index: int) -> str:
 class ProductCoreCompiler:
     """Compile an immutable OCR collection into a non-promoted candidate world."""
 
-    def __init__(self, *, core_release_digest: str) -> None:
+    def __init__(
+        self,
+        *,
+        core_release_digest: str,
+        output_budget_bytes: int = OUTPUT_BUDGET_BYTES,
+    ) -> None:
         if not core_release_digest.startswith("sha256:") or len(core_release_digest) != 71:
             raise ValueError("core release digest must be sha256:")
+        # Lowering the budget is a deployment's call; raising it past the bound the site can
+        # store is not, because the site would only refuse the same package later.
+        if not 0 < output_budget_bytes <= OUTPUT_BUDGET_BYTES:
+            raise ValueError(f"output budget must be in (0, {OUTPUT_BUDGET_BYTES}] bytes")
         self.core_release_digest = core_release_digest
+        self.output_budget_bytes = output_budget_bytes
 
     def compile(
         self,
@@ -471,6 +496,20 @@ class ProductCoreCompiler:
         package, directory_plan = project(
             lifecycle=lifecycle, review_reasons=review_reasons, checks=checks
         )
+        package_bytes = sum(file.size_bytes for file in package.files)
+        if package_bytes > self.output_budget_bytes:
+            raise CoreOutputTooLargeError(
+                {
+                    "bytes": package_bytes,
+                    "budget": self.output_budget_bytes,
+                    "counts": {
+                        "regions": sum(len(item.regions) for item in request.documents),
+                        "claims": len(semantics.claims),
+                        "contradictionPairs": len(semantics.contradictions),
+                        "files": len(package.files),
+                    },
+                }
+            )
         # The shipped package is checked again, not trusted to equal the probe: it must differ
         # only in validation/report.json and must earn the same verdict on its own.
         checked_files = {
@@ -1627,7 +1666,7 @@ class ProductCoreCompiler:
             {
                 "path": file.path,
                 "kind": "artifact",
-                "sourceIds": [unit.source_id for unit in units],
+                "sourceIds": list(dict.fromkeys(unit.source_id for unit in units)),
             }
             for file in files
         )

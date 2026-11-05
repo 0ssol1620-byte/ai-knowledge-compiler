@@ -12,7 +12,12 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
 from .auth import ProductCoreAuthenticationError, verify_product_core_request
-from .compiler import ProductCoreCompiler, wire_payload
+from .compiler import (
+    OUTPUT_BUDGET_BYTES,
+    CoreOutputTooLargeError,
+    ProductCoreCompiler,
+    wire_payload,
+)
 from .contracts import ProductCoreCompileRequest, ProductCoreCompileResponse
 
 MAX_REQUEST_BYTES = 32 * 1024 * 1024
@@ -47,11 +52,15 @@ class ProductCoreService:
         hmac_secret: bytes,
         core_release_digest: str,
         allow_customer_data: bool = False,
+        output_budget_bytes: int = OUTPUT_BUDGET_BYTES,
     ) -> None:
         if len(hmac_secret) < 32:
             raise ValueError("Product-Core HMAC secret must contain at least 32 bytes")
         self.hmac_secret = hmac_secret
-        self.compiler = ProductCoreCompiler(core_release_digest=core_release_digest)
+        self.compiler = ProductCoreCompiler(
+            core_release_digest=core_release_digest,
+            output_budget_bytes=output_budget_bytes,
+        )
         self.allow_customer_data = allow_customer_data
         self._cache: dict[tuple[str, str, str], _CachedResponse] = {}
         self._lock = Lock()
@@ -122,6 +131,9 @@ class ProductCoreService:
                     compile_request,
                     input_sha256=transport.input_sha256,
                 )
+            except CoreOutputTooLargeError as exc:
+                # Not cached: the refusal is recomputed, never replayed as a World.
+                return 422, {"code": "CORE_OUTPUT_TOO_LARGE", **exc.detail}
             except ValueError as exc:
                 return 422, {"code": "CORE_COMPILE_REJECTED", "reason": str(exc)}
             self._cache[cache_key] = _CachedResponse(work_sha256=work_sha256, response=response)
@@ -134,11 +146,13 @@ def create_product_core_app(
     hmac_secret: bytes,
     core_release_digest: str,
     allow_customer_data: bool = False,
+    output_budget_bytes: int = OUTPUT_BUDGET_BYTES,
 ) -> FastAPI:
     service = ProductCoreService(
         hmac_secret=hmac_secret,
         core_release_digest=core_release_digest,
         allow_customer_data=allow_customer_data,
+        output_budget_bytes=output_budget_bytes,
     )
     app = FastAPI(title="TAVONEL Product Core", version="2.0.0")
 
