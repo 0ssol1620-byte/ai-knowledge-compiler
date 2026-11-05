@@ -1,11 +1,23 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const baseURL = "http://127.0.0.1:3000";
+
+async function expectHydrated(page: Page) {
+  await expect(page.locator("html")).toHaveAttribute("data-hydrated", "true", {
+    timeout: 15_000,
+  });
+  const appFrame = page.locator(".app-frame");
+  if ((await appFrame.count()) > 0) {
+    await expect(appFrame).toHaveAttribute("data-app-hydrated", "true", {
+      timeout: 15_000,
+    });
+  }
+}
 
 test.beforeEach(async ({ context }) => {
   await context.addCookies([
     {
-      name: "structara_locale",
+      name: "akc_locale",
       value: "ko",
       url: baseURL,
       sameSite: "Lax",
@@ -17,10 +29,11 @@ test("Korean locale remains consistent across marketing and core product workflo
   page,
 }) => {
   await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expectHydrated(page);
   await expect(page.locator("html")).toHaveAttribute("lang", "ko");
   await expect(
     page.getByRole("heading", {
-      name: "흩어진 문서를 하나의 지식 시스템으로.",
+      name: "모든 결과는 정확한 원문으로 돌아갑니다.",
     }),
   ).toBeVisible();
   const desktopProductLink = page
@@ -39,14 +52,17 @@ test("Korean locale remains consistent across marketing and core product workflo
     await expect(
       mobileNavigation.getByRole("link", { name: "개요" }),
     ).toBeVisible();
+    await page.getByRole("button", { name: "내비게이션 닫기" }).click();
   }
 
   await page.goto("/product/verify");
+  await expectHydrated(page);
   await expect(
     page.getByRole("heading", { name: "추출 결과를 믿지 말고 검증하세요." }),
   ).toBeVisible();
 
   await page.goto("/projects");
+  await expectHydrated(page);
   await expect(
     page.getByRole("heading", { name: "프로젝트", exact: true }),
   ).toBeVisible();
@@ -62,6 +78,7 @@ test("Korean locale remains consistent across marketing and core product workflo
 
   await page.goto("/review?project=project-7&token=secret");
   await expect(page).toHaveURL(/\/integrity\?project=project-7$/);
+  await expectHydrated(page);
   await expect(
     page.getByRole("heading", {
       name: "자동 복구를 먼저 수행하고, 근거가 멈춘 곳만 사람이 판단합니다",
@@ -72,6 +89,7 @@ test("Korean locale remains consistent across marketing and core product workflo
   await expect(page.locator("body")).not.toContainText("검토 Studio");
 
   await page.goto("/knowledge-bases");
+  await expectHydrated(page);
   await expect(
     page.getByRole("heading", { name: "지식 Studio" }),
   ).toBeVisible();
@@ -90,19 +108,30 @@ test("language switch persists and returns the product to English", async ({
   isMobile,
 }) => {
   await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expectHydrated(page);
   if (isMobile) {
     await page.getByRole("button", { name: "내비게이션 열기" }).click();
   }
-  const switcher = page.getByRole("group", { name: "언어 선택" }).first();
-  await switcher.getByRole("button", { name: "EN" }).click();
+  const switcher = isMobile
+    ? page
+        .getByRole("navigation", { name: "모바일 내비게이션" })
+        .getByRole("group", { name: "언어 선택" })
+    : page.getByRole("group", { name: "언어 선택" }).first();
+  await Promise.all([
+    page.waitForNavigation({ waitUntil: "domcontentloaded" }),
+    switcher.getByRole("button", { name: "EN" }).click(),
+  ]);
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expectHydrated(page);
   await expect(
     page.getByRole("heading", {
-      name: "From scattered documents to one knowledge system.",
+      level: 1,
+      name: "Every output returns to its source.",
     }),
   ).toBeVisible();
 
   await page.goto("/projects");
+  await expectHydrated(page);
   await expect(
     page.getByRole("heading", { name: "Projects", exact: true }),
   ).toBeVisible();
@@ -115,14 +144,15 @@ test("Korean authentication, onboarding, and quick-convert controls stay actiona
   page,
 }) => {
   await page.goto("/signup");
+  await expectHydrated(page);
   await expect(
     page.getByRole("heading", { name: "계정 만들기" }),
   ).toBeVisible();
   await expect(page.getByLabel("표시 이름")).toBeVisible();
   await expect(page.getByLabel("이메일")).toBeVisible();
   await expect(page.getByLabel("비밀번호")).toBeVisible();
-
   await page.goto("/onboarding");
+  await expectHydrated(page);
   await expect(
     page.getByRole("heading", { name: "무엇을 만들고 싶나요?" }),
   ).toBeVisible();
@@ -138,6 +168,7 @@ test("Korean authentication, onboarding, and quick-convert controls stay actiona
   ).toBeVisible();
 
   await page.goto("/quick-convert");
+  await expectHydrated(page);
   await expect(
     page.getByRole("heading", { name: "새 변환 시작" }),
   ).toBeVisible();

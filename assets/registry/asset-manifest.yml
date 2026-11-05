@@ -1,5 +1,5 @@
 version: 1
-reviewed_at: 2026-07-30
+reviewed_at: 2026-08-30
 assets:
   - id: TAV-HOME-T2-HERO-001
     title: Source to Knowledge Hero
@@ -39,9 +39,9 @@ assets:
     master_path: assets/public-proof/dart/source-evidence/jtc-2026q1-income-statement.json
     derivatives:
       - path: assets/public-proof/dart/capture-manifest.json
-        sha256: "5c0ba8a7f8b62a13739eb38481006c96393c05411fa35c3329ae999d2abf5fe0"
+        sha256: "346baf22ef0c404080782fcd935227cc578b1431e4b5e358afb6556fe2f8e94f"
       - path: assets/public-proof/dart/hashes.sha256
-        sha256: "53f8c1a1e4614d8aea58d35164bbb781af08791282cc5fe439682df8e9e060cf"
+        sha256: "fcae6e5050046b33ef699ede115dd111712ec30d72c784d66dcb31c1086979cf"
     license:
       name: OpenDART-public-disclosure
       evidence_path: assets/public-proof/dart/source-evidence/acquisition-receipt.json
@@ -62,7 +62,7 @@ assets:
     master_path: apps/web/src/components/tavonel-app-page.tsx
     derivatives:
       - path: apps/web/e2e/workspace.spec.ts
-        sha256: "d8593453a244915bdaadeb609fba263e45a59fee6a5fc21f942fa64bd1f27c88"
+        sha256: "717e645be1c4c106b774fe53d60f79dd0e53bdf08701fef2feab57ccb7f30a1d"
     license:
       name: first-party
       evidence_path: assets/registry/source-evidence/README.md
@@ -83,7 +83,7 @@ assets:
     master_path: apps/web/public/brand/tavonel-glyphs.svg
     derivatives:
       - path: apps/web/src/components/tavonel-glyph.tsx
-        sha256: "f483488b419d75c12a00d19ac86768e493fa176e97b43148ca155b7f6ca778ba"
+        sha256: "839891a443636da59f0b6b911115fd0bfd661d969ea98c6e1b5847130bf01b32"
     license:
       name: first-party
       evidence_path: assets/brand/glyphs/README.md
@@ -104,7 +104,7 @@ assets:
     master_path: apps/web/src/components/tavonel-pattern.tsx
     derivatives:
       - path: assets/brand/patterns/README.md
-        sha256: "e1a6e3fe30536db2720fc48500a75088d01a60c0bc3f88167e0f8360ce50359e"
+        sha256: "f74519d1f571c55c286f9ab2b5418ea37f6ba512e1c69d97ed9fe9a6ba18731d"
     license:
       name: first-party
       evidence_path: assets/brand/patterns/README.md
@@ -125,7 +125,7 @@ assets:
     master_path: apps/web/src/app/tavonel.css
     derivatives:
       - path: assets/brand/textures/README.md
-        sha256: "95504651553b3b2581bd436809f8c3d02a16a9244c399554fe631c6a37c930b3"
+        sha256: "dfe77af7a6a37f9a57438e335ebbfea4f01a281c21630a657d3303327ee9684b"
     license:
       name: first-party
       evidence_path: assets/brand/textures/README.md
@@ -146,7 +146,7 @@ assets:
     master_path: apps/web/src/lib/tavonel-diagrams.ts
     derivatives:
       - path: apps/web/src/components/tavonel-diagram.tsx
-        sha256: "3a036578fdd56547ac693b87c243dbfe5ec7b525e4c75853e6ba150f4f824b36"
+        sha256: "47ffd750995c72d042f97e39246aca0a744771b8568ec471462ee3b3888244bd"
     license:
       name: first-party
       evidence_path: assets/registry/source-evidence/README.md
@@ -167,9 +167,9 @@ assets:
     master_path: assets/product/screenshots/en/1440x900/capture-manifest.json
     derivatives:
       - path: assets/product/screenshots/en/1440x900/hashes.sha256
-        sha256: "069e07f5fc4071763f57305ee19a8c43b868ccb9c5b06cb383cb97351b717ba5"
+        sha256: "0c982995d7f902652448d69cef54affe84bc73e3c67abf04b33a13b7364cfda6"
       - path: assets/product/screenshots/en/390x844/hashes.sha256
-        sha256: "af8a141551d2281fa059bdfe67ba41f31057ac842251741566d75d47399de5e5"
+        sha256: "5e92d701c181acd240e077bbd521cc61c8b517af887f2be43874700d4a79a6c4"
       - path: apps/web/public/product/workspace-home.webp
         sha256: "518b07d1cf3954db3f041aaf4fc61e6c96ccb5c0b0490f35bd67451de49311aa"
       - path: apps/web/public/product/processing.webp
@@ -202,7 +202,7 @@ assets:
     master_path: assets/product/recordings/capture-manifest.json
     derivatives:
       - path: assets/product/recordings/hashes.sha256
-        sha256: "2403864f24125641444999304ed47b88e3f6ed624d7779bdc93ba47d583af2ac"
+        sha256: "9aed9245c15461a4fdd6a6535c1c5af696d2a25117af66af63f47e77724ce6fb"
     license:
       name: first-party
       evidence_path: assets/product/recordings/README.md

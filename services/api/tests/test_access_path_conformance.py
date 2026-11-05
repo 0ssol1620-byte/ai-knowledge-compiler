@@ -4,9 +4,8 @@
 판정(403/404, 내용 누출 0, guessed-UUID와의 비-equivalence)을 ASGI
 TestClient 수준에서 실측한다. 서버 실구동 없음, 새 마이그레이션 없음.
 
-정직 규칙: 현재 스코핑이 없는 표면은 통과로 위장하지 않고 xfail(strict=True)로
-기록한다. 감사 이벤트 발행 여부는 매 경로마다 실측해 모듈 전역에 남기고,
-마지막 집계 테스트가 현재 상태(미발행)를 strict xfail로 고정한다.
+감사 이벤트 발행 여부는 매 경로마다 실측해 모듈 전역에 남기고, 마지막 집계
+테스트가 11개 경로 모두의 기록을 강제한다.
 """
 
 from __future__ import annotations
@@ -543,24 +542,70 @@ async def test_access_path_verdict_equivalence(
 
 
 # ---------------------------------------------------------------------------
-# 감사 이벤트 집계 — 현재 상태를 strict xfail로 고정한다.
+# 감사 이벤트 집계
 # ---------------------------------------------------------------------------
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "GAP-2(docs/security/access-path-conformance.md §3): 현재 어떤 읽기 표면도 "
-        "접근 거부 시 AuditEvent를 발행하지 않는다(감사는 auth/mutation/abuse 계열만 "
-        "존재). 거부 읽기 감사가 추가되면 이 테스트는 XPASS하여 수집이 실패하고, "
-        "매트릭스의 '감사' 열과 이 xfail을 갱신해야 한다."
-    ),
-)
-async def test_denied_reads_emit_audit_events() -> None:
+async def test_sensitive_read_access_decisions_emit_audit_events() -> None:
     assert len(_AUDIT_OBSERVATIONS) == len(PATHS), (
         "감사 집계는 11경로 측정 테스트가 모두 실행된 뒤에 의미가 있다"
     )
     missing = sorted(
         path_id for path_id, emitted in _AUDIT_OBSERVATIONS.items() if not emitted
     )
-    assert not missing, f"거부 읽기에서 감사 이벤트가 발행되지 않은 경로: {missing}"
+    assert not missing, f"민감 읽기 접근 결정이 감사되지 않은 경로: {missing}"
+
+
+async def test_denied_read_audit_excludes_resource_and_query_secrets(
+    apath_harness: Harness,
+) -> None:
+    harness = apath_harness
+    tenant = await _register_tenant(
+        harness,
+        "audit-minimal@apath.example",
+        "Audit Minimal",
+    )
+    await _login(harness, "audit-minimal@apath.example")
+    guessed_id = uuid.uuid4()
+
+    denied = await harness.client.get(
+        f"/v1/documents/{guessed_id}?secret=must-not-be-audited"
+    )
+
+    assert denied.status_code == 404
+    async with harness.app.state.database.sessions() as session:
+        event = await session.scalar(
+            select(AuditEvent)
+            .where(
+                AuditEvent.tenant_id == uuid.UUID(tenant["tenant_id"]),
+                AuditEvent.action == "security.read_access_denied",
+            )
+            .order_by(AuditEvent.occurred_at.desc())
+        )
+    assert event is not None
+    assert event.target_id == "/v1/documents/{document_id}"
+    serialized = str(event.metadata_json)
+    assert str(guessed_id) not in serialized
+    assert "must-not-be-audited" not in serialized
+
+
+async def test_denied_read_fails_closed_when_audit_write_fails(
+    apath_harness: Harness,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    harness = apath_harness
+    await _register_tenant(
+        harness,
+        "audit-failure@apath.example",
+        "Audit Failure",
+    )
+    await _login(harness, "audit-failure@apath.example")
+
+    async def unavailable_audit(*args: object, **kwargs: object) -> None:
+        raise RuntimeError("synthetic audit outage")
+
+    monkeypatch.setattr("akc_api.main.audit", unavailable_audit)
+    denied = await harness.client.get(f"/v1/documents/{uuid.uuid4()}")
+
+    assert denied.status_code == 503
+    assert denied.json()["error"]["code"] == "AUDIT_WRITE_FAILED"

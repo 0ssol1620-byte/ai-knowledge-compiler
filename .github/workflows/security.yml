@@ -121,6 +121,7 @@ jobs:
           pnpm audit --audit-level high \
             --ignore GHSA-jmr9-qjv8-65gv \
             --ignore GHSA-7pqw-9j4j-h8q3
+          node scripts/verify-dependency-patches.mjs
 
   application-images:
     runs-on: ubuntu-24.04

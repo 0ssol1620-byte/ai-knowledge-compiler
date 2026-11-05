@@ -9,14 +9,24 @@ const manifest = await readFile(
 );
 const matches = [...manifest.matchAll(/path: ([^\n]+)\n\s+sha256: "([^"]*)"/g)];
 let checked = 0;
+const failures = [];
 
 for (const [, relativePath, expected] of matches) {
-  const bytes = await readFile(resolve(root, relativePath.trim()));
-  const actual = createHash("sha256").update(bytes).digest("hex");
-  if (expected && actual !== expected) {
-    throw new Error(`hash mismatch: ${relativePath}`);
+  const normalizedPath = relativePath.trim();
+  try {
+    const bytes = await readFile(resolve(root, normalizedPath));
+    const actual = createHash("sha256").update(bytes).digest("hex");
+    if (expected && actual !== expected) {
+      failures.push(`${normalizedPath}: expected ${expected}, received ${actual}`);
+    }
+    checked += 1;
+  } catch (error) {
+    failures.push(`${normalizedPath}: ${error.message}`);
   }
-  checked += 1;
+}
+
+if (failures.length > 0) {
+  throw new Error(`asset hash verification failed:\n- ${failures.join("\n- ")}`);
 }
 
 console.log(`TAVONEL asset hashes verified (${checked} derivatives).`);
