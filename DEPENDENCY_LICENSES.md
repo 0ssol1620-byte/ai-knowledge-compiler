@@ -2,12 +2,12 @@
 
 | Name                       | Version/source   | License observed              | Bundled | Use                        |
 | -------------------------- | ---------------- | ----------------------------- | ------- | -------------------------- |
-| Next.js                    | `16.3.6`         | MIT                           | Yes     | App Router                 |
+| Next.js                    | `16.4.1`         | MIT                           | Yes     | App Router                 |
 | React                      | `19.2.8`         | MIT                           | Yes     | UI runtime                 |
 | Phosphor Icons             | `2.1.10`         | MIT                           | Yes     | Consistent interface icons |
 | Wanted Sans Variable       | `1.0.3`          | SIL OFL 1.1                   | Yes     | Latin and Korean typeface  |
 | impeccable                 | `3.5.0`          | Apache-2.0                    | No      | Anti-pattern checker (dev) |
-| Lighthouse CI              | `0.15.1`         | Apache-2.0                    | No      | Performance budgets (dev)  |
+| Lighthouse CI              | `0.16.0`         | Apache-2.0                    | No      | Performance budgets (dev)  |
 | fontTools                  | `>=4.55,<5`      | MIT                           | No      | Font subsetting (dev)      |
 | UI UX Pro Max              | local skill      | License metadata inconsistent | No      | Internal research only     |
 | Emil Design Engineering    | local skill      | Upstream repository guidance  | No      | Internal craft review      |
