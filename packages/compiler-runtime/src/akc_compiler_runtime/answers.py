@@ -15,6 +15,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from datetime import UTC, datetime
+from typing import cast
 
 from akc_cir.answer_compiler import DraftClaim
 from akc_cir.authority import AuthorityClass, ScopedClaim, SourceStatus
@@ -73,7 +74,7 @@ def _claim_is_answerable(row: Mapping[str, object]) -> bool:
         # A pointer is not a statement of fact: ``Depends on: x`` records an
         # edge, and edges never answer questions (cf. REFERENCES being inert).
         return False
-    return int(row["source_status"]) != int(SourceStatus.WITHDRAWN)
+    return int(cast(int, row["source_status"])) != int(SourceStatus.WITHDRAWN)
 
 
 def select_drafts(
@@ -129,9 +130,9 @@ def _scoped_claim(row: Mapping[str, object]) -> ScopedClaim:
         claim_id=str(row["logical_id"]),
         subject=str(row["subject"]),
         value=str(row["value"]),
-        authority=AuthorityClass(int(row["authority"])),
-        source_status=SourceStatus(int(row["source_status"])),
-        scope=dict(row["scope"]),  # type: ignore[arg-type]
+        authority=AuthorityClass(int(cast(int, row["authority"]))),
+        source_status=SourceStatus(int(cast(int, row["source_status"]))),
+        scope=dict(cast(Mapping[str, str], row["scope"])),
         valid_from=_parse(row.get("valid_from")),
         valid_to=_parse(row.get("valid_to")),
         recorded_at=_parse(recorded_at),

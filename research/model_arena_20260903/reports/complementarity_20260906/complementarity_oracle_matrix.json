@@ -1,0 +1,1561 @@
+{
+  "methodology": {
+    "score": "1 - clip(edit, [0,1])",
+    "oracle_edit": "mean(min(edit_A, edit_B)) on page intersection",
+    "oracle_gain_vs_A": "oracle_score - alone_score_A",
+    "primary": "continuous oracle (no hard threshold)",
+    "baseline": "paddleocr_vl_1_6",
+    "models": [
+      "paddleocr_vl_1_6",
+      "ovisocr2",
+      "infinity_parser2_flash",
+      "deepseek_ocr2",
+      "glm_ocr",
+      "opus5_subscription"
+    ],
+    "elements": [
+      "text",
+      "formula",
+      "table",
+      "reading_order"
+    ]
+  },
+  "page_counts": {
+    "text": {
+      "paddleocr_vl_1_6": 1557,
+      "ovisocr2": 1557,
+      "infinity_parser2_flash": 1557,
+      "deepseek_ocr2": 1557,
+      "glm_ocr": 1557,
+      "opus5_subscription": 1557
+    },
+    "formula": {
+      "paddleocr_vl_1_6": 313,
+      "ovisocr2": 313,
+      "infinity_parser2_flash": 313,
+      "deepseek_ocr2": 313,
+      "glm_ocr": 313,
+      "opus5_subscription": 313
+    },
+    "table": {
+      "paddleocr_vl_1_6": 458,
+      "ovisocr2": 458,
+      "infinity_parser2_flash": 458,
+      "deepseek_ocr2": 458,
+      "glm_ocr": 458,
+      "opus5_subscription": 458
+    },
+    "reading_order": {
+      "paddleocr_vl_1_6": 1638,
+      "ovisocr2": 1638,
+      "infinity_parser2_flash": 1638,
+      "deepseek_ocr2": 1638,
+      "glm_ocr": 1638,
+      "opus5_subscription": 1638
+    }
+  },
+  "all_model_intersections": {
+    "text": 1557,
+    "formula": 313,
+    "table": 458,
+    "reading_order": 1638
+  },
+  "file_map": {
+    "text": {
+      "paddleocr_vl_1_6": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\paddleocr_vl_1_6\\markdown_quick_match_text_block_per_page_edit.json",
+      "ovisocr2": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\ovisocr2\\md_ovisocr2_quick_match_text_block_per_page_edit.json",
+      "infinity_parser2_flash": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\infinity_parser2_flash\\md_infinity_parser2_flash_quick_match_text_block_per_page_edit.json",
+      "deepseek_ocr2": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\deepseek_ocr2\\markdown_quick_match_text_block_per_page_edit.json",
+      "glm_ocr": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\glm_ocr\\md_glm_ocr_quick_match_text_block_per_page_edit.json",
+      "opus5_subscription": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\opus5_subscription\\md_opus5_subscription_quick_match_text_block_per_page_edit.json"
+    },
+    "formula": {
+      "paddleocr_vl_1_6": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\paddleocr_vl_1_6\\markdown_quick_match_display_formula_per_page_edit.json",
+      "ovisocr2": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\ovisocr2\\md_ovisocr2_quick_match_display_formula_per_page_edit.json",
+      "infinity_parser2_flash": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\infinity_parser2_flash\\md_infinity_parser2_flash_quick_match_display_formula_per_page_edit.json",
+      "deepseek_ocr2": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\deepseek_ocr2\\markdown_quick_match_display_formula_per_page_edit.json",
+      "glm_ocr": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\glm_ocr\\md_glm_ocr_quick_match_display_formula_per_page_edit.json",
+      "opus5_subscription": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\opus5_subscription\\md_opus5_subscription_quick_match_display_formula_per_page_edit.json"
+    },
+    "table": {
+      "paddleocr_vl_1_6": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\paddleocr_vl_1_6\\markdown_quick_match_table_per_page_edit.json",
+      "ovisocr2": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\ovisocr2\\md_ovisocr2_quick_match_table_per_page_edit.json",
+      "infinity_parser2_flash": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\infinity_parser2_flash\\md_infinity_parser2_flash_quick_match_table_per_page_edit.json",
+      "deepseek_ocr2": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\deepseek_ocr2\\markdown_quick_match_table_per_page_edit.json",
+      "glm_ocr": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\glm_ocr\\md_glm_ocr_quick_match_table_per_page_edit.json",
+      "opus5_subscription": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\opus5_subscription\\md_opus5_subscription_quick_match_table_per_page_edit.json"
+    },
+    "reading_order": {
+      "paddleocr_vl_1_6": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\paddleocr_vl_1_6\\markdown_quick_match_reading_order_per_page_edit.json",
+      "ovisocr2": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\ovisocr2\\md_ovisocr2_quick_match_reading_order_per_page_edit.json",
+      "infinity_parser2_flash": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\infinity_parser2_flash\\md_infinity_parser2_flash_quick_match_reading_order_per_page_edit.json",
+      "deepseek_ocr2": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\deepseek_ocr2\\markdown_quick_match_reading_order_per_page_edit.json",
+      "glm_ocr": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\glm_ocr\\md_glm_ocr_quick_match_reading_order_per_page_edit.json",
+      "opus5_subscription": "D:\\CodexProjects\\ai-knowledge-compiler\\research\\model_arena_20260903\\reports\\full_compare_20260905\\omnidoc_raw\\opus5_subscription\\md_opus5_subscription_quick_match_reading_order_per_page_edit.json"
+    }
+  },
+  "alone_scores": {
+    "text": {
+      "paddleocr_vl_1_6": {
+        "n_pages_model": 1557,
+        "mean_edit_model": 0.04258990084547369,
+        "score_model": 0.9574100991545264,
+        "n_pages_all_intersect": 1557,
+        "mean_edit_all_intersect": 0.04258990084547369,
+        "score_all_intersect": 0.9574100991545264
+      },
+      "ovisocr2": {
+        "n_pages_model": 1557,
+        "mean_edit_model": 0.028989424886648758,
+        "score_model": 0.9710105751133512,
+        "n_pages_all_intersect": 1557,
+        "mean_edit_all_intersect": 0.028989424886648758,
+        "score_all_intersect": 0.9710105751133512
+      },
+      "infinity_parser2_flash": {
+        "n_pages_model": 1557,
+        "mean_edit_model": 0.04486710197411037,
+        "score_model": 0.9551328980258896,
+        "n_pages_all_intersect": 1557,
+        "mean_edit_all_intersect": 0.04486710197411037,
+        "score_all_intersect": 0.9551328980258896
+      },
+      "deepseek_ocr2": {
+        "n_pages_model": 1557,
+        "mean_edit_model": 0.05842836521331012,
+        "score_model": 0.9415716347866899,
+        "n_pages_all_intersect": 1557,
+        "mean_edit_all_intersect": 0.05842836521331012,
+        "score_all_intersect": 0.9415716347866899
+      },
+      "glm_ocr": {
+        "n_pages_model": 1557,
+        "mean_edit_model": 0.08458447244961509,
+        "score_model": 0.9154155275503849,
+        "n_pages_all_intersect": 1557,
+        "mean_edit_all_intersect": 0.08458447244961509,
+        "score_all_intersect": 0.9154155275503849
+      },
+      "opus5_subscription": {
+        "n_pages_model": 1557,
+        "mean_edit_model": 0.0896186246104797,
+        "score_model": 0.9103813753895202,
+        "n_pages_all_intersect": 1557,
+        "mean_edit_all_intersect": 0.0896186246104797,
+        "score_all_intersect": 0.9103813753895202
+      }
+    },
+    "formula": {
+      "paddleocr_vl_1_6": {
+        "n_pages_model": 313,
+        "mean_edit_model": 0.0867558206382204,
+        "score_model": 0.9132441793617796,
+        "n_pages_all_intersect": 313,
+        "mean_edit_all_intersect": 0.0867558206382204,
+        "score_all_intersect": 0.9132441793617796
+      },
+      "ovisocr2": {
+        "n_pages_model": 313,
+        "mean_edit_model": 0.08709481724356007,
+        "score_model": 0.91290518275644,
+        "n_pages_all_intersect": 313,
+        "mean_edit_all_intersect": 0.08709481724356007,
+        "score_all_intersect": 0.91290518275644
+      },
+      "infinity_parser2_flash": {
+        "n_pages_model": 313,
+        "mean_edit_model": 0.14073222469775745,
+        "score_model": 0.8592677753022425,
+        "n_pages_all_intersect": 313,
+        "mean_edit_all_intersect": 0.14073222469775745,
+        "score_all_intersect": 0.8592677753022425
+      },
+      "deepseek_ocr2": {
+        "n_pages_model": 313,
+        "mean_edit_model": 0.12590957002015002,
+        "score_model": 0.87409042997985,
+        "n_pages_all_intersect": 313,
+        "mean_edit_all_intersect": 0.12590957002015002,
+        "score_all_intersect": 0.87409042997985
+      },
+      "glm_ocr": {
+        "n_pages_model": 313,
+        "mean_edit_model": 0.2960040257800328,
+        "score_model": 0.7039959742199672,
+        "n_pages_all_intersect": 313,
+        "mean_edit_all_intersect": 0.2960040257800328,
+        "score_all_intersect": 0.7039959742199672
+      },
+      "opus5_subscription": {
+        "n_pages_model": 313,
+        "mean_edit_model": 0.14578510130063985,
+        "score_model": 0.8542148986993602,
+        "n_pages_all_intersect": 313,
+        "mean_edit_all_intersect": 0.14578510130063985,
+        "score_all_intersect": 0.8542148986993602
+      }
+    },
+    "table": {
+      "paddleocr_vl_1_6": {
+        "n_pages_model": 458,
+        "mean_edit_model": 0.05127512718920824,
+        "score_model": 0.9487248728107918,
+        "n_pages_all_intersect": 458,
+        "mean_edit_all_intersect": 0.05127512718920824,
+        "score_all_intersect": 0.9487248728107918
+      },
+      "ovisocr2": {
+        "n_pages_model": 458,
+        "mean_edit_model": 0.05136626410571415,
+        "score_model": 0.9486337358942859,
+        "n_pages_all_intersect": 458,
+        "mean_edit_all_intersect": 0.05136626410571415,
+        "score_all_intersect": 0.9486337358942859
+      },
+      "infinity_parser2_flash": {
+        "n_pages_model": 458,
+        "mean_edit_model": 0.12926098809663256,
+        "score_model": 0.8707390119033674,
+        "n_pages_all_intersect": 458,
+        "mean_edit_all_intersect": 0.12926098809663256,
+        "score_all_intersect": 0.8707390119033674
+      },
+      "deepseek_ocr2": {
+        "n_pages_model": 458,
+        "mean_edit_model": 0.11777843053928444,
+        "score_model": 0.8822215694607156,
+        "n_pages_all_intersect": 458,
+        "mean_edit_all_intersect": 0.11777843053928444,
+        "score_all_intersect": 0.8822215694607156
+      },
+      "glm_ocr": {
+        "n_pages_model": 458,
+        "mean_edit_model": 0.5013872217801912,
+        "score_model": 0.49861277821980876,
+        "n_pages_all_intersect": 458,
+        "mean_edit_all_intersect": 0.5013872217801912,
+        "score_all_intersect": 0.49861277821980876
+      },
+      "opus5_subscription": {
+        "n_pages_model": 458,
+        "mean_edit_model": 0.5402926750449081,
+        "score_model": 0.4597073249550919,
+        "n_pages_all_intersect": 458,
+        "mean_edit_all_intersect": 0.5402926750449081,
+        "score_all_intersect": 0.4597073249550919
+      }
+    },
+    "reading_order": {
+      "paddleocr_vl_1_6": {
+        "n_pages_model": 1638,
+        "mean_edit_model": 0.13037526134622857,
+        "score_model": 0.8696247386537714,
+        "n_pages_all_intersect": 1638,
+        "mean_edit_all_intersect": 0.13037526134622857,
+        "score_all_intersect": 0.8696247386537714
+      },
+      "ovisocr2": {
+        "n_pages_model": 1638,
+        "mean_edit_model": 0.11285344862372688,
+        "score_model": 0.8871465513762731,
+        "n_pages_all_intersect": 1638,
+        "mean_edit_all_intersect": 0.11285344862372688,
+        "score_all_intersect": 0.8871465513762731
+      },
+      "infinity_parser2_flash": {
+        "n_pages_model": 1638,
+        "mean_edit_model": 0.1376551902112244,
+        "score_model": 0.8623448097887756,
+        "n_pages_all_intersect": 1638,
+        "mean_edit_all_intersect": 0.1376551902112244,
+        "score_all_intersect": 0.8623448097887756
+      },
+      "deepseek_ocr2": {
+        "n_pages_model": 1638,
+        "mean_edit_model": 0.1499599214925253,
+        "score_model": 0.8500400785074747,
+        "n_pages_all_intersect": 1638,
+        "mean_edit_all_intersect": 0.1499599214925253,
+        "score_all_intersect": 0.8500400785074747
+      },
+      "glm_ocr": {
+        "n_pages_model": 1638,
+        "mean_edit_model": 0.2126865436083129,
+        "score_model": 0.787313456391687,
+        "n_pages_all_intersect": 1638,
+        "mean_edit_all_intersect": 0.2126865436083129,
+        "score_all_intersect": 0.787313456391687
+      },
+      "opus5_subscription": {
+        "n_pages_model": 1638,
+        "mean_edit_model": 0.16747079285562133,
+        "score_model": 0.8325292071443786,
+        "n_pages_all_intersect": 1638,
+        "mean_edit_all_intersect": 0.16747079285562133,
+        "score_all_intersect": 0.8325292071443786
+      }
+    }
+  },
+  "pairwise": {
+    "text": {
+      "paddle__ovis": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.04258990084547369,
+        "alone_mean_edit_B": 0.028989424886648758,
+        "alone_score_A": 0.9574100991545264,
+        "alone_score_B": 0.9710105751133512,
+        "oracle_edit": 0.023150328540332346,
+        "oracle_score": 0.9768496714596676,
+        "oracle_gain_A": 0.01943957230514126,
+        "oracle_gain_B": 0.005839096346316408,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "ovisocr2",
+        "short_A": "paddle",
+        "short_B": "ovis"
+      },
+      "paddle__flash": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.04258990084547369,
+        "alone_mean_edit_B": 0.04486710197411037,
+        "alone_score_A": 0.9574100991545264,
+        "alone_score_B": 0.9551328980258896,
+        "oracle_edit": 0.025407706876380238,
+        "oracle_score": 0.9745922931236197,
+        "oracle_gain_A": 0.017182193969093373,
+        "oracle_gain_B": 0.019459395097730092,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "infinity_parser2_flash",
+        "short_A": "paddle",
+        "short_B": "flash"
+      },
+      "paddle__deepseek": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.04258990084547369,
+        "alone_mean_edit_B": 0.05842836521331012,
+        "alone_score_A": 0.9574100991545264,
+        "alone_score_B": 0.9415716347866899,
+        "oracle_edit": 0.028047079912080088,
+        "oracle_score": 0.9719529200879199,
+        "oracle_gain_A": 0.014542820933393541,
+        "oracle_gain_B": 0.030381285301229966,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "deepseek_ocr2",
+        "short_A": "paddle",
+        "short_B": "deepseek"
+      },
+      "paddle__glm": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.04258990084547369,
+        "alone_mean_edit_B": 0.08458447244961509,
+        "alone_score_A": 0.9574100991545264,
+        "alone_score_B": 0.9154155275503849,
+        "oracle_edit": 0.0300860496365065,
+        "oracle_score": 0.9699139503634935,
+        "oracle_gain_A": 0.012503851208967132,
+        "oracle_gain_B": 0.05449842281310857,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "glm_ocr",
+        "short_A": "paddle",
+        "short_B": "glm"
+      },
+      "paddle__opus": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.04258990084547369,
+        "alone_mean_edit_B": 0.0896186246104797,
+        "alone_score_A": 0.9574100991545264,
+        "alone_score_B": 0.9103813753895202,
+        "oracle_edit": 0.02563092781578918,
+        "oracle_score": 0.9743690721842109,
+        "oracle_gain_A": 0.01695897302968452,
+        "oracle_gain_B": 0.06398769679469063,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "opus5_subscription",
+        "short_A": "paddle",
+        "short_B": "opus"
+      },
+      "ovis__flash": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.028989424886648758,
+        "alone_mean_edit_B": 0.04486710197411037,
+        "alone_score_A": 0.9710105751133512,
+        "alone_score_B": 0.9551328980258896,
+        "oracle_edit": 0.022650035629991263,
+        "oracle_score": 0.9773499643700088,
+        "oracle_gain_A": 0.006339389256657557,
+        "oracle_gain_B": 0.02221706634411913,
+        "model_A": "ovisocr2",
+        "model_B": "infinity_parser2_flash",
+        "short_A": "ovis",
+        "short_B": "flash"
+      },
+      "ovis__deepseek": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.028989424886648758,
+        "alone_mean_edit_B": 0.05842836521331012,
+        "alone_score_A": 0.9710105751133512,
+        "alone_score_B": 0.9415716347866899,
+        "oracle_edit": 0.024119508010863645,
+        "oracle_score": 0.9758804919891364,
+        "oracle_gain_A": 0.004869916875785196,
+        "oracle_gain_B": 0.034308857202446474,
+        "model_A": "ovisocr2",
+        "model_B": "deepseek_ocr2",
+        "short_A": "ovis",
+        "short_B": "deepseek"
+      },
+      "ovis__glm": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.028989424886648758,
+        "alone_mean_edit_B": 0.08458447244961509,
+        "alone_score_A": 0.9710105751133512,
+        "alone_score_B": 0.9154155275503849,
+        "oracle_edit": 0.023272510270966832,
+        "oracle_score": 0.9767274897290331,
+        "oracle_gain_A": 0.005716914615681912,
+        "oracle_gain_B": 0.061311962178648205,
+        "model_A": "ovisocr2",
+        "model_B": "glm_ocr",
+        "short_A": "ovis",
+        "short_B": "glm"
+      },
+      "ovis__opus": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.028989424886648758,
+        "alone_mean_edit_B": 0.0896186246104797,
+        "alone_score_A": 0.9710105751133512,
+        "alone_score_B": 0.9103813753895202,
+        "oracle_edit": 0.022984156296967245,
+        "oracle_score": 0.9770158437030327,
+        "oracle_gain_A": 0.006005268589681534,
+        "oracle_gain_B": 0.0666344683135125,
+        "model_A": "ovisocr2",
+        "model_B": "opus5_subscription",
+        "short_A": "ovis",
+        "short_B": "opus"
+      },
+      "flash__deepseek": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.04486710197411037,
+        "alone_mean_edit_B": 0.05842836521331012,
+        "alone_score_A": 0.9551328980258896,
+        "alone_score_B": 0.9415716347866899,
+        "oracle_edit": 0.031003027057161757,
+        "oracle_score": 0.9689969729428383,
+        "oracle_gain_A": 0.013864074916948632,
+        "oracle_gain_B": 0.027425338156148338,
+        "model_A": "infinity_parser2_flash",
+        "model_B": "deepseek_ocr2",
+        "short_A": "flash",
+        "short_B": "deepseek"
+      },
+      "flash__glm": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.04486710197411037,
+        "alone_mean_edit_B": 0.08458447244961509,
+        "alone_score_A": 0.9551328980258896,
+        "alone_score_B": 0.9154155275503849,
+        "oracle_edit": 0.03286311338536815,
+        "oracle_score": 0.9671368866146318,
+        "oracle_gain_A": 0.012003988588742187,
+        "oracle_gain_B": 0.05172135906424691,
+        "model_A": "infinity_parser2_flash",
+        "model_B": "glm_ocr",
+        "short_A": "flash",
+        "short_B": "glm"
+      },
+      "flash__opus": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.04486710197411037,
+        "alone_mean_edit_B": 0.0896186246104797,
+        "alone_score_A": 0.9551328980258896,
+        "alone_score_B": 0.9103813753895202,
+        "oracle_edit": 0.030132295153807012,
+        "oracle_score": 0.969867704846193,
+        "oracle_gain_A": 0.01473480682030337,
+        "oracle_gain_B": 0.05948632945667276,
+        "model_A": "infinity_parser2_flash",
+        "model_B": "opus5_subscription",
+        "short_A": "flash",
+        "short_B": "opus"
+      },
+      "deepseek__glm": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.05842836521331012,
+        "alone_mean_edit_B": 0.08458447244961509,
+        "alone_score_A": 0.9415716347866899,
+        "alone_score_B": 0.9154155275503849,
+        "oracle_edit": 0.032138356778472287,
+        "oracle_score": 0.9678616432215277,
+        "oracle_gain_A": 0.026290008434837753,
+        "oracle_gain_B": 0.05244611567114277,
+        "model_A": "deepseek_ocr2",
+        "model_B": "glm_ocr",
+        "short_A": "deepseek",
+        "short_B": "glm"
+      },
+      "deepseek__opus": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.05842836521331012,
+        "alone_mean_edit_B": 0.0896186246104797,
+        "alone_score_A": 0.9415716347866899,
+        "alone_score_B": 0.9103813753895202,
+        "oracle_edit": 0.032394423093304134,
+        "oracle_score": 0.9676055769066959,
+        "oracle_gain_A": 0.026033942120005982,
+        "oracle_gain_B": 0.057224201517175666,
+        "model_A": "deepseek_ocr2",
+        "model_B": "opus5_subscription",
+        "short_A": "deepseek",
+        "short_B": "opus"
+      },
+      "glm__opus": {
+        "n_pages": 1557,
+        "alone_mean_edit_A": 0.08458447244961509,
+        "alone_mean_edit_B": 0.0896186246104797,
+        "alone_score_A": 0.9154155275503849,
+        "alone_score_B": 0.9103813753895202,
+        "oracle_edit": 0.03290731402111315,
+        "oracle_score": 0.9670926859788869,
+        "oracle_gain_A": 0.05167715842850196,
+        "oracle_gain_B": 0.056711310589366626,
+        "model_A": "glm_ocr",
+        "model_B": "opus5_subscription",
+        "short_A": "glm",
+        "short_B": "opus"
+      }
+    },
+    "formula": {
+      "paddle__ovis": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.0867558206382204,
+        "alone_mean_edit_B": 0.08709481724356007,
+        "alone_score_A": 0.9132441793617796,
+        "alone_score_B": 0.91290518275644,
+        "oracle_edit": 0.06785629676222912,
+        "oracle_score": 0.9321437032377708,
+        "oracle_gain_A": 0.018899523875991253,
+        "oracle_gain_B": 0.0192385204813309,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "ovisocr2",
+        "short_A": "paddle",
+        "short_B": "ovis"
+      },
+      "paddle__flash": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.0867558206382204,
+        "alone_mean_edit_B": 0.14073222469775745,
+        "alone_score_A": 0.9132441793617796,
+        "alone_score_B": 0.8592677753022425,
+        "oracle_edit": 0.0661548972699207,
+        "oracle_score": 0.9338451027300793,
+        "oracle_gain_A": 0.020600923368299662,
+        "oracle_gain_B": 0.07457732742783674,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "infinity_parser2_flash",
+        "short_A": "paddle",
+        "short_B": "flash"
+      },
+      "paddle__deepseek": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.0867558206382204,
+        "alone_mean_edit_B": 0.12590957002015002,
+        "alone_score_A": 0.9132441793617796,
+        "alone_score_B": 0.87409042997985,
+        "oracle_edit": 0.07305339044618764,
+        "oracle_score": 0.9269466095538124,
+        "oracle_gain_A": 0.013702430192032766,
+        "oracle_gain_B": 0.05285617957396238,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "deepseek_ocr2",
+        "short_A": "paddle",
+        "short_B": "deepseek"
+      },
+      "paddle__glm": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.0867558206382204,
+        "alone_mean_edit_B": 0.2960040257800328,
+        "alone_score_A": 0.9132441793617796,
+        "alone_score_B": 0.7039959742199672,
+        "oracle_edit": 0.07711193783836151,
+        "oracle_score": 0.9228880621616384,
+        "oracle_gain_A": 0.009643882799858838,
+        "oracle_gain_B": 0.21889208794167125,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "glm_ocr",
+        "short_A": "paddle",
+        "short_B": "glm"
+      },
+      "paddle__opus": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.0867558206382204,
+        "alone_mean_edit_B": 0.14578510130063985,
+        "alone_score_A": 0.9132441793617796,
+        "alone_score_B": 0.8542148986993602,
+        "oracle_edit": 0.06922934602334743,
+        "oracle_score": 0.9307706539766526,
+        "oracle_gain_A": 0.017526474614873,
+        "oracle_gain_B": 0.07655575527729241,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "opus5_subscription",
+        "short_A": "paddle",
+        "short_B": "opus"
+      },
+      "ovis__flash": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.08709481724356007,
+        "alone_mean_edit_B": 0.14073222469775745,
+        "alone_score_A": 0.91290518275644,
+        "alone_score_B": 0.8592677753022425,
+        "oracle_edit": 0.07274243370094796,
+        "oracle_score": 0.9272575662990521,
+        "oracle_gain_A": 0.014352383542612146,
+        "oracle_gain_B": 0.06798979099680957,
+        "model_A": "ovisocr2",
+        "model_B": "infinity_parser2_flash",
+        "short_A": "ovis",
+        "short_B": "flash"
+      },
+      "ovis__deepseek": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.08709481724356007,
+        "alone_mean_edit_B": 0.12590957002015002,
+        "alone_score_A": 0.91290518275644,
+        "alone_score_B": 0.87409042997985,
+        "oracle_edit": 0.07675255379857054,
+        "oracle_score": 0.9232474462014295,
+        "oracle_gain_A": 0.010342263444989563,
+        "oracle_gain_B": 0.04915701622157953,
+        "model_A": "ovisocr2",
+        "model_B": "deepseek_ocr2",
+        "short_A": "ovis",
+        "short_B": "deepseek"
+      },
+      "ovis__glm": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.08709481724356007,
+        "alone_mean_edit_B": 0.2960040257800328,
+        "alone_score_A": 0.91290518275644,
+        "alone_score_B": 0.7039959742199672,
+        "oracle_edit": 0.07455738258634116,
+        "oracle_score": 0.9254426174136589,
+        "oracle_gain_A": 0.012537434657218904,
+        "oracle_gain_B": 0.22144664319369167,
+        "model_A": "ovisocr2",
+        "model_B": "glm_ocr",
+        "short_A": "ovis",
+        "short_B": "glm"
+      },
+      "ovis__opus": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.08709481724356007,
+        "alone_mean_edit_B": 0.14578510130063985,
+        "alone_score_A": 0.91290518275644,
+        "alone_score_B": 0.8542148986993602,
+        "oracle_edit": 0.07382877005435913,
+        "oracle_score": 0.9261712299456408,
+        "oracle_gain_A": 0.01326604718920088,
+        "oracle_gain_B": 0.07195633124628065,
+        "model_A": "ovisocr2",
+        "model_B": "opus5_subscription",
+        "short_A": "ovis",
+        "short_B": "opus"
+      },
+      "flash__deepseek": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.14073222469775745,
+        "alone_mean_edit_B": 0.12590957002015002,
+        "alone_score_A": 0.8592677753022425,
+        "alone_score_B": 0.87409042997985,
+        "oracle_edit": 0.0861228484791866,
+        "oracle_score": 0.9138771515208134,
+        "oracle_gain_A": 0.05460937621857087,
+        "oracle_gain_B": 0.03978672154096341,
+        "model_A": "infinity_parser2_flash",
+        "model_B": "deepseek_ocr2",
+        "short_A": "flash",
+        "short_B": "deepseek"
+      },
+      "flash__glm": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.14073222469775745,
+        "alone_mean_edit_B": 0.2960040257800328,
+        "alone_score_A": 0.8592677753022425,
+        "alone_score_B": 0.7039959742199672,
+        "oracle_edit": 0.10818061957424374,
+        "oracle_score": 0.8918193804257563,
+        "oracle_gain_A": 0.03255160512351374,
+        "oracle_gain_B": 0.18782340620578908,
+        "model_A": "infinity_parser2_flash",
+        "model_B": "glm_ocr",
+        "short_A": "flash",
+        "short_B": "glm"
+      },
+      "flash__opus": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.14073222469775745,
+        "alone_mean_edit_B": 0.14578510130063985,
+        "alone_score_A": 0.8592677753022425,
+        "alone_score_B": 0.8542148986993602,
+        "oracle_edit": 0.10260475487989819,
+        "oracle_score": 0.8973952451201018,
+        "oracle_gain_A": 0.038127469817859305,
+        "oracle_gain_B": 0.043180346420741644,
+        "model_A": "infinity_parser2_flash",
+        "model_B": "opus5_subscription",
+        "short_A": "flash",
+        "short_B": "opus"
+      },
+      "deepseek__glm": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.12590957002015002,
+        "alone_mean_edit_B": 0.2960040257800328,
+        "alone_score_A": 0.87409042997985,
+        "alone_score_B": 0.7039959742199672,
+        "oracle_edit": 0.10323125673121465,
+        "oracle_score": 0.8967687432687853,
+        "oracle_gain_A": 0.022678313288935326,
+        "oracle_gain_B": 0.19277276904881813,
+        "model_A": "deepseek_ocr2",
+        "model_B": "glm_ocr",
+        "short_A": "deepseek",
+        "short_B": "glm"
+      },
+      "deepseek__opus": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.12590957002015002,
+        "alone_mean_edit_B": 0.14578510130063985,
+        "alone_score_A": 0.87409042997985,
+        "alone_score_B": 0.8542148986993602,
+        "oracle_edit": 0.0878698703239614,
+        "oracle_score": 0.9121301296760386,
+        "oracle_gain_A": 0.03803969969618859,
+        "oracle_gain_B": 0.05791523097667839,
+        "model_A": "deepseek_ocr2",
+        "model_B": "opus5_subscription",
+        "short_A": "deepseek",
+        "short_B": "opus"
+      },
+      "glm__opus": {
+        "n_pages": 313,
+        "alone_mean_edit_A": 0.2960040257800328,
+        "alone_mean_edit_B": 0.14578510130063985,
+        "alone_score_A": 0.7039959742199672,
+        "alone_score_B": 0.8542148986993602,
+        "oracle_edit": 0.10364130768713711,
+        "oracle_score": 0.8963586923128629,
+        "oracle_gain_A": 0.19236271809289573,
+        "oracle_gain_B": 0.042143793613502734,
+        "model_A": "glm_ocr",
+        "model_B": "opus5_subscription",
+        "short_A": "glm",
+        "short_B": "opus"
+      }
+    },
+    "table": {
+      "paddle__ovis": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.05127512718920824,
+        "alone_mean_edit_B": 0.05136626410571415,
+        "alone_score_A": 0.9487248728107918,
+        "alone_score_B": 0.9486337358942859,
+        "oracle_edit": 0.034640630086100785,
+        "oracle_score": 0.9653593699138993,
+        "oracle_gain_A": 0.016634497103107493,
+        "oracle_gain_B": 0.016725634019613356,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "ovisocr2",
+        "short_A": "paddle",
+        "short_B": "ovis"
+      },
+      "paddle__flash": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.05127512718920824,
+        "alone_mean_edit_B": 0.12926098809663256,
+        "alone_score_A": 0.9487248728107918,
+        "alone_score_B": 0.8707390119033674,
+        "oracle_edit": 0.04374990285389205,
+        "oracle_score": 0.956250097146108,
+        "oracle_gain_A": 0.007525224335316216,
+        "oracle_gain_B": 0.08551108524274054,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "infinity_parser2_flash",
+        "short_A": "paddle",
+        "short_B": "flash"
+      },
+      "paddle__deepseek": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.05127512718920824,
+        "alone_mean_edit_B": 0.11777843053928444,
+        "alone_score_A": 0.9487248728107918,
+        "alone_score_B": 0.8822215694607156,
+        "oracle_edit": 0.04525984513060958,
+        "oracle_score": 0.9547401548693905,
+        "oracle_gain_A": 0.006015282058598692,
+        "oracle_gain_B": 0.07251858540867484,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "deepseek_ocr2",
+        "short_A": "paddle",
+        "short_B": "deepseek"
+      },
+      "paddle__glm": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.05127512718920824,
+        "alone_mean_edit_B": 0.5013872217801912,
+        "alone_score_A": 0.9487248728107918,
+        "alone_score_B": 0.49861277821980876,
+        "oracle_edit": 0.04702739216043447,
+        "oracle_score": 0.9529726078395655,
+        "oracle_gain_A": 0.004247735028773736,
+        "oracle_gain_B": 0.45435982961975674,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "glm_ocr",
+        "short_A": "paddle",
+        "short_B": "glm"
+      },
+      "paddle__opus": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.05127512718920824,
+        "alone_mean_edit_B": 0.5402926750449081,
+        "alone_score_A": 0.9487248728107918,
+        "alone_score_B": 0.4597073249550919,
+        "oracle_edit": 0.050169346807815936,
+        "oracle_score": 0.9498306531921841,
+        "oracle_gain_A": 0.0011057803813923073,
+        "oracle_gain_B": 0.49012332823709215,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "opus5_subscription",
+        "short_A": "paddle",
+        "short_B": "opus"
+      },
+      "ovis__flash": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.05136626410571415,
+        "alone_mean_edit_B": 0.12926098809663256,
+        "alone_score_A": 0.9486337358942859,
+        "alone_score_B": 0.8707390119033674,
+        "oracle_edit": 0.04706649304478193,
+        "oracle_score": 0.9529335069552181,
+        "oracle_gain_A": 0.004299771060932156,
+        "oracle_gain_B": 0.08219449505185061,
+        "model_A": "ovisocr2",
+        "model_B": "infinity_parser2_flash",
+        "short_A": "ovis",
+        "short_B": "flash"
+      },
+      "ovis__deepseek": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.05136626410571415,
+        "alone_mean_edit_B": 0.11777843053928444,
+        "alone_score_A": 0.9486337358942859,
+        "alone_score_B": 0.8822215694607156,
+        "oracle_edit": 0.04636738437482997,
+        "oracle_score": 0.95363261562517,
+        "oracle_gain_A": 0.004998879730884087,
+        "oracle_gain_B": 0.07141104616445437,
+        "model_A": "ovisocr2",
+        "model_B": "deepseek_ocr2",
+        "short_A": "ovis",
+        "short_B": "deepseek"
+      },
+      "ovis__glm": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.05136626410571415,
+        "alone_mean_edit_B": 0.5013872217801912,
+        "alone_score_A": 0.9486337358942859,
+        "alone_score_B": 0.49861277821980876,
+        "oracle_edit": 0.045313452386335426,
+        "oracle_score": 0.9546865476136646,
+        "oracle_gain_A": 0.006052811719378659,
+        "oracle_gain_B": 0.4560737693938558,
+        "model_A": "ovisocr2",
+        "model_B": "glm_ocr",
+        "short_A": "ovis",
+        "short_B": "glm"
+      },
+      "ovis__opus": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.05136626410571415,
+        "alone_mean_edit_B": 0.5402926750449081,
+        "alone_score_A": 0.9486337358942859,
+        "alone_score_B": 0.4597073249550919,
+        "oracle_edit": 0.05113809585776368,
+        "oracle_score": 0.9488619041422364,
+        "oracle_gain_A": 0.00022816824795046653,
+        "oracle_gain_B": 0.48915457918714444,
+        "model_A": "ovisocr2",
+        "model_B": "opus5_subscription",
+        "short_A": "ovis",
+        "short_B": "opus"
+      },
+      "flash__deepseek": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.12926098809663256,
+        "alone_mean_edit_B": 0.11777843053928444,
+        "alone_score_A": 0.8707390119033674,
+        "alone_score_B": 0.8822215694607156,
+        "oracle_edit": 0.08287969355277726,
+        "oracle_score": 0.9171203064472228,
+        "oracle_gain_A": 0.04638129454385531,
+        "oracle_gain_B": 0.03489873698650714,
+        "model_A": "infinity_parser2_flash",
+        "model_B": "deepseek_ocr2",
+        "short_A": "flash",
+        "short_B": "deepseek"
+      },
+      "flash__glm": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.12926098809663256,
+        "alone_mean_edit_B": 0.5013872217801912,
+        "alone_score_A": 0.8707390119033674,
+        "alone_score_B": 0.49861277821980876,
+        "oracle_edit": 0.09912276425142726,
+        "oracle_score": 0.9008772357485727,
+        "oracle_gain_A": 0.03013822384520526,
+        "oracle_gain_B": 0.40226445752876394,
+        "model_A": "infinity_parser2_flash",
+        "model_B": "glm_ocr",
+        "short_A": "flash",
+        "short_B": "glm"
+      },
+      "flash__opus": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.12926098809663256,
+        "alone_mean_edit_B": 0.5402926750449081,
+        "alone_score_A": 0.8707390119033674,
+        "alone_score_B": 0.4597073249550919,
+        "oracle_edit": 0.10866106970043134,
+        "oracle_score": 0.8913389302995687,
+        "oracle_gain_A": 0.020599918396201233,
+        "oracle_gain_B": 0.43163160534447675,
+        "model_A": "infinity_parser2_flash",
+        "model_B": "opus5_subscription",
+        "short_A": "flash",
+        "short_B": "opus"
+      },
+      "deepseek__glm": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.11777843053928444,
+        "alone_mean_edit_B": 0.5013872217801912,
+        "alone_score_A": 0.8822215694607156,
+        "alone_score_B": 0.49861277821980876,
+        "oracle_edit": 0.09285944922642163,
+        "oracle_score": 0.9071405507735784,
+        "oracle_gain_A": 0.024918981312862742,
+        "oracle_gain_B": 0.4085277725537696,
+        "model_A": "deepseek_ocr2",
+        "model_B": "glm_ocr",
+        "short_A": "deepseek",
+        "short_B": "glm"
+      },
+      "deepseek__opus": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.11777843053928444,
+        "alone_mean_edit_B": 0.5402926750449081,
+        "alone_score_A": 0.8822215694607156,
+        "alone_score_B": 0.4597073249550919,
+        "oracle_edit": 0.10444960807893397,
+        "oracle_score": 0.895550391921066,
+        "oracle_gain_A": 0.013328822460350387,
+        "oracle_gain_B": 0.4358430669659741,
+        "model_A": "deepseek_ocr2",
+        "model_B": "opus5_subscription",
+        "short_A": "deepseek",
+        "short_B": "opus"
+      },
+      "glm__opus": {
+        "n_pages": 458,
+        "alone_mean_edit_A": 0.5013872217801912,
+        "alone_mean_edit_B": 0.5402926750449081,
+        "alone_score_A": 0.49861277821980876,
+        "alone_score_B": 0.4597073249550919,
+        "oracle_edit": 0.3059501999262374,
+        "oracle_score": 0.6940498000737626,
+        "oracle_gain_A": 0.19543702185395384,
+        "oracle_gain_B": 0.23434247511867068,
+        "model_A": "glm_ocr",
+        "model_B": "opus5_subscription",
+        "short_A": "glm",
+        "short_B": "opus"
+      }
+    },
+    "reading_order": {
+      "paddle__ovis": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.13037526134622857,
+        "alone_mean_edit_B": 0.11285344862372688,
+        "alone_score_A": 0.8696247386537714,
+        "alone_score_B": 0.8871465513762731,
+        "oracle_edit": 0.10601645543303452,
+        "oracle_score": 0.8939835445669655,
+        "oracle_gain_A": 0.02435880591319406,
+        "oracle_gain_B": 0.00683699319069242,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "ovisocr2",
+        "short_A": "paddle",
+        "short_B": "ovis"
+      },
+      "paddle__flash": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.13037526134622857,
+        "alone_mean_edit_B": 0.1376551902112244,
+        "alone_score_A": 0.8696247386537714,
+        "alone_score_B": 0.8623448097887756,
+        "oracle_edit": 0.10951006990557595,
+        "oracle_score": 0.890489930094424,
+        "oracle_gain_A": 0.020865191440652575,
+        "oracle_gain_B": 0.02814512030564842,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "infinity_parser2_flash",
+        "short_A": "paddle",
+        "short_B": "flash"
+      },
+      "paddle__deepseek": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.13037526134622857,
+        "alone_mean_edit_B": 0.1499599214925253,
+        "alone_score_A": 0.8696247386537714,
+        "alone_score_B": 0.8500400785074747,
+        "oracle_edit": 0.11401282083313465,
+        "oracle_score": 0.8859871791668653,
+        "oracle_gain_A": 0.01636244051309388,
+        "oracle_gain_B": 0.03594710065939066,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "deepseek_ocr2",
+        "short_A": "paddle",
+        "short_B": "deepseek"
+      },
+      "paddle__glm": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.13037526134622857,
+        "alone_mean_edit_B": 0.2126865436083129,
+        "alone_score_A": 0.8696247386537714,
+        "alone_score_B": 0.787313456391687,
+        "oracle_edit": 0.12204931695255185,
+        "oracle_score": 0.8779506830474482,
+        "oracle_gain_A": 0.008325944393676732,
+        "oracle_gain_B": 0.09063722665576113,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "glm_ocr",
+        "short_A": "paddle",
+        "short_B": "glm"
+      },
+      "paddle__opus": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.13037526134622857,
+        "alone_mean_edit_B": 0.16747079285562133,
+        "alone_score_A": 0.8696247386537714,
+        "alone_score_B": 0.8325292071443786,
+        "oracle_edit": 0.10568360336136319,
+        "oracle_score": 0.8943163966386368,
+        "oracle_gain_A": 0.02469165798486539,
+        "oracle_gain_B": 0.06178718949425821,
+        "model_A": "paddleocr_vl_1_6",
+        "model_B": "opus5_subscription",
+        "short_A": "paddle",
+        "short_B": "opus"
+      },
+      "ovis__flash": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.11285344862372688,
+        "alone_mean_edit_B": 0.1376551902112244,
+        "alone_score_A": 0.8871465513762731,
+        "alone_score_B": 0.8623448097887756,
+        "oracle_edit": 0.10535683154175543,
+        "oracle_score": 0.8946431684582445,
+        "oracle_gain_A": 0.007496617081971468,
+        "oracle_gain_B": 0.03229835866946895,
+        "model_A": "ovisocr2",
+        "model_B": "infinity_parser2_flash",
+        "short_A": "ovis",
+        "short_B": "flash"
+      },
+      "ovis__deepseek": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.11285344862372688,
+        "alone_mean_edit_B": 0.1499599214925253,
+        "alone_score_A": 0.8871465513762731,
+        "alone_score_B": 0.8500400785074747,
+        "oracle_edit": 0.10712702778170083,
+        "oracle_score": 0.8928729722182992,
+        "oracle_gain_A": 0.005726420842026125,
+        "oracle_gain_B": 0.04283289371082455,
+        "model_A": "ovisocr2",
+        "model_B": "deepseek_ocr2",
+        "short_A": "ovis",
+        "short_B": "deepseek"
+      },
+      "ovis__glm": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.11285344862372688,
+        "alone_mean_edit_B": 0.2126865436083129,
+        "alone_score_A": 0.8871465513762731,
+        "alone_score_B": 0.787313456391687,
+        "oracle_edit": 0.10620246149817124,
+        "oracle_score": 0.8937975385018287,
+        "oracle_gain_A": 0.006650987125555674,
+        "oracle_gain_B": 0.10648408211014171,
+        "model_A": "ovisocr2",
+        "model_B": "glm_ocr",
+        "short_A": "ovis",
+        "short_B": "glm"
+      },
+      "ovis__opus": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.11285344862372688,
+        "alone_mean_edit_B": 0.16747079285562133,
+        "alone_score_A": 0.8871465513762731,
+        "alone_score_B": 0.8325292071443786,
+        "oracle_edit": 0.10222318552635676,
+        "oracle_score": 0.8977768144736432,
+        "oracle_gain_A": 0.01063026309737014,
+        "oracle_gain_B": 0.0652476073292646,
+        "model_A": "ovisocr2",
+        "model_B": "opus5_subscription",
+        "short_A": "ovis",
+        "short_B": "opus"
+      },
+      "flash__deepseek": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.1376551902112244,
+        "alone_mean_edit_B": 0.1499599214925253,
+        "alone_score_A": 0.8623448097887756,
+        "alone_score_B": 0.8500400785074747,
+        "oracle_edit": 0.11959847260127193,
+        "oracle_score": 0.880401527398728,
+        "oracle_gain_A": 0.018056717609952422,
+        "oracle_gain_B": 0.030361448891253362,
+        "model_A": "infinity_parser2_flash",
+        "model_B": "deepseek_ocr2",
+        "short_A": "flash",
+        "short_B": "deepseek"
+      },
+      "flash__glm": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.1376551902112244,
+        "alone_mean_edit_B": 0.2126865436083129,
+        "alone_score_A": 0.8623448097887756,
+        "alone_score_B": 0.787313456391687,
+        "oracle_edit": 0.12099212347789555,
+        "oracle_score": 0.8790078765221044,
+        "oracle_gain_A": 0.016663066733328846,
+        "oracle_gain_B": 0.0916944201304174,
+        "model_A": "infinity_parser2_flash",
+        "model_B": "glm_ocr",
+        "short_A": "flash",
+        "short_B": "glm"
+      },
+      "flash__opus": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.1376551902112244,
+        "alone_mean_edit_B": 0.16747079285562133,
+        "alone_score_A": 0.8623448097887756,
+        "alone_score_B": 0.8325292071443786,
+        "oracle_edit": 0.11399819056191066,
+        "oracle_score": 0.8860018094380894,
+        "oracle_gain_A": 0.02365699964931378,
+        "oracle_gain_B": 0.05347260229371076,
+        "model_A": "infinity_parser2_flash",
+        "model_B": "opus5_subscription",
+        "short_A": "flash",
+        "short_B": "opus"
+      },
+      "deepseek__glm": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.1499599214925253,
+        "alone_mean_edit_B": 0.2126865436083129,
+        "alone_score_A": 0.8500400785074747,
+        "alone_score_B": 0.787313456391687,
+        "oracle_edit": 0.12314289202544644,
+        "oracle_score": 0.8768571079745535,
+        "oracle_gain_A": 0.026817029467078868,
+        "oracle_gain_B": 0.08954365158286648,
+        "model_A": "deepseek_ocr2",
+        "model_B": "glm_ocr",
+        "short_A": "deepseek",
+        "short_B": "glm"
+      },
+      "deepseek__opus": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.1499599214925253,
+        "alone_mean_edit_B": 0.16747079285562133,
+        "alone_score_A": 0.8500400785074747,
+        "alone_score_B": 0.8325292071443786,
+        "oracle_edit": 0.11396882107534846,
+        "oracle_score": 0.8860311789246516,
+        "oracle_gain_A": 0.0359911004171769,
+        "oracle_gain_B": 0.05350197178027294,
+        "model_A": "deepseek_ocr2",
+        "model_B": "opus5_subscription",
+        "short_A": "deepseek",
+        "short_B": "opus"
+      },
+      "glm__opus": {
+        "n_pages": 1638,
+        "alone_mean_edit_A": 0.2126865436083129,
+        "alone_mean_edit_B": 0.16747079285562133,
+        "alone_score_A": 0.787313456391687,
+        "alone_score_B": 0.8325292071443786,
+        "oracle_edit": 0.11944624112349929,
+        "oracle_score": 0.8805537588765007,
+        "oracle_gain_A": 0.09324030248481363,
+        "oracle_gain_B": 0.048024551732122056,
+        "model_A": "glm_ocr",
+        "model_B": "opus5_subscription",
+        "short_A": "glm",
+        "short_B": "opus"
+      }
+    }
+  },
+  "oracle_score_matrices": {
+    "text": {
+      "paddle": {
+        "paddle": 0.9574100991545264,
+        "ovis": 0.9768496714596676,
+        "flash": 0.9745922931236197,
+        "deepseek": 0.9719529200879199,
+        "glm": 0.9699139503634935,
+        "opus": 0.9743690721842109
+      },
+      "ovis": {
+        "paddle": 0.9768496714596676,
+        "ovis": 0.9710105751133512,
+        "flash": 0.9773499643700088,
+        "deepseek": 0.9758804919891364,
+        "glm": 0.9767274897290331,
+        "opus": 0.9770158437030327
+      },
+      "flash": {
+        "paddle": 0.9745922931236197,
+        "ovis": 0.9773499643700088,
+        "flash": 0.9551328980258896,
+        "deepseek": 0.9689969729428383,
+        "glm": 0.9671368866146318,
+        "opus": 0.969867704846193
+      },
+      "deepseek": {
+        "paddle": 0.9719529200879199,
+        "ovis": 0.9758804919891364,
+        "flash": 0.9689969729428383,
+        "deepseek": 0.9415716347866899,
+        "glm": 0.9678616432215277,
+        "opus": 0.9676055769066959
+      },
+      "glm": {
+        "paddle": 0.9699139503634935,
+        "ovis": 0.9767274897290331,
+        "flash": 0.9671368866146318,
+        "deepseek": 0.9678616432215277,
+        "glm": 0.9154155275503849,
+        "opus": 0.9670926859788869
+      },
+      "opus": {
+        "paddle": 0.9743690721842109,
+        "ovis": 0.9770158437030327,
+        "flash": 0.969867704846193,
+        "deepseek": 0.9676055769066959,
+        "glm": 0.9670926859788869,
+        "opus": 0.9103813753895202
+      }
+    },
+    "formula": {
+      "paddle": {
+        "paddle": 0.9132441793617796,
+        "ovis": 0.9321437032377708,
+        "flash": 0.9338451027300793,
+        "deepseek": 0.9269466095538124,
+        "glm": 0.9228880621616384,
+        "opus": 0.9307706539766526
+      },
+      "ovis": {
+        "paddle": 0.9321437032377708,
+        "ovis": 0.91290518275644,
+        "flash": 0.9272575662990521,
+        "deepseek": 0.9232474462014295,
+        "glm": 0.9254426174136589,
+        "opus": 0.9261712299456408
+      },
+      "flash": {
+        "paddle": 0.9338451027300793,
+        "ovis": 0.9272575662990521,
+        "flash": 0.8592677753022425,
+        "deepseek": 0.9138771515208134,
+        "glm": 0.8918193804257563,
+        "opus": 0.8973952451201018
+      },
+      "deepseek": {
+        "paddle": 0.9269466095538124,
+        "ovis": 0.9232474462014295,
+        "flash": 0.9138771515208134,
+        "deepseek": 0.87409042997985,
+        "glm": 0.8967687432687853,
+        "opus": 0.9121301296760386
+      },
+      "glm": {
+        "paddle": 0.9228880621616384,
+        "ovis": 0.9254426174136589,
+        "flash": 0.8918193804257563,
+        "deepseek": 0.8967687432687853,
+        "glm": 0.7039959742199672,
+        "opus": 0.8963586923128629
+      },
+      "opus": {
+        "paddle": 0.9307706539766526,
+        "ovis": 0.9261712299456408,
+        "flash": 0.8973952451201018,
+        "deepseek": 0.9121301296760386,
+        "glm": 0.8963586923128629,
+        "opus": 0.8542148986993602
+      }
+    },
+    "table": {
+      "paddle": {
+        "paddle": 0.9487248728107918,
+        "ovis": 0.9653593699138993,
+        "flash": 0.956250097146108,
+        "deepseek": 0.9547401548693905,
+        "glm": 0.9529726078395655,
+        "opus": 0.9498306531921841
+      },
+      "ovis": {
+        "paddle": 0.9653593699138993,
+        "ovis": 0.9486337358942859,
+        "flash": 0.9529335069552181,
+        "deepseek": 0.95363261562517,
+        "glm": 0.9546865476136646,
+        "opus": 0.9488619041422364
+      },
+      "flash": {
+        "paddle": 0.956250097146108,
+        "ovis": 0.9529335069552181,
+        "flash": 0.8707390119033674,
+        "deepseek": 0.9171203064472228,
+        "glm": 0.9008772357485727,
+        "opus": 0.8913389302995687
+      },
+      "deepseek": {
+        "paddle": 0.9547401548693905,
+        "ovis": 0.95363261562517,
+        "flash": 0.9171203064472228,
+        "deepseek": 0.8822215694607156,
+        "glm": 0.9071405507735784,
+        "opus": 0.895550391921066
+      },
+      "glm": {
+        "paddle": 0.9529726078395655,
+        "ovis": 0.9546865476136646,
+        "flash": 0.9008772357485727,
+        "deepseek": 0.9071405507735784,
+        "glm": 0.49861277821980876,
+        "opus": 0.6940498000737626
+      },
+      "opus": {
+        "paddle": 0.9498306531921841,
+        "ovis": 0.9488619041422364,
+        "flash": 0.8913389302995687,
+        "deepseek": 0.895550391921066,
+        "glm": 0.6940498000737626,
+        "opus": 0.4597073249550919
+      }
+    },
+    "reading_order": {
+      "paddle": {
+        "paddle": 0.8696247386537714,
+        "ovis": 0.8939835445669655,
+        "flash": 0.890489930094424,
+        "deepseek": 0.8859871791668653,
+        "glm": 0.8779506830474482,
+        "opus": 0.8943163966386368
+      },
+      "ovis": {
+        "paddle": 0.8939835445669655,
+        "ovis": 0.8871465513762731,
+        "flash": 0.8946431684582445,
+        "deepseek": 0.8928729722182992,
+        "glm": 0.8937975385018287,
+        "opus": 0.8977768144736432
+      },
+      "flash": {
+        "paddle": 0.890489930094424,
+        "ovis": 0.8946431684582445,
+        "flash": 0.8623448097887756,
+        "deepseek": 0.880401527398728,
+        "glm": 0.8790078765221044,
+        "opus": 0.8860018094380894
+      },
+      "deepseek": {
+        "paddle": 0.8859871791668653,
+        "ovis": 0.8928729722182992,
+        "flash": 0.880401527398728,
+        "deepseek": 0.8500400785074747,
+        "glm": 0.8768571079745535,
+        "opus": 0.8860311789246516
+      },
+      "glm": {
+        "paddle": 0.8779506830474482,
+        "ovis": 0.8937975385018287,
+        "flash": 0.8790078765221044,
+        "deepseek": 0.8768571079745535,
+        "glm": 0.787313456391687,
+        "opus": 0.8805537588765007
+      },
+      "opus": {
+        "paddle": 0.8943163966386368,
+        "ovis": 0.8977768144736432,
+        "flash": 0.8860018094380894,
+        "deepseek": 0.8860311789246516,
+        "glm": 0.8805537588765007,
+        "opus": 0.8325292071443786
+      }
+    }
+  },
+  "oracle_gain_vs_paddle": {
+    "text": {
+      "ovis": {
+        "n_pages": 1557,
+        "paddle_alone_score": 0.9574100991545264,
+        "peer_alone_score": 0.9710105751133512,
+        "oracle_score": 0.9768496714596676,
+        "oracle_gain_vs_paddle": 0.01943957230514126
+      },
+      "flash": {
+        "n_pages": 1557,
+        "paddle_alone_score": 0.9574100991545264,
+        "peer_alone_score": 0.9551328980258896,
+        "oracle_score": 0.9745922931236197,
+        "oracle_gain_vs_paddle": 0.017182193969093373
+      },
+      "deepseek": {
+        "n_pages": 1557,
+        "paddle_alone_score": 0.9574100991545264,
+        "peer_alone_score": 0.9415716347866899,
+        "oracle_score": 0.9719529200879199,
+        "oracle_gain_vs_paddle": 0.014542820933393541
+      },
+      "glm": {
+        "n_pages": 1557,
+        "paddle_alone_score": 0.9574100991545264,
+        "peer_alone_score": 0.9154155275503849,
+        "oracle_score": 0.9699139503634935,
+        "oracle_gain_vs_paddle": 0.012503851208967132
+      },
+      "opus": {
+        "n_pages": 1557,
+        "paddle_alone_score": 0.9574100991545264,
+        "peer_alone_score": 0.9103813753895202,
+        "oracle_score": 0.9743690721842109,
+        "oracle_gain_vs_paddle": 0.01695897302968452
+      }
+    },
+    "formula": {
+      "ovis": {
+        "n_pages": 313,
+        "paddle_alone_score": 0.9132441793617796,
+        "peer_alone_score": 0.91290518275644,
+        "oracle_score": 0.9321437032377708,
+        "oracle_gain_vs_paddle": 0.018899523875991253
+      },
+      "flash": {
+        "n_pages": 313,
+        "paddle_alone_score": 0.9132441793617796,
+        "peer_alone_score": 0.8592677753022425,
+        "oracle_score": 0.9338451027300793,
+        "oracle_gain_vs_paddle": 0.020600923368299662
+      },
+      "deepseek": {
+        "n_pages": 313,
+        "paddle_alone_score": 0.9132441793617796,
+        "peer_alone_score": 0.87409042997985,
+        "oracle_score": 0.9269466095538124,
+        "oracle_gain_vs_paddle": 0.013702430192032766
+      },
+      "glm": {
+        "n_pages": 313,
+        "paddle_alone_score": 0.9132441793617796,
+        "peer_alone_score": 0.7039959742199672,
+        "oracle_score": 0.9228880621616384,
+        "oracle_gain_vs_paddle": 0.009643882799858838
+      },
+      "opus": {
+        "n_pages": 313,
+        "paddle_alone_score": 0.9132441793617796,
+        "peer_alone_score": 0.8542148986993602,
+        "oracle_score": 0.9307706539766526,
+        "oracle_gain_vs_paddle": 0.017526474614873
+      }
+    },
+    "table": {
+      "ovis": {
+        "n_pages": 458,
+        "paddle_alone_score": 0.9487248728107918,
+        "peer_alone_score": 0.9486337358942859,
+        "oracle_score": 0.9653593699138993,
+        "oracle_gain_vs_paddle": 0.016634497103107493
+      },
+      "flash": {
+        "n_pages": 458,
+        "paddle_alone_score": 0.9487248728107918,
+        "peer_alone_score": 0.8707390119033674,
+        "oracle_score": 0.956250097146108,
+        "oracle_gain_vs_paddle": 0.007525224335316216
+      },
+      "deepseek": {
+        "n_pages": 458,
+        "paddle_alone_score": 0.9487248728107918,
+        "peer_alone_score": 0.8822215694607156,
+        "oracle_score": 0.9547401548693905,
+        "oracle_gain_vs_paddle": 0.006015282058598692
+      },
+      "glm": {
+        "n_pages": 458,
+        "paddle_alone_score": 0.9487248728107918,
+        "peer_alone_score": 0.49861277821980876,
+        "oracle_score": 0.9529726078395655,
+        "oracle_gain_vs_paddle": 0.004247735028773736
+      },
+      "opus": {
+        "n_pages": 458,
+        "paddle_alone_score": 0.9487248728107918,
+        "peer_alone_score": 0.4597073249550919,
+        "oracle_score": 0.9498306531921841,
+        "oracle_gain_vs_paddle": 0.0011057803813923073
+      }
+    },
+    "reading_order": {
+      "ovis": {
+        "n_pages": 1638,
+        "paddle_alone_score": 0.8696247386537714,
+        "peer_alone_score": 0.8871465513762731,
+        "oracle_score": 0.8939835445669655,
+        "oracle_gain_vs_paddle": 0.02435880591319406
+      },
+      "flash": {
+        "n_pages": 1638,
+        "paddle_alone_score": 0.8696247386537714,
+        "peer_alone_score": 0.8623448097887756,
+        "oracle_score": 0.890489930094424,
+        "oracle_gain_vs_paddle": 0.020865191440652575
+      },
+      "deepseek": {
+        "n_pages": 1638,
+        "paddle_alone_score": 0.8696247386537714,
+        "peer_alone_score": 0.8500400785074747,
+        "oracle_score": 0.8859871791668653,
+        "oracle_gain_vs_paddle": 0.01636244051309388
+      },
+      "glm": {
+        "n_pages": 1638,
+        "paddle_alone_score": 0.8696247386537714,
+        "peer_alone_score": 0.787313456391687,
+        "oracle_score": 0.8779506830474482,
+        "oracle_gain_vs_paddle": 0.008325944393676732
+      },
+      "opus": {
+        "n_pages": 1638,
+        "paddle_alone_score": 0.8696247386537714,
+        "peer_alone_score": 0.8325292071443786,
+        "oracle_score": 0.8943163966386368,
+        "oracle_gain_vs_paddle": 0.02469165798486539
+      }
+    }
+  }
+}

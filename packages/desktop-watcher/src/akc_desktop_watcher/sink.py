@@ -6,11 +6,11 @@ import json
 import os
 from collections.abc import Callable
 from pathlib import Path
-from typing import Protocol
+from typing import Any, Protocol
 
 
 class EventSink(Protocol):
-    def deliver(self, record: dict) -> None:
+    def deliver(self, record: dict[str, Any]) -> None:
         """Consume one watcher record.
 
         Delivery is at-least-once: a sink that raises leaves the journal entry
@@ -21,10 +21,10 @@ class EventSink(Protocol):
 
 
 class CallbackEventSink:
-    def __init__(self, callback: Callable[[dict], None]) -> None:
+    def __init__(self, callback: Callable[[dict[str, Any]], None]) -> None:
         self._callback = callback
 
-    def deliver(self, record: dict) -> None:
+    def deliver(self, record: dict[str, Any]) -> None:
         self._callback(record)
 
 
@@ -49,7 +49,7 @@ class CompositeEventSink:
             if callable(closer):
                 closer()
 
-    def deliver(self, record: dict) -> None:
+    def deliver(self, record: dict[str, Any]) -> None:
         failures: list[tuple[str, str]] = []
         for index, sink in enumerate(self._sinks):
             try:
@@ -97,7 +97,7 @@ class JsonlFileSink:
     def __exit__(self, *exc_info: object) -> None:
         self.close()
 
-    def deliver(self, record: dict) -> None:
+    def deliver(self, record: dict[str, Any]) -> None:
         key = record.get("event_key")
         if isinstance(key, str) and key in self.seen_event_keys:
             return

@@ -2,6 +2,16 @@
 
 from .calibration import CalibrationBin, expected_calibration_error
 from .champion_matrix import ChampionCandidate, ChampionMatrix
+from .complementarity import (
+    COMPLEMENTARITY_ARTIFACT,
+    COMPLEMENTARITY_SHA256,
+    MEASURED_RESCUES,
+    ParseElement,
+    RescueMeasurement,
+    dominant_element,
+    rescues_for,
+    select_cross_check_peer,
+)
 from .engine import decide_escalation, estimate_route_credits, select_first_route
 from .estimation import (
     ClusterSamplePlan,
@@ -70,6 +80,9 @@ from .research import (
 )
 
 __all__ = [
+    "COMPLEMENTARITY_ARTIFACT",
+    "COMPLEMENTARITY_SHA256",
+    "MEASURED_RESCUES",
     "MODE_PROFILE",
     "BetaBinomialPosterior",
     "CalibrationBin",
@@ -96,6 +109,7 @@ __all__ = [
     "MonteCarloScheduleEstimate",
     "PageMetrics",
     "PageTechnicalClass",
+    "ParseElement",
     "ParseRequest",
     "ParseResult",
     "ParserCapabilities",
@@ -105,6 +119,7 @@ __all__ = [
     "ProviderRegistry",
     "ProviderUnavailableError",
     "QualitySignal",
+    "RescueMeasurement",
     "RiskTier",
     "Route",
     "RouteCostCandidate",
@@ -122,6 +137,7 @@ __all__ = [
     "classify_page",
     "decide_escalation",
     "detect_script_distribution",
+    "dominant_element",
     "estimate_collection",
     "estimate_route_credits",
     "estimate_schedule",
@@ -129,7 +145,9 @@ __all__ = [
     "native_candidate",
     "native_requires_visual_cross_check",
     "preflight_difficulty",
+    "rescues_for",
     "select_adaptive_samples",
+    "select_cross_check_peer",
     "select_expected_verified_cost",
     "select_first_route",
     "select_risk_constrained_candidate",

@@ -21,6 +21,7 @@ import os
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import cast
 
 from akc_cir.world_state import (
     PublicationManifest,
@@ -57,7 +58,8 @@ def _write_json_atomic(path: Path, payload: object) -> None:
 def _read_json(path: Path) -> object | None:
     if not path.exists():
         return None
-    return json.loads(path.read_text(encoding="utf-8"))
+    loaded: object = json.loads(path.read_text(encoding="utf-8"))
+    return loaded
 
 
 @dataclass(frozen=True, slots=True)
@@ -106,7 +108,7 @@ class WorldStore:
         if pointer is None:
             return None
         assert isinstance(pointer, dict)
-        return pointer.get("active_world_state_id")  # type: ignore[return-value]
+        return cast(str | None, pointer.get("active_world_state_id"))
 
     def load_world(self, world_state_id: str | None = None) -> StoredWorld | None:
         """Load the pointed-at world, or a specific one by id."""
@@ -205,7 +207,11 @@ class WorldStore:
         state = result.world_state
         _write_json_atomic(
             self.base / "meta.json",
-            {"version": _STORE_VERSION, "sequence": self._sequence, "workspace_id": self.workspace_id},
+            {
+                "version": _STORE_VERSION,
+                "sequence": self._sequence,
+                "workspace_id": self.workspace_id,
+            },
         )
         _write_json_atomic(
             self.base / "worlds" / f"{world_state_id}.json",
