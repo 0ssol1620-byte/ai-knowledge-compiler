@@ -31,7 +31,8 @@ RUN groupadd --gid 10001 akc \
     && install -d -o akc -g akc /app \
     && apt-get update \
     && apt-get install --yes --no-install-recommends apt bubblewrap libpcre2-8-0 \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip uninstall --yes --root-user-action ignore pip
 
 WORKDIR /app
 COPY --from=builder /build/.venv /app/.venv
