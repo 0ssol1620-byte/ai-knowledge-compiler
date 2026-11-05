@@ -26,6 +26,8 @@ MAX_REQUEST_BYTES = 32 * 1024 * 1024
 # The idempotency cache holds whole responses in process memory, so it is bounded twice: by
 # entries and by bytes, whichever is reached first, evicting the least recently used. An evicted
 # key is recompiled on retry (deterministic, same output) and no longer detects a 409 conflict.
+# CACHE_MAX_BYTES counts serialised bytes. The resident pydantic objects measured 1.75x that
+# (18.4 MB serialised -> 32.1 MB resident, tracemalloc), so the 256 MiB cap is ~450 MB resident.
 CACHE_MAX_ENTRIES = 8
 CACHE_MAX_BYTES = 256 * 1024 * 1024
 

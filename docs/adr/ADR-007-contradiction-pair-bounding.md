@@ -78,6 +78,10 @@ quality comparison instead of an equivalence check.
 
 ## Consequences
 
+- Memory, alongside this ADR: the Core idempotency cache (`api.py`) is capped at 8 entries /
+  256 MiB of **serialised** bytes. The resident pydantic objects measured 1.75× serialised
+  (18.4 MB → 32.1 MB, tracemalloc), so the cap is about 450 MB resident. The cap stays; fewer
+  stored contradiction rows shrink each entry and so raise the effective entry count.
 - `semantics/contradictions.jsonl` rows, VALIDATION_RECORD objects and their JSON-LD / CSV /
   TTL projections change shape → `artifactHashes`, `manifestDigest`, `worldStateId` change for
   every World that has a contradiction. Its next compile is a rebuild, not a carry-over.
