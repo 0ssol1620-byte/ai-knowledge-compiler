@@ -77,18 +77,21 @@ from .semantics import (
     semantic_tokens,
 )
 
-# The largest package Core returns. Foundation inlines every package file into
-# candidate-world.json and refuses that object above 32 MiB (`MAX_COLLECTION_JSON_BYTES`), so a
-# package whose files alone exceed it can never be stored: refusing here names the cause before
-# the candidate is serialised, hashed, sent, receipted and registered for nothing.
+# The largest output Core returns: Foundation's 32 MiB bound on what it stores
+# (`MAX_COLLECTION_JSON_BYTES`) and reads back from Core. Core is the precise gate, before any
+# digest or receipt exists; Foundation's own response bound is the backstop. Two checks, one
+# budget: the package bytes on the probe build (cheap, before a second package is built), then
+# the serialised candidate itself (the bytes that are hashed, sent and stored).
 OUTPUT_BUDGET_BYTES = 32 * 1024 * 1024
 
 
 class CoreOutputTooLargeError(Exception):
-    """The compiled package exceeds the output budget. Nothing is truncated; nothing is sent."""
+    """The compiled output exceeds the output budget. Nothing is truncated; nothing is sent."""
 
     def __init__(self, detail: dict[str, object]) -> None:
-        super().__init__(f"package of {detail['bytes']} B exceeds budget {detail['budget']} B")
+        super().__init__(
+            f"{detail['object']} of {detail['bytes']} B exceeds budget {detail['budget']} B"
+        )
         self.detail = detail
 
 
@@ -482,6 +485,24 @@ class ProductCoreCompiler:
         # carry the verdict. Only the report differs between the two builds.
         lifecycle, _ = settle(review_reasons)
         probe, _ = project(lifecycle=lifecycle, review_reasons=review_reasons)
+
+        def refuse_if_over(measured: str, size: int) -> None:
+            if size > self.output_budget_bytes:
+                raise CoreOutputTooLargeError(
+                    {
+                        "object": measured,
+                        "bytes": size,
+                        "budget": self.output_budget_bytes,
+                        "counts": {
+                            "regions": sum(len(item.regions) for item in request.documents),
+                            "claims": len(semantics.claims),
+                            "contradictionPairs": len(semantics.contradictions),
+                            "files": len(probe.files),
+                        },
+                    }
+                )
+
+        refuse_if_over("core-package", sum(file.size_bytes for file in probe.files))
         checks = self._validation_checks(
             request=request,
             canonical_documents=canonical_documents,
@@ -496,20 +517,6 @@ class ProductCoreCompiler:
         package, directory_plan = project(
             lifecycle=lifecycle, review_reasons=review_reasons, checks=checks
         )
-        package_bytes = sum(file.size_bytes for file in package.files)
-        if package_bytes > self.output_budget_bytes:
-            raise CoreOutputTooLargeError(
-                {
-                    "bytes": package_bytes,
-                    "budget": self.output_budget_bytes,
-                    "counts": {
-                        "regions": sum(len(item.regions) for item in request.documents),
-                        "claims": len(semantics.claims),
-                        "contradictionPairs": len(semantics.contradictions),
-                        "files": len(package.files),
-                    },
-                }
-            )
         # The shipped package is checked again, not trusted to equal the probe: it must differ
         # only in validation/report.json and must earn the same verdict on its own.
         checked_files = {
@@ -572,6 +579,7 @@ class ProductCoreCompiler:
             review_reasons=tuple(sorted(set(review_reasons))),
         )
         candidate_bytes = _json_bytes(wire_payload(candidate))
+        refuse_if_over("core-candidate", len(candidate_bytes))
         artifact_rows = self._candidate_artifacts(
             canonical_documents,
             knowledge_model,

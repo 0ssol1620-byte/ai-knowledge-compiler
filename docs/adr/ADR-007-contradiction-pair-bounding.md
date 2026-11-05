@@ -17,8 +17,8 @@ A pair whose numeric values differ, or whose polarity differs, becomes one
 Each pair is then written several times into the package: a VALIDATION_RECORD object in
 `canonical/model.json`, its JSON-LD node, `graph/nodes.csv` and `relationships.csv` rows, two
 TTL link lines, a `semantics/contradictions.jsonl` row, a `CONTRADICTION_CANDIDATE:<id>`
-review reason, and a `contradicts` edge on the Foundation side. Measured on the live bundle
-(`b787dd86…`, synthetic input, not the production job): about **5.6 KB per pair** in the
+review reason, and a `contradicts` edge on the Foundation side. Measured on the deployed
+compiler with synthetic input (not a production job): about **5.6 KB per pair** in the
 Foundation candidate.
 
 `topic_key` keeps the first 12 tokens after removing dates and numbers, so rows that differ
@@ -30,10 +30,10 @@ only by a number ("○○ 금액은 N원이다") all fall into one group. Measur
 | 206 | 21,114 | 127 MB |
 | 512 | 130,816 | 695 MB, 91 s Core CPU |
 
-The 12-page scan that failed with `JSON_TOO_LARGE` (134.6 MB candidate) fits this shape, but
-**which amplifier fired on that job was not observed** (see
-`CORE-PACKAGE-AMPLIFICATION-20261105.md` §5). F0 (`CORE_OUTPUT_TOO_LARGE`) now refuses such a
-package by name; this ADR is about not producing it.
+A 12-page scan that failed with `JSON_TOO_LARGE` (134.6 MB candidate) fits this shape, but
+**which amplifier fired on that job was not observed**; the refusal log of F0 is what will
+tell. F0 (`CORE_OUTPUT_TOO_LARGE`) now refuses such an output by name; this ADR is about not
+producing it.
 
 ## Decision (proposed)
 
@@ -52,11 +52,18 @@ For each `(topic_key, temporal_refs)` group with at least one disagreeing pair:
    `polarity_disagreement`; else none). Every claim in class A pairs with every claim in class
    B under that verdict. This reproduces today's pair set exactly; it is an encoding change,
    not a semantic change.
-4. Package cost becomes O(claims + classes²) per group instead of O(claims²). Classes are
-   bounded by the number of distinct values, which is small in the observed shape (a repeated
-   row with different numbers is one class per number; worst case equals claims, which is the
-   honest cost of k genuinely different values and is still linear in records because links
-   go to representatives).
+4. **Stored cost is O(claims) per group, and only because nothing pair-shaped is stored.**
+   Classes are *not* reliably few: the motivating shape, a repeated row with a different
+   number each time, is one class per claim (the unit-test fixture: 30 claims, 30 classes).
+   So classes² is the pair count again, and it is paid only at read time.
+
+   **Compatibility contract: pairs are never expanded into stored rows.** Not in the package
+   (no per-pair VALIDATION_RECORD, JSON-LD node, CSV row, TTL link or JSONL row), not in
+   review reasons, and not on the Foundation side: Foundation `contradicts` edges are derived
+   **per class** (one edge from the group to each class representative), never per pair. A
+   reader that needs a pair (a review drill-down, an export) derives it on request from the
+   group record and the rule in step 3, and does not persist it. Breaking this moves the
+   quadratic cost from Core to Foundation instead of removing it.
 5. One review reason per group, `CONTRADICTION_GROUP:<groupId>`, instead of one per pair. The
    reviewer adjudicates a group (pick the authoritative class), not N² pairs.
 
@@ -76,7 +83,8 @@ quality comparison instead of an equivalence check.
   every World that has a contradiction. Its next compile is a rebuild, not a carry-over.
 - Foundation's projection rejects a contradiction whose links are not exactly two
   (`core-runtime-v2.ts:536-557`); it must accept the group shape. Its per-contradiction
-  `reviewReasons.includes(...)` (O(C²), `:548`) becomes a Set lookup in the same change.
+  `reviewReasons.includes(...)` (O(C²), `:548`) becomes a Set lookup in the same change,
+  and its `contradicts` edges become one per class, per the step-4 contract.
 - Review UI and `/api/v1/reviews` label a group, not a pair.
 - Response schema: the candidate gains a new record kind → bump the semantics record version
   (`numeric_or_polarity.v1` above) and keep the reader dual-shape until legacy Worlds are gone.
@@ -90,10 +98,12 @@ quality comparison instead of an equivalence check.
    (internal only): `groups`, `classes`, `legacyPairs`, `expandedPairsEqual`, and the byte
    size each encoding would add. Digests unchanged in this step.
 3. **Benchmark (same condition).** Corpus: the GDP sample used for the density figures plus the
-   12-page scan (`715ddfa9-…`, rebuilt from its `ocr.json`). Pass criteria, all required:
+   12-page scan document named in the internal receipt, rebuilt from its OCR output. Pass
+   criteria, all required:
    `expandedPairsEqual` on 100 % of documents; candidate bytes and Core wall time not worse on
-   any document; review items per document reported (expected to fall). A receipt under
-   `outputs/…/go-live/` binds each number to its artifact hash.
+   any document; review items per document reported (expected to fall); stored rows per
+   group linear in claims (the step-4 contract). An internal benchmark receipt binds each
+   number to its artifact hash.
 4. **Canary.** Flag on one internal workspace. Watch: compile success, `CORE_OUTPUT_TOO_LARGE`
    rate, review completion, Foundation projection errors.
 5. **Rollout**, then **deprecate** the legacy pair encoding once no active World carries it.

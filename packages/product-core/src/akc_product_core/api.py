@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from threading import Lock
@@ -26,7 +27,9 @@ MAX_REQUEST_BYTES = 32 * 1024 * 1024
 @dataclass(frozen=True, slots=True)
 class _CachedResponse:
     work_sha256: str
-    response: ProductCoreCompileResponse
+    # A World, or a deterministic CORE_OUTPUT_TOO_LARGE body: the same work is refused the same
+    # way, so a retry is answered without recompiling under the lock. Still a refusal.
+    outcome: ProductCoreCompileResponse | dict[str, object]
 
 
 def _work_sha256(request: ProductCoreCompileRequest) -> str:
@@ -113,11 +116,13 @@ class ProductCoreService:
             if cached is not None:
                 if cached.work_sha256 != work_sha256:
                     return 409, {"code": "CORE_IDEMPOTENCY_CONFLICT"}
+                if isinstance(cached.outcome, dict):
+                    return 422, cached.outcome
                 # The same World, receipted to the attempt that was authenticated now. The
                 # candidate and its output digest are the first attempt's, unchanged.
-                replay = cached.response.model_copy(
+                replay = cached.outcome.model_copy(
                     update={
-                        "receipt": cached.response.receipt.model_copy(
+                        "receipt": cached.outcome.receipt.model_copy(
                             update={
                                 "request_id": transport.request_id,
                                 "input_sha256": transport.input_sha256,
@@ -132,11 +137,24 @@ class ProductCoreService:
                     input_sha256=transport.input_sha256,
                 )
             except CoreOutputTooLargeError as exc:
-                # Not cached: the refusal is recomputed, never replayed as a World.
-                return 422, {"code": "CORE_OUTPUT_TOO_LARGE", **exc.detail}
+                refusal: dict[str, object] = {"code": "CORE_OUTPUT_TOO_LARGE", **exc.detail}
+                # Numbers only: no document text reaches the log.
+                print(
+                    json.dumps(
+                        {
+                            "event": "core_output_too_large",
+                            "requestId": compile_request.request_id,
+                            **exc.detail,
+                        },
+                        separators=(",", ":"),
+                    ),
+                    flush=True,
+                )
+                self._cache[cache_key] = _CachedResponse(work_sha256=work_sha256, outcome=refusal)
+                return 422, refusal
             except ValueError as exc:
                 return 422, {"code": "CORE_COMPILE_REJECTED", "reason": str(exc)}
-            self._cache[cache_key] = _CachedResponse(work_sha256=work_sha256, response=response)
+            self._cache[cache_key] = _CachedResponse(work_sha256=work_sha256, outcome=response)
             # The bytes the receipt digest was computed over: the site hashes them as sent.
             return 200, wire_payload(response)
 
