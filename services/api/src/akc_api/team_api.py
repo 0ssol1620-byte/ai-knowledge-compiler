@@ -830,6 +830,16 @@ async def list_members(
             .order_by(Membership.created_at.asc(), Membership.user_id.asc())
         )
     ).all()
+    await audit(
+        session,
+        tenant_id=principal.tenant_id,
+        actor_id=principal.user_id,
+        action="team.members_viewed",
+        target_type="tenant",
+        target_id=str(principal.tenant_id),
+        metadata={"member_count": len(rows)},
+    )
+    await session.commit()
     return MemberListResponse(
         items=[
             MemberResponse(

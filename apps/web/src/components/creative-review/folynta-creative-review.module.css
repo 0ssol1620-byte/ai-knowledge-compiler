@@ -99,7 +99,7 @@
 }
 .wordmark small {
   color: var(--muted);
-  font-size: 7px;
+  font-size: 12px;
   letter-spacing: 0.13em;
 }
 .productNav > nav {
@@ -692,7 +692,7 @@
   font-size: 12px;
 }
 
-@media (max-width: 960px) {
+@media (max-width: 1024px) {
   .reviewNav {
     align-items: flex-start;
     flex-direction: column;
@@ -723,7 +723,7 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .reviewNav {
     padding: 9px 14px;
   }
@@ -810,10 +810,10 @@
   }
   .sourceObject > strong {
     min-height: 20px;
-    font-size: 7px;
+    font-size: 12px;
   }
   .sourceObject > span {
-    font-size: 6px;
+    font-size: 12px;
   }
   .sourceDiagram {
     height: 39px;
@@ -873,7 +873,7 @@
     height: 43px;
   }
   .compileCore small {
-    font-size: 6px;
+    font-size: 12px;
   }
   .compileCore strong {
     font-size: 12px;
@@ -885,7 +885,7 @@
     padding: 9px 10px;
   }
   .receipt span {
-    font-size: 7px;
+    font-size: 12px;
   }
   .receipt strong {
     font-size: 12px;
@@ -904,7 +904,7 @@
     width: 100%;
     justify-content: space-between;
     gap: 3px;
-    font-size: 7px;
+    font-size: 12px;
   }
   .directionFooter i {
     width: 12px;
