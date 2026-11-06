@@ -1,0 +1,4 @@
+fastapi==0.140.13
+jsonschema==4.26.0
+pydantic==2.13.4
+pyyaml==6.0.3
