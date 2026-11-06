@@ -1,0 +1,5 @@
+# Frozen inputs are hashed byte for byte (freeze/FROZEN_*.json); never let git rewrite them.
+prompt_registry/** -text
+schemas/** -text
+config/** -text
+freeze/** -text

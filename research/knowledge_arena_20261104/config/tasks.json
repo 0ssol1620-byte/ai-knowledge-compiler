@@ -1,0 +1,33 @@
+{
+  "schema": "tavonel.karena.task_config.v1",
+  "note": "Sampling is greedy and seeded so repeats measure serving nondeterminism, not sampling. Frozen with the prompts; a change is a new version.",
+  "stage0": {
+    "cases_per_task": 50,
+    "split": "CALIBRATION",
+    "repeat_subset": 10,
+    "repeats": 3,
+    "concurrency": 4
+  },
+  "tasks": {
+    "doc_type": {
+      "max_tokens": 200,
+      "temperature": 0.0,
+      "seed": 0
+    },
+    "typed_extraction": {
+      "max_tokens": 400,
+      "temperature": 0.0,
+      "seed": 0
+    },
+    "grounded_answer": {
+      "max_tokens": 900,
+      "temperature": 0.0,
+      "seed": 0
+    },
+    "schema_induction": {
+      "max_tokens": 3500,
+      "temperature": 0.0,
+      "seed": 0
+    }
+  }
+}

@@ -1,0 +1,317 @@
+{
+  "campaign_id": "TAVONEL-KNOWLEDGE-ARENA-20261104-V1",
+  "resolved_at": "2026-11-04T09:24:47Z",
+  "rows": [
+    {
+      "capabilities": {
+        "doc_type": null,
+        "grounded_answer": null,
+        "json_schema_output": null,
+        "korean_text": null,
+        "max_context_tokens_measured": null,
+        "schema_induction": null,
+        "text_input": null,
+        "typed_extraction": null
+      },
+      "capability_receipts": [],
+      "declared_parameter_count": 8190735360,
+      "exact_model_id": "Qwen/Qwen3-8B",
+      "exact_revision": "b968826d9c46dd6066d109eabc6255188de91218",
+      "gated": false,
+      "input_mode": "TEXT (chat completion over OpenAI-compatible vLLM); pinned per run",
+      "licences": {
+        "code": {
+          "custom_code_in_model_repo": [],
+          "serving_runtime": "vllm/vllm-openai:v0.19.0-ubuntu2404@sha256:69234fc31ff1d5e1687b2f06bba39e0f8c58dd4755f0508dbe0595cd3692b851 (vLLM; LICENSE at v0.19.0 begins 'Apache License')",
+          "source": "https://raw.githubusercontent.com/vllm-project/vllm/v0.19.0/LICENSE",
+          "status": "DECLARED_NOT_REVIEWED"
+        },
+        "dataset": {
+          "declared_datasets": null,
+          "note": "training data terms are separate from the weights licence",
+          "status": "UNDISCLOSED_BY_PUBLISHER"
+        },
+        "hosted_api": {
+          "note": "self-hosted weights on RunPod; no hosted-API arm (founder F-5/F-14)",
+          "status": "NOT_USED"
+        },
+        "weights": {
+          "declared_licence": "apache-2.0",
+          "declared_licence_name": null,
+          "licence_files": [
+            "LICENSE"
+          ],
+          "source": "https://huggingface.co/Qwen/Qwen3-8B/tree/b968826d9c46dd6066d109eabc6255188de91218",
+          "status": "DECLARED_NOT_REVIEWED"
+        }
+      },
+      "model_key": "qwen3_8b",
+      "patent_fto": "NOT_ASSESSED: an open-source licence is copyright permission from the publisher, not patent freedom to operate",
+      "registry_id": "karena:qwen3_8b",
+      "revision_resolved_at": "2026-11-04T09:24:46Z",
+      "revision_source": "https://huggingface.co/api/models/Qwen/Qwen3-8B",
+      "role": "CANDIDATE",
+      "serving": {
+        "image": "vllm/vllm-openai:v0.19.0-ubuntu2404@sha256:69234fc31ff1d5e1687b2f06bba39e0f8c58dd4755f0508dbe0595cd3692b851",
+        "min_cuda_version": "12.9"
+      }
+    },
+    {
+      "capabilities": {
+        "doc_type": null,
+        "grounded_answer": null,
+        "json_schema_output": null,
+        "korean_text": null,
+        "max_context_tokens_measured": null,
+        "schema_induction": null,
+        "text_input": null,
+        "typed_extraction": null
+      },
+      "capability_receipts": [],
+      "declared_parameter_count": 9653104368,
+      "exact_model_id": "Qwen/Qwen3.5-9B",
+      "exact_revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+      "gated": false,
+      "input_mode": "TEXT (chat completion over OpenAI-compatible vLLM); pinned per run",
+      "licences": {
+        "code": {
+          "custom_code_in_model_repo": [],
+          "serving_runtime": "vllm/vllm-openai:v0.19.0-ubuntu2404@sha256:69234fc31ff1d5e1687b2f06bba39e0f8c58dd4755f0508dbe0595cd3692b851 (vLLM; LICENSE at v0.19.0 begins 'Apache License')",
+          "source": "https://raw.githubusercontent.com/vllm-project/vllm/v0.19.0/LICENSE",
+          "status": "DECLARED_NOT_REVIEWED"
+        },
+        "dataset": {
+          "declared_datasets": null,
+          "note": "training data terms are separate from the weights licence",
+          "status": "UNDISCLOSED_BY_PUBLISHER"
+        },
+        "hosted_api": {
+          "note": "self-hosted weights on RunPod; no hosted-API arm (founder F-5/F-14)",
+          "status": "NOT_USED"
+        },
+        "weights": {
+          "declared_licence": "apache-2.0",
+          "declared_licence_name": null,
+          "licence_files": [
+            "LICENSE"
+          ],
+          "source": "https://huggingface.co/Qwen/Qwen3.5-9B/tree/c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+          "status": "DECLARED_NOT_REVIEWED"
+        }
+      },
+      "model_key": "qwen3_5_9b",
+      "patent_fto": "NOT_ASSESSED: an open-source licence is copyright permission from the publisher, not patent freedom to operate",
+      "registry_id": "karena:qwen3_5_9b",
+      "revision_resolved_at": "2026-11-04T09:24:46Z",
+      "revision_source": "https://huggingface.co/api/models/Qwen/Qwen3.5-9B",
+      "role": "CANDIDATE",
+      "serving": {
+        "image": "vllm/vllm-openai:v0.19.0-ubuntu2404@sha256:69234fc31ff1d5e1687b2f06bba39e0f8c58dd4755f0508dbe0595cd3692b851",
+        "min_cuda_version": "12.9"
+      }
+    },
+    {
+      "capabilities": {
+        "doc_type": null,
+        "grounded_answer": null,
+        "json_schema_output": null,
+        "korean_text": null,
+        "max_context_tokens_measured": null,
+        "schema_induction": null,
+        "text_input": null,
+        "typed_extraction": null
+      },
+      "capability_receipts": [],
+      "declared_parameter_count": 24011361280,
+      "exact_model_id": "mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+      "exact_revision": "95a6d26c4bfb886c58daf9d3f7332c857cb27b43",
+      "gated": false,
+      "input_mode": "TEXT (chat completion over OpenAI-compatible vLLM); pinned per run",
+      "licences": {
+        "code": {
+          "custom_code_in_model_repo": [],
+          "serving_runtime": "vllm/vllm-openai:v0.19.0-ubuntu2404@sha256:69234fc31ff1d5e1687b2f06bba39e0f8c58dd4755f0508dbe0595cd3692b851 (vLLM; LICENSE at v0.19.0 begins 'Apache License')",
+          "source": "https://raw.githubusercontent.com/vllm-project/vllm/v0.19.0/LICENSE",
+          "status": "DECLARED_NOT_REVIEWED"
+        },
+        "dataset": {
+          "declared_datasets": null,
+          "note": "training data terms are separate from the weights licence",
+          "status": "UNDISCLOSED_BY_PUBLISHER"
+        },
+        "hosted_api": {
+          "note": "self-hosted weights on RunPod; no hosted-API arm (founder F-5/F-14)",
+          "status": "NOT_USED"
+        },
+        "weights": {
+          "declared_licence": "apache-2.0",
+          "declared_licence_name": null,
+          "licence_files": [],
+          "source": "https://huggingface.co/mistralai/Mistral-Small-3.2-24B-Instruct-2506/tree/95a6d26c4bfb886c58daf9d3f7332c857cb27b43",
+          "status": "DECLARED_NOT_REVIEWED"
+        }
+      },
+      "model_key": "mistral_small_3_2_24b",
+      "patent_fto": "NOT_ASSESSED: an open-source licence is copyright permission from the publisher, not patent freedom to operate",
+      "registry_id": "karena:mistral_small_3_2_24b",
+      "revision_resolved_at": "2026-11-04T09:24:46Z",
+      "revision_source": "https://huggingface.co/api/models/mistralai/Mistral-Small-3.2-24B-Instruct-2506",
+      "role": "CANDIDATE",
+      "serving": {
+        "image": "vllm/vllm-openai:v0.19.0-ubuntu2404@sha256:69234fc31ff1d5e1687b2f06bba39e0f8c58dd4755f0508dbe0595cd3692b851",
+        "min_cuda_version": "12.9"
+      }
+    },
+    {
+      "capabilities": {
+        "doc_type": null,
+        "grounded_answer": null,
+        "json_schema_output": null,
+        "korean_text": null,
+        "max_context_tokens_measured": null,
+        "schema_induction": null,
+        "text_input": null,
+        "typed_extraction": null
+      },
+      "capability_receipts": [],
+      "declared_parameter_count": 14659507200,
+      "exact_model_id": "microsoft/phi-4",
+      "exact_revision": "2db69c1c3e91a05d2c64a3185acfbaf36f744e25",
+      "gated": false,
+      "input_mode": "TEXT (chat completion over OpenAI-compatible vLLM); pinned per run",
+      "licences": {
+        "code": {
+          "custom_code_in_model_repo": [],
+          "serving_runtime": "vllm/vllm-openai:v0.19.0-ubuntu2404@sha256:69234fc31ff1d5e1687b2f06bba39e0f8c58dd4755f0508dbe0595cd3692b851 (vLLM; LICENSE at v0.19.0 begins 'Apache License')",
+          "source": "https://raw.githubusercontent.com/vllm-project/vllm/v0.19.0/LICENSE",
+          "status": "DECLARED_NOT_REVIEWED"
+        },
+        "dataset": {
+          "declared_datasets": null,
+          "note": "training data terms are separate from the weights licence",
+          "status": "UNDISCLOSED_BY_PUBLISHER"
+        },
+        "hosted_api": {
+          "note": "self-hosted weights on RunPod; no hosted-API arm (founder F-5/F-14)",
+          "status": "NOT_USED"
+        },
+        "weights": {
+          "declared_licence": "mit",
+          "declared_licence_name": null,
+          "licence_files": [
+            "LICENSE"
+          ],
+          "source": "https://huggingface.co/microsoft/phi-4/tree/2db69c1c3e91a05d2c64a3185acfbaf36f744e25",
+          "status": "DECLARED_NOT_REVIEWED"
+        }
+      },
+      "model_key": "phi_4",
+      "patent_fto": "NOT_ASSESSED: an open-source licence is copyright permission from the publisher, not patent freedom to operate",
+      "registry_id": "karena:phi_4",
+      "revision_resolved_at": "2026-11-04T09:24:47Z",
+      "revision_source": "https://huggingface.co/api/models/microsoft/phi-4",
+      "role": "CANDIDATE",
+      "serving": {
+        "image": "vllm/vllm-openai:v0.19.0-ubuntu2404@sha256:69234fc31ff1d5e1687b2f06bba39e0f8c58dd4755f0508dbe0595cd3692b851",
+        "min_cuda_version": "12.9"
+      }
+    },
+    {
+      "capabilities": {
+        "doc_type": null,
+        "grounded_answer": null,
+        "json_schema_output": null,
+        "korean_text": null,
+        "max_context_tokens_measured": null,
+        "schema_induction": null,
+        "text_input": null,
+        "typed_extraction": null
+      },
+      "capability_receipts": [],
+      "declared_parameter_count": 12187325040,
+      "exact_model_id": "google/gemma-3-12b-it",
+      "exact_revision": "96b6f1eccf38110c56df3a15bffe176da04bfd80",
+      "gated": "manual",
+      "input_mode": "TEXT (chat completion over OpenAI-compatible vLLM); pinned per run",
+      "licences": {
+        "code": {
+          "custom_code_in_model_repo": [],
+          "serving_runtime": "vllm/vllm-openai:v0.19.0-ubuntu2404@sha256:69234fc31ff1d5e1687b2f06bba39e0f8c58dd4755f0508dbe0595cd3692b851 (vLLM; LICENSE at v0.19.0 begins 'Apache License')",
+          "source": "https://raw.githubusercontent.com/vllm-project/vllm/v0.19.0/LICENSE",
+          "status": "DECLARED_NOT_REVIEWED"
+        },
+        "dataset": {
+          "declared_datasets": null,
+          "note": "training data terms are separate from the weights licence",
+          "status": "UNDISCLOSED_BY_PUBLISHER"
+        },
+        "hosted_api": {
+          "note": "self-hosted weights on RunPod; no hosted-API arm (founder F-5/F-14)",
+          "status": "NOT_USED"
+        },
+        "weights": {
+          "declared_licence": "gemma",
+          "declared_licence_name": null,
+          "licence_files": [],
+          "source": "https://huggingface.co/google/gemma-3-12b-it/tree/96b6f1eccf38110c56df3a15bffe176da04bfd80",
+          "status": "CUSTOM_OR_GATED_TERMS_REVIEW_REQUIRED"
+        }
+      },
+      "model_key": "gemma_3_12b_it",
+      "patent_fto": "NOT_ASSESSED: an open-source licence is copyright permission from the publisher, not patent freedom to operate",
+      "registry_id": "karena:gemma_3_12b_it",
+      "revision_resolved_at": "2026-11-04T09:24:47Z",
+      "revision_source": "https://huggingface.co/api/models/google/gemma-3-12b-it",
+      "role": "CANDIDATE",
+      "serving": {
+        "image": "vllm/vllm-openai:v0.19.0-ubuntu2404@sha256:69234fc31ff1d5e1687b2f06bba39e0f8c58dd4755f0508dbe0595cd3692b851",
+        "min_cuda_version": "12.9"
+      }
+    },
+    {
+      "capabilities": {
+        "doc_type": null,
+        "grounded_answer": null,
+        "json_schema_output": null,
+        "korean_text": null,
+        "max_context_tokens_measured": null,
+        "schema_induction": null,
+        "text_input": null,
+        "typed_extraction": null
+      },
+      "capability_receipts": [],
+      "exact_model_id": null,
+      "exact_revision": null,
+      "input_mode": "TEXT via `claude -p` on the founder's subscription OAuth (arena.opus lane)",
+      "licences": {
+        "code": {
+          "note": "closed model; CLI is a client",
+          "status": "NOT_APPLICABLE"
+        },
+        "dataset": {
+          "status": "UNDISCLOSED_BY_PUBLISHER"
+        },
+        "hosted_api": {
+          "note": "consumer subscription surface, not the API; F-5/F-14 decide any API arm",
+          "status": "SUBSCRIPTION_TERMS_NOT_REVIEWED_FOR_EVALUATION"
+        },
+        "weights": {
+          "note": "weights not distributed",
+          "status": "NOT_APPLICABLE"
+        }
+      },
+      "model_key": "opus_subscription_reference",
+      "patent_fto": "NOT_ASSESSED: an open-source licence is copyright permission from the publisher, not patent freedom to operate",
+      "pin_at_run": "the exact model id the Claude Code CLI reports is written into each receipt",
+      "registry_id": "karena:opus_subscription_reference",
+      "role": "REFERENCE_ONLY",
+      "rules": [
+        "reference arm only: never a routing candidate, never compared as a same-condition arm",
+        "subscription OAuth only; no API key; no automatic switch to another model or to the API",
+        "public corpus only; stops at the subscription limit and does not auto-resume"
+      ],
+      "serving": null
+    }
+  ],
+  "schema": "tavonel.karena.model_candidates.v1"
+}

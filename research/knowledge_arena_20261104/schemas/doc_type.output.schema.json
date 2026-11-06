@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "karena.doc_type.output.v1",
+  "type": "object",
+  "properties": {
+    "label": {
+      "enum": [
+        "SEC_10K",
+        "SEC_10Q",
+        "SEC_8K",
+        "SEC_DEF14A",
+        "SEC_S1",
+        "FR_RULE",
+        "FR_PROPOSED_RULE",
+        "FR_NOTICE",
+        "FR_PRESIDENTIAL_DOCUMENT",
+        "KR_GOV_PRESS_RELEASE",
+        "UNKNOWN"
+      ]
+    },
+    "evidence_quote": {
+      "type": "string",
+      "maxLength": 300
+    }
+  },
+  "required": [
+    "label",
+    "evidence_quote"
+  ],
+  "additionalProperties": false
+}

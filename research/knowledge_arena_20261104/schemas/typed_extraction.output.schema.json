@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "karena.typed_extraction.output.v1",
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "unit": {
+      "enum": [
+        "USD",
+        "USD/shares"
+      ]
+    },
+    "evidence_quote": {
+      "type": "string",
+      "maxLength": 400
+    }
+  },
+  "required": [
+    "value",
+    "unit",
+    "evidence_quote"
+  ],
+  "additionalProperties": false
+}
