@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from threading import Lock
@@ -12,16 +14,31 @@ from fastapi.responses import JSONResponse
 from pydantic import ValidationError
 
 from .auth import ProductCoreAuthenticationError, verify_product_core_request
-from .compiler import ProductCoreCompiler, wire_payload
+from .compiler import (
+    OUTPUT_BUDGET_BYTES,
+    CoreOutputTooLargeError,
+    ProductCoreCompiler,
+    wire_payload,
+)
 from .contracts import ProductCoreCompileRequest, ProductCoreCompileResponse
 
 MAX_REQUEST_BYTES = 32 * 1024 * 1024
+# The idempotency cache holds whole responses in process memory, so it is bounded twice: by
+# entries and by bytes, whichever is reached first, evicting the least recently used. An evicted
+# key is recompiled on retry (deterministic, same output) and no longer detects a 409 conflict.
+# CACHE_MAX_BYTES counts serialised bytes. The resident pydantic objects measured 1.75x that
+# (18.4 MB serialised -> 32.1 MB resident, tracemalloc), so the 256 MiB cap is ~450 MB resident.
+CACHE_MAX_ENTRIES = 8
+CACHE_MAX_BYTES = 256 * 1024 * 1024
 
 
 @dataclass(frozen=True, slots=True)
 class _CachedResponse:
     work_sha256: str
-    response: ProductCoreCompileResponse
+    # A World, or a deterministic CORE_OUTPUT_TOO_LARGE body: the same work is refused the same
+    # way, so a retry is answered without recompiling under the lock. Still a refusal.
+    outcome: ProductCoreCompileResponse | dict[str, object]
+    size_bytes: int
 
 
 def _work_sha256(request: ProductCoreCompileRequest) -> str:
@@ -47,13 +64,18 @@ class ProductCoreService:
         hmac_secret: bytes,
         core_release_digest: str,
         allow_customer_data: bool = False,
+        output_budget_bytes: int = OUTPUT_BUDGET_BYTES,
     ) -> None:
         if len(hmac_secret) < 32:
             raise ValueError("Product-Core HMAC secret must contain at least 32 bytes")
         self.hmac_secret = hmac_secret
-        self.compiler = ProductCoreCompiler(core_release_digest=core_release_digest)
+        self.compiler = ProductCoreCompiler(
+            core_release_digest=core_release_digest,
+            output_budget_bytes=output_budget_bytes,
+        )
         self.allow_customer_data = allow_customer_data
-        self._cache: dict[tuple[str, str, str], _CachedResponse] = {}
+        self._cache: OrderedDict[tuple[str, str, str], _CachedResponse] = OrderedDict()
+        self._cache_bytes = 0
         self._lock = Lock()
 
     def health(self) -> dict[str, object]:
@@ -104,11 +126,14 @@ class ProductCoreService:
             if cached is not None:
                 if cached.work_sha256 != work_sha256:
                     return 409, {"code": "CORE_IDEMPOTENCY_CONFLICT"}
+                self._cache.move_to_end(cache_key)
+                if isinstance(cached.outcome, dict):
+                    return 422, cached.outcome
                 # The same World, receipted to the attempt that was authenticated now. The
                 # candidate and its output digest are the first attempt's, unchanged.
-                replay = cached.response.model_copy(
+                replay = cached.outcome.model_copy(
                     update={
-                        "receipt": cached.response.receipt.model_copy(
+                        "receipt": cached.outcome.receipt.model_copy(
                             update={
                                 "request_id": transport.request_id,
                                 "input_sha256": transport.input_sha256,
@@ -122,11 +147,46 @@ class ProductCoreService:
                     compile_request,
                     input_sha256=transport.input_sha256,
                 )
+            except CoreOutputTooLargeError as exc:
+                refusal: dict[str, object] = {"code": "CORE_OUTPUT_TOO_LARGE", **exc.detail}
+                # Numbers only: no document text reaches the log.
+                print(
+                    json.dumps(
+                        {
+                            "event": "core_output_too_large",
+                            "requestId": compile_request.request_id,
+                            **exc.detail,
+                        },
+                        separators=(",", ":"),
+                    ),
+                    flush=True,
+                )
+                self._remember(cache_key, work_sha256, refusal, refusal)
+                return 422, refusal
             except ValueError as exc:
                 return 422, {"code": "CORE_COMPILE_REJECTED", "reason": str(exc)}
-            self._cache[cache_key] = _CachedResponse(work_sha256=work_sha256, response=response)
             # The bytes the receipt digest was computed over: the site hashes them as sent.
-            return 200, wire_payload(response)
+            payload = wire_payload(response)
+            self._remember(cache_key, work_sha256, response, payload)
+            return 200, payload
+
+    def _remember(
+        self,
+        key: tuple[str, str, str],
+        work_sha256: str,
+        outcome: ProductCoreCompileResponse | dict[str, object],
+        payload: dict[str, object],
+    ) -> None:
+        # ponytail: sizes the entry by one extra serialisation (<= the 32 MiB output budget);
+        # carry the byte count out of the compiler if that cost ever shows up.
+        size = len(json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode())
+        self._cache[key] = _CachedResponse(work_sha256, outcome, size)
+        self._cache_bytes += size
+        while self._cache and (
+            len(self._cache) > CACHE_MAX_ENTRIES or self._cache_bytes > CACHE_MAX_BYTES
+        ):
+            _, evicted = self._cache.popitem(last=False)
+            self._cache_bytes -= evicted.size_bytes
 
 
 def create_product_core_app(
@@ -134,11 +194,13 @@ def create_product_core_app(
     hmac_secret: bytes,
     core_release_digest: str,
     allow_customer_data: bool = False,
+    output_budget_bytes: int = OUTPUT_BUDGET_BYTES,
 ) -> FastAPI:
     service = ProductCoreService(
         hmac_secret=hmac_secret,
         core_release_digest=core_release_digest,
         allow_customer_data=allow_customer_data,
+        output_budget_bytes=output_budget_bytes,
     )
     app = FastAPI(title="TAVONEL Product Core", version="2.0.0")
 
