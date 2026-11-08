@@ -27,4 +27,9 @@ Required production environment variables:
   source digest.
 
 Do not set `TAVONEL_CORE_ALLOW_CUSTOMER_DATA` for Foundation qualification.
+`customerDataEnabled` has been observed true in production (`tavonel-product-core-v2`)
+since at least 2026-11-02T00:48Z (GO-LIVE-READINESS.md); the Foundation customer-data release
+ledger (foundation_customer_data_releases, row 4252bead…, evaluated 2026-11-03)
+records the founder go-live approval the gate relies on; verify with
+`--expect-customer-data true`.
 The service exposes `GET /health` and HMAC-authenticated `POST /v2/compile`.

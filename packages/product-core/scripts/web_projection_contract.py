@@ -1,7 +1,7 @@
 """Cross-language contract: the site's own request builder and projection around this Core.
 
     uv run python packages/product-core/scripts/web_projection_contract.py \
-        --web-checkout D:/CodexProjects/tavonel-self-service-launch-20260928
+        --web-checkout <foundation-checkout>
 
 The site's `nextjs/lib/core-runtime-v2.ts` is bundled unmodified with the site's own esbuild,
 then: site builds the request -> signed POST to this Core's FastAPI app -> site projects the

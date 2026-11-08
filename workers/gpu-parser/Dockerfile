@@ -1,9 +1,9 @@
 # syntax=docker/dockerfile:1.7
 ARG MODEL_REVISION=1111111111111111111111111111111111111111
 
-FROM python:3.12-slim-bookworm@sha256:d50fb7611f86d04a3b0471b46d7557818d88983fc3136726336b2a4c657aa30b AS local
+FROM python:3.12-slim-bookworm@sha256:935c3c5b12357a7e10caa9c1e6ca5692344d97cf229832ef584be2cec9fc03df AS local
 RUN apt-get update \
-    && apt-get install --yes --no-install-recommends libpcre2-8-0 \
+    && apt-get install --yes --no-install-recommends apt libpcre2-8-0 \
     && rm -rf /var/lib/apt/lists/*
 ARG MODEL_REVISION
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -19,7 +19,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     ALLOW_INLINE_INPUT=true
 WORKDIR /app
 COPY workers/gpu-common/pyproject.toml workers/gpu-common/uv.lock ./
-RUN python -m pip install "uv==0.12.0" \
+RUN python -m pip install "uv==0.13.4" \
     && uv sync --locked --no-dev \
     && uv pip check --python /app/.venv/bin/python
 COPY workers/gpu-common/runtime.py ./runtime.py
@@ -49,7 +49,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY workers/gpu-common/pyproject.toml workers/gpu-common/uv.lock ./
-RUN python3 -m pip install --break-system-packages "uv==0.12.0" \
+RUN python3 -m pip install --break-system-packages "uv==0.13.4" \
     && uv sync --locked --no-dev \
     && uv pip install --python /app/.venv/bin/python \
       --index-url https://www.paddlepaddle.org.cn/packages/stable/cu126/ \

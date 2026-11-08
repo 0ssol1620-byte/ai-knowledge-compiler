@@ -19,3 +19,16 @@ def test_product_core_semantic_qualification_passes_without_external_claims() ->
     authority_case = next(case for case in report["cases"] if case["query"] == "security policy")
     assert authority_case["baselineTop1"] == "b-informal"
     assert authority_case["adaptiveTop1"] == "x-security"
+
+
+def test_committed_receipt_matches_the_shipped_code() -> None:
+    # The receipt binds the shipped semantics.py/retrieval.py by sha256. If either changes, this
+    # fails: add a new dated receipt; never rewrite a committed one.
+    import json
+    from pathlib import Path
+
+    receipt = (
+        Path(__file__).resolve().parents[2]
+        / "docs/evidence/product-core-semantic-qualification-2026-11-05.json"
+    )
+    assert run_qualification("2026-11-05") == json.loads(receipt.read_text(encoding="utf-8"))

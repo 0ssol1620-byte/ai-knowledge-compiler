@@ -58,7 +58,8 @@ def _canonical(value: object) -> bytes:
     ).encode()
 
 
-def run_qualification() -> dict[str, Any]:
+def run_qualification(qualification_date: str = "2026-11-05") -> dict[str, Any]:
+    """The report for the code as it is now; `qualification_date` names the receipt."""
     fixture_payload = {
         "corpus": _CORPUS,
         "authorities": _AUTHORITIES,
@@ -108,7 +109,7 @@ def run_qualification() -> dict[str, Any]:
     )
     return {
         "schemaVersion": "tavonel.product_core_semantic_qualification.v1",
-        "qualificationDate": "2026-08-29",
+        "qualificationDate": qualification_date,
         "scope": "fixed_synthetic_mixed_language_regression",
         "externalGeneralizationClaim": False,
         "corpusDocuments": len(_CORPUS),
@@ -155,7 +156,7 @@ def main() -> int:
         / "benchmark"
         / "reports"
         / "generated"
-        / "product-core-semantic-qualification-2026-08-29.json",
+        / "product-core-semantic-qualification-2026-11-05.json",
     )
     args = parser.parse_args()
     report = run_qualification()

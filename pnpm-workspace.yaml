@@ -5,24 +5,32 @@ packages:
 overrides:
   # All three close `pnpm audit --audit-level high` findings. Transitive only —
   # nothing here is a direct dependency, so an override is the whole fix.
-  #   brace-expansion  <5.0.9   via eslint and @lhci/cli
+  #   brace-expansion  <5.0.11  via eslint and @lhci/cli
   #   js-yaml          <4.3.2   via eslint and Lighthouse
   #   tmp              <0.2.7   via @lhci/cli
   #   nanoid           <3.3.18  via postcss, which next and vite both pull in
   #   image-size       <2.0.3   via Storybook's Next.js plugin
+  #   sharp            <0.35.5  GHSA-wq5f-xc86-pv6w, via next
+  #   source-map-js    <1.2.2   CVE-2026-93749, via postcss
+  #   vite             <7.3.7   GHSA-587h-7wmj-h5pm, via Storybook and vitest
+  #   basic-ftp        <6.2.1   GHSA-c475-qrg2-pj4r, via @lhci/cli proxy-agent>get-uri.
+  #                     get-uri still asks for ^5; 6.0.0 only changed a default
+  #                     (separate transfer hosts off), the API is unchanged.
   # The previous brace-expansion pin (5.0.8) was itself inside the vulnerable
   # range the advisory names.
-  brace-expansion: 5.0.9
+  brace-expansion: 5.0.11
   js-yaml: 4.3.2
   image-size: 2.0.3
   tmp: 0.2.7
   nanoid: ^3.3.18
   uuid: ^11.1.1
   postcss: 8.5.24
-  sharp: 0.35.4
+  sharp: 0.35.5
+  source-map-js: 1.2.2
+  vite: 7.3.7
+  basic-ftp: 6.2.1
 
 patchedDependencies:
-  extract-zip@2.0.1: patches/extract-zip@2.0.1.patch
   minimatch@3.1.5: patches/minimatch@3.1.5.patch
 
 allowBuilds:
@@ -41,8 +49,3 @@ minimumReleaseAgeExclude:
 onlyBuiltDependencies:
   - "@tailwindcss/oxide"
   - "sharp"
-
-auditConfig:
-  ignoreGhsas:
-    - GHSA-jmr9-qjv8-65gv
-    - GHSA-7pqw-9j4j-h8q3
