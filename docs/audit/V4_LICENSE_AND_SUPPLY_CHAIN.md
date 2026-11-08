@@ -149,7 +149,7 @@ coverage check keyed on exact strings reports three unrecorded actions. Fix when
 ## 4. Python and JavaScript dependencies
 
 - Root and GPU runtimes carry separate `uv.lock` files. CI runs
-  `uv sync --locked` then `uv pip check`. A pinned `uv==0.12.0` is the only
+  `uv sync --locked` then `uv pip check`. A pinned `uv==0.13.4` is the only
   pre-lock install permitted.
 - `pnpm-lock.yaml` is committed; CI installs `--frozen-lockfile` and warns loudly
   if the lockfile is absent.
