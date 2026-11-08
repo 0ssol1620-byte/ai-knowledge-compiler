@@ -96,6 +96,7 @@ packages = [
   "packages/parallel-runtime/src/akc_parallel_runtime",
   "packages/local-mcp/src/akc_local_mcp",
   "packages/source-adapters/src/akc_source_adapters",
+  "packages/product-core/src/akc_product_core",
   "services/api/src/akc_api",
   "services/url-fetcher/src/akc_url_fetcher",
   "services/scheduler/src/akc_scheduler",
@@ -104,7 +105,7 @@ packages = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers"
+addopts = "-ra --strict-config --strict-markers --import-mode=importlib"
 asyncio_mode = "auto"
 testpaths = ["tests", "packages", "services", "benchmark"]
 norecursedirs = [
@@ -118,10 +119,14 @@ norecursedirs = [
 ]
 pythonpath = [
   ".",
+  "packages/desktop-watcher/tests",
+  "packages/parallel-runtime/tests",
+  "benchmark/runpod_eval",
   # `packages/absorption` is deliberately absent from the wheel packages above:
   # it holds shadow-only absorption challengers that are linted, typed and
   # tested with the rest of the tree and must never ship. See its README.
   "packages/absorption/src",
+  "packages/compiler-runtime/src",
   "packages/cir-python/src",
   # Canonical ProductEvent envelope types (spec §9.4). Pure stdlib; wheel
   # packaging is deferred — see docs/ux/CINEMATIC_EVENT_CONTRACT.md §1.
@@ -137,10 +142,13 @@ pythonpath = [
   "packages/telemetry/src",
   "packages/retrieval/src",
   "packages/domain-packs/src",
+  "packages/desktop-app/src",
+  "packages/desktop-watcher/src",
   "packages/health-scan/src",
   "packages/parallel-runtime/src",
   "packages/local-mcp/src",
   "packages/source-adapters/src",
+  "packages/product-core/src",
   "services/api/src",
   "services/url-fetcher/src",
   "services/scheduler/src",
