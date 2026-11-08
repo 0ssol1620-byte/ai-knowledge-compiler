@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "verified_at": "2026-11-05",
+  "verified_at": "2026-11-08",
   "verification": {
     "container_images": "Registry manifest bytes were SHA-256 hashed and matched Docker-Content-Digest.",
     "github_actions": "The upstream exact-version tag commit was resolved and the commit object was verified through the GitHub API."
@@ -10,9 +10,9 @@
     "gcr.io/distroless/nodejs24-debian13:nonroot": "sha256:b8cec4b2f2126ff7bd034ec9ac207ffb3272667dfdc48376e3b035d3270549ba",
     "node:24.18.0-bookworm-slim": "sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d",
     "nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04": "sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802",
-    "pgvector/pgvector:pg17": "sha256:d2ef61f42ef767baa5a1475393303cc235bcd92febd9d7014eddb48b41f3bad0",
-    "python:3.12-slim-bookworm": "sha256:e697c81897302a4c4333bade000d98038fbb21eb064f8ee1fd42d02ebcd9d337",
-    "python:3.13-slim-bookworm": "sha256:281d39ff02e3b389401586134ff9e6572954687822a58055ec07a60ded4e0b7f"
+    "pgvector/pgvector:pg17": "sha256:7d0a41464797aeb9862dfdc0bbf1526b82cfd324cdd8036df19e3545f4a9ccb8",
+    "python:3.12-slim-bookworm": "sha256:935c3c5b12357a7e10caa9c1e6ca5692344d97cf229832ef584be2cec9fc03df",
+    "python:3.13-slim-bookworm": "sha256:a5a7017efc5969e00ae2b91c8eb0631049a569652aa4ffc4501769049ae45c72"
   },
   "github_actions": {
     "actions/checkout@v4.4.0": "11d5960a326750d5838078e36cf38b85af677262",
