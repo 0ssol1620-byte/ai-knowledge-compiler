@@ -77,6 +77,24 @@ from .semantics import (
     semantic_tokens,
 )
 
+# The largest output Core returns: Foundation's 32 MiB bound on what it stores
+# (`MAX_COLLECTION_JSON_BYTES`) and reads back from Core. Core is the precise gate, before any
+# digest or receipt exists; Foundation's own response bound is the backstop. Two checks, one
+# budget: the package bytes on the probe build (cheap, before a second package is built), then
+# the serialised candidate itself (the bytes that are hashed, sent and stored).
+OUTPUT_BUDGET_BYTES = 32 * 1024 * 1024
+
+
+class CoreOutputTooLargeError(Exception):
+    """The compiled output exceeds the output budget. Nothing is truncated; nothing is sent."""
+
+    def __init__(self, detail: dict[str, object]) -> None:
+        super().__init__(
+            f"{detail['object']} of {detail['bytes']} B exceeds budget {detail['budget']} B"
+        )
+        self.detail = detail
+
+
 _RETRIEVAL_MIN_CHARS = 180
 _RETRIEVAL_MAX_CHARS = 720
 _RETRIEVAL_TAIL_MAX_CHARS = 900
@@ -281,10 +299,20 @@ def _link_predicate(source_kind: str, target_kind: str, link_index: int) -> str:
 class ProductCoreCompiler:
     """Compile an immutable OCR collection into a non-promoted candidate world."""
 
-    def __init__(self, *, core_release_digest: str) -> None:
+    def __init__(
+        self,
+        *,
+        core_release_digest: str,
+        output_budget_bytes: int = OUTPUT_BUDGET_BYTES,
+    ) -> None:
         if not core_release_digest.startswith("sha256:") or len(core_release_digest) != 71:
             raise ValueError("core release digest must be sha256:")
+        # Lowering the budget is a deployment's call; raising it past the bound the site can
+        # store is not, because the site would only refuse the same package later.
+        if not 0 < output_budget_bytes <= OUTPUT_BUDGET_BYTES:
+            raise ValueError(f"output budget must be in (0, {OUTPUT_BUDGET_BYTES}] bytes")
         self.core_release_digest = core_release_digest
+        self.output_budget_bytes = output_budget_bytes
 
     def compile(
         self,
@@ -457,6 +485,24 @@ class ProductCoreCompiler:
         # carry the verdict. Only the report differs between the two builds.
         lifecycle, _ = settle(review_reasons)
         probe, _ = project(lifecycle=lifecycle, review_reasons=review_reasons)
+
+        def refuse_if_over(measured: str, size: int) -> None:
+            if size > self.output_budget_bytes:
+                raise CoreOutputTooLargeError(
+                    {
+                        "object": measured,
+                        "bytes": size,
+                        "budget": self.output_budget_bytes,
+                        "counts": {
+                            "regions": sum(len(item.regions) for item in request.documents),
+                            "claims": len(semantics.claims),
+                            "contradictionPairs": len(semantics.contradictions),
+                            "files": len(probe.files),
+                        },
+                    }
+                )
+
+        refuse_if_over("core-package", sum(file.size_bytes for file in probe.files))
         checks = self._validation_checks(
             request=request,
             canonical_documents=canonical_documents,
@@ -533,6 +579,7 @@ class ProductCoreCompiler:
             review_reasons=tuple(sorted(set(review_reasons))),
         )
         candidate_bytes = _json_bytes(wire_payload(candidate))
+        refuse_if_over("core-candidate", len(candidate_bytes))
         artifact_rows = self._candidate_artifacts(
             canonical_documents,
             knowledge_model,
@@ -1627,7 +1674,7 @@ class ProductCoreCompiler:
             {
                 "path": file.path,
                 "kind": "artifact",
-                "sourceIds": [unit.source_id for unit in units],
+                "sourceIds": list(dict.fromkeys(unit.source_id for unit in units)),
             }
             for file in files
         )
