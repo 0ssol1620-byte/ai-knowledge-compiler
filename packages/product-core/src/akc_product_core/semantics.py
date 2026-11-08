@@ -623,6 +623,49 @@ def _retrieval_profile(
     }
 
 
+def contradiction_candidates(
+    claims: tuple[SemanticClaim, ...],
+) -> tuple[ContradictionCandidate, ...]:
+    """Pair claims on one topic and time that disagree, sorted by contradiction ID.
+
+    Shared by `compile_semantics` and `corpus_reduce`, which recomputes the candidates over
+    the union of part claims so that a disagreement across a part seam is not lost.
+    """
+
+    grouped: defaultdict[tuple[str, tuple[str, ...]], list[SemanticClaim]] = defaultdict(list)
+    for claim in claims:
+        if claim.topic_key and claim.topic_key not in _NON_CONTRADICTION_TOPICS:
+            grouped[(claim.topic_key, claim.temporal_refs)].append(claim)
+    contradiction_rows: dict[str, ContradictionCandidate] = {}
+    for (topic_key, temporal_refs), group in grouped.items():
+        for left_index, left in enumerate(group):
+            for right in group[left_index + 1 :]:
+                reason: Literal["numeric_disagreement", "polarity_disagreement"] | None = None
+                if (
+                    left.numeric_values
+                    and right.numeric_values
+                    and left.numeric_values != right.numeric_values
+                ):
+                    reason = "numeric_disagreement"
+                elif left.polarity != right.polarity:
+                    reason = "polarity_disagreement"
+                if reason is None:
+                    continue
+                claim_ids = (
+                    min(left.claim_id, right.claim_id),
+                    max(left.claim_id, right.claim_id),
+                )
+                contradiction_id = _stable_id("contradiction", *claim_ids, reason)
+                contradiction_rows[contradiction_id] = ContradictionCandidate(
+                    contradiction_id=contradiction_id,
+                    claim_ids=claim_ids,
+                    topic_key=topic_key,
+                    reason=reason,
+                    temporal_refs=temporal_refs,
+                )
+    return tuple(contradiction_rows[key] for key in sorted(contradiction_rows))
+
+
 def compile_semantics(sources: tuple[SemanticSource, ...]) -> SemanticCompilation:
     claim_rows: list[dict[str, object]] = []
     entity_mentions: defaultdict[str, list[tuple[str, str, str]]] = defaultdict(list)
@@ -693,39 +736,8 @@ def compile_semantics(sources: tuple[SemanticSource, ...]) -> SemanticCompilatio
         for claim in claims
         for entity_id in claim.entity_ids
     )
-    grouped: defaultdict[tuple[str, tuple[str, ...]], list[SemanticClaim]] = defaultdict(list)
-    for claim in claims:
-        if claim.topic_key and claim.topic_key not in _NON_CONTRADICTION_TOPICS:
-            grouped[(claim.topic_key, claim.temporal_refs)].append(claim)
-    contradiction_rows: dict[str, ContradictionCandidate] = {}
-    for (topic_key, temporal_refs), group in grouped.items():
-        for left_index, left in enumerate(group):
-            for right in group[left_index + 1 :]:
-                reason: Literal["numeric_disagreement", "polarity_disagreement"] | None = None
-                if (
-                    left.numeric_values
-                    and right.numeric_values
-                    and left.numeric_values != right.numeric_values
-                ):
-                    reason = "numeric_disagreement"
-                elif left.polarity != right.polarity:
-                    reason = "polarity_disagreement"
-                if reason is None:
-                    continue
-                claim_ids = (
-                    min(left.claim_id, right.claim_id),
-                    max(left.claim_id, right.claim_id),
-                )
-                contradiction_id = _stable_id("contradiction", *claim_ids, reason)
-                contradiction_rows[contradiction_id] = ContradictionCandidate(
-                    contradiction_id=contradiction_id,
-                    claim_ids=claim_ids,
-                    topic_key=topic_key,
-                    reason=reason,
-                    temporal_refs=temporal_refs,
-                )
     domain = _domain(sources)
-    contradictions = tuple(contradiction_rows[key] for key in sorted(contradiction_rows))
+    contradictions = contradiction_candidates(claims)
     return SemanticCompilation(
         domain=domain,
         object_types=_DOMAIN_OBJECT_TYPES[domain],
@@ -754,6 +766,7 @@ __all__ = [
     "SemanticSource",
     "authority_tier",
     "compile_semantics",
+    "contradiction_candidates",
     "detect_language",
     "semantic_tokens",
 ]

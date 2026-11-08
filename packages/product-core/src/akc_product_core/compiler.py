@@ -95,6 +95,9 @@ class CoreOutputTooLargeError(Exception):
         self.detail = detail
 
 
+# The goal every compile plans its architecture for; corpus_reduce plans the corpus with it too.
+ARCHITECTURE_USER_GOAL = "Build an evidence-bound living knowledge world"
+
 _RETRIEVAL_MIN_CHARS = 180
 _RETRIEVAL_MAX_CHARS = 720
 _RETRIEVAL_TAIL_MAX_CHARS = 900
@@ -387,7 +390,7 @@ class ProductCoreCompiler:
             ArchitectureProfile(
                 domain=semantics.domain,
                 object_types=semantics.object_types,
-                user_goal="Build an evidence-bound living knowledge world",
+                user_goal=ARCHITECTURE_USER_GOAL,
                 corpus_size=len(canonical_documents),
                 temporal_structure=semantics.temporal_structure,
                 requested_blueprint=request.requested_blueprint,
