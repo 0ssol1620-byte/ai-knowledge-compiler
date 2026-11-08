@@ -13,10 +13,13 @@ Required runtime secrets:
 Optional policy:
 
 - `TAVONEL_CORE_ALLOW_CUSTOMER_DATA=true` accepts `approved_customer_data`
-  requests. Production Core V2 has run with it `true` since 2026-11-03, when direct
-  upload went live under the founder's go-live approval. Omit it for Foundation
-  qualification. `verify_deployment.py --expect-customer-data true|false` asserts
-  whichever one a deployment is meant to have; the flag has no default.
+  requests. Omit it for Foundation qualification. `customerDataEnabled` has been
+  observed true in production since at least 2026-11-02T00:48Z (GO-LIVE-READINESS.md); the Foundation customer-data release
+  ledger (foundation_customer_data_releases, row 4252bead…, evaluated 2026-11-03)
+  records the founder go-live approval the gate relies on; verify with
+  `--expect-customer-data true`.
+  `verify_deployment.py --expect-customer-data true|false` asserts whichever one a
+  deployment is meant to have; the flag has no default.
 
 Build from the repository root so both `akc_cir` and `akc_product_core` are in
 the Docker context:

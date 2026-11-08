@@ -28,7 +28,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Bootstrap the pinned lockfile installer
-        run: python -m pip install "uv==0.12.0"
+        run: python -m pip install "uv==0.13.4"
       - name: Sync the immutable development environment
         run: python -m uv sync --locked --extra dev
       - name: Verify resolved Python dependencies
@@ -139,7 +139,7 @@ jobs:
           python-version: "3.13"
       - name: Sync the immutable API environment
         run: |
-          python -m pip install "uv==0.12.0"
+          python -m pip install "uv==0.13.4"
           python -m uv sync --locked --extra dev
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
@@ -213,7 +213,7 @@ jobs:
           python-version: "3.12"
       - name: Sync immutable contract tooling
         run: |
-          python -m pip install "uv==0.12.0"
+          python -m pip install "uv==0.13.4"
           python -m uv sync --locked --extra dev
       - name: Validate model registry
         run: python -m uv run --locked --extra dev python infra/model-registry/validate_registry.py
@@ -312,7 +312,7 @@ jobs:
           python-version: "3.12"
       - name: Sync immutable migration tooling
         run: |
-          python -m pip install "uv==0.12.0"
+          python -m pip install "uv==0.13.4"
           python -m uv sync --locked --extra dev
       - name: Prepare disposable least-privilege login roles
         run: python -m uv run --locked --extra dev python infra/postgres/verify_postgres_gate.py --prepare-roles
@@ -389,7 +389,7 @@ jobs:
           python-version: "3.12"
       - name: Check lockfiles and compile Python sources
         run: |
-          python -m pip install "uv==0.12.0"
+          python -m pip install "uv==0.13.4"
           python -m uv lock --check
           python -m uv lock --check --project workers/gpu-common
           python -m compileall -q benchmark infra/model-registry infra/security workers/gpu-common \
