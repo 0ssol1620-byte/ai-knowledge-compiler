@@ -67,18 +67,6 @@
     radial-gradient(circle at 80% 70%, rgb(42 168 189 / 2.5%), transparent 36%);
 }
 
-@layer utilities {
-  /* WCAG-readable leaf copy must not collapse inside dense evidence surfaces. */
-  :where(p, span, strong, b, em, small, code, pre, li, dt, dd, th, td, caption) {
-    font-size: max(12px, 1em) !important;
-  }
-
-  /* Interactive copy has the stricter §7.3 rendered-size floor. */
-  main :where(a[href], button, input, select, textarea, summary, label) {
-    font-size: max(14px, 1em) !important;
-  }
-}
-
 body {
   background: var(--tv-canvas);
   color: var(--tv-ink);
