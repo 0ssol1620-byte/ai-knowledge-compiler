@@ -156,6 +156,9 @@ function checkFocusOnly(attributes, sourceFile, openingElement, tagName) {
   // deliberately not in the tab order, so it is not a dead affordance. Only a
   // control the user can tab to has to do something.
   if ((attributes.numbers.tabIndex ?? -1) < 0) return;
+  // A tabpanel with no focusable descendants is itself placed in the tab
+  // order by the ARIA tabs pattern. It is a readable region, not a control.
+  if (attributes.strings.role === "tabpanel") return;
   // An explicit role plus a name is a declared widget or region, not a stray
   // focus stop. A scrollable table region, for one, has to be tabbable to
   // satisfy WCAG 2.1.1 even though it has no handler of its own.

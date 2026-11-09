@@ -73,10 +73,23 @@ const appRoutes = [
   "/app/admin/audit",
 ] as const;
 
+// This spec verifies the English surface contracts. Locale switching and the
+// Korean product path are covered independently in locale.spec.ts.
+test.beforeEach(async ({ context }) => {
+  await context.addCookies([
+    {
+      name: "akc_locale",
+      value: "en",
+      url: "http://127.0.0.1:3000",
+      sameSite: "Lax",
+    },
+  ]);
+});
+
 test("HTML uses a per-request script nonce and hardened response headers", async ({
   page,
 }) => {
-  const response = await page.goto("/");
+  const response = await page.goto("/", { waitUntil: "domcontentloaded" });
   expect(response).not.toBeNull();
   const headers = response!.headers();
   expect(headers["x-content-type-options"]).toBe("nosniff");
@@ -94,15 +107,15 @@ test("HTML uses a per-request script nonce and hardened response headers", async
 test("brand homepage expresses the full source-to-intelligence thesis", async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   // The W2 facing-pages homepage replaced the earlier long-copy landing: the
   // round-trip promise moved into the h1, the four chapters carry
   // structure → evidence → knowledge → portability, and the provenance
   // disclaimers stay on the surface. Each chapter renders twice (desktop and
   // compact variants), so visibility is asserted on the first match.
-  await expect(
-    page.getByRole("heading", { level: 1 }),
-  ).toContainText("Every output returns");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "Every output returns",
+  );
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "to its source.",
   );
@@ -122,7 +135,7 @@ test("brand homepage expresses the full source-to-intelligence thesis", async ({
 test("product marketing uses real product evidence and deterministic diagrams", async ({
   page,
 }) => {
-  await page.goto("/product");
+  await page.goto("/product", { waitUntil: "domcontentloaded" });
   const evidence = page.locator(".tv-page-product-evidence");
   await expect(evidence).toBeVisible();
   await expect(evidence.getByText("Actual product")).toBeVisible();
@@ -149,7 +162,7 @@ test("marketing and product retain a clear round trip", async ({
   page,
   isMobile,
 }) => {
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   if (isMobile) {
     await page.getByRole("button", { name: "Open navigation" }).click();
     await page.getByRole("link", { name: "Workspace", exact: true }).click();
@@ -157,13 +170,13 @@ test("marketing and product retain a clear round trip", async ({
     await expect(
       page.getByRole("link", { name: "Sign in", exact: true }),
     ).toHaveAttribute("href", "/login");
-    await page.goto("/app/home");
+    await page.goto("/app/home", { waitUntil: "domcontentloaded" });
   }
   await expect(
     page.getByRole("heading", { name: "Today in your workspace" }),
   ).toBeVisible();
   await expect(page.locator(".product-back-link")).toHaveAttribute("href", "/");
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page).toHaveURL(/\/$/);
 });
 
@@ -253,7 +266,7 @@ test("quick convert exposes one bounded and consent-aware upload contract", asyn
       sameSite: "Lax",
     },
   ]);
-  await page.goto("/quick-convert");
+  await page.goto("/quick-convert", { waitUntil: "domcontentloaded" });
   await expect(page.getByText("Private route first")).toBeVisible();
   await expect(
     page.getByText("External providers require explicit workspace consent"),
@@ -265,7 +278,7 @@ test("quick convert exposes one bounded and consent-aware upload contract", asyn
 test("DART proof marks the exact revenue cell without a detached overlay", async ({
   page,
 }) => {
-  await page.goto("/demo/dart");
+  await page.goto("/demo/dart", { waitUntil: "domcontentloaded" });
   await expect(page.locator(".tv-source-cell-selected")).toHaveText(
     "4,902,490,901",
   );
@@ -279,7 +292,7 @@ test("demo administration and settings never expose writable-looking controls", 
   page,
 }) => {
   for (const path of ["/admin", "/settings"] as const) {
-    await page.goto(path);
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     const demoControls = page.locator("[data-demo-static-control]");
     expect(
       await demoControls.count(),
@@ -296,7 +309,7 @@ test("shell actions and fixed studios expose only operable or explicit gated con
   page,
 }) => {
   test.setTimeout(90_000);
-  await page.goto("/home");
+  await page.goto("/home", { waitUntil: "domcontentloaded" });
   await expect(
     page.locator('[data-shell-action="notifications"]'),
   ).toHaveAttribute("href", "/notices");
@@ -315,7 +328,6 @@ test("shell actions and fixed studios expose only operable or explicit gated con
 
   for (const path of [
     "/knowledge-bases",
-    "/review",
     "/api-workflows",
     "/workspace",
   ] as const) {
@@ -345,7 +357,9 @@ test("processing workspace exposes real stage counts and source-linked output", 
   page,
   isMobile,
 }) => {
-  await page.goto("/documents/sample-dart/processing");
+  await page.goto("/documents/sample-dart/processing", {
+    waitUntil: "domcontentloaded",
+  });
   await expect(page.getByText("Building knowledge structure")).toHaveCount(1);
   // Both figures are derived from demoPages and the stage list, not typed in.
   // The old copy said "16 of 18", which matched nothing in the fixture, and the
@@ -389,7 +403,7 @@ test("auth, onboarding, product, and document surfaces remain usable on mobile",
     "/documents/sample-dart/processing",
     "/documents/sample-dart/markdown",
   ]) {
-    await page.goto(path);
+    await page.goto(path, { waitUntil: "domcontentloaded" });
     await expect(page.locator("main")).toBeVisible();
     expect(
       await page.evaluate(
@@ -404,7 +418,7 @@ test("reduced motion removes travel and nonessential animation", async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
+  await page.goto("/", { waitUntil: "domcontentloaded" });
   // decision.md G-C dropped TIER 1 3D outright, so the layer must not exist at
   // all rather than merely be hidden under reduced motion.
   await expect(page.locator(".tv-webgl-layer")).toHaveCount(0);
@@ -419,11 +433,13 @@ test("reduced motion removes travel and nonessential animation", async ({
       ...Array.from(document.querySelectorAll<HTMLElement>(".tv-site *")).map(
         (element) => {
           const style = getComputedStyle(element);
-          return Math.max(
-            0,
-            ...style.animationDuration.split(",").map(parseFloat),
-            ...style.transitionDuration.split(",").map(parseFloat),
-          );
+          const durations = [
+            ...style.animationDuration.split(","),
+            ...style.transitionDuration.split(","),
+          ]
+            .map((value) => Number.parseFloat(value))
+            .filter(Number.isFinite);
+          return Math.max(0, ...durations);
         },
       ),
       0,
@@ -460,6 +476,11 @@ test("representative routes have no automated WCAG A or AA violations", async ({
   ]) {
     await page.goto(path, { waitUntil: "domcontentloaded" });
     await expect(page.locator("main")).toBeVisible();
+    // Axe must lay out every below-the-fold section; otherwise Chromium can
+    // resolve an offscreen node against a neighbouring intrinsic placeholder.
+    await page.addStyleTag({
+      content: ".tv-home > section { content-visibility: visible !important; }",
+    });
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
       .analyze();

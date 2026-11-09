@@ -8,7 +8,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from collections.abc import Callable
-from typing import Any, Protocol
+from typing import Any, Protocol, cast
 
 MAX_ATTEMPTS = 5
 BASE_BACKOFF_SECONDS = 1.0
@@ -39,18 +39,32 @@ class GoogleAdapterError(RuntimeError):
         self.status = status
 
 
+def _is_safe_google_url(value: str) -> bool:
+    try:
+        parsed = urllib.parse.urlsplit(value)
+    except ValueError:
+        return False
+    if not parsed.hostname or parsed.username is not None or parsed.password is not None:
+        return False
+    return parsed.scheme == "https" or (
+        parsed.scheme == "http" and parsed.hostname in {"localhost", "127.0.0.1", "::1"}
+    )
+
+
 def get_json(
     url: str,
     token_provider: GoogleTokenProvider,
     *,
     timeout: float = 30.0,
     sleep: Callable[[float], None] = time.sleep,
-) -> Any:
+) -> dict[str, Any]:
     """GET one JSON document with polite backoff on 429/5xx and Retry-After.
 
     Non-retryable 4xx raise immediately. Every attempt honors the server's
     ``Retry-After`` over our own exponential schedule.
     """
+    if not _is_safe_google_url(url):
+        raise GoogleAdapterError("Google API URL must use HTTPS (or exact loopback for tests)")
     delay = BASE_BACKOFF_SECONDS
     last_status: int | None = None
     for attempt in range(1, MAX_ATTEMPTS + 1):
@@ -59,7 +73,10 @@ def get_json(
         request.add_header("Accept", "application/json")
         try:
             with urllib.request.urlopen(request, timeout=timeout) as response:  # noqa: S310
-                return json.loads(response.read().decode("utf-8"))
+                value = json.loads(response.read().decode("utf-8"))
+            if not isinstance(value, dict):
+                raise GoogleAdapterError("Google API response must be a JSON object")
+            return cast(dict[str, Any], value)
         except urllib.error.HTTPError as exc:
             last_status = exc.code
             headers = dict(exc.headers or {})
@@ -70,7 +87,11 @@ def get_json(
                     f"GET {urllib.parse.urlsplit(url).path} failed (HTTP {exc.code})",
                     status=exc.code,
                 ) from exc
-            wait = float(retry_after) if retry_after.isdigit() else delay
+            wait = (
+                float(retry_after)
+                if isinstance(retry_after, str) and retry_after.isdigit()
+                else delay
+            )
             sleep(min(wait, MAX_BACKOFF_SECONDS))
             delay = min(delay * 2, MAX_BACKOFF_SECONDS)
         except urllib.error.URLError as exc:

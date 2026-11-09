@@ -1,4 +1,8 @@
-import { ArrowRight, CheckCircle, LockKey } from "@phosphor-icons/react/dist/ssr";
+import {
+  ArrowRight,
+  CheckCircle,
+  LockKey,
+} from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 
 import { AccuracySection } from "@/components/accuracy-section";
@@ -10,6 +14,13 @@ import { TavonelGlyph } from "@/components/tavonel-glyph";
 import { TavonelMarketingShell } from "@/components/tavonel-marketing-shell";
 import { TavonelProofDemo } from "@/components/tavonel-proof-demo";
 import { DART_PUBLIC_FIXTURE } from "@/lib/dart-public-fixture";
+import type { StructaraLocale } from "@/lib/locale";
+
+const HERO_COPY_KO = {
+  id: "d1",
+  headline: ["모든 결과는", "정확한 원문으로 돌아갑니다."],
+  lead: "문서를 사람과 AI가 다시 사용할 수 있는 구조화되고 검증된 지식으로 바꾸며, 모든 값은 원본 페이지까지 추적할 수 있습니다.",
+} as const;
 
 const chapters = [
   {
@@ -38,7 +49,7 @@ const chapters = [
   },
 ] as const;
 
-export function MarketingLanding() {
+export function MarketingLanding({ locale }: { locale: StructaraLocale }) {
   return (
     <TavonelMarketingShell>
       <main id="main-content" className="tv-home">
@@ -62,14 +73,22 @@ export function MarketingLanding() {
           The section is not replaced by a better diagram. It is deleted,
           because the hero now makes its point by doing the thing.
         */}
-        <HeroComp variant="frame" copy={HERO_COPY.d1} live />
+        <HeroComp
+          variant="frame"
+          copy={locale === "ko" ? HERO_COPY_KO : HERO_COPY.d1}
+          locale={locale}
+          live
+        />
 
         <div className="tv-output-rail" aria-label="Supported outputs">
-          {["Portable Markdown", "Obsidian Vault", "RAG JSONL", "Knowledge Graph"].map(
-            (output) => (
-              <span key={output}>{output}</span>
-            ),
-          )}
+          {[
+            "Portable Markdown",
+            "Obsidian Vault",
+            "RAG JSONL",
+            "Knowledge Graph",
+          ].map((output) => (
+            <span key={output}>{output}</span>
+          ))}
         </div>
 
         <TrialRunFilm />
@@ -115,7 +134,6 @@ export function MarketingLanding() {
             ))}
           </div>
         </section>
-
 
         <section className="tv-pillars">
           <header>
@@ -177,7 +195,6 @@ export function MarketingLanding() {
             <Link href="/demo/sec">Explore SEC</Link>
           </article>
         </section>
-
 
         <section className="tv-use-cases">
           <header>
@@ -306,7 +323,10 @@ function ChapterVisual({ index }: { index: string }) {
           <table className="tv-cv-table">
             <tbody>
               {fixture.rows.slice(0, 3).map((row) => (
-                <tr key={row.taxonomy} data-cited={row === revenue || undefined}>
+                <tr
+                  key={row.taxonomy}
+                  data-cited={row === revenue || undefined}
+                >
                   <th scope="row">{row.label}</th>
                   <td>{row.current}</td>
                 </tr>

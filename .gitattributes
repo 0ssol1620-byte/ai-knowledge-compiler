@@ -7,6 +7,8 @@
 *.tif binary
 *.tiff binary
 *.pdf binary
+*.blend binary
+*.glb binary
 *.zip binary
 *.zst binary
 

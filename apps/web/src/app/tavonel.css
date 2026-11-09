@@ -375,6 +375,11 @@ body.tv-menu-open {
   overflow: clip;
 }
 
+.tv-home > section:not(.tv-hero-comp) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+
 .tv-home-hero {
   position: relative;
   min-height: 900px;
@@ -4541,6 +4546,26 @@ body.tv-menu-open {
   border-color: #87a5ff;
   outline: 2px solid rgb(49 91 232 / 34%);
   outline-offset: 2px;
+}
+
+.login-page .login-google {
+  width: 100%;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 1px solid #d7d9dd;
+  border-radius: 6px;
+  background: var(--tv-surface);
+  color: var(--tv-ink);
+  font: inherit;
+  font-weight: 650;
+}
+
+.login-page .login-google:hover:not(:disabled) {
+  border-color: #aeb3bb;
+  background: #f3f4f5;
 }
 
 .login-page .login-form .primary-button {

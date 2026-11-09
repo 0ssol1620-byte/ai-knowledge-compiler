@@ -1,4 +1,16 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+async function expectHydrated(page: Page) {
+  await expect(page.locator("html")).toHaveAttribute("data-hydrated", "true", {
+    timeout: 15_000,
+  });
+  const appFrame = page.locator(".app-frame");
+  if ((await appFrame.count()) > 0) {
+    await expect(appFrame).toHaveAttribute("data-app-hydrated", "true", {
+      timeout: 15_000,
+    });
+  }
+}
 
 const coreRoutes = [
   "/",
@@ -34,6 +46,7 @@ test("core journeys preserve meaning and focus in forced colors", async ({
 
   for (const route of coreRoutes) {
     const response = await page.goto(route, { waitUntil: "domcontentloaded" });
+    await expectHydrated(page);
     expect(response?.status(), route).toBeLessThan(400);
     await expect(page.locator("h1")).toHaveCount(1);
     await expect(page.locator("h1")).toBeVisible();
@@ -66,10 +79,14 @@ test("core journeys preserve meaning and focus in forced colors", async ({
 test("core journeys tolerate 200 percent text scaling without horizontal overflow", async ({
   page,
 }, testInfo) => {
-  test.skip(testInfo.project.name === "mobile", "desktop text-scaling contract");
+  test.skip(
+    testInfo.project.name === "mobile",
+    "desktop text-scaling contract",
+  );
 
   for (const route of coreRoutes) {
     const response = await page.goto(route, { waitUntil: "domcontentloaded" });
+    await expectHydrated(page);
     expect(response?.status(), route).toBeLessThan(400);
     await page.addStyleTag({
       content: `
@@ -86,12 +103,14 @@ test("core journeys tolerate 200 percent text scaling without horizontal overflo
       scrollWidth: document.documentElement.scrollWidth,
       bodyWidth: document.body.scrollWidth,
     }));
-    expect(metrics.scrollWidth, `${route} document overflow at 200% text`).toBeLessThanOrEqual(
-      metrics.clientWidth + 1,
-    );
-    expect(metrics.bodyWidth, `${route} body overflow at 200% text`).toBeLessThanOrEqual(
-      metrics.clientWidth + 1,
-    );
+    expect(
+      metrics.scrollWidth,
+      `${route} document overflow at 200% text`,
+    ).toBeLessThanOrEqual(metrics.clientWidth + 1);
+    expect(
+      metrics.bodyWidth,
+      `${route} body overflow at 200% text`,
+    ).toBeLessThanOrEqual(metrics.clientWidth + 1);
   }
 });
 
@@ -100,6 +119,7 @@ test("core journeys never render visible text below 12 pixels", async ({
 }) => {
   for (const route of typographyRoutes) {
     const response = await page.goto(route, { waitUntil: "domcontentloaded" });
+    await expectHydrated(page);
     expect(response?.status(), route).toBeLessThan(400);
     await expect(page.locator("h1")).toBeVisible();
 
@@ -176,6 +196,7 @@ test("core controls and form labels render at 14 pixels or larger", async ({
 
   for (const route of controlRoutes) {
     const response = await page.goto(route, { waitUntil: "domcontentloaded" });
+    await expectHydrated(page);
     expect(response?.status(), route).toBeLessThan(400);
     await expect(page.locator("h1")).toBeVisible();
 
