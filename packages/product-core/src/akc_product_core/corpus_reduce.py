@@ -72,6 +72,12 @@ _PER_DOCUMENT_REASONS = (
     "IDENTITY_AMBIGUOUS:",
 )
 _VALIDATION_REASONS = frozenset(VALIDATION_CHECK_REVIEW_REASON.values())
+# Recomputed over the union of part claims, never copied from a part.
+_RECOMPUTED_REASONS = (
+    "CONTRADICTION_CANDIDATE:",
+    "CONTRADICTION_GROUP_TOO_LARGE:",
+    "CONTRADICTION_PAIR_BUDGET_EXCEEDED:",
+)
 # Attempt provenance, not knowledge: the request time and the activity (a hash of the request
 # ID). They differ between any two compiles of the same documents and are left out of every
 # byte comparison here. The object `hash` covers the activity, so it goes with it.
@@ -411,9 +417,7 @@ def corpus_reduce(parts: Sequence[ReducePart]) -> tuple[dict[str, Any], dict[str
         for reason in candidate.get("reviewReasons", ()):
             if reason.startswith(_PER_DOCUMENT_REASONS) or reason in _VALIDATION_REASONS:
                 reasons.add(reason)
-            elif reason != "SEMANTIC_CLAIMS_EMPTY" and not reason.startswith(
-                "CONTRADICTION_CANDIDATE:"
-            ):
+            elif reason != "SEMANTIC_CLAIMS_EMPTY" and not reason.startswith(_RECOMPUTED_REASONS):
                 raise CorpusReduceError(
                     "REDUCE_REVIEW_REASON_UNKNOWN",
                     f"part {part.part_index}: {reason.split(':', 1)[0]} has no reduce rule",
@@ -522,7 +526,7 @@ def corpus_reduce(parts: Sequence[ReducePart]) -> tuple[dict[str, Any], dict[str
 
     semantic_claims = tuple(_claim(item["payload"]) for item in claims)
     claim_by_id = {claim.claim_id: claim for claim in semantic_claims}
-    contradictions = contradiction_candidates(semantic_claims)
+    contradictions, contradiction_overflow = contradiction_candidates(semantic_claims)
     languages: Counter[str] = Counter(claim.language for claim in semantic_claims)
     domain = _domain(
         tuple(
@@ -560,6 +564,7 @@ def corpus_reduce(parts: Sequence[ReducePart]) -> tuple[dict[str, Any], dict[str
         retrieval_profile=_retrieval_profile(
             claims=semantic_claims, entities=tuple(entities), languages=languages
         ),
+        contradiction_overflow=contradiction_overflow,
     )
     architecture = plan_architecture(
         ArchitectureProfile(
@@ -654,6 +659,7 @@ def corpus_reduce(parts: Sequence[ReducePart]) -> tuple[dict[str, Any], dict[str
     review_reasons.update(
         f"CONTRADICTION_CANDIDATE:{item.contradiction_id}" for item in contradictions
     )
+    review_reasons.update(item.review_reason() for item in contradiction_overflow)
     lifecycle = "review_required" if review_reasons else "candidate"
     claim_owner = {claim["stableId"]: object_owner[claim["stableId"]] for claim in claims}
     cross_part_contradictions = sum(

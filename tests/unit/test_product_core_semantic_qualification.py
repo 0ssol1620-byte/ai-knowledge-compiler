@@ -29,6 +29,6 @@ def test_committed_receipt_matches_the_shipped_code() -> None:
 
     receipt = (
         Path(__file__).resolve().parents[2]
-        / "docs/evidence/product-core-semantic-qualification-2026-11-08.json"
+        / "docs/evidence/product-core-semantic-qualification-2026-11-09.json"
     )
-    assert run_qualification("2026-11-08") == json.loads(receipt.read_text(encoding="utf-8"))
+    assert run_qualification("2026-11-09") == json.loads(receipt.read_text(encoding="utf-8"))

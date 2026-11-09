@@ -114,3 +114,31 @@ quality comparison instead of an equivalence check.
 
 F0 stays as the backstop throughout: whatever this ADR does, a package over budget is refused
 by name, never truncated.
+
+## Addendum 2026-11-09: the fallback is taken, as an interim bound
+
+The condition this ADR kept the rejected cap for has been observed. The D0 production proof
+(a 12-page scan, `CORE_OUTPUT_TOO_LARGE`) is the motivating shape exactly: 216 claims in one
+group, **216 value classes**, 23,220 pairs, 168.8 MB of Core response on the current compiler.
+Class encoding would store O(claims) but every reader that expands it pays the 23,220 pairs
+again, and Foundation needs a new contradiction shape before it can read one. So the cap ships
+first, as a fail-closed bound, and the group encoding above stays the proposed target.
+
+What shipped (`semantics.py`, IMPLEMENTED_NOT_PROVEN, uncalibrated):
+
+- `MAX_CONTRADICTION_PAIRS_PER_GROUP = 496` (C(32, 2)). The largest group any existing fixture
+  forms is 30 claims / 435 pairs, so every existing output is byte-identical.
+- `MAX_CONTRADICTION_PAIRS_PER_COMPILE = 1,024`, groups admitted smallest first. Measured at
+  the bound: 1,020 pairs = 8.8 MB of response, about a quarter of the 32 MiB budget.
+- A group past either bound emits **no** pair and is named in review:
+  `CONTRADICTION_GROUP_TOO_LARGE:<groupId>:claims=<n>:pairs=<m>` or
+  `CONTRADICTION_PAIR_BUDGET_EXCEEDED:<groupId>:claims=<n>:pairs=<m>`. The pair count is the
+  exact count the pairwise rule would have produced, computed in O(n).
+- `corpus_reduce` recomputes both reasons over the union, like the candidates.
+
+The cost is the one this ADR named: recall falls for a group past the bound. On the D0 input
+those pairs were false positives (line, page and range numbers are identifiers, not
+measurements), but recall on real corpora is unmeasured; there is no gold set. Excluding
+enumerator-like numbers is a separate precision rule and is not in this change: it would move
+existing golden outputs (the `_fragmented_document` fixture is that shape), so it needs its own
+benchmark.
