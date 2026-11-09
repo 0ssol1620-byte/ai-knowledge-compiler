@@ -401,6 +401,7 @@ class ProductCoreCompiler:
         review_reasons.extend(
             f"CONTRADICTION_CANDIDATE:{item.contradiction_id}" for item in semantics.contradictions
         )
+        review_reasons.extend(item.review_reason() for item in semantics.contradiction_overflow)
         knowledge_model = self._knowledge_model(
             request,
             canonical_documents,

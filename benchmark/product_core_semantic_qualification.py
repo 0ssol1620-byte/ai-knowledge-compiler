@@ -58,7 +58,7 @@ def _canonical(value: object) -> bytes:
     ).encode()
 
 
-def run_qualification(qualification_date: str = "2026-11-08") -> dict[str, Any]:
+def run_qualification(qualification_date: str = "2026-11-09") -> dict[str, Any]:
     """The report for the code as it is now; `qualification_date` names the receipt."""
     fixture_payload = {
         "corpus": _CORPUS,
@@ -156,7 +156,7 @@ def main() -> int:
         / "benchmark"
         / "reports"
         / "generated"
-        / "product-core-semantic-qualification-2026-11-08.json",
+        / "product-core-semantic-qualification-2026-11-09.json",
     )
     args = parser.parse_args()
     report = run_qualification()

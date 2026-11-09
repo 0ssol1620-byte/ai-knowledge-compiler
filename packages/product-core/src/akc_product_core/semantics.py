@@ -311,6 +311,23 @@ _DOMAIN_OBJECT_TYPES: dict[str, tuple[str, ...]] = {
     "personal": ("note", "person", "topic", "task", "event"),
     "mixed": ("document", "note", "entity", "relation", "claim"),
 }
+# Bounds on contradiction candidates (D0 2026-11-09). IMPLEMENTED_NOT_PROVEN, uncalibrated: the
+# values come from measured output bytes, not from contradiction precision/recall on any corpus.
+#
+# Pairing is quadratic in a topic group. A 12-page scan of 216 lines that differ only in their
+# numbers ("Line 07 on page 3: ...") formed one group and 23,220 pairs: 168.8 MB of Core
+# response, against the 32 MiB OUTPUT_BUDGET_BYTES. Against the same scan with its pairs
+# withheld, one pair cost 7,049 B of response and 4,716 B of package.
+#
+# Per compile: 1,024 pairs. A synthetic input at that bound (three groups, 1,020 pairs, 72
+# claims) measured 8.8 MB of response and 5.7 MB of package, about a quarter of the budget, so
+# the contradiction path alone can no longer push a compile over it. Per group: C(32, 2) = 496,
+# a group of 32 claims; the largest group in every existing fixture is 30 claims and 435 pairs,
+# so no output below these bounds changes. A group past a bound emits no pair at all (a partial
+# subset would be arbitrary and would look complete) and is named in a review reason with its
+# claim and pair counts instead. Nothing is dropped silently.
+MAX_CONTRADICTION_PAIRS_PER_GROUP = 496
+MAX_CONTRADICTION_PAIRS_PER_COMPILE = 1_024
 
 
 def _stable_id(prefix: str, *parts: str) -> str:
@@ -553,6 +570,26 @@ class ContradictionCandidate:
 
 
 @dataclass(frozen=True, slots=True)
+class ContradictionGroupOverflow:
+    """A topic group whose candidate pairs were not emitted because a bound was reached."""
+
+    group_id: str
+    topic_key: str
+    temporal_refs: tuple[str, ...]
+    claim_count: int
+    candidate_pairs: int
+    cause: Literal["group", "compile"]
+
+    def review_reason(self) -> str:
+        code = (
+            "CONTRADICTION_GROUP_TOO_LARGE"
+            if self.cause == "group"
+            else "CONTRADICTION_PAIR_BUDGET_EXCEEDED"
+        )
+        return f"{code}:{self.group_id}:claims={self.claim_count}:pairs={self.candidate_pairs}"
+
+
+@dataclass(frozen=True, slots=True)
 class SemanticCompilation:
     domain: str
     object_types: tuple[str, ...]
@@ -563,6 +600,7 @@ class SemanticCompilation:
     relations: tuple[SemanticRelation, ...]
     contradictions: tuple[ContradictionCandidate, ...]
     retrieval_profile: dict[str, object]
+    contradiction_overflow: tuple[ContradictionGroupOverflow, ...] = ()
 
     def profile_record(self) -> dict[str, object]:
         return {
@@ -623,21 +661,66 @@ def _retrieval_profile(
     }
 
 
+def _candidate_pair_count(group: list[SemanticClaim]) -> int:
+    """The pairs the pairwise loop would flag, counted in O(n) instead of enumerated.
+
+    A pair is quiet when both claims share a polarity and their numbers do not disagree (one
+    side has none, or both have the same values); every other pair is a candidate.
+    """
+
+    quiet = 0
+    for polarity in ("positive", "negative"):
+        same = [claim for claim in group if claim.polarity == polarity]
+        valued = Counter(claim.numeric_values for claim in same if claim.numeric_values)
+        empty = len(same) - sum(valued.values())
+        quiet += empty * (empty - 1) // 2 + empty * (len(same) - empty)
+        quiet += sum(count * (count - 1) // 2 for count in valued.values())
+    return len(group) * (len(group) - 1) // 2 - quiet
+
+
 def contradiction_candidates(
     claims: tuple[SemanticClaim, ...],
-) -> tuple[ContradictionCandidate, ...]:
+) -> tuple[tuple[ContradictionCandidate, ...], tuple[ContradictionGroupOverflow, ...]]:
     """Pair claims on one topic and time that disagree, sorted by contradiction ID.
 
-    Shared by `compile_semantics` and `corpus_reduce`, which recomputes the candidates over
-    the union of part claims so that a disagreement across a part seam is not lost.
+    Also returns the groups past a bound (sorted by group ID), whose pairs are not emitted.
+    Groups are admitted smallest first, so the compile bound keeps the most specific
+    disagreements. Shared by `compile_semantics` and `corpus_reduce`, which recomputes both
+    over the union of part claims so that nothing across a part seam is lost.
     """
 
     grouped: defaultdict[tuple[str, tuple[str, ...]], list[SemanticClaim]] = defaultdict(list)
     for claim in claims:
         if claim.topic_key and claim.topic_key not in _NON_CONTRADICTION_TOPICS:
             grouped[(claim.topic_key, claim.temporal_refs)].append(claim)
+    sized = sorted(
+        ((_candidate_pair_count(group), key, group) for key, group in grouped.items()),
+        key=lambda row: (row[0], row[1]),
+    )
+    remaining = MAX_CONTRADICTION_PAIRS_PER_COMPILE
+    overflow: list[ContradictionGroupOverflow] = []
     contradiction_rows: dict[str, ContradictionCandidate] = {}
-    for (topic_key, temporal_refs), group in grouped.items():
+    for pairs, (topic_key, temporal_refs), group in sized:
+        if pairs == 0:
+            continue
+        cause: Literal["group", "compile"] | None = None
+        if pairs > MAX_CONTRADICTION_PAIRS_PER_GROUP:
+            cause = "group"
+        elif pairs > remaining:
+            cause = "compile"
+        if cause is not None:
+            overflow.append(
+                ContradictionGroupOverflow(
+                    group_id=_stable_id("contradiction_group", topic_key, *temporal_refs),
+                    topic_key=topic_key,
+                    temporal_refs=temporal_refs,
+                    claim_count=len(group),
+                    candidate_pairs=pairs,
+                    cause=cause,
+                )
+            )
+            continue
+        remaining -= pairs
         for left_index, left in enumerate(group):
             for right in group[left_index + 1 :]:
                 reason: Literal["numeric_disagreement", "polarity_disagreement"] | None = None
@@ -663,7 +746,10 @@ def contradiction_candidates(
                     reason=reason,
                     temporal_refs=temporal_refs,
                 )
-    return tuple(contradiction_rows[key] for key in sorted(contradiction_rows))
+    return (
+        tuple(contradiction_rows[key] for key in sorted(contradiction_rows)),
+        tuple(sorted(overflow, key=lambda item: item.group_id)),
+    )
 
 
 def compile_semantics(sources: tuple[SemanticSource, ...]) -> SemanticCompilation:
@@ -737,7 +823,7 @@ def compile_semantics(sources: tuple[SemanticSource, ...]) -> SemanticCompilatio
         for entity_id in claim.entity_ids
     )
     domain = _domain(sources)
-    contradictions = contradiction_candidates(claims)
+    contradictions, contradiction_overflow = contradiction_candidates(claims)
     return SemanticCompilation(
         domain=domain,
         object_types=_DOMAIN_OBJECT_TYPES[domain],
@@ -754,11 +840,15 @@ def compile_semantics(sources: tuple[SemanticSource, ...]) -> SemanticCompilatio
             entities=semantic_entities,
             languages=languages,
         ),
+        contradiction_overflow=contradiction_overflow,
     )
 
 
 __all__ = [
+    "MAX_CONTRADICTION_PAIRS_PER_COMPILE",
+    "MAX_CONTRADICTION_PAIRS_PER_GROUP",
     "ContradictionCandidate",
+    "ContradictionGroupOverflow",
     "SemanticClaim",
     "SemanticCompilation",
     "SemanticEntity",
