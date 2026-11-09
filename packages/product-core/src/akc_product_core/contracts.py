@@ -106,6 +106,24 @@ class ProductCoreRoute(ContractModel):
     privacy_policy: Literal["foundation_synthetic_only", "approved_customer_data"]
 
 
+class CorpusPart(ContractModel):
+    """Which part of a corpus this compile is. Optional; the compile itself never reads it.
+
+    Foundation compiles a corpus larger than one compile in parts. Naming the part lets Core
+    run `corpus_reduce` in shadow when `TAVONEL_CORPUS_REDUCE_MODE=shadow` (ADR-008).
+    """
+
+    corpus_id: Identifier
+    part_index: Annotated[int, Field(ge=0)]
+    part_count: Annotated[int, Field(ge=1, le=128)]
+
+    @model_validator(mode="after")
+    def index_within_count(self) -> CorpusPart:
+        if self.part_index >= self.part_count:
+            raise ValueError("partIndex must be below partCount")
+        return self
+
+
 class ProductCoreCompileRequest(ContractModel):
     schema_version: Literal["tavonel.product_core.compile_request.v2"] = (
         "tavonel.product_core.compile_request.v2"
@@ -120,6 +138,7 @@ class ProductCoreCompileRequest(ContractModel):
     route: ProductCoreRoute
     documents: Annotated[tuple[ProductCoreDocument, ...], Field(min_length=1, max_length=500)]
     previous_active_world: PreviousWorldSnapshot | None = None
+    corpus_part: CorpusPart | None = None
 
     @field_validator("requested_at")
     @classmethod
