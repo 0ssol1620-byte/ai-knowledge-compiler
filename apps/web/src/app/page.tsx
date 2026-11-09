@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
 import { JsonLd } from "@/components/json-ld";
+import { LocaleProvider } from "@/components/locale-provider";
 import { MarketingLanding } from "@/components/marketing-landing";
-import { getRequestLocale } from "@/lib/locale-server";
+import { getPublicRequestLocale } from "@/lib/locale-server";
 import { organizationGraph, SITE_BASE } from "@/lib/structured-data";
 
 export const metadata: Metadata = {
@@ -13,11 +14,11 @@ export const metadata: Metadata = {
 };
 
 export default async function MarketingPage() {
-  const locale = await getRequestLocale();
+  const locale = await getPublicRequestLocale();
   return (
-    <>
+    <LocaleProvider locale={locale}>
       <JsonLd nodes={organizationGraph(SITE_BASE)} />
       <MarketingLanding locale={locale} />
-    </>
+    </LocaleProvider>
   );
 }

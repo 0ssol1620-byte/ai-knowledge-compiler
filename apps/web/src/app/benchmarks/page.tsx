@@ -2,13 +2,14 @@ import type { Metadata } from "next";
 
 import { TavonelMarketingPage } from "@/components/tavonel-marketing-page";
 import { JsonLd } from "@/components/json-ld";
-import { getRequestLocale } from "@/lib/locale-server";
+import { LocaleProvider } from "@/components/locale-provider";
+import { getPublicRequestLocale } from "@/lib/locale-server";
 import { PUBLIC_PAGES_KO } from "@/lib/structara-content-ko";
 import { PUBLIC_PAGES } from "@/lib/tavonel-content";
 import { pageGraph, SITE_BASE } from "@/lib/structured-data";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getRequestLocale();
+  const locale = await getPublicRequestLocale();
   return {
     title: locale === "ko" ? "문서 벤치마크" : "Document benchmarks",
     description:
@@ -19,14 +20,14 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function BenchmarksPage() {
-  const locale = await getRequestLocale();
+  const locale = await getPublicRequestLocale();
   const definition = (locale === "ko" ? PUBLIC_PAGES_KO : PUBLIC_PAGES)[
     "/benchmarks"
   ]!;
   return (
-    <>
+    <LocaleProvider locale={locale}>
       <JsonLd nodes={pageGraph(definition, SITE_BASE)} />
       <TavonelMarketingPage definition={definition} locale={locale} />
-    </>
+    </LocaleProvider>
   );
 }

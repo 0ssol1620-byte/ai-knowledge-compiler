@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 
+import { LocaleProvider } from "@/components/locale-provider";
 import { TavonelOnboarding } from "@/components/tavonel-onboarding";
-import { getRequestLocale } from "@/lib/locale-server";
+import { getPublicRequestLocale } from "@/lib/locale-server";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await getRequestLocale();
+  const locale = await getPublicRequestLocale();
   return {
     title: locale === "ko" ? "첫 지식 프로젝트" : "First knowledge project",
     robots: { index: false, follow: false },
@@ -12,5 +13,9 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function OnboardingPage() {
-  return <TavonelOnboarding />;
+  return (
+    <LocaleProvider locale={await getPublicRequestLocale()}>
+      <TavonelOnboarding />
+    </LocaleProvider>
+  );
 }
