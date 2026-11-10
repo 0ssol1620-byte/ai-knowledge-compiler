@@ -274,7 +274,7 @@ class ProductCoreService:
         outcome: ProductCoreCompileResponse | dict[str, object],
         payload: dict[str, object],
     ) -> None:
-        # ponytail: sizes the entry by one extra serialisation (<= the 32 MiB output budget);
+        # ponytail: sizes the entry by one extra serialisation (<= OUTPUT_BUDGET_BYTES);
         # carry the byte count out of the compiler if that cost ever shows up.
         size = len(json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode())
         self._cache[key] = _CachedResponse(work_sha256, outcome, size)
