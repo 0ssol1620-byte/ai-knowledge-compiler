@@ -126,8 +126,11 @@ def test_d0_scan_compiles_under_the_budget_with_its_group_named() -> None:
 
     package_bytes = sum(file.size_bytes for file in candidate.package.files)
     response_bytes = len(canonical_json(wire_payload(response)).encode("utf-8"))
-    assert package_bytes < OUTPUT_BUDGET_BYTES // 8
-    assert response_bytes < OUTPUT_BUDGET_BYTES // 4
+    # The margins measured against the 32 MiB budget this bound was set under, kept as bytes so a
+    # later budget change does not loosen them.
+    assert package_bytes < 4 * 1024 * 1024
+    assert response_bytes < 8 * 1024 * 1024
+    assert response_bytes < OUTPUT_BUDGET_BYTES
 
 
 def test_the_bound_does_not_bypass_the_output_budget() -> None:

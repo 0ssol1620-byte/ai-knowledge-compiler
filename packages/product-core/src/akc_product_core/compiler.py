@@ -77,12 +77,21 @@ from .semantics import (
     semantic_tokens,
 )
 
-# The largest output Core returns: Foundation's 32 MiB bound on what it stores
+# The largest output Core returns, equal to Foundation's bound on what it stores
 # (`MAX_COLLECTION_JSON_BYTES`) and reads back from Core. Core is the precise gate, before any
 # digest or receipt exists; Foundation's own response bound is the backstop. Two checks, one
 # budget: the package bytes on the probe build (cheap, before a second package is built), then
 # the serialised candidate itself (the bytes that are hashed, sent and stored).
-OUTPUT_BUDGET_BYTES = 32 * 1024 * 1024
+#
+# It was 32 MiB, a constant no platform imposed: six device manuals (6,072 regions, package
+# 38,980,103 B, cjob-fac5555a 2026-11-10) were refused, and a Foundation corpus part is twelve
+# documents. Re-derived 2026-11-10 from the served path (verify, compile, cache sizing, response
+# render) on a manual-shaped synthetic corpus of ~1,012 regions a document: 6 documents ->
+# 87.5 MB candidate, 578 MiB peak RSS; 12 -> 176.2 MB, 1,102 MiB. 192 MiB holds twelve such
+# documents inside the function's 2 GB. A size bound, not an integrity check: nothing about
+# what is computed, hashed or validated depends on it, and an output over it is still refused
+# by name with its numbers. Compile time (28 s for twelve, locally) is not settled by it.
+OUTPUT_BUDGET_BYTES = 192 * 1024 * 1024
 
 
 class CoreOutputTooLargeError(Exception):
