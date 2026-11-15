@@ -29,7 +29,7 @@ RUN useradd --system --uid 10001 --home /nonexistent --shell /usr/sbin/nologin a
 USER 10001
 ENTRYPOINT ["python", "handler.py"]
 
-FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04@sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802 AS production
+FROM nvidia/cuda:13.5.0-cudnn-runtime-ubuntu24.04@sha256:0490edd1b0d88388497dfbe3762d0deab0ded3baf4828616636c17cbd44723e3 AS production
 ARG MODEL_REVISION
 ARG PADDLEOCR_VERSION=3.7.0
 ARG PADDLEPADDLE_VERSION=3.2.1
