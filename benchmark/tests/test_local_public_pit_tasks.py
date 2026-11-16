@@ -181,6 +181,8 @@ def test_shortfall_exits_1_and_reports_the_number(tmp_path: Path) -> None:
     man = json.loads((out / "tasks_manifest.json").read_text("utf-8"))
     assert man["floor"] == 200 and man["shortfall"] == 200 - man["tasks"] > 0
     assert man["valid_time_basis"] == pr.BASIS and man["statements"]
+    assert man["statements"][: len(pt.SPEC_STATEMENTS)] == list(pt.SPEC_STATEMENTS)
+    assert "DOM rule in §2.3" in man["statements"][1] and "never fetched" in man["statements"][3]
     assert len((out / "tasks.jsonl").read_text("utf-8").splitlines()) == man["tasks"]
 
 

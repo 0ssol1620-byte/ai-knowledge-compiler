@@ -29,17 +29,25 @@ FLOOR = 200
 STRATA = ("backdated", "added_later", "modified")
 # row text: "{name}: {label}: {value} {uom}, {period text}" (pit_rows.filing_rows)
 _TEXT = re.compile(r"^(.*): (-?[0-9][0-9.eE+-]*) (\S+), (.+)$", re.S)
-STATEMENTS = (
-    "Pre-training exposure cannot be controlled: these are large public companies' public XBRL "
+# spec section 0.1, verbatim (markdown emphasis dropped; "Not covered" sub-bullets joined)
+SPEC_STATEMENTS = (
+    "Pre-training exposure cannot be controlled. These are large public companies' public XBRL "
     "values, and a model may have memorised them. A holdout here is hidden from tuning, not "
     "from pre-training.",
-    "Selection condition: SEC rows are the presented non-dimensional FSDS facts of the chosen "
-    "filings; validity dates exist for inline-XBRL filings only. Scores hold for that "
-    "population only.",
-    "No arm comparison from this stratum: no result here compares a text-layer arm with a "
-    "vision arm.",
-    "Not covered: the filer's own PDF, images, tables that run across pages, MD&A and "
-    "narrative accuracy, dimensional and segment values, scans of any kind.",
+    "Selection condition. SEC screen pages contain only fields that pass the DOM rule in §2.3: "
+    "first numeric cell of a labelled statement row, unshadowed anchor, statement context, sign "
+    "explained, not a dash, on a filer-marked page that prints to one page. Scores hold for "
+    "that population only.",
+    "No arm comparison from this stratum. No result from this stratum compares a text-layer "
+    "arm with a vision arm.",
+    "Not covered: the filer's own PDF: pages are Chromium prints of the filed HTML; images: "
+    "they are never fetched; tables that run across pages; MD&A and narrative accuracy; "
+    "dimensional and segment values; scans of any kind.",
+)
+STATEMENTS = (
+    *SPEC_STATEMENTS,
+    "Population of these tasks: the presented non-dimensional FSDS facts of the chosen "
+    "filings; validity dates exist for inline-XBRL filings only.",
     "Gold after a later restatement is not generated: the harness has no transaction-time "
     "supersession for rows.",
 )
