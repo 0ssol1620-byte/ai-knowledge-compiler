@@ -182,3 +182,44 @@ def test_every_task_is_labelled_generated_and_parses_against_the_harness_contrac
             for lid, e in corpus.evidence_of.items()
             if e & task.gold_evidence_ids
         } <= {task.tenant}
+
+
+def test_retrieval_is_backfilled_when_leading_candidates_have_no_compilable_gold(tmp_path: Path):
+    # Every 4th latest control is a withdrawn stub whose title is not a sentence: it compiles
+    # to no claim, so the loop must read past the first 200 candidates to reach the floor.
+    def ctl(fam: str, i: int, rel: int) -> dict:
+        if rel >= 2 and i % 4 == 0:
+            return {
+                "id": f"{fam}-{i}", "title": f"Access Control {fam} {i}",
+                "props": [{"name": "status", "value": "withdrawn"}],
+                "links": [{"href": "#fa-2", "rel": "incorporated-into"}],
+            }  # fmt: skip
+        return _control(fam, i, rel)
+
+    def catalog(rel: int, version: str) -> dict:
+        n = 20 + (2 if rel >= 1 else 0)
+        meta = {"title": "t", "version": version, "last-modified": DATES[version]}
+        if version == "5.1.0":
+            meta["published"] = "2023-10-13T00:00:00Z"
+        groups = [
+            {"id": f, "controls": [ctl(f, i, rel) for i in range(1, n + 1)]} for f in FAMILIES
+        ]
+        return {"catalog": {"metadata": meta, "groups": groups}}
+
+    releases = {f"v{i}": catalog(i, v) for i, v in enumerate(DATES)}
+    shas = {t: f"{i:040x}" for i, t in enumerate(releases, start=1)}
+
+    def fetch(url: str) -> bytes:
+        if "/tags?" in url:
+            return json.dumps([{"name": t, "commit": {"sha": s}} for t, s in shas.items()]).encode()
+        for t, s in shas.items():
+            if f"/{s}/{bc.CATALOG_PATH}" in url:
+                return json.dumps(releases[t], sort_keys=True).encode()
+            if url.endswith(f"/{s}/LICENSE.md"):
+                return b"Public domain\n"
+        raise bc.NotFound(url)
+
+    manifest = bc.build(tmp_path, 7, 100, fetch, include_ecfr=False)
+    out = bt.build(manifest, tmp_path, 11)
+    assert len(_by(out, kind="retrieval")) == bt.FLOORS["retrieval"]
+    assert out["skipped"].get("retrieval: no compilable gold part", 0) > 0

@@ -328,9 +328,13 @@ def build(
         for c, doc in corpus.docs[fam[0], last][fam[1]][0].items():
             latest.append((fam, c, doc, corpus.meta[fam[0], last]["moment"]))
     latest.sort(key=lambda x: _order(seed, "retrieval", x[0], x[1]))
-    for fam, c, doc, t in latest[: FLOORS["retrieval"]]:
+    n_retrieval = 0
+    for fam, c, doc, t in latest:
+        if n_retrieval == FLOORS["retrieval"]:
+            break
         if gold := corpus.evidence_at(fam, c, t):
             add("retrieval", "retrieval", fam, c, _query(doc), None, gold)
+            n_retrieval += 1
         else:
             skipped["retrieval: no compilable gold part"] += 1
 
