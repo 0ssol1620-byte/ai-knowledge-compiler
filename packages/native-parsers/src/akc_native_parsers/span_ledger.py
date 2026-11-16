@@ -4,7 +4,10 @@ For every block and table cell that carries a ``native_object_id`` the locator
 is resolved against the *original bytes* by a resolver that never calls the
 parser, and the resolved text is compared with the CIR text. Nothing is filled
 in: a locator that cannot be resolved is reported with its reason, never
-passed. The ledger holds counts and ids only, no document text.
+passed. The ledger holds counts and ids only, no document text. A resolver
+returns only text read from the original; every failure is raised
+(``_Unresolvable`` or ``_Mismatch``), never returned as a marker string that a
+forged unit text could equal.
 
 Ceilings (stated, not hidden):
 * The HTML resolver uses the stdlib tokenizer, which does not repair markup the
@@ -13,7 +16,15 @@ Ceilings (stated, not hidden):
 * DOCX cell text follows the visible-text rule of the parser (tracked
   deletions excluded); a cell whose runs sit inside ``w:ins`` is reported as a
   mismatch rather than reconciled.
-* PDF is out of scope here (WO-D07-4 owns that resolver).
+* PDF text is re-extracted inside the block's bbox with pypdfium2, a different
+  library from the parser's pypdf. The parser's bbox is an estimate (glyph width
+  is modelled, not measured), so a text object that shares its bbox with a
+  neighbour on the same line resolves to more text than the block holds and is
+  reported as a mismatch, never reconciled. Rotated pages are inverted from the
+  parser's own display transform; multi-column and rotated real PDFs are not
+  proven here. Drawing and image-placement blocks resolve to "" (no text), after
+  pdfium confirms an object of that kind and ordinal on that page; their pixels
+  are not re-hashed.
 """
 
 from __future__ import annotations
@@ -39,6 +50,11 @@ from .models import LOCATOR_PAGE_SEMANTICS, ParserLimits, StructuredParseError, 
 _HELD_MARKERS = ("held", "unresolved")
 _MEMBER_LIMIT = ParserLimits().max_archive_member_bytes
 
+_PDF_TEXT = re.compile(r"pdf/page/(?P<p>\d+)/text/[0-9a-f]{20}")
+_PDF_GEOMETRY = re.compile(r"pdf/page/(?P<p>\d+)/(?:drawing|image-placement)/(?P<n>\d+)")
+
+_PDF_WIDTH_SLACK = 0.75  # real/estimated glyph width: 0.9 em (M, W) vs 0.52 em is 0.73
+
 # (text, optional (start_ms, end_ms)) for a resolved locator.
 _Resolved = tuple[str, tuple[int, int] | None]
 _Resolver = Callable[[str], _Resolved]
@@ -48,6 +64,11 @@ class _Unresolvable(Exception):
     def __init__(self, reason: str) -> None:
         super().__init__(reason)
         self.reason = reason
+
+
+class _Mismatch(Exception):
+    """The original was read and contradicts the unit. Raised, never returned as text:
+    a failure spelled as a resolved string can be matched by a forged raw_text."""
 
 
 @dataclass(frozen=True, slots=True)
@@ -94,6 +115,8 @@ def build_ledger(data: bytes, document: CanonicalDocument) -> SpanLedger:
     observed_pages: set[int] = set()
     observed_cues: set[int] = set()
 
+    assets = _registered_assets(document.metadata.get("assets")) if document_type == "pdf" else {}
+
     def check(unit_id: str, locator: str, expected: str, ref: Any) -> str:
         nonlocal exact, tokens_total, tokens_ok
         want = tuple(extract_numeric_tokens(expected))
@@ -105,10 +128,19 @@ def build_ledger(data: bytes, document: CanonicalDocument) -> SpanLedger:
             unresolvable.append((unit_id, open_failure))
             return "unresolvable"
         try:
-            text, span = resolver(locator)
+            # Every locator, whatever its kind, goes through its own format's resolver and
+            # then through the one text comparison below: no unit is passed without it.
+            text, span = (
+                resolver(locator, ref, assets)  # type: ignore[call-arg]
+                if getattr(resolver, "wants_ref", False)
+                else resolver(locator)
+            )
         except _Unresolvable as exc:
             unresolvable.append((unit_id, exc.reason))
             return "unresolvable"
+        except _Mismatch:
+            mismatch.append(unit_id)
+            return "mismatch"
         except Exception as exc:
             unresolvable.append((unit_id, f"resolver_error:{type(exc).__name__}"))
             return "unresolvable"
@@ -168,6 +200,18 @@ def build_ledger(data: bytes, document: CanonicalDocument) -> SpanLedger:
         omitted=tuple(str(w) for w in document.metadata.get("warnings", ())),
         held=tuple(held),
     )
+
+
+def _registered_assets(raw: Any) -> dict[str, str]:
+    # Untrusted metadata: an entry that is not {"id": str, "sha256": str} registers
+    # nothing, so a placement that names it fails as unregistered, never passes.
+    if not isinstance(raw, (list, tuple)):
+        return {}
+    return {
+        a["id"]: a["sha256"]
+        for a in raw
+        if isinstance(a, dict) and isinstance(a.get("id"), str) and isinstance(a.get("sha256"), str)
+    }
 
 
 def _expected_units(resolver: _Resolver | None) -> tuple[int, set[int]]:
@@ -668,7 +712,7 @@ def _subtitle_factory(kind: str) -> Callable[[bytes], _Resolver]:
             key = _merge_key(kind, cues[first][0])
             if any(_merge_key(kind, c[0]) != key for c in inside):
                 # a merged range is only exact if every cue in it says the same thing
-                return "\x00range_text_differs", (cues[first][1], end)
+                raise _Mismatch("range_text_differs")
             return cues[first][0], (cues[first][1], end)
 
         return _with_units(resolve, set(cues))
@@ -676,8 +720,80 @@ def _subtitle_factory(kind: str) -> Callable[[bytes], _Resolver]:
     return factory
 
 
+# --------------------------------------------------------------------- PDF
+
+
+def _pdf_resolver(data: bytes) -> _Resolver:
+    import pypdfium2  # type: ignore[import-untyped]  # lazy: only PDF ledgers need it
+    import pypdfium2.raw as pdfium_c  # type: ignore[import-untyped]
+
+    pdf = pypdfium2.PdfDocument(data)
+    pages = len(pdf)
+    cache: dict[int, Any] = {}
+    kinds: dict[int, Counter[int]] = {}  # page -> pdfium object type counts, scanned once
+
+    def resolve(locator: str, ref: Any, assets: dict[str, str]) -> _Resolved:
+        geometry = _PDF_GEOMETRY.fullmatch(locator)
+        match = geometry or _PDF_TEXT.fullmatch(locator)
+        if match is None:
+            raise _Unresolvable("unknown_locator_grammar")
+        index = int(match["p"])
+        if index >= pages:
+            raise _Unresolvable("locator_out_of_range")
+        bbox = ref.bbox1000
+        if bbox is None:
+            raise _Unresolvable("no_bbox")
+        if index != ref.page_index0:
+            raise _Mismatch("locator_page_differs")  # the block claims another page
+        if index not in cache:
+            page = pdf[index]
+            cache[index] = (page, page.get_textpage(), page.get_cropbox(), page.get_rotation())
+        page, textpage, (left, bottom, right, top), rotation = cache[index]
+        if geometry is not None:
+            # Image/drawing objects hold no text, so the original's text here is "": a block
+            # that carries text under a geometry locator is a mismatch, never a pass. The
+            # parser numbers one drawing per painted path and one placement per image Do
+            # on the page, so pdfium must count more such objects there than the locator's
+            # ordinal; a placement must also name an asset the document registered. The
+            # pixels are not re-hashed (stated ceiling): "exact" means "an untexted object
+            # of that kind and ordinal on that page of the original", not "the same pixels".
+            image = "/image-placement/" in locator
+            kind = pdfium_c.FPDF_PAGEOBJ_IMAGE if image else pdfium_c.FPDF_PAGEOBJ_PATH
+            if index not in kinds:
+                kinds[index] = Counter(o.type for o in page.get_objects(max_depth=15))
+            if kinds[index][kind] <= int(geometry["n"]):
+                raise _Mismatch("object_not_in_original")
+            if image and not assets.get(str(ref.image_asset_id), "").startswith("sha256:"):
+                raise _Mismatch("asset_unregistered")
+            return "", None
+        width, height = right - left, top - bottom
+        x1, y1, x2, y2 = (v / 1000 for v in bbox.root)
+        dw, dh = (height, width) if rotation % 180 else (width, height)
+        # invert the parser's display transform (_display_bbox1000): v runs top-down
+        corners = [(x * dw, dh - y * dh) for x in (x1, x2) for y in (y1, y2)]
+        if rotation == 90:
+            points = [(width - y, x) for x, y in corners]
+        elif rotation == 180:
+            points = [(width - x, height - y) for x, y in corners]
+        elif rotation == 270:
+            points = [(y, height - x) for x, y in corners]
+        else:
+            points = corners
+        xs, ys = [p[0] for p in points], [p[1] for p in points]
+        # The parser models glyph width at 0.52 em; real capitals are wider, so the box is
+        # too narrow at its right end. Widen only that edge by the stated estimation error.
+        slack = (max(xs) - min(xs)) * _PDF_WIDTH_SLACK
+        return textpage.get_text_bounded(
+            left + min(xs), bottom + min(ys), left + max(xs) + slack, bottom + max(ys)
+        ), None
+
+    resolve.wants_ref = True  # type: ignore[attr-defined]
+    return _with_units(resolve, set(range(pages)))  # type: ignore[arg-type]
+
+
 _FACTORIES: dict[str, Callable[[bytes], _Resolver]] = {
     "docx": _docx_resolver,
+    "pdf": _pdf_resolver,
     "pptx": _pptx_resolver,
     "xlsx": _xlsx_resolver,
     "html": _html_resolver,
