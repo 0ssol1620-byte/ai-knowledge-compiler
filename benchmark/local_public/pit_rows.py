@@ -39,6 +39,43 @@ def _midnight(iso: str, plus_days: int = 0) -> str:
     return datetime(d.year, d.month, d.day, tzinfo=UTC).isoformat()
 
 
+def _dated(
+    row: Callable[..., dict[str, Any]], r: dict[str, str], start: str | None, end: str
+) -> dict[str, Any]:
+    if start is None:
+        return row(r, f"I{end}", f"as of {end}.", _midnight(end), _midnight(end, 1))
+    return row(r, f"{start}_{end}", f"{start} to {end}.", _midnight(start), _midnight(end, 1))
+
+
+def _month_row(row: Callable[..., dict[str, Any]], r: dict[str, str]) -> dict[str, Any]:
+    text = (
+        f"period ending {r['ddate'][:4]}-{r['ddate'][4:6]} "
+        f"(month as rounded by FSDS), {r['qtrs']} quarters."
+    )
+    return row(r, f"{r['ddate']}m{r['qtrs']}", text, None, None)
+
+
+def _context_span(
+    r: dict[str, str], ctxs: dict[str, Any], facts: list[Any]
+) -> tuple[str | None, str] | None:
+    """The one non-dimensional context of this accession whose dates match the FSDS row
+    (sec_align rules 1-2); None when none or several do."""
+    q, found = int(r["qtrs"]), set()
+    for f in facts:
+        c = ctxs.get(f.ctx)
+        if f.name != r["tag"] or f.hidden or c is None or c.segment:
+            continue
+        if (q == 0) != (c.start is None):
+            continue
+        e = date.fromisoformat(c.end)
+        if q and round(((e - date.fromisoformat(c.start or c.end)).days + 1) / 91.3125) != q:
+            continue
+        ne = sec_align.nearest_month_end(e)
+        if ne is not None and ne.strftime("%Y%m%d") == r["ddate"]:
+            found.add((c.start, c.end))
+    return next(iter(found)) if len(found) == 1 else None
+
+
 def filing_rows(
     sub: dict[str, str],
     num_rows: list[dict[str, str]],
@@ -47,10 +84,13 @@ def filing_rows(
     gold_value: Callable[[dict[str, Any]], Any],
     accepted: datetime | None,
     tenant: str = TENANT,
+    reasons: dict[str, int] | None = None,
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """(corpus rows, join keys) of one filing; a key is every presented non-dimensional num row.
 
-    `accepted` None -> ([], []) and the caller counts `acceptance_unresolved`."""
+    `accepted` None -> ([], []) and the caller counts `acceptance_unresolved`.
+    `reasons` (optional, mutated) counts iXBRL rows written without a screen-field candidate,
+    by the `sec_align` reason."""
     if accepted is None:
         return [], []
     if accepted.tzinfo is None or accepted.utcoffset() is None:
@@ -102,32 +142,35 @@ def filing_rows(
 
     rows: list[dict[str, Any]] = []
     if sub["instance"].endswith("_htm.xml"):
-        seen: set[tuple[str, str, str, str, str, str]] = set()
+        cands: dict[tuple[str, ...], list[sec_align.Candidate]] = {}
+        why: dict[tuple[str, str, str], str] = {}
         for c in sec_align.align(sub, num_rows, pre_rows, html_bytes, gold_value):
-            if not isinstance(c, sec_align.Candidate):
-                continue
-            f = c.fsds
-            ident = (f["tag"], f["version"], f["ddate"], f["qtrs"], f["uom"], c.context_id)
-            if ident in seen:  # one fact printed in several places is one row
-                continue
-            seen.add(ident)
-            r = next(
-                x
-                for x in presented
-                if (x["tag"], x["version"], x["ddate"], x["qtrs"], x["uom"]) == ident[:5]
-            )
-            if c.start is None:
-                pk, text = f"I{c.end}", f"as of {c.end}."
+            if isinstance(c, sec_align.Candidate):
+                f = c.fsds
+                k5 = (f["tag"], f["version"], f["ddate"], f["qtrs"], f["uom"])
+                cands.setdefault(k5, []).append(c)
             else:
-                pk, text = f"{c.start}_{c.end}", f"{c.start} to {c.end}."
-            rows.append(row(r, pk, text, _midnight(c.start or c.end), _midnight(c.end, 1)))
-    else:
+                why[(c.tag, c.ddate, c.qtrs)] = c.reason
+        ctxs, facts, _ = sec_align.contexts(html_bytes)
         for r in presented:
-            text = (
-                f"period ending {r['ddate'][:4]}-{r['ddate'][4:6]} "
-                f"(month as rounded by FSDS), {r['qtrs']} quarters."
-            )
-            rows.append(row(r, f"{r['ddate']}m{r['qtrs']}", text, None, None))
+            ident = (r["tag"], r["version"], r["ddate"], r["qtrs"], r["uom"])
+            seen: set[tuple[str | None, str]] = set()
+            for c in cands.get(ident, []):
+                if (c.start, c.end) in seen:  # one fact printed in several places is one row
+                    continue
+                seen.add((c.start, c.end))
+                rows.append(_dated(row, r, c.start, c.end))
+            if ident in cands:
+                continue
+            # not accepted as a screen field (page rules 4-10): still a presented fact. Dates
+            # only if the same accession's context matches on rules 1-2, else month basis.
+            if reasons is not None:
+                k = why.get((r["tag"], r["ddate"], r["qtrs"]), "unknown")
+                reasons[k] = reasons.get(k, 0) + 1
+            span = _context_span(r, ctxs, facts)
+            rows.append(_dated(row, r, *span) if span else _month_row(row, r))
+    else:
+        rows.extend(_month_row(row, r) for r in presented)
     return rows, keys
 
 
@@ -177,7 +220,19 @@ def assemble(
 
 def _load_ciks(path: Path) -> set[str]:
     data = json.loads(path.read_text("utf-8"))
-    raw = data.get("ciks", data) if isinstance(data, dict) else data
+    raw = data["ciks"] if isinstance(data, dict) and set(data) == {"ciks"} else data
+    if (
+        not isinstance(raw, list)
+        or not raw
+        or not all(
+            (isinstance(c, int) and not isinstance(c, bool)) or (isinstance(c, str) and c.isdigit())
+            for c in raw
+        )
+    ):
+        raise PitError(
+            'exclude-ciks must be a non-empty list of numeric CIKs or {"ciks": [...]}; '
+            "refusing to guess the holdout boundary"
+        )
     return {str(c).lstrip("0") or "0" for c in raw}
 
 
@@ -229,6 +284,7 @@ def build(
     )
     per_filing: list[tuple[list[dict[str, Any]], list[dict[str, Any]]]] = []
     unresolved: list[tuple[str, str, str, str, str]] = []
+    reasons: dict[str, int] = {}
     stats = {"filings": 0, "acceptance_unresolved": 0, "filing_missing": 0}
     for q in quarters:
         with zipfile.ZipFile(sources.open_verified(f"sec_fsds/{q}")) as zf:
@@ -249,7 +305,7 @@ def build(
                     continue
             acc = sec_time.accepted_at(sub["accepted"], bulk.get(adsh))
             rows, keys = filing_rows(
-                sub, nums.get(adsh, []), pres.get(adsh, []), html, gold_value, acc
+                sub, nums.get(adsh, []), pres.get(adsh, []), html, gold_value, acc, reasons=reasons
             )
             if acc is None:
                 stats["acceptance_unresolved"] += 1
@@ -269,6 +325,8 @@ def build(
         json.dumps(
             {
                 "valid_time_basis": BASIS,
+                "lpc_manifest_sha256": lo.manifest["manifest_sha256"],
+                "ixbrl_rows_without_screen_candidate_by_align_reason": reasons,
                 "rows": len(corpus),
                 "ciks": sorted(chosen),
                 "excluded_ciks_sha256": hashlib.sha256(exclude_ciks.read_bytes()).hexdigest(),
