@@ -263,7 +263,10 @@ def _probe(
         if tr is not None
         else None
     )
-    if tr is None or first is not el:
+    numeric_before = any(re.search(r"\d", _text(x)) for x in cells[1:k]) or bool(
+        re.search(r"\d", cell[:idx])
+    )
+    if tr is None or first is not el or numeric_before:
         return _Probe("not_first_column" if tr is not None else "no_label")
     anchor = _text(cells[0]) if cells else ""
     if not anchor or cells[0] is td:
@@ -337,6 +340,8 @@ def align(
 
     `gold_value(field_dict)` is the scorer's normaliser: field dict in, signed number out.
     """
+    if any(x["adsh"] != sub["adsh"] for x in (*num_rows, *pre_rows)):
+        raise ValueError("alignment is by the same adsh only")
     presented: dict[tuple[str, str], dict[str, str]] = {}
     for p in pre_rows:
         if p["stmt"] in STMTS:

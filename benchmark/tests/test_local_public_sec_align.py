@@ -397,11 +397,18 @@ def test_fact_printed_twice_gives_two_candidates_shadow_decision_left_to_pages()
 
 
 def test_later_filing_restated_value_never_aligns_to_earlier_adsh() -> None:
-    """A key restated in a later filing carries another adsh; one accession is read."""
-    later = {**num("1300000000"), "adsh": "0000950170-25-999999"}
-    res = align(KOHLS, [num()], pre(), doc(CTX, [row(fact("1,300"))]), gold_value)
-    assert reason(res) == "value_mismatch"
-    assert later["adsh"] != KOHLS["adsh"]
+    """A row or presentation entry of another accession is refused, not aligned."""
+    later = {**num(), "adsh": "0000950170-25-999999"}
+    html = doc(CTX, [row(fact("1,234"))])
+    with pytest.raises(ValueError):
+        align(KOHLS, [later], pre(), html, gold_value)
+    with pytest.raises(ValueError):
+        align(KOHLS, [num()], [{**pre()[0], "adsh": "0000950170-25-999999"}], html, gold_value)
+
+
+def test_note_number_column_between_label_and_fact_is_not_first_column() -> None:
+    assert reason(run([["Cash", "3", "$", fact("1,234")]])) == "not_first_column"
+    assert reason(run([["Cash", "3 $ " + fact("1,234")]])) == "not_first_column"
 
 
 def test_no_stored_output_carries_ddate_outside_fsds() -> None:
