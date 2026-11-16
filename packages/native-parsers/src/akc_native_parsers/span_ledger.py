@@ -19,7 +19,9 @@ Ceilings (stated, not hidden):
   neighbour on the same line resolves to more text than the block holds and is
   reported as a mismatch, never reconciled. Rotated pages are inverted from the
   parser's own display transform; multi-column and rotated real PDFs are not
-  proven here.
+  proven here. Drawing and image-placement blocks resolve to "" (no text), after
+  pdfium confirms an object of that kind and ordinal on that page; their pixels
+  are not re-hashed.
 """
 
 from __future__ import annotations
@@ -46,7 +48,7 @@ _HELD_MARKERS = ("held", "unresolved")
 _MEMBER_LIMIT = ParserLimits().max_archive_member_bytes
 
 _PDF_TEXT = re.compile(r"pdf/page/(?P<p>\d+)/text/[0-9a-f]{20}")
-_PDF_GEOMETRY = re.compile(r"pdf/page/(?P<p>\d+)/(?:drawing|image-placement)/\d+")
+_PDF_GEOMETRY = re.compile(r"pdf/page/(?P<p>\d+)/(?:drawing|image-placement)/(?P<n>\d+)")
 
 _PDF_WIDTH_SLACK = 0.75  # real/estimated glyph width: 0.9 em (M, W) vs 0.52 em is 0.73
 
@@ -107,26 +109,6 @@ def build_ledger(data: bytes, document: CanonicalDocument) -> SpanLedger:
 
     assets = {str(a.get("id")): str(a.get("sha256")) for a in document.metadata.get("assets", ())}
 
-    def _pdf_geometry(unit_id: str, locator: str, ref: Any, known: dict[str, str]) -> str:
-        # Image/drawing blocks carry no text to compare. What the original can still say is
-        # whether the page exists (checked against the page count read by pdfium) and whether
-        # the locator's page is the block's own page; an image placement must also name an
-        # asset whose hash the document registered. Nothing here re-reads the drawing or the
-        # image bytes (stated ceiling), so "exact" means "the page is there", not "the pixels".
-        nonlocal exact
-        index = int(_PDF_GEOMETRY.fullmatch(locator)["p"])  # type: ignore[index]
-        if index not in getattr(resolver, "units", ()):
-            unresolvable.append((unit_id, "locator_out_of_range"))
-            return "unresolvable"
-        asset_ok = "/image-placement/" not in locator or known.get(
-            str(ref.image_asset_id), ""
-        ).startswith("sha256:")
-        if index == ref.page_index0 and asset_ok:
-            exact += 1
-            return "exact"
-        mismatch.append(unit_id)
-        return "mismatch"
-
     def check(unit_id: str, locator: str, expected: str, ref: Any) -> str:
         nonlocal exact, tokens_total, tokens_ok
         want = tuple(extract_numeric_tokens(expected))
@@ -138,11 +120,11 @@ def build_ledger(data: bytes, document: CanonicalDocument) -> SpanLedger:
             unresolvable.append((unit_id, open_failure))
             return "unresolvable"
         try:
-            if _PDF_GEOMETRY.fullmatch(locator):
-                return _pdf_geometry(unit_id, locator, ref, assets)
+            # Every locator, whatever its kind, goes through its own format's resolver and
+            # then through the one text comparison below: no unit is passed without it.
             text, span = (
-                resolver(locator, ref.bbox1000)  # type: ignore[call-arg]
-                if getattr(resolver, "wants_bbox", False)
+                resolver(locator, ref, assets)  # type: ignore[call-arg]
+                if getattr(resolver, "wants_ref", False)
                 else resolver(locator)
             )
         except _Unresolvable as exc:
@@ -720,24 +702,44 @@ def _subtitle_factory(kind: str) -> Callable[[bytes], _Resolver]:
 
 def _pdf_resolver(data: bytes) -> _Resolver:
     import pypdfium2  # type: ignore[import-untyped]  # lazy: only PDF ledgers need it
+    import pypdfium2.raw as pdfium_c  # type: ignore[import-untyped]
 
     pdf = pypdfium2.PdfDocument(data)
     pages = len(pdf)
     cache: dict[int, Any] = {}
 
-    def resolve(locator: str, bbox: Any) -> _Resolved:
-        match = _PDF_TEXT.fullmatch(locator)
+    def resolve(locator: str, ref: Any, assets: dict[str, str]) -> _Resolved:
+        geometry = _PDF_GEOMETRY.fullmatch(locator)
+        match = geometry or _PDF_TEXT.fullmatch(locator)
         if match is None:
             raise _Unresolvable("unknown_locator_grammar")
         index = int(match["p"])
         if index >= pages:
             raise _Unresolvable("locator_out_of_range")
+        bbox = ref.bbox1000
         if bbox is None:
             raise _Unresolvable("no_bbox")
+        if index != ref.page_index0:
+            return "\x00locator_page_differs", None  # the block claims another page
         if index not in cache:
             page = pdf[index]
             cache[index] = (page, page.get_textpage(), page.get_cropbox(), page.get_rotation())
         page, textpage, (left, bottom, right, top), rotation = cache[index]
+        if geometry is not None:
+            # Image/drawing objects hold no text, so the original's text here is "": a block
+            # that carries text under a geometry locator is a mismatch, never a pass. The
+            # parser numbers one drawing per painted path and one placement per image Do
+            # on the page, so pdfium must count more such objects there than the locator's
+            # ordinal; a placement must also name an asset the document registered. The
+            # pixels are not re-hashed (stated ceiling): "exact" means "an untexted object
+            # of that kind and ordinal on that page of the original", not "the same pixels".
+            image = "/image-placement/" in locator
+            kind = pdfium_c.FPDF_PAGEOBJ_IMAGE if image else pdfium_c.FPDF_PAGEOBJ_PATH
+            if sum(o.type == kind for o in page.get_objects(max_depth=15)) <= int(geometry["n"]):
+                return "\x00object_not_in_original", None
+            if image and not assets.get(str(ref.image_asset_id), "").startswith("sha256:"):
+                return "\x00asset_unregistered", None
+            return "", None
         width, height = right - left, top - bottom
         x1, y1, x2, y2 = (v / 1000 for v in bbox.root)
         dw, dh = (height, width) if rotation % 180 else (width, height)
@@ -759,7 +761,7 @@ def _pdf_resolver(data: bytes) -> _Resolver:
             left + min(xs), bottom + min(ys), left + max(xs) + slack, bottom + max(ys)
         ), None
 
-    resolve.wants_bbox = True  # type: ignore[attr-defined]
+    resolve.wants_ref = True  # type: ignore[attr-defined]
     return _with_units(resolve, set(range(pages)))  # type: ignore[arg-type]
 
 
