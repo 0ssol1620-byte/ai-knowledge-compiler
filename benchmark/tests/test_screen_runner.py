@@ -741,7 +741,8 @@ def test_no_compatibility_character_merges_into_a_number():
     for ch in chars:
         assert canonical_values("number", "12" + ch) == set(), repr(ch)
         assert canonical_values("number", ch + "12") == set(), repr(ch)
-        assert canonical_values("number", "1.5" + ch + " 7") == {("7", "num", None)}, repr(ch)
+        assert canonical_values("number", "1.5" + ch + " x 7") == {("7", "num", None)}, repr(ch)
+        assert canonical_values("number", ch + " 7") == set(), repr(ch)
 
 
 def test_only_the_listed_folds_apply():
@@ -887,7 +888,7 @@ def test_date_touching_a_character_outside_its_grammar_is_refused(text):
 def _outside_grammar() -> list[str]:
     """Every non-ASCII character of the classes that hide inside numbers in extracted text."""
     classes = {"Mn", "Mc", "Me", "Cf", "Cc", "Nd", "Nl", "No", "Zs", "Zl", "Zp", "Pd", "Sm"}
-    listed = set("\uff10\uff11\uff12\uff13\uff14\uff15\uff16\uff17\uff18\uff19\u2212\uff0d")
+    listed = set("\uff10\uff11\uff12\uff13\uff14\uff15\uff16\uff17\uff18\uff19\u2212\uff0d\uff0b")
     return [
         chr(cp)
         for cp in range(0x80, sys.maxunicode + 1)
@@ -901,7 +902,8 @@ def test_every_character_outside_the_grammar_refuses_a_token_it_touches():
     for ch in chars:
         assert canonical_values("number", "12" + ch) == set(), repr(ch)
         assert canonical_values("number", ch + "12") == set(), repr(ch)
-        assert canonical_values("number", "1.5" + ch + " 7") == {("7", "num", None)}, repr(ch)
+        assert canonical_values("number", "1.5" + ch + " x 7") == {("7", "num", None)}, repr(ch)
+        assert canonical_values("number", ch + " 7") == set(), repr(ch)
 
 
 # Junk that is never part of a number: invisible, foreign digits, minus and bracket variants,
@@ -934,9 +936,10 @@ def test_property_wide_junk_around_a_token_reads_it_whole_or_not_at_all(
     text = head + token + tail
     got = canonical_values("number", text)
     assert got <= {want}, (text, got)
-    touched = bool((head and head[-1] != " ") or (tail and tail[0] != " "))
-    if touched:
-        assert got == set(), text
+    # Every junk character but the space is unlisted, and a number joins across spaces, so
+    # junk past a space may hide a part ("\u02d7 5"): any junk at all refuses the number.
+    touched = bool(head.strip(" ") or tail.strip(" "))
+    assert got == (set() if touched else {want}), text
     assert score_critical_fields([_field(token, "A")], "A " + text).exact == (not touched)
     if head.strip(" ") or tail.strip(" "):
         assert _gold_refused(text)
@@ -955,6 +958,11 @@ def test_property_wide_junk_around_a_token_reads_it_whole_or_not_at_all(
             "1234567890123456789012345679억",
             "123456789012345678901234567890000000",
         ),
+        ("1." + "0" * 29 + "1", "1", None),
+        ("0." + "0" * 29 + "1", "0", None),
+        ("1." + "0" * 29 + "1조", "1조", "1000000000000." + "0" * 17 + "1"),
+        ("1." + "0" * 29 + "1 trillion", "1 trillion", "1000000000000." + "0" * 17 + "1"),
+        ("9" * 30 + "조", "1" + "0" * 42, "9" * 30 + "0" * 12),
     ],
 )
 def test_long_numbers_are_not_rounded(gold, candidate, kept):
@@ -1009,3 +1017,115 @@ def test_scan_time_grows_linearly_to_one_megabyte(fill):
         _best_seconds("a" + fill * (size // len(fill)) + "x 1") for size in (256_000, 1_024_000)
     )
     assert large <= 2 * 4 * small + 0.5, (fill, small, large)
+
+
+# --- No regular expression and no normalisation reads a token. -------------------------------
+def test_scanner_uses_no_regex_and_no_normalisation():
+    import ast
+
+    import benchmark.screen.critical_fields as cf
+
+    tree = ast.parse(Path(cf.__file__).read_text(encoding="utf-8"))
+    imported = {
+        a.name.split(".")[0] for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names
+    }
+    imported |= {
+        (n.module or "").split(".")[0] for n in ast.walk(tree) if isinstance(n, ast.ImportFrom)
+    }
+    assert not imported & {"re", "regex", "unicodedata", "fnmatch"}, imported
+    called = {
+        n.func.attr
+        for n in ast.walk(tree)
+        if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+    }
+    assert not called & {"match", "fullmatch", "search", "finditer", "findall", "sub"}
+
+
+# --- A token touching junk or a joiner is refused and listed, never dropped or read short. ----
+@pytest.mark.parametrize(
+    ("gold", "candidate", "kind"),
+    [
+        ("12억", "A 12억 \u200b3456만", "number"),
+        ("12억", "A 12억 \u00ad3456만", "number"),
+        ("12억", "A 12억 \u20603456만", "number"),
+        ("12억 3456만", "A 12억 3456만 \u200b7898원", "number"),
+        ("5천만", "A 5천만 \u200b2천", "number"),
+        ("5", "A 5,억", "number"),
+        ("5", "A 5.억원", "number"),
+        ("5", "A 5 .만", "number"),
+        ("5", "A \u02d7 5", "number"),
+        ("5", "A 5 \u200b%", "number"),
+        ("3", "A 3 \u200bmillion", "number"),
+        ("2024-03-06", "A 2024\u2010-03-05 2024-03-06", "date"),
+        ("2024-03-06", "A 2024\u201003\u201005 (정정 2024-03-06)", "date"),
+        ("2024-03-06", "A 2024\u200b-03-05 2024-03-06", "date"),
+        ("2024-03-06", "A 2024\u00ad.03.05 2024-03-06", "date"),
+        ("2024-03-06", "A 2024\u0301-03-05 2024-03-06", "date"),
+        ("2024-03-06", "A 12024-03-05 2024-03-06", "date"),
+        ("2024-03-06", "A 2024 03 05 2024-03-06", "date"),
+        ("2024-03-06", "A 2024 \u2010 03 \u2010 05 2024-03-06", "date"),
+        ("2024-03-06", "A 202\u200b4-03-05 2024-03-06", "date"),
+        ("INV", "A INV_2024", "identifier"),
+        ("v1", "A v1.2.3", "identifier"),
+        ("KR", "A KR/2024/001", "identifier"),
+        ("INV", "A INV:2024", "identifier"),
+        ("INV", "A INV'2024", "identifier"),
+        ("INV", "A INV@x", "identifier"),
+        ("INV", "A INV#7", "identifier"),
+        ("2024", "A INV_2024", "identifier"),
+    ],
+)
+def test_token_touching_junk_or_a_joiner_is_refused_not_read_short(gold, candidate, kind):
+    assert score_critical_fields([_field(gold, "A", kind)], candidate).exact == 0
+    assert _gold_refused(candidate[2:], kind)
+
+
+def test_refused_number_does_not_restart_inside_its_korean_groups():
+    assert canonical_values("number", "\u200b12억 3456만") == set()
+    assert canonical_values("number", "x12억 3456만") == set()
+
+
+def test_only_ascii_spaces_join_the_parts_of_a_number():
+    # A newline or a tab is a cell or line boundary: a lone "-" cell does not sign the next row.
+    assert canonical_values("number", "-\n5") == {("5", "num", None)}
+    assert canonical_values("number", "5\nmillion") == {("5", "num", None)}
+    assert canonical_values("number", "5\t%") == {("5", "num", None)}
+    assert canonical_values("number", "$\n5") == {("5", "num", None)}
+    assert _same("- 5", "-5") and _same("5 %", "5%") and _same("3 million", "3000000")
+
+
+@pytest.mark.parametrize("text", ["5\u1161", "\u11a85", "5억\u11a8", "5\u3131"])
+def test_lone_jamo_is_not_a_particle(text):
+    assert canonical_values("number", text) == set() and _gold_refused(text)
+
+
+_DATE_TOKENS = ["2024-03-05", "2024.3.5", "2024/03/05", "2024년 3월 5일", "2024 - 03 - 05"]
+_ID_TOKENS = ["AB12", "INV-2024", "X9", "kr2024001"]
+
+
+@settings(max_examples=300)
+@given(
+    st.sampled_from([("date", t) for t in _DATE_TOKENS] + [("identifier", t) for t in _ID_TOKENS]),
+    st.text(_JUNK, max_size=3),
+    st.text(_JUNK, max_size=3),
+)
+def test_property_wide_junk_around_a_date_or_identifier_reads_it_whole_or_not_at_all(
+    kind_token, head, tail
+):
+    kind, token = kind_token
+    (want,) = canonical_values(kind, token)
+    text = head + token + tail
+    got = canonical_values(kind, text)
+    assert got <= {want}, (text, got)
+    # A date joins its parts across spaces, so junk past a space may hide one; an identifier
+    # never spans a space, so only junk glued to it touches it.
+    if kind == "date":
+        touched = bool(head.strip(" ") or tail.strip(" "))
+    else:
+        touched = bool(head[-1:].strip(" ") or tail[:1].strip(" "))
+    assert got == (set() if touched else {want}), text
+    assert score_critical_fields([_field(token, "A", kind)], "A " + text).exact == (not touched)
+    if head.strip(" ") or tail.strip(" "):
+        assert _gold_refused(text, kind)
+    else:
+        assert gold_value(_field(text, "A", kind)) == want

@@ -10,18 +10,22 @@ currency, so ``-5%`` is not ``5%``. Nothing is repaired or guessed: an unparseab
 token never matches and is not skipped over, and a gold value that is not exactly one clean
 token, and nothing else, raises.
 
-Numbers are read by a hand-written scanner over a closed character set. Folding is an explicit
-table (fullwidth digits and punctuation, Unicode minus); there is no NFKC. A digit is ``0-9``
-only. A token may touch only the ends of the text, ASCII whitespace, listed ASCII punctuation
-or Hangul (a particle: "5억을"). Any other character touching a token refuses the whole token,
-so a token is read whole or refused, never short, and every ASCII digit lies in an accepted or
-a refused token. Arithmetic is exact to ``_PREC`` significant digits; a value that would round
-is refused. Every scan is linear in the text, so hostile output cannot stall a run.
+Numbers, dates and identifiers are read by hand-written linear scanners over a closed
+character set; no regular expression reads or delimits a token. Folding is an explicit table
+(fullwidth digits, punctuation and currency signs, Unicode minus); there is no NFKC. A digit is
+``0-9`` only. A token may touch only the ends of the text, ASCII whitespace, listed ASCII
+punctuation or a Hangul syllable that is not a unit (a particle: "5억을"). Parts of a number or
+a date join across ASCII spaces only, so past those spaces neither side may hold an unlisted
+character, which could hide a part, nor (for numbers) a Korean unit the grammar did not take.
+Anything else touching a token refuses the whole token, so a token is read whole or refused,
+never short, and a refused token is listed, never dropped. Arithmetic is exact to ``_PREC``
+significant digits; a value that would round is refused. Every scan is linear in the text,
+so hostile output cannot stall a run.
 """
 
 from __future__ import annotations
 
-import re
+import string
 from dataclasses import dataclass
 from datetime import date
 from decimal import (
@@ -45,6 +49,7 @@ _FOLD = str.maketrans(
         "\uff0c": ",",
         "\uff0e": ".",
         "\uff0d": "-",
+        "\uff0b": "+",
         "\uff05": "%",
         "\uff08": "(",
         "\uff09": ")",
@@ -59,12 +64,14 @@ _FOLD = str.maketrans(
 _WS = frozenset(" \t\n\r")
 _SPACE = frozenset(" ")
 _DIGIT = frozenset("0123456789")
-_ASCII_LETTER = frozenset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+_ASCII_LETTER = frozenset(string.ascii_letters)
 # Joins digit runs into something that is not one number: "1-5", "1/2", "1'000", "1..5".
 _JOIN = frozenset("-+.,'_~/")
 # ASCII punctuation a token may touch on either side.
 _PUNCT = frozenset('!"#&*:;<=>?@[\\]^`{|}')
 _SIGN = {"-": True, "+": False, "△": True, "▲": True}  # sign -> negative
+# Non-ASCII characters a token may hold (after folding); every other one is unlisted.
+_LISTED = frozenset("△▲₩€£¥")
 
 # Korean place value: a 천/백/십 term builds a section, a 만/억/조 unit scales the whole
 # section ("5천5백만" = 5,500 x 10^4). A unit run is one optional small unit then one optional
@@ -104,7 +111,12 @@ _START = _DIGIT | _CUR_FIRST | {"("} | set(_SIGN)
 # Values are exact to this many significant digits; one that would round is refused.
 _PREC = 100
 _EXACT = Context(prec=_PREC, traps=[Inexact, InvalidOperation, Overflow, DivisionByZero])
-_NEXT_WS = re.compile("[ \t\n\r]")
+
+_DATE_SEP = frozenset("-/.")
+# An identifier is letters, digits and hyphens; any other ASCII punctuation between two such
+# runs joins them into something that is not one identifier ("INV_2024", "v1.2.3").
+_ID_CHARS = _DIGIT | _ASCII_LETTER | {"-"}
+_ID_JOIN = frozenset(string.punctuation) - {"-"}
 
 
 def _fold(text: str) -> str:
@@ -112,7 +124,11 @@ def _fold(text: str) -> str:
 
 
 def _hangul(c: str) -> bool:
-    return "\uac00" <= c <= "\ud7a3" or "\u1100" <= c <= "\u11ff"  # syllables, jamo
+    return "\uac00" <= c <= "\ud7a3"  # syllables only; a lone jamo is unlisted
+
+
+def _unlisted(c: str) -> bool:
+    return not (c.isascii() or _hangul(c) or c in _LISTED)
 
 
 def _clean_left(text: str, i: int, extra: str = "") -> bool:
@@ -125,23 +141,39 @@ def _clean_left(text: str, i: int, extra: str = "") -> bool:
 
 def _clean_right(text: str, j: int, extra: str = "") -> bool:
     """May a token end at ``j``. A joiner run after it ("5.", "1,234, and") is punctuation
-    only when a separator follows, never a digit, a letter or an unlisted character."""
+    only when a separator follows, never a digit, a letter, a unit or an unlisted character."""
     n, k = len(text), j
     while k < n and text[k] in _JOIN:
         k += 1
     if k == n:
         return True
     c = text[k]
-    return c in _WS or c in _PUNCT or c in extra or _hangul(c)
+    return c in _WS or c in _PUNCT or c in extra or (_hangul(c) and c not in _KO_CHARS)
 
 
-def _next_ws(text: str, k: int) -> int:
-    m = _NEXT_WS.search(text, k)
-    return m.start() if m else len(text)
+def _apart(text: str, i: int, j: int, refuse: frozenset[str] = frozenset()) -> bool:
+    """Do the ASCII spaces around ``text[i:j]`` really end it. Signs, groups, scale words,
+    percent and currency join a token across them, so the first character past them on either
+    side (and past a joiner run on the right, "5 .만") must not be unlisted, where such a part
+    could hide ("12억 \\u200b3456만", "\\u02d7 5"), nor a ``refuse`` character."""
+    left = i
+    while left > 0 and text[left - 1] == " ":
+        left -= 1
+    right = _skip(text, j, _SPACE)
+    past = _skip(text, right, _JOIN)
+    near = (text[left - 1 : left], text[right : right + 1], text[past : past + 1])
+    return not any(c and (_unlisted(c) or c in refuse) for c in near)
 
 
 def _skip(text: str, k: int, chars: frozenset[str] = _WS) -> int:
     while k < len(text) and text[k] in chars:
+        k += 1
+    return k
+
+
+def _word_end(text: str, k: int) -> int:
+    """The next ASCII whitespace at or after ``k``: where a refused token's word ends."""
+    while k < len(text) and text[k] not in _WS:
         k += 1
     return k
 
@@ -209,7 +241,7 @@ def _body(text: str, k: int) -> tuple[int, list[tuple[str, str]]] | None:
                 return j, groups
             groups.append((nxt[1], text[s:u]))
             j = u
-    s = _skip(text, j)
+    s = _skip(text, j, _SPACE)
     for word in _EN_WORDS:
         seg = text[s : s + len(word)]
         if seg.isascii() and seg.lower() == word:
@@ -278,12 +310,12 @@ def _number_at(text: str, i: int) -> tuple[int, Any] | None:
     n = len(text)
     k, opened, negative = i, False, False
     if text[k] == "(":
-        opened, k = True, _skip(text, k + 1)
+        opened, k = True, _skip(text, k + 1, _SPACE)
     elif text[k] in _SIGN:
-        negative, k = _SIGN[text[k]], _skip(text, k + 1)
+        negative, k = _SIGN[text[k]], _skip(text, k + 1, _SPACE)
     prefix = _currency_at(text, k)
     if prefix:
-        k = _skip(text, prefix[1])
+        k = _skip(text, prefix[1], _SPACE)
     if k >= n or text[k] not in _DIGIT:
         return None
     body = _body(text, k)
@@ -299,19 +331,24 @@ def _number_at(text: str, i: int) -> tuple[int, Any] | None:
     after = _skip(text, end)
     if after < n and text[after] in _KO_CHARS:
         return after + 1, None
-    pct = after < n and text[after] == "%"
+    spaced = _skip(text, end, _SPACE)
+    pct = spaced < n and text[spaced] == "%"
     if pct:
-        end = after + 1
-    suffix = _currency_at(text, _skip(text, end))
+        end = spaced + 1
+    suffix = _currency_at(text, _skip(text, end, _SPACE))
     if suffix:
         end = suffix[1]
     if opened:
-        close = _skip(text, end)
+        close = _skip(text, end, _SPACE)
         if close < n and text[close] == ")":
             end, negative = close + 1, True
     elif end < n and text[end] == ")":
         return end + 1, None  # a close paren with no open
-    if not _clean_right(text, end) or (prefix and suffix and prefix[0] != suffix[0]):
+    if (
+        not _clean_right(text, end)
+        or not _apart(text, i, end, _KO_CHARS)
+        or (prefix and suffix and prefix[0] != suffix[0])
+    ):
         return end, None
     value = _amount(groups, negative)
     if value is None:
@@ -329,64 +366,108 @@ def _numbers(text: str) -> list[tuple[int, int, Any]]:
             i += 1
         elif not _clean_left(text, i):
             if c in _DIGIT:  # a digit is never skipped: glued to a word, it is refused
-                out.append((i, i + 1, None))
-                i = _next_ws(text, i)
+                end = _word_end(text, i)
+                out.append((i, end, None))
+                i = end
             else:
                 i += 1
         elif (tok := _number_at(text, i)) is None:
             i += 1
         else:
             end, value = tok
-            out.append((i, end, value))
             # Nothing restarts inside a refused token: the rest of its word goes with it.
-            i = end if value is not None else _next_ws(text, end)
+            if value is None:
+                end = _word_end(text, end)
+            out.append((i, end, value))
+            i = end
     return out
 
 
-_W = "[ \t\n\r]*+"
-_DATE = re.compile(
-    rf"([0-9]{{4}}){_W}[-/.]{_W}([0-9]{{1,2}}){_W}[-/.]{_W}([0-9]{{1,2}})"
-    rf"|([0-9]{{4}}){_W}년{_W}([0-9]{{1,2}}){_W}월{_W}([0-9]{{1,2}}){_W}일"
-)
-_DATE_SHAPE = re.compile(rf"[0-9]{{4}}{_W}[-/.년]")
-_DIGIT_RUN = re.compile("[0-9]+")
-_IDENT = re.compile("[0-9A-Za-z-]+")
+def _date_at(text: str, i: int, j: int) -> tuple[int, Any]:
+    """The date whose year is the four digits ``text[i:j]``, as ``(end, ISO date or None)``.
+
+    ``YYYY s M s D`` with ``s`` one of ``- / .``, or ``YYYY년 M월 D일``; ASCII spaces may stand
+    between parts. Anything else after the year refuses the token where the grammar stopped.
+    """
+    n = len(text)
+    k = _skip(text, j, _SPACE)
+    marks = "년월일" if k < n and text[k] == "년" else ""
+    parts = [int(text[i:j])]
+    for step in range(2):
+        k = _skip(text, k, _SPACE)
+        if k >= n or (text[k] != marks[step] if marks else text[k] not in _DATE_SEP):
+            return k, None
+        k = _skip(text, k + 1, _SPACE)
+        e = _skip(text, k, _DIGIT)
+        if not 1 <= e - k <= 2:
+            return e, None
+        parts.append(int(text[k:e]))
+        k = e
+    if marks:
+        k = _skip(text, k, _SPACE)
+        if k >= n or text[k] != "일":
+            return k, None
+        k += 1
+    if not (_clean_left(text, i, "()") and _clean_right(text, k, "()") and _apart(text, i, k)):
+        return k, None
+    try:
+        return k, date(*parts).isoformat()
+    except ValueError:
+        return k, None
 
 
 def _dates(text: str) -> list[tuple[int, int, Any]]:
-    """Every date-shaped run (four digits, then a date separator), read whole or refused."""
+    """Every date-shaped digit run, read whole or refused, never dropped.
+
+    A run is date-shaped when it is followed, past ASCII spaces, by a date separator or by
+    another digit ("2024 03 05"), or when an unlisted character lies next to it, past ASCII
+    spaces, where a separator or a digit could hide ("2024\\u2010-03-05"). Only a four-digit
+    run followed by a separator can be read; every other date-shaped run is refused
+    ("12024-03-05").
+    """
     out: list[tuple[int, int, Any]] = []
-    for run in _DIGIT_RUN.finditer(text):
-        k = run.start()
-        if run.end() - k != 4:
+    n, i = len(text), 0
+    while i < n:
+        if text[i] not in _DIGIT:
+            i += 1
             continue
-        m = _DATE.match(text, k)
-        if m is None:
-            if _DATE_SHAPE.match(text, k):
-                out.append((k, run.end(), None))
+        j = _skip(text, i, _DIGIT)
+        g = _skip(text, j, _SPACE)
+        nxt = text[g] if g < n else ""
+        separated = j - i >= 4 and (nxt in _DATE_SEP or nxt == "년")
+        spaced_digits = j - i == 4 and nxt in _DIGIT
+        if not (separated or spaced_digits or not _apart(text, i, j)):
+            i = j
             continue
-        value = None
-        if _clean_left(text, k, "()") and _clean_right(text, m.end(), "()"):
-            y, mo, d = (int(g) for g in (m[1] or m[4], m[2] or m[5], m[3] or m[6]))
-            try:
-                value = date(y, mo, d).isoformat()
-            except ValueError:
-                value = None
-        out.append((k, m.end(), value))
+        end, value = _date_at(text, i, j) if separated and j - i == 4 else (j, None)
+        if value is None:
+            end = _word_end(text, end)
+        out.append((i, end, value))
+        i = end
     return out
 
 
 def _identifiers(text: str) -> list[tuple[int, int, Any]]:
-    def clean(k: int) -> bool:
-        return k < 0 or k >= len(text) or text[k].isascii() or _hangul(text[k])
-
-    return [
-        (m.start(), m.end(), m[0].replace("-", "").upper())
-        if clean(m.start() - 1) and clean(m.end())
-        else (m.start(), m.end(), None)
-        for m in _IDENT.finditer(text)
-        if m[0].strip("-")
-    ]
+    """Every run of letters, digits and hyphens. It must stand apart: past any ASCII
+    punctuation on either side lies an end, ASCII whitespace or a Hangul syllable, never
+    another letter or digit ("INV_2024") and never an unlisted character ("AB12\\u00b9")."""
+    out: list[tuple[int, int, Any]] = []
+    n, i = len(text), 0
+    while i < n:
+        if text[i] not in _ID_CHARS:
+            i += 1
+            continue
+        j = _skip(text, i, _ID_CHARS)
+        if text[i:j].strip("-"):
+            left = i
+            while left > 0 and text[left - 1] in _ID_JOIN:
+                left -= 1
+            right = _skip(text, j, _ID_JOIN)
+            near = (text[left - 1 : left], text[right : right + 1])
+            whole = all(not c or c in _WS or _hangul(c) for c in near)
+            out.append((i, j, text[i:j].replace("-", "").upper() if whole else None))
+        i = j
+    return out
 
 
 def _ordered(kind: str, text: str) -> list[tuple[int, int, Any]]:
@@ -416,6 +497,14 @@ def _anchor(field: dict[str, Any]) -> str:
     return _fold(anchor).strip()
 
 
+def _lower(text: str) -> str:
+    """Lower case, one character for one, so positions in the result are positions in text."""
+    low = text.lower()
+    if len(low) == len(text):
+        return low
+    return "".join(c.lower() if len(c.lower()) == 1 else c for c in text)
+
+
 def gold_value(field: dict[str, Any]) -> Any:
     """The canonical value of a gold field whose value, ASCII whitespace aside, is exactly one
     clean token and nothing else ("5 apples" is not 5); anything else raises."""
@@ -434,15 +523,15 @@ def gold_value(field: dict[str, Any]) -> Any:
 
 def value_after_anchor(field: dict[str, Any], text: str) -> Any | None:
     """Value of the first token of the field's kind after its anchor; None if refused or none."""
-    text = _fold(text)
-    hit = re.search(re.escape(_anchor(field)), text, re.IGNORECASE)
-    if hit is None:
+    text, anchor = _fold(text), _anchor(field)
+    hit = _lower(text).find(_lower(anchor))
+    if hit < 0:
         return None
     # ponytail: first anchor occurrence only, as a substring. A repeated label is not
     # disambiguated, and an anchor that is a prefix of an earlier label binds to that label
     # ("영업이익" hits "영업이익률 5.2%, 영업이익 1,234억" at 영업이익률). Gold must name an anchor
     # whose first occurrence is the field's own label; upgrade = anchor occurrence index.
-    tail = text[hit.end() :]
+    tail = text[hit + len(anchor) :]
     return next((v for _, _, v in _ordered(field["kind"], tail)), None)
 
 
