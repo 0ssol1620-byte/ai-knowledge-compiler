@@ -135,6 +135,8 @@ def build(
     def pin(name: str, role: str, path: Path, **extra: Any) -> dict[str, Any]:
         if not path.is_file():
             raise SourceMissing(f"{name}: {path}")
+        if any(x["name"] == name for x in entries):
+            raise SourceError(f"duplicate manifest entry name: {name}")
         sha, size = _sha256_file(path)
         e = {
             "name": name,
@@ -335,10 +337,15 @@ def write_receipt(
 ) -> Path:
     run_dir.mkdir(parents=True, exist_ok=True)
     dest = run_dir / "receipt.json"
-    dest.write_text(json.dumps(rec, indent=1, sort_keys=True), "utf-8")
-    if private_audit_dir is not None:
-        private_audit_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(dest, private_audit_dir / dest.name)
+    copy = private_audit_dir / dest.name if private_audit_dir is not None else None
+    for d in (dest, copy):  # evidence is never overwritten; check both before writing either
+        if d is not None and d.exists():
+            raise SourceError(f"receipt already exists, refusing to overwrite: {d}")
+    with dest.open("x", encoding="utf-8") as f:
+        f.write(json.dumps(rec, indent=1, sort_keys=True))
+    if copy is not None:
+        copy.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(dest, copy)
     return dest
 
 

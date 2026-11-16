@@ -199,3 +199,17 @@ def test_verified_path_tampered_renderer(tree: dict[str, Path]) -> None:
     exe.write_bytes(b"evil")
     with pytest.raises(S.HashMismatch):
         lo.verified_path("tool/chrome-headless-shell")
+
+
+def test_receipt_never_overwritten(tree: dict[str, Path]) -> None:
+    _build(tree)
+    lo = S.Loader(tree["out"])
+    run, audit = tree["root"] / "run", tree["root"] / "audit"
+    first = S.write_receipt(S.receipt(lo.ledger, [], ["first"]), run, audit)
+    before = (first.read_bytes(), (audit / "receipt.json").read_bytes())
+    with pytest.raises(S.SourceError):
+        S.write_receipt(S.receipt(lo.ledger, [], ["second"]), run, audit)
+    with pytest.raises(S.SourceError):  # fresh run dir, existing audit copy
+        S.write_receipt(S.receipt(lo.ledger, [], ["third"]), tree["root"] / "run2", audit)
+    assert (first.read_bytes(), (audit / "receipt.json").read_bytes()) == before
+    assert not (tree["root"] / "run2" / "receipt.json").exists()
