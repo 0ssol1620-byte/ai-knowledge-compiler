@@ -1,0 +1,5 @@
+{"response": {"total": "3", "data": [
+  {"period": "2020-01", "value": "3.10", "units": "synthetic"},
+  {"period": "2020-02", "value": "3.25", "units": "synthetic"},
+  {"period": "2020-03", "value": null, "units": "synthetic"}
+]}}
