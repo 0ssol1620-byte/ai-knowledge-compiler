@@ -6,6 +6,8 @@ Input: WO-D08-1 screen records. Selection rule, frozen before A2b:
   3. A candidate that is primary in exactly one stratum is routed only there
      (minority isolated). No voting, no ensemble: one primary per stratum.
   4. The worst stratum is reported beside the macro figure, never averaged away.
+Selection and the rule-4 summary both use selection_rate: field-level exact/n
+(accepted pages only) times page-level accepted/pages, so failed pages count.
 """
 
 from __future__ import annotations
@@ -164,9 +166,9 @@ def build_report(records: list[dict[str, Any]], *, incumbent: str) -> dict[str, 
     summary: dict[str, Any] = {}
     for c in sorted({r["candidate_id"] for r in records}):
         rates = {
-            s: cell["critical_exact_rate"]
+            s: cell["selection_rate"]
             for s in strata
-            if (cell := strata[s]["cells"].get(c)) and cell["critical_exact_rate"] != INSUFFICIENT
+            if (cell := strata[s]["cells"].get(c)) and cell["selection_rate"] != INSUFFICIENT
         }
         worst = min(rates, key=lambda s: (rates[s], s)) if rates else None
         summary[c] = {

@@ -6,15 +6,34 @@ from typing import Any
 from benchmark.screen.paired_report import INSUFFICIENT, build_report
 
 
-def rec(stratum: str, cand: str, doc: str, *, n: int = 2, exact: int = 2, err: int = 0,
-        cer: float = 0.1, fail: tuple[str, ...] = (), cost: float | None = 0.01) -> dict[str, Any]:
+def rec(
+    stratum: str,
+    cand: str,
+    doc: str,
+    *,
+    n: int = 2,
+    exact: int = 2,
+    err: int = 0,
+    cer: float = 0.1,
+    fail: tuple[str, ...] = (),
+    cost: float | None = 0.01,
+) -> dict[str, Any]:
     return {
-        "page_id": f"{doc}-p", "doc_id": doc, "stratum": stratum, "split": "dev",
-        "candidate_id": cand, "revision": "a" * 40, "image_digest": "sha256:" + "b" * 64,
-        "config_sha256": "c" * 64, "raw_sha256": "d" * 64,
-        "metrics": {"cer": cer}, "critical": {"n": n, "exact": exact, "accepted_errors": err},
-        "hard_failures": list(fail), "gpu_seconds": None,
-        "provider_cost_usd": cost, "latency_ms": 100,
+        "page_id": f"{doc}-p",
+        "doc_id": doc,
+        "stratum": stratum,
+        "split": "dev",
+        "candidate_id": cand,
+        "revision": "a" * 40,
+        "image_digest": "sha256:" + "b" * 64,
+        "config_sha256": "c" * 64,
+        "raw_sha256": "d" * 64,
+        "metrics": {"cer": cer},
+        "critical": {"n": n, "exact": exact, "accepted_errors": err},
+        "hard_failures": list(fail),
+        "gpu_seconds": None,
+        "provider_cost_usd": cost,
+        "latency_ms": 100,
     }
 
 
@@ -79,6 +98,16 @@ class PairedReportTest(unittest.TestCase):
         self.assertEqual(r["routes"]["s"]["primary"], "inc")
         self.assertNotIn("dead", r["routes"]["s"]["alternatives"])
         self.assertEqual(r["strata"]["s"]["rejected"]["dead"], "no_accepted_pages")
+
+    def test_summary_worst_stratum_counts_failed_pages(self) -> None:
+        f = ("provider_unavailable",)
+        for fn in (2, 0):
+            recs = docs("a", "c", k=10, exact=1)
+            recs += [rec("b", "c", "ok")]
+            recs += [rec("b", "c", f"f{i}", n=fn, exact=0, fail=f, cost=None) for i in range(9)]
+            c = build_report(recs, incumbent="inc")["summary"]["c"]
+            self.assertEqual(c["worst_stratum"], "b")
+            self.assertAlmostEqual(c["worst_stratum_critical_exact_rate"], 0.1)
 
     def test_pairing_counts_discordant_docs(self) -> None:
         recs = docs("s", "inc", exact=1) + docs("s", "c", exact=2)
