@@ -14,10 +14,11 @@ Numbers, dates and identifiers are read by hand-written linear scanners over a c
 character set; no regular expression reads or delimits a token. Folding is an explicit table
 (fullwidth digits, punctuation and currency signs, Unicode minus); there is no NFKC. A digit is
 ``0-9`` only. Field first: a field is a run of non-whitespace, and a token is its whole field
-or nothing. Before it only named opening punctuation may stand, after it only closing or
-sentence punctuation and one run of Hangul particles ("5억원이다.", "INV-2024를"); anything
-else refuses it, so a prefix or suffix of a field is never read ("5:3", "12가3456", "x=5",
-"약5억", "번호:INV-1", "INV_"). Parts of a number or a date join
+or nothing. Before it only named opening punctuation and label separators ``: = |`` may
+stand ("A :5"), after it only closing or sentence punctuation and one run of Hangul particles
+("5억원이다.", "INV-2024를"); anything else refuses it, so a prefix or suffix of a field is
+never read ("5:3", "12가3456", "x=5", "약5억", "번호:INV-1", "INV_"). A date uses one
+separator ("2024-03/05" is refused). Parts of a number or a date join
 across ASCII spaces only, so past those spaces neither side may hold an unlisted character,
 which could hide a part, nor (for numbers) a Korean unit the grammar did not take, and after a
 unit or scale word only a word that cannot be a further part may follow. A plain number
@@ -75,10 +76,11 @@ _ASCII_LETTER = frozenset(string.ascii_letters)
 # Joins digit runs into something that is not one number: "1-5", "1/2", "1'000", "1..5".
 _JOIN = frozenset("-+.,'_~/")
 # A field is a run of non-whitespace. The only text a token may leave in its field: named
-# opening punctuation before it, and after it closing or sentence punctuation and one run of
+# opening punctuation or label separators before it ("A :5", "A =INV-1", "A |5|": the
+# anchor's own punctuation), and after it closing or sentence punctuation and one run of
 # Hangul particles. Anything else makes the token a prefix or suffix of its field.
-_OPEN = frozenset("([{\"'")
-_CLOSE = frozenset(")]}\"'.,;:!?")
+_OPEN = frozenset("([{\"':=|")
+_CLOSE = frozenset(")]}\"'.,;:!?|")
 _SIGN = {"-": True, "+": False, "△": True, "▲": True}  # sign -> negative
 # Non-ASCII characters a token may hold (after folding); every other one is unlisted.
 _LISTED = frozenset("△▲₩€£¥")
@@ -426,30 +428,42 @@ def _numbers(text: str) -> list[tuple[int, int, Any]]:
 def _date_at(text: str, i: int, j: int) -> tuple[int, Any]:
     """The date whose year is the four digits ``text[i:j]``, as ``(end, ISO date or None)``.
 
-    ``YYYY s M s D`` with ``s`` one of ``- / .``, or ``YYYY년 M월 D일``; ASCII spaces may stand
-    between parts. Anything else after the year refuses the token where the grammar stopped.
+    ``YYYY s M s D`` with one separator ``s`` of ``- / .`` used both times, or
+    ``YYYY년 M월 D일``. ASCII spaces may stand only after a separator of the dotted or the
+    년/월/일 form ("2024. 3. 5.", "2024년 3월 5일"), and the dotted form may end in its own
+    ".". A spaced date is refused when the next field holds an ASCII digit, which could be a
+    split part of it ("2024. 3. 1 5."), unless that field is parenthesised. Anything else
+    after the year ("2024-03/05", "2024 - 03 - 05") refuses the token where the grammar
+    stopped.
     """
-    n = len(text)
-    k = _skip(text, j, _SPACE)
-    marks = "년월일" if k < n and text[k] == "년" else ""
-    parts = [int(text[i:j])]
-    for step in range(2):
-        k = _skip(text, k, _SPACE)
-        if k >= n or (text[k] != marks[step] if marks else text[k] not in _DATE_SEP):
+    marks = "년월" if text[j : j + 1] == "년" else text[j : j + 1] * 2
+    if marks[:1] not in _DATE_SEP | {"년"}:
+        return j, None
+    parts, k, spaced = [int(text[i:j])], j, False
+    for mark in marks:
+        if text[k : k + 1] != mark:
             return k, None
-        k = _skip(text, k + 1, _SPACE)
+        k += 1
+        if mark in ".년월":
+            s = _skip(text, k, _SPACE)
+            spaced, k = spaced or s > k, s
         e = _skip(text, k, _DIGIT)
         if not 1 <= e - k <= 2:
             return e, None
         parts.append(int(text[k:e]))
         k = e
-    if marks:
-        k = _skip(text, k, _SPACE)
-        if k >= n or text[k] != "일":
+    if marks == "년월":
+        if text[k : k + 1] != "일":
             return k, None
+        k += 1
+    elif marks == ".." and text[k : k + 1] == ".":
         k += 1
     if not (_clean_left(text, i) and _clean_right(text, k) and _apart(text, i, k)):
         return k, None
+    if spaced:
+        s = _skip(text, _word_end(text, k), _SPACE)
+        if text[s : s + 1] != "(" and any(c in _DIGIT for c in text[s : _word_end(text, s)]):
+            return k, None
     try:
         return k, date(*parts).isoformat()
     except ValueError:

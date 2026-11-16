@@ -7,6 +7,7 @@ import string
 import sys
 import time
 import unicodedata
+from datetime import date
 from pathlib import Path
 from typing import Any
 
@@ -997,10 +998,18 @@ def test_gold_is_exactly_one_token_and_nothing_else(bad):
 
 
 # --- Linear at page scale: 1 MB against 256 KB for each kind of fill. ------------------------
-def _best_seconds(text: str) -> float:
-    return min(_scan_seconds(text) for _ in range(2))
+def _kind_seconds(kind: str, text: str) -> float:
+    started = time.perf_counter()
+    canonical_values(kind, text)
+    value_after_anchor(_field("x", "a", kind), text)
+    return time.perf_counter() - started
 
 
+def _best_seconds(kind: str, text: str) -> float:
+    return min(_kind_seconds(kind, text) for _ in range(2))
+
+
+@pytest.mark.parametrize("kind", ["number", "date", "identifier"])
 @pytest.mark.parametrize(
     "fill",
     [
@@ -1015,6 +1024,10 @@ def _best_seconds(text: str) -> float:
         "\u200b1\u00a0\u0661",
         "(",
         "[(",
+        ":=|",
+        "|5",
+        "2024. 3. 5 ",
+        "1 0",
     ],
     ids=[
         "space",
@@ -1028,13 +1041,18 @@ def _best_seconds(text: str) -> float:
         "unicode-junk",
         "open-paren",
         "open-mixed",
+        "label-separators",
+        "label-digit",
+        "spaced-date",
+        "digit-space-digit",
     ],
 )
-def test_scan_time_grows_linearly_to_one_megabyte(fill):
+def test_scan_time_grows_linearly_to_one_megabyte(fill, kind):
     small, large = (
-        _best_seconds("a" + fill * (size // len(fill)) + "x 1") for size in (256_000, 1_024_000)
+        _best_seconds(kind, "a" + fill * (size // len(fill)) + "x 1")
+        for size in (256_000, 1_024_000)
     )
-    assert large <= 2 * 4 * small + 0.5, (fill, small, large)
+    assert large <= 2 * 4 * small + 0.5, (kind, fill, small, large)
 
 
 # --- No regular expression and no normalisation reads a token. -------------------------------
@@ -1117,7 +1135,7 @@ def test_lone_jamo_is_not_a_particle(text):
     assert canonical_values("number", text) == set() and _gold_refused(text)
 
 
-_DATE_TOKENS = ["2024-03-05", "2024.3.5", "2024/03/05", "2024년 3월 5일", "2024 - 03 - 05"]
+_DATE_TOKENS = ["2024-03-05", "2024.3.5", "2024/03/05", "2024년 3월 5일", "2024. 3. 5."]
 _ID_TOKENS = ["AB12", "INV-2024", "X9", "kr2024001"]
 
 
@@ -1274,10 +1292,13 @@ def test_property_value_after_anchor_is_the_first_token_or_nothing(kind, data):
     runs = data.draw(st.lists(_FIRST_RUNS[kind], min_size=1, max_size=4))
     sep = st.text(_SEPARATOR, min_size=1, max_size=2)
     seps = data.draw(st.lists(sep, min_size=len(runs) - 1, max_size=len(runs) - 1))
-    first = data.draw(_LEADING) + runs[0]
-    first += "".join(s + r for s, r in zip(seps, runs[1:], strict=True))
+    lead = data.draw(_LEADING)
+    body = runs[0] + "".join(s + r for s, r in zip(seps, runs[1:], strict=True))
+    first = lead + body
+    # A run of label separators alone before the token is the anchor's own punctuation
+    # ("A :5"): the field is read as the token after it. Gold never strips it.
     try:
-        whole = gold_value(_field(first, "A", kind))
+        whole = gold_value(_field(body if set(lead) <= set(":=|") else first, "A", kind))
     except ValueError:
         whole = None
     later = gold_value(_field(_LATER[kind], "A", kind))
@@ -1316,12 +1337,10 @@ def test_ascii_space_thousands_grouping_is_refused(gold, candidate):
         ("5", "A 마이너스5", "number"),
         ("5", "A <5", "number"),
         ("5", "A >5", "number"),
-        ("5", "A =5", "number"),
         ("5", "A x=5", "number"),
         ("5", "A ref:5", "number"),
         ("5", "A @5", "number"),
         ("5", "A #5", "number"),
-        ("5", "A |5|", "number"),
         ("5", "A 초과5", "number"),
         ("5", "A 미만5", "number"),
         ("5", "A 가5", "number"),
@@ -1332,7 +1351,8 @@ def test_ascii_space_thousands_grouping_is_refused(gold, candidate):
         ("5", "A \u200b-;5", "number"),
         ("777", "A \u200b-;777", "number"),
         ("5", "A 5=", "number"),
-        ("5", "A 5|", "number"),
+        ("5", "A 5|=", "number"),
+        ("5", "A x|5", "number"),
         ("5억", "A 약5억", "number"),
         ("5억원", "A 총5억원", "number"),
         ("12억 3456만원", "A 12억 3456만원 7", "number"),
@@ -1359,3 +1379,332 @@ def test_field_first_prefix_or_suffix_of_a_field_is_never_read(gold, candidate, 
     assert score_critical_fields([_field(gold, "A", kind)], candidate).exact == 0
     assert value_after_anchor(_field("x", "A", kind), candidate) is None
     assert _gold_refused(candidate[2:], kind)
+
+
+# --- Label separators: "label:value" with no space is ordinary output. A run of ":" "=" "|"
+# directly before the token is the anchor's own punctuation and is read through, for every
+# kind; a trailing "|" is closing punctuation. Anything else glued before the token refuses it.
+@pytest.mark.parametrize(
+    ("candidate", "kind", "want"),
+    [
+        ("A :5", "number", ("5", "num", None)),
+        ("A =5", "number", ("5", "num", None)),
+        ("A |5|", "number", ("5", "num", None)),
+        ("A |5", "number", ("5", "num", None)),
+        ("A 5|", "number", ("5", "num", None)),
+        ("A :=|5", "number", ("5", "num", None)),
+        ("A :-5", "number", ("-5", "num", None)),
+        ("A =(5)", "number", ("-5", "num", None)),
+        ("A :$5", "number", ("5", "num", "USD")),
+        ("A :12억 3456만", "number", ("1234560000", "num", None)),
+        ("A :2024-03-05", "date", "2024-03-05"),
+        ("A =2024-03-05", "date", "2024-03-05"),
+        ("A |2024-03-05|", "date", "2024-03-05"),
+        ("A :2024. 3. 5.", "date", "2024-03-05"),
+        ("A =INV-1", "identifier", "INV1"),
+        ("A :INV-1", "identifier", "INV1"),
+        ("A |AB12|", "identifier", "AB12"),
+        # Kept as they were (amendment A.1.3): a sign or currency standing alone before the
+        # number joins it across an ASCII space; a parenthesised group after a Korean group is
+        # not a continuation; closing punctuation, a particle, closing punctuation is tolerated.
+        ("A - 5", "number", ("-5", "num", None)),
+        ("A $ 5", "number", ("5", "num", "USD")),
+        ("A 12억 (3456만)", "number", ("1200000000", "num", None)),
+        ("A 5.이다", "number", ("5", "num", None)),
+        ("A 12억;입", "number", ("1200000000", "num", None)),
+        ('A "2024-03-05"부터', "date", "2024-03-05"),
+        ('A "INV-1"을', "identifier", "INV1"),
+    ],
+)
+def test_label_separator_directly_before_a_value_is_read(candidate, kind, want):
+    assert value_after_anchor(_field("x", "A", kind), candidate) == want
+
+
+@pytest.mark.parametrize(
+    ("value", "kind"),
+    [
+        (":5", "number"),
+        ("=5", "number"),
+        ("|5|", "number"),
+        ("5|", "number"),
+        (":2024-03-05", "date"),
+        ("=INV-1", "identifier"),
+    ],
+)
+def test_gold_with_a_label_separator_is_not_one_token(value, kind):
+    assert _gold_refused(value, kind)
+
+
+# --- Dates use one separator, and spaces only after a separator of the dotted or 년/월/일 form.
+@pytest.mark.parametrize(
+    "text",
+    [
+        "2024-03/05",
+        "2024/03-05",
+        "2024.03-05",
+        "2024-03.05",
+        "2024 - 03 - 05",
+        "2024-03 -05",
+        "2024 /03/05",
+        "2024- 03-05",
+        "2024/ 03/ 05",
+        "2024 .03.05",
+        "2024. 3 .5",
+        "2024 년 3월 5일",
+        "2024년 3 월 5일",
+        "2024년 3월 5 일",
+        "2024. 3월 5일",
+        "2024년 3. 5.",
+    ],
+)
+def test_date_uses_one_separator_and_spaces_only_after_it(text):
+    assert value_after_anchor(_field("x", "A", "date"), "A " + text) is None
+    assert score_critical_fields([_field("2024-03-05", "A", "date")], "A " + text).exact == 0
+    assert _gold_refused(text, "date")
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "2024-03-05",
+        "2024/3/5",
+        "2024.3.5",
+        "2024.03.05.",
+        "2024. 3. 5.",
+        "2024. 03. 05",
+        "2024년 3월 5일",
+        "2024년3월5일",
+    ],
+)
+def test_one_separator_date_is_read(text):
+    assert gold_value(_field(text, "A", "date")) == "2024-03-05"
+    assert value_after_anchor(_field("x", "A", "date"), "A " + text + " 2031-12-31") in (
+        "2024-03-05",
+        None,  # a spaced date followed by a digit field: see the continuation property
+    )
+    assert value_after_anchor(_field("x", "A", "date"), "A " + text + "\n2031-12-31") == (
+        "2024-03-05"
+    )
+
+
+# --- Independent-value property (amendment A.2.1). The test generates a value and renders it
+# to a token itself; it never asks the reader what a token is worth.
+_PROPERTY_JUNK = (
+    string.punctuation
+    + string.ascii_letters
+    + string.digits
+    + "조억만천백십"  # scale syllables
+    + "가을이다부터입니년월일"  # non-scale Hangul
+    + "\u200b\u200c\u200d\u2060\ufeff\u00ad\u200e\u200f"  # zero-width and format
+    + "\u0301\u0336\u20e3"  # combining
+    + "\u00a0\u202f\u2009"  # space-like, not ASCII
+    + "\u0661\u0967\u0e51\U0001d7cf"  # Arabic-Indic, Devanagari, Thai, mathematical digits
+    + "\u02d7\u2052\u2796"  # minus variants
+    + "\u00b9\u00b2\u00b3\u2070\u00bd\u00bc\u2153"  # superscripts, vulgar fractions
+)
+_LABEL_SEPARATORS = ":=|"
+_CLOSING = ")]}\"'.,;:!?|"
+_ALNUM = string.ascii_letters + string.digits
+
+
+@st.composite
+def _number_token(draw: Any) -> tuple[str, Any]:
+    style = draw(st.sampled_from(["plain", "comma", "decimal", "korean"]))
+    if style == "korean":
+        groups = draw(_groups)
+        text, digits = _ko_render(groups, draw(_flags), draw(_flags)), str(_value(groups))
+    elif style == "decimal":
+        whole = draw(st.integers(0, 10**9))
+        frac = draw(st.text("0123456789", min_size=1, max_size=6).filter(lambda f: f[-1] != "0"))
+        text = digits = f"{whole}.{frac}"
+    else:
+        n = draw(st.integers(0, 10**12))
+        text, digits = (f"{n:,}" if style == "comma" else str(n)), str(n)
+    pct = style != "korean" and draw(st.booleans())
+    currency = None if pct else draw(st.sampled_from([None, "USD", "KRW"]))
+    if currency == "USD":
+        text = "$" + text
+    elif currency == "KRW":
+        text += "원"
+    if pct:
+        text += "%"
+    negative = digits.strip("0.") != "" and draw(st.booleans())
+    if negative:
+        text = draw(st.sampled_from([f"-{text}", f"({text})"]))
+    return text, (("-" if negative else "") + digits, "pct" if pct else "num", currency)
+
+
+@st.composite
+def _date_token(draw: Any) -> tuple[str, Any]:
+    d = draw(st.dates(min_value=date(1000, 1, 1), max_value=date(9999, 12, 31)))
+    y = f"{d.year:04d}"
+    pad = draw(st.booleans())
+    m, dd = (f"{d.month:02d}", f"{d.day:02d}") if pad else (str(d.month), str(d.day))
+    form = draw(st.sampled_from(["-", "/", ".", "spaced-dot", "ko", "spaced-ko"]))
+    if form in ("-", "/", "."):
+        text = f"{y}{form}{m}{form}{dd}"
+    elif form == "spaced-dot":
+        text = f"{y}. {m}. {dd}."
+    else:
+        sp = " " if form == "spaced-ko" else ""
+        text = f"{y}년{sp}{m}월{sp}{dd}일"
+    return text, d.isoformat()
+
+
+@st.composite
+def _identifier_token(draw: Any) -> tuple[str, Any]:
+    chunks = draw(st.lists(st.text(_ALNUM, min_size=1, max_size=4), min_size=1, max_size=3))
+    return "-".join(chunks), "".join(chunks).upper()
+
+
+_TOKENS = {"number": _number_token(), "date": _date_token(), "identifier": _identifier_token()}
+
+
+def _edge_joins(kind: str, pre: str, post: str) -> bool:
+    """Would the character of ``pre`` or ``post`` at the token's edge be read as part of the
+    token by its grammar ("1." + "5", "x-" + "AB", "5" + "억"): then the field is a different,
+    longer token and its value is that token's own, which this property does not judge."""
+    a, b = pre[-1:], post[:1]
+    if (a and a in _ALNUM) or (b and b in _ALNUM):
+        return True
+    if kind == "identifier":
+        return "-" in (a, b)
+    if kind != "number":
+        return False
+    return bool(
+        (a and a in "-+\u25b3\u25b2($€£¥₩원엔조억만천백십")
+        or pre.endswith("달러")
+        or (a and a in ".," and pre[-2:-1] and pre[-2:-1] in string.digits)
+        or (b and b in "%조억만천백십원엔$€£¥₩")
+        or post.startswith("달러")
+        or (b and b in ".," and post[1:2] and post[1:2] in string.digits)
+    )
+
+
+@seed(20261117)
+@settings(max_examples=500, deadline=None)
+@given(
+    st.sampled_from(sorted(_TOKENS)),
+    st.data(),
+    st.text(_PROPERTY_JUNK, max_size=3),
+    st.text(_PROPERTY_JUNK, max_size=3),
+)
+def test_property_value_read_is_the_generated_value_or_nothing(kind, data, pre, post):
+    token, value = data.draw(_TOKENS[kind])
+    later, later_value = data.draw(_TOKENS[kind])
+    assume(later_value != value and not _edge_joins(kind, pre, post))
+    field = _field("x", "A", kind)
+    # The later token on the next line: across a space a later number may be a grammatical
+    # continuation ("12억 3456만") and a digit field after a spaced date refuses it, both of
+    # which the continuation property decides. Date and identifier are also read across a space.
+    seps = ["\n", " "] if kind != "number" else ["\n"]
+    for sep in seps:
+        got = value_after_anchor(field, f"A {pre}{token}{post}{sep}{later}")
+        # (i) the generated value or nothing: never the later value, never any other.
+        assert got in (None, value), (kind, pre, token, post, sep, got, value)
+    # (ii) with nothing glued to it, the token is read: a reader that refuses all fails here.
+    assert value_after_anchor(field, f"A {token}\n{later}") == value, token
+    # (iii) a run of label separators before it, nothing after: still read.
+    lead = data.draw(st.text(_LABEL_SEPARATORS, min_size=1, max_size=3))
+    assert value_after_anchor(field, f"A {lead}{token}\n{later}") == value, (lead, token)
+    # (iv) opening punctuation before it and closing punctuation after it: still read. For a
+    # number "(" and ")" belong to the grammar (accounting negative), so they are left out.
+    opening = "[{\"'" + ("" if kind == "number" else "(")
+    closing = _CLOSING.replace(")", "") if kind == "number" else _CLOSING
+    lead = data.draw(st.text(_LABEL_SEPARATORS + opening, max_size=3))
+    trail = data.draw(st.text(closing, max_size=3))
+    assert value_after_anchor(field, f"A {lead}{token}{trail}\n{later}") == value, (
+        lead,
+        token,
+        trail,
+    )
+
+
+# --- Continuation property (amendment A.2.2): the field after a Korean scale group, or after a
+# part of a spaced date, continues it wholly or the whole value is refused.
+# A field with no digit and no scale syllable, shaped as text after a value ends: closing
+# punctuation, a run of words or particles, closing punctuation ("이다.", "전년", ").").
+_NOT_A_PART = st.builds(
+    lambda a, w, b: a + w + b,
+    st.text(_CLOSING, max_size=2),
+    st.text("가을이다부터입니전년대비", max_size=3),
+    st.text(_CLOSING, max_size=2),
+).filter(bool)
+_GLUE = st.text("xX_~/\\@#=<>+-*\u200b\u00b9\u0661", min_size=1, max_size=2)
+_LOWER = {"조": [("억", 10**8), ("만", 10**4)], "억": [("만", 10**4), ("천만", 10**7)]}
+_KO_SCALE = "조억만천백십"
+
+
+@seed(20261117)
+@settings(max_examples=300, deadline=None)
+@given(st.integers(1, 9999), st.sampled_from(["조", "억"]), st.data())
+def test_property_a_field_after_a_korean_group_continues_it_wholly_or_refuses(n, big, data):
+    value = n * (10**12 if big == "조" else 10**8)
+
+    def read(g: str) -> Any:
+        return value_after_anchor(_field("x", "A"), f"A {n}{big} {g}")
+
+    unit, scale = data.draw(st.sampled_from(_LOWER[big]))
+    m = data.draw(st.integers(1, 9 if unit == "천만" else 9999))
+    part = f"{m}{unit}"
+    # A whole lower group joins.
+    assert read(part) == (str(value + m * scale), "num", None), part
+    # A field with an ASCII digit that is not a whole continuation refuses the whole value.
+    glue = data.draw(_GLUE)
+    for bad in (glue + part, part + glue, f"{glue}{m}", f"{m}{glue}", f"{m}{glue}{unit}"):
+        assert read(bad) is None, bad
+    # So does a field that begins with a scale syllable.
+    scaled = data.draw(st.sampled_from(_KO_SCALE)) + data.draw(st.text(_PROPERTY_JUNK, max_size=3))
+    assert read(scaled) is None, scaled
+    # A bare final group is a continuation by orthography (art. 44); it joins or refuses.
+    assert read(str(m)) in (None, (str(value + m), "num", None))
+    # A field with neither, of words and closing punctuation, leaves the value standing.
+    word = data.draw(_NOT_A_PART)
+    assert read(word) == (str(value), "num", None), word
+    # A parenthesised field is never joined, whatever it holds.
+    inside = data.draw(st.text(_PROPERTY_JUNK, max_size=4))
+    assert read(f"({inside}") == (str(value), "num", None), inside
+    # Any other field with no ASCII digit may still refuse, and never gives another value (kept,
+    # A.1.3: an OCR "l" or "O", a hidden character or a spaced "~ 15억" can stand for a part).
+    other = data.draw(
+        st.text(_PROPERTY_JUNK.translate({ord(c): None for c in string.digits}), min_size=1)
+    )
+    got = read(other)  # a currency or percent word is the spaced suffix the grammar defines
+    assert got is None or got[0] == str(value), (other, got)
+
+
+@seed(20261117)
+@settings(max_examples=300, deadline=None)
+@given(
+    st.dates(min_value=date(1000, 1, 1), max_value=date(9999, 12, 31)),
+    st.sampled_from(["dot", "ko"]),
+    st.data(),
+)
+def test_property_a_field_in_or_after_a_spaced_date_completes_it_wholly_or_refuses(d, form, data):
+    iso = d.isoformat()
+    m, dd = d.month, d.day
+    if form == "dot":
+        parts = [f"{d.year:04d}.", f"{m}.", f"{dd}."]
+    else:
+        parts = [f"{d.year:04d}년", f"{m}월", f"{dd}일"]
+
+    def read(fields: list[str]) -> Any:
+        return value_after_anchor(_field("x", "A", "date"), "A " + " ".join(fields))
+
+    assert read(parts) == iso
+    # A part replaced by a field with an ASCII digit that is not that part refuses the date.
+    i = data.draw(st.integers(1, 2))
+    glue = data.draw(_GLUE)
+    digits = parts[i][:-1]
+    for bad in (glue + parts[i], digits + glue + parts[i][-1], parts[i] + glue):
+        assert read([*parts[:i], bad, *parts[i + 1 :]]) is None, bad
+    # A part replaced by a field with no digit: no partial date stands.
+    assert read([*parts[:i], data.draw(_NOT_A_PART)]) is None
+    # After the whole date, a field with an ASCII digit refuses it (could be its split part:
+    # "2024. 3. 1 5." is not 1 March), unless parenthesised; a field with neither leaves it.
+    tail = data.draw(st.text(_PROPERTY_JUNK.replace("(", ""), max_size=2)) + data.draw(
+        st.sampled_from(string.digits)
+    )
+    assert read([*parts, tail]) is None, tail
+    assert read([*parts, f"({tail})"]) == iso, tail
+    assert read([*parts, data.draw(_NOT_A_PART)]) == iso
