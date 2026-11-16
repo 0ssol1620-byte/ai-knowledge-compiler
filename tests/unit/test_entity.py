@@ -445,3 +445,123 @@ def test_a_reviewer_approved_merge_is_not_flagged_as_an_automatic_one() -> None:
     )
 
     assert registry.high_risk_auto_merges({"ent_1": "customer"}) == ()
+
+
+# --------------------------------------------------------------------------
+# WO-D11-1: type-aware tiers, conflicting identifiers, explicit split
+# --------------------------------------------------------------------------
+
+
+def test_the_same_name_of_a_different_type_does_not_merge() -> None:
+    apple_org = _mention("m1", "Apple", type_candidate="organization")
+    apple_product = _mention("m2", "Apple", type_candidate="product")
+
+    decision = resolve_mention(apple_product, [("ent_org", apple_org)])
+
+    assert decision.verdict is MergeVerdict.NEW_ENTITY
+
+
+def test_a_composite_key_of_a_different_type_does_not_merge() -> None:
+    attrs = {"plant": "B", "line": "B"}
+    other = _mention("m1", "M-012", type_candidate="machine", attributes=attrs)
+    mention = _mention("m2", "M-012", type_candidate="tool", attributes=attrs)
+
+    decision = resolve_mention(mention, [("ent_1", other)])
+
+    assert decision.verdict is MergeVerdict.NEW_ENTITY
+
+
+def test_an_untyped_mention_may_still_match_by_name() -> None:
+    other = _mention("m1", "Acme Corporation", type_candidate="organization")
+    mention = _mention("m2", "Acme Corporation", type_candidate="")
+
+    decision = resolve_mention(mention, [("ent_1", other)])
+
+    assert decision.verdict is MergeVerdict.AUTO_MERGE
+    assert decision.entity_id == "ent_1"
+
+
+def test_conflicting_system_identifiers_block_a_name_merge() -> None:
+    other = _mention(
+        "m1", "Acme Corporation", type_candidate="organization", external_ids={"lei": "LEI-1"}
+    )
+    mention = _mention(
+        "m2", "Acme Corporation", type_candidate="organization", external_ids={"lei": "LEI-2"}
+    )
+
+    decision = resolve_mention(mention, [("ent_1", other)])
+
+    assert decision.verdict is MergeVerdict.REVIEW
+    assert decision.tier is ResolutionTier.SYSTEM_OF_RECORD
+    assert decision.candidates == ("ent_1",)
+
+
+def test_conflicting_identifiers_block_an_alias_merge() -> None:
+    other = _mention(
+        "m1", "Acme Corporation", type_candidate="organization", external_ids={"lei": "LEI-1"}
+    )
+    mention = _mention(
+        "m2", "ACME", type_candidate="organization", external_ids={"lei": "LEI-2"}
+    )
+
+    decision = resolve_mention(mention, [("ent_1", other)], aliases={"acme": "ent_1"})
+
+    assert decision.verdict is MergeVerdict.REVIEW
+
+
+def _three_mention_registry() -> EntityRegistry:
+    registry = EntityRegistry()
+    for mention_id in ("m1", "m2", "m3"):
+        registry.add("ent_1", mention_id)
+    return registry
+
+
+def test_a_split_moves_only_the_named_mentions_and_undoes_exactly() -> None:
+    registry = _three_mention_registry()
+
+    registry.split(
+        split_id="sp_1",
+        entity_id="ent_1",
+        new_entity_id="ent_2",
+        mention_ids=["m2"],
+        decided_by="ops@acme",
+    )
+    assert registry.members("ent_1") == ("m1", "m3")
+    assert registry.members("ent_2") == ("m2",)
+
+    registry.unsplit("sp_1")
+    assert registry.members("ent_1") == ("m1", "m2", "m3")
+    assert registry.entity_ids == ("ent_1",)
+    assert registry.splits == ()
+
+
+def test_the_system_cannot_split() -> None:
+    with pytest.raises(ValueError, match="human"):
+        _three_mention_registry().split(
+            split_id="sp_1",
+            entity_id="ent_1",
+            new_entity_id="ent_2",
+            mention_ids=["m2"],
+            decided_by="system",
+        )
+
+
+def test_a_split_that_would_empty_the_entity_is_refused() -> None:
+    with pytest.raises(ValueError, match="empty"):
+        _three_mention_registry().split(
+            split_id="sp_1",
+            entity_id="ent_1",
+            new_entity_id="ent_2",
+            mention_ids=["m1", "m2", "m3"],
+            decided_by="ops@acme",
+        )
+
+
+def test_a_split_refuses_a_non_member_and_an_existing_target() -> None:
+    registry = _three_mention_registry()
+    registry.add("ent_2", "m9")
+    kw = {"split_id": "sp_1", "entity_id": "ent_1", "decided_by": "ops@acme"}
+    with pytest.raises(ValueError, match="member"):
+        registry.split(new_entity_id="ent_3", mention_ids=["m9"], **kw)
+    with pytest.raises(ValueError, match="exists"):
+        registry.split(new_entity_id="ent_2", mention_ids=["m1"], **kw)
