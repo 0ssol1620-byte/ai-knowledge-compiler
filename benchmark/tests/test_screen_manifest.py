@@ -12,6 +12,9 @@ from typing import Any
 import pytest
 
 from benchmark.screen.manifest import (
+    EG04_MIN_DOCS,
+    EG04_MIN_PAGES,
+    EG04_STRATA,
     HoldoutGuard,
     HoldoutSealedError,
     assign_split,
@@ -164,31 +167,98 @@ def test_holdout_overshoot_beyond_10_pages_refused() -> None:
         freeze(docs, "salt")
 
 
-def _eg04_docs(korean_ratio: float = 0.6, offset: int = 10_000) -> list[dict[str, Any]]:
-    n = 150
-    return [
-        _doc(offset + i, pages=10, lang="ko" if i < n * korean_ratio else "en", cls=f"c{i % 10}")
-        for i in range(n)
+def _eg04_docs(
+    extra_en: int = 0, offset: int = 10_000, drop: str | None = None
+) -> list[dict[str, Any]]:
+    """Every ADR-009 floor met exactly (per-document cap respected); `extra_en` adds English
+    pages above the floors, `drop` moves one stratum's documents into en_native."""
+    docs: list[dict[str, Any]] = []
+    for sid, lang, floor, mind in EG04_STRATA:
+        for _ in range(mind):
+            docs.append(_doc(
+                offset + len(docs), stratum="en_native" if sid == drop else sid,
+                pages=-(-floor // mind),
+                lang="en" if sid == drop or lang == "open" else lang, cls=f"c{len(docs) % 10}",
+            ))
+    docs += [
+        _doc(offset + len(docs) + k, stratum="en_native", pages=20, lang="en", cls="c0")
+        for k in range(extra_en // 20)
     ]
+    return docs
+
+
+def _eg04_fails(match: str, docs: list[dict[str, Any]]) -> None:
+    with pytest.raises(ContractError, match=match):
+        freeze(docs, "s", profile="eg04", screen_manifest=_frozen())
+
+
+def test_eg04_floor_table_sums_to_the_minimums() -> None:
+    assert sum(f for _, _, f, _ in EG04_STRATA) == EG04_MIN_PAGES == 1500
+    assert sum(m for _, _, _, m in EG04_STRATA) == EG04_MIN_DOCS == 150
+    assert len(EG04_STRATA) == 11
 
 
 def test_eg04_profile_accepts_disjoint_and_rejects_overlap_and_low_korean() -> None:
     screen = _frozen()
     ok = freeze(_eg04_docs(), "s", profile="eg04", screen_manifest=screen)
     assert ok["profile"] == "eg04"
+    # 40% Korean passes once every floor is met (Korean floors alone are 625/1,500 = 41.7%)
+    low_ko = freeze(_eg04_docs(extra_en=1000), "s", profile="eg04", screen_manifest=screen)
+    assert low_ko["counts"]["korean_pages"] / low_ko["counts"]["pages"] < 0.4
     overlap = _eg04_docs()
-    overlap[0] = copy.deepcopy(screen["documents"][0])
+    keep = {k: overlap[0][k] for k in ("stratum", "language", "document_class")}
+    overlap[0] = {**copy.deepcopy(screen["documents"][0]), **keep}
     overlap[0]["doc_id"] = "x.pdf"
-    overlap[0]["page_count"] = 10
+    overlap[0]["page_count"] = 12
     overlap[0].pop("split")
     with pytest.raises(ContractError, match="shares 1 source"):
         freeze(overlap, "s", profile="eg04", screen_manifest=screen)
-    with pytest.raises(ContractError, match="50% Korean"):
-        freeze(_eg04_docs(korean_ratio=0.4), "s", profile="eg04", screen_manifest=screen)
+    with pytest.raises(ContractError, match=r"stratum 'en_tables': page floor 225"):
+        freeze(_eg04_docs(drop="en_tables"), "s", profile="eg04", screen_manifest=screen)
     with pytest.raises(ContractError, match="minimums"):
         freeze(_eg04_docs()[:100], "s", profile="eg04", screen_manifest=screen)
     with pytest.raises(ContractError, match="screen manifest"):
         freeze(_eg04_docs(), "s", profile="eg04")
+
+
+def test_eg04_shortfall_in_documents_and_per_document_cap() -> None:
+    docs = _eg04_docs()
+    en = [d for d in docs if d["stratum"] == "en_tables"]
+    # one large document cannot fill the floor: cap is ceil(225/10) = 23 pages
+    for d in en[1:]:
+        d["stratum"] = "en_native"
+    en[0]["page_count"] = 500
+    with pytest.raises(ContractError) as e:
+        freeze(docs, "s", profile="eg04", screen_manifest=_frozen())
+    assert "stratum 'en_tables': page floor 225 not met (23 counted)" in str(e.value)
+    assert "stratum 'en_tables': minimum documents 20 not met (1 counted)" in str(e.value)
+
+
+def test_eg04_unknown_stratum_language_and_synthetic_refused() -> None:
+    d = _eg04_docs()
+    d[0]["stratum"] = "s0"
+    _eg04_fails("stratum 's0'.*unknown stratum", d)
+    d = _eg04_docs()
+    next(x for x in d if x["stratum"] == "ko_native")["language"] = "en"
+    _eg04_fails("stratum 'ko_native'.*fixed language 'ko'", d)
+    d = _eg04_docs()
+    scan = next(x for x in d if x["stratum"] == "distorted")
+    scan["rights"]["rights_class"] = "synthetic"
+    scan["rights"]["licence_snapshot_sha256"] = None
+    _eg04_fails("stratum 'distorted'.*synthetic document in a scan stratum", d)
+    d = _eg04_docs()  # synthetic in a non-scan stratum counts toward no floor
+    syn = next(x for x in d if x["stratum"] == "slides")
+    syn["rights"]["rights_class"] = "synthetic"
+    syn["rights"]["licence_snapshot_sha256"] = None
+    _eg04_fails("stratum 'slides': minimum documents 10", d)
+    d = _eg04_docs()  # ... except adversarial's
+    syn = next(x for x in d if x["stratum"] == "adversarial")
+    syn["rights"]["rights_class"] = "synthetic"
+    syn["rights"]["licence_snapshot_sha256"] = None
+    assert freeze(d, "s", profile="eg04", screen_manifest=_frozen())["profile"] == "eg04"
+    d = _eg04_docs()  # an open stratum takes any language
+    next(x for x in d if x["stratum"] == "slides")["language"] = "ko"
+    assert freeze(d, "s", profile="eg04", screen_manifest=_frozen())["profile"] == "eg04"
 
 
 def _real_corpus(tmp_path: Path) -> dict[str, Any]:
