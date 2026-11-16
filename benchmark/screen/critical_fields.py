@@ -332,8 +332,9 @@ def _number_at(text: str, i: int) -> tuple[int, Any] | None:
     """The token starting at ``i`` as ``(end, canonical value or None when refused)``.
 
     None when nothing was consumed at ``i``, or when the sign, paren or currency consumed there
-    is glued into a word ("원가", "-x", "(주)") or closes a bracketed unit label ("(원)",
-    "(단위: 원)"): that is text, not a number. Any other consumed prefix with no digit after it
+    is glued, with no whitespace anywhere, into a word ("원가", "-x", "(주)") or closes a
+    bracketed unit label ("(원)", "(단위: 원)"): that is text, not a number. A sign or paren
+    standing alone is never text ("- 원가 5"). Any other consumed prefix with no digit after it
     is refused, so the scan never restarts past it and reads the number without it ("- :5",
     "$ [5]", "$ - 5", "-\\t5", "-- 5"). Once a digit is reached the token is read whole or
     refused.
@@ -346,13 +347,16 @@ def _number_at(text: str, i: int) -> tuple[int, Any] | None:
         negative, k = _SIGN[text[k]], k + 1
     end_of_prefix = k
     k = _skip(text, k, _SPACE)
+    # Whitespace after the sign or paren makes it standalone: a word after it is not glued to
+    # it, however the word begins ("- 원가 5", "( $) 5"), so it can no longer be text.
+    standalone = k > end_of_prefix
     prefix = _currency_at(text, k)
     if prefix:
         end_of_prefix = prefix[1]
         k = _skip(text, end_of_prefix, _SPACE)
     if k >= n or text[k] not in _DIGIT:
         c = text[k : k + 1]
-        glued = k == end_of_prefix > i and c != ""
+        glued = k == end_of_prefix > i and c != "" and not standalone
         # A currency symbol before a letter is two currencies, not a word ("$USD").
         symbol = prefix is not None and not text[end_of_prefix - 1].isalpha()
         word = glued and (c in _ASCII_LETTER or _hangul(c)) and not symbol

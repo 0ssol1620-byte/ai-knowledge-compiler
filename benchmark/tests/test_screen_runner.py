@@ -1633,6 +1633,23 @@ def test_property_value_read_is_the_generated_value_or_nothing(kind, data, pre, 
 # A sign, an accounting "(" or a currency, each a field of its own before a number.
 _STANDALONE = ["-", "+", "△", "▲", "(", "$", "₩", "€", "£", "¥"]
 _STANDALONE += ["\uff04", "\u2212", "USD", "krw", "Eur", "원", "달러", "엔"]
+# Every currency spelling the reader knows, as written (codes in upper case), and its code.
+_CURRENCY_CODES = {
+    "$": "USD",
+    "USD": "USD",
+    "달러": "USD",
+    "₩": "KRW",
+    "원": "KRW",
+    "KRW": "KRW",
+    "€": "EUR",
+    "EUR": "EUR",
+    "£": "GBP",
+    "GBP": "GBP",
+    "¥": "¥",
+    "엔": "JPY",
+    "JPY": "JPY",
+}
+_CURRENCY_SPELLINGS = frozenset(_CURRENCY_CODES)
 
 
 # --- Amendment A.4: once a sign, "(" or currency is consumed for a number, the number is read
@@ -1668,6 +1685,30 @@ _STANDALONE += ["\uff04", "\u2212", "USD", "krw", "Eur", "원", "달러", "엔"]
         "A - x 5",
         "A $USD 5",
         "A - (5)",
+        # Amendment A.5: a sign or "(" standing alone, whitespace, then a word or label that
+        # begins with a currency: refused like any other non-digit, never the bare number.
+        "A - 원가 5",
+        "A - 원래 5",
+        "A △ 원가 5",
+        "A + 원가 5",
+        "A ▲ 달러화 5",
+        "A - 엔화 5",
+        "A - Euro 5",
+        "A - EURO 5",
+        "A - usdx 5",
+        "A - 원) 5",
+        "A - $) 5",
+        "A - USD) 5",
+        "A - 원] 5",
+        "A - 원} 5",
+        "A - 원가 :5",
+        "A △ 엔) 5",
+        "A ( 원) 5",
+        "A ( $) 5",
+        "A ( 원가 5 )",
+        "A - 원화 5억",
+        "A -\t원가 5",
+        "A (\t원) 5",
     ],
 )
 def test_a_consumed_sign_paren_or_currency_is_never_dropped(candidate):
@@ -1685,6 +1726,13 @@ def test_a_consumed_sign_paren_or_currency_is_never_dropped(candidate):
         ("A (USD) 5", ("5", "num", None)),
         ("A -$ 5", ("-5", "num", "USD")),
         ("A ( 5 )", ("-5", "num", None)),
+        # Amendment A.5: only glued shapes are text.
+        ("A (원) 5", ("5", "num", None)),
+        ("A (단위: 원) 5", ("5", "num", None)),
+        ("A -원가 5", ("5", "num", None)),
+        # A sign, a space, then a currency glued to the digits: the signed currency value.
+        ("A - 원5", ("-5", "num", "KRW")),
+        ("A - $ 5", ("-5", "num", "USD")),
     ],
 )
 def test_a_prefix_glued_into_a_word_or_a_unit_label_is_text(candidate, want):
@@ -1697,21 +1745,78 @@ def test_a_prefix_glued_into_a_word_or_a_unit_label_is_text(candidate, want):
     _number_token(),
     st.sampled_from(_STANDALONE),
     st.text(" \t\n\r", min_size=1, max_size=3),
-    st.text(_PROPERTY_JUNK + " " + "△▲₩원", max_size=4),
+    st.one_of(
+        st.text(_PROPERTY_JUNK + " " + "△▲₩원", max_size=4),
+        # Words and labels that begin with a currency (amendment A.5).
+        st.sampled_from(["원가", "원래", "Euro", "usdx", "달러화", "엔화", "원)", "$)", "USD]"]),
+    ),
 )
+@example(("5", ("5", "num", None)), "-", " ", "원가 ")
+@example(("5", ("5", "num", None)), "(", " ", "$) ")
 def test_property_a_standalone_prefix_field_is_read_with_the_number_or_refuses(
     rendered, alone, ws, junk
 ):
     """A standalone sign, "(" or currency field, whitespace, then anything that does not start
     with a digit, then a token: the prefix was consumed and nothing joins it to the number, so
     the result is None. Past spaces alone the prefix joins the token; with a digit right after
-    the whitespace the field is a different, longer number, which this property does not judge.
+    the whitespace the field is a different, longer number, which this property does not judge,
+    and neither is a currency glued to the token's digits ("- 원5" is a signed currency value).
     """
     token, _ = rendered
     assume(junk[:1] not in string.digits + " ")
     assume(junk or ws.strip(" "))
+    assume(not (junk.upper() in _CURRENCY_SPELLINGS and token[:1] in string.digits))
     got = value_after_anchor(_field("x", "A"), f"A {alone}{ws}{junk}{token}\n7")
     assert got is None, (alone, ws, junk, token, got)
+
+
+# Amendment A.5, closed by enumeration: every standalone prefix the reader knows, every ASCII
+# whitespace run after it, one representative of every character class the reader tells apart
+# at the next position, and a fixed set of continuations.
+_NEGATIVE_PREFIXES = ["-", "\u2212", "△", "▲", "(", "\uff08"]
+_SIGN_PREFIXES = ["-", "\u2212", "+", "△", "▲"]
+_CURRENCY_PREFIXES = [*sorted(_CURRENCY_SPELLINGS), "usd", "Krw", "\uff04", "\uffe6", "\uffe1"]
+_FOLDED_CURRENCY = {"\uff04": "USD", "\uffe6": "KRW", "\uffe1": "GBP"}
+_NEXT_CLASSES = sorted(
+    set("([{\"':=|")  # opening punctuation and label separators
+    | set("-+△▲")  # signs
+    | {s[0] for s in _CURRENCY_SPELLINGS}  # currency first characters
+    | {s[0].lower() for s in _CURRENCY_SPELLINGS}
+    | _CURRENCY_SPELLINGS  # whole currencies
+    | set("x가")  # an ASCII letter, a Hangul syllable
+    | set("조억만천백십")  # scale syllables
+    | set(_CLOSING)
+)
+
+
+def test_a_standalone_prefix_then_whitespace_never_yields_the_bare_number():
+    """``A `` + P + S + N + rest: the result is None, except that a sign, spaces, a whole
+    currency and then the digits read as the signed currency value ("- 원5", "- $ 5"). Never
+    the bare, unsigned or currency-less number."""
+    wrong = []
+    for p in [*_SIGN_PREFIXES, "(", "\uff08", *_CURRENCY_PREFIXES]:
+        for s in [" ", "\t", "\n", "\r", "  ", " \t"]:
+            for nxt in _NEXT_CLASSES:
+                for rest in ["5", " 5", "가 5", ") 5", " :5"]:
+                    text = f"A {p}{s}{nxt}{rest}"
+                    want = None
+                    joined = p in _SIGN_PREFIXES and not s.strip(" ")
+                    if joined and nxt in _CURRENCY_SPELLINGS and rest in ("5", " 5"):
+                        sign = "-" if p in _NEGATIVE_PREFIXES else ""
+                        want = (sign + "5", "num", _CURRENCY_CODES[nxt])
+                    got = value_after_anchor(_field("x", "A"), text)
+                    if got != want:
+                        wrong.append((text, got, want))
+    assert not wrong, (len(wrong), wrong[:20])
+
+
+@pytest.mark.parametrize("p", [*_CURRENCY_PREFIXES, "(", "-"])
+def test_every_standalone_prefix_is_read_with_the_number_across_spaces(p):
+    """The enumeration above is not vacuous: each prefix, spaces, then digits, carries P."""
+    got = value_after_anchor(_field("x", "A"), f"A {p} 5" + (" )" if p == "(" else ""))
+    assert got is not None and got != ("5", "num", None), (p, got)
+    code = _FOLDED_CURRENCY.get(p) or _CURRENCY_CODES.get(p.upper())
+    assert got[2] == code and got[0] == ("-5" if p in "(-" else "5"), (p, got)
 
 
 # --- Continuation property (amendment A.2.2): the field after a Korean scale group, or after a
