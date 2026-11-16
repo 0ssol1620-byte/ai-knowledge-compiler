@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import functools
 import io
+import struct
+import tracemalloc
 import zipfile
 
 import pytest
@@ -183,3 +186,62 @@ def test_hwpx_corrupt_lzma_and_unsupported_zip_version_are_held() -> None:
     ver = bytearray(_seed_zip(zipfile.ZIP_STORED))
     ver[ver.index(b"PK" + bytes([1, 2])) + 6] = 116  # central-directory "version needed" 11.6
     assert isinstance(detect_hwp_format(bytes(ver)), Held)
+
+
+_BOMB_BYTES = 16 * 1024 * 1024
+_PEAK_BUDGET = 4 * 1024 * 1024
+
+
+@functools.cache
+def _honest_bomb(method: int) -> bytes:
+    members = {**HWPX, "Contents/section0.xml": b"\x00" * _BOMB_BYTES}
+    return _zip(members, compression=method)
+
+
+def _lie_about_size(data: bytes, name: bytes, declared: int) -> bytes:
+    # rewrite the declared uncompressed size in the local header (offset 22) and the
+    # central-directory entry (offset 24); the compressed stream still expands to 16 MB
+    raw = bytearray(data)
+    local = raw.index(name) - 30
+    central = raw.index(name, raw.index(b"PK\x01\x02")) - 46
+    raw[local + 22 : local + 26] = struct.pack("<I", declared)
+    raw[central + 24 : central + 28] = struct.pack("<I", declared)
+    return bytes(raw)
+
+
+def _peak_of(data: bytes) -> tuple[object, int]:
+    tracemalloc.start()
+    try:
+        result = detect_hwp_format(data)
+        return result, tracemalloc.get_traced_memory()[1]
+    finally:
+        tracemalloc.stop()
+
+
+@pytest.mark.parametrize(
+    "method",
+    [zipfile.ZIP_DEFLATED, zipfile.ZIP_BZIP2, zipfile.ZIP_LZMA],
+    ids=["deflate", "bz2", "lzma"],
+)
+@pytest.mark.parametrize("declared", [0, 1, 100, 4096])
+def test_member_lying_about_its_size_is_held_within_a_bounded_memory_peak(
+    method: int, declared: int
+) -> None:
+    # Root-cause guard: the header-declared sizes pass every container check, so the only
+    # bound on decompression is the read itself. Whatever the method and the lie, the
+    # detector holds the package without ever inflating past the declared size.
+    data = _lie_about_size(_honest_bomb(method), b"Contents/section0.xml", declared)
+    result, peak = _peak_of(data)
+    assert isinstance(result, Held), result
+    assert peak < _PEAK_BUDGET, f"peak {peak / 1e6:.1f} MB"
+    if method != zipfile.ZIP_DEFLATED:
+        assert result.reason_code == "HWP_CONTAINER_LIMIT"
+        assert result.detail == "ARCHIVE_COMPRESSION_METHOD"
+
+
+@pytest.mark.parametrize("method", [zipfile.ZIP_BZIP2, zipfile.ZIP_LZMA], ids=["bz2", "lzma"])
+def test_hwpx_with_unbounded_compression_method_is_held(method: int) -> None:
+    # stdlib bz2/lzma readers have no per-chunk output cap; HWPX (OCF) uses stored/deflate only
+    held = _held(detect_hwp_format(_zip(HWPX, compression=method)), "HWP_CONTAINER_LIMIT")
+    assert held.detail == "ARCHIVE_COMPRESSION_METHOD"
+    assert detect_hwp_format(_zip(HWPX, compression=zipfile.ZIP_STORED)) == "hwpx"

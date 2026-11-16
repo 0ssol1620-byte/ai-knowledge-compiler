@@ -53,6 +53,10 @@ _ARCHIVE_ERRORS = (
     zlib.error,
     lzma.LZMAError,
 )
+# The stdlib bz2/lzma member readers inflate a whole input chunk with no output cap, so a few
+# hundred bytes can allocate gigabytes before any size check runs. HWPX (OCF) packages use
+# stored or deflate only; anything else is held, never decompressed.
+_BOUNDED_METHODS = frozenset({zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED})
 
 
 def detect_hwp_format(data: bytes, limits: ParserLimits | None = None) -> DetectedFormat | Held:
@@ -85,14 +89,16 @@ def _detect_hwpx(data: bytes, limits: ParserLimits) -> DetectedFormat | Held:
     with archive:
         try:
             names = _check_zip_members(archive, limits)
+            if any(i.compress_type not in _BOUNDED_METHODS for i in archive.infolist()):
+                return Held(reason_code="HWP_CONTAINER_LIMIT", detail="ARCHIVE_COMPRESSION_METHOD")
             if not names >= HWPX_REQUIRED_MEMBERS:
                 return Held(reason_code="HWP_SIGNATURE_MISMATCH", detail="NOT_HWPX_PACKAGE")
             mimetype = next(i for i in archive.infolist() if i.filename.casefold() == "mimetype")
-            if archive.read(mimetype).strip() != HWPX_MIMETYPE:
+            if _read_member(archive, mimetype).strip() != HWPX_MIMETYPE:
                 return Held(reason_code="HWP_SIGNATURE_MISMATCH", detail="NOT_HWPX_PACKAGE")
             for entry in archive.infolist():
                 if entry.filename.casefold().endswith((".xml", ".hpf")):
-                    upper = archive.read(entry).upper()
+                    upper = _read_member(archive, entry).upper()
                     if b"<!DOCTYPE" in upper or b"<!ENTITY" in upper:
                         return Held(reason_code="HWP_XML_UNSAFE")
         except StructuredParseError as exc:
@@ -100,6 +106,21 @@ def _detect_hwpx(data: bytes, limits: ParserLimits) -> DetectedFormat | Held:
         except _ARCHIVE_ERRORS:
             return Held(reason_code="HWP_SIGNATURE_MISMATCH", detail="INVALID_ARCHIVE")
     return "hwpx"
+
+
+def _read_member(archive: zipfile.ZipFile, entry: zipfile.ZipInfo) -> bytes:
+    """Read one member without inflating past its declared size.
+
+    ZipFile.read() decompresses the whole stream before trimming it to `file_size`, so a member
+    that under-declares its size defeats every header check. Reading `file_size + 1` keeps the
+    deflate output capped per chunk; a size or CRC lie surfaces as BadZipFile/EOFError.
+    """
+
+    with archive.open(entry) as handle:
+        payload = handle.read(entry.file_size + 1)
+    if len(payload) != entry.file_size:
+        raise zipfile.BadZipFile("member size differs from its declared size")
+    return payload
 
 
 def _detect_hwpml(data: bytes) -> DetectedFormat | Held:
