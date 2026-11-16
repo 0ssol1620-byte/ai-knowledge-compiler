@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import itertools
 import math
 import unittest
 from typing import Any
@@ -138,14 +139,104 @@ class PairedReportTest(unittest.TestCase):
         after = build_report(recs, incumbent="c")["strata"]["s"]["cells"]["c"]["selection_rate"]
         self.assertLessEqual(after, before)
 
+    def test_cell_critical_rate_and_ci_count_failed_pages(self) -> None:
+        f = ("provider_unavailable",)
+
+        def stratum(recs: list[dict[str, Any]]) -> dict[str, Any]:
+            out: dict[str, Any] = build_report(recs, incumbent="c")["strata"]["s"]
+            return out
+
+        # A1: failing the 0/5 page must not lift the field rate or its Wilson upper bound.
+        recs = [rec("s", "c", "ok"), rec("s", "c", "x", n=5, exact=0)]
+        before = stratum(recs)["cells"]["c"]
+        recs[1]["hard_failures"] = list(f)
+        after = stratum(recs)["cells"]["c"]
+        self.assertLessEqual(after["critical_exact_rate"], before["critical_exact_rate"])
+        self.assertLessEqual(after["critical_exact_ci"][1], before["critical_exact_ci"][1])
+        # A2: nine of ten pages failed is a 0.1 cell, not a perfect one.
+        recs = [rec("s", "c", "ok")] + [rec("s", "c", f"f{i}", exact=0, fail=f) for i in range(9)]
+        self.assertAlmostEqual(stratum(recs)["cells"]["c"]["critical_exact_rate"], 0.1)
+        # A3: all failed reports 0.0 with an interval, and is still not eligible.
+        for fn in (2, 0):
+            recs = [rec("s", "c", f"f{i}", n=fn, exact=0, fail=f) for i in range(3)]
+            got = stratum(recs)
+            self.assertEqual(got["cells"]["c"]["critical_exact_rate"], 0.0)
+            self.assertNotEqual(got["cells"]["c"]["critical_exact_ci"], INSUFFICIENT)
+            self.assertEqual(got["rejected"]["c"], "no_accepted_pages")
+        # Paired: a failure written with n=0 still counts the gold n another candidate
+        # recorded for that page, so 9 of 10 failed pages is 0.1, not 1.0.
+        recs = [rec("s", "inc", f"d{i}", n=10, exact=9) for i in range(10)]
+        recs += [rec("s", "c", "d0", n=10, exact=10)]
+        recs += [rec("s", "c", f"d{i}", n=0, exact=0, fail=f) for i in range(1, 10)]
+        cells = build_report(recs, incumbent="inc")["strata"]["s"]["cells"]
+        self.assertAlmostEqual(cells["c"]["critical_exact_rate"], 0.1)
+        self.assertAlmostEqual(cells["inc"]["critical_exact_rate"], 0.9)
+        # Failed pages carrying critical n never make an accepted-n-less cell eligible.
+        recs = [rec("s", "c", "ok", n=0, exact=0), rec("s", "c", "f", exact=0, fail=f)]
+        self.assertEqual(stratum(recs)["rejected"]["c"], INSUFFICIENT)
+
+    def test_added_failed_pages_cannot_win_a_tie_break(self) -> None:
+        f = ("provider_unavailable",)
+        base = [rec("a", "inc", "d1", exact=0, cer=0.5), rec("a", "c", "d1", exact=0, cer=0.6)]
+        plus = base + [rec("a", "c", f"f{i}", exact=0, cer=0.0, fail=f) for i in range(3)]
+        for recs in (base, plus):
+            self.assertEqual(build_report(recs, incumbent="inc")["routes"]["a"]["primary"], "inc")
+
     def test_out_of_range_critical_counts_refused(self) -> None:
         for n, exact in ((2, 3), (2, -1), (-1, 0)):
             with self.assertRaises(ValueError):
                 build_report([rec("s", "c", "d", n=n, exact=exact)], incumbent="c")
 
+    def test_fuzz_malformed_records_fail_closed_with_value_error(self) -> None:
+        """Any malformed field is refused with ValueError; nothing else leaks, and
+        whatever is accepted yields finite rates inside [0, 1]."""
+        odd: list[Any] = [0, 1, 2, 2.5, True, False, math.inf, -math.inf, math.nan]
+        odd += [-1, None, "2", 10**18, [], {}]
+        fields = [
+            ("critical", "n"),
+            ("critical", "exact"),
+            ("critical", "accepted_errors"),
+            ("metrics", "cer"),
+            ("provider_cost_usd",),
+            ("latency_ms",),
+            ("hard_failures",),
+            ("stratum",),
+            ("candidate_id",),
+            ("doc_id",),
+            ("page_id",),
+            ("critical",),
+            ("metrics",),
+        ]
+        g = _SplitMix64(4242)
+        for _ in range(3000):
+            r = rec("s", "c", "d")
+            if g.below(2):
+                r["hard_failures"] = ["provider_unavailable"]
+            for _k in range(1 + g.below(3)):
+                *parents, leaf = fields[g.below(len(fields))]
+                holder: Any = r
+                for key in parents:
+                    holder = holder.get(key) if isinstance(holder, dict) else None
+                if not isinstance(holder, dict):
+                    continue
+                if g.below(8) == 0:
+                    holder.pop(leaf, None)
+                else:
+                    holder[leaf] = copy.deepcopy(odd[g.below(len(odd))])
+            try:
+                out = build_report([r, rec("s", "c", "e")], incumbent="c")
+            except ValueError:
+                continue
+            for st in out["strata"].values():
+                for cell, key in itertools.product(
+                    st["cells"].values(), ("selection_rate", "critical_exact_rate")
+                ):
+                    v = cell[key]
+                    self.assertTrue(v == INSUFFICIENT or 0.0 <= v <= 1.0, (key, v, r))
+
     def test_property_failing_a_page_never_improves_its_candidate(self) -> None:
-        """Fuzz: turning any one accepted page into a hard failure never improves its
-        candidate's stratum rate, macro, worst stratum or primary route."""
+        """Fuzz: failing accepted pages or adding failed ones never improves the
+        candidate's cell rates, Wilson upper bound, macro, worst stratum or primary."""
 
         def rate(x: Any) -> float:
             return math.inf if x in (INSUFFICIENT, None) else float(x)
@@ -174,19 +265,35 @@ class PairedReportTest(unittest.TestCase):
             i = ok[g.below(len(ok))]
             worse = copy.deepcopy(recs)
             worse[i]["hard_failures"] = ["contract_failed"]
-            c, s = recs[i]["candidate_id"], recs[i]["stratum"]
+            c = recs[i]["candidate_id"]
+            # Also fail more of c's pages, and add brand-new failed pages for c (any
+            # recorded n, any CER): neither may help c anywhere.
+            for r in worse:
+                if r["candidate_id"] == c and g.below(3) == 0:
+                    r["hard_failures"] = ["contract_failed"]
+            strata_b = sorted({r["stratum"] for r in recs})
+            for k in range(g.below(3)):
+                new = rec(strata_b[g.below(len(strata_b))], c, f"new{k}", n=g.below(4), exact=0)
+                new["page_id"], new["hard_failures"] = f"new-{k}", ["provider_unavailable"]
+                new["metrics"]["cer"] = g.below(1000) / 1000
+                worse.append(new)
             b, a = build_report(recs, incumbent="inc"), build_report(worse, incumbent="inc")
-            ctx = (recs, i)
-            cell_b, cell_a = b["strata"][s]["cells"][c], a["strata"][s]["cells"][c]
-            self.assertLessEqual(
-                rate(cell_a["selection_rate"]), rate(cell_b["selection_rate"]), ctx
-            )
+            ctx = (recs, worse)
+            for s in strata_b:
+                cell_b, cell_a = b["strata"][s]["cells"].get(c), a["strata"][s]["cells"].get(c)
+                if cell_b is not None:
+                    for key in ("selection_rate", "critical_exact_rate"):
+                        self.assertLessEqual(rate(cell_a[key]), rate(cell_b[key]), (key, ctx))
+                    ci_b, ci_a = cell_b["critical_exact_ci"], cell_a["critical_exact_ci"]
+                    upper_b = math.inf if ci_b == INSUFFICIENT else ci_b[1]
+                    upper_a = math.inf if ci_a == INSUFFICIENT else ci_a[1]
+                    self.assertLessEqual(upper_a, upper_b, ctx)
+                if a["routes"][s]["primary"] == c:
+                    self.assertEqual(b["routes"][s]["primary"], c, (s, ctx))
             sb, sa = b["summary"][c], a["summary"][c]
             for key in ("macro_critical_exact_rate", "worst_stratum_critical_exact_rate"):
                 self.assertLessEqual(rate(sa[key]), rate(sb[key]) + 1e-12, (key, ctx))
             self.assertLessEqual(set(sa["strata_insufficient"]), set(sb["strata_insufficient"]))
-            if a["routes"][s]["primary"] == c:
-                self.assertEqual(b["routes"][s]["primary"], c, ctx)
 
     def test_pairing_counts_discordant_docs(self) -> None:
         recs = docs("s", "inc", exact=1) + docs("s", "c", exact=2)

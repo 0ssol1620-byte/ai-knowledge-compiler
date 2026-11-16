@@ -11,6 +11,16 @@ the per-page critical exact fraction, where a hard-failed page scores 0 whatever
 critical n it recorded, and an accepted page without critical fields does not
 count. Failing a page can therefore never raise it, and a stratum whose pages all
 failed reports 0.0, never "insufficient".
+Every reported rate counts failed pages the same way: critical_exact_rate and its
+Wilson CI take exact fields from accepted pages over the critical n of all
+pages, so a failed page is n fields, none exact. Critical n is gold, a property
+of the page: a failed page counts the largest n any record of that page carries
+in the stratum, so a runner writing n=0 on a failure cannot hide it when another
+candidate read the page (WO-D08-1 must still record gold n on failed pages, or
+a page no candidate read stays invisible). Eligibility uses accepted_critical_n.
+Ties on selection_rate break on failure fraction before CER and cost, so adding
+or failing a page never moves its candidate up. A malformed record is a
+ValueError.
 """
 
 from __future__ import annotations
@@ -25,6 +35,7 @@ from benchmark.w6.v2.grading import wilson_interval
 
 MAX_ALTERNATIVES = 2
 INSUFFICIENT = "insufficient"
+_METRICS = ("cer", "table_f1", "formula_score")
 
 
 def _percentile(values: list[float], q: float) -> float | None:
@@ -61,15 +72,38 @@ def _selection_rate(records: list[dict[str, Any]]) -> float | str:
     return sum(scores) / len(scores) if scores else INSUFFICIENT
 
 
-def _cell(records: list[dict[str, Any]]) -> dict[str, Any]:
+def _real(v: object) -> bool:
+    return isinstance(v, int | float) and not isinstance(v, bool) and math.isfinite(v) and v >= 0
+
+
+def _validate(r: Any) -> None:
+    """Fail closed: any malformed WO-D08-1 record is a ValueError, never a wrong rate."""
+    try:
+        c, m, cost = r["critical"], r["metrics"], r["provider_cost_usd"]
+        ok = (
+            all(isinstance(r[k], str) for k in ("page_id", "doc_id", "stratum", "candidate_id"))
+            and all(type(c[k]) is int for k in ("n", "exact", "accepted_errors"))
+            and 0 <= c["exact"] <= c["n"]
+            and c["accepted_errors"] >= 0
+            and isinstance(r["hard_failures"], list)
+            and isinstance(m, dict)
+            and all(_real(m[k]) for k in _METRICS if k in m)
+            and (cost is None or _real(cost))
+            and _real(r["latency_ms"])
+        )
+    except (KeyError, TypeError) as e:
+        raise ValueError(f"malformed screen record ({e!r}): {r!r:.300}") from e
+    if not ok:
+        raise ValueError(f"malformed screen record: {r!r:.300}")
+
+
+def _cell(records: list[dict[str, Any]], gold_n: dict[str, int]) -> dict[str, Any]:
     """One stratum x candidate cell. A critical-less cell is insufficient, not zero."""
-    for r in records:
-        c = r["critical"]
-        if not 0 <= c["exact"] <= c["n"] or c["accepted_errors"] < 0:
-            raise ValueError(f"critical counts out of range on page {r['page_id']!r}: {c}")
     accepted = [r for r in records if not r["hard_failures"]]
-    # A hard-failed page is never exact and carries no trusted critical counts.
-    n = sum(r["critical"]["n"] for r in accepted)
+    failures = len(records) - len(accepted)
+    # A failed page keeps the page's gold critical n in the denominator, none exact.
+    n = sum(gold_n[r["page_id"]] if r["hard_failures"] else r["critical"]["n"] for r in records)
+    accepted_n = sum(r["critical"]["n"] for r in accepted)
     exact = sum(r["critical"]["exact"] for r in accepted)
     costs = [r["provider_cost_usd"] for r in records]
     known = [c for c in costs if c is not None]
@@ -78,16 +112,18 @@ def _cell(records: list[dict[str, Any]]) -> dict[str, Any]:
         "pages": len(records),
         "docs": len({r["doc_id"] for r in records}),
         "critical_n": n,
+        "accepted_critical_n": accepted_n,
         "critical_exact": exact,
-        "critical_exact_rate": exact / n if n else INSUFFICIENT,
-        "critical_exact_ci": wilson_interval(exact, n) if n else INSUFFICIENT,
+        # Failed pages with no recorded n still make the cell 0.0, never insufficient.
+        "critical_exact_rate": exact / n if n else (0.0 if failures else INSUFFICIENT),
+        "critical_exact_ci": wilson_interval(exact, n) if n or failures else INSUFFICIENT,
         # Failure-aware figure that selection ranks on: failed pages dilute the rate.
         "selection_rate": _selection_rate(records),
         "accepted_critical_errors": sum(r["critical"]["accepted_errors"] for r in records),
         "cer": _metric(records, "cer"),
         "table_f1": _metric(records, "table_f1"),
         "formula_score": _metric(records, "formula_score"),
-        "failures": len(records) - len(accepted),
+        "failures": failures,
         # Never invent a cost: unknown on any page means unknown for the cell.
         "cost_per_accepted_page_usd": (
             sum(known) / len(accepted) if accepted and len(known) == len(costs) else None
@@ -126,10 +162,12 @@ def _paired(base: list[dict[str, Any]], cand: list[dict[str, Any]]) -> dict[str,
     }
 
 
-def _rank_key(cell: dict[str, Any]) -> tuple[float, float, float]:
+def _rank_key(cell: dict[str, Any]) -> tuple[float, float, float, float]:
     cer, cost = cell["cer"], cell["cost_per_accepted_page_usd"]
+    # Failure fraction before CER: a failed page's metrics must not win a tie.
     return (
         -cell["selection_rate"],
+        cell["failures"] / cell["pages"],
         cer if cer is not None else math.inf,
         cost if cost is not None else math.inf,
     )
@@ -138,12 +176,17 @@ def _rank_key(cell: dict[str, Any]) -> tuple[float, float, float]:
 def build_report(records: list[dict[str, Any]], *, incumbent: str) -> dict[str, Any]:
     grouped: dict[str, dict[str, list[dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
     for r in records:
+        _validate(r)
         grouped[r["stratum"]][r["candidate_id"]].append(r)
 
     strata: dict[str, Any] = {}
     ranked: dict[str, list[str]] = {}
     for stratum in sorted(grouped):
-        cells = {c: _cell(rs) for c, rs in grouped[stratum].items()}
+        gold_n: dict[str, int] = defaultdict(int)
+        for rs in grouped[stratum].values():
+            for r in rs:
+                gold_n[r["page_id"]] = max(gold_n[r["page_id"]], r["critical"]["n"])
+        cells = {c: _cell(rs, gold_n) for c, rs in grouped[stratum].items()}
         pairs = {
             c: _paired(grouped[stratum].get(incumbent, []), grouped[stratum][c])
             for c in cells
@@ -156,7 +199,7 @@ def build_report(records: list[dict[str, Any]], *, incumbent: str) -> dict[str, 
                 rejected[c] = f"accepted_critical_errors={cell['accepted_critical_errors']}"
             elif cell["failures"] == cell["pages"]:
                 rejected[c] = "no_accepted_pages"
-            elif cell["critical_exact_rate"] == INSUFFICIENT:
+            elif cell["accepted_critical_n"] == 0:
                 rejected[c] = INSUFFICIENT
             else:
                 eligible.append(c)
