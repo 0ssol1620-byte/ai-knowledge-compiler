@@ -192,11 +192,24 @@ class Cursor:
 
 
 @dataclass(frozen=True, slots=True)
+class SkippedSource:
+    """A source item the adapter saw but deliberately did not read.
+
+    Reported beside the events (never inside a :class:`ChangeEvent`), so a skip
+    is visible without changing any event hash.
+    """
+
+    path: str
+    reason: str
+
+
+@dataclass(frozen=True, slots=True)
 class FetchResult:
     """What one poll produced: ordered events plus the position after them."""
 
     events: tuple[ChangeEvent, ...]
     cursor: Cursor
+    skipped: tuple[SkippedSource, ...] = ()
 
     def __len__(self) -> int:
         return len(self.events)
