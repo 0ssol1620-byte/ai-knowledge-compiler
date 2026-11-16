@@ -42,6 +42,8 @@ def _check_doc(doc: dict[str, Any]) -> None:
     name = doc["doc_id"]
     if not isinstance(name, str) or not name:
         raise ContractError("doc_id must be a non-empty string")
+    if "/" in name or "\\" in name or name in (".", "..") or Path(name).is_absolute():
+        raise ContractError(f"doc_id {name!r} must be a plain file name inside the corpus root")
     require_sha256(doc["source_sha256"], "source_sha256")
     for f in ("byte_size", "page_count"):
         if not isinstance(doc[f], int) or isinstance(doc[f], bool) or doc[f] < 1:
@@ -101,26 +103,42 @@ def assign_split(
     for d in docs:
         _check_doc(d)
     _check_unique(docs)
-    share = holdout_pages / (dev_pages + holdout_pages)
+    total = _pages(docs)
+    cap = holdout_pages + HOLDOUT_MAX_OVERSHOOT
     ordered = sorted(docs, key=lambda x: _order_key(salt, x))
     by_stratum: dict[str, list[dict[str, Any]]] = {}
     for d in ordered:
         d["split"] = "dev"
         by_stratum.setdefault(d["stratum"], []).append(d)
-    for name, group in by_stratum.items():
+    held = 0
+    for name, group in by_stratum.items():  # every stratum first gets its smallest document
         if len(group) < 2:
             raise ContractError(f"stratum {name!r} has one document and cannot land in both splits")
-        quota, got = _pages(group) * share, 0
-        for d in group[:-1]:  # always leave at least one document in dev
-            if got >= quota or (got and got + d["page_count"] > quota):
+        small = min(group[:-1], key=lambda x: x["page_count"])  # last doc stays in dev
+        small["split"] = "holdout"
+        held += small["page_count"]
+    if held > cap:
+        raise ContractError(f"one document per stratum already puts {held} pages in the holdout")
+    for group in by_stratum.values():
+        quota = holdout_pages * _pages(group) / total
+        got = sum(d["page_count"] for d in group if d["split"] == "holdout")
+        for d in group[:-1]:
+            if got >= quota:
                 break
-            d["split"] = "holdout"
-            got += d["page_count"]
-    held = _pages(d for d in docs if d["split"] == "holdout")
+            if d["split"] == "dev" and got + d["page_count"] <= quota and (
+                held + d["page_count"] <= cap
+            ):
+                d["split"] = "holdout"
+                got += d["page_count"]
+                held += d["page_count"]
     for d in ordered:  # top up to the floor, never emptying a stratum's dev side
         if held >= holdout_pages:
             break
-        if d["split"] == "dev" and sum(x["split"] == "dev" for x in by_stratum[d["stratum"]]) > 1:
+        if (
+            d["split"] == "dev"
+            and held + d["page_count"] <= cap
+            and sum(x["split"] == "dev" for x in by_stratum[d["stratum"]]) > 1
+        ):
             d["split"] = "holdout"
             held += d["page_count"]
     return docs
@@ -161,6 +179,13 @@ def freeze(
             raise ContractError(
                 f"holdout overshoots 100 by more than {HOLDOUT_MAX_OVERSHOOT}: {c['holdout_pages']}"
             )
+        stripped = [{k: v for k, v in d.items() if k != "split"} for d in docs]
+        for want in assign_split(stripped, salt):
+            got = next(d for d in docs if d["doc_id"] == want["doc_id"])
+            if got["split"] != want["split"]:
+                raise ContractError(
+                    f"{want['doc_id']}: split {got['split']!r} is not what salt {salt!r} assigns"
+                )
     else:
         if screen_manifest is None:
             raise ContractError("eg04 profile needs the screen manifest to prove no overlap")
@@ -172,6 +197,11 @@ def freeze(
             raise ContractError(f"eg04 minimums not met: {c}")
         if c["korean_pages"] * 2 < c["pages"]:
             raise ContractError(f"eg04 needs >=50% Korean pages: {c['korean_pages']}/{c['pages']}")
+        body = {k: v for k, v in screen_manifest.items() if k != "manifest_sha256"}
+        if screen_manifest.get("profile") != "screen" or (
+            canonical_sha256(body) != screen_manifest.get("manifest_sha256")
+        ):
+            raise ContractError("eg04 needs an intact manifest with profile 'screen'")
         screen_sources = {d["source_sha256"] for d in screen_manifest["documents"]}
         shared = {d["source_sha256"] for d in docs} & screen_sources
         if shared:

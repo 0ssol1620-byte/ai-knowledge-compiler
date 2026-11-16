@@ -252,3 +252,46 @@ def test_holdout_guard(tmp_path: Path) -> None:
         guard.load("holdout", "tune", RECIPE_A)  # still sealed for tuning after evaluation
     with pytest.raises(ValueError):
         guard.load("holdout", "peek")
+
+
+def _mixed_corpus(total: int, strata: int = 9, max_pages: int = 30) -> list[dict[str, Any]]:
+    docs, i, pages_left = [], 0, total
+    while pages_left > 0:
+        pc = min((i // strata * 7 + i % strata) % max_pages + 1, pages_left)
+        docs.append(_doc(i, stratum=f"s{i % strata}", pages=pc))
+        pages_left -= pc
+        i += 1
+    return docs
+
+
+def test_split_hits_holdout_window_on_mixed_page_counts() -> None:
+    for total in (460, 600, 1000):
+        docs = _mixed_corpus(total)
+        for salt in ("a", "b", "c", "d", "e"):
+            m = freeze(assign_split(docs, salt), salt)
+            c = m["counts"]
+            assert 100 <= c["holdout_pages"] <= 110 and c["dev_pages"] >= 300, (total, salt, c)
+            for s in {d["stratum"] for d in docs}:
+                assert {d["split"] for d in m["documents"] if d["stratum"] == s} == {
+                    "dev", "holdout"
+                }
+
+
+def test_freeze_rejects_hand_picked_split_that_salt_does_not_assign() -> None:
+    docs = assign_split(_screen_docs(), "salt")
+    dev = next(d for d in docs if d["split"] == "dev" and d["stratum"] == "s0")
+    hold = next(d for d in docs if d["split"] == "holdout" and d["stratum"] == "s0")
+    dev["split"], hold["split"] = "holdout", "dev"  # same stratum, same pages: counts still pass
+    with pytest.raises(ContractError, match="is not what salt"):
+        freeze(docs, "salt")
+
+
+def test_doc_id_cannot_escape_corpus_root_and_eg04_needs_intact_screen_manifest() -> None:
+    for bad in ("../x.pdf", "/abs.pdf", "a/b.pdf", "..", "a\\b.pdf"):
+        docs = _screen_docs()
+        docs[0]["doc_id"] = bad
+        with pytest.raises(ContractError, match="plain file name"):
+            assign_split(docs, "salt")
+    tampered = {**_frozen(), "salt": "other"}
+    with pytest.raises(ContractError, match="intact manifest"):
+        freeze(_eg04_docs(), "s", profile="eg04", screen_manifest=tampered)
