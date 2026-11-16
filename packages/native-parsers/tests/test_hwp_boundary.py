@@ -116,3 +116,64 @@ def test_request_and_result_carry_no_host_paths() -> None:
         r"[A-Za-z]:[\/]|\\|(?<![A-Za-z0-9_\-\"])/[A-Za-z]", text.replace("section0/", "")
     )
     assert hwp_boundary.__file__ not in text
+
+
+def test_disable_network_denies_socket_and_create_connection(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import socket
+
+    monkeypatch.setattr(socket, "socket", socket.socket)
+    monkeypatch.setattr(socket, "create_connection", socket.create_connection)
+    hwp_boundary._disable_network()
+    with pytest.raises(PermissionError, match="parser_network_disabled"):
+        socket.create_connection(("192.0.2.1", 9))
+    with pytest.raises(PermissionError, match="parser_network_disabled"):
+        socket.socket()
+
+
+_NET_PROBE = (
+    "import sys,json;sys.path[:0]=json.loads(sys.argv.pop(1));"
+    "import socket;"
+    "from akc_native_parsers import hwp_boundary as b;"
+    "from akc_native_parsers.hwp_contract import HwpEngineHold\n"
+    "class P:\n"
+    "  def parse(self, data, request):\n"
+    "    try: socket.create_connection(('192.0.2.1', 9), timeout=0.5)\n"
+    "    except PermissionError as e:\n"
+    "      if str(e) == 'parser_network_disabled': raise HwpEngineHold('HWP_ENGINE_UNAVAILABLE')\n"
+    "      raise\n"
+    "    raise SystemExit(3)\n"
+    "b._ENGINES['fixture'] = P\n"
+    "b._child_main(sys.argv[1:])"
+)
+
+
+def test_child_main_denies_network_before_the_engine_runs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(hwp_boundary, "_BOOT", _NET_PROBE)
+    assert _run("x") == Held(reason_code="HWP_ENGINE_UNAVAILABLE")
+    # control: with the denial turned off the probe reaches the connect and cannot yield Held
+    off = "b._disable_network = lambda: None" + chr(10) + "b._child_main("
+    no_denial = _NET_PROBE.replace("b._child_main(", off)
+    monkeypatch.setattr(hwp_boundary, "_BOOT", no_denial)
+    assert _run("x") == Retryable(reason_code="PARSER_PROCESS_CRASH")
+
+
+@pytest.mark.parametrize(
+    "child_stdout",
+    [
+        "sys.stdout.write('not json')",
+        "pass",
+        'sys.stdout.write(\'{"outcome":"held","reason_code":"HWP_CONTAINER_LIMIT"} x\')',
+        'sys.stdout.write(\'{"outcome":"retryable","reason_code":"PARSER_TIMEOUT"}\')',
+        'sys.stdout.write(\'{"outcome":"held","reason_code":"NOT_A_CODE"}\')',
+    ],
+)
+def test_malformed_child_stdout_is_held_invalid(
+    monkeypatch: pytest.MonkeyPatch, child_stdout: str
+) -> None:
+    boot = "import sys,json;sys.path[:0]=json.loads(sys.argv.pop(1));" + child_stdout
+    monkeypatch.setattr(hwp_boundary, "_BOOT", boot)
+    assert _run("fixture:complex_table") == Held(reason_code="PARSER_RESULT_INVALID")
