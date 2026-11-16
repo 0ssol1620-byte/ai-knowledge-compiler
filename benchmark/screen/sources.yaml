@@ -1,21 +1,22 @@
 # Allowlist of source families for the screen corpus. A family absent from this file is refused.
-# rights_class values match the screen manifest enum: owned, public_domain, permissive_licence, synthetic.
+# rights_class values match the screen manifest enum: owned, public_domain, public_record, permissive_licence, synthetic.
+# public_record = published by a regulator, authored by a third party, redistribution not assumed.
 # `clearance: decision_required` means the licence text is captured here but whether it permits this use
 # is a recorded rights decision (core-runtime-arena section 6), not something this file settles.
 # Excluded on purpose: OmniDocBench, olmOCR-bench and other research-only / non-commercial sets.
 families:
   sec_edgar:
-    rights_class: public_domain
+    rights_class: public_record
     download: true
     hosts: [www.sec.gov]
     licences:
-      US-FED-PUBLIC: https://www.sec.gov/about/privacy-information#copyright
+      SEC-WEBSITE-POLICY: https://www.sec.gov/about/privacy-information#copyright
     snapshot_required: true
     clearance: decision_required
   opendart:
     # Fetched through benchmark/acquire_dart.py (needs the founder-typed DART key); this tool does
     # not call OpenDART, so the family is not downloadable by URL here.
-    rights_class: public_domain
+    rights_class: public_record
     download: false
     hosts: [opendart.fss.or.kr, dart.fss.or.kr]
     licences:

@@ -15,7 +15,7 @@ from typing import Any
 
 from benchmark.v6.contracts import ContractError, canonical_sha256, require_sha256
 
-RIGHTS_CLASSES = ("owned", "public_domain", "permissive_licence", "synthetic")
+RIGHTS_CLASSES = ("owned", "public_domain", "public_record", "permissive_licence", "synthetic")
 SPLITS = ("dev", "holdout")
 PURPOSES = ("tune", "calibrate", "evaluate_frozen")
 PROFILES = ("screen", "eg04")
