@@ -1,0 +1,5 @@
+hpi_type,hpi_flavor,frequency,level,place_name,place_id,yr,period,index_nsa,index_sa
+traditional,purchase-only,quarterly,MSA,Synthetic Metro A,90001,2020,1,100.10,100.40
+traditional,purchase-only,quarterly,MSA,Synthetic Metro A,90001,2020,2,101.20,101.00
+traditional,purchase-only,quarterly,MSA,Synthetic Metro B,90002,2020,1,98.00,98.30
+traditional,purchase-only,quarterly,MSA,Synthetic Metro B,90002,2020,2,NA,98.90
