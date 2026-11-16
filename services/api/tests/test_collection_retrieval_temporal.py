@@ -293,6 +293,32 @@ async def test_an_aware_cut_reaches_the_store_query() -> None:
     assert executor.parameters["has_available_at"] is False
 
 
+async def test_response_states_which_temporal_cuts_abstained() -> None:
+    executor = _Executor()
+    store = PostgresHybridStore(executor=executor, row_attestor=HmacSha256RowAttestor(b"r" * 32))
+    async with _client(store) as client:
+        plain = await client.post(_URL, json={"query": "evidence"})
+        cut = await client.post(
+            _URL,
+            json={
+                "query": "evidence",
+                "knownAt": "2026-11-16T09:00:00Z",
+                "validAt": "2026-11-16T09:00:00Z",
+                "availableAt": "2026-11-16T09:00:00Z",
+            },
+        )
+    assert plain.json()["temporal_coverage"] == {
+        "row_temporal_fields": ["recorded_at"],
+        "abstained_cuts": [],
+    }
+    assert cut.status_code == 200, cut.text
+    assert cut.json()["hits"] == []
+    assert cut.json()["temporal_coverage"] == {
+        "row_temporal_fields": ["recorded_at"],
+        "abstained_cuts": ["valid_at", "available_at"],
+    }
+
+
 async def test_a_temporal_attestation_failure_is_a_closed_503() -> None:
     store = _RaisingStore(executor=_Executor(), row_attestor=HmacSha256RowAttestor(b"r" * 32))
     async with _client(store) as client:

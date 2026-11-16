@@ -3115,8 +3115,10 @@ async def commit_then_sweep_superseded(
 ) -> int | None:
     """Commit the completion receipt, then delete rows of every other canonical model.
 
-    The sweep runs only after the commit: a failed commit leaves the previous
-    model's rows serving. A failed sweep never un-completes the compile; it is
+    The sweep runs only after the commit. A failed commit leaves mixed rows (the new
+    rows are already indexed and overwrite by stable_id), so search fails closed
+    with 503 RECEIPT_MISMATCH until a later compile completes.
+    A failed sweep never un-completes the compile; it is
     retried once, then logged with a code, and the next compile sweeps again.
     Returns the removed row count, or None when the sweep failed.
     """

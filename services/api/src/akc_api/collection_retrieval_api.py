@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import re
 import uuid
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from akc_cir import canonical_json, sha256_digest
 from akc_retrieval import (
@@ -88,12 +88,21 @@ class CollectionRetrievalHit(_WireModel):
     metadata: dict[str, Any]
 
 
+class CollectionRetrievalTemporalCoverage(_WireModel):
+    # Static statement, so an abstained cut is never mistaken for "nothing matched".
+    # recorded_at is the start of the latest compile (rewritten on every recompile),
+    # so knownAt means "at or after the last compile", not when a fact was first known.
+    row_temporal_fields: tuple[Literal["recorded_at"], ...] = ("recorded_at",)
+    abstained_cuts: tuple[Literal["valid_at", "available_at"], ...] = ()
+
+
 class CollectionRetrievalSearchResponse(_WireModel):
     collection_id: uuid.UUID
     project_id: uuid.UUID
     query_fingerprint: Annotated[str, Field(pattern=r"^sha256:[0-9a-f]{64}$")]
     embedding: CollectionRetrievalEmbeddingReceipt
     hits: tuple[CollectionRetrievalHit, ...]
+    temporal_coverage: CollectionRetrievalTemporalCoverage
 
 
 def _runtime_unavailable(code: str) -> HTTPException:
@@ -320,6 +329,16 @@ async def search_collection_retrieval(
             model_id=embedding.model_id,
             model_revision=embedding.model_revision,
             source_sha256=embedding.source_hash,
+        ),
+        temporal_coverage=CollectionRetrievalTemporalCoverage(
+            abstained_cuts=tuple(
+                name
+                for name, value in (
+                    ("valid_at", payload.valid_at),
+                    ("available_at", payload.available_at),
+                )
+                if value is not None
+            )
         ),
         hits=tuple(
             CollectionRetrievalHit(
