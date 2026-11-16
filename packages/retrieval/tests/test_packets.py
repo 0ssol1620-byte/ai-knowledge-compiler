@@ -5,6 +5,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 from akc_retrieval import EvidenceHit, RetrievalQuery
+from akc_retrieval.engine import ProviderAttestationError
 from akc_retrieval.packets import (
     EvidenceItem,
     EvidencePacket,
@@ -31,7 +32,7 @@ def _hit(**metadata: str) -> EvidenceHit:
         vector_score=0.8,
         evidence_block_ids=(uuid.uuid4(),),
         source_hash="b" * 64,
-        metadata=dict(metadata),
+        metadata={"recorded_at": "2026-01-01T00:00:00+00:00", **metadata},
     )
 
 
@@ -91,3 +92,15 @@ def test_an_expired_packet_is_refused_at_build() -> None:
 def test_hits_not_matching_admissions_are_refused() -> None:
     with pytest.raises(ValueError, match="does not match"):
         _build([_hit()], [_adm("excluded_not_valid")])
+
+
+def test_a_hit_outside_the_cut_is_refused_despite_a_forged_admission() -> None:
+    late = _hit(recorded_at="2026-06-01T00:00:00+00:00")
+    with pytest.raises(ProviderAttestationError, match="outside the temporal cut"):
+        _build([late], [_adm("admitted")])
+
+
+def test_an_inconsistent_admission_is_refused() -> None:
+    forged = TemporalAdmission(admitted=False, reason="admitted")
+    with pytest.raises(ProviderAttestationError, match="inconsistent"):
+        _build([_hit(recorded_at="2026-01-01T00:00:00+00:00")], [forged])

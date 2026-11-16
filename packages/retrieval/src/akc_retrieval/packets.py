@@ -13,8 +13,9 @@ from datetime import UTC, datetime
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict
 
+from .engine import ProviderAttestationError
 from .models import EvidenceHit, RetrievalQuery, VerificationState
-from .temporal import TemporalAdmission, _moment
+from .temporal import TemporalAdmission, _moment, admit
 
 
 class _Public(BaseModel):
@@ -93,6 +94,10 @@ def build_evidence_packet(
         raise ValueError("expires_at must be timezone-aware")
     if expires_at <= (now or datetime.now(UTC)):
         raise ValueError("packet would already be expired")
+    if any(a.admitted != (a.reason == "admitted") for a in admissions):
+        raise ProviderAttestationError("inconsistent temporal admission")
+    if any(not admit(h.metadata, query).admitted for h in hits):
+        raise ProviderAttestationError("packet item outside the temporal cut")
     counts = Counter(a.reason for a in admissions)
     if counts["admitted"] != len(hits):
         raise ValueError("admitted count does not match the hits supplied")
