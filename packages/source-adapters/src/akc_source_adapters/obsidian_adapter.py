@@ -14,14 +14,14 @@ frontmatter, else the first H1 heading, else the file stem.
 from __future__ import annotations
 
 import hashlib
-from collections.abc import Callable, Iterator
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
 import yaml
 
-from akc_source_adapters.envelope import ChangeEvent, Cursor, FetchResult, utc_now
+from akc_source_adapters.envelope import ChangeEvent, Cursor, FetchResult, SkippedSource, utc_now
 
 PROVIDER = "obsidian"
 NOTE_GLOB = "*.md"
@@ -29,6 +29,7 @@ _FRONTMATTER_FENCE = "---"
 KIND_NOTE_ADDED = "note_added"
 KIND_NOTE_CHANGED = "note_changed"
 KIND_NOTE_DELETED = "note_deleted"
+SKIP_SYMLINK_OUTSIDE_ROOT = "symlink_outside_root"
 
 
 @dataclass(frozen=True, slots=True)
@@ -44,11 +45,21 @@ class NoteState:
         return {"mtime_ns": self.mtime_ns, "sha256": self.sha256, "size_bytes": self.size_bytes}
 
 
-def _iter_note_files(vault: Path) -> Iterator[Path]:
-    yield from sorted(
-        (p for p in vault.rglob(NOTE_GLOB) if p.is_file()),
-        key=lambda p: p.relative_to(vault).as_posix(),
-    )
+def _iter_note_files(vault: Path) -> tuple[list[Path], list[SkippedSource]]:
+    """Notes under ``vault`` plus candidates skipped because they resolve outside it."""
+    root = vault.resolve()
+    notes: list[Path] = []
+    skipped: list[SkippedSource] = []
+    for path in sorted(vault.rglob(NOTE_GLOB), key=lambda p: p.relative_to(vault).as_posix()):
+        if not path.is_file():
+            continue
+        if not path.resolve().is_relative_to(root):
+            skipped.append(
+                SkippedSource(path.relative_to(vault).as_posix(), SKIP_SYMLINK_OUTSIDE_ROOT)
+            )
+            continue
+        notes.append(path)
+    return notes, skipped
 
 
 class ObsidianVaultAdapter:
@@ -82,8 +93,12 @@ class ObsidianVaultAdapter:
 
     def scan(self) -> dict[str, NoteState]:
         """Hash every note; paths are vault-relative posix strings, sorted."""
+        return self._scan()[0]
+
+    def _scan(self) -> tuple[dict[str, NoteState], tuple[SkippedSource, ...]]:
         states: dict[str, NoteState] = {}
-        for path in _iter_note_files(self.vault_path):
+        notes, skipped = _iter_note_files(self.vault_path)
+        for path in notes:
             relative = path.relative_to(self.vault_path).as_posix()
             try:
                 content = path.read_bytes()
@@ -95,13 +110,13 @@ class ObsidianVaultAdapter:
             states[relative] = NoteState(
                 path=relative, sha256=digest, mtime_ns=stat.st_mtime_ns, size_bytes=stat.st_size
             )
-        return states
+        return states, tuple(skipped)
 
     def fetch_changes(self, cursor: Cursor | None) -> FetchResult:
         """Changes since ``cursor``'s snapshot (everything when ``cursor`` is None)."""
         self._assert_compatible(cursor)
         previous = self._previous_states(cursor)
-        current = self.scan()
+        current, skipped = self._scan()
         observed_at = self._clock()
 
         events: list[ChangeEvent] = []
@@ -144,7 +159,7 @@ class ObsidianVaultAdapter:
 
         next_state = {relative: state.as_dict() for relative, state in current.items()}
         next_cursor = self._cursor_for(cursor, {"notes": next_state})
-        return FetchResult(events=tuple(events), cursor=next_cursor)
+        return FetchResult(events=tuple(events), cursor=next_cursor, skipped=skipped)
 
     def checkpoint(self) -> Cursor:
         """Snapshot of the vault right now, without emitting events."""
