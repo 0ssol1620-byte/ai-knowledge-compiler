@@ -1,0 +1,13 @@
+id: team-workspace
+version: 1.0.0
+display_name: Team Workspace
+domains: [team, workspace, operations]
+object_types: [meeting, decision, action_item, owner, milestone]
+root_views: [Meetings, Decisions, Actions, Milestones]
+moc_templates: [Meetings, Decisions, Actions]
+folder_depth: 3
+naming_policy: date-title
+source_preservation: true
+relation_policy: [source_explicit, structured_derived, rule_derived]
+validators: [source_coverage, privacy_scope, owner_evidence, date_fidelity]
+export_profiles: [obsidian, ontology, rag]

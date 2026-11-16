@@ -1,0 +1,7 @@
+blueprint: creative-works
+kind: verified-example
+version: 1.0.0
+input: {document_type: manuscript, temporal_structure: drafts}
+expected:
+  object_kinds: [Work, Character, Setting, Scene, Draft, Reference]
+  required_authority: [source_ref, draft_id, access_scope]

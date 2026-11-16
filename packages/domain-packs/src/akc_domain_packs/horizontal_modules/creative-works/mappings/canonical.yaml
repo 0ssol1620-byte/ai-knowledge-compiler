@@ -1,0 +1,9 @@
+blueprint: creative-works
+kind: canonical-mappings
+version: 1.0.0
+mappings:
+  work: Entity
+  character: Entity
+  setting: Entity
+  scene: Note
+  draft: Note
