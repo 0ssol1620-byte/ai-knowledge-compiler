@@ -138,6 +138,10 @@ def to_temporal_facts(
     on everything that vintage's fact is built from (value, period_end, and on
     the last day superseded_on); which duplicate represents them then changes
     nothing but the evidence label.
+
+    A dated missing-value release is a release: it takes part in every check
+    above (a missing marker and a value on the same day disagree), it ends the
+    value before it, and it is held (`missing_value`) rather than emitted.
     """
     by_id: dict[str, list[VintageObservation]] = {}
     for o in observations:
@@ -145,29 +149,36 @@ def to_temporal_facts(
 
     facts: list[TemporalFact] = []
     held: list[HeldObservation] = []
+
+    def missing(o: VintageObservation) -> bool:
+        return o.value.strip() in missing_markers
+
     for lid in sorted(by_id):
-        usable: list[VintageObservation] = []
+        dated: list[VintageObservation] = []
         unrecorded: list[VintageObservation] = []
         ordered = sorted(by_id[lid], key=lambda o: (o.available_on or date.min, o.vintage_id))
         for o in ordered:
-            if o.value.strip() in missing_markers:
+            if o.available_on is not None:
+                dated.append(o)  # missing markers included: every release is checked
+            elif missing(o):
                 held.append(HeldObservation(o, "missing_value"))
-            elif o.available_on is None:
-                if include_unrecorded:
-                    unrecorded.append(o)
-                else:
-                    held.append(HeldObservation(o, "availability_unknown"))
+            elif include_unrecorded:
+                unrecorded.append(o)
             else:
-                usable.append(o)
+                held.append(HeldObservation(o, "availability_unknown"))
+        held.extend(HeldObservation(o, "missing_value") for o in dated if missing(o))
 
         by_day: dict[date, list[VintageObservation]] = {}
-        for o in usable:
+        for o in dated:
             assert o.available_on is not None
             by_day.setdefault(o.available_on, []).append(o)
 
         reason: HoldReason | None = None
         days = sorted(by_day)
-        if any(len({(o.value, o.period_end) for o in day}) > 1 for day in by_day.values()):
+        if any(
+            len({(None if missing(o) else o.value, o.period_end) for o in day}) > 1
+            for day in by_day.values()
+        ):
             reason = "ambiguous_vintage"
         elif any(
             o.superseded_on is not None and o.superseded_on + _DAY != nxt
@@ -178,7 +189,7 @@ def to_temporal_facts(
             # last day nothing else ends the chain, so the duplicates must agree.
             reason = "vintage_chain_inconsistent"
         if reason is not None:
-            held.extend(HeldObservation(o, reason) for o in usable)
+            held.extend(HeldObservation(o, reason) for o in dated if not missing(o))
             # The logical id is held whole: an undated vintage is not emitted
             # as the current value of an id whose chain cannot be trusted.
             held.extend(HeldObservation(o, "availability_unknown") for o in unrecorded)
@@ -189,6 +200,8 @@ def to_temporal_facts(
         chain = [by_day[d][0] for d in days]
         for i, o in enumerate(chain):
             assert o.available_on is not None
+            if missing(o):
+                continue  # held above; it still ends the value before it
             successor_day: date | None = None
             if i + 1 < len(chain):
                 successor_day = chain[i + 1].available_on

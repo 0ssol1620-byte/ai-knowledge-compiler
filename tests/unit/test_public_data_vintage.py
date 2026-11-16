@@ -378,3 +378,120 @@ def test_answers_do_not_depend_on_vintage_id_or_input_order() -> None:
         rng.shuffle(relabelled)
         again = _canonical(*to_temporal_facts(relabelled, include_unrecorded=unrecorded))
         assert again == base, (seed, observations)
+
+
+@pytest.mark.parametrize(
+    ("value_sup", "missing_sup"),
+    [(None, None), (None, date(2020, 3, 1)), (date(2020, 3, 1), None)],
+)
+def test_same_day_missing_marker_and_value_are_held_in_any_id_order(
+    value_sup: date | None, missing_sup: date | None
+) -> None:
+    day = date(2020, 1, 1)
+    for a, b in (("v1", "v2"), ("v2", "v1")):
+        facts, held = to_temporal_facts(
+            [
+                obs(a, day, "1.0", superseded_on=value_sup),
+                obs(b, day, ".", superseded_on=missing_sup),
+            ]
+        )
+        assert facts == ()
+        assert sorted(h.reason for h in held) == ["ambiguous_vintage", "missing_value"]
+
+
+def test_missing_value_release_ends_the_previous_value() -> None:
+    facts, held = to_temporal_facts(
+        [obs("v1", date(2020, 1, 1), "1.0"), obs("v2", date(2020, 3, 1), ".")]
+    )
+    assert [(f.value, f.superseded_at) for f in facts] == [
+        ("1.0", available_upper_bound(date(2020, 3, 1)))
+    ]
+    assert [h.reason for h in held] == ["missing_value"]
+    assert TemporalTimeline(facts).as_of(known_at=datetime(2021, 1, 1, tzinfo=UTC)).values == ()
+
+
+def test_mid_chain_missing_release_must_meet_its_successor() -> None:
+    facts, _ = to_temporal_facts(
+        [
+            obs("v1", date(2020, 1, 1), "1.0"),
+            obs("v2", date(2020, 3, 1), ".", superseded_on=date(2020, 3, 31)),
+            obs("v3", date(2020, 6, 1), "2.0"),
+        ]
+    )
+    assert facts == ()
+
+
+_MISSING = (".", "")
+_VALUES = ["1.0", "1.0", "2.0", " 1.0", ".", " . ", ""]
+
+
+def _oracle(observations: list[VintageObservation], lid: str, t: datetime) -> str | None:
+    """What the source said was current at `t`, read off the raw observations."""
+    seen = [
+        o
+        for o in observations
+        if o.logical_id == lid
+        and o.available_on is not None
+        and available_upper_bound(o.available_on) <= t
+    ]
+    if not seen:
+        return None
+    last = max(seen, key=lambda o: o.available_on or date.min)
+    if last.value.strip() in _MISSING:
+        return None
+    if (
+        last.superseded_on is not None
+        and available_upper_bound(last.superseded_on + timedelta(days=1)) <= t
+    ):
+        return None
+    return last.value
+
+
+def test_every_known_value_is_the_latest_release_and_same_day_releases_agree() -> None:
+    """Property: an emitted known-at answer is what the raw releases say, or nothing.
+
+    Missing-marker releases are releases: one on the same day as a value
+    contradicts it, and one on a later day ends it. Checked against an oracle
+    that reads the raw observations, not the mapping.
+    """
+    near_end = [_END - timedelta(days=n) for n in (1, 2)]
+    days = [date(2020, 1, 1), date(2020, 1, 2), date(2020, 3, 1), date(2020, 6, 1), *near_end]
+    for seed in range(3000):
+        rng = random.Random(seed)
+        observations: list[VintageObservation] = []
+        for n in range(rng.randint(1, 7)):
+            avail = rng.choice([*days, None])
+            later = [d - timedelta(days=1) for d in days if avail and d > avail] + [avail]
+            try:
+                observations.append(
+                    obs(
+                        rng.choice("abcdefg") + str(n % 2),
+                        avail,
+                        rng.choice(_VALUES),
+                        period_end=rng.choice([None, None, date(2019, 12, 31)]),
+                        superseded_on=rng.choice([None, *later]) if avail else None,
+                    )
+                )
+            except ValueError:
+                continue
+        facts, _ = to_temporal_facts(observations, include_unrecorded=rng.random() < 0.5)
+        dated = [f for f in facts if f.recorded_at is not None]
+        for lid in {f.logical_id for f in dated}:
+            groups: dict[date, set[object]] = {}
+            for o in observations:
+                if o.logical_id == lid and o.available_on is not None:
+                    key = None if o.value.strip() in _MISSING else o.value
+                    groups.setdefault(o.available_on, set()).add((key, o.period_end))
+            assert all(len(g) == 1 for g in groups.values()), (seed, observations)
+            instants = {
+                available_upper_bound(o.available_on) + delta
+                for o in observations
+                if o.logical_id == lid
+                and o.available_on is not None
+                and o.available_on < near_end[-1]
+                for delta in (timedelta(seconds=-1), timedelta(0), timedelta(days=40))
+            }
+            for t in instants:
+                known = [f.value for f in dated if f.logical_id == lid and f.known_at(t)]
+                expected = _oracle(observations, lid, t)
+                assert known == ([] if expected is None else [expected]), (seed, t, observations)
