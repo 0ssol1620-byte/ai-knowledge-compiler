@@ -42,7 +42,10 @@ def _check_doc(doc: dict[str, Any]) -> None:
     name = doc["doc_id"]
     if not isinstance(name, str) or not name:
         raise ContractError("doc_id must be a non-empty string")
-    if "/" in name or "\\" in name or name in (".", "..") or Path(name).is_absolute():
+    if (
+        "/" in name or "\\" in name or ":" in name
+        or name in (".", "..") or Path(name).is_absolute()
+    ):
         raise ContractError(f"doc_id {name!r} must be a plain file name inside the corpus root")
     require_sha256(doc["source_sha256"], "source_sha256")
     for f in ("byte_size", "page_count"):
@@ -104,7 +107,7 @@ def assign_split(
         _check_doc(d)
     _check_unique(docs)
     total = _pages(docs)
-    cap = holdout_pages + HOLDOUT_MAX_OVERSHOOT
+    cap = min(holdout_pages + HOLDOUT_MAX_OVERSHOOT, total - dev_pages)  # dev keeps its floor
     ordered = sorted(docs, key=lambda x: _order_key(salt, x))
     by_stratum: dict[str, list[dict[str, Any]]] = {}
     for d in ordered:
@@ -114,7 +117,7 @@ def assign_split(
     for name, group in by_stratum.items():  # every stratum first gets its smallest document
         if len(group) < 2:
             raise ContractError(f"stratum {name!r} has one document and cannot land in both splits")
-        small = min(group[:-1], key=lambda x: x["page_count"])  # last doc stays in dev
+        small = min(group, key=lambda x: x["page_count"])
         small["split"] = "holdout"
         held += small["page_count"]
     if held > cap:
@@ -122,11 +125,14 @@ def assign_split(
     for group in by_stratum.values():
         quota = holdout_pages * _pages(group) / total
         got = sum(d["page_count"] for d in group if d["split"] == "holdout")
-        for d in group[:-1]:
+        for d in group:
             if got >= quota:
                 break
-            if d["split"] == "dev" and got + d["page_count"] <= quota and (
-                held + d["page_count"] <= cap
+            if (
+                d["split"] == "dev"
+                and got + d["page_count"] <= quota
+                and held + d["page_count"] <= cap
+                and sum(x["split"] == "dev" for x in group) > 1
             ):
                 d["split"] = "holdout"
                 got += d["page_count"]
@@ -141,6 +147,11 @@ def assign_split(
         ):
             d["split"] = "holdout"
             held += d["page_count"]
+    if not holdout_pages <= held <= cap:
+        raise ContractError(
+            f"salt {salt!r}: no split with a {holdout_pages}-{cap} page holdout "
+            f"(holdout={held}, total={total})"
+        )
     return docs
 
 

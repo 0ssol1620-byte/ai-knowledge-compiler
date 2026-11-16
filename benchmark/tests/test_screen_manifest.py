@@ -295,3 +295,61 @@ def test_doc_id_cannot_escape_corpus_root_and_eg04_needs_intact_screen_manifest(
     tampered = {**_frozen(), "salt": "other"}
     with pytest.raises(ContractError, match="intact manifest"):
         freeze(_eg04_docs(), "s", profile="eg04", screen_manifest=tampered)
+
+
+def _held(docs: list[dict[str, Any]]) -> int:
+    return sum(d["page_count"] for d in docs if d["split"] == "holdout")
+
+
+def test_smallest_document_sorted_last_is_still_chosen() -> None:
+    # s0/s1: 80 + 1 pages; s2: forty-six 10-page docs -> 1 + 1 + 10x10 = 102 holdout exists
+    docs = [_doc(0, "s0", 80), _doc(1, "s0", 1), _doc(2, "s1", 80), _doc(3, "s1", 1)]
+    docs += [_doc(10 + i, "s2", 10) for i in range(46)]
+    for n in range(40):
+        out = assign_split(docs, f"salt{n}")
+        assert 100 <= _held(out) <= 110
+        assert sum(d["page_count"] for d in out if d["split"] == "dev") >= 300
+
+
+def test_assign_split_never_returns_a_short_or_long_holdout() -> None:
+    def rnd(*key: object, lo: int, hi: int) -> int:  # deterministic stand-in for random
+        h = hashlib.sha256(repr(key).encode()).digest()
+        return lo + int.from_bytes(h[:4], "big") % (hi - lo + 1)
+
+    raised = 0
+    for trial in range(300):
+        strata = rnd(trial, "k", lo=2, hi=3)
+        docs = [
+            _doc(i, f"s{i % strata}", rnd(trial, i, lo=5, hi=80))
+            for i in range(rnd(trial, "n", lo=6, hi=14))
+        ]
+        try:
+            out = assign_split(docs, f"salt{trial}")
+        except ContractError:
+            raised += 1
+            continue
+        assert 100 <= _held(out) <= 110
+        assert sum(d["page_count"] for d in out if d["split"] == "dev") >= 300
+        assert {d["split"] for d in out if d["stratum"] == "s0"} == {"dev", "holdout"}
+    assert raised > 0  # the failure path is exercised, and it is a ContractError
+
+
+def test_unsplittable_corpus_raises_contract_error_not_short_holdout() -> None:
+    docs = [_doc(0, "s0", 60), _doc(1, "s0", 60), _doc(2, "s1", 60), _doc(3, "s1", 60)]
+    docs += [_doc(10 + i, "s2", 90) for i in range(2)]
+    with pytest.raises(ContractError):
+        assign_split(docs, "x")
+
+
+def test_exact_400_page_corpus_leaves_dev_300() -> None:
+    for n in range(20):
+        try:
+            out = assign_split(_screen_docs(), f"s{n}")
+        except ContractError:
+            pytest.fail("a 400-page corpus must split to exactly 300/100")
+        assert sum(d["page_count"] for d in out if d["split"] == "dev") >= 300
+
+
+def test_drive_relative_doc_id_rejected() -> None:
+    with pytest.raises(ContractError):
+        assign_split([_doc(0), dict(_doc(1), doc_id="C:evil.pdf")], "x")
