@@ -126,8 +126,14 @@ def calibrate_dev(
     split: str = "dev",
 ) -> dict[str, Any]:
     dev_docs = {d["doc_id"] for d in guard.load(split, "calibrate")}  # holdout raises here
+    if manifest_sha256 != guard._manifest["manifest_sha256"]:
+        raise ValueError("manifest_sha256 does not match the manifest the guard enforces")
     by_stratum: dict[str, list[PageObservation]] = defaultdict(list)
+    seen: set[str] = set()
     for o in observations:
+        if o.page_id in seen:
+            raise ValueError(f"{o.page_id}: duplicate page observation")
+        seen.add(o.page_id)
         if o.doc_id not in dev_docs:
             raise HoldoutSealedError(f"{o.doc_id}: not a dev document; refusing to calibrate")
         by_stratum[o.stratum].append(o)

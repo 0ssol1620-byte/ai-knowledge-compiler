@@ -42,8 +42,8 @@ def verify_crop(
             revision=revision,
         )
 
-    if not request.crop_sha256 or crop_bytes is None:
-        return result(None)
+    if crop_bytes is None or not request.crop_sha256:
+        return VerifierResult("HOLD_MISSING_CROP", None, verifier_id, revision)
     if len(crop_bytes) > MAX_CROP_BYTES:
         raise ValueError("crop exceeds the verifier size bound")
     if not hmac.compare_digest(hashlib.sha256(crop_bytes).hexdigest(), request.crop_sha256):

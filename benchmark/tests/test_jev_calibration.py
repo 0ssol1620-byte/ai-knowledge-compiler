@@ -73,6 +73,8 @@ def test_client_failures_never_call_or_accept() -> None:
         CFG, _req(crop_sha256=None), None, calibrated_renderer=RENDERER, transport=_boom
     )
     assert r.state == "HOLD_MISSING_CROP"
+    r = verify_crop(CFG, _req(), None, calibrated_renderer=RENDERER, transport=_boom)
+    assert r.state == "HOLD_MISSING_CROP"
     r = verify_crop(
         CFG, _req(renderer_version="2"), CROP, calibrated_renderer=RENDERER, transport=_boom
     )
@@ -154,3 +156,16 @@ def test_holdout_input_raises(tmp_path: Path) -> None:
         calibrate_dev(guard, MSHA, _obs(), alpha_by_stratum={"s1": 0.2}, split="holdout")
     with pytest.raises(ValueError, match="no alpha"):
         calibrate_dev(guard, MSHA, _obs(), alpha_by_stratum={})
+
+
+def test_manifest_digest_must_match_guard(tmp_path: Path) -> None:
+    guard = HoldoutGuard(_manifest(), tmp_path / "log.jsonl")
+    for bad in ("sha256:" + "b" * 64, "x"):
+        with pytest.raises(ValueError, match="manifest_sha256"):
+            calibrate_dev(guard, bad, _obs(), alpha_by_stratum={"s1": 0.2})
+
+
+def test_duplicate_page_observation_raises(tmp_path: Path) -> None:
+    guard = HoldoutGuard(_manifest(), tmp_path / "log.jsonl")
+    with pytest.raises(ValueError, match="duplicate"):
+        calibrate_dev(guard, MSHA, [*_obs(), *_obs()], alpha_by_stratum={"s1": 0.2})
