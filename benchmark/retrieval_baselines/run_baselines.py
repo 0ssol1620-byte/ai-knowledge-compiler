@@ -77,13 +77,23 @@ def exact_token(query: str, candidates: Candidates, k: int) -> tuple[str, ...]:
     return rank_exact_token_baseline(query, candidates, top_k=k)
 
 
-def _all_hits(query: str, candidates: Candidates) -> tuple[Any, ...]:
-    # ponytail: rank_semantic_candidates caps top_k at 100, so re-sorts see <=100 candidates.
-    return rank_semantic_candidates(query, candidates, top_k=min(len(candidates), 100))
+RANK_CAP = 100  # rank_semantic_candidates rejects top_k > 100
+
+
+class NotRun(Exception):
+    """A retriever cannot honestly score this task; counted in the report, never truncated."""
 
 
 def bm25_only(query: str, candidates: Candidates, k: int) -> tuple[str, ...]:
-    hits = _all_hits(query, candidates) if candidates else ()
+    if len(candidates) > RANK_CAP:
+        # BM25 IDF and max-normalisation depend on the whole set; slicing would change them.
+        raise NotRun(
+            f"candidate set exceeds the rank_semantic_candidates cap of {RANK_CAP}; "
+            "no public full-set BM25 scorer"
+        )
+    if not candidates:
+        return ()
+    hits = rank_semantic_candidates(query, candidates, top_k=len(candidates))
     ordered = sorted(hits, key=lambda h: (-h.lexical_score, h.logical_id))
     return tuple(h.logical_id for h in ordered[:k])
 
@@ -95,7 +105,14 @@ def hybrid_current(query: str, candidates: Candidates, k: int) -> tuple[str, ...
 
 
 def graph_entity(query: str, candidates: Candidates, k: int) -> tuple[str, ...]:
-    hits = _all_hits(query, candidates) if candidates else ()
+    # graph_score depends only on (query, candidate), so slicing is exact.
+    hits = [
+        h
+        for i in range(0, len(candidates), RANK_CAP)
+        for h in rank_semantic_candidates(
+            query, candidates[i : i + RANK_CAP], top_k=len(candidates[i : i + RANK_CAP])
+        )
+    ]
     ordered = sorted(hits, key=lambda h: (-h.graph_score, h.logical_id))
     return tuple(h.logical_id for h in ordered[:k])
 
@@ -178,12 +195,14 @@ def run(
         recall: dict[str, list[float]] = defaultdict(list)
         precision: dict[str, list[float]] = defaultdict(list)
         tp = fp = fn = leaks = denied = ran = skipped = 0
+        reasons: dict[str, int] = defaultdict(int)
         started = time.perf_counter()
         for task in tasks:
             candidates = corpus.candidates.get(task.tenant, ())
             if task.cut is not None:
                 if admit is None:
                     skipped += 1
+                    reasons["akc_retrieval.temporal unavailable"] += 1
                     continue
                 cut = SimpleNamespace(
                     **{"include_unknown_validity": False, **dict.fromkeys(CUT_KEYS), **task.cut}
@@ -193,7 +212,12 @@ def run(
                     for c in candidates
                     if admit(corpus.metadata.get(c.logical_id, {}), cut).admitted
                 )
-            hits = tuple(retriever(task.query, candidates, top_k))[:top_k]
+            try:
+                hits = tuple(retriever(task.query, candidates, top_k))[:top_k]
+            except NotRun as exc:
+                skipped += 1
+                reasons[str(exc)] += 1
+                continue
             ran += 1
             for hit in hits:
                 owner = corpus.tenant_of.get(hit)
@@ -215,7 +239,8 @@ def run(
             "wall_seconds": time.perf_counter() - started,
             "tasks": ran,
             "not_run_tasks": skipped,
-            "not_run_reason": "akc_retrieval.temporal unavailable" if skipped else None,
+            "not_run_reason": "; ".join(sorted(reasons)) or None,
+            "not_run_reasons": dict(sorted(reasons.items())),
             "recall_at_k": {k: mean(recall[k]) for k in sorted(KINDS)},
             "source_precision_at_k": {k: mean(precision[k]) for k in sorted(KINDS)},
             "abstention_precision": ratio(tp, tp + fp),

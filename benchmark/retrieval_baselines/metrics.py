@@ -50,6 +50,11 @@ def parse_task(row: Mapping[str, Any]) -> Task:
         gold = row["gold_evidence_ids"]
         answerable = row["answerable"]
         raw_cut = row["cut"]
+        if not isinstance(gold, list):
+            raise TaskError("gold_evidence_ids must be a list")
+        for field in ("task_id", "tenant", "query", "generator"):
+            if not isinstance(row[field], str):
+                raise TaskError(f"{field} must be a string")
         task = Task(
             task_id=str(row["task_id"]),
             kind=kind,

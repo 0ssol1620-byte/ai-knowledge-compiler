@@ -166,3 +166,31 @@ def test_a_naive_cut_and_an_inconsistent_answerable_flag_are_rejected():
 def test_a_logical_id_shared_by_two_tenants_is_refused():
     with pytest.raises(ValueError):
         Corpus([_src("a", "x", "Revenue increased."), _src("b", "x", "Contract period.")])
+
+
+def _big_corpus():
+    rows = [
+        _src(
+            "a", f"d{i:03d}", f"Quartz Holdings reported zephyr mercury filler{i} figures in 2023."
+        )
+        for i in range(150)
+    ]
+    rows.append(_src("a", "target", "Mercury Systems reported figures in 2023."))
+    return rows
+
+
+def test_over_cap_candidate_set_is_scored_in_full_for_graph_and_not_run_for_bm25():
+    corpus = Corpus(_big_corpus())
+    task = _task("t1", "a", "zephyr Mercury", ["ev-target"])
+    entry = run(corpus, [task], BASELINES)["retrievers"]
+    assert entry["graph_entity"]["recall_at_k"]["retrieval"] == 1.0
+    assert (entry["bm25_only"]["tasks"], entry["bm25_only"]["not_run_tasks"]) == (0, 1)
+    assert "cap of 100" in entry["bm25_only"]["not_run_reason"]
+    assert entry["hybrid_current"]["tasks"] == entry["exact_token"]["tasks"] == 1
+
+
+def test_string_gold_and_non_string_fields_are_rejected():
+    with pytest.raises(metrics.TaskError):
+        metrics.parse_task({**_row("t", "a", "q", ["ev-a2"]), "gold_evidence_ids": "ev-a2"})
+    with pytest.raises(metrics.TaskError):
+        metrics.parse_task({**_row("t", "a", "q", ["ev-a2"]), "query": None})
