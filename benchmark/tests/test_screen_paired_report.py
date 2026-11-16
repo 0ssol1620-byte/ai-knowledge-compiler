@@ -96,23 +96,35 @@ class PairedReportTest(unittest.TestCase):
 
     def test_failed_pages_cannot_win_selection(self) -> None:
         f = ("provider_unavailable",)
-        recs = [*docs("s", "inc", k=10, exact=1, n=2), rec("s", "c", "ok")]
-        recs += [rec("s", "c", f"f{i}", n=0, exact=0, fail=f, cost=None) for i in range(9)]
-        recs += [rec("s", "dead", "d0", n=0, exact=0, fail=("contract_failed",), cost=None)]
+        # c reads s0 perfectly and fails s1..s9; the failures keep the page's gold n.
+        recs = [*docs("s", "inc", k=10, exact=1, n=2), rec("s", "c", "s0")]
+        recs += [rec("s", "c", f"s{i}", exact=0, fail=f, cost=None) for i in range(1, 10)]
+        recs += [rec("s", "dead", "s0", exact=0, fail=("contract_failed",), cost=None)]
         r = build_report(recs, incumbent="inc")
         self.assertEqual(r["routes"]["s"]["primary"], "inc")
+        self.assertAlmostEqual(r["strata"]["s"]["cells"]["c"]["critical_exact_rate"], 0.1)
         self.assertNotIn("dead", r["routes"]["s"]["alternatives"])
         self.assertEqual(r["strata"]["s"]["rejected"]["dead"], "no_accepted_pages")
+        # A failure that drops the page's gold n out of the denominator is refused.
+        for i in range(1, 10):
+            recs[10 + i]["critical"]["n"] = 0
+        with self.assertRaises(ValueError):
+            build_report(recs, incumbent="inc")
 
     def test_summary_worst_stratum_counts_failed_pages(self) -> None:
         f = ("provider_unavailable",)
-        for fn in (2, 0):
-            recs = docs("a", "c", k=10, exact=1)
-            recs += [rec("b", "c", "ok")]
-            recs += [rec("b", "c", f"f{i}", n=fn, exact=0, fail=f, cost=None) for i in range(9)]
-            c = build_report(recs, incumbent="inc")["summary"]["c"]
-            self.assertEqual(c["worst_stratum"], "b")
-            self.assertAlmostEqual(c["worst_stratum_critical_exact_rate"], 0.1)
+        recs = docs("a", "c", k=10, exact=1)
+        recs += [rec("b", "c", "ok")]
+        recs += [rec("b", "c", f"f{i}", exact=0, fail=f, cost=None) for i in range(9)]
+        c = build_report(recs, incumbent="inc")["summary"]["c"]
+        self.assertEqual(c["worst_stratum"], "b")
+        self.assertAlmostEqual(c["worst_stratum_critical_exact_rate"], 0.1)
+        # Failures written with n=0 where another candidate records the gold n=2: refused.
+        for r in recs[11:]:
+            r["critical"]["n"] = 0
+        recs += [rec("b", "inc", f"f{i}", exact=0) for i in range(9)]
+        with self.assertRaises(ValueError):
+            build_report(recs, incumbent="inc")
 
     def test_fully_failed_stratum_is_worst_not_hidden(self) -> None:
         f = ("provider_unavailable",)
@@ -164,13 +176,21 @@ class PairedReportTest(unittest.TestCase):
             self.assertEqual(got["cells"]["c"]["critical_exact_rate"], 0.0)
             self.assertNotEqual(got["cells"]["c"]["critical_exact_ci"], INSUFFICIENT)
             self.assertEqual(got["rejected"]["c"], "no_accepted_pages")
-        # A failure written with n=0 is still a page, so 9 of 10 failed pages is 0.1.
+        # Nine of ten pages failed, each keeping its gold n=10: 10 of 100 fields, 0.1.
         recs = [rec("s", "inc", f"d{i}", n=10, exact=9) for i in range(10)]
         recs += [rec("s", "c", "d0", n=10, exact=10)]
-        recs += [rec("s", "c", f"d{i}", n=0, exact=0, fail=f) for i in range(1, 10)]
-        cells = build_report(recs, incumbent="inc")["strata"]["s"]["cells"]
+        recs += [rec("s", "c", f"d{i}", n=10, exact=0, fail=f) for i in range(1, 10)]
+        rep = build_report(recs, incumbent="inc")
+        cells = rep["strata"]["s"]["cells"]
+        self.assertEqual((cells["c"]["critical_exact"], cells["c"]["critical_n"]), (10, 100))
         self.assertAlmostEqual(cells["c"]["critical_exact_rate"], 0.1)
         self.assertAlmostEqual(cells["inc"]["critical_exact_rate"], 0.9)
+        self.assertEqual(rep["routes"]["s"]["primary"], "inc")
+        # The same failures written with n=0 would leave the denominator: refused.
+        for r in recs[11:]:
+            r["critical"]["n"] = 0
+        with self.assertRaises(ValueError):
+            build_report(recs, incumbent="inc")
         # Failed pages carrying critical n never make an accepted-n-less cell eligible.
         recs = [rec("s", "c", "ok", n=0, exact=0), rec("s", "c", "f", exact=0, fail=f)]
         self.assertEqual(stratum(recs)["rejected"]["c"], INSUFFICIENT)
@@ -247,18 +267,28 @@ class PairedReportTest(unittest.TestCase):
 
         g = _SplitMix64(20261116)
         for _ in range(400):
-            recs = []
+            recs: list[dict[str, Any]] = []
+            gold: dict[tuple[str, int, int], int] = {}
             for s in subset(["a", "b", "c"]):
                 for cand in subset(["inc", "c1", "c2"]):
                     for d in range(1 + g.below(3)):
                         for p in range(1 + g.below(3)):
-                            n = g.below(5)
+                            # Gold critical n is a page property, shared by every candidate.
+                            n = gold.setdefault((s, d, p), g.below(5))
                             r = rec(s, cand, f"{s}{d}", n=n, exact=g.below(n + 1))
-                            r["page_id"] = f"{s}{cand}{d}-{p}"
+                            r["page_id"] = f"{s}{d}-{p}"
                             r["metrics"]["cer"] = g.below(1000) / 1000
                             if g.below(10) < 3:
                                 r["hard_failures"] = ["provider_unavailable"]
                             recs.append(r)
+            # Any candidate's record (failed or not) disagreeing on a page's gold n is refused.
+            keys = [(r["stratum"], r["doc_id"], r["page_id"]) for r in recs]
+            shared = [i for i, k in enumerate(keys) if keys.count(k) > 1]
+            if shared:
+                bad = copy.deepcopy(recs)
+                bad[shared[g.below(len(shared))]]["critical"]["n"] += 1 + g.below(3)
+                with self.assertRaises(ValueError):
+                    build_report(bad, incumbent="inc")
             ok = [i for i, r in enumerate(recs) if not r["hard_failures"]]
             if not ok:
                 continue
@@ -312,10 +342,17 @@ class PairedReportTest(unittest.TestCase):
                 if cell["critical_exact_rate"] == INSUFFICIENT:
                     self.assertEqual(cell["critical_exact_ci"], INSUFFICIENT, ctx)
                     continue
-                self.assertGreaterEqual(cell["critical_n"], cell["failures"], ctx)
-                self.assertEqual(
-                    cell["critical_exact_rate"], cell["critical_exact"] / cell["critical_n"]
-                )
+                # Field-pooled: integer exact fields over every gold critical field.
+                self.assertIsInstance(cell["critical_exact"], int, ctx)
+                self.assertLessEqual(cell["critical_exact"], cell["critical_n"], ctx)
+                if cell["critical_n"] == 0:  # every page failed and none had critical fields
+                    self.assertEqual(
+                        (cell["critical_exact_rate"], cell["failures"]), (0.0, cell["pages"])
+                    )
+                else:
+                    self.assertEqual(
+                        cell["critical_exact_rate"], cell["critical_exact"] / cell["critical_n"]
+                    )
                 self.assertEqual(
                     cell["critical_exact_ci"],
                     wilson_interval(cell["critical_exact"], cell["critical_n"]),
@@ -335,28 +372,36 @@ class PairedReportTest(unittest.TestCase):
 
     def test_one_rate_for_selection_cell_and_summary(self) -> None:
         f = ("provider_unavailable",)
-        # B1: c is 1/1 and 1/9 fields, inc 0/1 and 9/9. The primary's reported rate
-        # and CI are the ones it was chosen on, and the summary repeats them.
+        # B1: c is 1/1 and 1/9 fields, inc 0/1 and 9/9. The rate is field-pooled
+        # (c 2/10, inc 9/10), the primary is chosen on it, and the summary repeats it.
         recs = [rec("s", "c", "p1", n=1, exact=1), rec("s", "c", "p2", n=9, exact=1)]
         recs += [rec("s", "inc", "p1", n=1, exact=0), rec("s", "inc", "p2", n=9, exact=9)]
         rep = build_report(recs, incumbent="inc")
         cells = rep["strata"]["s"]["cells"]
-        primary = rep["routes"]["s"]["primary"]
-        self.assertGreaterEqual(
-            cells[primary]["critical_exact_rate"], cells["inc"]["critical_exact_rate"]
-        )
-        self.assertAlmostEqual(cells["c"]["critical_exact_rate"], 5 / 9)
+        self.assertEqual(rep["routes"]["s"]["primary"], "inc")
+        self.assertEqual((cells["c"]["critical_exact"], cells["c"]["critical_n"]), (2, 10))
+        self.assertAlmostEqual(cells["c"]["critical_exact_rate"], 0.2)
+        self.assertAlmostEqual(cells["inc"]["critical_exact_rate"], 0.9)
+        self.assertEqual(cells["c"]["critical_exact_ci"], wilson_interval(2, 10))
         self.assertEqual(
             rep["summary"]["c"]["macro_critical_exact_rate"], cells["c"]["critical_exact_rate"]
         )
         self.assertNotIn("selection_rate", cells["c"])
         self.assert_one_rate(rep)
-        # B2: an all-failed cell is 0.0 over its page count, even when failures say n=0.
-        recs = [rec("s", "c", f"f{i}", n=0, exact=0, fail=f) for i in range(3)]
+        # C1: one field right of 101 never beats 99 of 101, however the pages split.
+        recs = [rec("s", "c", "p1", n=1, exact=1), rec("s", "c", "p2", n=100, exact=0)]
+        recs += [rec("s", "inc", "p1", n=1, exact=0), rec("s", "inc", "p2", n=100, exact=99)]
+        rep = build_report(recs, incumbent="inc")
+        cells = rep["strata"]["s"]["cells"]
+        self.assertEqual(rep["routes"]["s"]["primary"], "inc")
+        self.assertAlmostEqual(cells["c"]["critical_exact_rate"], 1 / 101)
+        self.assertAlmostEqual(cells["inc"]["critical_exact_rate"], 99 / 101)
+        # B2: an all-failed cell is 0.0 over its gold critical field count.
+        recs = [rec("s", "c", f"f{i}", n=5, exact=0, fail=f) for i in range(3)]
         cell = build_report(recs, incumbent="c")["strata"]["s"]["cells"]["c"]
         self.assertEqual(
             (cell["critical_n"], cell["critical_exact_rate"], cell["critical_exact_ci"]),
-            (3, 0.0, wilson_interval(0, 3)),
+            (15, 0.0, wilson_interval(0, 15)),
         )
         # B3: a page number reused by another document does not lend it that page's n.
         big = [rec("s", "inc", "big", n=40, exact=40), rec("s", "c", "big", n=40, exact=40)]
@@ -364,7 +409,8 @@ class PairedReportTest(unittest.TestCase):
         for r in (*big, small):
             r["page_id"] = "p1"
         cell = build_report([*big, small], incumbent="inc")["strata"]["s"]["cells"]["c"]
-        self.assertEqual((cell["critical_n"], cell["critical_exact_rate"]), (2, 0.5))
+        self.assertEqual((cell["critical_exact"], cell["critical_n"]), (40, 41))
+        self.assertAlmostEqual(cell["critical_exact_rate"], 40 / 41)
 
     def test_duplicate_page_record_refused(self) -> None:
         recs = [rec("s", "c", "p1"), rec("s", "c", "p2", exact=0)]

@@ -8,15 +8,18 @@ Input: WO-D08-1 screen records. Selection rule, frozen before A2b:
   4. The worst stratum is reported beside the macro figure, never averaged away.
 There is one critical exact rate, computed only by _exact and used by the cell,
 its Wilson CI, eligibility, selection and the rule-4 summary alike. Its unit is
-the page: n counts every hard-failed page (whatever critical n it recorded) plus
-every accepted page with critical fields. An accepted page scores its exact
-field fraction, a failed page 0; critical_exact is the sum of those scores and
-the rate is their mean. The Wilson CI over (critical_exact, n) is conservative
-for a mean of [0, 1] scores, whose variance is at most p(1 - p). Failing or
-adding a failed page therefore never raises the rate or either Wilson bound, and
-a stratum whose pages all failed reports 0.0 over its page count, never
-"insufficient". Ties break on failure fraction before CER and cost, so failures
-never move a candidate up. A malformed or duplicated record is a ValueError.
+the gold critical field (the U03 ">=99% exact critical-field" unit): n is every
+gold critical field on every page, failed or not, and critical_exact counts the
+exact fields on accepted pages only, so a failed page's fields are all not
+exact. Gold critical n is a page property, so every candidate's record of one
+(stratum, doc_id, page_id) must carry the same n; a disagreement (e.g. a failure
+written with n=0, which would drop its fields from the denominator) is a
+ValueError. Failing or adding a failed page therefore never raises the rate or
+either Wilson bound. A cell whose pages all failed reports 0.0 over its gold
+field count (Wilson [0, 1] when that count is 0), never "insufficient"; a cell is
+"insufficient" only when it has no gold critical field and an accepted page.
+Ties break on failure fraction before CER and cost, so failures never move a
+candidate up. A malformed or duplicated record is a ValueError.
 """
 
 from __future__ import annotations
@@ -50,6 +53,8 @@ def _metric(records: list[dict[str, Any]], key: str) -> float | None:
 
 
 def _doc_critical_exact(records: list[dict[str, Any]]) -> bool:
+    """McNemar's binary outcome per document (all critical fields exact, no failure);
+    a separate test statistic, never a reported rate."""
     n = sum(r["critical"]["n"] for r in records)
     return (
         n > 0
@@ -58,17 +63,15 @@ def _doc_critical_exact(records: list[dict[str, Any]]) -> bool:
     )
 
 
-def _exact(records: list[dict[str, Any]]) -> tuple[float, int, float | str, list[float] | str]:
-    """The only critical exact rate: (exact score, n pages, rate, Wilson CI)."""
-    scores = [
-        0.0 if r["hard_failures"] else r["critical"]["exact"] / r["critical"]["n"]
-        for r in records
-        if r["hard_failures"] or r["critical"]["n"]
-    ]
-    if not scores:
-        return 0.0, 0, INSUFFICIENT, INSUFFICIENT
-    exact, n = sum(scores), len(scores)
-    return exact, n, exact / n, wilson_interval(exact, n)
+def _exact(records: list[dict[str, Any]]) -> tuple[int, int, float | str, list[float] | str]:
+    """The only critical exact rate, field-pooled: (exact fields, gold fields, rate, CI)."""
+    n = sum(r["critical"]["n"] for r in records)
+    exact = sum(r["critical"]["exact"] for r in records if not r["hard_failures"])
+    if n:
+        return exact, n, exact / n, wilson_interval(exact, n)
+    if all(r["hard_failures"] for r in records):  # all failed: 0, never hidden
+        return 0, 0, 0.0, wilson_interval(0, 0)
+    return 0, 0, INSUFFICIENT, INSUFFICIENT
 
 
 def _real(v: object) -> bool:
@@ -167,6 +170,7 @@ def _rank_key(cell: dict[str, Any]) -> tuple[float, float, float, float]:
 def build_report(records: list[dict[str, Any]], *, incumbent: str) -> dict[str, Any]:
     grouped: dict[str, dict[str, list[dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
     seen: set[tuple[str, str, str, str]] = set()
+    gold_n: dict[tuple[str, str, str], int] = {}
     for r in records:
         _validate(r)
         # At-least-once delivery: a page counted twice would weigh twice in every rate.
@@ -174,6 +178,11 @@ def build_report(records: list[dict[str, Any]], *, incumbent: str) -> dict[str, 
         if key in seen:
             raise ValueError(f"duplicate screen record for {key}")
         seen.add(key)
+        # Gold critical n belongs to the page, not the candidate: a record that
+        # disagrees (a failure written with n=0) would move fields out of a denominator.
+        page = (r["stratum"], r["doc_id"], r["page_id"])
+        if gold_n.setdefault(page, r["critical"]["n"]) != r["critical"]["n"]:
+            raise ValueError(f"critical n {r['critical']['n']} != {gold_n[page]} for {page}")
         grouped[r["stratum"]][r["candidate_id"]].append(r)
 
     strata: dict[str, Any] = {}
@@ -188,11 +197,14 @@ def build_report(records: list[dict[str, Any]], *, incumbent: str) -> dict[str, 
         rejected: dict[str, str] = {}
         eligible: list[str] = []
         for c, cell in cells.items():
+            accepted_n = sum(
+                r["critical"]["n"] for r in grouped[stratum][c] if not r["hard_failures"]
+            )
             if cell["accepted_critical_errors"] > 0:
                 rejected[c] = f"accepted_critical_errors={cell['accepted_critical_errors']}"
             elif cell["failures"] == cell["pages"]:
                 rejected[c] = "no_accepted_pages"
-            elif cell["critical_n"] == cell["failures"]:  # no accepted page with critical fields
+            elif accepted_n == 0:  # no accepted page with critical fields
                 rejected[c] = INSUFFICIENT
             else:
                 eligible.append(c)
