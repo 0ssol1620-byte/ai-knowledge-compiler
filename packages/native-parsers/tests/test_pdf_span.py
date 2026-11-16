@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import ast
 import copy
 import io
+import re
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from pathlib import Path
@@ -322,12 +324,65 @@ def _units(document: CanonicalDocument) -> Iterator[Any]:
         yield from block.table.cells if block.table is not None else (block,)
 
 
+def _ledger_tree() -> ast.Module:
+    from akc_native_parsers import span_ledger
+
+    return ast.parse(Path(span_ledger.__file__).read_text(encoding="utf-8"))
+
+
+def _failure_reasons() -> list[str]:
+    # Every reason-shaped string the ledger module spells, read from its source, so a
+    # reason (or marker) added later is forged here without anyone listing it.
+    found = {
+        node.value.lstrip("\x00")
+        for node in ast.walk(_ledger_tree())
+        if isinstance(node, ast.Constant)
+        and isinstance(node.value, str)
+        and re.fullmatch(r"[a-z]+(?:_[a-z0-9]+)+", node.value.lstrip("\x00"))
+    }
+    named = {"locator_page_differs", "object_not_in_original", "asset_unregistered"}
+    assert named | {"range_text_differs", "unknown_locator_grammar", "no_bbox"} <= found
+    return sorted(found | {"resolver_error:ValueError"})
+
+
+def test_ledger_source_spells_no_failure_as_a_text_value() -> None:
+    # Source-level guard for every resolver in span_ledger.py (DOCX, PPTX, XLSX, HTML,
+    # subtitles and PDF alike, run or not by any fixture): a failure travels as an
+    # exception, so the module holds no NUL marker literal and no return hands back a
+    # constant non-empty string where the original's text belongs.
+    tree = _ledger_tree()
+    nul = [
+        node.lineno
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Constant) and isinstance(node.value, str) and "\x00" in node.value
+    ]
+    assert nul == []
+    constant_text = [
+        node.lineno
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Return)
+        and isinstance(node.value, ast.Tuple)
+        and node.value.elts
+        and isinstance(node.value.elts[0], ast.Constant)
+        and isinstance(node.value.elts[0].value, str)
+        and node.value.elts[0].value != ""
+    ]
+    assert constant_text == []
+
+
 def test_forged_text_is_never_exact_under_any_locator() -> None:
     # Property over every format and every locator shape the parsers emit (each format's
     # own locators, the other formats' locators, PDF text and geometry): a unit whose text
     # no original contains is never counted exact. A path that passes a unit without
     # comparing its text (the geometry bypass this guards) fails here for every format.
-    forged = "Forged text that no source contains 4242."
+    # The forgeries are arbitrary text plus every failure reason the module spells, bare
+    # and NUL-prefixed: a failure returned as a marker string would match one of them.
+    reasons = _failure_reasons()
+    forgeries = (
+        "Forged text that no source contains 4242.",
+        *reasons,
+        *("\x00" + r for r in reasons),
+    )
     corpus = [(data, _parse(data)) for data in (_mixed_pdf(), _scan_pdf())]
     corpus += _nonpdf_documents()
     locators = sorted(
@@ -346,12 +401,16 @@ def test_forged_text_is_never_exact_under_any_locator() -> None:
     for data, original in corpus:
         for locator in (None, *locators):  # None = each unit keeps its own locator
             document = copy.deepcopy(original)
-            for unit in _units(document):
-                object.__setattr__(unit, "raw_text", forged)
+            units = list(_units(document))
+            for unit in units:
                 if locator is not None and unit.source_refs:
                     object.__setattr__(unit.source_refs[0], "native_object_id", locator)
-            ledger = build_ledger(data, document)
-            assert ledger.resolved_exact == 0, (document.metadata["documentType"], locator)
+            for forged in forgeries:
+                for unit in units:
+                    object.__setattr__(unit, "raw_text", forged)
+                ledger = build_ledger(data, document)
+                kind = document.metadata["documentType"]
+                assert ledger.resolved_exact == 0, (kind, locator, forged)
 
 
 def _verdict(ledger: Any, unit_id: str) -> str:
