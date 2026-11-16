@@ -1,0 +1,60 @@
+# Allowlist of source families for the screen corpus. A family absent from this file is refused.
+# rights_class values match the screen manifest enum: owned, public_domain, permissive_licence, synthetic.
+# `clearance: decision_required` means the licence text is captured here but whether it permits this use
+# is a recorded rights decision (core-runtime-arena section 6), not something this file settles.
+# Excluded on purpose: OmniDocBench, olmOCR-bench and other research-only / non-commercial sets.
+families:
+  sec_edgar:
+    rights_class: public_domain
+    download: true
+    hosts: [www.sec.gov]
+    licences:
+      US-FED-PUBLIC: https://www.sec.gov/about/privacy-information#copyright
+    snapshot_required: true
+    clearance: decision_required
+  opendart:
+    # Fetched through benchmark/acquire_dart.py (needs the founder-typed DART key); this tool does
+    # not call OpenDART, so the family is not downloadable by URL here.
+    rights_class: public_domain
+    download: false
+    hosts: [opendart.fss.or.kr, dart.fss.or.kr]
+    licences:
+      KR-OPENDART-TERMS: https://opendart.fss.or.kr/intro/terms.do
+    snapshot_required: true
+    clearance: decision_required
+  kogl_type1:
+    rights_class: permissive_licence
+    download: true
+    hosts: [www.kogl.or.kr, www.korea.kr, www.data.go.kr]
+    licences:
+      KOGL-1: https://www.kogl.or.kr/info/licenseType1.do
+    snapshot_required: true
+    clearance: decision_required
+  arxiv_cc_by:
+    # Per paper: the snapshot is the paper's own abs page, and acquisition is refused unless that
+    # page links to the CC-BY licence URL the CSV row names.
+    rights_class: permissive_licence
+    licence_per_document: true
+    download: true
+    hosts: [arxiv.org, export.arxiv.org]
+    licences:
+      CC-BY-4.0: https://creativecommons.org/licenses/by/4.0/
+      CC-BY-3.0: https://creativecommons.org/licenses/by/3.0/
+    snapshot_required: true
+    clearance: decision_required
+  auto_gold_synthetic:
+    rights_class: synthetic
+    download: false
+    hosts: []
+    licences:
+      OWNED-SYNTHETIC: null
+    snapshot_required: false
+    clearance: owned
+  founder_owned:
+    rights_class: owned
+    download: false
+    hosts: []
+    licences:
+      OWNED-FOUNDER: null
+    snapshot_required: false
+    clearance: owned
