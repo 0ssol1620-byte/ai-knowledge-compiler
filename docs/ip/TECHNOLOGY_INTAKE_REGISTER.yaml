@@ -162,3 +162,186 @@ founder_decisions_pending:
     blocks: "nothing today"
   - id: FTO-3
     question: "Who owns the intake record for each new dependency going forward (§15.1 requires an owner)?"
+
+# ---------------------------------------------------------------------------
+# Datasets read for EVALUATION ONLY (SCOPE-FOUNDER-20261116, Amendments 3-4).
+# Dataset terms only: code, model-weight, dataset and hosted-API terms are four
+# separate licences, and these rows clear none of the others. Local copies belong
+# to another project; they are pinned by absolute path + sha256 in
+# D:/CodexProjects/v34-lanes/corpus/lpc-sources.v1.json. The other project's hash
+# list is a COLLECTOR MANIFEST: it proves the bytes are unchanged since collection,
+# not their provenance. Nothing is copied into this repository. Common limits:
+# internal benchmark use; no redistribution of documents, pages, rows or
+# renderings; a published number is an aggregate score bound to a receipt; no
+# trading, investment-advice or government-endorsement claim.
+# Every `basis` below was read from the snapshot bytes its row names by sha256
+# (run WO-LPC-R0: D:/CodexProjects/v34-lanes/corpus/licences/terms.json, bytes in
+# <sha256>.html beside it) for WO-LPC-0 on 2026-11-17, not from the live site.
+# A row whose terms the snapshot does not settle is HELD, and says why.
+# ---------------------------------------------------------------------------
+datasets_evaluation_only:
+  - id: data_sec_fsds
+    reference: "SEC Financial Statement Data Sets, quarterly ZIPs 2009q1-2026q1"
+    publisher: "U.S. Securities and Exchange Commission (DERA)"
+    classification: ORANGE
+    status: EVALUATION_ONLY
+    use: "Gold values for screen critical fields; revision pairs; point-in-time tasks."
+    snapshot_url: "https://www.sec.gov/about/privacy-information#copyright"
+    snapshot_sha256: "8947260f51dc2be0fd82832cc6b4b31dac9e55cf31c2f92e7060895037045a3d"
+    fetched_at: "2026-11-16T19:59:45.522493+00:00"
+    basis: >-
+      Page "SEC Web Site Privacy and Security Policy", section "Website
+      Dissemination" (element id `dissemination`; page last reviewed Nov. 29,
+      2023). Its first sentence says information presented on sec.gov is
+      "considered public information and may be copied or further distributed"
+      by site users without the SEC's permission. The same section asks users to
+      consider citing the SEC as the source and not to use the SEC seal, logos or
+      artwork; says SEC, EDGAR, the EDGAR logo and the EDGARLink names are SEC
+      registered trademarks that need an SEC licence for use in the trade name,
+      trademark or domain name of an SEC- or EDGAR-related business; and allows mentioning EDGAR in text
+      without a licence as long as no SEC affiliation or approval is implied. The
+      word copyright does not occur on the page, and the URL fragment `#copyright`
+      matches no element in the snapshot. The page does not name the Financial
+      Statement Data Sets or any other data set, so this row rests on the general
+      sec.gov statement; the common limits above (no redistribution) apply
+      regardless.
+    not_cleared: "Redistribution of the ZIPs or rows; any claim that values are SEC-verified."
+
+  - id: data_sec_edgar_filings
+    reference: "EDGAR primary documents (10-K, 10-Q, 10-K/A, 20-F, 10-KT), 23,482 filings 2017-2026, and bulk submissions.zip of 2026-08-16"
+    publisher: "Authored by each registrant; disseminated by the SEC through EDGAR"
+    classification: ORANGE
+    status: EVALUATION_ONLY
+    rights_class: public_record   # published by a regulator, authored by a third party, redistribution not assumed
+    use: "Renderings parsed by benchmark candidates (filer-page excerpts printed locally); acceptance-time witness."
+    snapshot_url: "https://www.sec.gov/about/privacy-information#copyright"
+    snapshot_sha256: "8947260f51dc2be0fd82832cc6b4b31dac9e55cf31c2f92e7060895037045a3d"
+    fetched_at: "2026-11-16T19:59:45.522493+00:00"
+    basis: >-
+      The page is silent on registrant-authored content. Deciding text: the first
+      sentence of section "Website Dissemination" (element id `dissemination`),
+      which lets site users copy and redistribute information on sec.gov
+      "without the SEC’s permission". The permission it gives is the SEC's own.
+      Nothing in that section, or elsewhere on the page, mentions registrants,
+      the authors of filings, third-party content or copyright. Outside the site
+      menu, filings appear once, in section "Information Collected and Stored
+      Automatically", as an example of information visitors read or download;
+      that privacy statement says nothing about who holds rights in them.
+      Filings and our renderings of them are therefore treated as not
+      redistributable, and no record calls them public domain.
+    not_cleared: "Publishing any page, excerpt, image or text of a filing; 'public domain' as a legal claim about filer content."
+
+  - id: data_alfred_vintages
+    reference: "FRED/ALFRED vintage observations, local CSV sha256 f01bc6cff96e4582fbac059c08dee7dc93fe9a81ce3463f2187c1a41fa8e8d40 (a derived CSV of another project; API responses not retained)"
+    publisher: "Federal Reserve Bank of St. Louis (FRED/ALFRED); series owned by their original sources"
+    classification: ORANGE
+    status: HELD
+    held_reason: >-
+      The CSV was retrieved under another project's FRED API key, and the API
+      terms snapshot does not settle whether a party that never used the API may
+      use data retrieved that way (verify_at_merge_separately below). Held until
+      a document that settles it is snapshotted and read, or the data is
+      retrieved again under a key held for TAVONEL.
+    held_for: "Every run that reads the CSV's values: the ALFRED half of WO-LPC-R4 (the WO-LPC-7 reader and its leak and late_recorded tasks)."
+    snapshot_url: "https://fred.stlouisfed.org/docs/api/terms_of_use.html"
+    snapshot_sha256: "1b363c108142640f7e3a450169808cf195117fa3d7771651ae52bea5e515935c"
+    fetched_at: "2026-11-16T19:59:46.070812+00:00"
+    basis: >-
+      Page "FRED® API Terms of Use". Section "Property Rights": series offered
+      through the API may belong to third parties and carry copyright
+      restrictions that the API does not override; using a third-party series
+      for more than personal use needs the owner's permission, which the St.
+      Louis Fed says it cannot give; and "Copyrighted series contain the word
+      'Copyright' in their notes." The same section extends the St. Louis Fed's
+      rights to all output of the API. Section "Prohibitions" bars implying St.
+      Louis Fed endorsement and removing proprietary notices attached to data
+      obtained through the API; section "Requirements" obliges an application
+      that uses the API to display a non-endorsement notice. The terms also
+      incorporate the St. Louis Fed web site Legal Terms and Privacy Policy;
+      neither is among the R0 snapshots, and neither was read.
+    series_allowed:   # one snapshot per series page; ownership read from the page, not assumed
+      - series: CPIAUCSL
+        snapshot_url: "https://fred.stlouisfed.org/series/CPIAUCSL"
+        snapshot_sha256: "e756010b9e1463cde5f3287fd2843e694c3f2897e91f26aa43ccdcad6dfaa7b3"
+        fetched_at: "2026-11-16T19:59:46.770489+00:00"
+        source: "U.S. Bureau of Labor Statistics (release: Consumer Price Index)"
+      - series: UNRATE
+        snapshot_url: "https://fred.stlouisfed.org/series/UNRATE"
+        snapshot_sha256: "9148769c9b45f9eebacbda635e1494350082372938e8125c5493e9597f7ef7eb"
+        fetched_at: "2026-11-16T19:59:47.099640+00:00"
+        source: "U.S. Bureau of Labor Statistics (release: Employment Situation)"
+      - series: INDPRO
+        snapshot_url: "https://fred.stlouisfed.org/series/INDPRO"
+        snapshot_sha256: "0b7cec64885e5d2cc3f3601aefffc485c10007e7230b85351fd796ebb89d7744"
+        fetched_at: "2026-11-16T19:59:47.835400+00:00"
+        source: "Board of Governors of the Federal Reserve System (US) (release: G.17 Industrial Production and Capacity Utilization)"
+      - series: DFF
+        snapshot_url: "https://fred.stlouisfed.org/series/DFF"
+        snapshot_sha256: "fbc6f44098b4e3b9990dcaef4925c7eef3d8fd62ee7fd0b39099cf87b0ade72a"
+        fetched_at: "2026-11-16T19:59:48.463833+00:00"
+        source: "Board of Governors of the Federal Reserve System (US) (release: H.15 Selected Interest Rates)"
+      - series: DGS10
+        snapshot_url: "https://fred.stlouisfed.org/series/DGS10"
+        snapshot_sha256: "39f43bd1bd9cc686be799f644e82e8c3252384c250172c3feee3fa59e0518773"
+        fetched_at: "2026-11-16T19:59:48.931883+00:00"
+        source: "Board of Governors of the Federal Reserve System (US) (release: H.15 Selected Interest Rates)"
+      - series: DGS2
+        snapshot_url: "https://fred.stlouisfed.org/series/DGS2"
+        snapshot_sha256: "b22e8c573fe3a767d46122fc2af51653d8e731dfdd3d1e1dcef1210412ff15fa"
+        fetched_at: "2026-11-16T19:59:49.470548+00:00"
+        source: "Board of Governors of the Federal Reserve System (US) (release: H.15 Selected Interest Rates)"
+    series_pages_basis: >-
+      Read the same way on all six pages. The Notes panel names as Source the
+      body listed per series above (U.S. Bureau of Labor Statistics, or Board of
+      Governors of the Federal Reserve System); none names a third-party owner.
+      The series notes do not contain the word Copyright, which the API terms
+      give as the mark of a copyrighted series. Each page's Suggested Citation
+      credits that source and names FRED at the St. Louis Fed as where the data
+      was retrieved, with the series URL. Each page also carries a copyright
+      banner for shared graphs inside markup of class `hide` (hidden in the page as
+      served), and head metadata (keywords and a JSON-LD
+      licence link to fred.stlouisfed.org/legal/#copyright-public-domain) that
+      labels the series public domain with citation requested. That legal page
+      was not snapshotted, so this register does not itself call the series
+      public domain. No series moves to series_excluded.
+    series_excluded:   # no R0 snapshot was taken for these; the reasons come from the founder's scope (SCOPE-FOUNDER-20261116), not from a page reading
+      - { series: BAMLH0A0HYM2, reason: "third-party owned (ICE Data Indices)" }
+      - { series: VIXCLS,       reason: "third-party owned (Cboe)" }
+      - { series: DTWEXBGS,     reason: "terms not read" }
+    verify_at_merge_separately:
+      - question: "Reuse of data retrieved under ANOTHER project's FRED API key: do the terms bind the key holder only, or the data?"
+        state: HELD
+        finding: >-
+          Not settled by the snapshot. The opening paragraph binds whoever uses
+          the API. Section "API Key" issues each key to one registrant and makes
+          that registrant alone answerable to the St. Louis Fed for its use of
+          the API. Section "Property Rights" extends the St. Louis Fed's rights
+          to all API output. Section "Term and Termination" requires destroying
+          copies of the API when the licence ends and says nothing about
+          retrieved data. No section addresses stored or derived data, or a
+          party that holds API output without having used the API. The
+          incorporated Legal Terms were not snapshotted, so whether they address
+          it is unknown.
+    not_cleared: "Redistribution of series values; any FRED/Federal Reserve endorsement claim."
+
+  - id: tool_chrome_headless_shell
+    reference: "chrome-headless-shell 149.0.7827.55 (Playwright chromium_headless_shell-1228), exe sha256 28016df6864d302434c9231e1f9f1a8a7ecc512cb2fe3faabb2a36130b96bcf1"
+    classification: ORANGE   # the work order proposed GREEN_PENDING_VERIFY; `classifications` above is a closed vocabulary, so ORANGE with this note
+    status: LOCAL_TOOL_NOT_SHIPPED
+    snapshot_file: "LICENSE.headless_shell sha256 273fdb2b9a87aecb3e7a719c42ce6d045459dc6efb398d3baaaedc18f4a3c21f"
+    snapshot_file_location: "%LOCALAPPDATA%/ms-playwright/chromium_headless_shell-1228/chrome-headless-shell-win64/LICENSE.headless_shell (2,037,413 bytes); its sha256 and the exe sha256 were re-computed on 2026-11-17 and equal the values in this row"
+    basis: >-
+      The file concatenates 274 notice sections, each headed by a component
+      name. The first, "The Chromium Project", is a three-condition BSD-style
+      licence ("Copyright 2015 The Chromium Authors"): source and binary
+      redistributions keep the copyright notice and disclaimer, and Google's or
+      the contributors' names may not endorse derived products without
+      permission. A phrase scan of the other sections finds Apache-2.0, MIT-,
+      BSD- and ISC-style and Unicode texts in most, and GNU GPL, LGPL or Mozilla
+      Public License wording in 14 (among them ffmpeg, WebKit,
+      hyphenation-patterns, icu and the symphonia packages); 9 sections match none
+      of the scanned phrases (among them FreeType, harfbuzz and sqlite). Those
+      sections were scanned, not read line by line, and the scan does not settle
+      which licence governs each component. The binary is a local renderer that
+      is never shipped or distributed; this row clears no redistribution.
+    not_cleared: "Shipping, bundling or redistributing the binary or any part of it; a GREEN classification before the copyleft-worded sections are read."
