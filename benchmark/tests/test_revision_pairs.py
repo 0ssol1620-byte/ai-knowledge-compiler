@@ -27,7 +27,7 @@ def _control(cid: str, prose: str, *, withdrawn: bool = False) -> dict:
             {
                 "id": f"{cid}_smt",
                 "name": "statement",
-                "parts": [{"id": f"{cid}_smt.a", "prose": prose}],
+                "parts": [{"id": f"{cid}_smt.a", "name": "item", "prose": prose}],
             },
             {"id": f"{cid}_gdn", "name": "guidance", "prose": f"guidance {cid}"},
         ],
@@ -157,3 +157,20 @@ def test_ecfr_sections_become_documents_per_subpart():
     assert sorted(docs) == ["200.1", "200.2"] and not withdrawn
     assert [r.text for r in docs["200.1"].regions] == ["First.", "Second."]
     assert docs["200.2"].regions[0].native_object_id == "200.2_title"
+
+
+def test_assessment_parts_are_not_regions_and_idless_prose_fails_closed():
+    cat = copy.deepcopy(RELEASES["v1.0.0"])
+    control = cat["catalog"]["groups"][0]["controls"][0]
+    control["parts"].append(
+        {
+            "id": "sa-1_obj",
+            "name": "assessment-objective",
+            "parts": [{"name": "assessment-objects", "prose": "examine things"}],
+        }
+    )
+    docs, _ = tpc.docs_from_catalog(cat)["sa"]
+    assert [r.native_object_id for r in docs["sa-1"].regions] == ["sa-1_smt.a", "sa-1_gdn"]
+    control["parts"].append({"name": "guidance", "prose": "no id"})
+    with pytest.raises(tpc.CorpusError, match="no OSCAL id"):
+        tpc.docs_from_catalog(cat)

@@ -215,10 +215,14 @@ def _all_families(
     manifest: dict[str, Any], source: str, key: str, cache_dir: Path
 ) -> dict[str, Any]:
     if source == "nist-oscal":
-        snap = next(s for s in manifest["snapshots"] if s["commit_sha"] == key)
+        snap = next((s for s in manifest["snapshots"] if s["commit_sha"] == key), None)
+        if snap is None:
+            raise CorpusError(f"snapshot {key} not in manifest")
         raw = read_verified(cache_dir / key / "catalog.json", snap["sha256"])
         return docs_from_catalog(json.loads(raw))
-    snap = next(s for s in manifest["ecfr_snapshots"] if s["date"] == key)
+    snap = next((s for s in manifest["ecfr_snapshots"] if s["date"] == key), None)
+    if snap is None:
+        raise CorpusError(f"eCFR snapshot {key} not in manifest")
     return docs_from_ecfr_xml(read_verified(cache_dir / "ecfr" / f"{key}.xml", snap["sha256"]), key)
 
 
@@ -305,7 +309,7 @@ def render_rights(manifest: dict[str, Any]) -> str:
         lic = s["license"]
         lines.append(
             f"| {s['tag']} | {s['commit_sha']} | {s['version']} | {lic['file']} "
-            f"| {lic['sha256']} | {lic['first_line']} |"
+            f"| {lic['sha256']} | {lic['first_line'].lstrip('# ')} |"
         )
     if manifest["ecfr_snapshots"]:
         lines += [

@@ -79,11 +79,20 @@ def _is_withdrawn(control: dict[str, Any]) -> bool:
     )
 
 
+# Spec 2.3: each statement/guidance part is one region keyed by its OSCAL part id.
+# Merged-in SP 800-53A assessment parts are out of scope and are not descended into.
+_REGION_PART_NAMES = frozenset({"statement", "item", "guidance"})
+
+
 def _part_texts(parts: list[dict[str, Any]], out: list[tuple[str, str]], cid: str) -> None:
     for part in parts:
+        if part.get("name") not in _REGION_PART_NAMES:
+            continue
         prose = (part.get("prose") or "").strip()
         if prose:
-            out.append((part.get("id") or f"{cid}_part{len(out)}", prose))
+            if not part.get("id"):
+                raise CorpusError(f"{cid}: {part['name']} part with prose has no OSCAL id")
+            out.append((part["id"], prose))
         _part_texts(part.get("parts", []), out, cid)
 
 
@@ -154,6 +163,8 @@ def docs_from_ecfr_xml(xml: bytes, version: str) -> dict[str, FamilyDocs]:
             head = _squash("".join(head_el.itertext())) if head_el is not None else sid
             paras = [t for t in (_squash("".join(p.itertext())) for p in section.findall("P")) if t]
             parts = [(f"{sid}_p{i}", t) for i, t in enumerate(paras)] or [(f"{sid}_title", head)]
+            if sid in docs:
+                raise CorpusError(f"duplicate eCFR section id {sid!r} in subpart")
             docs[sid] = make_doc(
                 connector="ecfr",
                 native_id=sid,
@@ -185,11 +196,15 @@ def family_docs(
 ) -> FamilyDocs:
     """Verified upstream bytes -> (docs, withdrawn) for one family at one snapshot."""
     if source == "nist-oscal":
-        snap = next(s for s in manifest["snapshots"] if s["commit_sha"] == snapshot_key)
+        snap = next((s for s in manifest["snapshots"] if s["commit_sha"] == snapshot_key), None)
+        if snap is None:
+            raise CorpusError(f"snapshot {snapshot_key} not in manifest")
         raw = read_verified(cache_dir / snap["commit_sha"] / "catalog.json", snap["sha256"])
         fams = docs_from_catalog(json.loads(raw))
     else:
-        esnap = next(s for s in manifest["ecfr_snapshots"] if s["date"] == snapshot_key)
+        esnap = next((s for s in manifest["ecfr_snapshots"] if s["date"] == snapshot_key), None)
+        if esnap is None:
+            raise CorpusError(f"eCFR snapshot {snapshot_key} not in manifest")
         raw = read_verified(cache_dir / "ecfr" / f"{esnap['date']}.xml", esnap["sha256"])
         fams = docs_from_ecfr_xml(raw, esnap["date"])
     if family not in fams:
