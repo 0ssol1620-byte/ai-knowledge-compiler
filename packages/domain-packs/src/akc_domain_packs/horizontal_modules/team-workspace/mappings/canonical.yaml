@@ -1,0 +1,9 @@
+blueprint: team-workspace
+kind: canonical-mappings
+version: 1.0.0
+mappings:
+  meeting: Note
+  decision: Claim
+  action_item: Claim
+  owner: Entity
+  milestone: Entity

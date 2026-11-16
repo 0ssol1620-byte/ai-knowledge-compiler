@@ -1,0 +1,8 @@
+blueprint: team-workspace
+kind: ontology
+version: 1.0.0
+classes: [Meeting, Decision, ActionItem, Person, Milestone]
+relations:
+  - {type: decided_in, source: Decision, target: Meeting, authority: source_explicit}
+  - {type: assigned_to, source: ActionItem, target: Person, authority: source_explicit}
+  - {type: due_by, source: ActionItem, target: Milestone, authority: source_explicit}

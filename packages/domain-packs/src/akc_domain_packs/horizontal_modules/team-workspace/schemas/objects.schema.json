@@ -1,0 +1,13 @@
+{
+  "blueprint": "team-workspace",
+  "kind": "object-schema",
+  "version": "1.0.0",
+  "type": "object",
+  "required": ["object_kind", "stable_id", "source_refs"],
+  "properties": {
+    "object_kind": {"enum": ["Meeting", "Decision", "ActionItem", "Person", "Milestone"]},
+    "stable_id": {"type": "string", "minLength": 1},
+    "source_refs": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+  },
+  "additionalProperties": true
+}

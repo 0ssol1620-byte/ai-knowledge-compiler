@@ -1,0 +1,7 @@
+blueprint: creative-works
+kind: directory-layout
+version: 1.0.0
+roots: [Sources, Works, Characters, Settings, Scenes, Drafts, MOCs, Evidence, Packages]
+maximum_depth: 3
+naming_policy: stable-title
+preserve_existing_folders: true

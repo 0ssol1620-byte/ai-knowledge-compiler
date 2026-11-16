@@ -1,0 +1,7 @@
+blueprint: creative-works
+kind: conformance-cases
+version: 1.0.0
+cases:
+  - {id: canon_from_manuscript, fixture: manuscript_with_canon, expected: pass}
+  - {id: character_relation_only_implied, fixture: implied_relationship, expected: unresolved}
+  - {id: private_draft_in_shared_world, fixture: private_shared_mix, expected: quarantine}
