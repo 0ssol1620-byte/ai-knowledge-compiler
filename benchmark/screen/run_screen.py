@@ -1,7 +1,10 @@
 """Screen runner: paired, resumable, failure-preserving, immutable raw output.
 
 Every page of the requested split yields exactly one record per candidate. A provider
-failure or a schema failure is a record (``accepted=false``), never a skipped page.
+failure or a schema failure is a record (``accepted=false``), never a skipped page:
+``provider_unavailable`` (RunnerUnavailable), ``provider_error`` (any other exception the
+candidate raised on the page) or ``contract_failed``. A missing or changed source file is an
+integrity violation and stops the run before any call.
 Raw output is written once per (page, candidate, revision, image digest, config); the
 same bytes are a cache hit, different bytes raise ``ImmutableOutputError``.
 """
@@ -132,6 +135,10 @@ def run_screen(
     for d, p in pages:  # an unparseable gold field must stop the run before any paid call
         for f in gold[f"{d['doc_id']}#{p}"].get("critical_fields") or []:
             gold_value(f)
+    for d in docs:  # integrity violation, not a page failure: stop before any call
+        src = corpus_root / d["doc_id"]
+        if not src.is_file() or _sha(src.read_bytes()) != d["source_sha256"]:
+            raise ContractError(f"{d['doc_id']}: source missing or hash differs from manifest")
     validator = parser_output_validator(_REPO / "benchmark" / "manifest.yaml")
     ledger: dict[str, dict[str, Any]] = {}
     if records_path.is_file():
@@ -172,8 +179,14 @@ def run_screen(
         else:
             try:
                 result = call(candidate, case, corpus_root)
-            except (RunnerUnavailable, ValueError):
+            except RunnerUnavailable:
                 failures = ["provider_unavailable"]  # operational: nothing came back
+            except Exception:
+                # Any parser crash on hostile input is a page result. The source bytes were
+                # verified above, so what is left is the candidate failing on this page
+                # (e.g. pypdf PdfReadError on a malformed PDF). Local writes happen below,
+                # outside this try, so a disk fault still propagates.
+                failures = ["provider_error"]
             else:
                 try:
                     data = (
