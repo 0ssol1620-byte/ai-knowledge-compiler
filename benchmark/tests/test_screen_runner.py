@@ -18,6 +18,13 @@ from hypothesis import strategies as st
 from benchmark.runners.base import RunnerUnavailable
 from benchmark.runners.registry import EXTERNAL_RUNNERS
 from benchmark.screen.critical_fields import (
+    _CLOSE,
+    _CUR_FIRST,
+    _CURRENCY,
+    _FOLD,
+    _KO_CHARS,
+    _OPEN,
+    _SIGN,
     canonical_values,
     gold_value,
     score_critical_fields,
@@ -1633,23 +1640,21 @@ def test_property_value_read_is_the_generated_value_or_nothing(kind, data, pre, 
 # A sign, an accounting "(" or a currency, each a field of its own before a number.
 _STANDALONE = ["-", "+", "△", "▲", "(", "$", "₩", "€", "£", "¥"]
 _STANDALONE += ["\uff04", "\u2212", "USD", "krw", "Eur", "원", "달러", "엔"]
-# Every currency spelling the reader knows, as written (codes in upper case), and its code.
-_CURRENCY_CODES = {
-    "$": "USD",
-    "USD": "USD",
-    "달러": "USD",
-    "₩": "KRW",
-    "원": "KRW",
-    "KRW": "KRW",
-    "€": "EUR",
-    "EUR": "EUR",
-    "£": "GBP",
-    "GBP": "GBP",
-    "¥": "¥",
-    "엔": "JPY",
-    "JPY": "JPY",
-}
-_CURRENCY_SPELLINGS = frozenset(_CURRENCY_CODES)
+# Every currency spelling the reader knows, as written (codes in upper case): its own table.
+_CURRENCY_SPELLINGS = frozenset(_CURRENCY)
+# Words and labels that begin with a currency (amendment A.5).
+_CURRENCY_WORDS = ["원가", "원래", "Euro", "usdx", "달러화", "엔화", "원)", "$)", "USD]"]
+
+
+def _variants(c: str) -> list[str]:
+    """``c`` and every character the reader's fold table turns into it (U+FF0D for "-")."""
+    return [c, *(chr(k) for k, v in _FOLD.items() if v == c)]
+
+
+def _currency_code(s: str) -> str | None:
+    """The code the reader's table gives the spelling ``s`` after folding (codes in any case)."""
+    folded = s.translate(_FOLD)
+    return _CURRENCY.get(folded) or _CURRENCY.get(folded.upper())
 
 
 # --- Amendment A.4: once a sign, "(" or currency is consumed for a number, the number is read
@@ -1709,6 +1714,27 @@ _CURRENCY_SPELLINGS = frozenset(_CURRENCY_CODES)
         "A - 원화 5억",
         "A -\t원가 5",
         "A (\t원) 5",
+        # Lead note, round 11: a currency closing a bracket is a unit label only inside an
+        # open "(" ("(원)", "(단위: 원)"); without one the consumed currency is refused.
+        "A $) 5",
+        "A USD] 5",
+        "A 원) 5",
+        "A 원] 5",
+        "A €} 5",
+        "A KRW) 5",
+        "A 달러) 5",
+        "A usd) 5",
+        "A \uff04) 5",
+        "A \uffe5) 5",
+        "A x 원) 5",
+        "A 가 $) 5",
+        "A : 원) 5",
+        "A [원) 5",
+        "A [원] 5",
+        "A {USD} 5",
+        "A (원] 5",
+        "A 원)) 5",
+        "A (원) 원) 5",
     ],
 )
 def test_a_consumed_sign_paren_or_currency_is_never_dropped(candidate):
@@ -1730,6 +1756,9 @@ def test_a_consumed_sign_paren_or_currency_is_never_dropped(candidate):
         ("A (원) 5", ("5", "num", None)),
         ("A (단위: 원) 5", ("5", "num", None)),
         ("A -원가 5", ("5", "num", None)),
+        ("A (단위:원) 5", ("5", "num", None)),
+        ("A (단위 : 원) 5", ("5", "num", None)),
+        ("A \uff08원) 5", ("5", "num", None)),
         # A sign, a space, then a currency glued to the digits: the signed currency value.
         ("A - 원5", ("-5", "num", "KRW")),
         ("A - $ 5", ("-5", "num", "USD")),
@@ -1748,7 +1777,13 @@ def test_a_prefix_glued_into_a_word_or_a_unit_label_is_text(candidate, want):
     st.one_of(
         st.text(_PROPERTY_JUNK + " " + "△▲₩원", max_size=4),
         # Words and labels that begin with a currency (amendment A.5).
-        st.sampled_from(["원가", "원래", "Euro", "usdx", "달러화", "엔화", "원)", "$)", "USD]"]),
+        st.sampled_from(_CURRENCY_WORDS),
+        # One of those words with text after it.
+        st.builds(
+            lambda w, t: w + t,
+            st.sampled_from(_CURRENCY_WORDS),
+            st.text(_PROPERTY_JUNK + " ", max_size=3),
+        ),
     ),
 )
 @example(("5", ("5", "num", None)), "-", " ", "원가 ")
@@ -1772,21 +1807,27 @@ def test_property_a_standalone_prefix_field_is_read_with_the_number_or_refuses(
 
 # Amendment A.5, closed by enumeration: every standalone prefix the reader knows, every ASCII
 # whitespace run after it, one representative of every character class the reader tells apart
-# at the next position, and a fixed set of continuations.
-_NEGATIVE_PREFIXES = ["-", "\u2212", "△", "▲", "(", "\uff08"]
-_SIGN_PREFIXES = ["-", "\u2212", "+", "△", "▲"]
-_CURRENCY_PREFIXES = [*sorted(_CURRENCY_SPELLINGS), "usd", "Krw", "\uff04", "\uffe6", "\uffe1"]
-_FOLDED_CURRENCY = {"\uff04": "USD", "\uffe6": "KRW", "\uffe1": "GBP"}
-_NEXT_CLASSES = sorted(
-    set("([{\"':=|")  # opening punctuation and label separators
-    | set("-+△▲")  # signs
-    | {s[0] for s in _CURRENCY_SPELLINGS}  # currency first characters
-    | {s[0].lower() for s in _CURRENCY_SPELLINGS}
-    | _CURRENCY_SPELLINGS  # whole currencies
-    | set("x가")  # an ASCII letter, a Hangul syllable
-    | set("조억만천백십")  # scale syllables
-    | set(_CLOSING)
+# at the next position, and a fixed set of continuations. Prefixes and classes come from the
+# reader's own tables, so a sign, currency or fold added there is enumerated here unasked.
+_SIGN_PREFIXES = [v for s in _SIGN for v in _variants(s)]
+_NEGATIVE_PREFIXES = [v for s, neg in _SIGN.items() if neg for v in _variants(s)]
+_NEGATIVE_PREFIXES += _variants("(")
+_CURRENCY_PREFIXES = sorted(
+    {v for k in _CURRENCY for v in _variants(k)}
+    | {k.lower() for k in _CURRENCY if k.isascii() and k.isalpha()}
+    | {k.title() for k in _CURRENCY if k.isascii() and k.isalpha()}
 )
+_NEXT_CLASSES = sorted(
+    set(_OPEN)  # opening punctuation and label separators
+    | set(_SIGN)  # signs
+    | _CUR_FIRST  # currency first characters, both cases
+    | _CURRENCY_SPELLINGS  # whole currencies
+    | {chr(k) for k, v in _FOLD.items() if v not in string.digits}  # folded variants
+    | set("x가")  # an ASCII letter, a Hangul syllable
+    | _KO_CHARS  # scale syllables
+    | _CLOSE
+)
+_WHITESPACE_RUNS = [" ", "\t", "\n", "\r", "\x0b", "\x0c", "  ", " \t"]
 
 
 def test_a_standalone_prefix_then_whitespace_never_yields_the_bare_number():
@@ -1794,29 +1835,61 @@ def test_a_standalone_prefix_then_whitespace_never_yields_the_bare_number():
     currency and then the digits read as the signed currency value ("- 원5", "- $ 5"). Never
     the bare, unsigned or currency-less number."""
     wrong = []
-    for p in [*_SIGN_PREFIXES, "(", "\uff08", *_CURRENCY_PREFIXES]:
-        for s in [" ", "\t", "\n", "\r", "  ", " \t"]:
+    for p in [*_SIGN_PREFIXES, *_variants("("), *_CURRENCY_PREFIXES]:
+        for s in _WHITESPACE_RUNS:
             for nxt in _NEXT_CLASSES:
                 for rest in ["5", " 5", "가 5", ") 5", " :5"]:
                     text = f"A {p}{s}{nxt}{rest}"
                     want = None
                     joined = p in _SIGN_PREFIXES and not s.strip(" ")
-                    if joined and nxt in _CURRENCY_SPELLINGS and rest in ("5", " 5"):
+                    if joined and _currency_code(nxt) and rest in ("5", " 5"):
                         sign = "-" if p in _NEGATIVE_PREFIXES else ""
-                        want = (sign + "5", "num", _CURRENCY_CODES[nxt])
+                        want = (sign + "5", "num", _currency_code(nxt))
                     got = value_after_anchor(_field("x", "A"), text)
                     if got != want:
                         wrong.append((text, got, want))
     assert not wrong, (len(wrong), wrong[:20])
 
 
-@pytest.mark.parametrize("p", [*_CURRENCY_PREFIXES, "(", "-"])
+@pytest.mark.parametrize("p", [*_CURRENCY_PREFIXES, *_NEGATIVE_PREFIXES])
 def test_every_standalone_prefix_is_read_with_the_number_across_spaces(p):
     """The enumeration above is not vacuous: each prefix, spaces, then digits, carries P."""
-    got = value_after_anchor(_field("x", "A"), f"A {p} 5" + (" )" if p == "(" else ""))
+    paren = p in _variants("(")
+    got = value_after_anchor(_field("x", "A"), f"A {p} 5" + (" )" if paren else ""))
     assert got is not None and got != ("5", "num", None), (p, got)
-    code = _FOLDED_CURRENCY.get(p) or _CURRENCY_CODES.get(p.upper())
-    assert got[2] == code and got[0] == ("-5" if p in "(-" else "5"), (p, got)
+    code = _currency_code(p)
+    assert got[2] == code and got[0] == ("-5" if p in _NEGATIVE_PREFIXES else "5"), (p, got)
+
+
+def test_a_currency_closing_a_bracket_is_a_unit_label_only_inside_an_open_paren():
+    """Lead note, round 11, closed by enumeration over the reader's tables: ``A`` + opener + a
+    currency glued to a closing bracket + `` 5``. Only a ")" that closes a "(" still open
+    before it ("(원)", "(단위: 원)") makes a unit label, after which the bare 5 is read; any
+    other shape consumed the currency and is refused, never the currency-less 5. A currency
+    glued after a word ("(단위:원]") starts no token: it is text, and the 5 is read."""
+    openers = ["", "x ", ": ", "가 ", "(단위: ", "(단위 : ", "(단위:", "(a) ", "( x) "]
+    openers += [o + "(" for o in ("", "x ")] + [v for o in "([{" for v in _variants(o)]
+    openers += ["[단위: ", "{단위: ", "([", "(단위 [x] "]
+    wrong = []
+    for opener in openers:
+        folded = opener.translate(_FOLD)
+        # The last bracket the opener leaves open, if any.
+        stack: list[str] = []
+        in_word = folded.split(" ")[-1].strip("([{") != ""
+        for c in folded:
+            if c in "([{":
+                stack.append(c)
+            elif c in ")]}" and stack and "([{"[")]}".index(c)] == stack[-1]:
+                stack.pop()
+        for cur in _CURRENCY_PREFIXES:
+            for close in sorted(set(_CLOSE) & set(")]}")):
+                text = f"A {opener}{cur}{close} 5"
+                label = in_word or (close == ")" and stack[-1:] == ["("])
+                want = ("5", "num", None) if label else None
+                got = value_after_anchor(_field("x", "A"), text)
+                if got != want:
+                    wrong.append((text, got, want))
+    assert not wrong, (len(wrong), wrong[:20])
 
 
 # --- Continuation property (amendment A.2.2): the field after a Korean scale group, or after a

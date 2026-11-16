@@ -82,6 +82,7 @@ _JOIN = frozenset("-+.,'_~/")
 _OPEN = frozenset("([{\"':=|")
 _CLOSE = frozenset(")]}\"'.,;:!?|")
 _SIGN = {"-": True, "+": False, "△": True, "▲": True}  # sign -> negative
+_PAIR = {")": "(", "]": "[", "}": "{"}  # closing bracket -> its opening bracket
 # Non-ASCII characters a token may hold (after folding); every other one is unlisted.
 _LISTED = frozenset("△▲₩€£¥")
 
@@ -328,12 +329,14 @@ def _ends_scaled(text: str, s: int, english: bool) -> bool:
     )
 
 
-def _number_at(text: str, i: int) -> tuple[int, Any] | None:
+def _number_at(text: str, i: int, in_paren: bool = False) -> tuple[int, Any] | None:
     """The token starting at ``i`` as ``(end, canonical value or None when refused)``.
 
     None when nothing was consumed at ``i``, or when the sign, paren or currency consumed there
-    is glued, with no whitespace anywhere, into a word ("원가", "-x", "(주)") or closes a
-    bracketed unit label ("(원)", "(단위: 원)"): that is text, not a number. A sign or paren
+    is glued, with no whitespace anywhere, into a word ("원가", "-x", "(주)") or, glued to a
+    ")", closes a unit label whose "(" is its own or, ``in_paren``, still open before ``i``
+    ("(원)", "(단위: 원)"): that is text, not a number. Any other bracket after a currency
+    ("원) 5", "$] 5", "[원) 5", "{USD} 5") is refused like any non-digit. A sign or paren
     standing alone is never text ("- 원가 5"). Any other consumed prefix with no digit after it
     is refused, so the scan never restarts past it and reads the number without it ("- :5",
     "$ [5]", "$ - 5", "-\\t5", "-- 5"). Once a digit is reached the token is read whole or
@@ -360,7 +363,7 @@ def _number_at(text: str, i: int) -> tuple[int, Any] | None:
         # A currency symbol before a letter is two currencies, not a word ("$USD").
         symbol = prefix is not None and not text[end_of_prefix - 1].isalpha()
         word = glued and (c in _ASCII_LETTER or _hangul(c)) and not symbol
-        unit_label = glued and prefix is not None and c in ")]}"
+        unit_label = glued and prefix is not None and c == ")" and (opened or in_paren)
         if k == i or word or unit_label:
             return None
         return k, None
@@ -424,12 +427,24 @@ def _numbers(text: str) -> list[tuple[int, int, Any]]:
     # Would a token at i begin its field (_clean_left), carried one character at a time so a
     # run of opening punctuation is never walked again from each "(" in it.
     ok = True
+    # Brackets still open before ``seen``, innermost last: every character up to i is walked
+    # once, inside read tokens too, so a ")" a token consumed still closes its "(".
+    brackets: list[str] = []
+    seen = 0
     while i < n:
         c = text[i]
+        for b in text[seen:i]:
+            if b in _PAIR.values():
+                brackets.append(b)
+            elif b in _PAIR and brackets and brackets[-1] == _PAIR[b]:
+                brackets.pop()
+        seen = i
         if c in _DIGIT and not ok:  # a digit is never skipped: glued to a word, it is refused
             end = _word_end(text, i)
             out.append((i, end, None))
-        elif c in _START and ok and (tok := _number_at(text, i)) is not None:
+        elif (
+            c in _START and ok and (tok := _number_at(text, i, brackets[-1:] == ["("])) is not None
+        ):
             end, value = tok
             # Nothing restarts inside a refused token: the rest of its word goes with it.
             if value is None:
