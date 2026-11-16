@@ -19,6 +19,7 @@ from lxml import etree
 from benchmark.local_public.sec_align import IX, Candidate, Excluded, _cells, _local, _text
 
 MIN_FIELDS = 3
+XHTML = "http://www.w3.org/1999/xhtml"
 _BEFORE = re.compile(r"(?<![\w-])(page-break-before:always|break-before:page)")
 _AFTER = re.compile(r"(?<![\w-])(page-break-after:always|break-after:page)")
 _DROP = ("script", "link", "base", "style")  # style moves to <head>; ix:header is dropped by name
@@ -148,8 +149,14 @@ def excerpt_html(html_bytes: bytes, seg: Segment) -> bytes:
     if hashlib.sha256(html_bytes).hexdigest() != seg.sha256:
         raise ValueError("segment was cut from different bytes")
     clone, _, styles = _clone(seg)
+    body_el = _body(clone)
+    for top in (body_el, *styles):  # XHTML-namespaced `<br/>` would serialize as `<br></br>`
+        for e in top.iter():
+            if isinstance(e.tag, str) and e.tag.startswith(f"{{{XHTML}}}"):
+                e.tag = etree.QName(e).localname
+        etree.cleanup_namespaces(top)
     head = "".join(etree.tostring(s, method="html", encoding="unicode") for s in styles)
-    body = etree.tostring(_body(clone), method="html", encoding="unicode")
+    body = etree.tostring(body_el, method="html", encoding="unicode")
     return f'<!doctype html><html><head><meta charset="utf-8">{head}</head>{body}</html>'.encode()
 
 
@@ -186,7 +193,9 @@ def dom_text(excerpt: bytes) -> str:
 
 
 def _norm(s: str) -> str:
-    return " ".join(unicodedata.normalize("NFKC", s).casefold().split())
+    # no whitespace at all: inline element boundaries add none on screen, so a word split across
+    # spans is one word; collapsing can only add shadowing (reject), never hide it
+    return "".join(unicodedata.normalize("NFKC", s).casefold().split())
 
 
 def accept(seg: Segment, candidates: list[Candidate]) -> tuple[list[Candidate], list[Excluded]]:
@@ -218,8 +227,8 @@ def accept(seg: Segment, candidates: list[Candidate]) -> tuple[list[Candidate], 
         off.append(run)
         if _norm(n):
             parts.append(_norm(n))
-            run += len(parts[-1]) + 1
-    text = " ".join(parts)
+            run += len(parts[-1])
+    text = "".join(parts)
     ok: list[Candidate] = []
     bad: list[Excluded] = []
     for c, cell in mine:

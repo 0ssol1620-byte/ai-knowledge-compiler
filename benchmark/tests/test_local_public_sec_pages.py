@@ -178,3 +178,31 @@ def test_module_imports_no_pdf_library() -> None:
     )
     out = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True, check=True)
     assert out.stdout.strip() == "[]"
+
+
+def test_excerpt_br_is_not_doubled() -> None:
+    d = html("<p>a<br/>b</p>" + GOOD, page(row("Other", 9)))
+    ex = excerpt_html(d, segments(d)[0]).decode()
+    assert "</br>" not in ex and "<br>" in ex
+
+
+def test_word_split_across_inline_spans_shadows() -> None:
+    p = "<p><span>Reven</span><span>ue</span></p>" + page(
+        row("Revenue", 1), row("Cost", 2), row("Profit", 3), row("Net", 4)
+    )
+    d = html(p, page(row("Other", 9)))
+    ok, bad = accept(segments(d)[0], cands(d))
+    assert reasons((ok, bad)) == ["anchor_shadowed"] and len(ok) == 3
+
+
+def test_anchor_inside_earlier_row_label_shadows() -> None:
+    p = page(
+        row("Cost of services and products (exclusive of depreciation and amortization)", 1),
+        row("Depreciation and amortization", 2),
+        row("Current portion of long-term debt", 3),
+        row("Long-term debt", 4),
+        row("Profit", 5),
+    )
+    d = html(p, page(row("Other", 9)))
+    ok, bad = accept(segments(d)[0], cands(d))
+    assert reasons((ok, bad)) == ["anchor_shadowed", "anchor_shadowed"] and len(ok) == 3
