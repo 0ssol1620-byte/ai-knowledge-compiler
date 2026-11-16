@@ -2,12 +2,13 @@
 
 Gold lists ``critical_fields``: ``{"field_id", "kind": number|date|identifier, "value",
 "anchor"}``. ``anchor`` is the label text that precedes the value on the page. A field is
-exact only when the first value of its kind after the first occurrence of the anchor in the
+exact only when the first token of its kind after the first occurrence of the anchor in the
 candidate text has the gold canonical form, so swapped values and values that merely occur
 elsewhere on the page are not exact. A gold field without an anchor is refused.
 Canonical form keeps sign, decimal value (scale words applied), percent versus plain, and
 currency, so ``-5%`` is not ``5%``. Nothing is repaired or guessed: an unparseable candidate
-token never matches, an unparseable gold value raises.
+token never matches and is not skipped over, and a gold value that is not exactly one clean
+token raises. Scanning is linear in the text, so hostile output cannot stall a run.
 """
 
 from __future__ import annotations
@@ -52,21 +53,59 @@ _CURRENCY = {
     "JPY": "JPY",
     "¥": "¥",
 }
+# Text is folded before it is read. Only compatibility folds that keep a character's identity
+# are applied (width, font style, no-break and other spaces: fullwidth 12 is 12). Every other
+# compatibility mapping turns one character into different ones ("5¹" -> "51", "1½" -> "11/2"
+# with a fraction slash, "⑴" -> "(1)"), so such a character becomes _JUNK, which no token
+# may touch.
+_JUNK = "\ufffd"
+_SAME_CHAR = ("<wide>", "<narrow>", "<font>", "<noBreak>")
+
+
+class _FoldTable(dict[int, str]):
+    def __missing__(self, cp: int) -> str:
+        ch = chr(cp)
+        tag = unicodedata.decomposition(ch)
+        keep = (
+            not tag.startswith("<")
+            or tag.startswith(_SAME_CHAR)
+            or unicodedata.normalize("NFKC", ch).isspace()
+        )
+        self[cp] = ch if keep else _JUNK
+        return self[cp]
+
+
+_FOLD = _FoldTable()
+
+
+def _fold(text: str) -> str:
+    return unicodedata.normalize("NFKC", text.translate(_FOLD)).replace("\u2212", "-")
+
+
 # Whole token or no token. Every quantifier is possessive and every alternation atomic, so a
 # token is read only as its longest parse: the engine can never back off to a shorter prefix
-# (drop a decimal, a unit, "%" or a currency) to satisfy the boundary checks. A token glued to
-# anything outside its grammar ("2.5mm", "1.5억억", "3.5%p") is not read at all. The glued
-# character is matched rather than looked ahead at, so the scan resumes after it and never
-# reads the rest of a refused token ("50%5" is not 5).
+# (drop a decimal, a unit, "%" or a currency) to satisfy the boundary checks, and once a body
+# is read the match cannot fail, so the scan never restarts inside it. Anything touching a
+# token that is outside its grammar is consumed and refuses the whole token: a letter or digit
+# of any script but Hangul (Hangul after a token is a particle: "5억을"), a unit run that goes
+# on after a line break ("5\n억"), a bare digit group after a spaced Korean group ("12억 3456만
+# 7898" is not 12억 3456만), or a joiner between digit runs ("1-5", "1/2", "1'000", "1..5"). The
+# same characters before a token stop it from starting, so the rest of a refused token, or a
+# number after "x-" or "Q3-", is not read either. Whitespace is only read after a sign or a
+# currency, so a whitespace run costs one step per position, not one scan per position.
+_HANGUL = "\uac00-\ud7a3\u1100-\u11ff"
+_ALNUM = rf"[^\W_{_HANGUL}]"
+_JOIN = "-+.,'_~/\u2044\u2010-\u2015"
 _NUM = r"(?>\d{1,3}(?:,\d{3})++(?:\.\d++)?+|\d++(?:\.\d++)?+)(?!\d|[.,]\d)"
 _CUR = "|".join(sorted(map(re.escape, _CURRENCY), key=len, reverse=True))
 _NUMBER = re.compile(
-    rf"""(?<![0-9A-Za-z.,{_KO_CHARS}])(?P<sign>[-\u2212+△▲]|\()?+\s*+(?P<cp>{_CUR})?+\s*+
-    (?P<body>(?>{_NUM}[ \t]*+{_KO_UNIT}(?:[ \t]*+{_NUM}[ \t]*+{_KO_UNIT})*+
+    rf"""(?<!{_ALNUM})(?<![{_JOIN}{_KO_CHARS}{_JUNK}△▲(])
+    (?:(?:(?P<open>\()|(?P<sign>[-+△▲]))\s*+)?+(?:(?P<cp>{_CUR})\s*+)?+
+    (?P<body>(?>{_NUM}[ ]*+{_KO_UNIT}(?:[ ]*+{_NUM}[ ]*+{_KO_UNIT})*+
             |{_NUM}(?:\s*+(?:thousand|million|billion|trillion|bn)|[kmb](?![A-Za-z]))?+))
-    (?!\s*[{_KO_CHARS}])  # a unit run continues on the next line or after junk: not a token
-    (?P<pct>\s*+%)?+(?:\s*+(?P<cs>{_CUR}))?+(?P<close>\))?+
-    (?P<glued>[0-9A-Za-z%]|[.,](?=\d))?+  # consumed, then refused: no restart inside""",
+    (?P<refused>(?<=[{_KO_CHARS}])[ ]++\d|\s*+[{_KO_CHARS}])?+
+    (?P<pct>\s*+%)?+(?:\s*+(?P<cs>{_CUR}))?+(?P<close>(?(open)\s*+)\))?+
+    (?P<glued>{_ALNUM}|[%{_JUNK}]|[{_JOIN}]++(?=\d))?+""",
     re.VERBOSE | re.IGNORECASE,
 )
 _DATE_ISO = re.compile(r"(?<!\d)(\d{4})\s*[-/.]\s*(\d{1,2})\s*[-/.]\s*(\d{1,2})(?!\d)")
@@ -109,7 +148,7 @@ def _ko_amount(groups: list[tuple[Decimal, str]]) -> Decimal | None:
 
 
 def _canon_number(m: re.Match[str]) -> tuple[str, str, str | None] | None:
-    if m["glued"]:
+    if m["glued"] or m["refused"]:
         return None
     body = m["body"]
     try:
@@ -130,12 +169,9 @@ def _canon_number(m: re.Match[str]) -> tuple[str, str, str | None] | None:
     else:
         ((n, unit),) = groups
         total = n * (_EN_SCALE[unit.lower()] if unit else Decimal(1))
-    sign = m["sign"]
-    if sign == "(" and not m["close"]:
-        sign = None
-    if sign != "(" and m["close"]:
+    if m["close"] and not m["open"]:
         return None  # stray close paren: not a clean token
-    if sign in ("-", "\u2212", "△", "▲", "("):
+    if m["sign"] in ("-", "△", "▲") or m["close"]:
         total = -total
     text = "0" if total == 0 else format(total.normalize(), "f")
     cp, cs = _cur(m["cp"]), _cur(m["cs"])
@@ -144,16 +180,14 @@ def _canon_number(m: re.Match[str]) -> tuple[str, str, str | None] | None:
     return text, "pct" if m["pct"] else "num", cp or cs
 
 
-def _identifier(token: str) -> str:
-    return unicodedata.normalize("NFKC", token).replace("-", "").upper()
-
-
 def _ordered(kind: str, text: str) -> list[tuple[int, Any]]:
-    """``(offset, canonical value)`` of every ``kind`` value in ``text``, in page order."""
-    text = unicodedata.normalize("NFKC", text).replace(chr(0x2212), "-")
+    """``(offset, canonical value)`` of every ``kind`` token in ``text``, in page order.
+
+    A refused token stays in the list with value None, so it is never skipped over.
+    """
+    text = _fold(text)
     if kind == "number":
-        found = [(m.start(), _canon_number(m)) for m in _NUMBER.finditer(text)]
-        return [(o, c) for o, c in found if c is not None]
+        return [(m.start(), _canon_number(m)) for m in _NUMBER.finditer(text)]
     if kind == "date":
         out: list[tuple[int, Any]] = []
         for pat in (_DATE_ISO, _DATE_KO):
@@ -161,45 +195,46 @@ def _ordered(kind: str, text: str) -> list[tuple[int, Any]]:
                 try:
                     out.append((m.start(), date(*(int(g) for g in m.groups())).isoformat()))
                 except ValueError:
-                    continue
-        return sorted(out)
+                    out.append((m.start(), None))
+        return sorted(out, key=lambda t: t[0])
     if kind == "identifier":
         return [
-            (m.start(), _identifier(m[0]))
-            for m in re.finditer(r"[0-9A-Za-z\-]+", text)
+            (m.start(), None if _JUNK in m[0] else m[0].replace("-", "").upper())
+            for m in re.finditer(rf"[0-9A-Za-z\-{_JUNK}]+", text)
             if m[0].strip("-")
         ]
     raise ValueError(f"kind {kind!r} not in {KINDS}")
 
 
 def canonical_values(kind: str, text: str) -> set[Any]:
-    """Every canonical value of ``kind`` that ``text`` holds."""
-    return {v for _, v in _ordered(kind, text)}
+    """Every canonical value of ``kind`` that ``text`` holds (refused tokens left out)."""
+    return {v for _, v in _ordered(kind, text) if v is not None}
 
 
 def _anchor(field: dict[str, Any]) -> str:
     anchor = field.get("anchor")
-    if not isinstance(anchor, str) or not unicodedata.normalize("NFKC", anchor).strip():
+    if not isinstance(anchor, str) or not _fold(anchor).strip():
         raise ValueError(f"critical field {field.get('field_id')!r}: anchor is required")
-    return unicodedata.normalize("NFKC", anchor).strip()
+    return _fold(anchor).strip()
 
 
 def gold_value(field: dict[str, Any]) -> Any:
+    """The one canonical value of a gold field; anything but exactly one clean token raises."""
     kind, raw = field.get("kind"), field.get("value")
     if kind not in KINDS or not isinstance(raw, str) or not raw.strip():
         raise ValueError(f"critical field {field.get('field_id')!r}: kind/value invalid")
     _anchor(field)
-    values = canonical_values(kind, raw)
-    if len(values) != 1:
+    tokens = [v for _, v in _ordered(kind, raw)]
+    if len(tokens) != 1 or tokens[0] is None:
         raise ValueError(
             f"critical field {field.get('field_id')!r}: value {raw!r} is not one {kind}"
         )
-    return next(iter(values))
+    return tokens[0]
 
 
 def value_after_anchor(field: dict[str, Any], text: str) -> Any | None:
-    """First value of the field's kind after the first occurrence of its anchor, or None."""
-    text = unicodedata.normalize("NFKC", text).replace(chr(0x2212), "-")
+    """Value of the first token of the field's kind after its anchor; None if refused or none."""
+    text = _fold(text)
     hit = re.search(re.escape(_anchor(field)), text, re.IGNORECASE)
     if hit is None:
         return None

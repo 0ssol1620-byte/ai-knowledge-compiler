@@ -200,8 +200,9 @@ def run_screen(
                         )
                         + "\n"
                     ).encode()
-                except (TypeError, ValueError):
+                except Exception as exc:  # TypeError, ValueError, RecursionError, ...
                     failures = ["contract_failed"]  # semantic: the output cannot be recorded
+                    error_type = f"{type(exc).__module__}.{type(exc).__qualname__}"
         if data is not None:
             parsed = json.loads(data)
             _write_once(raw_path, data)  # a local write error propagates, never a record

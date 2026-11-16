@@ -3,11 +3,14 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import sys
+import time
+import unicodedata
 from pathlib import Path
 from typing import Any
 
 import pytest
-from hypothesis import assume, given
+from hypothesis import assume, example, given, settings
 from hypothesis import strategies as st
 
 from benchmark.runners.base import RunnerUnavailable
@@ -623,3 +626,182 @@ def test_property_fraction_before_another_group_is_refused(whole, frac, big_and_
     big, rest = big_and_rest
     text = f"{whole}.{frac}{big}{rest[i]}"
     assert canonical_values("number", text) == set()
+
+
+# --- Bounded cost: every scan is linear in the page, whatever the page holds. ---------------
+# One alphabet of every character the number and date grammars react to. Each case is a short
+# head, a long run of one short fill pattern, then a short tail, which is the shape of every
+# super-linear input found so far (a whitespace run before a non-number, a run of signs,
+# a long digit-group chain).
+_ALPHABET = " \n\t-+()△▲$₩원%,.'/~_xk1억만천조십USD년월일\u00b9\u00bd"
+_SCAN_CHARS = 120_000
+_SCAN_BUDGET_S = 3.0  # linear is ~0.2 s here; the quadratic whitespace scan took ~15 s
+
+
+def _scan_seconds(text: str) -> float:
+    started = time.perf_counter()
+    for kind in ("number", "date", "identifier"):
+        canonical_values(kind, text)
+    score_critical_fields([_field("1")], "a" + text)
+    return time.perf_counter() - started
+
+
+@pytest.mark.parametrize("fill", [*sorted(set(_ALPHABET)), "1 ", "( ", "- ", "1,", "1억 "])
+def test_every_single_pattern_run_scans_in_linear_time(fill):
+    text = "a" + fill * (_SCAN_CHARS // len(fill)) + "x 1"
+    assert _scan_seconds(text) < _SCAN_BUDGET_S, repr(fill)
+
+
+@settings(max_examples=40, deadline=None)
+@given(
+    st.text(_ALPHABET, max_size=3),
+    st.text(_ALPHABET, min_size=1, max_size=3),
+    st.text(_ALPHABET, max_size=3),
+)
+@example(head="-", fill=" ", tail="x")
+@example(head="$", fill="\n", tail="x")
+def test_property_scan_time_is_bounded(head, fill, tail):
+    text = head + fill * (_SCAN_CHARS // len(fill)) + tail
+    assert _scan_seconds(text) < _SCAN_BUDGET_S, (head, fill, tail)
+
+
+# --- Korean 만-grouped spacing (orthography art. 44): a bare digit group after a spaced unit
+# group belongs to the same number, so the number is refused, never read as its prefix.
+@pytest.mark.parametrize(
+    ("gold", "candidate"),
+    [
+        ("12억 3456만", "A 12억 3456만 7898원"),
+        ("1억 2,345만", "A 1억 2,345만 6,789원"),
+        ("1만", "A 1만 9999"),
+        ("10000", "A 1만 10000"),
+        ("3억", "A 3억 5000"),
+    ],
+)
+def test_bare_group_after_korean_group_is_not_a_prefix_match(gold, candidate):
+    assert score_critical_fields([_field(gold, "A")], candidate).exact == 0
+    with pytest.raises(ValueError):
+        score_critical_fields([_field(candidate[2:])], "a 5")
+
+
+@given(_groups, _flags, _flags, st.integers(0, 99999), st.booleans())
+def test_property_bare_trailing_group_is_never_dropped(groups, styles, spaces, tail, commas):
+    text = _ko_render(groups, styles, spaces) + " " + (f"{tail:,}" if commas else str(tail))
+    assert canonical_values("number", text) == set()
+    assert canonical_values("number", text + "원") == set()
+    prefix = _ko_render(groups, styles, spaces)
+    assert score_critical_fields([_field(prefix)], "a " + text).exact == 0
+
+
+def test_tab_separates_korean_groups():
+    assert canonical_values("number", "5천\t3억") == {
+        ("5000", "num", None),
+        ("300000000", "num", None),
+    }
+
+
+# --- Compatibility folding never builds a different number. ---------------------------------
+@pytest.mark.parametrize(
+    ("gold", "candidate"),
+    [
+        ("12.51", "A 12.5¹"),
+        ("52", "A 5²"),
+        ("11", "A 1½"),
+        ("1234.52", "A 1,234.5²"),
+        ("12.5", "A 12.5¹"),
+        ("1", "A 1\u20442"),
+        ("5", "A 5℃"),
+        ("1.5", "A 1.5μm"),
+        ("5", "A 5億"),
+    ],
+)
+def test_footnote_fraction_and_symbol_glued_to_a_number_refuse_it(gold, candidate):
+    assert score_critical_fields([_field(gold, "A")], candidate).exact == 0
+    with pytest.raises(ValueError):
+        score_critical_fields([_field(candidate[2:])], "a 5")
+
+
+def _compat_chars() -> list[str]:
+    keep = ("<wide>", "<narrow>", "<font>", "<noBreak>")
+    out = []
+    for cp in range(sys.maxunicode + 1):
+        tag = unicodedata.decomposition(chr(cp))
+        if (
+            tag.startswith("<")
+            and not tag.startswith(keep)
+            and not unicodedata.normalize("NFKC", chr(cp)).isspace()
+        ):
+            out.append(chr(cp))
+    return out
+
+
+def test_no_compatibility_character_merges_into_a_number():
+    """Exhaustive: every character NFKC would rewrite into other characters refuses the token."""
+    chars = _compat_chars()
+    assert len(chars) > 2000  # 2,362 on Python 3.13 (Unicode 15.1)
+    for ch in chars:
+        assert canonical_values("number", "12" + ch) == set(), repr(ch)
+        assert canonical_values("number", ch + "12") == set(), repr(ch)
+        assert canonical_values("number", "1.5" + ch + " 7") == {("7", "num", None)}, repr(ch)
+
+
+def test_identity_folds_still_apply():
+    assert _same("\uff11\uff0c\uff12\uff13\uff14억", "1,234억")  # fullwidth
+    assert _same("1\u00a0억", "1억")  # no-break space
+    assert _same("\U0001d7cf\U0001d7d0", "12")  # mathematical digits
+    assert _same("영업이익\u2009-5%", "-5%")  # thin space before a sign
+
+
+# --- Signs, joiners and refused tokens: never a different number. ---------------------------
+@pytest.mark.parametrize(
+    "candidate",
+    [
+        "x-5",
+        "Q3-5%",
+        "--5",
+        "-(5)",
+        "1-5",
+        "3~5억",
+        "1/2",
+        "10/20",
+        "1'000",
+        "1_000",
+        "1..5",
+        "\u20135",
+        "1\u20135",
+        "1+1",
+    ],
+)
+def test_sign_or_joiner_glued_to_digits_reads_nothing(candidate):
+    assert canonical_values("number", candidate) == set()
+    assert score_critical_fields([_field("5", "A")], "A " + candidate).exact == 0
+    with pytest.raises(ValueError):
+        score_critical_fields([_field(candidate)], "a 5")
+
+
+def test_spaced_parentheses_are_negative():
+    assert _same("( 5 )", "-5") and _same("( 1,234억 )", "-123400000000")
+    assert canonical_values("number", "5)") == set()  # a close paren with no open
+
+
+def test_refused_token_after_anchor_is_not_skipped():
+    assert score_critical_fields([_field("2억", "A")], "A 1.5억억 2억").exact == 0
+    date_field = _field("2024-03-05", "A", "date")
+    assert score_critical_fields([date_field], "A 2024-02-30 2024-03-05").exact == 0
+    assert score_critical_fields([_field("AB1", "A", "identifier")], "A AB1¹ AB1").exact == 0
+
+
+@pytest.mark.parametrize("bad", ["5 5", "1만 10000", "1.5억억 2억", "2.5mm 3"])
+def test_gold_with_more_than_one_token_is_refused(bad):
+    with pytest.raises(ValueError):
+        score_critical_fields([_field(bad)], "a 5")
+
+
+def test_deeply_nested_output_is_contract_failed(tmp_path, monkeypatch):
+    guard, corpus, gold = _setup(tmp_path, pages=1)
+    nested: list[Any] = []
+    for _ in range(200_000):
+        nested = [nested]
+    monkeypatch.setitem(EXTERNAL_RUNNERS, "mineru", lambda p, **_: {"x": nested})
+    (rec,) = _run(tmp_path, guard, corpus, gold)
+    assert rec["hard_failures"] == ["contract_failed"] and rec["raw_sha256"] is None
+    assert rec["provider_error_type"] == "builtins.RecursionError"
