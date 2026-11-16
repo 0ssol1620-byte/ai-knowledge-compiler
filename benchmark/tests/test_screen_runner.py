@@ -15,7 +15,7 @@ from hypothesis import strategies as st
 
 from benchmark.runners.base import RunnerUnavailable
 from benchmark.runners.registry import EXTERNAL_RUNNERS
-from benchmark.screen.critical_fields import canonical_values, score_critical_fields
+from benchmark.screen.critical_fields import canonical_values, gold_value, score_critical_fields
 from benchmark.screen.manifest import HoldoutGuard, HoldoutSealedError
 from benchmark.screen.run_screen import Candidate, ImmutableOutputError, run_screen
 from benchmark.v6.contracts import ContractError
@@ -744,11 +744,15 @@ def test_no_compatibility_character_merges_into_a_number():
         assert canonical_values("number", "1.5" + ch + " 7") == {("7", "num", None)}, repr(ch)
 
 
-def test_identity_folds_still_apply():
-    assert _same("\uff11\uff0c\uff12\uff13\uff14억", "1,234억")  # fullwidth
-    assert _same("1\u00a0억", "1억")  # no-break space
-    assert _same("\U0001d7cf\U0001d7d0", "12")  # mathematical digits
-    assert _same("영업이익\u2009-5%", "-5%")  # thin space before a sign
+def test_only_the_listed_folds_apply():
+    assert _same("\uff11\uff0c\uff12\uff13\uff14억", "1,234억")  # fullwidth digits and comma
+    assert _same("\uff081\uff0e5\uff05\uff09", "(1.5%)")  # fullwidth . % ( )
+    assert _same("\u22125", "-5") and _same("\uff0d5", "-5")
+    # Not on the list, so not folded: the character touches the token and refuses it.
+    assert canonical_values("number", "1\u00a0억") == set()  # no-break space
+    assert canonical_values("number", "\ufe635") == set()  # small hyphen-minus
+    assert canonical_values("number", "\U0001d7cf\U0001d7d0") == set()  # mathematical digits
+    assert canonical_values("number", "영업이익\u2009-5%") == set()  # thin space before a sign
 
 
 # --- Signs, joiners and refused tokens: never a different number. ---------------------------
@@ -805,3 +809,203 @@ def test_deeply_nested_output_is_contract_failed(tmp_path, monkeypatch):
     (rec,) = _run(tmp_path, guard, corpus, gold)
     assert rec["hard_failures"] == ["contract_failed"] and rec["raw_sha256"] is None
     assert rec["provider_error_type"] == "builtins.RecursionError"
+
+
+# --- Closed character set: a character outside the grammar never lets a token be read short. --
+def _gold_refused(value: str, kind: str = "number") -> bool:
+    try:
+        gold_value(_field(value, "A", kind))
+    except ValueError:
+        return True
+    return False
+
+
+# Zero-width, format and combining characters, as PDF text extraction leaves them.
+_INVISIBLE = [
+    "\u200b",
+    "\u200c",
+    "\u200d",
+    "\u2060",
+    "\u00ad",
+    "\ufeff",
+    "\u200e",
+    "\u200f",
+    "\u0336",
+    "\u0301",
+    "\u20e3",
+]
+
+
+@pytest.mark.parametrize("ch", _INVISIBLE, ids=lambda c: f"U+{ord(c):04X}")
+def test_invisible_character_inside_a_number_refuses_it(ch):
+    assert score_critical_fields([_field("1", "A")], "A 1" + ch + "234").exact == 0
+    assert score_critical_fields([_field("12.5", "A")], "A 12.5" + ch).exact == 0
+    assert canonical_values("number", "1" + ch + "234") == set()
+    assert _gold_refused("1" + ch + "234") and _gold_refused("12.5" + ch)
+    assert (
+        score_critical_fields([_field("2024-03-01", "A", "date")], "A 2024-03-1" + ch + "5").exact
+        == 0
+    )
+    assert _gold_refused("2024-03-1" + ch + "5", "date")
+
+
+@pytest.mark.parametrize("sep", ["\u202f", "\u2009", "\u00a0", "\u2002", "\u3000"])
+def test_space_like_thousands_separator_refuses_the_number(sep):
+    for text in (f"1{sep}000", f"1{sep}000{sep}000"):
+        assert score_critical_fields([_field("1", "A")], "A " + text).exact == 0
+        assert canonical_values("number", text) == set() and _gold_refused(text)
+
+
+@pytest.mark.parametrize("text", ["\u02d75", "\u20525", "\u27965", "\u27685\u2769", "\u20105"])
+def test_unlisted_minus_or_bracket_is_not_dropped(text):
+    assert score_critical_fields([_field("5", "A")], "A " + text).exact == 0
+    assert canonical_values("number", text) == set() and _gold_refused(text)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "\u0661\u0662",
+        "1\u0662",
+        "\u0967\u0968",
+        "\U0001d7cf\U0001d7d0",
+        "\u0e51\u0e52",
+        "\u1811\u1812",
+    ],
+)
+def test_digit_outside_ascii_is_not_a_digit(text):
+    assert score_critical_fields([_field("12", "A")], "A " + text).exact == 0
+    assert canonical_values("number", text) == set() and _gold_refused(text)
+
+
+@pytest.mark.parametrize("text", ["2024-03-05x", "2024-03-05\u00b9", "x2024-03-05", "2024-03-05-1"])
+def test_date_touching_a_character_outside_its_grammar_is_refused(text):
+    assert _gold_refused(text, "date")
+    assert score_critical_fields([_field("2024-03-05", "A", "date")], "A " + text).exact == 0
+
+
+def _outside_grammar() -> list[str]:
+    """Every non-ASCII character of the classes that hide inside numbers in extracted text."""
+    classes = {"Mn", "Mc", "Me", "Cf", "Cc", "Nd", "Nl", "No", "Zs", "Zl", "Zp", "Pd", "Sm"}
+    listed = set("\uff10\uff11\uff12\uff13\uff14\uff15\uff16\uff17\uff18\uff19\u2212\uff0d")
+    return [
+        chr(cp)
+        for cp in range(0x80, sys.maxunicode + 1)
+        if unicodedata.category(chr(cp)) in classes and chr(cp) not in listed
+    ]
+
+
+def test_every_character_outside_the_grammar_refuses_a_token_it_touches():
+    chars = _outside_grammar()
+    assert len(chars) > 4000
+    for ch in chars:
+        assert canonical_values("number", "12" + ch) == set(), repr(ch)
+        assert canonical_values("number", ch + "12") == set(), repr(ch)
+        assert canonical_values("number", "1.5" + ch + " 7") == {("7", "num", None)}, repr(ch)
+
+
+# Junk that is never part of a number: invisible, foreign digits, minus and bracket variants,
+# space-like separators, symbols. ASCII space is in it, so junk can also stand apart.
+_JUNK = (
+    " "
+    + "".join(_INVISIBLE)
+    + "\u0661\u0967\u0e51\u1811\U0001d7cf\u00b9\u00bd\u2460"
+    + "\u02d7\u2052\u2796\u2010\u2011\u2012\u2013\u2014\u2768\u2769"
+    + "\u00a0\u202f\u2009\u2002\u3000\u00a4\u2103\u03bc\u5104"
+)
+
+
+@settings(max_examples=300)
+@given(
+    st.sampled_from(["", "-", "\u25b3", "$", "\u20a9"]),
+    _MANTISSA,
+    _UNIT,
+    _SUFFIX,
+    st.text(_JUNK, max_size=3),
+    st.text(_JUNK, max_size=3),
+)
+def test_property_wide_junk_around_a_token_reads_it_whole_or_not_at_all(
+    sign, mantissa, unit, suffix, head, tail
+):
+    token = sign + mantissa + unit + suffix
+    whole = canonical_values("number", token)
+    assume(len(whole) == 1)  # "$5원" names two currencies and is refused by design
+    (want,) = whole
+    text = head + token + tail
+    got = canonical_values("number", text)
+    assert got <= {want}, (text, got)
+    touched = bool((head and head[-1] != " ") or (tail and tail[0] != " "))
+    if touched:
+        assert got == set(), text
+    assert score_critical_fields([_field(token, "A")], "A " + text).exact == (not touched)
+    if head.strip(" ") or tail.strip(" "):
+        assert _gold_refused(text)
+    else:
+        assert gold_value(_field(text)) == want
+
+
+# --- Exact arithmetic: a value is kept digit for digit or refused, never rounded. -------------
+@pytest.mark.parametrize(
+    ("gold", "candidate", "kept"),
+    [
+        ("12345678901234567890123456789", "12345678901234567890123456790", None),
+        ("1.00000000000000000000000000001", "1", None),
+        (
+            "1234567890123456789012345678.9억",
+            "1234567890123456789012345679억",
+            "123456789012345678901234567890000000",
+        ),
+    ],
+)
+def test_long_numbers_are_not_rounded(gold, candidate, kept):
+    assert gold_value(_field(gold)) == (kept or gold, "num", None)
+    assert score_critical_fields([_field(gold, "A")], "A " + candidate).exact == 0
+    assert score_critical_fields([_field(gold, "A")], "A " + gold).exact == 1
+
+
+def test_number_beyond_exact_precision_is_refused():
+    long = "1" * 101
+    assert canonical_values("number", long) == set() and _gold_refused(long)
+    assert canonical_values("number", "1" * 100) == {("1" * 100, "num", None)}
+
+
+@pytest.mark.parametrize("bad", ["1.5 B", "1.5 mil", "5 apples", "3 \ubc31\ud654\uc810", "5 %p"])
+def test_gold_is_exactly_one_token_and_nothing_else(bad):
+    assert _gold_refused(bad)
+
+
+# --- Linear at page scale: 1 MB against 256 KB for each kind of fill. ------------------------
+def _best_seconds(text: str) -> float:
+    return min(_scan_seconds(text) for _ in range(2))
+
+
+@pytest.mark.parametrize(
+    "fill",
+    [
+        " ",
+        "\n",
+        "1",
+        "1 ",
+        "1,",
+        "1\uc5b5 ",
+        "-x1.$ \uc5b5,\u00b9(",
+        "2024-",
+        "\u200b1\u00a0\u0661",
+    ],
+    ids=[
+        "space",
+        "newline",
+        "digits",
+        "digit-space",
+        "digit-comma",
+        "ko-group",
+        "junk",
+        "date",
+        "unicode-junk",
+    ],
+)
+def test_scan_time_grows_linearly_to_one_megabyte(fill):
+    small, large = (
+        _best_seconds("a" + fill * (size // len(fill)) + "x 1") for size in (256_000, 1_024_000)
+    )
+    assert large <= 2 * 4 * small + 0.5, (fill, small, large)
