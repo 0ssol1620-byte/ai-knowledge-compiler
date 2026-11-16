@@ -32,17 +32,39 @@ It is also pinned by two tests:
 
 `docs/release/EXTERNAL_GATES.md` describes EG-04 (>=1,500 pages, >=150 documents) without a language share, so it does not change.
 
-How the list was made, so it can be re-run. A share rule can be written as prose or as arithmetic, so one pattern is not enough; three
-passes run over the repository (`git grep`, excluding JSON and `apps/`) and over `v34-lanes/workorders/` and `v34-lanes/adr/`:
+How the list was made, so it can be re-run. A share rule can be written as prose or as arithmetic, so one pattern is not enough. These
+are the exact commands, run from the repository root in Git Bash; the patterns avoid a literal `'` (they use `\x27`) so they paste
+unchanged. JSON (so `benchmark/schemas/`) and `apps/` are searched; only the generated `apps/web/public` and `docs/adr/` (this record)
+are excluded:
 
-1. prose: a case-insensitive Korean term (`korean`, `한국어`, `ko`) within a line of a share (`50%`, `>=50`, `≥50`, `과반`, `절반`,
-   `majority`, `half`), in either order;
-2. code: the names `korean_pages`, `korean_share`, `korean_ratio`, and **every** comparison of a `language`/`lang` field with `"ko"`
-   (that is how the `korean_pages * 2 < pages` and `… == "ko") * 2 >= total` checks are written), each read by hand for a share;
-3. every reader of `benchmark/screen/strata.yaml` (today only `test_screen_acquire.py`).
+```bash
+V34=D:/CodexProjects/v34-lanes
+PROSE='(korean|한국어|\bko\b)[^\n]{0,60}(50 ?%|>= ?50|≥ ?50|과반|절반|majority|\bhalf\b)|(50 ?%|>= ?50|≥ ?50|과반|절반|majority|\bhalf\b)[^\n]{0,40}(korean|한국어)|한국어 ?중심|korean[- ]centric'
+CODE='korean_(pages|share|ratio)|ko_share|language_distribution|\b(language|lang)[\x27"]?\]?\s*(==|!=)\s*[\x27"]ko[\x27"]|[\x27"]ko[\x27"]\s*(==|!=)\s*\w*\[?[\x27"]?(language|lang)|\* ?2 ?(>=|<)'
+READERS='strata\.yaml'
+for P in "$PROSE" "$CODE" "$READERS"; do
+  git grep -n -I -i -P "$P" -- . ':!apps/web/public' ':!docs/adr/*'
+  grep -rnIiP "$P" "$V34/workorders" "$V34/adr"
+done
+```
 
-For each hit, the row's "Changed by" was checked against that work order's write scope. Hits that only record the decision to change the rule (`local-public-corpus.md` §2.7 and L-1, `LPC.json`, `ALL.json`) are not rule
-places. The masterplan's §22.2 golden-corpus table plans Korean pages by area but states no share, so it is not one either.
+`PROSE` finds a Korean term within a line of a share, in either order, and the "Korean-centred" wording. `CODE` finds the share
+variables, **every** comparison of a `language`/`lang` field with `"ko"`, and every `* 2 >=` / `* 2 <` halving test (that is how
+`korean_pages * 2 < pages` and `… == "ko") * 2 >= total` are written). `READERS` finds every file that reads or names `strata.yaml`.
+Each hit was read by hand. Every hit file is either a rule place in the table or test list above, or one of these, which are not:
+
+- decision records, which record the decision to change the rule, not the rule: `v34-lanes/workorders/local-public-corpus.md` (§2.7,
+  the WO-LPC-ADR spec, L-1, the WO index), `local-public-corpus.v1.md` (its superseded first version), `LPC.json` and `ALL.json` (the
+  work-order index), and `v34-lanes/adr/SCOPE-FOUNDER-20261116.md` (Amendment 4, the decision itself);
+- `core-runtime-arena.md` line ~121: WO-D02-2's write-scope list naming `strata.yaml` (that file is already in the table);
+- `docs/north-star/TAVONEL_MASTERPLAN_v3.1.md` line ~3752: `language_distribution: {ko: 0.7, en: 0.3}` is one page's profiler output
+  in an example, not a corpus rule;
+- the frozen masterplan §32.6 "실제 해자" (line ~6289): "한국어 중심 Golden Corpus" names the golden corpus as a moat and states no
+  share, so it is not a rule place and is not edited. Amendment 2 moves the headline corpus to global-first; Korean stays a set of
+  strata, as below.
+
+The frozen masterplan's §22.2 golden-corpus table plans Korean pages by area but states no share and no pattern above matches it, so it
+is not a rule place either. For each rule place, the "Changed by" entry was checked against that work order's write scope.
 
 Amendment 2 made the target customer global and the gold global-first (SEC EDGAR, ESEF, UK iXBRL, NIST OSCAL, US federal data). Korean
 sources are kept only for the Korean/HWP stratum. A corpus-wide Korean majority now contradicts the product claim, and one aggregate
@@ -90,7 +112,8 @@ Two guards go with the floors, because floors alone can be gamed by one large do
   the **floor**, not from the stratum's actual page count, so adding pages to a stratum never raises it. Pages above the cap are still
   evaluated; they do not count toward the floor. With the minimum documents above, every floor stays reachable under the cap (tightest:
   `slides` and `distorted`, 10 × 10 = 100 = floor);
-- each stratum has at least 5 distinct issuers/publishers (or authors, for handwriting).
+- each stratum has at least 5 distinct issuers/publishers (or authors, for handwriting). No manifest field records a publisher, so
+  this guard is checked by a person at corpus freeze, not by `manifest.py` (see "Where each rule is checked" below).
 
 Language shares are an **outcome, not a rule**. With these floors, fixed-language pages are Korean 625 (41.7%) and English 600 (40%);
 the other 275 pages (18.3%) are `open` and are not sourced from Korean material. No share is required to exceed 50%, and if the lead
@@ -100,6 +123,29 @@ Difference from the core-runtime-arena §7 plan: the Korean fixed strata are 625
 English floors are 450 pages (30%) against §7's 15% SEC (≈ 225, the share WO-LPC-R2 selects); `adversarial` (75) and any synthetic
 degradation stay inside §7's 15% synthetic cap. A synthetic degradation is never placed in a scan stratum (`ko_scan`, `handwriting`,
 `distorted`) and never counts toward any floor in this table.
+
+### Where each rule is checked, and from which field
+
+A manifest document carries exactly `doc_id`, `source_sha256`, `byte_size`, `page_count`, `stratum`, `language`, `document_class`,
+`rights` and an optional `split` (`manifest.py` `_DOC_FIELDS`; `benchmark/schemas/screen-manifest.schema.json` closes the record with
+`additionalProperties: false`). Its fields record what a person decided and `manifest.py` never infers one, so a rule is checked in
+`manifest.py` only when these fields decide it. The rest is checked by a person at corpus freeze and written into the freeze report;
+it is not dropped.
+
+| Rule | Fields read | Checked by |
+|---|---|---|
+| 1,500 pages, 150 documents, ten document classes (unchanged) | `page_count`, `document_class` | `manifest.py` (exists today) |
+| Every document's `stratum` is one of the eleven above | `stratum` | `manifest.py`, WO-LPC-ADR-IMPL (an unknown stratum is rejected, not ignored) |
+| Page floor and minimum documents per stratum; every shortfall named in one error | `stratum`, `page_count` | `manifest.py`, WO-LPC-ADR-IMPL |
+| Per-document cap ⌈floor / 10⌉ | `stratum`, `page_count` | `manifest.py`, WO-LPC-ADR-IMPL |
+| A fixed-language stratum holds only documents of that language; `open` holds any | `stratum`, `language` | `manifest.py`, WO-LPC-ADR-IMPL |
+| A `synthetic` document is rejected in `ko_scan`, `handwriting` and `distorted`, and counts toward no floor except `adversarial`'s | `stratum`, `rights.rights_class` | `manifest.py`, WO-LPC-ADR-IMPL |
+| At least 5 distinct issuers/publishers (authors, for handwriting) per stratum | none: the record has no publisher field, and reading one out of `source_url` would be inferring it | A person at corpus freeze; the freeze report lists the publishers per stratum. Moving it into `manifest.py` needs a person-recorded `publisher` field in `_DOC_FIELDS` and in `benchmark/schemas/screen-manifest.schema.json`, which is **not** in WO-LPC-ADR-IMPL's write scope: the lead adds it or it stays a freeze-report check |
+| `adversarial` holds constructed hostile pages only, never a synthetic degradation | none: `rights_class` says `synthetic` for both and no field tells them apart | A person at corpus freeze; written into the freeze report |
+| A rasterised print is never in a scan stratum (Amendment 4) | none: a rendered print is recorded as `public_record` like a real scan | A person at corpus freeze, from the renderer receipt; written into the freeze report |
+
+`_counts` keeps its `korean_pages` entry: it is part of every frozen screen manifest's digest, and removing it would change those
+digests. Only the eg04 comparison against it goes.
 
 ## What the local SEC corpus can and cannot fill
 
@@ -144,13 +190,26 @@ as they are.
 
 ## Places to change when accepted (WO-LPC-ADR-IMPL)
 
-1. `benchmark/screen/manifest.py`: replace the `korean_pages` check (eg04 only) with a per-stratum floor check and the two guards; the screen profile is untouched.
+1. `benchmark/screen/manifest.py`: replace the eg04 `korean_pages * 2 < pages` check with the rows of "Where each rule is checked"
+   that say WO-LPC-ADR-IMPL (stratum ids, floors and minimum documents, the per-document cap, fixed-language strata, `synthetic`
+   placement). Nothing else in the file changes: `_DOC_FIELDS`, `_counts` (including `korean_pages`) and the screen profile stay. The
+   publisher guard and the rasterised-print rule are **not** in `manifest.py`; they are freeze-report checks.
 2. `benchmark/corpus/CORPUS_POLICY.md`: private-beta bullet.
 3. `benchmark/screen/strata.yaml`: header comment only — its basis becomes the screen's own plan instead of CORPUS_POLICY (the screen strata and their Korean share are unchanged); EG-04 floors live with the profile, not in the screen list. Not in IMPL's write scope as written: the lead adds it or defers it.
-4. `benchmark/tests/test_screen_manifest.py`: `test_eg04_profile_...` (the 40%-Korean fixture no longer fails on language; with every floor met it passes, and a fixture missing the `en_tables` floor fails).
+4. `benchmark/tests/test_screen_manifest.py`: `test_eg04_profile_...` and its helper `_eg04_docs` (line ~167). The old fixture puts
+   every document in stratum `s0`, so it fails on the unknown-stratum check, not on language, at any Korean ratio. The helper is rebuilt
+   over the eleven strata. A rebuilt fixture that meets every floor with 40% Korean pages passes (the Korean floors alone are 625 of
+   1,500 pages, 41.7%, so that fixture carries English pages above their floors); a fixture missing the `en_tables` floor fails, naming
+   `en_tables`. The helper also feeds `test_doc_id_cannot_escape_corpus_root_and_eg04_needs_intact_screen_manifest` (line ~297),
+   whose body does not change and which must still fail on "intact manifest"; IMPL's scope line names only `test_eg04_profile_…`, so
+   the lead confirms that the shared helper is in scope.
 5. `benchmark/tests/test_screen_acquire.py::test_strata_targets_sum_and_korean_share`: **not edited**. It pins the screen plan, which keeps its Korean share; it is no longer read as enforcing CORPUS_POLICY.
 6. `docs/masterplan/AI_Knowledge_Compiler_SaaS_Masterplan_FINAL_v2_KO_2026-07-29.md` §37.1: **not edited** (frozen); this ADR is the superseding record for its Korean bullet, for EG-04 only.
 7. `v34-lanes/workorders/core-runtime-arena.md` §7 (outside this repository): the lead updates the plan text.
+8. `benchmark/schemas/screen-manifest.schema.json` and `_DOC_FIELDS` in `manifest.py`: a person-recorded `publisher` field, only if
+   the publisher guard is to move from the freeze report into `manifest.py`. **Not** in WO-LPC-ADR-IMPL's write scope: the lead adds it
+   to a work order or the guard stays a freeze-report check. Either way the field is recorded by a person, never derived from
+   `source_url`.
 
 ## Rollback
 
