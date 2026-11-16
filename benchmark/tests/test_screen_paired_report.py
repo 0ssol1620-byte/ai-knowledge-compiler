@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import copy
-import itertools
 import math
 import unittest
 from typing import Any
@@ -9,6 +8,7 @@ from typing import Any
 from akc_absorption.metrics import _SplitMix64
 
 from benchmark.screen.paired_report import INSUFFICIENT, build_report
+from benchmark.w6.v2.grading import wilson_interval
 
 
 def rec(
@@ -134,9 +134,10 @@ class PairedReportTest(unittest.TestCase):
     def test_failing_a_bad_page_does_not_raise_the_rate(self) -> None:
         # Page x is accepted but 0/5 exact; failing it must not look better than reading it.
         recs = [rec("s", "c", "ok"), rec("s", "c", "x", n=5, exact=0)]
-        before = build_report(recs, incumbent="c")["strata"]["s"]["cells"]["c"]["selection_rate"]
+        key = "critical_exact_rate"
+        before = build_report(recs, incumbent="c")["strata"]["s"]["cells"]["c"][key]
         recs[1]["hard_failures"] = ["provider_unavailable"]
-        after = build_report(recs, incumbent="c")["strata"]["s"]["cells"]["c"]["selection_rate"]
+        after = build_report(recs, incumbent="c")["strata"]["s"]["cells"]["c"][key]
         self.assertLessEqual(after, before)
 
     def test_cell_critical_rate_and_ci_count_failed_pages(self) -> None:
@@ -163,8 +164,7 @@ class PairedReportTest(unittest.TestCase):
             self.assertEqual(got["cells"]["c"]["critical_exact_rate"], 0.0)
             self.assertNotEqual(got["cells"]["c"]["critical_exact_ci"], INSUFFICIENT)
             self.assertEqual(got["rejected"]["c"], "no_accepted_pages")
-        # Paired: a failure written with n=0 still counts the gold n another candidate
-        # recorded for that page, so 9 of 10 failed pages is 0.1, not 1.0.
+        # A failure written with n=0 is still a page, so 9 of 10 failed pages is 0.1.
         recs = [rec("s", "inc", f"d{i}", n=10, exact=9) for i in range(10)]
         recs += [rec("s", "c", "d0", n=10, exact=10)]
         recs += [rec("s", "c", f"d{i}", n=0, exact=0, fail=f) for i in range(1, 10)]
@@ -228,15 +228,15 @@ class PairedReportTest(unittest.TestCase):
             except ValueError:
                 continue
             for st in out["strata"].values():
-                for cell, key in itertools.product(
-                    st["cells"].values(), ("selection_rate", "critical_exact_rate")
-                ):
-                    v = cell[key]
-                    self.assertTrue(v == INSUFFICIENT or 0.0 <= v <= 1.0, (key, v, r))
+                for cell in st["cells"].values():
+                    v = cell["critical_exact_rate"]
+                    self.assertTrue(v == INSUFFICIENT or 0.0 <= v <= 1.0, (v, r))
 
     def test_property_failing_a_page_never_improves_its_candidate(self) -> None:
         """Fuzz: failing accepted pages or adding failed ones never improves the
-        candidate's cell rates, Wilson upper bound, macro, worst stratum or primary."""
+        candidate's cell rate, either Wilson bound, macro, worst stratum or primary;
+        and in every report the primary's reported rate is the highest eligible one
+        and the summary repeats the cell's rate."""
 
         def rate(x: Any) -> float:
             return math.inf if x in (INSUFFICIENT, None) else float(x)
@@ -282,18 +282,96 @@ class PairedReportTest(unittest.TestCase):
             for s in strata_b:
                 cell_b, cell_a = b["strata"][s]["cells"].get(c), a["strata"][s]["cells"].get(c)
                 if cell_b is not None:
-                    for key in ("selection_rate", "critical_exact_rate"):
-                        self.assertLessEqual(rate(cell_a[key]), rate(cell_b[key]), (key, ctx))
-                    ci_b, ci_a = cell_b["critical_exact_ci"], cell_a["critical_exact_ci"]
-                    upper_b = math.inf if ci_b == INSUFFICIENT else ci_b[1]
-                    upper_a = math.inf if ci_a == INSUFFICIENT else ci_a[1]
-                    self.assertLessEqual(upper_a, upper_b, ctx)
+                    key = "critical_exact_rate"
+                    self.assertLessEqual(rate(cell_a[key]), rate(cell_b[key]), (key, ctx))
+                    # "insufficient" is the uninformative interval [0, 1].
+                    ci_b, ci_a = (
+                        [0.0, 1.0] if ci == INSUFFICIENT else ci
+                        for ci in (cell_b["critical_exact_ci"], cell_a["critical_exact_ci"])
+                    )
+                    self.assertLessEqual(ci_a[0], ci_b[0], ctx)
+                    self.assertLessEqual(ci_a[1], ci_b[1], ctx)
                 if a["routes"][s]["primary"] == c:
                     self.assertEqual(b["routes"][s]["primary"], c, (s, ctx))
             sb, sa = b["summary"][c], a["summary"][c]
             for key in ("macro_critical_exact_rate", "worst_stratum_critical_exact_rate"):
                 self.assertLessEqual(rate(sa[key]), rate(sb[key]) + 1e-12, (key, ctx))
             self.assertLessEqual(set(sa["strata_insufficient"]), set(sb["strata_insufficient"]))
+            for rep in (b, a):
+                self.assert_one_rate(rep, ctx)
+
+    def assert_one_rate(self, rep: dict[str, Any], ctx: Any = None) -> None:
+        """Selection, the cell, its CI and the summary all show the same rate."""
+        for s, st in rep["strata"].items():
+            cells, primary = st["cells"], rep["routes"][s]["primary"]
+            eligible = [c for c in cells if c not in st["rejected"]]
+            if primary is not None:
+                top = max(cells[c]["critical_exact_rate"] for c in eligible)
+                self.assertEqual(cells[primary]["critical_exact_rate"], top, (s, ctx))
+            for cell in cells.values():
+                if cell["critical_exact_rate"] == INSUFFICIENT:
+                    self.assertEqual(cell["critical_exact_ci"], INSUFFICIENT, ctx)
+                    continue
+                self.assertGreaterEqual(cell["critical_n"], cell["failures"], ctx)
+                self.assertEqual(
+                    cell["critical_exact_rate"], cell["critical_exact"] / cell["critical_n"]
+                )
+                self.assertEqual(
+                    cell["critical_exact_ci"],
+                    wilson_interval(cell["critical_exact"], cell["critical_n"]),
+                    ctx,
+                )
+        for c, summ in rep["summary"].items():
+            rates = [
+                st["cells"][c]["critical_exact_rate"]
+                for st in rep["strata"].values()
+                if c in st["cells"] and st["cells"][c]["critical_exact_rate"] != INSUFFICIENT
+            ]
+            if rates:
+                self.assertEqual(summ["worst_stratum_critical_exact_rate"], min(rates), ctx)
+                self.assertAlmostEqual(summ["macro_critical_exact_rate"], sum(rates) / len(rates))
+                worst = rep["strata"][summ["worst_stratum"]]["cells"][c]["critical_exact_rate"]
+                self.assertEqual(worst, summ["worst_stratum_critical_exact_rate"], ctx)
+
+    def test_one_rate_for_selection_cell_and_summary(self) -> None:
+        f = ("provider_unavailable",)
+        # B1: c is 1/1 and 1/9 fields, inc 0/1 and 9/9. The primary's reported rate
+        # and CI are the ones it was chosen on, and the summary repeats them.
+        recs = [rec("s", "c", "p1", n=1, exact=1), rec("s", "c", "p2", n=9, exact=1)]
+        recs += [rec("s", "inc", "p1", n=1, exact=0), rec("s", "inc", "p2", n=9, exact=9)]
+        rep = build_report(recs, incumbent="inc")
+        cells = rep["strata"]["s"]["cells"]
+        primary = rep["routes"]["s"]["primary"]
+        self.assertGreaterEqual(
+            cells[primary]["critical_exact_rate"], cells["inc"]["critical_exact_rate"]
+        )
+        self.assertAlmostEqual(cells["c"]["critical_exact_rate"], 5 / 9)
+        self.assertEqual(
+            rep["summary"]["c"]["macro_critical_exact_rate"], cells["c"]["critical_exact_rate"]
+        )
+        self.assertNotIn("selection_rate", cells["c"])
+        self.assert_one_rate(rep)
+        # B2: an all-failed cell is 0.0 over its page count, even when failures say n=0.
+        recs = [rec("s", "c", f"f{i}", n=0, exact=0, fail=f) for i in range(3)]
+        cell = build_report(recs, incumbent="c")["strata"]["s"]["cells"]["c"]
+        self.assertEqual(
+            (cell["critical_n"], cell["critical_exact_rate"], cell["critical_exact_ci"]),
+            (3, 0.0, wilson_interval(0, 3)),
+        )
+        # B3: a page number reused by another document does not lend it that page's n.
+        big = [rec("s", "inc", "big", n=40, exact=40), rec("s", "c", "big", n=40, exact=40)]
+        small = rec("s", "c", "small", n=1, exact=0, fail=f)
+        for r in (*big, small):
+            r["page_id"] = "p1"
+        cell = build_report([*big, small], incumbent="inc")["strata"]["s"]["cells"]["c"]
+        self.assertEqual((cell["critical_n"], cell["critical_exact_rate"]), (2, 0.5))
+
+    def test_duplicate_page_record_refused(self) -> None:
+        recs = [rec("s", "c", "p1"), rec("s", "c", "p2", exact=0)]
+        with self.assertRaises(ValueError):
+            build_report([*recs, copy.deepcopy(recs[0])], incumbent="c")
+        # The same page under another candidate or stratum is not a duplicate.
+        build_report([*recs, rec("s", "inc", "p1"), rec("t", "c", "p1")], incumbent="c")
 
     def test_pairing_counts_discordant_docs(self) -> None:
         recs = docs("s", "inc", exact=1) + docs("s", "c", exact=2)

@@ -6,21 +6,17 @@ Input: WO-D08-1 screen records. Selection rule, frozen before A2b:
   3. A candidate that is primary in exactly one stratum is routed only there
      (minority isolated). No voting, no ensemble: one primary per stratum.
   4. The worst stratum is reported beside the macro figure, never averaged away.
-Selection and the rule-4 summary both use selection_rate: the mean over pages of
-the per-page critical exact fraction, where a hard-failed page scores 0 whatever
-critical n it recorded, and an accepted page without critical fields does not
-count. Failing a page can therefore never raise it, and a stratum whose pages all
-failed reports 0.0, never "insufficient".
-Every reported rate counts failed pages the same way: critical_exact_rate and its
-Wilson CI take exact fields from accepted pages over the critical n of all
-pages, so a failed page is n fields, none exact. Critical n is gold, a property
-of the page: a failed page counts the largest n any record of that page carries
-in the stratum, so a runner writing n=0 on a failure cannot hide it when another
-candidate read the page (WO-D08-1 must still record gold n on failed pages, or
-a page no candidate read stays invisible). Eligibility uses accepted_critical_n.
-Ties on selection_rate break on failure fraction before CER and cost, so adding
-or failing a page never moves its candidate up. A malformed record is a
-ValueError.
+There is one critical exact rate, computed only by _exact and used by the cell,
+its Wilson CI, eligibility, selection and the rule-4 summary alike. Its unit is
+the page: n counts every hard-failed page (whatever critical n it recorded) plus
+every accepted page with critical fields. An accepted page scores its exact
+field fraction, a failed page 0; critical_exact is the sum of those scores and
+the rate is their mean. The Wilson CI over (critical_exact, n) is conservative
+for a mean of [0, 1] scores, whose variance is at most p(1 - p). Failing or
+adding a failed page therefore never raises the rate or either Wilson bound, and
+a stratum whose pages all failed reports 0.0 over its page count, never
+"insufficient". Ties break on failure fraction before CER and cost, so failures
+never move a candidate up. A malformed or duplicated record is a ValueError.
 """
 
 from __future__ import annotations
@@ -62,14 +58,17 @@ def _doc_critical_exact(records: list[dict[str, Any]]) -> bool:
     )
 
 
-def _selection_rate(records: list[dict[str, Any]]) -> float | str:
-    """Monotone in failures: a failed page scores 0, so failing one never helps."""
+def _exact(records: list[dict[str, Any]]) -> tuple[float, int, float | str, list[float] | str]:
+    """The only critical exact rate: (exact score, n pages, rate, Wilson CI)."""
     scores = [
         0.0 if r["hard_failures"] else r["critical"]["exact"] / r["critical"]["n"]
         for r in records
         if r["hard_failures"] or r["critical"]["n"]
     ]
-    return sum(scores) / len(scores) if scores else INSUFFICIENT
+    if not scores:
+        return 0.0, 0, INSUFFICIENT, INSUFFICIENT
+    exact, n = sum(scores), len(scores)
+    return exact, n, exact / n, wilson_interval(exact, n)
 
 
 def _real(v: object) -> bool:
@@ -97,14 +96,10 @@ def _validate(r: Any) -> None:
         raise ValueError(f"malformed screen record: {r!r:.300}")
 
 
-def _cell(records: list[dict[str, Any]], gold_n: dict[str, int]) -> dict[str, Any]:
+def _cell(records: list[dict[str, Any]]) -> dict[str, Any]:
     """One stratum x candidate cell. A critical-less cell is insufficient, not zero."""
     accepted = [r for r in records if not r["hard_failures"]]
-    failures = len(records) - len(accepted)
-    # A failed page keeps the page's gold critical n in the denominator, none exact.
-    n = sum(gold_n[r["page_id"]] if r["hard_failures"] else r["critical"]["n"] for r in records)
-    accepted_n = sum(r["critical"]["n"] for r in accepted)
-    exact = sum(r["critical"]["exact"] for r in accepted)
+    exact, n, rate, ci = _exact(records)
     costs = [r["provider_cost_usd"] for r in records]
     known = [c for c in costs if c is not None]
     latencies = [float(r["latency_ms"]) for r in records]
@@ -112,18 +107,14 @@ def _cell(records: list[dict[str, Any]], gold_n: dict[str, int]) -> dict[str, An
         "pages": len(records),
         "docs": len({r["doc_id"] for r in records}),
         "critical_n": n,
-        "accepted_critical_n": accepted_n,
         "critical_exact": exact,
-        # Failed pages with no recorded n still make the cell 0.0, never insufficient.
-        "critical_exact_rate": exact / n if n else (0.0 if failures else INSUFFICIENT),
-        "critical_exact_ci": wilson_interval(exact, n) if n or failures else INSUFFICIENT,
-        # Failure-aware figure that selection ranks on: failed pages dilute the rate.
-        "selection_rate": _selection_rate(records),
+        "critical_exact_rate": rate,
+        "critical_exact_ci": ci,
         "accepted_critical_errors": sum(r["critical"]["accepted_errors"] for r in records),
         "cer": _metric(records, "cer"),
         "table_f1": _metric(records, "table_f1"),
         "formula_score": _metric(records, "formula_score"),
-        "failures": failures,
+        "failures": len(records) - len(accepted),
         # Never invent a cost: unknown on any page means unknown for the cell.
         "cost_per_accepted_page_usd": (
             sum(known) / len(accepted) if accepted and len(known) == len(costs) else None
@@ -166,7 +157,7 @@ def _rank_key(cell: dict[str, Any]) -> tuple[float, float, float, float]:
     cer, cost = cell["cer"], cell["cost_per_accepted_page_usd"]
     # Failure fraction before CER: a failed page's metrics must not win a tie.
     return (
-        -cell["selection_rate"],
+        -cell["critical_exact_rate"],
         cell["failures"] / cell["pages"],
         cer if cer is not None else math.inf,
         cost if cost is not None else math.inf,
@@ -175,18 +166,20 @@ def _rank_key(cell: dict[str, Any]) -> tuple[float, float, float, float]:
 
 def build_report(records: list[dict[str, Any]], *, incumbent: str) -> dict[str, Any]:
     grouped: dict[str, dict[str, list[dict[str, Any]]]] = defaultdict(lambda: defaultdict(list))
+    seen: set[tuple[str, str, str, str]] = set()
     for r in records:
         _validate(r)
+        # At-least-once delivery: a page counted twice would weigh twice in every rate.
+        key = (r["stratum"], r["candidate_id"], r["doc_id"], r["page_id"])
+        if key in seen:
+            raise ValueError(f"duplicate screen record for {key}")
+        seen.add(key)
         grouped[r["stratum"]][r["candidate_id"]].append(r)
 
     strata: dict[str, Any] = {}
     ranked: dict[str, list[str]] = {}
     for stratum in sorted(grouped):
-        gold_n: dict[str, int] = defaultdict(int)
-        for rs in grouped[stratum].values():
-            for r in rs:
-                gold_n[r["page_id"]] = max(gold_n[r["page_id"]], r["critical"]["n"])
-        cells = {c: _cell(rs, gold_n) for c, rs in grouped[stratum].items()}
+        cells = {c: _cell(rs) for c, rs in grouped[stratum].items()}
         pairs = {
             c: _paired(grouped[stratum].get(incumbent, []), grouped[stratum][c])
             for c in cells
@@ -199,7 +192,7 @@ def build_report(records: list[dict[str, Any]], *, incumbent: str) -> dict[str, 
                 rejected[c] = f"accepted_critical_errors={cell['accepted_critical_errors']}"
             elif cell["failures"] == cell["pages"]:
                 rejected[c] = "no_accepted_pages"
-            elif cell["accepted_critical_n"] == 0:
+            elif cell["critical_n"] == cell["failures"]:  # no accepted page with critical fields
                 rejected[c] = INSUFFICIENT
             else:
                 eligible.append(c)
@@ -226,9 +219,9 @@ def build_report(records: list[dict[str, Any]], *, incumbent: str) -> dict[str, 
     summary: dict[str, Any] = {}
     for c in sorted({r["candidate_id"] for r in records}):
         rates = {
-            s: cell["selection_rate"]
+            s: cell["critical_exact_rate"]
             for s in strata
-            if (cell := strata[s]["cells"].get(c)) and cell["selection_rate"] != INSUFFICIENT
+            if (cell := strata[s]["cells"].get(c)) and cell["critical_exact_rate"] != INSUFFICIENT
         }
         worst = min(rates, key=lambda s: (rates[s], s)) if rates else None
         summary[c] = {
