@@ -538,14 +538,21 @@ def _html_resolver(data: bytes) -> _Resolver:
             if match is None:
                 raise _Unresolvable("unknown_locator_grammar")
             name, index = match["name"], int(match["i"])
-            same = [k for k in node.kids if isinstance(k, _Node) and k.name == name]
-            if index <= len(same):
+            same = [
+                k
+                for k in node.kids
+                if isinstance(k, _Node)
+                and k.name == name
+                and k.name not in _DROPPED  # the parser decomposes these before indexing
+                and k.role != "navigation"
+            ]
+            if 1 <= index <= len(same):
                 node = same[index - 1]
             elif not (name in {"html", "head", "body"} and index == 1):
                 raise _Unresolvable("path_not_found")  # lxml implies html/head/body; we do too
         if text_index is not None:
             texts = [k for k in node.kids if isinstance(k, str)]
-            if text_index > len(texts):
+            if not 1 <= text_index <= len(texts):
                 raise _Unresolvable("path_not_found")
             return texts[text_index - 1], None
         name = node.name
@@ -594,6 +601,8 @@ def _subtitle_factory(kind: str) -> Callable[[bytes], _Resolver]:
         counter = 0
         for position, block in blocks:
             lines = block.splitlines()
+            if kind == "vtt" and lines and lines[0].strip().startswith(("NOTE", "STYLE", "REGION")):
+                continue  # mirrors the parser's skipped blocks
             at = next((i for i, ln in enumerate(lines[:2]) if _TIMING.match(ln.strip())), None)
             if at is None:
                 continue
@@ -616,8 +625,12 @@ def _subtitle_factory(kind: str) -> Callable[[bytes], _Resolver]:
             last = int(match["b"] or match["a"])
             if first not in cues:
                 raise _Unresolvable("locator_out_of_range")
-            ends = [cues[i][2] for i in range(first, last + 1) if i in cues]
-            return cues[first][0], (cues[first][1], max(ends))
+            inside = [cues[i] for i in range(first, last + 1) if i in cues]
+            end = max(cue[2] for cue in inside)
+            if any(cue[0] != cues[first][0] for cue in inside):
+                # a merged range is only exact if every cue in it says the same thing
+                return "\x00range_text_differs", (cues[first][1], end)
+            return cues[first][0], (cues[first][1], end)
 
         return _with_units(resolve, set(cues))
 

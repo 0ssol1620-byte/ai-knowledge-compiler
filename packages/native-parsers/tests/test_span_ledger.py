@@ -193,3 +193,72 @@ def test_unreadable_original_and_unsupported_type_fail_closed() -> None:
     with pytest.raises(StructuredParseError) as raised:
         build_ledger(data, pdf_like)
     assert raised.value.code == "LEDGER_TYPE_UNSUPPORTED"
+
+
+def _srt(middle: str) -> bytes:
+    cues = ("Hello 5", middle, "Hello 5")
+    return "\n\n".join(
+        f"{i + 1}\n00:00:0{i + 1},000 --> 00:00:0{i + 1},900\n{t}" for i, t in enumerate(cues)
+    ).encode()
+
+
+def test_srt_merged_range_with_tampered_middle_cue_is_mismatch() -> None:
+    data = _srt("Hello 5")
+    document = _parse("srt", data)
+    merged = [
+        b for b in document.blocks if b.source_refs and "-" in b.source_refs[0].native_object_id
+    ]
+    assert merged, "parser should merge the three identical cues"
+    assert build_ledger(data, document).resolved_mismatch == ()
+    ledger = build_ledger(_srt("Hello 6"), document)
+    assert merged[0].id in ledger.resolved_mismatch
+    assert not ledger.source_hash_matches
+
+
+def test_html_zero_index_and_navigation_nodes_follow_the_parser() -> None:
+    data = b"<html><body><p>one 1</p><p>two 2</p></body></html>"
+    document = _parse("html", data)
+    block = next(b for b in document.blocks if (b.raw_text or "").startswith("one"))
+    ref = block.source_refs[0]
+    zero = ref.native_object_id.replace("p[1]", "p[0]")
+    assert zero != ref.native_object_id
+    bad = document.model_copy(
+        update={
+            "blocks": (
+                block.model_copy(
+                    update={"source_refs": (ref.model_copy(update={"native_object_id": zero}),)}
+                ),
+            )
+        }
+    )
+    assert (block.id, "path_not_found") in build_ledger(data, bad).unresolvable
+    nav = b"<html><body><div role=navigation>menu</div><div>body 7</div></body></html>"
+    ledger, _ = _ledger("html", nav)
+    assert ledger.resolved_mismatch == () and ledger.unresolvable == ()
+    assert ledger.resolved_exact >= 1
+
+
+def test_pptx_table_cell_resolves_and_tamper_is_caught() -> None:
+    deck = Presentation()
+    slide = deck.slides.add_slide(deck.slide_layouts[6])
+    table = slide.shapes.add_table(2, 2, Inches(1), Inches(1), Inches(4), Inches(2)).table
+    for r, row in enumerate((("Item", "Value"), ("Margin", "42.5%"))):
+        for c, text in enumerate(row):
+            table.cell(r, c).text = text
+    buf = io.BytesIO()
+    deck.save(buf)
+    data = buf.getvalue()
+    ledger, document = _ledger("pptx", data)
+    assert ledger.table_blocks_derived == 1 and ledger.resolved_exact >= 4
+    assert ledger.resolved_mismatch == ()
+    source = zipfile.ZipFile(io.BytesIO(data))
+    out = io.BytesIO()
+    with zipfile.ZipFile(out, "w") as target:
+        for item in source.infolist():
+            payload = source.read(item.filename)
+            if item.filename == "ppt/slides/slide1.xml":
+                assert b"42.5%" in payload
+                payload = payload.replace(b"42.5%", b"47.5%")
+            target.writestr(item, payload)
+    tampered = build_ledger(out.getvalue(), document)  # type: ignore[arg-type]
+    assert tampered.resolved_mismatch and not tampered.source_hash_matches
