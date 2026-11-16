@@ -58,6 +58,12 @@ class TemporalPolicy(StrEnum):
     INCLUDE_UNKNOWN = "include_unknown"
 
 
+def _require_aware(owner: str, name: str, moment: datetime | None) -> None:
+    """A naive datetime has no instant; comparing it to an aware one raises or lies."""
+    if moment is not None and moment.utcoffset() is None:
+        raise ValueError(f"{owner}: {name} must be timezone-aware")
+
+
 @dataclass(frozen=True, slots=True)
 class TemporalFact:
     """One assertion on both axes.
@@ -77,6 +83,8 @@ class TemporalFact:
     evidence_id: str | None = None
 
     def __post_init__(self) -> None:
+        for name in ("valid_from", "valid_to", "recorded_at", "superseded_at"):
+            _require_aware(self.logical_id, name, getattr(self, name))
         if self.valid_from and self.valid_to and self.valid_to < self.valid_from:
             raise ValueError(f"{self.logical_id}: valid_to precedes valid_from")
         if self.recorded_at and self.superseded_at and self.superseded_at < self.recorded_at:
@@ -189,6 +197,8 @@ class TemporalTimeline:
         recorded. Supplying both reconstructs what an agent would have retrieved
         at that moment, which is what §19's replay needs.
         """
+        _require_aware("as_of", "valid_at", valid_at)
+        _require_aware("as_of", "known_at", known_at)
         selected: list[TemporalFact] = []
         included_unknown: list[str] = []
         excluded_unknown: list[str] = []
@@ -304,6 +314,7 @@ def replay_context(
     had been recorded by then. §19 is explicit that this reconstructs the input
     context and never claims to reconstruct a model's reasoning.
     """
+    _require_aware("replay_context", "at", at)
     answer = timeline.as_of(valid_at=at, known_at=at, policy=TemporalPolicy.EXCLUDE_UNKNOWN)
     if logical_ids is None:
         return answer
