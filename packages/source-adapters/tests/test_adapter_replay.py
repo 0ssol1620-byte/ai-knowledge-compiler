@@ -48,7 +48,7 @@ T0 = datetime(2026, 8, 1, tzinfo=UTC)
 
 
 def _rng(seed: int) -> random.Random:
-    # The repo's S311 ignore covers tests/** only, not packages/*/tests (see proposed_deltas).
+    # The repo's S311 ignore covers tests/** only, not packages/*/tests.
     return random.Random(seed)  # noqa: S311
 
 
@@ -313,7 +313,8 @@ class _GitHubModel(_Model):
 
 
 class _DriveModel(_Model):
-    PAGE = 3
+    # 2, not 3: a window holds 1-3 records, so only PAGE < 3 makes nextPageToken ever occur.
+    PAGE = 2
 
     def __init__(self, httpd: ThreadingHTTPServer) -> None:
         self.files: dict[str, tuple[str, str]] = {}  # fileId -> (name, modifiedTime)
@@ -396,7 +397,7 @@ class _GmailModel(_Model):
 
     def mutate(self, rng: random.Random) -> None:
         # ponytail: the adapter cannot survive a message that is deleted in the same poll
-        # window as another event on it (see proposed_deltas), so a touched id is never deleted.
+        # window as another event on it (pinned by the xfail test below), so touched ids stay.
         deletable = sorted(set(self.messages) - self.touched)
         op = _pick_op(rng, bool(self.messages))
         if op == "delete" and not deletable:
@@ -532,6 +533,42 @@ def test_rewritten_git_history_raises_cursor_invalid_never_restarts(tmp_path: Pa
 
     with pytest.raises(GitCursorInvalid):
         model.adapter.fetch_changes(_roundtrip(cursor))
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="GitAdapter keeps going from '<old>..HEAD' when the old object survives a reset; "
+    "proposed delta: check 'git merge-base --is-ancestor <cursor sha> HEAD' and raise",
+)
+def test_reset_rewrite_with_surviving_object_raises_cursor_invalid(tmp_path: Path) -> None:
+    model = _GitModel(tmp_path, seed=0)
+    model.commit("create 0/1")
+    model.commit("create 0/2")  # B: the cursor lands here
+    cursor = model.adapter.fetch_changes(None).cursor
+
+    model.head = model.git("rev-parse", "HEAD~1").strip()  # reset --hard HEAD~1
+    (model.root / ".git" / "refs" / "heads" / "main").write_text(
+        model.head + chr(10), encoding="utf-8"
+    )
+    model.commit("create 0/3")  # C replaces B; B's object is still in the store
+
+    with pytest.raises(GitCursorInvalid):
+        model.adapter.fetch_changes(_roundtrip(cursor))
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="GmailAdapter GETs a message that was added and deleted in one history window, "
+    "gets 404 and stalls the cursor forever; see proposed_deltas for gmail.py",
+)
+def test_gmail_add_then_delete_in_one_window_does_not_stall(server: ThreadingHTTPServer) -> None:
+    model = _GmailModel(server)
+    cursor = _roundtrip(model.adapter.fetch_changes(None).cursor)
+    model._record(messagesAdded=model._ref("m1"))
+    model._record(messagesDeleted=model._ref("m1"))  # m1 never existed in the store at poll time
+
+    result = model.adapter.fetch_changes(cursor)  # must not raise
+    assert {e.kind for e in result.events} <= {"message_removed"}
 
 
 def test_legacy_drive_cursor_raises_cursor_invalid_before_any_request(
