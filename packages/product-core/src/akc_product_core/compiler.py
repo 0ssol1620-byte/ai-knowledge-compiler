@@ -483,6 +483,9 @@ class ProductCoreCompiler:
             )
         )
         impact = graph.impact_of(diff.changed_logical_ids)
+        review_reasons.extend(
+            f"DEPENDENCY_CYCLE:{'->'.join(cycle)}" for cycle in impact.cycles_detected
+        )
         project = partial(
             self._package_projection,
             request=request,
