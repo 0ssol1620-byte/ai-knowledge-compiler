@@ -592,16 +592,22 @@ def _ms(stamp: str) -> int:
 # Cue markup by each format's own grammar, never the parser's: SRT knows i/b/u/font,
 # WebVTT knows c/i/b/u/ruby/rt, lang (annotated), v and timestamp tags. Anything
 # else in angle brackets ("<10%>", "<USD -1,234.50>") is cue text and stays in the key.
+# Cue text is hostile, so every pattern runs in linear time: a tag body never crosses
+# another "<" (a scan from each "<" stops at the next one instead of re-reading the
+# rest of the cue), and no two adjacent quantifiers can match the same character.
+# A "<" inside a would-be tag leaves it in the key, which can only add a mismatch.
 _CUE_MARKUP = {
-    "srt": re.compile(r"</?(?:i|b|u)>|<font(?:\s[^>]*)?>|</font>", re.IGNORECASE),
+    "srt": re.compile(r"</?(?:i|b|u)>|<font(?:\s[^<>]*)?>|</font>", re.IGNORECASE),
     "vtt": re.compile(
-        r"</?(?:c|i|b|u|ruby|rt)(?:\.[^\s>]*)?>|<lang(?:\.[^\s>]*)?\s[^>]*>|</lang>"
-        r"|<v(?:\.[^\s>]*)?>|</v>|<\d+(?::\d{2}){1,2}\.\d{3}>"
+        r"</?(?:c|i|b|u|ruby|rt)(?:\.[^\s<>]*)?>|<lang(?:\.[^\s<>]*)?\s[^<>]*>|</lang>"
+        r"|<v(?:\.[^\s<>]*)?>|</v>|<\d+(?::\d{2}){1,2}\.\d{3}>"
     ),
 }
 # A leading WebVTT voice span names the speaker; an annotated <v name> later in the
-# cue is not markup to strip, so that name stays in the key.
-_VOICE = re.compile(r"<v(?:\.[^\s>]*)*\s+([^>]+)>(.*)", re.DOTALL)
+# cue is not markup to strip, so that name stays in the key. The class suffix is one
+# optional group (it already spans ".a.b") and the name starts at a non-space, so the
+# whitespace run between them has exactly one way to match.
+_VOICE = re.compile(r"<v(?:\.[^\s>]*)?\s+([^\s>][^>]*)>(.*)", re.DOTALL)
 _SPEAKER_LABEL = re.compile(r"([^\n:]{1,80}):\s+(.+)", re.DOTALL)
 
 
@@ -659,7 +665,8 @@ def _subtitle_factory(kind: str) -> Callable[[bytes], _Resolver]:
                 raise _Unresolvable("locator_out_of_range")
             inside = [cues[i] for i in range(first, last + 1) if i in cues]
             end = max(cue[2] for cue in inside)
-            if any(_merge_key(kind, c[0]) != _merge_key(kind, cues[first][0]) for c in inside):
+            key = _merge_key(kind, cues[first][0])
+            if any(_merge_key(kind, c[0]) != key for c in inside):
                 # a merged range is only exact if every cue in it says the same thing
                 return "\x00range_text_differs", (cues[first][1], end)
             return cues[first][0], (cues[first][1], end)

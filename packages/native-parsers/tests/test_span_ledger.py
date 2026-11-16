@@ -412,6 +412,73 @@ def test_reversed_cue_range_and_missing_vtt_signature_are_named() -> None:
     assert {r for _, r in unsigned.unresolvable} == {"vtt_signature_missing"}
 
 
+# Hostile cue text must cost the resolver linear time. Run in a child process so an
+# exponential regex fails the test on its deadline instead of hanging the suite.
+_PUMP_CHILD = r"""
+import random, time
+from akc_native_parsers import span_ledger as sl
+
+N = 20_000  # the parser's max_cue_chars
+TOKENS = ["<", ">", "<v", "<v.", ".", " ", "\t", "\n", "<lang", "<font", "<c", "</c>",
+          "<00:00:01.000>", "<1", "1", ":", ": ", "a", "Bob", "<i>", "&lt;"]
+cases = [a + (b * (N // len(b))) + c for a in TOKENS for b in TOKENS for c in ("", "!", ">")]
+cases += [(a + b) * (N // len(a + b)) + "!" for a in TOKENS for b in TOKENS]
+rng = random.Random(20261116)
+for _ in range(150):
+    parts = []
+    while sum(map(len, parts)) < N:
+        parts.append(rng.choice(TOKENS))
+    cases.append("".join(parts))
+worst = (0.0, "")
+for text in cases:
+    for kind in ("srt", "vtt"):
+        start = time.perf_counter()
+        sl._merge_key(kind, text)
+        sl._TIMING.match("00:00:00.000 --> 00:00:01.000 " + text.replace("\n", " "))
+        worst = max(worst, (time.perf_counter() - start, kind + " " + repr(text[:40])))
+assert worst[0] < 0.25, "%d cases, worst %.4fs %s" % (len(cases), *worst)
+"""
+
+
+def _bounded_child(code: str, timeout: float) -> None:
+    # spawn hands the child this sys.path; a failing assert there exits non-zero and
+    # its traceback lands in the captured output
+    import multiprocessing
+
+    child = multiprocessing.get_context("spawn").Process(target=exec, args=(code, {}))
+    child.start()
+    child.join(timeout)
+    if child.is_alive():
+        child.kill()
+        child.join()
+        pytest.fail(f"resolver did not finish within {timeout}s on hostile cue text")
+    assert child.exitcode == 0, "hostile-cue child failed; see its traceback above"
+
+
+def test_hostile_cue_text_costs_linear_time_property() -> None:
+    # every token pumped to the cue ceiling, every token pair alternated, plus seeded
+    # random token soups: no merge-key or timing regex may backtrack on any of them
+    _bounded_child(_PUMP_CHILD, timeout=600)
+
+
+def test_voice_tag_of_dots_does_not_stall_the_ledger() -> None:
+    # reviewer's case: parsed in milliseconds, then the ledger ran ~23 h at 40 dots
+    code = r"""
+from datetime import UTC, datetime
+from akc_native_parsers import ParseContext, parse_non_pdf_to_cir
+from akc_native_parsers.span_ledger import build_ledger
+data = ("WEBVTT\n\n00:00:00.000 --> 00:00:01.000\n<v" + "." * 40 + "5\n\n"
+        "00:00:01.000 --> 00:00:02.000\nnext 7\n").encode()
+doc = parse_non_pdf_to_cir(filename="s.vtt", declared_mime="text/vtt", data=data,
+    context=ParseContext(tenant_id="tenant_fixture", document_id="document_fixture",
+                         document_version_id="version_fixture",
+                         created_at=datetime(2026, 7, 29, tzinfo=UTC)))
+ledger = build_ledger(data, doc)
+assert (ledger.resolved_exact, ledger.resolved_mismatch) == (2, ()), ledger
+"""
+    _bounded_child(code, timeout=120)
+
+
 def test_resolver_imports_no_parser_module() -> None:
     # The resolver must not inherit the parser's blind spots through its code.
     import ast
