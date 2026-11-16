@@ -6,8 +6,11 @@ Input: WO-D08-1 screen records. Selection rule, frozen before A2b:
   3. A candidate that is primary in exactly one stratum is routed only there
      (minority isolated). No voting, no ensemble: one primary per stratum.
   4. The worst stratum is reported beside the macro figure, never averaged away.
-Selection and the rule-4 summary both use selection_rate: field-level exact/n
-(accepted pages only) times page-level accepted/pages, so failed pages count.
+Selection and the rule-4 summary both use selection_rate: the mean over pages of
+the per-page critical exact fraction, where a hard-failed page scores 0 whatever
+critical n it recorded, and an accepted page without critical fields does not
+count. Failing a page can therefore never raise it, and a stratum whose pages all
+failed reports 0.0, never "insufficient".
 """
 
 from __future__ import annotations
@@ -48,8 +51,22 @@ def _doc_critical_exact(records: list[dict[str, Any]]) -> bool:
     )
 
 
+def _selection_rate(records: list[dict[str, Any]]) -> float | str:
+    """Monotone in failures: a failed page scores 0, so failing one never helps."""
+    scores = [
+        0.0 if r["hard_failures"] else r["critical"]["exact"] / r["critical"]["n"]
+        for r in records
+        if r["hard_failures"] or r["critical"]["n"]
+    ]
+    return sum(scores) / len(scores) if scores else INSUFFICIENT
+
+
 def _cell(records: list[dict[str, Any]]) -> dict[str, Any]:
     """One stratum x candidate cell. A critical-less cell is insufficient, not zero."""
+    for r in records:
+        c = r["critical"]
+        if not 0 <= c["exact"] <= c["n"] or c["accepted_errors"] < 0:
+            raise ValueError(f"critical counts out of range on page {r['page_id']!r}: {c}")
     accepted = [r for r in records if not r["hard_failures"]]
     # A hard-failed page is never exact and carries no trusted critical counts.
     n = sum(r["critical"]["n"] for r in accepted)
@@ -65,7 +82,7 @@ def _cell(records: list[dict[str, Any]]) -> dict[str, Any]:
         "critical_exact_rate": exact / n if n else INSUFFICIENT,
         "critical_exact_ci": wilson_interval(exact, n) if n else INSUFFICIENT,
         # Failure-aware figure that selection ranks on: failed pages dilute the rate.
-        "selection_rate": exact / n * len(accepted) / len(records) if n else INSUFFICIENT,
+        "selection_rate": _selection_rate(records),
         "accepted_critical_errors": sum(r["critical"]["accepted_errors"] for r in records),
         "cer": _metric(records, "cer"),
         "table_f1": _metric(records, "table_f1"),
