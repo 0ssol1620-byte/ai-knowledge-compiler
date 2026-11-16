@@ -33,7 +33,7 @@
               "source_url": { "type": "string", "minLength": 1 },
               "licence_id": { "type": "string", "minLength": 1 },
               "licence_snapshot_sha256": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
-              "rights_class": { "enum": ["owned", "public_domain", "permissive_licence", "synthetic"] },
+              "rights_class": { "enum": ["owned", "public_domain", "public_record", "permissive_licence", "synthetic"] },
               "redistribution": { "type": "boolean" },
               "recorded_by": { "type": "string", "minLength": 1 },
               "recorded_at": { "type": "string", "minLength": 1 }

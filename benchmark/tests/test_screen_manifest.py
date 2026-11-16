@@ -353,3 +353,18 @@ def test_exact_400_page_corpus_leaves_dev_300() -> None:
 def test_drive_relative_doc_id_rejected() -> None:
     with pytest.raises(ContractError):
         assign_split([_doc(0), dict(_doc(1), doc_id="C:evil.pdf")], "x")
+
+
+def test_public_record_needs_snapshot_and_enum_matches_schema() -> None:
+    from benchmark.screen.manifest import RIGHTS_CLASSES, _check_doc
+
+    docs = _screen_docs()
+    docs[0]["rights"]["rights_class"] = "public_record"
+    _check_doc(docs[0])
+    docs[0]["rights"]["licence_snapshot_sha256"] = None
+    with pytest.raises(ContractError, match="snapshot"):
+        _check_doc(docs[0])
+    schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+    rights_props = schema["properties"]["documents"]["items"]["properties"]["rights"]["properties"]
+    enum = rights_props["rights_class"]["enum"]
+    assert tuple(enum) == RIGHTS_CLASSES

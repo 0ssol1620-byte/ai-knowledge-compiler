@@ -38,7 +38,7 @@ def _ok(request: httpx.Request) -> httpx.Response:
     return httpx.Response(200, content=LICENCE if "privacy" in request.url.path else DOC)
 
 
-ROW = (DOC_URL, "sec_edgar", "US-FED-PUBLIC")
+ROW = (DOC_URL, "sec_edgar", "SEC-WEBSITE-POLICY")
 
 
 def test_strata_targets_sum_and_korean_share() -> None:
@@ -55,6 +55,7 @@ def test_sources_exclude_research_only_sets() -> None:
     assert {f["rights_class"] for f in fams.values()} <= {
         "owned",
         "public_domain",
+        "public_record",
         "permissive_licence",
         "synthetic",
     }
@@ -68,7 +69,8 @@ def test_acquire_records_rights_fields(tmp_path: Path) -> None:
     rights = json.loads(out.read_text(encoding="utf-8"))["rights"]
     assert recs[0]["source_sha256"] == f"sha256:{sha}" and recs[0]["byte_size"] == len(DOC)
     assert rights["licence_snapshot_sha256"] == "sha256:" + hashlib.sha256(LICENCE).hexdigest()
-    assert rights["rights_class"] == "public_domain"
+    assert rights["rights_class"] == "public_record"
+    assert rights["licence_id"] == "SEC-WEBSITE-POLICY"
 
 
 def test_unknown_family_refused_before_any_request(tmp_path: Path) -> None:
@@ -91,9 +93,10 @@ def test_unknown_family_refused_before_any_request(tmp_path: Path) -> None:
 
 def test_host_and_licence_must_match_family(tmp_path: Path) -> None:
     for row in (
-        ("https://evil.example/a.pdf", "sec_edgar", "US-FED-PUBLIC"),
+        ("https://evil.example/a.pdf", "sec_edgar", "SEC-WEBSITE-POLICY"),
         (DOC_URL, "sec_edgar", "CC-BY-4.0"),
-        ("http://www.sec.gov/a.pdf", "sec_edgar", "US-FED-PUBLIC"),
+        (DOC_URL, "sec_edgar", "US-FED-PUBLIC"),
+        ("http://www.sec.gov/a.pdf", "sec_edgar", "SEC-WEBSITE-POLICY"),
         ("https://x/a", "founder_owned", "OWNED-FOUNDER"),
     ):
         with pytest.raises(acq.AcquireError):
