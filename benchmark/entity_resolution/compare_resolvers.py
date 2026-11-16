@@ -187,12 +187,17 @@ def _git_sha() -> str:
     git = shutil.which("git")
     if git is None:
         return "unknown"
+    here = str(Path(__file__).resolve().parent)
     try:
-        return subprocess.run(
-            [git, "rev-parse", "HEAD"], capture_output=True, text=True, check=True
+        sha = subprocess.run(
+            [git, "rev-parse", "HEAD"], capture_output=True, text=True, check=True, cwd=here
+        ).stdout.strip()
+        dirty = subprocess.run(
+            [git, "status", "--porcelain"], capture_output=True, text=True, check=True, cwd=here
         ).stdout.strip()
     except (OSError, subprocess.CalledProcessError):
         return "unknown"
+    return f"{sha}-dirty" if dirty else sha
 
 
 def run(fixture: Path, out: Path) -> dict[str, Any]:
