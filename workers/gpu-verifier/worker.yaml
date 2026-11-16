@@ -1,0 +1,28 @@
+worker_contract_version: "1.0"
+worker_kind: verifier
+provider_key: minicpm_ocr_jev
+experimental: true
+default_enabled: false
+network:
+  outbound: runpod_job_control_plane_only
+  model_and_adapter_paths: offline
+bounds:
+  max_crop_bytes: 4194304
+  max_candidate_text_chars: 20000
+output_states: [SCORED, HOLD_MISSING_CROP, HOLD_RENDERER_MISMATCH, HOLD_INVALID_OUTPUT]
+production:
+  model_revision_required: true
+  weight_manifest_sha256_required: true
+  vram_gb_min: 12
+  image_digest: null
+  licence_snapshot: pending
+required_runtime_env:
+  - MODEL_REVISION
+  - WEIGHT_MANIFEST_SHA256
+  - MODEL_ADAPTER_MODULE
+  - WEIGHTS_DIR
+  - WEIGHT_MANIFEST
+  - CALIBRATED_RENDERER_ID
+  - CALIBRATED_RENDERER_VERSION
+  - REQUIRE_CALLBACK_AUTH
+  - CALLBACK_HMAC_SECRET
