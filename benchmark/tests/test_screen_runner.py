@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from pathlib import Path
 from typing import Any
 
 import pytest
-from hypothesis import given
+from hypothesis import assume, given
 from hypothesis import strategies as st
 
 from benchmark.runners.base import RunnerUnavailable
@@ -120,6 +121,8 @@ def test_provider_exception_is_a_record_and_run_continues(tmp_path, monkeypatch)
     recs = _run(tmp_path, guard, corpus, gold)
     assert [r["accepted"] for r in recs] == [False, True]
     assert recs[0]["hard_failures"] == ["provider_unavailable"] and recs[0]["raw_sha256"] is None
+    assert recs[0]["provider_error_type"] == "benchmark.runners.base.RunnerUnavailable"
+    assert recs[1]["provider_error_type"] is None
     assert recs[1]["critical"] == {"n": 1, "exact": 1, "accepted_errors": 0}
     assert recs[1]["gpu_seconds"] == 1.5 and recs[1]["provider_cost_usd"] == 0.01
 
@@ -365,6 +368,9 @@ def test_any_provider_exception_is_a_record_and_run_continues(tmp_path, monkeypa
     recs = _run(tmp_path, guard, corpus, gold)
     assert len(calls) == 2 and [r["accepted"] for r in recs] == [False, True]
     assert recs[0]["hard_failures"] == ["provider_error"] and recs[0]["raw_sha256"] is None
+    want = f"{type(exc).__module__}.{type(exc).__qualname__}"
+    assert recs[0]["provider_error_type"] == want and recs[1]["provider_error_type"] is None
+    assert str(exc) not in json.dumps(recs[0], ensure_ascii=False)  # type only, no message
     lines = (tmp_path / "rec.jsonl").read_text(encoding="utf-8").splitlines()
     assert len(lines) == 2
 
@@ -402,6 +408,8 @@ def test_native_lane_records_every_malformed_source_and_continues(tmp_path):
     assert [r["doc_id"] for r in recs] == list(_BROKEN)
     assert all(r["accepted"] is False and r["hard_failures"] for r in recs)
     assert all(r["raw_sha256"] is None for r in recs)
+    assert recs[0]["provider_error_type"] == "pypdf.errors.PdfReadError"
+    assert all(re.fullmatch(r"[\w.]+\.\w+", r["provider_error_type"]) for r in recs)
 
 
 @pytest.mark.parametrize("damage", ["missing", "changed"])
@@ -512,3 +520,106 @@ def test_holdout_with_tune_purpose_raises(tmp_path):
             raw_dir=tmp_path / "r",
             records_path=tmp_path / "x.jsonl",
         )
+
+
+# Whole token or no token: a number glued to a tail that is not part of its grammar is not
+# read at all, never as a shorter prefix (decimal, unit run, percent or currency dropped).
+@pytest.mark.parametrize(
+    ("gold", "candidate"),
+    [
+        ("2", "2.5mm"),
+        ("12", "12.5x"),
+        ("1", "1.5GB"),
+        ("1", "1.5e3"),
+        ("1.2", "1.2.3"),
+        ("3.5", "3.5%p"),
+        ("1", "1.5 천 억"),
+        ("1", "1.5천천"),
+        ("1", "1.5억억"),
+        ("2", "2.5천백만"),
+        ("100000000", "1억 2천 억"),
+        ("300000000", "3억 5천만x"),
+        ("5", "5원x"),
+        ("5", "5억.3"),
+        ("5", "50%5"),
+        ("5", "5원5"),
+        ("5", "(5)5"),
+    ],
+)
+def test_glued_tail_never_yields_a_prefix(gold, candidate):
+    assert canonical_values("number", candidate) == set()
+    with pytest.raises(ValueError):
+        score_critical_fields([_field(candidate)], "a 5")
+    assert score_critical_fields([_field(gold)], "a " + candidate).exact == 0
+
+
+@pytest.mark.parametrize(
+    "bad", ["1.5억5천만", "1.5천5백만", "0.5조5천억", "5천 0.5천", "5억 0.5억", "1조 0.5조"]
+)
+def test_overlapping_places_are_refused(bad):
+    """A fraction spills into the places after it, and a place may not repeat."""
+    assert canonical_values("number", bad) == set()
+    with pytest.raises(ValueError):
+        score_critical_fields([_field(bad)], "a 5")
+
+
+def test_fraction_in_the_last_group_is_kept():
+    assert _same("1.5천억", "150000000000")
+    assert _same("1조 2.5천억", "1250000000000")
+
+
+def test_newline_separates_unit_groups():
+    assert canonical_values("number", "3억\n5천만") == {
+        ("300000000", "num", None),
+        ("50000000", "num", None),
+    }
+    assert score_critical_fields([_field("350000000")], "a 3억\n5천만").exact == 0
+
+
+_MANTISSA = st.builds(
+    lambda i, frac, commas: (f"{i:,}" if commas else str(i)) + (f".{frac}" if frac else ""),
+    st.integers(1, 10**6),
+    st.sampled_from(["", "5", "25", "05", "125"]),
+    st.booleans(),
+)
+_UNIT = st.sampled_from(
+    ["", "억", "천만", "천억", "백만", "십억", "만", "조", "k", "m", " million"]
+)
+_SUFFIX = st.sampled_from(["", "%", "원", " USD", "달러"])
+_GLUED = st.sampled_from(
+    ["mm", "x", "GB", "e3", "%p", ".3.4", ",3", "천천", "억억", " 천 억", "천백만", "q"]
+)
+
+
+@given(_MANTISSA, _UNIT, _SUFFIX, st.sampled_from(["", "x", ".3", "5", "억", " 천"]))
+def test_property_no_proper_prefix_value_is_read(mantissa, unit, suffix, tail):
+    """Whatever the token reads as, it never reads as any of its own proper prefixes."""
+    # Hangul after "%" or a currency is a particle by design ("5%로"), so the token ends there.
+    assume(not (suffix and tail in ("억", " 천")))
+    text = mantissa + unit + suffix + tail
+    whole = canonical_values("number", text)
+    for k in range(1, len(text)):
+        assert not whole & canonical_values("number", text[:k]), (text, text[:k])
+
+
+@given(_MANTISSA, _UNIT, _GLUED)
+def test_property_glued_junk_yields_no_number(mantissa, unit, junk):
+    token = mantissa + unit
+    assert len(canonical_values("number", token)) == 1
+    assert canonical_values("number", token + junk) == set()
+    assert canonical_values("number", "a " + token + junk + " b") == set()
+    with pytest.raises(ValueError):
+        score_critical_fields([_field(token + junk)], "a 5")
+    assert score_critical_fields([_field(token)], "a " + token + junk).exact == 0
+
+
+@given(
+    st.integers(0, 99),
+    st.sampled_from(["5", "25", "05"]),
+    st.sampled_from([("조", ["5천억", " 1억", "3만"]), ("억", ["5천만", " 1만", "3천"])]),
+    st.integers(0, 2),
+)
+def test_property_fraction_before_another_group_is_refused(whole, frac, big_and_rest, i):
+    big, rest = big_and_rest
+    text = f"{whole}.{frac}{big}{rest[i]}"
+    assert canonical_values("number", text) == set()

@@ -26,7 +26,7 @@ KINDS = ("number", "date", "identifier")
 _KO_SMALL = {"십": Decimal(10), "백": Decimal(10) ** 2, "천": Decimal(10) ** 3}
 _KO_BIG = {"만": Decimal(10) ** 4, "억": Decimal(10) ** 8, "조": Decimal(10) ** 12}
 _KO_CHARS = "조억만천백십"
-_KO_UNIT = "(?:[십백천]?[만억조]|[십백천])"
+_KO_UNIT = "(?>[십백천]?+[만억조]|[십백천])"
 _EN_SCALE = {
     "k": Decimal(10) ** 3,
     "thousand": Decimal(10) ** 3,
@@ -52,14 +52,21 @@ _CURRENCY = {
     "JPY": "JPY",
     "¥": "¥",
 }
-_NUM = r"(?:\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)(?!\d|,\d)"
+# Whole token or no token. Every quantifier is possessive and every alternation atomic, so a
+# token is read only as its longest parse: the engine can never back off to a shorter prefix
+# (drop a decimal, a unit, "%" or a currency) to satisfy the boundary checks. A token glued to
+# anything outside its grammar ("2.5mm", "1.5억억", "3.5%p") is not read at all. The glued
+# character is matched rather than looked ahead at, so the scan resumes after it and never
+# reads the rest of a refused token ("50%5" is not 5).
+_NUM = r"(?>\d{1,3}(?:,\d{3})++(?:\.\d++)?+|\d++(?:\.\d++)?+)(?!\d|[.,]\d)"
 _CUR = "|".join(sorted(map(re.escape, _CURRENCY), key=len, reverse=True))
 _NUMBER = re.compile(
-    rf"""(?<![0-9A-Za-z.,{_KO_CHARS}])(?P<sign>[-\u2212+△▲]|\()?\s*(?P<cp>{_CUR})?\s*
-    (?P<body>{_NUM}\s*{_KO_UNIT}(?:\s*{_NUM}\s*{_KO_UNIT})*
-            |{_NUM}(?:\s*(?:thousand|million|billion|trillion|bn)|[kmb](?![A-Za-z]))?)
-    (?!\s*[{_KO_CHARS}])  # never stop inside a Korean unit run: whole token or no token
-    (?P<pct>\s*%)?(?:\s*(?P<cs>{_CUR}))?(?P<close>\))?(?![0-9A-Za-z])""",
+    rf"""(?<![0-9A-Za-z.,{_KO_CHARS}])(?P<sign>[-\u2212+△▲]|\()?+\s*+(?P<cp>{_CUR})?+\s*+
+    (?P<body>(?>{_NUM}[ \t]*+{_KO_UNIT}(?:[ \t]*+{_NUM}[ \t]*+{_KO_UNIT})*+
+            |{_NUM}(?:\s*+(?:thousand|million|billion|trillion|bn)|[kmb](?![A-Za-z]))?+))
+    (?!\s*[{_KO_CHARS}])  # a unit run continues on the next line or after junk: not a token
+    (?P<pct>\s*+%)?+(?:\s*+(?P<cs>{_CUR}))?+(?P<close>\))?+
+    (?P<glued>[0-9A-Za-z%]|[.,](?=\d))?+  # consumed, then refused: no restart inside""",
     re.VERBOSE | re.IGNORECASE,
 )
 _DATE_ISO = re.compile(r"(?<!\d)(\d{4})\s*[-/.]\s*(\d{1,2})\s*[-/.]\s*(\d{1,2})(?!\d)")
@@ -73,20 +80,27 @@ def _cur(value: str | None) -> str | None:
 
 
 def _ko_amount(groups: list[tuple[Decimal, str]]) -> Decimal | None:
-    """Place-value sum of ``(number, unit run)`` groups; None when places do not descend."""
+    """Place-value sum of ``(number, unit run)`` groups; None when places do not descend.
+
+    Places are compared as places, not as terms, so a fraction cannot hide a repeated place
+    ("5억 0.5억"), and only the last group may carry a fraction: a fraction spills into the
+    places after it ("1.5억5천만" would count the 5천만 place twice).
+    """
+    if any(n != n.to_integral_value() for n, _ in groups[:-1]):
+        return None
     total = section = Decimal(0)
     big_bound: Decimal | None = None  # the previous big unit: everything after is smaller
     small_bound: Decimal | None = None  # the previous small unit inside this section
     for n, unit in groups:
         small = _KO_SMALL.get(unit[:1], Decimal(1))
         term = n * small
-        if small_bound is not None and term >= small_bound:
+        if small_bound is not None and (small >= small_bound or term >= small_bound):
             return None
         section += term
         small_bound = small
         if unit[-1:] in _KO_BIG:
             big = _KO_BIG[unit[-1]]
-            if big_bound is not None and section * big >= big_bound:
+            if big_bound is not None and (big >= big_bound or section * big >= big_bound):
                 return None
             total, section, big_bound, small_bound = total + section * big, Decimal(0), big, None
     if big_bound is not None and section >= big_bound:
@@ -95,6 +109,8 @@ def _ko_amount(groups: list[tuple[Decimal, str]]) -> Decimal | None:
 
 
 def _canon_number(m: re.Match[str]) -> tuple[str, str, str | None] | None:
+    if m["glued"]:
+        return None
     body = m["body"]
     try:
         groups = [

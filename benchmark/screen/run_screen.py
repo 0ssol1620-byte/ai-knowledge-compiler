@@ -3,7 +3,9 @@
 Every page of the requested split yields exactly one record per candidate. A provider
 failure or a schema failure is a record (``accepted=false``), never a skipped page:
 ``provider_unavailable`` (RunnerUnavailable), ``provider_error`` (any other exception the
-candidate raised on the page) or ``contract_failed``. A missing or changed source file is an
+candidate raised on the page) or ``contract_failed``. A provider exception also records its
+type as ``provider_error_type`` (``module.QualName``, never the message, which may quote the
+document); it is null when the call returned. A missing or changed source file is an
 integrity violation and stops the run before any call.
 Raw output is written once per (page, candidate, revision, image digest, config); the
 same bytes are a cache hit, different bytes raise ``ImmutableOutputError``.
@@ -173,20 +175,23 @@ def run_screen(
         parsed: Any = None
         failures: list[str] = []
         raw_sha: str | None = None
+        error_type: str | None = None
         data: bytes | None = None
         if raw_path.is_file():
             data = raw_path.read_bytes()
         else:
             try:
                 result = call(candidate, case, corpus_root)
-            except RunnerUnavailable:
+            except RunnerUnavailable as exc:
                 failures = ["provider_unavailable"]  # operational: nothing came back
-            except Exception:
+                error_type = f"{type(exc).__module__}.{type(exc).__qualname__}"
+            except Exception as exc:
                 # Any parser crash on hostile input is a page result. The source bytes were
                 # verified above, so what is left is the candidate failing on this page
                 # (e.g. pypdf PdfReadError on a malformed PDF). Local writes happen below,
                 # outside this try, so a disk fault still propagates.
                 failures = ["provider_error"]
+                error_type = f"{type(exc).__module__}.{type(exc).__qualname__}"
             else:
                 try:
                     data = (
@@ -235,6 +240,7 @@ def run_screen(
             "metrics": metrics,
             "critical": crit,
             "hard_failures": sorted(set(failures)),
+            "provider_error_type": error_type,
             "accepted": output is not None and not failures,
             "gpu_seconds": _num(runtime, "gpu_seconds"),
             "provider_cost_usd": _num(runtime, "estimated_cost_usd"),
