@@ -13,12 +13,16 @@ token, and nothing else, raises.
 Numbers, dates and identifiers are read by hand-written linear scanners over a closed
 character set; no regular expression reads or delimits a token. Folding is an explicit table
 (fullwidth digits, punctuation and currency signs, Unicode minus); there is no NFKC. A digit is
-``0-9`` only. A token ends only where, past a run of ASCII punctuation and Hangul particles
-("5억을", "1,234, and"), the text ends or ASCII whitespace follows; a digit, a letter, a unit or
-an unlisted character there refuses it ("5:3", "12가3456"). Parts of a number or a date join
+``0-9`` only. Field first: a field is a run of non-whitespace, and a token is its whole field
+or nothing. Before it only named opening punctuation may stand, after it only closing or
+sentence punctuation and one run of Hangul particles ("5억원이다.", "INV-2024를"); anything
+else refuses it, so a prefix or suffix of a field is never read ("5:3", "12가3456", "x=5",
+"약5억", "번호:INV-1", "INV_"). Parts of a number or a date join
 across ASCII spaces only, so past those spaces neither side may hold an unlisted character,
 which could hide a part, nor (for numbers) a Korean unit the grammar did not take, and after a
-unit or scale word only a word that cannot be a further part may follow. Every digit run is a
+unit or scale word only a word that cannot be a further part may follow. A plain number
+followed by a space and exactly three digits ("1 000") is refused: ASCII-space grouping cannot
+be told from two numbers. Every digit run is a
 number or date token, read or refused, never skipped. So the first token after an anchor is
 read whole or refused, never short, and a refused token is listed, never dropped, so a later
 token is never read in its place. Arithmetic is exact to ``_PREC``
@@ -70,9 +74,11 @@ _DIGIT = frozenset("0123456789")
 _ASCII_LETTER = frozenset(string.ascii_letters)
 # Joins digit runs into something that is not one number: "1-5", "1/2", "1'000", "1..5".
 _JOIN = frozenset("-+.,'_~/")
-# ASCII punctuation a token may start after.
-_PUNCT = frozenset('!"#&*:;<=>?@[\\]^`{|}')
-_ASCII_PUNCT = frozenset(string.punctuation)
+# A field is a run of non-whitespace. The only text a token may leave in its field: named
+# opening punctuation before it, and after it closing or sentence punctuation and one run of
+# Hangul particles. Anything else makes the token a prefix or suffix of its field.
+_OPEN = frozenset("([{\"'")
+_CLOSE = frozenset(")]}\"'.,;:!?")
 _SIGN = {"-": True, "+": False, "△": True, "▲": True}  # sign -> negative
 # Non-ASCII characters a token may hold (after folding); every other one is unlisted.
 _LISTED = frozenset("△▲₩€£¥")
@@ -120,7 +126,6 @@ _DATE_SEP = frozenset("-/.")
 # An identifier is letters, digits and hyphens; any other ASCII punctuation between two such
 # runs joins them into something that is not one identifier ("INV_2024", "v1.2.3").
 _ID_CHARS = _DIGIT | _ASCII_LETTER | {"-"}
-_ID_JOIN = frozenset(string.punctuation) - {"-"}
 
 
 def _fold(text: str) -> str:
@@ -135,27 +140,25 @@ def _unlisted(c: str) -> bool:
     return not (c.isascii() or _hangul(c) or c in _LISTED)
 
 
-def _clean_left(text: str, i: int, extra: str = "") -> bool:
-    """May a token start at ``i``: what precedes it separates words, never joins them."""
-    if i == 0:
-        return True
-    c = text[i - 1]
-    return c in _WS or c in _PUNCT or c in extra or (_hangul(c) and c not in _KO_CHARS)
-
-
-def _soft(c: str) -> bool:
-    """ASCII punctuation or a particle: a token may touch a run of these only where the run
-    itself ends the word."""
-    return c in _ASCII_PUNCT or (_hangul(c) and c not in _KO_CHARS)
+def _clean_left(text: str, i: int) -> bool:
+    """Does a token at ``i`` start its field: past named opening punctuation only, the text
+    starts or ASCII whitespace stands. Anything else ("x=5", "<5", "약5억", "마이너스5",
+    "번호:INV-1", "\\u200b;5") makes the token a suffix of its field, which is never read."""
+    while i > 0 and text[i - 1] in _OPEN:
+        i -= 1
+    return i == 0 or text[i - 1] in _WS
 
 
 def _clean_right(text: str, j: int) -> bool:
-    """May a token end at ``j``: past a run of ASCII punctuation and particles ("5.",
-    "1,234, and", "5억원이다.") lies an end or ASCII whitespace, never a digit, a letter, a
-    unit or an unlisted character ("5:3", "5억가3", "5.억")."""
-    n, k = len(text), j
-    while k < n and _soft(text[k]):
+    """Does a token ending at ``j`` end its field: past closing or sentence punctuation and
+    one run of Hangul particles ("5.", "1,234,", "5억원이다.", "(2024-03-05)이후"), the text
+    ends or ASCII whitespace stands; never a digit, a letter, a unit, other punctuation or an
+    unlisted character ("5:3", "5억가3", "5.억", "INV_", "5=")."""
+    n = len(text)
+    k = _skip(text, j, _CLOSE)
+    while k < n and _hangul(text[k]) and text[k] not in _KO_CHARS:
         k += 1
+    k = _skip(text, k, _CLOSE)
     return k == n or text[k] in _WS
 
 
@@ -313,7 +316,7 @@ def _amount(groups: list[tuple[str, str]], negative: bool) -> str | None:
 def _ends_scaled(text: str, s: int, english: bool) -> bool:
     """Is ``text[s]``, the first character past the spaces after a scaled token, something
     other than a further part of it: an opening paren, a currency, an English word after an
-    English scale, or a run of punctuation and particles that ends the word."""
+    English scale, or closing punctuation and particles that end the word."""
     c = text[s]
     return (
         c == "("
@@ -351,6 +354,13 @@ def _number_at(text: str, i: int) -> tuple[int, Any] | None:
     s = _skip(text, end, _SPACE)
     if unit and end < s < n and not _ends_scaled(text, s, unit in _EN_SCALE):
         return s + 1, None
+    # A plain number, a space, then exactly three digits is ASCII-space thousands grouping
+    # ("1 000", "12 345 678"), as is a separator glued to the next digits ("5 ,000"): which
+    # number it is cannot be told, so it is refused.
+    grouped = _skip(text, s, _DIGIT) - s == 3
+    grouped = grouped or (text[s : s + 1] in (",", ".") and text[s + 1 : s + 2] in _DIGIT)
+    if not unit and end < s and grouped:
+        return s + 1, None
     # A unit the grammar did not take ("5억억", "1.5 천 억", "5\n억").
     after = _skip(text, end)
     if after < n and text[after] in _KO_CHARS:
@@ -369,6 +379,11 @@ def _number_at(text: str, i: int) -> tuple[int, Any] | None:
         end, negative = close + 1, True
     elif end < n and text[end] in ")+-":
         return end + 1, None  # a close paren with no open, or a trailing sign ("5-")
+    # The same holds past a currency, percent or paren that ended a scaled token
+    # ("12억 3456만원 7898" is not 12억 3456만원).
+    s = _skip(text, end, _SPACE)
+    if unit and end < s < n and not _ends_scaled(text, s, unit in _EN_SCALE):
+        return s + 1, None
     if (
         not _clean_right(text, end)
         or not _apart(text, i, end, _KO_CHARS)
@@ -385,26 +400,26 @@ def _number_at(text: str, i: int) -> tuple[int, Any] | None:
 def _numbers(text: str) -> list[tuple[int, int, Any]]:
     out: list[tuple[int, int, Any]] = []
     n, i = len(text), 0
+    # Would a token at i begin its field (_clean_left), carried one character at a time so a
+    # run of opening punctuation is never walked again from each "(" in it.
+    ok = True
     while i < n:
         c = text[i]
-        if c not in _START:
-            i += 1
-        elif not _clean_left(text, i):
-            if c in _DIGIT:  # a digit is never skipped: glued to a word, it is refused
-                end = _word_end(text, i)
-                out.append((i, end, None))
-                i = end
-            else:
-                i += 1
-        elif (tok := _number_at(text, i)) is None:
-            i += 1
-        else:
+        if c in _DIGIT and not ok:  # a digit is never skipped: glued to a word, it is refused
+            end = _word_end(text, i)
+            out.append((i, end, None))
+        elif c in _START and ok and (tok := _number_at(text, i)) is not None:
             end, value = tok
             # Nothing restarts inside a refused token: the rest of its word goes with it.
             if value is None:
                 end = _word_end(text, end)
             out.append((i, end, value))
-            i = end
+        else:
+            ok = c in _WS or (c in _OPEN and ok)
+            i += 1
+            continue
+        i = end
+        ok = _clean_left(text, i)  # walks back inside the token just read, never further
     return out
 
 
@@ -433,7 +448,7 @@ def _date_at(text: str, i: int, j: int) -> tuple[int, Any]:
         if k >= n or text[k] != "일":
             return k, None
         k += 1
-    if not (_clean_left(text, i, "()") and _clean_right(text, k) and _apart(text, i, k)):
+    if not (_clean_left(text, i) and _clean_right(text, k) and _apart(text, i, k)):
         return k, None
     try:
         return k, date(*parts).isoformat()
@@ -465,10 +480,10 @@ def _dates(text: str) -> list[tuple[int, int, Any]]:
 
 
 def _identifiers(text: str) -> list[tuple[int, int, Any]]:
-    """Every run of letters, digits and hyphens. It must stand apart: past any run of ASCII
-    punctuation and Hangul syllables on either side ("INV-2024를", "번호:INV") lies an end or
-    ASCII whitespace, never another letter or digit ("INV_2024", "12가3456", "AB가_CD") and
-    never an unlisted character ("AB12\\u00b9")."""
+    """Every run of letters, digits and hyphens. It must be its whole field but for opening
+    punctuation before it and closing punctuation and one particle run after it
+    ("INV-2024를", "(AB12)"); a run inside a longer field is refused ("INV_2024", "INV_",
+    "12가3456", "번호:INV-1", "AB12\\u00b9")."""
     out: list[tuple[int, int, Any]] = []
     n, i = len(text), 0
     while i < n:
@@ -477,12 +492,9 @@ def _identifiers(text: str) -> list[tuple[int, int, Any]]:
             continue
         j = _skip(text, i, _ID_CHARS)
         if text[i:j].strip("-"):
-            left, right = i, j
-            while left > 0 and (text[left - 1] in _ID_JOIN or _hangul(text[left - 1])):
-                left -= 1
-            while right < n and (text[right] in _ID_JOIN or _hangul(text[right])):
-                right += 1
-            whole = (left == 0 or text[left - 1] in _WS) and (right == n or text[right] in _WS)
+            # A hyphen at either end joins the run to something it does not hold ("INV- 2024").
+            whole = "-" not in (text[i], text[j - 1]) and _clean_left(text, i)
+            whole = whole and _clean_right(text, j)
             out.append((i, j, text[i:j].replace("-", "").upper() if whole else None))
         i = j
     return out

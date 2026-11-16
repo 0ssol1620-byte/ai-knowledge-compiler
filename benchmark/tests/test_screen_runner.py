@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from hypothesis import assume, example, given, settings
+from hypothesis import assume, example, given, seed, settings
 from hypothesis import strategies as st
 
 from benchmark.runners.base import RunnerUnavailable
@@ -264,7 +264,6 @@ def _field(value: str, anchor: str = "a", kind: str = "number") -> dict[str, str
     [
         ("영업이익은 1,234.5억원으로 증가", ("123450000000", "KRW")),
         ("가격 3,000원에 판매", ("3000", "KRW")),
-        ("매출액1,234억 달성", ("123400000000", None)),
         ("금리는 -5%로", ("-5", "pct")),
         ("성장률 5%로", ("5", "pct")),
     ],
@@ -273,6 +272,13 @@ def test_korean_particles_do_not_break_numbers(text, want):
     (got,) = canonical_values("number", text)
     n, k, cur = got
     assert n == want[0] and (cur == want[1] or k == want[1])
+
+
+def test_label_glued_to_a_number_is_read_through_its_anchor_only():
+    # Field first: in the whole text the number is a suffix of the field "매출액1,234억" and is
+    # refused; cut at its anchor, the number starts the field and is read.
+    assert canonical_values("number", "매출액1,234억 달성") == set()
+    assert score_critical_fields([_field("1,234억", "매출액")], "매출액1,234억 달성").exact == 1
 
 
 def test_particle_after_number_is_not_a_false_match():
@@ -652,7 +658,9 @@ def _scan_seconds(text: str) -> float:
     return time.perf_counter() - started
 
 
-@pytest.mark.parametrize("fill", [*sorted(set(_ALPHABET)), "1 ", "( ", "- ", "1,", "1억 "])
+@pytest.mark.parametrize(
+    "fill", [*sorted(set(_ALPHABET)), "1 ", "( ", "- ", "1,", "1억 ", "[(", '"(', "('"]
+)
 def test_every_single_pattern_run_scans_in_linear_time(fill):
     text = "a" + fill * (_SCAN_CHARS // len(fill)) + "x 1"
     assert _scan_seconds(text) < _SCAN_BUDGET_S, repr(fill)
@@ -1005,6 +1013,8 @@ def _best_seconds(text: str) -> float:
         "-x1.$ \uc5b5,\u00b9(",
         "2024-",
         "\u200b1\u00a0\u0661",
+        "(",
+        "[(",
     ],
     ids=[
         "space",
@@ -1016,6 +1026,8 @@ def _best_seconds(text: str) -> float:
         "junk",
         "date",
         "unicode-junk",
+        "open-paren",
+        "open-mixed",
     ],
 )
 def test_scan_time_grows_linearly_to_one_megabyte(fill):
@@ -1210,9 +1222,16 @@ def test_first_token_after_the_anchor_is_read_whole_or_refused(gold, candidate, 
         ("5", "A 5:", "number"),
         ("5억원", "A 5억원이다.", "number"),
         ("INV2024", "A INV-2024를 확인", "identifier"),
-        ("INV2024", "A 번호:INV-2024.", "identifier"),
+        ("INV2024", "A 번호: INV-2024.", "identifier"),
+        ("INV1", 'A "INV-1"', "identifier"),
         ("2024-03-05", "A (2024-03-05) 이후", "date"),
+        ("2024-03-05", "A (2024-03-05)이후", "date"),
         ("2024-03-05", "A 2024년 3월 5일에", "date"),
+        ("5", "A [5]", "number"),
+        ("5", "A 5,", "number"),
+        ("1000", "A 1,000", "number"),
+        ("1", "A 1 0000", "number"),
+        ("12억원", "A 12억원 (전년 10억원)", "number"),
     ],
 )
 def test_a_separated_token_is_still_read(gold, candidate, kind):
@@ -1220,13 +1239,20 @@ def test_a_separated_token_is_still_read(gold, candidate, kind):
 
 
 # The separator alphabet: every ASCII punctuation character, Hangul units and particles, ASCII
-# letters and junk. A separator joins two token runs into one word with no space in it.
+# letters and junk: zero-width, format and combining characters, digits outside ASCII and
+# space-like characters that are not ASCII. A separator joins two token runs into one field.
 _SEPARATOR = (
     string.punctuation
     + "조억만천백십가년월일원을이"
     + string.ascii_letters
-    + "\u200b\u00b9\u2010\u00e9\uff29"
+    + "\u200b\u00ad\u00b9\u2010\u00e9\uff29"
+    + "\u0301\u0336"  # combining
+    + "\u0661\U0001d7cf"  # digits outside ASCII
+    + "\u00a0\u202f\u2009"  # space-like, not ASCII
 )
+# A run before the first token run, inside the same field. Named opening punctuation is left
+# out: stripping it is the one prefix the rule allows, and the gold side does not.
+_LEADING = st.text("".join(sorted(set(_SEPARATOR) - set("([{\"'"))), max_size=3)
 _DIGITS = st.text("0123456789", min_size=1, max_size=4)
 _KO_GROUP = st.tuples(_DIGITS, st.sampled_from(["억", "만", "조", "천", "천만", "백억"]))
 _FIRST_RUNS = {
@@ -1239,13 +1265,17 @@ _FIRST_RUNS = {
 _LATER = {"number": "987654321", "date": "2031-12-31", "identifier": "ZZ9QQ"}
 
 
-@settings(max_examples=400, deadline=None)
+@seed(20261117)
+@settings(max_examples=600, deadline=None)
 @given(st.sampled_from(sorted(_FIRST_RUNS)), st.data())
 def test_property_value_after_anchor_is_the_first_token_or_nothing(kind, data):
+    """The first field after the anchor is read whole or refused: never a prefix of it, never
+    a suffix of it ("x=5", "\\u200b-;777"), and never the later token in its place."""
     runs = data.draw(st.lists(_FIRST_RUNS[kind], min_size=1, max_size=4))
     sep = st.text(_SEPARATOR, min_size=1, max_size=2)
     seps = data.draw(st.lists(sep, min_size=len(runs) - 1, max_size=len(runs) - 1))
-    first = runs[0] + "".join(s + r for s, r in zip(seps, runs[1:], strict=True))
+    first = data.draw(_LEADING) + runs[0]
+    first += "".join(s + r for s, r in zip(seps, runs[1:], strict=True))
     try:
         whole = gold_value(_field(first, "A", kind))
     except ValueError:
@@ -1254,3 +1284,78 @@ def test_property_value_after_anchor_is_the_first_token_or_nothing(kind, data):
     got = value_after_anchor(_field("x", "A", kind), f"A {first} {_LATER[kind]}")
     assert got in (None, whole), (first, got, whole)
     assert got != later or whole == later, first
+
+
+# --- ASCII-space thousands grouping: "1 000" cannot be told from 1 and 000, so it is refused. ---
+@pytest.mark.parametrize(
+    ("gold", "candidate"),
+    [
+        ("1", "A 1 000"),
+        ("12", "A 12 345 678"),
+        ("$1", "A $1 000"),
+        ("-1", "A -1 000"),
+        ("1", "A 1 000원"),
+        ("1", "A 1 000."),
+        ("1000", "A 1,000 000"),
+        ("5", "A 5 ,000"),
+        ("5", "A 5 .5"),
+    ],
+)
+def test_ascii_space_thousands_grouping_is_refused(gold, candidate):
+    assert score_critical_fields([_field(gold, "A")], candidate).exact == 0
+    assert value_after_anchor(_field("x", "A"), candidate) is None
+    assert _gold_refused(candidate[2:])
+
+
+# --- Field first: a token is its whole field or nothing. Before it only named opening
+# punctuation, after it only closing punctuation and one particle run; a prefix or a suffix of
+# a field is never read, whatever stands next to it.
+@pytest.mark.parametrize(
+    ("gold", "candidate", "kind"),
+    [
+        ("5", "A 마이너스5", "number"),
+        ("5", "A <5", "number"),
+        ("5", "A >5", "number"),
+        ("5", "A =5", "number"),
+        ("5", "A x=5", "number"),
+        ("5", "A ref:5", "number"),
+        ("5", "A @5", "number"),
+        ("5", "A #5", "number"),
+        ("5", "A |5|", "number"),
+        ("5", "A 초과5", "number"),
+        ("5", "A 미만5", "number"),
+        ("5", "A 가5", "number"),
+        ("5", "A 제5기", "number"),
+        ("5", "A é:5", "number"),
+        ("5", "A x:5", "number"),
+        ("5", "A \u00a0;5", "number"),
+        ("5", "A \u200b-;5", "number"),
+        ("777", "A \u200b-;777", "number"),
+        ("5", "A 5=", "number"),
+        ("5", "A 5|", "number"),
+        ("5억", "A 약5억", "number"),
+        ("5억원", "A 총5억원", "number"),
+        ("12억 3456만원", "A 12억 3456만원 7", "number"),
+        ("12억 3456만원", "A 12억 3456만원 7898", "number"),
+        ("2024-03-05", "A <2024-03-05", "date"),
+        ("2024-03-05", "A ~2024-03-05", "date"),
+        ("2024-03-05", "A 기준일2024-03-05", "date"),
+        ("2024-03-05", "A 약2024-03-05", "date"),
+        ("2024-03-05", "A é:2024-03-05", "date"),
+        ("2024-03-05", "A \u200b;2024-03-05", "date"),
+        ("2024-03-05", "A 2024-03-05=", "date"),
+        ("INV1", "A 번호INV-1", "identifier"),
+        ("INV1", "A 번호:INV-1", "identifier"),
+        ("AB12", "A 가가AB12", "identifier"),
+        ("INV1", "A é:INV1", "identifier"),
+        ("INV1", "A \u200b;INV1", "identifier"),
+        ("INV", "A INV_ 2024", "identifier"),
+        ("INV", "A INV- 2024", "identifier"),
+        ("INV", "A -INV 2024", "identifier"),
+        ("INV", "A INV= 2024", "identifier"),
+    ],
+)
+def test_field_first_prefix_or_suffix_of_a_field_is_never_read(gold, candidate, kind):
+    assert score_critical_fields([_field(gold, "A", kind)], candidate).exact == 0
+    assert value_after_anchor(_field("x", "A", kind), candidate) is None
+    assert _gold_refused(candidate[2:], kind)
