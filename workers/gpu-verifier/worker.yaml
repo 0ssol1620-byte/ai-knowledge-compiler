@@ -4,7 +4,8 @@ provider_key: minicpm_ocr_jev
 experimental: true
 default_enabled: false
 network:
-  outbound: none
+  outbound: runpod_job_control_plane_only
+  model_and_adapter_paths: offline
 bounds:
   max_crop_bytes: 4194304
   max_candidate_text_chars: 20000
@@ -17,8 +18,11 @@ production:
   licence_snapshot: pending
 required_runtime_env:
   - MODEL_REVISION
+  - WEIGHT_MANIFEST_SHA256
   - MODEL_ADAPTER_MODULE
   - WEIGHTS_DIR
   - WEIGHT_MANIFEST
   - CALIBRATED_RENDERER_ID
   - CALIBRATED_RENDERER_VERSION
+  - REQUIRE_CALLBACK_AUTH
+  - CALLBACK_HMAC_SECRET

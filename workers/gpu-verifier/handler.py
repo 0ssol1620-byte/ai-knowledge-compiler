@@ -1,4 +1,7 @@
-"""Jev crop-verifier worker: bounded input, no network, weights checked at start.
+"""Jev crop-verifier worker: bounded input, weights checked at start.
+
+Network: the only outbound path is the RunPod job control plane; model and adapter
+paths are offline (HF_HUB_OFFLINE / TRANSFORMERS_OFFLINE).
 
 The verifier receives crops only (rendering lives in the parser image). Output
 states mirror akc_quality.crop_verifier.VerifierResult; the image carries no
@@ -31,13 +34,34 @@ class RefusedInput(ValueError):
     """The request is outside the bounds; nothing was scored."""
 
 
-def verify_weights(manifest_path: Path, weights_dir: Path) -> None:
-    """Every manifest entry must exist under weights_dir with the exact sha256."""
-    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+class ScorerFailed(RuntimeError):
+    """The scorer itself broke (operational failure), distinct from a semantic hold."""
+
+
+def _is_hex(value: object, lengths: tuple[int, ...]) -> bool:
+    return isinstance(value, str) and len(value) in lengths and set(value) <= HEX64
+
+
+def verify_weights(manifest_path: Path, weights_dir: Path, manifest_sha256: str) -> None:
+    """The manifest must match the pinned digest; every entry must match its sha256.
+
+    The pin comes from the environment, outside the (replaceable) weights mount.
+    """
+    raw = manifest_path.read_bytes()
+    if not _is_hex(manifest_sha256, (64,)):
+        raise RuntimeError("WEIGHT_MANIFEST_SHA256 must be 64 lowercase hex")
+    if hashlib.sha256(raw).hexdigest() != manifest_sha256:
+        raise RuntimeError("weight manifest sha256 mismatch")
+    manifest = json.loads(raw.decode("utf-8"))
     files = manifest.get("files") if isinstance(manifest, dict) else None
     if not isinstance(files, dict) or not files:
         raise RuntimeError("weight manifest has no files")
     root = weights_dir.resolve()
+    extra = {p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()}
+    extra -= set(files)
+    extra.discard(manifest_path.resolve().relative_to(root).as_posix())
+    if extra:
+        raise RuntimeError(f"weight files not in manifest: {sorted(extra)}")
     for name, expected in files.items():
         path = (root / name).resolve()
         if root not in path.parents or not path.is_file():
@@ -63,19 +87,23 @@ def _hold(state: str, revision: str) -> dict[str, Any]:
 
 
 def handle(
-    payload: dict[str, Any],
+    payload: Any,
     scorer: Scorer,
     *,
     revision: str,
     calibrated_renderer: tuple[str, str],
 ) -> dict[str, Any]:
+    if not isinstance(payload, dict):
+        raise RefusedInput("input must be an object")
     text = payload.get("candidate_text")
     if not isinstance(text, str) or len(text) > MAX_TEXT_CHARS:
         raise RefusedInput("candidate_text missing or too long")
     encoded = payload.get("crop_b64")
     if encoded in (None, ""):
         return _hold("HOLD_MISSING_CROP", revision)
-    if not isinstance(encoded, str) or len(encoded) > MAX_CROP_BYTES * 4 // 3 + 4:
+    if not isinstance(encoded, str):
+        raise RefusedInput("crop_b64 must be a string")
+    if len(encoded) > MAX_CROP_BYTES * 4 // 3 + 4:
         raise RefusedInput("crop too large")
     try:
         crop = base64.b64decode(encoded, validate=True)
@@ -87,8 +115,8 @@ def handle(
         return _hold("HOLD_RENDERER_MISMATCH", revision)
     try:
         raw = scorer(crop, text)
-    except Exception:  # a scorer failure is a HOLD, never an accept
-        return _hold("HOLD_INVALID_OUTPUT", revision)
+    except Exception as exc:  # operational failure: surface it, never hold or accept
+        raise ScorerFailed(type(exc).__name__) from exc
     if (
         isinstance(raw, bool)
         or not isinstance(raw, (int, float))
@@ -108,19 +136,32 @@ def handle(
 
 def main() -> None:
     revision = os.environ["MODEL_REVISION"]
-    verify_weights(Path(os.environ["WEIGHT_MANIFEST"]), Path(os.environ["WEIGHTS_DIR"]))
+    if not _is_hex(revision, (40, 64)):
+        raise RuntimeError("MODEL_REVISION must be 40 or 64 lowercase hex")
+    if os.environ.get("REQUIRE_CALLBACK_AUTH") != "true" or not os.environ.get(
+        "CALLBACK_HMAC_SECRET"
+    ):
+        raise RuntimeError("REQUIRE_CALLBACK_AUTH=true and CALLBACK_HMAC_SECRET are required")
+    verify_weights(
+        Path(os.environ["WEIGHT_MANIFEST"]),
+        Path(os.environ["WEIGHTS_DIR"]),
+        os.environ["WEIGHT_MANIFEST_SHA256"],
+    )
     renderer = (os.environ["CALIBRATED_RENDERER_ID"], os.environ["CALIBRATED_RENDERER_VERSION"])
     scorer: Scorer = importlib.import_module(os.environ["MODEL_ADAPTER_MODULE"]).score
 
     def serve_one(event: dict[str, Any]) -> dict[str, Any]:
         try:
             return handle(
-                event.get("input") or {}, scorer, revision=revision, calibrated_renderer=renderer
+                event.get("input"), scorer, revision=revision, calibrated_renderer=renderer
             )
         except RefusedInput as exc:
             return {"error": str(exc)}
+        except ScorerFailed as exc:
+            print(f"scorer failed: {exc}", file=sys.stderr)
+            return {"error": "scorer_failed"}
 
-    import runpod  # type: ignore[import-not-found]  # present in the image only
+    import runpod  # type: ignore[import-not-found]  # installed by uv sync (gpu-common)
 
     runpod.serverless.start({"handler": serve_one})
 
