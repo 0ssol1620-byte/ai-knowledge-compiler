@@ -41,18 +41,19 @@ COLS_SUB = [
 COLS_NUM = ["adsh", "tag", "version", "ddate", "qtrs", "uom", "segments", "coreg", "value"]
 COLS_PRE = ["adsh", "report", "line", "stmt", "plabel", "negating", "tag", "version"]
 CTX: list[tuple[str, str | None, str, bool]] = [*_CTX]
-TAGS = ["Revenues", "CostOfRevenue", "NetIncomeLoss"]
+TAGS = ["Revenues", "CostOfRevenue", "GrossProfit", "NetIncomeLoss"]
 
 
 def tsv(cols: list[str], rows: list[dict[str, str]]) -> bytes:
     return "\n".join(["\t".join(cols), *("\t".join(r[c] for c in cols) for r in rows)]).encode()
 
 
-def page_html(label: str, script: bool = False, rows: int = 3) -> bytes:
+def page_html(label: str, script: bool = False, rows: int = 4) -> bytes:
     """A filing with a filer page break, then one table of `rows` presented rows."""
     cells = [
         [f"{label} Revenue", fact("1,234", tag="us-gaap:Revenues")],
         [f"{label} Cost", fact("500", tag="us-gaap:CostOfRevenue")],
+        [f"{label} Profit", fact("90", tag="us-gaap:GrossProfit")],
         [f"{label} Loss", "$ (", fact("700", tag="us-gaap:NetIncomeLoss", sign="-"), ")"],
     ][:rows]
     html = doc(CTX, cells).replace(
@@ -97,6 +98,7 @@ class World:
         values = {
             "Revenues": "1234000000",
             "CostOfRevenue": "500000000",
+            "GrossProfit": "90000000",
             "NetIncomeLoss": "-700000000",
         }
         for i, t in enumerate(TAGS):
@@ -253,8 +255,8 @@ def test_every_gold_passes_gold_value_and_keeps_the_shown_sign(tmp_path: Path) -
     assert len(gold) == 1 and gold[0]["page_id"].endswith(".pdf#0")
     fields = gold[0]["truth"]["critical_fields"]
     assert len(fields) == 3
-    by_value = {f["value"]: f for f in fields}
-    assert gold_value(by_value["($ 700)"])[0] == "-700"
+    # the page shows "$ (700)", which the scorer cannot read: no gold, counted, never rewritten
+    assert all("700" not in f["value"] for f in fields)
     for f in fields:
         gold_value(f)
         assert f["fsds"]["ddate_precision"] == "month_rounded" and f["fsds"]["quarter"] == "2025q3"
@@ -419,7 +421,8 @@ def test_receipt_has_statements_verbatim_and_census(tmp_path: Path) -> None:
     assert "Pre-training exposure cannot be controlled." in rec["statements"][0]
     assert rec["lpc_manifest_sha256"] == "sha256:" + "f" * 64
     y = rec["census"]["yield_over_presented_non_dimensional_rows"]
-    assert y["denominator"] == 3 and y["gold"] == 1.0 and y["aligned"] == 1.0
+    assert y["denominator"] == 4 and y["gold"] == 0.75 and y["aligned"] == 0.75
+    assert rec["census"]["reasons"]["gold_unparseable"] == 1
     assert rec["census"]["filer_agent_prefix_by_profile"]["screen"] == {"0000000001": 1}
     assert {o["path"].rsplit("/", 1)[-1] for o in rec["outputs"]} >= {
         "records.jsonl",
@@ -516,14 +519,27 @@ def test_output_inside_git_tree_and_zero_pages_refuse(tmp_path: Path) -> None:
         )
 
 
-def test_canonical_gold_moves_the_symbol_inside_the_bracket_and_adapter_is_strict() -> None:
-    assert sec_screen.canonical_gold("$ (700)") == "($ 700)"
-    assert sec_screen.canonical_gold("$ 700") == "$ 700"
-    assert sec_screen.canonical_gold("(700)") == "(700)"
+def test_signed_adapter_is_strict_and_never_rewrites_the_shown_value() -> None:
     f = {"kind": "number", "anchor": "a"}
     read = sec_screen.signed(gold_value)
-    assert read({**f, "value": "$ (700)"}) == -700 and read({**f, "value": "1,234"}) == 1234
+    assert read({**f, "value": "($ 700)"}) == -700 and read({**f, "value": "1,234"}) == 1234
+    with pytest.raises(ValueError):  # what the page shows, "$ (700)", is not a readable gold
+        read({**f, "value": "$ (700)"})
     with pytest.raises(ValueError):
         sec_screen.signed(lambda _f: 5)({**f, "value": "5"})
     with pytest.raises(ValueError):
         read({**f, "value": "(1,234"})
+
+
+def test_rows_of_dom_refused_filings_stay_in_the_yield_denominator(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    w.filing("0000000001-25-000001", "111")
+    w.filing(
+        "0000000002-25-000002",
+        "222",
+        html=page_html("b").replace(b'<div style="page-break-after:always"></div>', b""),
+    )
+    census, _ = run(w, tmp_path, pool=50, screen_pages=2)
+    assert census["reasons"]["no_filer_page_breaks"] == 1
+    y = census["yield_over_presented_non_dimensional_rows"]
+    assert y["denominator"] == 8 and y["gold"] == 0.375

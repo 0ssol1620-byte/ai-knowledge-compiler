@@ -15,13 +15,12 @@ import gzip
 import hashlib
 import io
 import json
-import re
 import shutil
 import sys
 import zipfile
 from collections import Counter
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -61,20 +60,11 @@ class ScreenError(Exception):
     pass
 
 
-_CUR_PAREN = re.compile(r"^([$€£¥]) \((.+)\)$")
-
-
-def canonical_gold(gold: str) -> str:
-    """The scorer reads "($ 700)" and refuses "$ (700)": the symbol goes inside the bracket."""
-    m = _CUR_PAREN.match(gold)
-    return f"({m[1]} {m[2]})" if m else gold
-
-
 def signed(gold_value: Callable[[dict[str, Any]], Any]) -> Callable[[dict[str, Any]], Decimal]:
     """`sec_align` wants a signed number; the scorer returns (amount, kind, unit)."""
 
     def read(field: dict[str, Any]) -> Decimal:
-        canon = gold_value({**field, "value": canonical_gold(field["value"])})
+        canon = gold_value(field)
         if not (isinstance(canon, tuple) and len(canon) == 3):
             raise ValueError(f"unexpected canonical value {canon!r}")
         return Decimal(canon[0])
@@ -156,6 +146,18 @@ def pick_page(
 ) -> Page | None:
     """First segment, in seed-hash order, that is eligible and prints to one page; else None."""
     adsh = sub["adsh"]
+    # align before the DOM refusals: a refused filing's rows stay in the yield denominator
+    cands: list[Candidate] = []
+    for item in align(sub, num, pre, html, signed(gold_value)):
+        if isinstance(item, Excluded):
+            reasons[item.reason] += 1
+            rows["presented_rows"] += item.reason not in _NOT_PRESENTED
+        else:
+            cands.append(item)
+    aligned = {c.field_id: c for c in cands}
+    rows["presented_rows"] += len(aligned)
+    rows["aligned_rows"] += len(aligned)
+    rows["ddate_rounded_match"] += sum(c.ddate_rounded for c in aligned.values())
     if sec_pages.has_script(html):
         reasons["script_refused"] += 1
         return None
@@ -164,17 +166,6 @@ def pick_page(
     except sec_pages.SegmentRefused as exc:
         reasons[exc.reason] += 1
         return None
-    cands: list[Candidate] = []
-    for item in align(sub, num, pre, html, signed(gold_value)):
-        if isinstance(item, Excluded):
-            reasons[item.reason] += 1
-            rows["presented_rows"] += item.reason not in _NOT_PRESENTED
-        else:
-            cands.append(replace(item, gold=canonical_gold(item.gold)))
-    aligned = {c.field_id: c for c in cands}
-    rows["presented_rows"] += len(aligned)
-    rows["aligned_rows"] += len(aligned)
-    rows["ddate_rounded_match"] += sum(c.ddate_rounded for c in aligned.values())
     dom_ok: set[str] = set()
     eligible: list[tuple[Any, list[Candidate]]] = []
     for seg in sorted(segs, key=lambda s: _rank(seed, "segment", f"{adsh}:{s.index}")):
