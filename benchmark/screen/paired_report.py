@@ -48,9 +48,10 @@ def _doc_critical_exact(records: list[dict[str, Any]]) -> bool:
 
 def _cell(records: list[dict[str, Any]]) -> dict[str, Any]:
     """One stratum x candidate cell. A critical-less cell is insufficient, not zero."""
-    n = sum(r["critical"]["n"] for r in records)
-    exact = sum(r["critical"]["exact"] for r in records)
     accepted = [r for r in records if not r["hard_failures"]]
+    # A hard-failed page is never exact and carries no trusted critical counts.
+    n = sum(r["critical"]["n"] for r in accepted)
+    exact = sum(r["critical"]["exact"] for r in accepted)
     costs = [r["provider_cost_usd"] for r in records]
     known = [c for c in costs if c is not None]
     latencies = [float(r["latency_ms"]) for r in records]
@@ -61,6 +62,8 @@ def _cell(records: list[dict[str, Any]]) -> dict[str, Any]:
         "critical_exact": exact,
         "critical_exact_rate": exact / n if n else INSUFFICIENT,
         "critical_exact_ci": wilson_interval(exact, n) if n else INSUFFICIENT,
+        # Failure-aware figure that selection ranks on: failed pages dilute the rate.
+        "selection_rate": exact / n * len(accepted) / len(records) if n else INSUFFICIENT,
         "accepted_critical_errors": sum(r["critical"]["accepted_errors"] for r in records),
         "cer": _metric(records, "cer"),
         "table_f1": _metric(records, "table_f1"),
@@ -107,7 +110,7 @@ def _paired(base: list[dict[str, Any]], cand: list[dict[str, Any]]) -> dict[str,
 def _rank_key(cell: dict[str, Any]) -> tuple[float, float, float]:
     cer, cost = cell["cer"], cell["cost_per_accepted_page_usd"]
     return (
-        -cell["critical_exact_rate"],
+        -cell["selection_rate"],
         cer if cer is not None else math.inf,
         cost if cost is not None else math.inf,
     )
@@ -132,6 +135,8 @@ def build_report(records: list[dict[str, Any]], *, incumbent: str) -> dict[str, 
         for c, cell in cells.items():
             if cell["accepted_critical_errors"] > 0:
                 rejected[c] = f"accepted_critical_errors={cell['accepted_critical_errors']}"
+            elif cell["failures"] == cell["pages"]:
+                rejected[c] = "no_accepted_pages"
             elif cell["critical_exact_rate"] == INSUFFICIENT:
                 rejected[c] = INSUFFICIENT
             else:

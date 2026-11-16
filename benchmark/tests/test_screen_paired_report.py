@@ -70,6 +70,16 @@ class PairedReportTest(unittest.TestCase):
         self.assertEqual(cell["failures"], 1)
         self.assertIsNone(cell["cost_per_accepted_page_usd"])
 
+    def test_failed_pages_cannot_win_selection(self) -> None:
+        f = ("provider_unavailable",)
+        recs = [*docs("s", "inc", k=10, exact=1, n=2), rec("s", "c", "ok")]
+        recs += [rec("s", "c", f"f{i}", n=0, exact=0, fail=f, cost=None) for i in range(9)]
+        recs += [rec("s", "dead", "d0", n=0, exact=0, fail=("contract_failed",), cost=None)]
+        r = build_report(recs, incumbent="inc")
+        self.assertEqual(r["routes"]["s"]["primary"], "inc")
+        self.assertNotIn("dead", r["routes"]["s"]["alternatives"])
+        self.assertEqual(r["strata"]["s"]["rejected"]["dead"], "no_accepted_pages")
+
     def test_pairing_counts_discordant_docs(self) -> None:
         recs = docs("s", "inc", exact=1) + docs("s", "c", exact=2)
         p = build_report(recs, incumbent="inc")["strata"]["s"]["paired_vs_incumbent"]["c"]
