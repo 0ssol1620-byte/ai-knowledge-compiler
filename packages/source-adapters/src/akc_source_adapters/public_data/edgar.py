@@ -38,7 +38,9 @@ def parse_edgar_companyfacts(
 ) -> tuple[VintageObservation, ...]:
     """One observation per (taxonomy, concept, unit, fact).
 
-    `series_id = cik:taxonomy:concept:unit`, `vintage_id = accn`, `available_on
+    `series_id = cik:taxonomy:concept:unit`, plus `:end` when the fact has a
+    `start` (a duration; same-start facts with different ends are different
+    periods, not revisions); `vintage_id = accn`, `available_on
     = filed`. Identical repeats within the payload collapse; the same accession
     with a different value is kept twice so `to_temporal_facts` holds it as
     `ambiguous_vintage`. A malformed fact raises. `rights_id` is required beyond
@@ -55,19 +57,23 @@ def parse_edgar_companyfacts(
         for concept, body in _obj(concepts, f"facts.{taxonomy}").items():
             units = _obj(_obj(body, concept).get("units"), f"{concept}.units")
             for unit, rows in units.items():
-                series_id = f"{cik}:{taxonomy}:{concept}:{unit}"
+                base = f"{cik}:{taxonomy}:{concept}:{unit}"
                 if not isinstance(rows, list):
-                    raise ValueError(f"EDGAR payload: {series_id} must be a list")
+                    raise ValueError(f"EDGAR payload: {base} must be a list")
                 for fact in rows:
-                    fact = _obj(fact, series_id)
-                    end = _need(fact, "end", series_id)
+                    fact = _obj(fact, base)
+                    end = _need(fact, "end", base)
+                    # A duration fact is its own series per end date: Q1, 6M YTD, 9M YTD and FY
+                    # share a start, and only a same-period refiling is a revision.
+                    start = _need(fact, "start", base) if "start" in fact else None
+                    series_id = base if start is None else f"{base}:{end}"
                     accn = _need(fact, "accn", series_id)
                     filed = _need(fact, "filed", series_id)
                     val = _need(fact, "val", series_id)
                     o = VintageObservation(
                         source_id="sec_edgar",
                         series_id=series_id,
-                        period_start=_day(fact.get("start") or end, "start", series_id),
+                        period_start=_day(start or end, "start", series_id),
                         period_end=_day(end, "end", series_id),
                         value=val,
                         unit=unit,

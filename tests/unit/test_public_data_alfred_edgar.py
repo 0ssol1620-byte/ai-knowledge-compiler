@@ -80,12 +80,12 @@ def test_alfred_request_url_has_no_key_and_is_https() -> None:
 
 def test_edgar_amendment_is_a_later_vintage_not_an_overwrite() -> None:
     obs = _edgar()
-    rev = [o for o in obs if o.series_id.endswith(":Revenues:USD")]
+    rev = [o for o in obs if ":Revenues:USD" in o.series_id]
     assert [(o.vintage_id, o.value) for o in rev] == [
         ("0001234567-20-000001", "1000"),  # identical repeat collapsed
         ("0001234567-20-000009", "1010"),
     ]
-    assert rev[0].series_id == "1234567:us-gaap:Revenues:USD"
+    assert rev[0].series_id == "1234567:us-gaap:Revenues:USD:2019-12-31"
     assert rev[0].available_on == date(2020, 2, 14)
     facts, held = to_temporal_facts(obs)
     assert held == ()
@@ -93,6 +93,47 @@ def test_edgar_amendment_is_a_later_vintage_not_an_overwrite() -> None:
     lid = rev[0].logical_id
     assert tl.as_of(known_at=datetime(2020, 3, 1, tzinfo=UTC), logical_id=lid).values == ("1000",)
     assert tl.as_of(known_at=datetime(2020, 7, 1, tzinfo=UTC), logical_id=lid).values == ("1010",)
+
+
+def _edgar_doc(*rows: dict) -> bytes:  # type: ignore[type-arg]
+    return json.dumps(
+        {"cik": 1, "facts": {"us-gaap": {"Revenues": {"units": {"USD": list(rows)}}}}}
+    ).encode()
+
+
+def test_edgar_periods_sharing_a_start_date_are_not_revisions_of_each_other() -> None:
+    # Real filings: Q1 -> 6M YTD -> FY all start on the same day. Different end = different fact.
+    q1 = {
+        "start": "2019-01-01",
+        "end": "2019-03-31",
+        "val": 100,
+        "accn": "A1",
+        "filed": "2019-05-01",
+    }
+    h1 = {
+        "start": "2019-01-01",
+        "end": "2019-06-30",
+        "val": 250,
+        "accn": "A2",
+        "filed": "2019-08-01",
+    }
+    obs = _edgar(_edgar_doc(q1, h1))
+    facts, held = to_temporal_facts(obs)
+    assert held == ()
+    assert len({o.logical_id for o in obs}) == 2
+    assert all(f.superseded_at is None for f in facts)
+    tl = TemporalTimeline(facts)
+    known = datetime(2019, 9, 1, tzinfo=UTC)
+    by_end = {o.period_end: o.logical_id for o in obs}
+    assert tl.as_of(known_at=known, logical_id=by_end[date(2019, 3, 31)]).values == ("100",)
+    assert tl.as_of(known_at=known, logical_id=by_end[date(2019, 6, 30)]).values == ("250",)
+
+
+def test_edgar_empty_or_non_text_start_raises_not_becomes_instant() -> None:
+    row = {"end": "2019-03-31", "val": 1, "accn": "A1", "filed": "2019-05-01"}
+    for bad in ("", 5, None):
+        with pytest.raises(ValueError, match="start"):
+            _edgar(_edgar_doc({**row, "start": bad}))
 
 
 def test_edgar_instant_fact_uses_end_as_start_and_keeps_text() -> None:
