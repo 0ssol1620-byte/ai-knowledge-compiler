@@ -23,7 +23,9 @@ across ASCII spaces only, so past those spaces neither side may hold an unlisted
 which could hide a part, nor (for numbers) a Korean unit the grammar did not take, and after a
 unit or scale word only a word that cannot be a further part may follow. A plain number
 followed by a space and exactly three digits ("1 000") is refused: ASCII-space grouping cannot
-be told from two numbers. Every digit run is a
+be told from two numbers. A percent or currency set apart from a number by a label separator
+or opening punctuation ("5 :%", "5 (원)") refuses it, and so does a unit label that carries a
+sign ("[-원] 5"). Every digit run is a
 number or date token, read or refused, never skipped. So the first token after an anchor is
 read whole or refused, never short, and a refused token is listed, never dropped, so a later
 token is never read in its place. Arithmetic is exact to ``_PREC``
@@ -117,10 +119,28 @@ _CURRENCY = {
     "엔": "JPY",
     "JPY": "JPY",
     "¥": "¥",
+    "CNY": "CNY",
+    "RMB": "CNY",
+    "HKD": "HKD",
+    "TWD": "TWD",
+    "SGD": "SGD",
+    "AUD": "AUD",
+    "CAD": "CAD",
+    "CHF": "CHF",
+    "INR": "INR",
+    "US$": "USD",
+    "HK$": "HKD",
+    "NT$": "TWD",
+    "S$": "SGD",
+    "A$": "AUD",
+    "C$": "CAD",
 }
 _CUR_KEYS = sorted(_CURRENCY, key=len, reverse=True)
 _CUR_FIRST = frozenset({k[0] for k in _CURRENCY} | {k[0].lower() for k in _CURRENCY})
 _START = _DIGIT | _CUR_FIRST | {"("} | set(_SIGN)
+# What may stand between a number and a percent or currency that it does not take: ASCII
+# whitespace and label separators or opening punctuation ("5 :%", "5 |원", "5 (%)").
+_GAP = _WS | _OPEN
 # Values are exact to this many significant digits; one that would round is refused.
 _PREC = 100
 _EXACT = Context(prec=_PREC, traps=[Inexact, InvalidOperation, Overflow, DivisionByZero])
@@ -329,14 +349,30 @@ def _ends_scaled(text: str, s: int, english: bool) -> bool:
     )
 
 
-def _number_at(text: str, i: int, open_bracket: str | None = None) -> tuple[int, Any] | None:
+def _mark_at(text: str, k: int) -> bool:
+    """Is ``text[k]`` a percent, or a currency that no digit follows across spaces."""
+    if text[k : k + 1] == "%":
+        return True
+    cur = _currency_at(text, k)
+    if cur is None:
+        return False
+    after = _skip(text, cur[1], _SPACE)
+    return text[after : after + 1] not in _DIGIT
+
+
+def _number_at(
+    text: str, i: int, open_bracket: str | None = None, signed: bool = False
+) -> tuple[int, Any] | None:
     """The token starting at ``i`` as ``(end, canonical value or None when refused)``.
 
     None when nothing was consumed at ``i``, or when the sign, paren or currency consumed there
     is glued, with no whitespace anywhere, into a word ("원가", "-x", "(주)") or, glued to a
     closing bracket, closes a unit label: the bracket pairs with its own "(" or, with none,
     with ``open_bracket``, the innermost bracket still open before ``i`` ("(원)", "(단위:
-    원)", "[원]", "{USD}"): that is text, not a number. Any other bracket after a currency
+    원)", "[원]", "{USD}"): that is text, not a number. A label that carries a sign, consumed
+    at ``i`` or ``signed`` (one stands after ``open_bracket`` and before ``i``), is not a plain
+    unit label and is refused ("[-원]", "(단위: -원)", "[x -원]"): what the sign applies to is
+    not guessed. Any other bracket after a currency
     ("원) 5", "$] 5", "[원) 5", "(원] 5") is refused like any non-digit. A sign or paren
     standing alone is never text ("- 원가 5"). Any other consumed prefix with no digit after it
     is refused, so the scan never restarts past it and reads the number without it ("- :5",
@@ -366,6 +402,8 @@ def _number_at(text: str, i: int, open_bracket: str | None = None) -> tuple[int,
         word = glued and (c in _ASCII_LETTER or _hangul(c)) and not symbol
         closes = "(" if opened else open_bracket
         unit_label = glued and prefix is not None and c in _PAIR and _PAIR[c] == closes
+        if unit_label and (text[i] in _SIGN or (signed and not opened)):
+            return k, None
         if k == i or word or unit_label:
             return None
         return k, None
@@ -416,6 +454,13 @@ def _number_at(text: str, i: int, open_bracket: str | None = None) -> tuple[int,
         or (prefix and suffix and prefix[0] != suffix[0])
     ):
         return end, None
+    # A percent or currency the grammar did not take, set apart by a label separator or
+    # opening punctuation ("5 :%", "5 |원", "5 (%)", "12억 (원)"), says what the number is:
+    # refused, never read plain. A currency that begins a further number ("5 ($3)") is that
+    # number's own. Whitespace alone is the grammar's to join or not ("5 %", "5\t%").
+    gap = _skip(text, end, _GAP)
+    if any(c in _OPEN for c in text[end:gap]) and _mark_at(text, gap):
+        return gap, None
     value = _amount(groups, negative)
     if value is None:
         return end, None
@@ -429,26 +474,26 @@ def _numbers(text: str) -> list[tuple[int, int, Any]]:
     # Would a token at i begin its field (_clean_left), carried one character at a time so a
     # run of opening punctuation is never walked again from each "(" in it.
     ok = True
-    # Brackets still open before ``seen``, innermost last: every character up to i is walked
-    # once, inside read tokens too, so a ")" a token consumed still closes its "(".
-    brackets: list[str] = []
-    seen = 0
+    # Brackets still open before ``seen``, innermost last, each with the count of signs walked
+    # before it opened: every character up to i is walked once, inside read tokens too, so a
+    # ")" a token consumed still closes its "(", and a sign inside a bracket is counted.
+    brackets: list[tuple[str, int]] = []
+    signs = seen = 0
     while i < n:
         c = text[i]
         for b in text[seen:i]:
-            if b in _PAIR.values():
-                brackets.append(b)
-            elif b in _PAIR and brackets and brackets[-1] == _PAIR[b]:
+            if b in _SIGN:
+                signs += 1
+            elif b in _PAIR.values():
+                brackets.append((b, signs))
+            elif b in _PAIR and brackets and brackets[-1][0] == _PAIR[b]:
                 brackets.pop()
         seen = i
+        inner, since = brackets[-1] if brackets else (None, signs)
         if c in _DIGIT and not ok:  # a digit is never skipped: glued to a word, it is refused
             end = _word_end(text, i)
             out.append((i, end, None))
-        elif (
-            c in _START
-            and ok
-            and (tok := _number_at(text, i, brackets[-1] if brackets else None)) is not None
-        ):
+        elif c in _START and ok and (tok := _number_at(text, i, inner, signs > since)) is not None:
             end, value = tok
             # Nothing restarts inside a refused token: the rest of its word goes with it.
             if value is None:
