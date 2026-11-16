@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -48,6 +49,16 @@ def _sets(world: NormalizedWorld) -> dict[str, frozenset[str]]:
     }
 
 
+def _state_blind(records: frozenset[str]) -> frozenset[str]:
+    """Drop verificationState, which legitimately differs between incremental and cold."""
+    out = set()
+    for record in records:
+        data = json.loads(record)
+        data.pop("verificationState", None)
+        out.add(json.dumps(data, sort_keys=True, ensure_ascii=False))
+    return frozenset(out)
+
+
 def _phantoms(
     incremental: ProductCoreCompileResponse,
     cold: ProductCoreCompileResponse,
@@ -69,6 +80,10 @@ def _phantoms(
                 found.add(f"object:{index}")
     if inc_world is not None and cold_world is not None:
         found |= {f"claim:{k}" for k in inc_world.claim_keys - cold_world.claim_keys}
+        # Every object cold does not contain, of any kind; this is the only guard under HOLD.
+        for name, records in _sets(inc_world).items():
+            extra = _state_blind(records) - _state_blind(_sets(cold_world)[name])
+            found |= {f"{name}:{r}" for r in extra}
     return len(found)
 
 

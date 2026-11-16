@@ -81,9 +81,49 @@ def test_an_unchanged_pair_holds_on_the_compilers_own_equivalence_check() -> Non
     assert "EQUIVALENCE_FAILED" in result.hold_reasons
 
 
-def test_a_matched_unit_with_a_reused_logical_id_normalizes_equal_to_cold() -> None:
-    incremental, cold = compile_pair((A,), (A, B), requested_at=NOW)
+def test_a_unit_with_a_different_logical_id_normalizes_equal_to_cold() -> None:
+    # Same text, new region ids -> the incremental and cold logical/claim ids differ, so equality
+    # holds only if normalization rewrites them to unit and claim keys.
+    e1 = _doc("filing-e", "Mercury Systems reported revenue of 100 million won in 2025.")
+    renamed = e1.model_copy(
+        update={
+            "regions": tuple(
+                r.model_copy(update={"region_id": r.region_id + "-x"}) for r in e1.regions
+            )
+        }
+    )
+    incremental, cold = compile_pair((e1,), (renamed,), requested_at=NOW)
+    assert {u.logical_id for u in incremental.candidate.units} != {
+        u.logical_id for u in cold.candidate.units
+    }
     assert normalize(incremental) == normalize(cold)
+
+
+def test_a_stale_non_claim_object_is_phantom_even_under_hold() -> None:
+    e1 = _doc(
+        "filing-e",
+        "Mercury Systems reported revenue of 100 million won in 2025.",
+        "Mercury Systems acquired Venus Labs.",
+    )
+    moved = e1.model_copy(
+        update={
+            "page_count": 2,
+            "regions": tuple(
+                r.model_copy(update={"page_index0": 1, "page_number1": 2}) for r in e1.regions
+            ),
+        }
+    )
+    incremental, cold = compile_pair((e1,), (moved,), requested_at=NOW)
+    clean = judge(incremental, cold)
+    assert clean.verdict == "HOLD" and clean.phantom == 0
+    model = copy.deepcopy(incremental.candidate.canonical_knowledge_model)
+    stale = copy.deepcopy(next(o for o in model["objects"] if o["kind"] == "entity"))
+    stale["stableId"] = stale["payload"]["entityId"] = "entity_stale"
+    stale["payload"]["canonicalName"] = "Stale Corp"
+    model["objects"].append(stale)
+    result = judge(_with_model(incremental, model), cold)
+    assert result.verdict == "HOLD"
+    assert result.phantom >= 1
 
 
 def test_an_unresolved_identity_is_hold_not_equal() -> None:
