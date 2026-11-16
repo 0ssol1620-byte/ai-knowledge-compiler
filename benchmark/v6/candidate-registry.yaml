@@ -489,6 +489,17 @@ candidates:
     license: { id: "Apache-2.0", status: approved, commercial_use: allowed }
     conditions: [model_file_manifest_sha256, direct_page_parse_recipe, optional_expansion_only, signed_image_digest]
 
+  - id: minicpm-ocr-jev
+    tier: E
+    kind: multimodal_baseline
+    role: crop_level_ocr_verifier_not_a_parser
+    required: false
+    execution_state: artifact_manifest_runtime_and_license_pending
+    promotion_eligible: false
+    identity: { repository: null, revision: null, artifact_sha256: null, runtime_recipe: null }
+    license: { id: "unreviewed-code-vs-weights-split", status: review_required, commercial_use: unknown }
+    conditions: [decision_d3_code_and_weights_licence, exact_revision, model_file_manifest_sha256, signed_image_digest]
+
   - id: qwen3.5-9b
     tier: K
     kind: knowledge_compiler
