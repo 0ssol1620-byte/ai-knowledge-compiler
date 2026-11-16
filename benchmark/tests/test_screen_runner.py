@@ -24,6 +24,7 @@ from benchmark.screen.critical_fields import (
     _FOLD,
     _KO_CHARS,
     _OPEN,
+    _PAIR,
     _SIGN,
     canonical_values,
     gold_value,
@@ -1714,8 +1715,9 @@ def _currency_code(s: str) -> str | None:
         "A - 원화 5억",
         "A -\t원가 5",
         "A (\t원) 5",
-        # Lead note, round 11: a currency closing a bracket is a unit label only inside an
-        # open "(" ("(원)", "(단위: 원)"); without one the consumed currency is refused.
+        # Lead note, round 11: a currency closing a bracket is a unit label only when the
+        # bracket closes its own "(" or the innermost bracket still open before it ("(원)",
+        # "[단위: 원]"); without one the consumed currency is refused.
         "A $) 5",
         "A USD] 5",
         "A 원) 5",
@@ -1730,9 +1732,11 @@ def _currency_code(s: str) -> str | None:
         "A 가 $) 5",
         "A : 원) 5",
         "A [원) 5",
-        "A [원] 5",
-        "A {USD} 5",
         "A (원] 5",
+        "A [원} 5",
+        "A {USD] 5",
+        "A (단위: 원] 5",
+        "A [단위: 원) 5",
         "A 원)) 5",
         "A (원) 원) 5",
     ],
@@ -1759,6 +1763,14 @@ def test_a_consumed_sign_paren_or_currency_is_never_dropped(candidate):
         ("A (단위:원) 5", ("5", "num", None)),
         ("A (단위 : 원) 5", ("5", "num", None)),
         ("A \uff08원) 5", ("5", "num", None)),
+        # Lead note, round 11: a closing bracket that matches the innermost open one keeps the
+        # label text, whichever bracket it is.
+        ("A [원] 5", ("5", "num", None)),
+        ("A {USD} 5", ("5", "num", None)),
+        ("A [USD] 5", ("5", "num", None)),
+        ("A [단위: 원] 5", ("5", "num", None)),
+        ("A {단위: 원} 5", ("5", "num", None)),
+        ("A [단위:원] 5", ("5", "num", None)),
         # A sign, a space, then a currency glued to the digits: the signed currency value.
         ("A - 원5", ("-5", "num", "KRW")),
         ("A - $ 5", ("-5", "num", "USD")),
@@ -1834,8 +1846,21 @@ def test_a_standalone_prefix_then_whitespace_never_yields_the_bare_number():
     """``A `` + P + S + N + rest: the result is None, except that a sign, spaces, a whole
     currency and then the digits read as the signed currency value ("- 원5", "- $ 5"). Never
     the bare, unsigned or currency-less number."""
+    prefixes = [*_SIGN_PREFIXES, *_variants("("), *_CURRENCY_PREFIXES]
+    # Meta-assertion: the prefixes enumerated are exactly as many as the reader's tables give,
+    # counted here straight from _SIGN, the inverse of _FOLD and _CURRENCY (ASCII codes also in
+    # lower and title case), so a prefix the derivation above drops fails here.
+    unfold = {v: {chr(k) for k, w in _FOLD.items() if w == v} for v in _FOLD.values()}
+    signs = set(_SIGN).union(*(unfold.get(s, set()) for s in _SIGN))
+    parens = {"("} | unfold.get("(", set())
+    codes = [k for k in _CURRENCY if k.isascii() and k.isalpha()]
+    currencies = set(_CURRENCY).union(*(unfold.get(k, set()) for k in _CURRENCY))
+    currencies |= {k.lower() for k in codes} | {k.title() for k in codes}
+    assert len(prefixes) == len(set(prefixes))
+    assert len(set(prefixes)) == len(signs) + len(parens) + len(currencies)
+    assert set(prefixes) == signs | parens | currencies
     wrong = []
-    for p in [*_SIGN_PREFIXES, *_variants("("), *_CURRENCY_PREFIXES]:
+    for p in prefixes:
         for s in _WHITESPACE_RUNS:
             for nxt in _NEXT_CLASSES:
                 for rest in ["5", " 5", "가 5", ") 5", " :5"]:
@@ -1861,30 +1886,34 @@ def test_every_standalone_prefix_is_read_with_the_number_across_spaces(p):
     assert got[2] == code and got[0] == ("-5" if p in _NEGATIVE_PREFIXES else "5"), (p, got)
 
 
-def test_a_currency_closing_a_bracket_is_a_unit_label_only_inside_an_open_paren():
+def test_a_currency_closing_a_bracket_is_a_unit_label_only_when_it_closes_its_opener():
     """Lead note, round 11, closed by enumeration over the reader's tables: ``A`` + opener + a
-    currency glued to a closing bracket + `` 5``. Only a ")" that closes a "(" still open
-    before it ("(원)", "(단위: 원)") makes a unit label, after which the bare 5 is read; any
-    other shape consumed the currency and is refused, never the currency-less 5. A currency
-    glued after a word ("(단위:원]") starts no token: it is text, and the 5 is read."""
+    currency glued to a closing bracket + `` 5``. Only a bracket that closes the innermost one
+    still open before it ("(원)", "(단위: 원)", "[원]", "{단위: USD}") makes a unit label, after
+    which the bare 5 is read; any other shape consumed the currency and is refused, never the
+    currency-less 5. A currency glued after a word ("(단위:원]") starts no token: it is text,
+    and the 5 is read. A "(" glued to a further bracket ("([원]") is an accounting paren
+    consumed with no digit after it, refused like "([5])"."""
     openers = ["", "x ", ": ", "가 ", "(단위: ", "(단위 : ", "(단위:", "(a) ", "( x) "]
-    openers += [o + "(" for o in ("", "x ")] + [v for o in "([{" for v in _variants(o)]
-    openers += ["[단위: ", "{단위: ", "([", "(단위 [x] "]
+    openers += [o + "(" for o in ("", "x ")] + [v for o in _PAIR.values() for v in _variants(o)]
+    openers += ["[단위: ", "{단위: ", "([", "[(", "{[", "(단위 [x] ", "[단위 (x) "]
     wrong = []
     for opener in openers:
         folded = opener.translate(_FOLD)
-        # The last bracket the opener leaves open, if any.
+        # The brackets the opener leaves open, innermost last.
         stack: list[str] = []
-        in_word = folded.split(" ")[-1].strip("([{") != ""
+        lead = folded.split(" ")[-1]
+        in_word = lead.strip("".join(_PAIR.values())) != ""
+        paren_consumed = "(" in lead[:-1]
         for c in folded:
-            if c in "([{":
+            if c in _PAIR.values():
                 stack.append(c)
-            elif c in ")]}" and stack and "([{"[")]}".index(c)] == stack[-1]:
+            elif c in _PAIR and stack[-1:] == [_PAIR[c]]:
                 stack.pop()
         for cur in _CURRENCY_PREFIXES:
-            for close in sorted(set(_CLOSE) & set(")]}")):
+            for close in sorted(set(_CLOSE) & set(_PAIR)):
                 text = f"A {opener}{cur}{close} 5"
-                label = in_word or (close == ")" and stack[-1:] == ["("])
+                label = in_word or (not paren_consumed and stack[-1:] == [_PAIR[close]])
                 want = ("5", "num", None) if label else None
                 got = value_after_anchor(_field("x", "A"), text)
                 if got != want:

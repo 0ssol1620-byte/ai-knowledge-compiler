@@ -329,14 +329,15 @@ def _ends_scaled(text: str, s: int, english: bool) -> bool:
     )
 
 
-def _number_at(text: str, i: int, in_paren: bool = False) -> tuple[int, Any] | None:
+def _number_at(text: str, i: int, open_bracket: str | None = None) -> tuple[int, Any] | None:
     """The token starting at ``i`` as ``(end, canonical value or None when refused)``.
 
     None when nothing was consumed at ``i``, or when the sign, paren or currency consumed there
     is glued, with no whitespace anywhere, into a word ("원가", "-x", "(주)") or, glued to a
-    ")", closes a unit label whose "(" is its own or, ``in_paren``, still open before ``i``
-    ("(원)", "(단위: 원)"): that is text, not a number. Any other bracket after a currency
-    ("원) 5", "$] 5", "[원) 5", "{USD} 5") is refused like any non-digit. A sign or paren
+    closing bracket, closes a unit label: the bracket pairs with its own "(" or, with none,
+    with ``open_bracket``, the innermost bracket still open before ``i`` ("(원)", "(단위:
+    원)", "[원]", "{USD}"): that is text, not a number. Any other bracket after a currency
+    ("원) 5", "$] 5", "[원) 5", "(원] 5") is refused like any non-digit. A sign or paren
     standing alone is never text ("- 원가 5"). Any other consumed prefix with no digit after it
     is refused, so the scan never restarts past it and reads the number without it ("- :5",
     "$ [5]", "$ - 5", "-\\t5", "-- 5"). Once a digit is reached the token is read whole or
@@ -363,7 +364,8 @@ def _number_at(text: str, i: int, in_paren: bool = False) -> tuple[int, Any] | N
         # A currency symbol before a letter is two currencies, not a word ("$USD").
         symbol = prefix is not None and not text[end_of_prefix - 1].isalpha()
         word = glued and (c in _ASCII_LETTER or _hangul(c)) and not symbol
-        unit_label = glued and prefix is not None and c == ")" and (opened or in_paren)
+        closes = "(" if opened else open_bracket
+        unit_label = glued and prefix is not None and c in _PAIR and _PAIR[c] == closes
         if k == i or word or unit_label:
             return None
         return k, None
@@ -443,7 +445,9 @@ def _numbers(text: str) -> list[tuple[int, int, Any]]:
             end = _word_end(text, i)
             out.append((i, end, None))
         elif (
-            c in _START and ok and (tok := _number_at(text, i, brackets[-1:] == ["("])) is not None
+            c in _START
+            and ok
+            and (tok := _number_at(text, i, brackets[-1] if brackets else None)) is not None
         ):
             end, value = tok
             # Nothing restarts inside a refused token: the rest of its word goes with it.
