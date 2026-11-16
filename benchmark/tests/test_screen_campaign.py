@@ -147,3 +147,90 @@ def test_stop_sweeps_foreign_tagged_resources(tmp_path: Path) -> None:
     p.live.add("stray1")
     _run(c, "S3", "15")
     assert "stray1" not in p.live
+
+
+class _Flaky(FakeProvider):
+    """delete() works, but the first GET after it still shows the resource."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.stale = 1
+
+    def delete(self, resource_id: str) -> None:
+        self.live.discard(resource_id)
+
+    def exists(self, resource_id: str) -> bool:
+        if self.stale:
+            self.stale -= 1
+            return True
+        return False
+
+    def tagged_resource_ids(self, run_tag: str) -> list[str]:
+        return []
+
+
+def test_overspend_still_tears_down_stops_and_reloads(tmp_path: Path) -> None:
+    p = FakeProvider()
+    p.live.add("pod1")
+    ledger = _ledger(tmp_path)
+    c = Campaign(_spec(), ledger, p)
+    c.reserve_stage("S1", "55")
+    with pytest.raises(ContractError, match="exceeded"):
+        c.complete_stage("S1", actual_cost_usd="400", partial_results={}, resource_ids=("pod1",))
+    assert not p.live and c.stopped and not c.has_receipt("S1")
+    assert [a["percent"] for a in c._payloads("campaign.alert.v1")] == [50, 80, 100]
+    again = Campaign(_spec(), ledger, FakeProvider())
+    assert again.stopped
+
+
+def test_zero_or_negative_reservation_refused(tmp_path: Path) -> None:
+    c = Campaign(_spec(), _ledger(tmp_path), FakeProvider())
+    for bad in ("0", "-5"):
+        with pytest.raises(ContractError, match="positive"):
+            c.reserve_stage("S1", bad)
+
+
+def test_zero_cap_stage_cannot_hide_cost(tmp_path: Path) -> None:
+    local = Stage("L", Decimal(0), (), 1, "cpu")
+    spec = CampaignSpec("t", "v6-t-camp", Decimal(100), (50,), (local,))
+    c = Campaign(spec, _ledger(tmp_path), FakeProvider())
+    c.reserve_stage("L")
+    with pytest.raises(ContractError, match="exceeded"):
+        c.complete_stage("L", actual_cost_usd="50", partial_results={}, resource_ids=())
+    assert not c.has_receipt("L")
+
+
+def test_failed_teardown_is_resumable(tmp_path: Path) -> None:
+    ledger = _ledger(tmp_path)
+    c = Campaign(_spec(), ledger, _Flaky())
+    c.reserve_stage("S1")
+    with pytest.raises(ContractError, match="teardown"):
+        c.complete_stage("S1", actual_cost_usd="5", partial_results={}, resource_ids=("pod1",))
+    c.complete_stage("S1", actual_cost_usd="5", partial_results={}, resource_ids=("pod1",))
+    assert c.has_receipt("S1")
+    assert len(c._payloads("campaign.stage_settled.v1")) == 1
+    Campaign(_spec(), ledger, FakeProvider())  # replay loads
+
+
+def test_teardown_attempts_every_resource_and_survives_errors(tmp_path: Path) -> None:
+    class P(FakeProvider):
+        def delete(self, resource_id: str) -> None:
+            self.calls += 1
+            if resource_id == "boom":
+                raise RuntimeError("api down")
+            if resource_id != "a":
+                self.live.discard(resource_id)
+
+    p = P()
+    p.live.update({"a", "b", "boom"})
+    c = Campaign(_spec(), _ledger(tmp_path), p)
+    assert c.teardown("S1", ["a", "boom", "b"]) is False
+    assert "b" not in p.live
+    last = c._payloads("campaign.teardown.v1")[-1]
+    assert last["done"] is False and last["confirmed_404"] == ["b"]
+
+
+def test_ledger_run_tag_must_match_spec(tmp_path: Path) -> None:
+    other = EvidenceLedger(tmp_path / "o.jsonl", cohort_id="t", run_tag="v6-other")
+    with pytest.raises(ContractError, match="run_tag"):
+        Campaign(_spec(), other, FakeProvider())

@@ -126,6 +126,8 @@ class Campaign:
         ledger: EvidenceLedger,
         provider: CampaignProvider | None = None,
     ) -> None:
+        if ledger.run_tag != spec.run_tag:
+            raise ContractError("ledger run_tag does not match the campaign spec")
         self.spec = spec
         self.ledger = ledger
         self.provider = provider
@@ -133,19 +135,25 @@ class Campaign:
             campaign_id=spec.campaign_id, hard_cap_usd=spec.hard_cap_usd
         )
         # Rebuild spend state from the ledger so a restarted runner cannot double-reserve.
+        reserved: dict[str, Decimal] = {}
         for event in ledger.replay():
             payload = event.payload
+            stage_id = str(payload.get("stage"))
             if event.event_type == "campaign.stage_reserved.v1":
                 amount = Decimal(str(payload["reserved_usd"]))
+                reserved[stage_id] = amount
                 if amount > 0:
-                    self.budget.reserve(
-                        allocation_id=str(payload["stage"]), maximum_cost_usd=amount
-                    )
+                    self.budget.reserve(allocation_id=stage_id, maximum_cost_usd=amount)
             elif event.event_type == "campaign.stage_settled.v1":
-                self.budget.settle(
-                    allocation_id=str(payload["stage"]),
-                    actual_cost_usd=str(payload["actual_cost_usd"]),
-                )
+                actual = Decimal(str(payload["actual_cost_usd"]))
+                if reserved.get(stage_id, Decimal(0)) > 0:
+                    try:
+                        self.budget.settle(allocation_id=stage_id, actual_cost_usd=actual)
+                    except ContractError:
+                        # An overspend is recorded by settle before it raises; the
+                        # ledger stays loadable and the runner stays stopped/blocked.
+                        if actual <= reserved[stage_id]:
+                            raise
 
     def _payloads(self, event_type: str) -> list[Mapping[str, object]]:
         return [e.payload for e in self.ledger.iter_type(event_type)]
@@ -172,6 +180,8 @@ class Campaign:
         amount = stage.cap_usd if maximum_cost_usd is None else Decimal(str(maximum_cost_usd))
         if amount > stage.cap_usd:
             raise ContractError(f"reservation exceeds the {stage_id} stage cap")
+        if amount < 0 or (amount == 0 and stage.cap_usd != 0):
+            raise ContractError(f"reservation for {stage_id} must be positive")
         if amount > 0:
             self.budget.reserve(allocation_id=stage_id, maximum_cost_usd=amount)
         self.ledger.append(
@@ -192,24 +202,38 @@ class Campaign:
         ]
         if not reserved:
             raise ContractError(f"stage {stage_id} was never reserved")
-        self.ledger.append(
-            "campaign.partial.v1", {"stage": stage_id, "results": dict(partial_results)}
-        )
         actual = Decimal(str(actual_cost_usd))
-        if Decimal(str(reserved[0]["reserved_usd"])) > 0:
-            try:
-                self.budget.settle(allocation_id=stage_id, actual_cost_usd=actual)
-            finally:
-                self.ledger.append(
-                    "campaign.stage_settled.v1",
-                    {"stage": stage_id, "actual_cost_usd": str(actual)},
-                )
+        if actual < 0:
+            raise ContractError("actual_cost_usd cannot be negative")
+        reserved_usd = Decimal(str(reserved[0]["reserved_usd"]))
+        settled = [p for p in self._payloads("campaign.stage_settled.v1") if p["stage"] == stage_id]
+        if settled:
+            # Resumed after a failed teardown: spend is already recorded, redo teardown only.
+            actual = Decimal(str(settled[0]["actual_cost_usd"]))
+        else:
+            self.ledger.append(
+                "campaign.partial.v1", {"stage": stage_id, "results": dict(partial_results)}
+            )
+            if reserved_usd > 0:
+                try:
+                    self.budget.settle(allocation_id=stage_id, actual_cost_usd=actual)
+                except ContractError:
+                    if actual <= reserved_usd:
+                        raise
+            self.ledger.append(
+                "campaign.stage_settled.v1",
+                {"stage": stage_id, "actual_cost_usd": str(actual)},
+            )
+        overspent = actual > reserved_usd
         self._alerts()
         ids = list(resource_ids)
         if self.stopped and self.provider is not None:
             # At the hard cap, sweep every tagged resource, not only this stage's.
             ids += [r for r in self.provider.tagged_resource_ids(self.spec.run_tag) if r not in ids]
-        if not self.teardown(stage_id, ids):
+        proven = self.teardown(stage_id, ids)
+        if overspent:
+            raise ContractError(f"{stage_id} cost {actual} exceeded its reservation {reserved_usd}")
+        if not proven:
             raise ContractError(f"teardown of {stage_id} is not proven; no stage receipt")
         self.ledger.append("campaign.stage_receipt.v1", {"stage": stage_id})
 
@@ -231,9 +255,13 @@ class Campaign:
             raise ContractError("teardown needs a provider")
         confirmations: list[ProviderAbsenceReceipt] = []
         for rid in resource_ids:
-            self.provider.delete(rid)
-            if self.provider.exists(rid):
-                break
+            try:
+                self.provider.delete(rid)
+                gone = not self.provider.exists(rid)
+            except Exception:
+                gone = False  # any provider error means "not confirmed"
+            if not gone:
+                continue
             confirmations.append(ProviderAbsenceReceipt(rid, "GET_404_NOT_FOUND", _now()))
         tagged = tuple(sorted(self.provider.tagged_resource_ids(self.spec.run_tag)))
         audit = OrphanAuditReceipt(
