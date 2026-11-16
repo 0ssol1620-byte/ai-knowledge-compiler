@@ -3,11 +3,15 @@
 from __future__ import annotations
 
 import dataclasses
+import random
+from collections import Counter
 from datetime import UTC, date, datetime, timedelta, timezone
+from typing import Any
 
 import pytest
-from akc_cir.temporal import TemporalTimeline
+from akc_cir.temporal import TemporalFact, TemporalTimeline
 from akc_source_adapters.public_data.vintage import (
+    HeldObservation,
     VintageObservation,
     available_upper_bound,
     comparability_blockers,
@@ -198,13 +202,13 @@ def test_observation_has_no_derived_or_signal_fields() -> None:
         {"superseded_on": date(2020, 1, 1)},
     ],
 )
-def test_invalid_observation_is_rejected(bad: dict[str, object]) -> None:
+def test_invalid_observation_is_rejected(bad: dict[str, Any]) -> None:
     with pytest.raises(ValueError):
         obs(**bad)
 
 
 def _geo(**over: object) -> VintageObservation:
-    base: dict[str, object] = {
+    base: dict[str, Any] = {
         "geography_id": "CBSA-1",
         "geography_level": "cbsa",
         "geography_vintage": "2023",
@@ -249,3 +253,128 @@ def test_area_comparability_measure_unit_frequency_level() -> None:
     assert comparability_blockers(_geo(), _geo(geography_level="state")) == (
         "geography_level_differs",
     )
+
+
+@pytest.mark.parametrize(
+    ("first", "second"),
+    [(date(2020, 5, 31), date(2020, 3, 1)), (None, date(2020, 5, 31))],
+)
+def test_last_day_duplicates_contradicting_supersession_are_held_in_any_id_order(
+    first: date | None, second: date | None
+) -> None:
+    day = date(2020, 1, 1)
+    for a, b in (("v1", "v2"), ("v2", "v1")):
+        facts, held = to_temporal_facts(
+            [obs(a, day, "1.0", superseded_on=first), obs(b, day, "1.0", superseded_on=second)]
+        )
+        assert facts == ()
+        assert [h.reason for h in held] == ["vintage_chain_inconsistent"] * 2
+
+
+def test_same_day_duplicates_disagreeing_on_period_end_are_held() -> None:
+    day = date(2020, 3, 1)
+    facts, held = to_temporal_facts(
+        [obs("v1", day, "1.0"), obs("v2", day, "1.0", period_end=date(2019, 12, 31))]
+    )
+    assert facts == ()
+    assert [h.reason for h in held] == ["ambiguous_vintage"] * 2
+
+
+def test_unrecorded_vintage_of_a_held_logical_id_is_held_too() -> None:
+    day = date(2020, 3, 1)
+    facts, held = to_temporal_facts(
+        [obs("v0", None, "0.5"), obs("v1", day, "1.0"), obs("v2", day, "2.0")],
+        include_unrecorded=True,
+    )
+    assert facts == ()
+    assert sorted(h.reason for h in held) == [
+        "ambiguous_vintage",
+        "ambiguous_vintage",
+        "availability_unknown",
+    ]
+
+
+_END = date.max
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        {"available_on": _END, "available_precision": "day"},
+        {"available_on": _END - timedelta(days=2), "superseded_on": _END - timedelta(days=1)},
+        {"period_start": _END - timedelta(days=1), "period_end": _END},
+    ],
+)
+def test_dates_at_the_calendar_end_are_rejected_not_overflowed(bad: dict[str, Any]) -> None:
+    with pytest.raises(ValueError):
+        obs(**bad)
+    with pytest.raises(ValueError):
+        available_upper_bound(_END)
+
+
+Answer = tuple[Counter[tuple[object, ...]], Counter[tuple[object, ...]]]
+
+
+def _canonical(facts: tuple[TemporalFact, ...], held: tuple[HeldObservation, ...]) -> Answer:
+    """Everything a known-at answer depends on; provenance labels left out."""
+    return (
+        Counter(
+            (f.logical_id, f.value, f.valid_from, f.valid_to, f.recorded_at, f.superseded_at)
+            for f in facts
+        ),
+        Counter(
+            (
+                h.reason,
+                h.observation.value,
+                h.observation.available_on,
+                h.observation.superseded_on,
+                h.observation.period_end,
+            )
+            for h in held
+        ),
+    )
+
+
+def _random_observations(rng: random.Random) -> list[VintageObservation]:
+    near_end = [_END - timedelta(days=n) for n in range(4)]
+    days = [date(2020, 1, 1), date(2020, 3, 1), date(2020, 6, 1), *near_end]
+    out: list[VintageObservation] = []
+    for n in range(rng.randint(1, 6)):
+        avail = rng.choice([*days, None])
+        later = [d - timedelta(days=1) for d in days if avail and d > avail] + [avail]
+        try:
+            out.append(
+                obs(
+                    f"v{n}",
+                    avail,
+                    rng.choice(["1.0", "2.0", "."]),
+                    period_start=date(2019, 12, 1),
+                    period_end=rng.choice([None, date(2019, 12, 31), _END]),
+                    superseded_on=rng.choice([None, *later]) if avail else None,
+                )
+            )
+        except ValueError:
+            continue  # the observation itself is refused; nothing to map
+    return out
+
+
+def test_answers_do_not_depend_on_vintage_id_or_input_order() -> None:
+    """Property: relabelling vintages and shuffling the input never changes an answer.
+
+    Same-day duplicates are collapsed onto one representative, so any field the
+    representative contributes must agree across them or the id is held; and no
+    accepted observation may make the mapping raise.
+    """
+    for seed in range(3000):
+        rng = random.Random(seed)
+        observations = _random_observations(rng)
+        unrecorded = rng.random() < 0.5
+        base = _canonical(*to_temporal_facts(observations, include_unrecorded=unrecorded))
+        labels = [o.vintage_id for o in observations]
+        rng.shuffle(labels)
+        relabelled = [
+            dataclasses.replace(o, vintage_id=v) for o, v in zip(observations, labels, strict=True)
+        ]
+        rng.shuffle(relabelled)
+        again = _canonical(*to_temporal_facts(relabelled, include_unrecorded=unrecorded))
+        assert again == base, (seed, observations)

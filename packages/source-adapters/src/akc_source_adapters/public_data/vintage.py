@@ -42,6 +42,8 @@ def available_upper_bound(d: date) -> datetime:
     # ponytail: loses up to ~36 h of precision; replace with the exact release
     # instant once a source's release timestamp and zone are verified from
     # primary docs.
+    if d >= date.max:
+        raise ValueError(f"{d}: no calendar day follows it, so it never certainly ends")
     return datetime.combine(d + _DAY, time(12), tzinfo=UTC)
 
 
@@ -78,10 +80,16 @@ class VintageObservation:
             raise ValueError(f"{self.logical_id}: raw_sha256 must be 'sha256:' + 64 hex")
         if self.period_end is not None and self.period_end < self.period_start:
             raise ValueError(f"{self.logical_id}: period_end precedes period_start")
+        # Every stated day is mapped to an instant after it ends (period_end and
+        # available_on one day on, superseded_on two): the calendar must have room.
+        if self.period_end is not None and self.period_end >= date.max:
+            raise ValueError(f"{self.logical_id}: period_end is an open-end sentinel")
+        if self.available_on is not None and self.available_on >= date.max:
+            raise ValueError(f"{self.logical_id}: available_on is an open-end sentinel")
         if self.superseded_on is not None:
             if self.available_on is None or self.superseded_on < self.available_on:
                 raise ValueError(f"{self.logical_id}: superseded_on needs an earlier available_on")
-            if self.superseded_on >= date.max:
+            if self.superseded_on >= date.max - _DAY:
                 raise ValueError(f"{self.logical_id}: superseded_on is an open-end sentinel")
 
     @property
@@ -126,7 +134,10 @@ def to_temporal_facts(
     A logical id whose vintages disagree on the same day, or whose stated
     `superseded_on` does not meet the next vintage, is held whole: its chain
     cannot be trusted, and a partial chain would claim a value was current
-    when it was not.
+    when it was not. Same-day duplicates are one vintage only when they agree
+    on everything that vintage's fact is built from (value, period_end, and on
+    the last day superseded_on); which duplicate represents them then changes
+    nothing but the evidence label.
     """
     by_id: dict[str, list[VintageObservation]] = {}
     for o in observations:
@@ -136,13 +147,14 @@ def to_temporal_facts(
     held: list[HeldObservation] = []
     for lid in sorted(by_id):
         usable: list[VintageObservation] = []
+        unrecorded: list[VintageObservation] = []
         ordered = sorted(by_id[lid], key=lambda o: (o.available_on or date.min, o.vintage_id))
         for o in ordered:
             if o.value.strip() in missing_markers:
                 held.append(HeldObservation(o, "missing_value"))
             elif o.available_on is None:
                 if include_unrecorded:
-                    facts.append(_fact(o, None, None))
+                    unrecorded.append(o)
                 else:
                     held.append(HeldObservation(o, "availability_unknown"))
             else:
@@ -153,20 +165,28 @@ def to_temporal_facts(
             assert o.available_on is not None
             by_day.setdefault(o.available_on, []).append(o)
 
-        if any(len({o.value for o in day}) > 1 for day in by_day.values()):
-            held.extend(HeldObservation(o, "ambiguous_vintage") for o in usable)
-            continue
-        # Same day, same value: one vintage; the first by vintage_id represents it.
-        # Every duplicate's stated superseded_on is still checked: none may be dropped.
+        reason: HoldReason | None = None
         days = sorted(by_day)
-        chain = [by_day[d][0] for d in days]
-        if any(
+        if any(len({(o.value, o.period_end) for o in day}) > 1 for day in by_day.values()):
+            reason = "ambiguous_vintage"
+        elif any(
             o.superseded_on is not None and o.superseded_on + _DAY != nxt
             for d, nxt in pairwise(days)
             for o in by_day[d]
-        ):
-            held.extend(HeldObservation(o, "vintage_chain_inconsistent") for o in usable)
+        ) or (days and len({o.superseded_on for o in by_day[days[-1]]}) > 1):
+            # Mid-chain a stated superseded_on must meet the next vintage; on the
+            # last day nothing else ends the chain, so the duplicates must agree.
+            reason = "vintage_chain_inconsistent"
+        if reason is not None:
+            held.extend(HeldObservation(o, reason) for o in usable)
+            # The logical id is held whole: an undated vintage is not emitted
+            # as the current value of an id whose chain cannot be trusted.
+            held.extend(HeldObservation(o, "availability_unknown") for o in unrecorded)
             continue
+        facts.extend(_fact(o, None, None) for o in unrecorded)
+        # The first by vintage_id represents each day; the checks above make
+        # every duplicate's fact identical but for its evidence label.
+        chain = [by_day[d][0] for d in days]
         for i, o in enumerate(chain):
             assert o.available_on is not None
             successor_day: date | None = None
