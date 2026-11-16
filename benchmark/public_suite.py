@@ -134,9 +134,13 @@ def _get_json(url: str) -> dict[str, Any]:
     parsed = urlsplit(url)
     if parsed.scheme != "https" or not parsed.hostname:
         raise PublicSuiteError("metadata endpoint must be an absolute HTTPS URL")
+    headers = {"Accept": "application/json", "User-Agent": "structara-public-suite/1.0"}
+    token = os.environ.get("GITHUB_TOKEN")
+    if token and parsed.hostname == "api.github.com":
+        headers["Authorization"] = f"Bearer {token}"
     request = urllib.request.Request(  # noqa: S310 - HTTPS validated immediately above.
         url,
-        headers={"Accept": "application/json", "User-Agent": "structara-public-suite/1.0"},
+        headers=headers,
     )
     try:
         with urllib.request.urlopen(request, timeout=30) as response:  # noqa: S310

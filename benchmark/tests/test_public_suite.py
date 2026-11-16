@@ -8,6 +8,7 @@ import pytest
 
 from benchmark.public_suite import (
     PublicSuiteError,
+    _get_json,
     _load_registry,
     adapt_cir,
     audit_isolation,
@@ -204,3 +205,39 @@ def test_official_execution_preflight_is_explicitly_blocked_without_receipts(
     assert "DATASET_RECEIPT_MISSING_OR_INVALID" in receipt["blockers"]
     assert "LICENSE_RECEIPT_MISSING_OR_INVALID" in receipt["blockers"]
     assert "COMMAND_MANIFEST_MISSING_OR_INVALID" in receipt["blockers"]
+
+
+@pytest.mark.parametrize(
+    ("token", "url", "expected"),
+    [
+        ("tok", "https://api.github.com/repos/a/b", "Bearer tok"),
+        (None, "https://api.github.com/repos/a/b", None),
+        ("tok", "https://huggingface.co/api/datasets/a/b", None),
+    ],
+)
+def test_get_json_sends_github_token_only_to_api_github(
+    monkeypatch: pytest.MonkeyPatch, token: str | None, url: str, expected: str | None
+) -> None:
+    seen: dict[str, str | None] = {}
+
+    class _Response:
+        def __enter__(self) -> _Response:
+            return self
+
+        def __exit__(self, *_: object) -> None:
+            return None
+
+        def read(self, *_: object) -> bytes:
+            return b"{}"
+
+    def fake_urlopen(request: object, timeout: int) -> _Response:
+        seen["auth"] = request.get_header("Authorization")  # type: ignore[attr-defined]
+        return _Response()
+
+    if token is None:
+        monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    else:
+        monkeypatch.setenv("GITHUB_TOKEN", token)
+    monkeypatch.setattr("urllib.request.urlopen", fake_urlopen)
+    assert _get_json(url) == {}
+    assert seen["auth"] == expected
