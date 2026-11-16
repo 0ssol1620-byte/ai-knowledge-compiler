@@ -105,3 +105,24 @@ def test_invalid_inputs_refused() -> None:
         CostLine("timing", 1, 1)
     with pytest.raises(VerifiedCostError):
         compare_levels([_fixture(1)])
+
+
+def test_non_finite_values_refused() -> None:
+    nan, inf = float("nan"), float("inf")
+    for bad in (nan, inf):
+        with pytest.raises(VerifiedCostError):
+            CostLine("invoice", bad, 1)
+        with pytest.raises(VerifiedCostError):
+            CostLine("invoice", 1, bad)
+        with pytest.raises(VerifiedCostError):
+            AttemptRecord("a", bad, 1, 1, "ok")
+        with pytest.raises(VerifiedCostError):
+            AttemptRecord("a", 0, bad, 1, "ok")
+        with pytest.raises(VerifiedCostError):
+            AttemptRecord("a", 0, 1, bad, "ok")
+
+
+def test_duplicate_level_refused() -> None:
+    a, b = _fixture(1), _fixture(1, per_attempt=5.0)
+    with pytest.raises(VerifiedCostError, match="duplicate level"):
+        compare_levels([a, b])

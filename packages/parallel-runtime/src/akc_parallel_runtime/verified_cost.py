@@ -30,6 +30,8 @@ class AttemptRecord:
     def __post_init__(self) -> None:
         if self.outcome not in OUTCOMES:
             raise VerifiedCostError(f"unknown attempt outcome: {self.outcome!r}")
+        if not all(map(math.isfinite, (self.started_s, self.finished_s, self.busy_gpu_s))):
+            raise VerifiedCostError("attempt times must be finite")
         if self.finished_s < self.started_s or self.busy_gpu_s < 0:
             raise VerifiedCostError("attempt times must be non-negative and ordered")
 
@@ -43,6 +45,8 @@ class CostLine:
     def __post_init__(self) -> None:
         if self.source not in COST_SOURCES:
             raise VerifiedCostError(f"unknown cost source: {self.source!r}")
+        if not (math.isfinite(self.usd) and math.isfinite(self.billed_gpu_s)):
+            raise VerifiedCostError("cost line values must be finite")
         if self.usd < 0 or self.billed_gpu_s < 0:
             raise VerifiedCostError("cost line values must be non-negative")
 
@@ -138,6 +142,8 @@ class LevelComparison:
 def compare_levels(levels: Sequence[LevelAggregate]) -> LevelComparison:
     if len(levels) < 2:
         raise VerifiedCostError("need at least two levels to compare")
+    if len({lv.level for lv in levels}) != len(levels):
+        raise VerifiedCostError("duplicate level")
     first = levels[0]
     if any(
         lv.accepted_pages != first.accepted_pages or lv.critical_errors != first.critical_errors
