@@ -48,6 +48,8 @@ _MEMBER_LIMIT = ParserLimits().max_archive_member_bytes
 _PDF_TEXT = re.compile(r"pdf/page/(?P<p>\d+)/text/[0-9a-f]{20}")
 _PDF_GEOMETRY = re.compile(r"pdf/page/(?P<p>\d+)/(?:drawing|image-placement)/\d+")
 
+_PDF_WIDTH_SLACK = 0.75  # real/estimated glyph width: 0.9 em (M, W) vs 0.52 em is 0.73
+
 # (text, optional (start_ms, end_ms)) for a resolved locator.
 _Resolved = tuple[str, tuple[int, int] | None]
 _Resolver = Callable[[str], _Resolved]
@@ -106,15 +108,20 @@ def build_ledger(data: bytes, document: CanonicalDocument) -> SpanLedger:
     assets = {str(a.get("id")): str(a.get("sha256")) for a in document.metadata.get("assets", ())}
 
     def _pdf_geometry(unit_id: str, locator: str, ref: Any, known: dict[str, str]) -> str:
-        # Image/drawing blocks: never compare text. The box must sit inside the page and
-        # an image placement must name an asset whose hash the document registered.
+        # Image/drawing blocks carry no text to compare. What the original can still say is
+        # whether the page exists (checked against the page count read by pdfium) and whether
+        # the locator's page is the block's own page; an image placement must also name an
+        # asset whose hash the document registered. Nothing here re-reads the drawing or the
+        # image bytes (stated ceiling), so "exact" means "the page is there", not "the pixels".
         nonlocal exact
-        box = ref.bbox1000.root if ref.bbox1000 is not None else None
-        inside = box is not None and 0 <= box[0] < box[2] <= 1000 and 0 <= box[1] < box[3] <= 1000
+        index = int(_PDF_GEOMETRY.fullmatch(locator)["p"])  # type: ignore[index]
+        if index not in getattr(resolver, "units", ()):
+            unresolvable.append((unit_id, "locator_out_of_range"))
+            return "unresolvable"
         asset_ok = "/image-placement/" not in locator or known.get(
             str(ref.image_asset_id), ""
         ).startswith("sha256:")
-        if inside and asset_ok:
+        if index == ref.page_index0 and asset_ok:
             exact += 1
             return "exact"
         mismatch.append(unit_id)
@@ -745,8 +752,11 @@ def _pdf_resolver(data: bytes) -> _Resolver:
         else:
             points = corners
         xs, ys = [p[0] for p in points], [p[1] for p in points]
+        # The parser models glyph width at 0.52 em; real capitals are wider, so the box is
+        # too narrow at its right end. Widen only that edge by the stated estimation error.
+        slack = (max(xs) - min(xs)) * _PDF_WIDTH_SLACK
         return textpage.get_text_bounded(
-            left + min(xs), bottom + min(ys), left + max(xs), bottom + max(ys)
+            left + min(xs), bottom + min(ys), left + max(xs) + slack, bottom + max(ys)
         ), None
 
     resolve.wants_bbox = True  # type: ignore[attr-defined]

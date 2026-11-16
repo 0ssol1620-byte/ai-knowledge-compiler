@@ -139,3 +139,59 @@ def test_unknown_pdf_locator_is_unresolvable() -> None:
     object.__setattr__(block.source_refs[0], "native_object_id", "pdf/page/9/text/" + "0" * 20)
     ledger = build_ledger(data, document)
     assert (block.id, "locator_out_of_range") in ledger.unresolvable
+
+
+@pytest.mark.parametrize("name", ["valid-text-pdf", "valid-scan-pdf", "valid-mixed-pdf"])
+def test_fixture_matrix_pdfs_roundtrip(tmp_path, name: str) -> None:  # type: ignore[no-untyped-def]
+    # Capitals are wider than the parser's 0.52 em estimate; the ledger widens only the
+    # right edge of the box by the stated estimation error, so 'PDF' is not cut to 'PD'.
+    from tests.fixtures.build_safe_fixture_matrix import build_fixture_matrix
+
+    data = build_fixture_matrix(tmp_path)[name].read_bytes()
+    document = _parse(data)
+    ledger = build_ledger(data, document)
+    assert ledger.resolved_mismatch == () and ledger.unresolvable == ()
+    assert ledger.resolved_exact == len(document.blocks) > 0
+
+
+def test_fidelity_mixed_pdf_roundtrips() -> None:
+    from tests.unit.test_pdf_native_fidelity import _mixed_pdf as fidelity_mixed
+
+    data = fidelity_mixed()
+    document = _parse(data)
+    ledger = build_ledger(data, document)
+    assert ledger.resolved_mismatch == () and ledger.unresolvable == ()
+    assert ledger.resolved_exact == len(document.blocks) > 0
+
+
+def test_geometry_block_on_missing_page_is_unresolvable() -> None:
+    data = _mixed_pdf()
+    document = _parse(data)
+    geometry = next(
+        b for b in document.blocks if "/image-placement/" in b.source_refs[0].native_object_id
+    )
+    # the 2-page original truncated to its first page: the image's page is gone
+    one_page = PdfWriter()
+    one_page.add_page(PdfReader(io.BytesIO(data)).pages[0])
+    out = io.BytesIO()
+    one_page.write(out)
+    ledger = build_ledger(out.getvalue(), document)
+    assert (geometry.id, "locator_out_of_range") in ledger.unresolvable
+
+
+def test_geometry_locator_page_must_match_block_page() -> None:
+    data = _mixed_pdf()
+    document = _parse(data)
+    block = next(b for b in document.blocks if "/drawing/" in b.source_refs[0].native_object_id)
+    ref = block.source_refs[0]
+    object.__setattr__(ref, "native_object_id", ref.native_object_id.replace("page/0/", "page/9/"))
+    assert build_ledger(data, document).unresolvable == ((block.id, "locator_out_of_range"),)
+    object.__setattr__(ref, "native_object_id", ref.native_object_id.replace("page/9/", "page/1/"))
+    assert block.id in build_ledger(data, document).resolved_mismatch
+
+
+def test_unrelated_original_does_not_pass_geometry() -> None:
+    document = _parse(_mixed_pdf())
+    ledger = build_ledger(_text_pdf(b"BT /F1 12 Tf 72 720 Td (other) Tj ET"), document)
+    assert ledger.resolved_exact < len(document.blocks)
+    assert any(r == "locator_out_of_range" for _, r in ledger.unresolvable)
