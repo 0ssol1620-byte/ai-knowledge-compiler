@@ -20,7 +20,8 @@ from .hwp_contract import HwpAdapterResult, HwpBlock, TableCell
 from .models import normalize_text
 
 _MINUS = dict.fromkeys((0x2212, 0x2012, 0x2013, 0xFF0D), "-")  # minus, figure/en dash, fullwidth
-_MARKUP = re.compile(r"[*_`~|]|^\s*(?:#{1,6}|>|[-+*]|\d+\.)\s+", re.MULTILINE)
+_HEADING = re.compile(r"^#{1,6}[ \t]+", re.MULTILINE)
+_EMPHASIS = re.compile(r"\*\*(\S(?:.*?\S)?)\*\*|(?<!\w)_(\S(?:.*?\S)?)_(?!\w)")
 _DATE = re.compile(r"^\d{4}[-/.]\d{1,2}[-/.]\d{1,2}$")
 
 
@@ -35,20 +36,30 @@ def _sha(value: str) -> str:
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
-def _canon(text: str) -> str:
-    """Whitespace and Markdown-only differences vanish; everything else stays."""
+def _collapse(text: str) -> str:
+    return " ".join(normalize_text(text).translate(_MINUS).split())
 
-    text = _MARKUP.sub("", normalize_text(text).translate(_MINUS))
+
+def _canon(text: str, kind: str = "paragraph") -> str:
+    """Whitespace, paired emphasis and a leading heading mark vanish; all else stays.
+
+    The text is engine text, not Markdown: `~ | _ *`, `N.` and sign marks carry
+    values and are never stripped, and equation blocks are never touched.
+    """
+
+    text = normalize_text(text).translate(_MINUS)
+    if kind != "equation":
+        text = _EMPHASIS.sub(lambda m: m.group(1) or m.group(2), _HEADING.sub("", text))
     return " ".join(text.split())
 
 
 def _text_fields(a: str, b: str, kind: str) -> list[tuple[str, str, str]]:
     """(field, a_value, b_value) for every way the two canonical texts differ."""
 
-    ca, cb = _canon(a), _canon(b)
-    if ca == cb:
+    ca, cb = _canon(a, kind), _canon(b, kind)
+    ta, tb = extract_numeric_tokens(_collapse(a)), extract_numeric_tokens(_collapse(b))
+    if ca == cb and ta == tb:
         return []
-    ta, tb = extract_numeric_tokens(ca), extract_numeric_tokens(cb)
     if ta == tb:
         field = kind if kind in ("footnote", "equation") else "text"  # unit/word change
     elif tuple(t.lstrip("+-") for t in ta) == tuple(t.lstrip("+-") for t in tb):
@@ -69,13 +80,16 @@ def _shape(grid: Iterable[TableCell]) -> tuple[tuple[int, int, int, int], ...]:
 def _header(grid: tuple[TableCell, ...], cell: TableCell) -> str:
     for h in grid:
         if h.row == 0 and h.col <= cell.col < h.col + h.col_span:
-            return _canon(h.text)
+            return _canon(h.text, "cell")
     return ""
 
 
 def _table_diffs(a: HwpBlock, b: HwpBlock) -> list[tuple[str, str, str]]:
     ga, gb = a.table_grid or (), b.table_grid or ()
     out: list[tuple[str, str, str]] = []
+    if len({(c.row, c.col) for c in ga}) != len(ga) or len({(c.row, c.col) for c in gb}) != len(gb):
+        # repeated positions: no cell can be paired safely, so hold the whole table
+        return [("table_grid_ambiguous", repr(_shape(ga)), repr(_shape(gb)))]
     if _shape(ga) != _shape(gb):
         out.append(("table_shape", repr(_shape(ga)), repr(_shape(gb))))
     ca = {(c.row, c.col): c for c in ga}
@@ -120,7 +134,7 @@ def compare_readers(a: HwpAdapterResult, b: HwpAdapterResult) -> tuple[HeldRegio
             if x is None or y is None:
                 src = x or y
                 assert src is not None
-                value = _canon(src.text) + repr(_shape(src.table_grid or ()))
+                value = _canon(src.text, src.kind) + repr(_shape(src.table_grid or ()))
                 hold(anchor, "unaligned", value if x else None, value if y else None)
                 continue
             if x.kind != y.kind:

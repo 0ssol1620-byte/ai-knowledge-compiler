@@ -114,3 +114,42 @@ def test_unalignable_anchor_is_held_not_dropped() -> None:
     assert [(h.anchor, h.field) for h in held] == [("s0/p8", "unaligned"), ("s0/p9", "unaligned")]
     assert held[0].a_value_sha256 is None and held[0].b_value_sha256
     assert held[1].a_value_sha256 and held[1].b_value_sha256 is None
+
+
+_VALUE_CASES = [
+    ("2026. 11. 16.", "2027. 11. 16."),
+    ("3. 500", "4. 500"),
+    ("5~10%", "510%"),
+    ("- 5", "+ 5"),
+    ("- 1,200", "1,200"),
+    ("x_1 + y", "x1 + y"),
+    ("2*3", "23"),
+    ("|a|", "a"),
+]
+
+
+@pytest.mark.parametrize(("a", "b"), _VALUE_CASES)
+@pytest.mark.parametrize("kind", ["paragraph", "equation"])
+def test_characters_that_carry_values_are_never_stripped_as_markup(
+    a: str, b: str, kind: str
+) -> None:
+    assert compare_readers(_result(_para(a, kind=kind)), _result(_para(b, kind=kind)))
+
+
+@pytest.mark.parametrize(("a", "b"), _VALUE_CASES)
+def test_value_characters_in_cells_hold(a: str, b: str) -> None:
+    assert compare_readers(
+        _result(_table((0, 0, "H"), (1, 0, a))), _result(_table((0, 0, "H"), (1, 0, b)))
+    )
+
+
+def test_paired_emphasis_is_still_ignored() -> None:
+    a = _result(_para("**Total** _net_ 5 kg"), _para("# Note", anchor="s0/p2"))
+    b = _result(_para("Total net 5 kg"), _para("Note", anchor="s0/p2"))
+    assert compare_readers(a, b) == ()
+
+
+def test_duplicate_grid_position_holds_the_table() -> None:
+    a = _result(_table((0, 0, "A"), (1, 0, "X"), (1, 0, "5")))
+    b = _result(_table((0, 0, "A"), (1, 0, "Y"), (1, 0, "5")))
+    assert [h.field for h in compare_readers(a, b)] == ["table_grid_ambiguous"]
