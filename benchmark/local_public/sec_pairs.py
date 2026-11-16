@@ -90,7 +90,10 @@ def _exact_dates(side: Side, row: dict[str, str]) -> tuple[str | None, str]:
         c = ctxs.get(f.ctx)
         if f.name != row["tag"] or c is None or c.segment or (q == 0) != (c.start is None):
             continue
-        ne = nearest_month_end(date.fromisoformat(c.end))
+        e = date.fromisoformat(c.end)
+        if q and round(((e - date.fromisoformat(c.start or c.end)).days + 1) / 91.3125) != q:
+            continue  # design 2.2 rule 2: the context length must equal qtrs
+        ne = nearest_month_end(e)
         if ne is not None and ne.strftime("%Y%m%d") == row["ddate"]:
             found.add((c.start, c.end))
     if len(found) != 1:

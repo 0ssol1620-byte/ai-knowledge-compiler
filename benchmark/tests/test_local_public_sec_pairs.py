@@ -252,3 +252,26 @@ def test_a_stale_original_row_in_the_incremental_world_is_a_phantom():
     model["objects"].append(stale)
     cand = incremental.candidate.model_copy(update={"canonical_knowledge_model": model})
     assert judge(incremental.model_copy(update={"candidate": cand}), cold).phantom >= 1
+
+
+def test_ixbrl_context_length_must_match_qtrs_so_q2_pair_is_exact():
+    def ctx(cid, start, end):
+        return (
+            f'<xbrli:context id="{cid}"><xbrli:entity/><xbrli:period><xbrli:startDate>{start}'
+            f"</xbrli:startDate><xbrli:endDate>{end}</xbrli:endDate></xbrli:period></xbrli:context>"
+        )
+
+    fact = '<ix:nonFraction name="us-gaap:Rev" contextRef="{}">1</ix:nonFraction>'
+    body = ctx("q", "2025-04-01", "2025-06-30") + ctx("y", "2025-01-01", "2025-06-30")
+    h = f"<html {IX_NS}><body>{body}{fact.format('q')}{fact.format('y')}</body></html>".encode()
+    rows = [
+        num("Rev", "10", ddate="20250630", qtrs="1"),
+        num("Rev", "25", ddate="20250630", qtrs="2"),
+    ]
+    pres = [pre("Rev", 1, "IS")]
+    a = side("A", rows, pres, ix=True, h=h, period="20250331", form="10-Q")
+    b = side("B", rows, pres, ix=True, h=h, period="20250630", form="10-Q")
+    case = sp.successor_case(a, b, sp.SUCC_10Q, BULK)
+    assert case.date_basis == "exact"
+    text = " ".join(r.text for d in case.after for r in d.regions)
+    assert "2025-04-01 to 2025-06-30" in text and "2025-01-01 to 2025-06-30" in text
