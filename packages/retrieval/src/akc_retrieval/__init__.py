@@ -60,6 +60,7 @@ from .postgres import (
     build_index_mutations,
     canonical_attestation_payload,
 )
+from .temporal import TemporalAdmission, admit
 
 __all__ = [
     "DEFAULT_FIELD_WEIGHTS",
@@ -102,10 +103,12 @@ __all__ = [
     "RetrievalUnavailable",
     "SQLAlchemyPostgreSQLExecutor",
     "SQLAlchemyPostgreSQLMutationExecutor",
+    "TemporalAdmission",
     "VectorCandidate",
     "VectorRecord",
     "VectorStore",
     "VerificationState",
+    "admit",
     "build_index_mutations",
     "canonical_attestation_payload",
     "cosine_similarity",

@@ -5,7 +5,7 @@ from __future__ import annotations
 import hashlib
 import re
 import uuid
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from akc_cir import canonical_json, sha256_digest
 from akc_retrieval import (
@@ -17,7 +17,7 @@ from akc_retrieval import (
     RetrievalUnavailable,
 )
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -46,6 +46,11 @@ class CollectionRetrievalSearchRequest(_WireModel):
     graph_seed_ids: tuple[Annotated[str, Field(min_length=1, max_length=240)], ...] = ()
     candidate_k: Annotated[int, Field(ge=30, le=100)] = 50
     top_k: Annotated[int, Field(ge=5, le=15)] = 10
+    # Timezone-aware instants only; a naive value is a 422. Rows carry recorded_at
+    # only, so an availableAt cut abstains until sources declare availability.
+    valid_at: AwareDatetime | None = Field(default=None, alias="validAt")
+    known_at: AwareDatetime | None = Field(default=None, alias="knownAt")
+    available_at: AwareDatetime | None = Field(default=None, alias="availableAt")
 
     @field_validator("query")
     @classmethod
@@ -83,12 +88,21 @@ class CollectionRetrievalHit(_WireModel):
     metadata: dict[str, Any]
 
 
+class CollectionRetrievalTemporalCoverage(_WireModel):
+    # Static statement, so an abstained cut is never mistaken for "nothing matched".
+    # recorded_at is the start of the latest compile (rewritten on every recompile),
+    # so knownAt means "at or after the last compile", not when a fact was first known.
+    row_temporal_fields: tuple[Literal["recorded_at"], ...] = ("recorded_at",)
+    abstained_cuts: tuple[Literal["valid_at", "available_at"], ...] = ()
+
+
 class CollectionRetrievalSearchResponse(_WireModel):
     collection_id: uuid.UUID
     project_id: uuid.UUID
     query_fingerprint: Annotated[str, Field(pattern=r"^sha256:[0-9a-f]{64}$")]
     embedding: CollectionRetrievalEmbeddingReceipt
     hits: tuple[CollectionRetrievalHit, ...]
+    temporal_coverage: CollectionRetrievalTemporalCoverage
 
 
 def _runtime_unavailable(code: str) -> HTTPException:
@@ -291,6 +305,9 @@ async def search_collection_retrieval(
             graph_seed_ids=payload.graph_seed_ids,
             candidate_k=payload.candidate_k,
             top_k=payload.top_k,
+            valid_at=payload.valid_at,
+            known_at=payload.known_at,
+            available_at=payload.available_at,
         )
     except (ProviderAttestationError, RetrievalUnavailable, ValueError) as exc:
         raise _runtime_unavailable("COLLECTION_RETRIEVAL_FAILED_CLOSED") from exc
@@ -312,6 +329,16 @@ async def search_collection_retrieval(
             model_id=embedding.model_id,
             model_revision=embedding.model_revision,
             source_sha256=embedding.source_hash,
+        ),
+        temporal_coverage=CollectionRetrievalTemporalCoverage(
+            abstained_cuts=tuple(
+                name
+                for name, value in (
+                    ("valid_at", payload.valid_at),
+                    ("available_at", payload.available_at),
+                )
+                if value is not None
+            )
         ),
         hits=tuple(
             CollectionRetrievalHit(

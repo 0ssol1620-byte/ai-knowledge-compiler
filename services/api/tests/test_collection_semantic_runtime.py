@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from datetime import date
+from datetime import UTC, date, datetime
 from decimal import Decimal
 from typing import Any, cast
 
@@ -375,6 +375,7 @@ def _batch(value: CollectionSemanticCompileInput) -> tuple[Any, RetrievalIndexBa
         embeddings=embeddings,
         model_id="Qwen3-Embedding-0.6B",
         model_revision="b" * 40,
+        recorded_at=datetime(2026, 11, 16, tzinfo=UTC),
     )
 
 
@@ -777,6 +778,7 @@ def test_batch_builder_rejects_missing_embedding_as_source_miss() -> None:
             embeddings={},
             model_id="Qwen3-Embedding-0.6B",
             model_revision="b" * 40,
+            recorded_at=datetime(2026, 11, 16, tzinfo=UTC),
         )
 
 

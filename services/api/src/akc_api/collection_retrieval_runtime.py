@@ -9,6 +9,7 @@ import hashlib
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass
+from datetime import datetime
 from typing import TYPE_CHECKING, Protocol, cast, runtime_checkable
 
 import httpx
@@ -196,6 +197,8 @@ class CollectionSemanticRetrievalRuntime:
     async def build_batch(
         self,
         prepared: PreparedCollectionSemanticRuntime,
+        *,
+        recorded_at: datetime,
     ) -> RetrievalIndexBatch:
         if not 1 <= len(prepared.index_expectations) <= 1000:
             raise RetrievalUnavailable(
@@ -236,6 +239,7 @@ class CollectionSemanticRetrievalRuntime:
             embeddings=dict(embedded),
             model_id=self.embedding_provider.model_id,
             model_revision=self.embedding_provider.model_revision,
+            recorded_at=recorded_at,
         )
 
     async def aclose(self) -> None:

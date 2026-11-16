@@ -19,6 +19,7 @@ from .models import (
     VectorCandidate,
     VectorRecord,
 )
+from .temporal import admit
 
 
 class RetrievalUnavailable(RuntimeError):
@@ -101,6 +102,7 @@ class InMemoryVectorStore:
             and record.project_id in allowed_projects
             and record.media_kind in query.media_kinds
             and _matches_filters(record, query)
+            and admit(record.metadata, query).admitted
         ]
         return sorted(
             candidates,
@@ -179,6 +181,8 @@ class RetrievalService:
             for candidate in candidates
         ):
             raise ProviderAttestationError("vector store returned an ACL-violating candidate")
+        if any(not admit(candidate.record.metadata, query).admitted for candidate in candidates):
+            raise ProviderAttestationError("store returned a candidate outside the temporal cut")
         if len({candidate.record.stable_id for candidate in candidates}) != len(candidates):
             raise ProviderAttestationError("vector store returned duplicate candidate ids")
 

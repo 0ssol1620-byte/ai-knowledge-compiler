@@ -4,6 +4,7 @@ import base64
 import hashlib
 import json
 import uuid
+from datetime import UTC, datetime
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, cast
@@ -184,7 +185,7 @@ async def test_runtime_batch_factory_embeds_every_exact_canonical_source() -> No
                 canonical_model_sha256="sha256:" + "c" * 64,
             ),
         )
-        batch = await runtime.build_batch(prepared)
+        batch = await runtime.build_batch(prepared, recorded_at=datetime(2026, 11, 16, tzinfo=UTC))
 
     assert sorted(seen_texts) == sorted(texts)
     assert {item.payload.stable_id for item in batch.documents} == {
