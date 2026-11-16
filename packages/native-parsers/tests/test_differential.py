@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import hashlib
+import time
+from collections.abc import Callable
 
 import pytest
 from akc_native_parsers.differential import compare_readers
@@ -147,6 +149,125 @@ def test_paired_emphasis_is_still_ignored() -> None:
     a = _result(_para("**Total** _net_ 5 kg"), _para("# Note", anchor="s0/p2"))
     b = _result(_para("Total net 5 kg"), _para("Note", anchor="s0/p2"))
     assert compare_readers(a, b) == ()
+
+
+def _timed_compare(a: HwpAdapterResult, b: HwpAdapterResult) -> float:
+    start = time.perf_counter()
+    compare_readers(a, b)
+    return time.perf_counter() - start
+
+
+_HOSTILE_UNITS = (
+    "**a ",
+    " _a",
+    "*",
+    "_",
+    "**",
+    "__",
+    "**a\n",
+    "\n# ",
+    "9",
+    "-1 ",
+    "1,",
+    "1 %",
+    "$ ",
+    "2026.1.",
+    "a_b*",
+)
+
+
+@pytest.mark.parametrize("unit", _HOSTILE_UNITS)
+def test_text_cost_is_linear_in_hostile_input(unit: str) -> None:
+    # every text pass (emphasis, heading, numeric tokens, dates) must stay linear:
+    # doubling a hostile text may not quadruple the time, and 200k chars stays bounded
+    def run(n: int) -> float:
+        text = (unit * (n // len(unit) + 1))[:n]
+        para, cell = _result(_para(text)), _result(_table((0, 0, "H"), (1, 0, text)))
+        return _timed_compare(para, _result(_para(text + "9"))) + _timed_compare(cell, cell)
+
+    small, big = run(100_000), run(200_000)
+    assert big < 2.0, f"{unit!r}: 200k chars took {big:.2f}s"
+    assert big < 4 * small + 0.25, f"{unit!r}: superlinear {small:.3f}s -> {big:.3f}s"
+
+
+def _row0_last(n: int) -> HwpAdapterResult:
+    return _result(_table(*[(1, c, "1") for c in range(n)], *[(0, c, "h") for c in range(n)]))
+
+
+def _wide_header(n: int, text: str) -> HwpAdapterResult:
+    # every row-0 cell spans every column: the first one (grid order) heads them all
+    header = HwpBlock(
+        id="t",
+        kind="table",
+        table_grid=(
+            TableCell(row=0, col=0, col_span=10**9, text=text),
+            *(TableCell(row=0, col=c, col_span=10**9, text="x") for c in range(1, n)),
+            *(TableCell(row=1, col=c, text="1") for c in range(n)),
+        ),
+        bbox_or_element_anchor="s0/t1",
+        original_ref="s0/t1",
+    )
+    return _result(header)
+
+
+@pytest.mark.parametrize(
+    "build",
+    [
+        lambda n: _row0_last(n),
+        lambda n: _result(_table(*[(1 + i // 50, i % 50, "1") for i in range(n)])),
+        lambda n: _wide_header(n, "H" * 20_000),
+    ],
+    ids=["row0_last", "no_row0", "spanning_long_header"],
+)
+def test_table_cost_is_near_linear_in_cells(build: Callable[[int], HwpAdapterResult]) -> None:
+    small, big = build(4_000), build(8_000)
+    t_small, t_big = _timed_compare(small, small), _timed_compare(big, big)
+    assert t_big < 2.0, f"8k cells took {t_big:.2f}s"
+    assert t_big < 4 * t_small + 0.25, f"superlinear {t_small:.3f}s -> {t_big:.3f}s"
+
+
+def test_long_header_disagreement_is_hashed_once_per_header() -> None:
+    n = 8_000
+    a, b = _wide_header(n, "H" * 20_000), _wide_header(n, "H" * 19_999 + "J")
+    start = time.perf_counter()
+    held = compare_readers(a, b)
+    assert time.perf_counter() - start < 2.0
+    assert held[0].field == "cell:r0c0:text"
+    under = {f"cell:r{r}c{c}:header" for r in (0, 1) for c in range(n)} - {"cell:r0c0:header"}
+    assert len(held) == 1 + len(under) and {h.field for h in held[1:]} == under
+    pairs = {(h.a_value_sha256, h.b_value_sha256) for h in held[1:]}
+    canon_a, canon_b = "H" * 20_000, "H" * 19_999 + "J"
+    assert pairs == {
+        (hashlib.sha256(canon_a.encode()).hexdigest(), hashlib.sha256(canon_b.encode()).hexdigest())
+    }
+
+
+def test_first_covering_header_in_grid_order_wins() -> None:
+    # overlapping row-0 spans: the same cells in another order change which header heads col 1
+    wide = TableCell(row=0, col=0, col_span=2, text="A")
+    narrow, body = TableCell(row=0, col=1, text="B"), TableCell(row=1, col=1, text="5")
+
+    def grid(*cells: TableCell) -> HwpAdapterResult:
+        block = HwpBlock(
+            id="t",
+            kind="table",
+            table_grid=cells,
+            bbox_or_element_anchor="s0/t1",
+            original_ref="s0/t1",
+        )
+        return _result(block)
+
+    a, b = grid(wide, narrow, body), grid(narrow, wide, body)
+    assert compare_readers(a, a) == ()
+    assert [h.field for h in compare_readers(a, b)] == ["cell:r0c1:header", "cell:r1c1:header"]
+
+
+def test_heading_mark_is_stripped_only_from_paragraphs_and_headings() -> None:
+    cell = compare_readers(
+        _result(_table((0, 0, "H"), (1, 0, "# 5"))), _result(_table((0, 0, "H"), (1, 0, "5")))
+    )
+    assert [h.field for h in cell] == ["cell:r1c0:text"]
+    assert compare_readers(_result(_para("# 5")), _result(_para("5"))) == ()
 
 
 def test_duplicate_grid_position_holds_the_table() -> None:
