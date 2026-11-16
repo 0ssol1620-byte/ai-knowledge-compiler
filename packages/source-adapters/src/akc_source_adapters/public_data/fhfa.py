@@ -38,6 +38,7 @@ def parse_fhfa_hpi_csv(
     if missing:
         raise ValueError(f"FHFA header lacks columns {missing}")
     out: list[VintageObservation] = []
+    seen: dict[tuple[str, date], str] = {}
     for row in reader:
         freq = (row["frequency"] or "").strip().lower()
         if freq not in _MONTHS_PER_PERIOD or None in row.values():
@@ -50,10 +51,16 @@ def parse_fhfa_hpi_csv(
         if not place:
             raise ValueError("FHFA row: empty place_id")
         flavor = f"{row['hpi_type'].strip()}:{row['hpi_flavor'].strip()}"
+        sid = f"{flavor}:{freq}:{place}:{value_col}"
+        if (sid, start) in seen:
+            if seen[(sid, start)] != row[value_col]:
+                raise ValueError(f"FHFA rows conflict for {sid} {start}")
+            continue
+        seen[(sid, start)] = row[value_col]
         out.append(
             VintageObservation(
                 source_id="fhfa_hpi",
-                series_id=f"{flavor}:{freq}:{place}:{value_col}",
+                series_id=sid,
                 period_start=start,
                 period_end=None,
                 value=row[value_col],  # exact text; non-numeric stays text

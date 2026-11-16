@@ -129,3 +129,19 @@ def test_non_numeric_value_kept_as_text_or_held() -> None:
     assert [o.value for o in _eia()] == ["3.10", "3.25", ""]  # exact text; null -> marker
     _, held = to_temporal_facts(_eia())
     assert [h.reason for h in held].count("missing_value") == 1
+
+
+def test_same_period_rows_with_different_values_raise() -> None:
+    with pytest.raises(ValueError, match="conflict"):
+        _eia(
+            b'{"response": {"data": [{"period": "2020-01", "value": "1"},'
+            b' {"period": "2020", "value": "2"}]}}'
+        )
+    with pytest.raises(ValueError, match="conflict"):
+        _fhfa(
+            b"hpi_type,hpi_flavor,frequency,level,place_id,yr,period,index_nsa,index_sa\n"
+            b"t,f,quarterly,MSA,1,2020,1,100,100\nt,f,quarterly,MSA,1,2020,1,200,200\n"
+        )
+    with pytest.raises(ValueError, match="conflict"):
+        _census(b"cbsa_code,year,month,permit_units\n1,2020,1,5\n1,2020,1,9\n")
+    assert len(_census(b"cbsa_code,year,month,permit_units\n1,2020,1,5\n1,2020,1,5\n")) == 1

@@ -47,6 +47,7 @@ def parse_eia_v2(
     if not isinstance(rows, list):
         raise ValueError("EIA payload: field 'response.data' must be a list")
     out: list[VintageObservation] = []
+    seen: dict[date, str] = {}
     for row in rows:
         if not isinstance(row, dict):
             raise ValueError("EIA row: not an object")
@@ -58,11 +59,19 @@ def parse_eia_v2(
             value = ""  # a null value is a missing marker the timeline holds
         elif not isinstance(value, str):
             raise ValueError("EIA row: field 'value' must be text, number or null")
+        start = _period(period)
+        if start in seen:
+            if seen[start] != value:
+                raise ValueError(
+                    f"EIA rows conflict for {series_id} {start}: {seen[start]!r} vs {value!r}"
+                )
+            continue
+        seen[start] = value
         out.append(
             VintageObservation(
                 source_id="eia",
                 series_id=series_id,
-                period_start=_period(period),
+                period_start=start,
                 period_end=None,
                 value=value,
                 unit=units,

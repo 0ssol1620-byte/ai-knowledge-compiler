@@ -37,6 +37,7 @@ def parse_census_bps_csv(
     if missing:
         raise ValueError(f"Census header lacks columns {missing}")
     out: list[VintageObservation] = []
+    seen: dict[tuple[str, date], str] = {}
     for row in reader:
         if None in row.values():
             raise ValueError(f"Census row: ragged row: {row}")
@@ -49,6 +50,11 @@ def parse_census_bps_csv(
             raise ValueError(
                 f"Census row: bad year/month {row['year']!r}/{row['month']!r}"
             ) from exc
+        if (cbsa, start) in seen:
+            if seen[(cbsa, start)] != row["permit_units"]:
+                raise ValueError(f"Census rows conflict for {cbsa} {start}")
+            continue
+        seen[(cbsa, start)] = row["permit_units"]
         out.append(
             VintageObservation(
                 source_id="census_bps",
