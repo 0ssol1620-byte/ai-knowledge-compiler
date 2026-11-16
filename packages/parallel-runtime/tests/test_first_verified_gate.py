@@ -24,6 +24,7 @@ from akc_parallel_runtime import (
 )
 from akc_parallel_runtime.coordinator import SettlementRequest
 from akc_parallel_runtime.first_verified import VerifiedCandidate
+from akc_parallel_runtime.identity import canonical_sha256
 from helpers import HASH_A, HASH_B, HASH_C, HASH_D, NOW
 
 SHARD = "shard-1"
@@ -209,6 +210,13 @@ def test_winner_charged_once_and_hedge_loser_gets_zero_charge_plus_telemetry() -
     winner = root(store, "w")
     loser = hedge(store, winner, "h")
     run(store, loser)
+    store.attach_output(
+        loser,
+        output(HASH_B, gpu_seconds=Decimal("3"), provider_cost=Decimal("0.5")),
+        idempotency_key="out-loser",
+    )
+    silent = hedge(store, winner, "h2")
+    run(store, silent)
     validate(store, winner, passed=True)
     request = SettlementRequest(reservation, "page-1", Decimal("2"))
     result = coordinator.accept_arbitrated(
@@ -217,7 +225,7 @@ def test_winner_charged_once_and_hedge_loser_gets_zero_charge_plus_telemetry() -
         idempotency_key="acc",
         settlement=request,
     )
-    assert result.cancel_attempt_ids == (loser,)
+    assert set(result.cancel_attempt_ids) == {loser, silent}
     assert store.get(loser).status is AttemptStatus.SUPERSEDED
     replay = coordinator.accept_arbitrated(
         decision(winner),
@@ -225,12 +233,40 @@ def test_winner_charged_once_and_hedge_loser_gets_zero_charge_plus_telemetry() -
         idempotency_key="acc",
         settlement=request,
     )
-    assert replay.cancel_attempt_ids == (loser,)
+    assert set(replay.cancel_attempt_ids) == {loser, silent}
     assert ledger.balance(reservation)[0] == Decimal("2.000000")
     telemetry = [
-        e for e in ledger._entries if e.entry_type is CreditEntryType.COMPUTE_TELEMETRY
+        e
+        for e in ledger.entries(reservation)
+        if e.entry_type is CreditEntryType.COMPUTE_TELEMETRY
     ]
+    # only the loser with a recorded output has measured cost; the RUNNING one gets no row
     assert [(e.attempt_id, e.amount) for e in telemetry] == [(loser, Decimal("0"))]
+    assert telemetry[0].metadata_sha256 == canonical_sha256(
+        {
+            "attempt_kind": "hedge",
+            "gpu_seconds": Decimal("3.000000"),
+            "provider_cost": Decimal("0.500000"),
+            "user_credits": "0.000000",
+        }
+    )
+
+
+def test_settlement_without_ledger_or_ledger_without_settlement_raises() -> None:
+    plain = ParallelCoordinator()
+    winner = root(plain.attempts, "w")
+    validate(plain.attempts, winner, passed=True)
+    request = SettlementRequest("r", "page-1", Decimal("2"))
+    with pytest.raises(RuntimeError, match="without a credit ledger"):
+        plain.accept_arbitrated(
+            decision(winner), occurred_at=NOW, idempotency_key="acc", settlement=request
+        )
+    assert plain.attempts.get(winner).status is not AttemptStatus.ACCEPTED
+    funded = ParallelCoordinator(credits=CreditLedger())
+    winner2 = root(funded.attempts, "w")
+    validate(funded.attempts, winner2, passed=True)
+    with pytest.raises(RuntimeError, match="no settlement"):
+        funded.accept_arbitrated(decision(winner2), occurred_at=NOW, idempotency_key="acc")
 
 
 def test_eight_threads_racing_accept_produce_exactly_one_accepted() -> None:

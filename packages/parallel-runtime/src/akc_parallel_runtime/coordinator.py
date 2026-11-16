@@ -212,6 +212,10 @@ class ParallelCoordinator:
             raise RuntimeError("arbitration prediction identity does not match immutable output")
         if snapshot.status is AttemptStatus.REJECTED:
             raise RuntimeError("arbitration names an attempt that failed validation")
+        if settlement is not None and self.credits is None:
+            raise RuntimeError("settlement requested without a credit ledger")
+        if settlement is None and self.credits is not None:
+            raise RuntimeError("credit ledger configured but no settlement requested")
         result = self.attempts.accept(
             decision.selected_attempt_id,
             occurred_at=occurred_at,
@@ -238,13 +242,16 @@ class ParallelCoordinator:
             )
             for loser_id in losers:
                 loser = self.attempts.get(loser_id)
-                cost = loser.output.cost if loser.output is not None else None
+                if loser.output is None:
+                    # no measured cost: record nothing rather than invent a zero
+                    continue
+                cost = loser.output.cost
                 self.credits.record_compute_telemetry(
                     reservation_id=settlement.reservation_id,
                     attempt_id=loser_id,
                     attempt_kind=loser.attempt.kind,
-                    gpu_seconds=cost.gpu_seconds if cost else Decimal("0"),
-                    provider_cost=cost.provider_cost if cost else Decimal("0"),
+                    gpu_seconds=cost.gpu_seconds,
+                    provider_cost=cost.provider_cost,
                     occurred_at=occurred_at,
                     idempotency_key=f"loser-telemetry:{loser_id}",
                 )
