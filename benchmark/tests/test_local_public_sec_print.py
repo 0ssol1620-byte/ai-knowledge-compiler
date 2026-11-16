@@ -36,7 +36,8 @@ def pdf(n):
     for o in offs: body += f"{o:010d} 00000 n \n".encode()
     body += f"trailer\n<< /Size {len(objs)+1} /Root 1 0 R >>\nstartxref\n{x}\n%%EOF\n".encode()
     return body
-Path(out).write_bytes(pdf(int(pages)))
+if mode != "nowrite":
+    Path(out).write_bytes(pdf(int(pages)))
 sys.exit(3 if mode == "fail" else 0)
 """
 
@@ -138,3 +139,44 @@ def test_failure_kills_grandchild(fake, tmp_path):
         sec_print.print_pdf(Path("x"), tmp_path / "a.html", tmp_path / "o.pdf")
     assert _gone(int(pidfile.read_text()))
     assert not state["profile"].exists()
+
+
+def test_one_page(fake, tmp_path):
+    assert sec_print.print_pdf(Path("x"), tmp_path / "a.html", tmp_path / "o.pdf") == 1
+
+
+def test_stale_out_is_not_evidence(fake, tmp_path):
+    state, _ = fake
+    state["mode"] = "nowrite"
+    out = tmp_path / "o.pdf"
+    out.write_bytes(b"stale")
+    with pytest.raises(RuntimeError, match="no PDF"):
+        sec_print.print_pdf(Path("x"), tmp_path / "a.html", out)
+    assert not out.exists()
+
+
+@pytest.mark.skipif(sys.platform != "win32", reason="Job Object path")
+def test_assign_failure_kills_suspended_child(fake, tmp_path, monkeypatch):
+    import ctypes
+
+    real = ctypes.WinDLL
+
+    class Proxy:
+        def __init__(self, dll):
+            self._dll = dll
+
+        def __getattr__(self, name):
+            if name == "AssignProcessToJobObject":
+                f = lambda *a: 0  # noqa: E731
+                return f
+            return getattr(self._dll, name)
+
+    monkeypatch.setattr(
+        sec_print.ctypes,
+        "WinDLL",
+        lambda name, **kw: Proxy(real(name, **kw)) if name == "kernel32" else real(name, **kw),
+    )
+    t0 = time.monotonic()
+    with pytest.raises(OSError, match="AssignProcessToJobObject"):
+        sec_print.print_pdf(Path("x"), tmp_path / "a.html", tmp_path / "o.pdf", timeout_s=3)
+    assert time.monotonic() - t0 < 10

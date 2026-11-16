@@ -106,6 +106,8 @@ def _win_run(argv: list[str], timeout_s: float) -> int:
         k32.TerminateJobObject(job, 1)
         k32.CloseHandle(job)
         if proc is not None:
+            if proc.poll() is None:
+                proc.kill()  # not in the job (assign/resume failed): TerminateJobObject missed it
             proc.wait()
 
 
@@ -129,6 +131,7 @@ def print_pdf(exe: Path, html: Path, out: Path, timeout_s: float = 90) -> int:
     """
     profile = Path(tempfile.mkdtemp(prefix="lpc-profile-"))
     try:
+        out.unlink(missing_ok=True)  # a stale PDF must never pass as this run's output
         argv = build_argv(exe, html, out, profile)
         run = _win_run if sys.platform == "win32" else _posix_run
         code = run(argv, timeout_s)
