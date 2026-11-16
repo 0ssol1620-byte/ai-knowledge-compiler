@@ -35,6 +35,7 @@ from openpyxl import load_workbook
 from openpyxl.cell.cell import MergedCell
 
 from .models import LOCATOR_PAGE_SEMANTICS, ParserLimits, StructuredParseError, normalize_text
+from .subtitle_parser import _TAG, _speaker_and_text
 
 _HELD_MARKERS = ("held", "unresolved")
 _MEMBER_LIMIT = ParserLimits().max_archive_member_bytes
@@ -589,6 +590,12 @@ def _ms(stamp: str) -> int:
     return ((hours * 60 + minutes) * 60 + seconds) * 1000 + int(millis)
 
 
+def _merge_key(raw: str) -> tuple[str | None, str]:
+    # the parser's own merge key (_merge_repeated_cues): speaker + tag-stripped text
+    speaker, text = _speaker_and_text(raw)
+    return speaker, normalize_text(_TAG.sub("", text))
+
+
 def _subtitle_factory(kind: str) -> Callable[[bytes], _Resolver]:
     def factory(data: bytes) -> _Resolver:
         source = data.decode("utf-8-sig").replace("\r\n", "\n").replace("\r", "\n")
@@ -627,7 +634,7 @@ def _subtitle_factory(kind: str) -> Callable[[bytes], _Resolver]:
                 raise _Unresolvable("locator_out_of_range")
             inside = [cues[i] for i in range(first, last + 1) if i in cues]
             end = max(cue[2] for cue in inside)
-            if any(cue[0] != cues[first][0] for cue in inside):
+            if any(_merge_key(cue[0]) != _merge_key(cues[first][0]) for cue in inside):
                 # a merged range is only exact if every cue in it says the same thing
                 return "\x00range_text_differs", (cues[first][1], end)
             return cues[first][0], (cues[first][1], end)

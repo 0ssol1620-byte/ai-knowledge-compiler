@@ -262,3 +262,37 @@ def test_pptx_table_cell_resolves_and_tamper_is_caught() -> None:
             target.writestr(item, payload)
     tampered = build_ledger(out.getvalue(), document)  # type: ignore[arg-type]
     assert tampered.resolved_mismatch and not tampered.source_hash_matches
+
+
+_YT = (
+    "WEBVTT\nKind: captions\n\n"
+    "00:00:00.000 --> 00:00:02.000\nrevenue<00:00:00.500><c> was</c> 42\n\n"
+    "00:00:02.000 --> 00:00:02.010\nrevenue was 42\n\n"
+    "00:00:02.010 --> 00:00:04.000\nnext line 7\n"
+)
+
+
+def test_markup_only_repeat_cue_merges_exact_and_tamper_is_caught() -> None:
+    data = _YT.encode()
+    document = _parse("vtt", data)
+    assert any("-" in b.source_refs[0].native_object_id for b in document.blocks if b.source_refs)
+    ledger = build_ledger(data, document)
+    assert ledger.resolved_mismatch == ()
+    assert ledger.resolved_exact == 2
+    tampered = build_ledger(
+        _YT.replace("\nrevenue was 42\n", "\nrevenue was 43\n").encode(), document
+    )
+    assert tampered.resolved_mismatch
+
+
+def test_vtt_note_style_blocks_do_not_shift_cue_numbering() -> None:
+    data = (
+        b"WEBVTT\n\nNOTE\n00:00:09.000 --> 00:00:09.500\nignored 9\n\n"
+        b"STYLE\n::cue { color: red }\n\n"
+        b"00:00:00.000 --> 00:00:01.000\nfirst 1\n\n"
+        b"00:00:02.000 --> 00:00:03.000\nsecond 2\n"
+    )
+    document = _parse("vtt", data)
+    ledger = build_ledger(data, document)
+    assert ledger.resolved_mismatch == ()
+    assert {r for _, r in ledger.unresolvable} == {"parser_generated_text"}
