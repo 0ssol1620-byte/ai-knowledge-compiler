@@ -187,11 +187,11 @@ def test_unreadable_original_and_unsupported_type_fail_closed() -> None:
     ledger = build_ledger(b"not a zip", document)
     assert ledger.resolved_exact == 0 and ledger.unresolvable
     assert {reason for _, reason in ledger.unresolvable} == {"original_unreadable"}
-    pdf_like = document.model_copy(
-        update={"metadata": {**document.metadata, "documentType": "pdf"}}
+    no_factory = document.model_copy(
+        update={"metadata": {**document.metadata, "documentType": "hwp"}}
     )
     with pytest.raises(StructuredParseError) as raised:
-        build_ledger(data, pdf_like)
+        build_ledger(data, no_factory)
     assert raised.value.code == "LEDGER_TYPE_UNSUPPORTED"
 
 

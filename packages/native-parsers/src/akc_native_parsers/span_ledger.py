@@ -13,7 +13,13 @@ Ceilings (stated, not hidden):
 * DOCX cell text follows the visible-text rule of the parser (tracked
   deletions excluded); a cell whose runs sit inside ``w:ins`` is reported as a
   mismatch rather than reconciled.
-* PDF is out of scope here (WO-D07-4 owns that resolver).
+* PDF text is re-extracted inside the block's bbox with pypdfium2, a different
+  library from the parser's pypdf. The parser's bbox is an estimate (glyph width
+  is modelled, not measured), so a text object that shares its bbox with a
+  neighbour on the same line resolves to more text than the block holds and is
+  reported as a mismatch, never reconciled. Rotated pages are inverted from the
+  parser's own display transform; multi-column and rotated real PDFs are not
+  proven here.
 """
 
 from __future__ import annotations
@@ -38,6 +44,9 @@ from .models import LOCATOR_PAGE_SEMANTICS, ParserLimits, StructuredParseError, 
 
 _HELD_MARKERS = ("held", "unresolved")
 _MEMBER_LIMIT = ParserLimits().max_archive_member_bytes
+
+_PDF_TEXT = re.compile(r"pdf/page/(?P<p>\d+)/text/[0-9a-f]{20}")
+_PDF_GEOMETRY = re.compile(r"pdf/page/(?P<p>\d+)/(?:drawing|image-placement)/\d+")
 
 # (text, optional (start_ms, end_ms)) for a resolved locator.
 _Resolved = tuple[str, tuple[int, int] | None]
@@ -94,6 +103,23 @@ def build_ledger(data: bytes, document: CanonicalDocument) -> SpanLedger:
     observed_pages: set[int] = set()
     observed_cues: set[int] = set()
 
+    assets = {str(a.get("id")): str(a.get("sha256")) for a in document.metadata.get("assets", ())}
+
+    def _pdf_geometry(unit_id: str, locator: str, ref: Any, known: dict[str, str]) -> str:
+        # Image/drawing blocks: never compare text. The box must sit inside the page and
+        # an image placement must name an asset whose hash the document registered.
+        nonlocal exact
+        box = ref.bbox1000.root if ref.bbox1000 is not None else None
+        inside = box is not None and 0 <= box[0] < box[2] <= 1000 and 0 <= box[1] < box[3] <= 1000
+        asset_ok = "/image-placement/" not in locator or known.get(
+            str(ref.image_asset_id), ""
+        ).startswith("sha256:")
+        if inside and asset_ok:
+            exact += 1
+            return "exact"
+        mismatch.append(unit_id)
+        return "mismatch"
+
     def check(unit_id: str, locator: str, expected: str, ref: Any) -> str:
         nonlocal exact, tokens_total, tokens_ok
         want = tuple(extract_numeric_tokens(expected))
@@ -105,7 +131,13 @@ def build_ledger(data: bytes, document: CanonicalDocument) -> SpanLedger:
             unresolvable.append((unit_id, open_failure))
             return "unresolvable"
         try:
-            text, span = resolver(locator)
+            if _PDF_GEOMETRY.fullmatch(locator):
+                return _pdf_geometry(unit_id, locator, ref, assets)
+            text, span = (
+                resolver(locator, ref.bbox1000)  # type: ignore[call-arg]
+                if getattr(resolver, "wants_bbox", False)
+                else resolver(locator)
+            )
         except _Unresolvable as exc:
             unresolvable.append((unit_id, exc.reason))
             return "unresolvable"
@@ -676,8 +708,54 @@ def _subtitle_factory(kind: str) -> Callable[[bytes], _Resolver]:
     return factory
 
 
+# --------------------------------------------------------------------- PDF
+
+
+def _pdf_resolver(data: bytes) -> _Resolver:
+    import pypdfium2  # type: ignore[import-untyped]  # lazy: only PDF ledgers need it
+
+    pdf = pypdfium2.PdfDocument(data)
+    pages = len(pdf)
+    cache: dict[int, Any] = {}
+
+    def resolve(locator: str, bbox: Any) -> _Resolved:
+        match = _PDF_TEXT.fullmatch(locator)
+        if match is None:
+            raise _Unresolvable("unknown_locator_grammar")
+        index = int(match["p"])
+        if index >= pages:
+            raise _Unresolvable("locator_out_of_range")
+        if bbox is None:
+            raise _Unresolvable("no_bbox")
+        if index not in cache:
+            page = pdf[index]
+            cache[index] = (page, page.get_textpage(), page.get_cropbox(), page.get_rotation())
+        page, textpage, (left, bottom, right, top), rotation = cache[index]
+        width, height = right - left, top - bottom
+        x1, y1, x2, y2 = (v / 1000 for v in bbox.root)
+        dw, dh = (height, width) if rotation % 180 else (width, height)
+        # invert the parser's display transform (_display_bbox1000): v runs top-down
+        corners = [(x * dw, dh - y * dh) for x in (x1, x2) for y in (y1, y2)]
+        if rotation == 90:
+            points = [(width - y, x) for x, y in corners]
+        elif rotation == 180:
+            points = [(width - x, height - y) for x, y in corners]
+        elif rotation == 270:
+            points = [(y, height - x) for x, y in corners]
+        else:
+            points = corners
+        xs, ys = [p[0] for p in points], [p[1] for p in points]
+        return textpage.get_text_bounded(
+            left + min(xs), bottom + min(ys), left + max(xs), bottom + max(ys)
+        ), None
+
+    resolve.wants_bbox = True  # type: ignore[attr-defined]
+    return _with_units(resolve, set(range(pages)))  # type: ignore[arg-type]
+
+
 _FACTORIES: dict[str, Callable[[bytes], _Resolver]] = {
     "docx": _docx_resolver,
+    "pdf": _pdf_resolver,
     "pptx": _pptx_resolver,
     "xlsx": _xlsx_resolver,
     "html": _html_resolver,
