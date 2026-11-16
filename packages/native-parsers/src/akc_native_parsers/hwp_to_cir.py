@@ -70,6 +70,7 @@ def _add_table(builder: CirBuilder, block: HwpBlock, flags: list[str]) -> Canoni
     rows, cols, complete, overlapping = _grid_shape(block, builder.limits)
     loc = _location(block.original_ref)
     if not complete:
+        flags[0] = "hwp_held"
         flags.append("held_incomplete_grid")
     if not cells or overlapping:
         # Cannot be a CanonicalTable without guessing which cell wins; keep the text, hold it.
@@ -123,7 +124,7 @@ def hwp_result_to_cir(
         context=context,
         source_filename=source_filename or f"source.{fmt}",
         source_sha256=f"sha256:{result.manifest.source_sha256}",
-        document_type=fmt,
+        document_type={"hwp3": "hwp", "hwp5": "hwp"}.get(fmt, fmt),
         limits=limits or ParserLimits(),
     )
     held_ids: list[str] = []
@@ -164,6 +165,7 @@ def hwp_result_to_cir(
         )
     builder.metadata["locatorPageSemantics"] = LOCATOR_PAGE_SEMANTICS
     builder.metadata["hwp"] = {
+        "detectedFormat": fmt,
         "engineId": result.engine_id,
         "engineVersion": result.engine_version,
         "resultSha256": result.artifact_hashes["result_sha256"],

@@ -82,6 +82,7 @@ def test_missing_cell_holds_the_table() -> None:
     assert block.table is not None and len(block.table.cells) == 2  # no cell inferred
     assert doc.metadata["hwp"]["acceptedBlockIds"] == []
     assert block.id in doc.metadata["hwp"]["heldBlockIds"]
+    assert "hwp_held" in block.quality_flags and "hwp_verified" not in block.quality_flags
 
 
 def test_overlapping_spans_hold_without_choosing_a_winner() -> None:
@@ -123,7 +124,7 @@ def test_unverified_blocks_are_never_accepted() -> None:
 def test_locator_semantics_is_container_ordinal() -> None:
     doc = hwp_result_to_cir(_fixture("fixture:complex_table"), CTX)
     assert doc.metadata["locatorPageSemantics"] == "container_ordinal"
-    assert doc.metadata["documentType"] == "hwp5"
+    assert doc.metadata["documentType"] == "hwp"
     assert {r.page_index0 for b in doc.blocks for r in b.source_refs} == {0}
 
 
@@ -136,3 +137,9 @@ def test_duplicate_original_ref_and_hostile_span_fail_closed() -> None:
     huge = (TableCell(row=0, col=0, row_span=10**9, col_span=10**9, text="x"),)
     with pytest.raises(StructuredParseError):
         hwp_result_to_cir(_result(_table(huge)), CTX)
+
+
+def test_document_type_is_in_the_locator_key_table() -> None:
+    doc = hwp_result_to_cir(_fixture("fixture:complex_table"), CTX)
+    assert doc.metadata["documentType"] in {"hwp", "hwpx", "hwpml"}
+    assert doc.metadata["hwp"]["detectedFormat"] == "hwp5"
