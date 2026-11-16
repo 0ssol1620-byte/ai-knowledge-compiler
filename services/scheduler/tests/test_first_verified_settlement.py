@@ -5,14 +5,14 @@ import sys
 import uuid
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 import pytest
 import pytest_asyncio
 from akc_api.database import Base
-from akc_api.gpu_provider import GpuProviderError
+from akc_api.gpu_provider import GpuJobPoll, GpuProviderError
 from akc_api.models import (
     Collection,
     Document,
@@ -349,3 +349,67 @@ async def test_late_provider_completion_for_cancelled_invocation_is_fenced(
         assert invocation.result_manifest is None
         assert attempt.state == "SUPERSEDED"
         assert attempt.output_sha256 is None
+
+
+@pytest.mark.asyncio
+async def test_cancel_survives_in_flight_poll_holding_a_live_lease(
+    harness: tuple[Sessions, Seed],
+) -> None:
+    from akc_scheduler.gpu_jobs import GpuInvocationWorker, _Claim
+
+    sessions, seed = harness
+    token = uuid.uuid4()
+    async with sessions() as session:
+        invocation = await session.get(GpuProviderInvocation, seed.loser_invocation_id)
+        assert invocation is not None
+        invocation.status = "running"
+        invocation.lease_token = token
+        invocation.lease_expires_at = NOW + timedelta(minutes=5)
+        await session.commit()
+    await _settle(sessions, seed)
+    async with sessions() as session:
+        inv = await session.get(GpuProviderInvocation, seed.loser_invocation_id)
+        assert inv is not None
+        assert inv.lease_token is None and inv.lease_expires_at is None
+        claim = _Claim(
+            invocation_id=inv.id,
+            tenant_id=inv.tenant_id,
+            project_id=inv.project_id,
+            job_id=inv.job_id,
+            document_id=inv.document_id,
+            document_version_id=inv.document_version_id,
+            page_id=None,
+            provider_key=inv.provider_key,
+            endpoint_id=inv.endpoint_id,
+            idempotency_key=inv.idempotency_key,
+            input_bucket="source",
+            input_object_key=inv.input_object_key,
+            input_sha256=inv.input_sha256,
+            output_object_key=inv.output_object_key,
+            options={},
+            model_revision=inv.model_revision,
+            runtime_image_digest=inv.runtime_image_digest,
+            adapter_version=inv.adapter_version,
+            attempt_number=1,
+            lease_token=token,
+            lease_expires_at=NOW + timedelta(minutes=5),
+            provider_job_id=inv.provider_job_id,
+            provider_status="IN_PROGRESS",
+            action="poll",
+            cancellation_reason=None,
+        )
+    worker = GpuInvocationWorker(
+        engine=sessions.kw["bind"],
+        client=object(),  # type: ignore[arg-type]
+        object_store=object(),  # type: ignore[arg-type]
+        policy=gpu_admission._policy(),
+        clock=lambda: NOW,
+        random_source=lambda: 0.5,
+    )
+    # The in-flight poll writes back under the lease it held before the cancel.
+    await worker._record_poll_wait(claim, GpuJobPoll(status="IN_PROGRESS"))
+    async with sessions() as session:
+        inv = await session.get(GpuProviderInvocation, seed.loser_invocation_id)
+        assert inv is not None
+        assert inv.status == "cancel_requested"
+        assert inv.cancellation_reason == SUPERSEDE_REASON

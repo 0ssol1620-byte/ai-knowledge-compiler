@@ -55,8 +55,14 @@ async def supersede_losers(
 ) -> LoserSettlement:
     """Supersede the non-terminal siblings of an ACCEPTED winner; idempotent.
 
-    ``scope`` is the tenant id. A replay finds no live sibling and no
-    cancellable invocation, so it changes nothing.
+    ``scope`` is the tenant id. Idempotency rests on state, not on
+    ``operation_key`` (which is only validated and copied into the event
+    payload): a replay, under any key, finds no live sibling and no cancellable
+    invocation, so it changes nothing.
+
+    Lock order is attempt rows first, then invocation rows; sibling attempts are
+    locked before the state-machine check so a concurrent callback's terminal
+    state is never overwritten.
     """
 
     if not operation_key or len(operation_key) > 120:
@@ -70,11 +76,13 @@ async def supersede_losers(
     if shard is None:
         raise FirstVerifiedSettlementError("shard is outside the tenant scope")
     winner = await session.scalar(
-        select(ParallelParseAttempt).where(
+        select(ParallelParseAttempt)
+        .where(
             ParallelParseAttempt.tenant_id == scope,
             ParallelParseAttempt.shard_id == shard_id,
             ParallelParseAttempt.id == winner_attempt_id,
         )
+        .with_for_update()
     )
     if winner is None or winner.state != "ACCEPTED":
         raise FirstVerifiedSettlementError("winner is not an ACCEPTED attempt of this shard")
@@ -89,6 +97,7 @@ async def supersede_losers(
                 ParallelParseAttempt.state.in_(_LIVE_ATTEMPT_STATES),
             )
             .order_by(ParallelParseAttempt.attempt_number)
+            .with_for_update()
         )
     ).all()
     superseded: list[uuid.UUID] = []
@@ -120,6 +129,10 @@ async def supersede_losers(
         ):
             continue
         invocation.status = "cancel_requested"
+        # Same as request_gpu_cancellation: drop the lease so a worker mid-poll
+        # fails its lease check instead of writing running/submitted back over us.
+        invocation.lease_token = None
+        invocation.lease_expires_at = None
         invocation.cancellation_reason = SUPERSEDE_REASON
         invocation.available_at = now
         invocation.updated_at = now
