@@ -38,7 +38,7 @@ from akc_source_adapters import GitAdapter, GitCursorInvalid, ObsidianVaultAdapt
 from akc_source_adapters.envelope import ChangeEvent, Cursor, FetchResult
 from akc_source_adapters.github_adapter import GitHubAdapter
 from akc_source_adapters.google import DriveAdapter, GmailAdapter, SourceCursorInvalid
-from akc_source_adapters.google._common import StaticTokenProvider
+from akc_source_adapters.google._common import GoogleAdapterError, StaticTokenProvider
 
 SEEDS = range(40)
 PROVIDERS = ("git", "obsidian", "github", "drive", "gmail")
@@ -371,7 +371,8 @@ class _DriveModel(_Model):
 
 
 class _GmailModel(_Model):
-    PAGE = 3
+    # 2, not 3: a round yields 1-3 history records, so only PAGE < 3 ever emits nextPageToken.
+    PAGE = 2
 
     def __init__(self, httpd: ThreadingHTTPServer) -> None:
         self.messages: dict[str, set[str]] = {}
@@ -537,6 +538,7 @@ def test_rewritten_git_history_raises_cursor_invalid_never_restarts(tmp_path: Pa
 
 @pytest.mark.xfail(
     strict=True,
+    raises=pytest.fail.Exception,
     reason="GitAdapter keeps going from '<old>..HEAD' when the old object survives a reset; "
     "proposed delta: check 'git merge-base --is-ancestor <cursor sha> HEAD' and raise",
 )
@@ -558,6 +560,7 @@ def test_reset_rewrite_with_surviving_object_raises_cursor_invalid(tmp_path: Pat
 
 @pytest.mark.xfail(
     strict=True,
+    raises=GoogleAdapterError,
     reason="GmailAdapter GETs a message that was added and deleted in one history window, "
     "gets 404 and stalls the cursor forever; see proposed_deltas for gmail.py",
 )
