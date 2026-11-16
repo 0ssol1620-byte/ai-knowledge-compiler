@@ -27,7 +27,7 @@ from .test_postgres import (
 )
 
 KNOWN = datetime(2026, 1, 1, tzinfo=UTC)
-KEEP = "c" * 64
+KEEP = "sha256:" + "c" * 64
 
 
 def _row_with(metadata: dict[str, str | int | float | bool | None]) -> dict[str, object]:
@@ -162,4 +162,16 @@ async def test_sweep_rejects_a_malformed_keep_digest() -> None:
             project_id=PROJECT_ID,
             collection_id=uuid.uuid4(),
             keep_canonical_model_sha256="not-a-digest",
+        )
+
+
+async def test_sweep_rejects_a_bare_hex_digest_that_would_delete_every_row() -> None:
+    # The runtime writer stores metadata canonical_model_sha256 as "sha256:<hex>"; a bare
+    # hex keep value would differ from every row and wipe the collection.
+    with pytest.raises(ValueError):
+        await _indexer(_CountingExecutor()).sweep_superseded(
+            tenant_id=TENANT_ID,
+            project_id=PROJECT_ID,
+            collection_id=COLLECTION_ID,
+            keep_canonical_model_sha256="c" * 64,
         )

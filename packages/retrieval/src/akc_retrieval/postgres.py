@@ -37,6 +37,7 @@ from .models import (
 from .temporal import admit
 
 _HASH_PATTERN = r"^[0-9a-f]{64}$"
+_PREFIXED_HASH_PATTERN = r"^sha256:[0-9a-f]{64}$"
 _REVISION_PATTERN = r"^[0-9a-f]{40,64}$"
 _ATTESTATION_ALGORITHM = "hmac-sha256"
 _KEY_ID = re.compile(r"^[a-z0-9][a-z0-9_-]{0,31}$")
@@ -823,8 +824,10 @@ class PostgresHybridIndexer:
 
         One transaction under the tenant lock; idempotent (a second call removes 0).
         """
-        if not re.fullmatch(_HASH_PATTERN, keep_canonical_model_sha256):
-            raise ValueError("keep_canonical_model_sha256 must be a lowercase sha256 hex digest")
+        if not re.fullmatch(_PREFIXED_HASH_PATTERN, keep_canonical_model_sha256):
+            raise ValueError(
+                "keep_canonical_model_sha256 must be the stored 'sha256:<hex>' digest"
+            )
         scope = {
             "tenant_id": str(tenant_id),
             "project_id": str(project_id),
