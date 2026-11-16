@@ -3,26 +3,32 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime
 from functools import cache
 
 import pytest
-from akc_product_core.contracts import ProductCoreDocument
+from akc_cir.identity import document_version_id, source_id
+from akc_product_core import ProductCoreCompiler, ProductCoreCompileRequest
+from akc_product_core.contracts import ProductCoreDocument, ProductCoreRoute
 
-from benchmark.u06_equivalence.faults import FAULT_CLASSES, _content_hash, generate, main, manifest
+from benchmark.u06_equivalence.faults import FAULT_CLASSES, generate, main, manifest
 
 SHA = "a" * 64
+TENANT = "tenant-x"
 
 
 def _doc(native: str, texts: list[str]) -> ProductCoreDocument:
+    sid = source_id(tenant_id=TENANT, connector_type="upload", native_id=native)
+    sha = "sha256:" + SHA
     return ProductCoreDocument.model_validate(
         {
             "nativeId": native,
             "connectorType": "upload",
-            "sourceId": f"src-{native}",
-            "sourceVersionId": f"v-{native}",
+            "sourceId": sid,
+            "sourceVersionId": document_version_id(source=sid, content_sha256=sha),
             "immutableObjectKey": f"o/{SHA}/{native}.pdf",
             "ocrObjectKey": f"o/{SHA}/{native}.json",
-            "contentSha256": f"sha256:{SHA}",
+            "contentSha256": sha,
             "title": f"Doc {native}",
             "sourceFilename": f"{native}.pdf",
             "pageCount": 2,
@@ -73,6 +79,10 @@ def test_every_case_is_contract_valid():
     for c in generate(_pairs(), n=320, seed=3):
         for d in (*c.before_docs, *c.after_docs):
             ProductCoreDocument.model_validate(d.model_dump())
+            # the compiler's identity rule: a supplied version id must be the derived one
+            assert d.source_version_id is None or d.source_version_id == document_version_id(
+                source=d.source_id, content_sha256=d.content_sha256
+            )
             # object keys stay content-addressed to the (recomputed) hash
             assert d.content_sha256.removeprefix("sha256:") in d.immutable_object_key.split("/")
 
@@ -97,7 +107,7 @@ def test_a_rename_keeps_the_content_hash_and_a_text_edit_changes_it():
     assert len(renamed) == 1
     base = next(d for _b, a in _pairs() for d in a if d.native_id == renamed[0].native_id)
     assert renamed[0].regions == base.regions
-    assert renamed[0].content_sha256 == _content_hash(base)
+    assert renamed[0].content_sha256 == base.content_sha256
     wsp = by["whitespace_only"]
     assert wsp.after_docs != wsp.before_docs
 
@@ -120,3 +130,27 @@ def test_cli_writes_a_manifest(tmp_path):
     assert main(["--pairs", str(pairs), "--out", str(tmp_path), "--n", "32", "--seed", "9"]) == 0
     m = json.loads((tmp_path / "faults_manifest.json").read_text(encoding="utf-8"))
     assert (m["caseCount"], m["seed"], m["provenance"]) == (32, 9, "generated")
+
+
+def test_every_non_duplicate_after_side_compiles_cold():
+    comp = ProductCoreCompiler(core_release_digest="sha256:" + "b" * 64)
+    for c in generate(_pairs(), n=160, seed=1):
+        if c.fault_class == "duplicate_region_text" or not c.after_docs:
+            continue  # duplicate text is a Core "hold" by design; empty cannot form a request
+        req = ProductCoreCompileRequest(
+            request_id=c.case_id,
+            idempotency_key="i" + c.case_id,
+            tenant_id=TENANT,
+            workspace_id="workspace-x",
+            collection_id="collection-x",
+            requested_at=datetime(2026, 11, 16, tzinfo=UTC),
+            route=ProductCoreRoute(
+                operation_class="initial_compile",
+                quality_requirement="standard",
+                max_cost_credits=1,
+                max_latency_ms=60000,
+                privacy_policy="foundation_synthetic_only",
+            ),
+            documents=c.after_docs,
+        )
+        comp.compile(req, input_sha256="sha256:" + "c" * 64)

@@ -20,6 +20,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
+from akc_cir.identity import document_version_id
 from akc_product_core.contracts import ProductCoreDocument
 
 Docs = tuple[ProductCoreDocument, ...]
@@ -73,10 +74,18 @@ def _rebuild(doc: ProductCoreDocument, **changes: Any) -> ProductCoreDocument:
     ]
     out = ProductCoreDocument.model_validate(data)
     new = _content_hash(out)
+    if new == _content_hash(doc):
+        return out  # same content: keep the original hash, keys and derived version id
     old_hex, new_hex = doc.content_sha256.removeprefix("sha256:"), new.removeprefix("sha256:")
     data["content_sha256"] = new
     for key in ("immutable_object_key", "ocr_object_key"):
         data[key] = data[key].replace(old_hex, new_hex)
+    # the compiler requires source_version_id == document_version_id(source, content_sha256)
+    data["source_version_id"] = (
+        document_version_id(source=data["source_id"], content_sha256=new)
+        if data["source_id"]
+        else None
+    )
     return ProductCoreDocument.model_validate(data)
 
 
@@ -131,14 +140,13 @@ def _add(_b: Docs, after: Docs, rng: _Rng) -> Docs | None:
     src = after[rng.randrange(len(after))]
     regions = [r.model_dump(by_alias=False) for r in src.regions]
     regions[0]["text"] += " (added source)"
+    # identity is left for the compiler to derive from native_id; none is invented here
     kw: dict[str, Any] = {
         "native_id": f"{src.native_id}-added",
         "source_filename": ("added-" + src.source_filename)[:500],
+        "source_id": None,
+        "source_version_id": None,
     }
-    if src.source_id:
-        kw["source_id"] = f"{src.source_id}-added"
-    if src.source_version_id:
-        kw["source_version_id"] = f"{src.source_version_id}-added"
     return (*after, _rebuild(src, regions=regions, **kw))
 
 
@@ -162,6 +170,7 @@ def _duplicate(_b: Docs, after: Docs, rng: _Rng) -> Docs | None:
     src = doc.regions[rng.randrange(len(doc.regions))]
     dup = src.model_dump(by_alias=False) | {
         "region_id": f"{src.region_id}-dup"[:256],
+        "native_object_id": f"{src.native_object_id}-dup" if src.native_object_id else None,
         "order": max(r.order for r in doc.regions) + 1,
     }
     return _replace(
