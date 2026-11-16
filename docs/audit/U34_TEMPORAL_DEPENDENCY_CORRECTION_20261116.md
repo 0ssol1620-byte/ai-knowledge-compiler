@@ -16,7 +16,7 @@ The two proposed patches in `d00/_scratch/proposed` were read against the real c
 
 ## Tests
 
-`tests/unit/test_f30_regressions.py` (new, 20 cases) and `TestTraceImpactSiblingCycle` in `packages/local-mcp/tests/test_read_surface.py`. Written first: 16 failed on the base. After the fix all pass. Required suites: 208 passed, 3 failed. The 3 failures are `test_stdio_roundtrip.py` (server subprocess closes stdout in this local env) and fail identically on the base. Callers (`test_p0_spine`, `test_recompilation_diagnostic`, `test_product_core_*`): 118 passed. `ruff check` clean and `mypy` clean on both modules.
+`tests/unit/test_f30_regressions.py` (new, 20 cases) and `TestTraceImpactSiblingCycle` in `packages/local-mcp/tests/test_read_surface.py`. Round 1 figures (superseded by Round 3 below): written first, 16 failed on the base; required suites 208 passed, 3 failed. The 3 failures are `test_stdio_roundtrip.py` (server subprocess closes stdout in this local env) and fail identically on the base. Callers (`test_p0_spine`, `test_recompilation_diagnostic`, `test_product_core_*`): 118 passed. `ruff check` clean and `mypy` clean on both modules.
 
 ## Shadow (Protected Core ladder, local only)
 
@@ -38,4 +38,22 @@ Re-run after the follow-up fix. All 13 differences are additions (49 added cycle
 
 ## Follow-up (reviewer blocker: fabricated hops)
 
-Tests added: 3-node sibling SCC (`root->a,b,c; a->c, c->b, b->a`, expects `a -> c -> b -> a`), 300 seeded random graphs (every reported cycle is a closed walk over live edges; every node of every non-trivial SCC inside the reached set is in some reported cycle), 50 seeded DAGs report none, and a local-mcp `trace_impact` regression that every printed hop exists. They fail on the first-round code (65 failures) and pass now. The 3 `test_stdio_roundtrip.py` failures are unchanged and fail on the untouched base (environment).
+Tests added: 3-node sibling SCC (`root->a,b,c; a->c, c->b, b->a`, expects `a -> c -> b -> a`), 300 seeded random graphs (every reported cycle is a closed walk over live edges; round 3: every non-trivial reached SCC has a reported cycle inside it), 50 seeded DAGs report none, and a local-mcp `trace_impact` regression that every printed hop exists. They failed on the first-round code (65 failures); round 3 re-ran them and they pass. The 3 `test_stdio_roundtrip.py` failures are unchanged and fail on the untouched base (environment).
+
+## Round 3 - linear cycle reporting
+
+Reviewer measurement (`review-U34b/perf.py`, one seeded random SUPPORTS graph): the follow-up ran one BFS per uncovered member of a cyclic component, O(U*(V+E)). 2,000 nodes / 10,000 edges: base 0.01 s, previous HEAD 1.01 s; 5,000 / 25,000: base 0.03 s, previous HEAD 6.57 s; `cycles_detected` grew 22 -> 1,968 and inflated the wire field `impact.cycles`.
+
+Contract change (lead decision): `cycles_detected` now guarantees that every cyclic component among the reached nodes is represented by at least one real closed walk. It no longer guarantees that every member of a component lies on a reported cycle. After the lineage walk, each non-trivial component that no reported cycle touches gets exactly one cycle: the shortest closed walk through its first member in sorted order, one BFS restricted to that component. Components already touched by a lineage cycle get nothing. BFS, `affected`, depths, `via`, `truncated`, `unknown` and the order of the lineage cycles (a prefix of the output) are unchanged.
+
+Measured after the change (same `perf.py`, one seed, this worktree vs base `6b3a27bf`):
+
+| nodes / edges | base | round 3 | cycles_detected base / round 3 |
+|---|---|---|---|
+| 500 / 2,500 | 0.00 s | 0.00 s | 24 / 24 |
+| 2,000 / 10,000 | 0.01 s | 0.02 s | 26 / 26 |
+| 5,000 / 25,000 | 0.02 s | 0.06 s | 22 / 22 |
+
+Tests: the SCC property is now "every non-trivial reached SCC has a reported cycle inside it"; a latency guard (2,000 / 10,000, median of 3 under 0.5 s, `len(cycles) <= lineage cycles + non-trivial components`, lineage cycles a prefix) was added. Receipts: `D:/CodexProjects/v34-lanes/receipts/u34-r3/`. Local author-side evidence only: no gate is marked passed, no public claim is made, and the independent re-review is still required.
+
+Shadow re-run (round 3, same fixtures, `receipts/u34-r3/out/`): product-core 1,887 calls and compiler-runtime 427 calls, affected/depth/path, truncated and unknown identical to base, cycles identical on every call (0 added cycles; the earlier 49 additions came from covering every member and are gone). Property check on seeded random graphs and DAGs (`u34-r3/random_check.py`, contract-adjusted): 0 errors. Suites: f30 regressions 372 passed; temporal, dependency, recompilation, knowledge_cicd_pipeline, world_state, p0_spine, absorption diagnostic, local-mcp, product_core_*: 669 passed, 3 failed (`test_stdio_roundtrip.py`, same on base). ruff and mypy clean.

@@ -264,18 +264,15 @@ class DependencyGraph:
         # The lineage check above only sees a cycle that closes on the path that
         # first reached it. Two sibling branches that point at each other are
         # each reached first from the seed, so the loop is missed (F30-04). An
-        # SCC pass over the reached nodes finds every loop; one the walk did not
-        # already name is reported as a real closed walk instead.
+        # SCC pass over the reached nodes finds every cyclic component; each one
+        # no reported cycle touches gets exactly one real closed walk, through
+        # its first member in sorted order. One BFS per uncovered component,
+        # inside that component, so the added cost is linear in the reached graph.
         reached = set(seeds) | {path.node_id for path in affected}
         covered = {node for cycle in cycles for node in cycle}
         for component in self._cyclic_components(reached, as_of):
-            members = set(component)
-            for start in component:  # sorted, so the choice is deterministic
-                if start in covered:
-                    continue
-                cycle = self._shortest_cycle(start, members, as_of)
-                cycles.append(cycle)
-                covered.update(cycle)
+            if covered.isdisjoint(component):
+                cycles.append(self._shortest_cycle(component[0], set(component), as_of))
 
         return ImpactReport(
             changed=tuple(seeds),

@@ -7,6 +7,8 @@ F30-04: a directed cycle reached through sibling BFS branches is reported.
 from __future__ import annotations
 
 import random
+import statistics
+import time
 from datetime import UTC, datetime
 from itertools import pairwise
 
@@ -251,13 +253,11 @@ def test_every_reported_cycle_is_a_real_walk_on_random_graphs(seed: int) -> None
     live = _live_edges(graph)
     for root in sorted(graph.nodes)[:2]:
         report = graph.impact_of([root])
-        covered = set()
         for cycle in report.cycles_detected:
             _assert_real_cycle(cycle, live)
-            covered.update(cycle)
         reached = {root, *report.affected_ids}
         for component in _sccs(graph, reached):
-            assert component <= covered
+            assert any(set(c) <= component for c in report.cycles_detected)
 
 
 @pytest.mark.parametrize("seed", range(50))
@@ -265,3 +265,24 @@ def test_dags_report_no_cycle(seed: int) -> None:
     graph = _acyclic_graph(seed)
     for root in sorted(graph.nodes):
         assert graph.impact_of([root]).cycles_detected == ()
+
+
+def test_cycle_reporting_is_linear_on_a_large_cyclic_graph(monkeypatch: pytest.MonkeyPatch) -> None:
+    rng = random.Random(7)
+    pairs = {tuple(rng.sample(range(2000), 2)) for _ in range(10000)}
+    graph = DependencyGraph(
+        [DependencyEdge(f"x{a}", f"x{b}", EdgeType.SUPPORTS) for a, b in sorted(pairs)]
+    )
+    times = []
+    for _ in range(3):
+        start = time.perf_counter()
+        report = graph.impact_of(["x0"])
+        times.append(time.perf_counter() - start)
+    assert statistics.median(times) < 0.5  # generous: ~0.05 s here, quadratic code took ~1 s
+
+    reached = {"x0", *report.affected_ids}
+    components = graph._cyclic_components(reached, None)
+    monkeypatch.setattr(DependencyGraph, "_cyclic_components", lambda *_: [])
+    lineage_only = graph.impact_of(["x0"]).cycles_detected
+    assert len(report.cycles_detected) <= len(lineage_only) + len(components)
+    assert report.cycles_detected[: len(lineage_only)] == lineage_only
