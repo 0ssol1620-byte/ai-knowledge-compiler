@@ -7,6 +7,7 @@ synthetic canned IR written in this file for boundary tests.
 
 from __future__ import annotations
 
+import hashlib
 import re
 from typing import Annotated, Literal, Protocol
 
@@ -38,7 +39,7 @@ REASON_CODES = frozenset(
     }
 )
 
-_HOST_PATH_OR_URL = re.compile(r"(?:^[A-Za-z]:[\\/]|^[\\/]|^[A-Za-z][A-Za-z0-9+.-]*://|\\\\)")
+_HOST_PATH_OR_URL = re.compile(r"(?:^[A-Za-z]:[\\/]|^[\\/]|^[A-Za-z][A-Za-z0-9+.-]*:|\\\\)")
 
 
 def _no_path_or_url(value: str) -> str:
@@ -155,7 +156,10 @@ class HwpAdapterResult(ContractModel):
         limits = ParserLimits()
         if len(self.blocks) > limits.max_blocks:
             raise ValueError("too many blocks")
-        if sum(len(b.text) for b in self.blocks) > limits.max_total_text_chars:
+        if (
+            sum(len(b.text) + sum(len(c.text) for c in b.table_grid or ()) for b in self.blocks)
+            > limits.max_total_text_chars
+        ):
             raise ValueError("total text too large")
         cells = sum(len(b.table_grid or ()) for b in self.blocks)
         if cells > limits.max_table_cells:
@@ -191,10 +195,11 @@ def build_result(
 
 
 class Accepted(ContractModel):
+    outcome: Literal["accepted"] = "accepted"
     result: HwpAdapterResult
 
 
-class Held(ContractModel):
+class _ReasonOutcome(ContractModel):
     reason_code: str
     detail: str | None = None  # body-free stable sub-code, e.g. ARCHIVE_RATIO_LIMIT
 
@@ -206,8 +211,12 @@ class Held(ContractModel):
         return value
 
 
-class Retryable(Held):
-    pass
+class Held(_ReasonOutcome):
+    outcome: Literal["held"] = "held"
+
+
+class Retryable(_ReasonOutcome):
+    outcome: Literal["retryable"] = "retryable"
 
 
 HwpOutcome = Accepted | Held | Retryable
@@ -233,8 +242,13 @@ class HwpEngineHold(Exception):
 def run_engine(engine: HwpEngine, data: bytes, request: HwpAdapterRequest) -> HwpOutcome:
     """In-process outcome mapping. Process isolation, timeouts and crashes are 7b's job."""
 
+    if hashlib.sha256(data).hexdigest() != request.source_sha256:
+        return Held(reason_code="HWP_SOURCE_HASH_MISMATCH")
     try:
-        return Accepted(result=engine.parse(data, request))
+        result = engine.parse(data, request)
+        if result.manifest.source_sha256 != request.source_sha256:
+            return Held(reason_code="HWP_SOURCE_HASH_MISMATCH")
+        return Accepted(result=result)
     except HwpEngineHold as hold:
         return Held(reason_code=hold.reason_code)
     except ValueError:

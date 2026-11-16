@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import io
 import zipfile
+import zlib
 
 from defusedxml import ElementTree as SafeElementTree
 from defusedxml.common import DefusedXmlException
@@ -79,7 +80,7 @@ def _detect_hwpx(data: bytes, limits: ParserLimits) -> DetectedFormat | Held:
                         return Held(reason_code="HWP_XML_UNSAFE")
         except StructuredParseError as exc:
             return Held(reason_code="HWP_CONTAINER_LIMIT", detail=exc.code)
-        except (OSError, zipfile.BadZipFile, EOFError, NotImplementedError):
+        except (OSError, zipfile.BadZipFile, EOFError, NotImplementedError, zlib.error):
             # truncated member data, bad CRC, unsupported compression
             return Held(reason_code="HWP_SIGNATURE_MISMATCH", detail="INVALID_ARCHIVE")
     return "hwpx"
@@ -108,6 +109,9 @@ def _detect_hwpml(data: bytes) -> DetectedFormat | Held:
                 element.clear()
     except DefusedXmlException:
         return Held(reason_code="HWP_XML_UNSAFE")
+    except (ValueError, LookupError):
+        # declared encoding the parser cannot decode (euc-kr, cp949, utf-32, unknown names)
+        return Held(reason_code="HWP_SIGNATURE_MISMATCH", detail="XML_ENCODING")
     except (SafeElementTree.ParseError, UnicodeError):
         return Held(reason_code="HWP_SIGNATURE_MISMATCH", detail="XML_MALFORMED")
     return "hwpml" if root == "HWPML" else Held(reason_code="HWP_SIGNATURE_MISMATCH")

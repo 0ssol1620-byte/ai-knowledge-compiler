@@ -125,3 +125,20 @@ def test_truncated_containers_fail_with_stable_codes(cut: int) -> None:
     _held(detect_hwp_format(zipped[:cut]), "HWP_SIGNATURE_MISMATCH")
     _held(detect_hwp_format(HWP5[:8] + b"\x00" * cut), "HWP_NOT_HWP_OLE")
     _held(detect_hwp_format(b"<HWPML><BODY><P>"[: 5 + cut]), "HWP_SIGNATURE_MISMATCH")
+
+
+@pytest.mark.parametrize("enc", ["euc-kr", "cp949", "utf-32", "shift_jis", "x-bogus"])
+def test_hwpml_unsupported_xml_encoding_is_held_not_raised(enc: str) -> None:
+    data = f'<?xml version="1.0" encoding="{enc}"?><HWPML/>'.encode()
+    assert _held(detect_hwp_format(data), "HWP_SIGNATURE_MISMATCH").detail == "XML_ENCODING"
+
+
+def test_hwpx_corrupt_deflate_member_is_held_not_raised() -> None:
+    raw = bytearray(_zip(HWPX, compression=zipfile.ZIP_STORED))
+    at = raw.index(b"Contents/content.hpf")  # local header name; method field is 8 bytes before
+    raw[at - 22 + 0 : at - 22 + 2] = b"\x08\x00"
+    raw[raw.index(b"PK\x01\x02", 0) :][:0] = b""
+    # patch the central directory entry too
+    cd = raw.index(b"Contents/content.hpf", raw.index(b"PK\x01\x02"))
+    raw[cd - 46 + 10 : cd - 46 + 12] = b"\x08\x00"
+    _held(detect_hwp_format(bytes(raw)), "HWP_SIGNATURE_MISMATCH")

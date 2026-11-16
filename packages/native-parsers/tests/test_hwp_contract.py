@@ -12,7 +12,9 @@ from akc_native_parsers.hwp_contract import (
     HwpBlock,
     HwpManifest,
     ResourceReceipt,
+    TableCell,
     UnavailableEngine,
+    UnresolvedRegion,
     build_result,
     run_engine,
 )
@@ -127,3 +129,47 @@ def test_fixture_engine_outcomes() -> None:
 def test_held_rejects_unknown_reason_code() -> None:
     with pytest.raises(ValidationError):
         Held(reason_code="SOMETHING_ELSE")
+
+
+def test_run_engine_holds_source_hash_mismatch() -> None:
+    wrong = run_engine(FixtureEngine(), b"other bytes", _request())
+    assert isinstance(wrong, Held) and wrong.reason_code == "HWP_SOURCE_HASH_MISMATCH"
+    mism = run_engine(FixtureEngine(), DATA, _request(parser_profile="fixture:hash_mismatch"))
+    assert isinstance(mism, Held) and mism.reason_code == "HWP_SOURCE_HASH_MISMATCH"
+
+
+def test_retryable_is_not_held_and_serialises_distinctly() -> None:
+    from akc_native_parsers.hwp_contract import Retryable
+
+    r = Retryable(reason_code="PARSER_TIMEOUT")
+    assert not isinstance(r, Held)
+    assert r.model_dump()["outcome"] == "retryable"
+    assert Held(reason_code="PARSER_TIMEOUT").model_dump()["outcome"] == "held"
+
+
+def test_table_cell_text_counts_toward_total_text_cap() -> None:
+    cell = HwpBlock(
+        id="b1",
+        kind="table",
+        table_grid=(TableCell(row=0, col=0, text="x" * 10_000_001),),
+        bbox_or_element_anchor="a",
+        original_ref="a",
+    )
+    with pytest.raises(ValidationError):
+        build_result(
+            engine_id="t",
+            engine_version="1",
+            manifest=HwpManifest(source_sha256="0" * 64, detected_format="hwp5"),
+            blocks=(cell,),
+            resource_receipt=ResourceReceipt(wall_ms=0, input_bytes=1, output_bytes=0, exit_code=0),
+        )
+
+
+@pytest.mark.parametrize(
+    "bad", ["file:/etc/passwd", "javascript:alert(1)", "data:text/html,x", "C:relative.hwp"]
+)
+def test_anchor_and_ref_reject_schemes_without_slashes(bad: str) -> None:
+    with pytest.raises(ValidationError):
+        HwpBlock(id="b", kind="paragraph", bbox_or_element_anchor="a", original_ref=bad)
+    with pytest.raises(ValidationError):
+        UnresolvedRegion(anchor=bad, reason="embedded_image", critical=False)
