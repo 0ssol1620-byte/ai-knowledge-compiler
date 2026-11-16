@@ -103,20 +103,28 @@ def test_rapid_consecutive_writes_collapse_into_one_stable_event(start_session) 
     assert record["content_sha256"] == sha256_of("chunk-5")
 
 
+def _discovered(session: Session) -> list[dict]:
+    return [r for r in session.records if r["event_type"] == "file.discovered.v1"]
+
+
+def _removed(session: Session) -> list[dict]:
+    return [r for r in session.records if r["event_type"] == "watcher.file.removed.v1"]
+
+
 def test_rename_emits_for_destination_and_clears_source(start_session) -> None:  # type: ignore[no-untyped-def]
     session: Session = start_session()
     wait_watch_live(session)
 
     source = session.inbox / "a.txt"
     source.write_text("same-bytes", encoding="utf-8")
-    assert wait_until(lambda: len(session.records) == 1)
+    assert wait_until(lambda: len(_discovered(session)) == 1)
 
     sub = session.inbox / "sub"
     sub.mkdir()
     source.rename(sub / "b.txt")
 
-    assert wait_until(lambda: len(session.records) == 2)
-    by_rel = {record["relative_path"]: record for record in session.records}
+    assert wait_until(lambda: len(_discovered(session)) == 2)
+    by_rel = {record["relative_path"]: record for record in _discovered(session)}
     assert set(by_rel) == {"a.txt", "sub/b.txt"}
     moved = by_rel["sub/b.txt"]
     assert moved["content_sha256"] == sha256_of("same-bytes")
@@ -125,8 +133,9 @@ def test_rename_emits_for_destination_and_clears_source(start_session) -> None: 
 
     # The source slot is cleared: recreating a.txt emits again.
     (session.inbox / "a.txt").write_text("same-bytes", encoding="utf-8")
-    assert wait_until(lambda: len(session.records) == 3)
-    recreated = session.records[-1]
+    assert wait_until(lambda: len(_discovered(session)) == 3)
+    assert [r["relative_path"] for r in _removed(session)] == ["a.txt"]
+    recreated = _discovered(session)[-1]
     assert recreated["relative_path"] == "a.txt"
     assert recreated["generation"] == 2
 
@@ -137,14 +146,15 @@ def test_delete_then_recreate_emits_again_with_bumped_generation(start_session) 
 
     target = session.inbox / "f.txt"
     target.write_text("payload", encoding="utf-8")
-    assert wait_until(lambda: len(session.records) == 1)
+    assert wait_until(lambda: len(_discovered(session)) == 1)
 
     target.unlink()
     assert wait_until(lambda: session.watcher.stats()["removals_cleared"] == 1)
 
     target.write_text("payload", encoding="utf-8")
-    assert wait_until(lambda: len(session.records) == 2)
-    second = session.records[1]
+    assert wait_until(lambda: len(_discovered(session)) == 2)
+    assert [r["relative_path"] for r in _removed(session)] == ["f.txt"]
+    second = _discovered(session)[1]
     assert second["generation"] == 2
     assert second["sequence"] == 2
     assert second["content_sha256"] == sha256_of("payload")
