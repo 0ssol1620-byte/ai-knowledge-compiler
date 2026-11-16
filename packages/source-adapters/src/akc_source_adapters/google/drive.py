@@ -8,10 +8,14 @@ from __future__ import annotations
 import urllib.parse
 from collections.abc import Mapping
 from datetime import UTC, datetime
-from typing import Any, cast
+from typing import Any
 
 from akc_source_adapters.envelope import ChangeEvent, Cursor, FetchResult
-from akc_source_adapters.google._common import GoogleTokenProvider, get_json
+from akc_source_adapters.google._common import (
+    GoogleTokenProvider,
+    SourceCursorInvalid,
+    get_json,
+)
 
 PROVIDER = "gdrive"
 FRESHNESS_TIER = "F1"
@@ -56,6 +60,14 @@ class DriveAdapter:
     def fetch_changes(self, cursor: Cursor | None) -> FetchResult:
         state: dict[str, object] = dict(cursor.state) if cursor is not None else {}
         page_token = str(state.get("delta_token") or "")
+        known: dict[str, dict[str, str]] = {}
+        raw_files: Any = state.get("files") or {}
+        for file_id, entry in raw_files.items():
+            if not isinstance(entry, dict):
+                # Legacy name-keyed cursor: slots cannot be mapped to fileIds.
+                raise SourceCursorInvalid("legacy name-keyed Drive cursor; re-inventory required")
+            known[str(file_id)] = entry
+        state["files"] = known
         observed_at = datetime.now(UTC)
         events: list[ChangeEvent] = []
 
@@ -75,28 +87,38 @@ class DriveAdapter:
                 f"{self.api_base}/changes?{query}",
                 self.token_provider,
                 sleep=self._sleep,
+                cursor_request=bool(page_token),
             )
 
             for change in payload.get("changes", []):
                 file_meta = change.get("file") or {}
-                path = str(file_meta.get("name") or change.get("fileId"))
-                revision = f"{change.get('fileId')}@{file_meta.get('modifiedTime', '')}"
+                file_id = str(change.get("fileId"))
+                name = str(file_meta.get("name") or file_id)
+                revision = f"{file_id}@{file_meta.get('modifiedTime', '')}"
                 removed = bool(change.get("removed")) or bool(file_meta.get("trashed"))
-                known_files = cast(dict[str, str], state.get("files", {}))
-                kind = "file_removed" if removed else (
-                    "file_changed" if known_files.get(path) else "file_added"
-                )
-                event_payload: dict[str, object] = {"path": path}
-                if not removed:
+                previous = known.get(file_id)
+                event_payload: dict[str, object]
+                if removed:
+                    kind = "file_removed"
+                    event_payload = {"path": previous["path"] if previous else name}
+                    known.pop(file_id, None)
+                else:
+                    if previous is None:
+                        kind = "file_added"
+                        event_payload = {"path": name}
+                    elif previous["path"] != name:
+                        kind = "file_renamed"
+                        event_payload = {"path": name, "previous_path": previous["path"]}
+                    else:
+                        kind = "file_changed"
+                        event_payload = {"path": name}
                     event_payload.update(
                         {
                             "mimeType": file_meta.get("mimeType", ""),
                             "modifiedTime": file_meta.get("modifiedTime", ""),
                         }
                     )
-                    cast(dict[str, str], state.setdefault("files", {}))[path] = revision
-                elif "files" in state:
-                    cast(dict[str, str], state["files"]).pop(path, None)
+                    known[file_id] = {"path": name, "revision": revision}
                 events.append(
                     ChangeEvent(
                         source_id=self.source_id,

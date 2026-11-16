@@ -39,12 +39,21 @@ class GoogleAdapterError(RuntimeError):
         self.status = status
 
 
+class SourceAccessRevoked(GoogleAdapterError):
+    """The provider refused the token (HTTP 401/403): access was revoked or never granted."""
+
+
+class SourceCursorInvalid(GoogleAdapterError):
+    """The provider no longer honours our cursor (HTTP 404/410): re-inventory, never guess."""
+
+
 def get_json(
     url: str,
     token_provider: GoogleTokenProvider,
     *,
     timeout: float = 30.0,
     sleep: Callable[[float], None] = time.sleep,
+    cursor_request: bool = False,
 ) -> Any:
     """GET one JSON document with polite backoff on 429/5xx and Retry-After.
 
@@ -65,6 +74,17 @@ def get_json(
             headers = dict(exc.headers or {})
             retry_after = str(headers.get("Retry-After") or "")
             retryable = exc.code == 429 or exc.code >= 500
+            if exc.code in (401, 403):
+                raise SourceAccessRevoked(
+                    f"GET {urllib.parse.urlsplit(url).path} refused (HTTP {exc.code})",
+                    status=exc.code,
+                ) from exc
+            if cursor_request and exc.code in (404, 410):
+                raise SourceCursorInvalid(
+                    f"GET {urllib.parse.urlsplit(url).path}: cursor no longer valid "
+                    f"(HTTP {exc.code})",
+                    status=exc.code,
+                ) from exc
             if attempt == MAX_ATTEMPTS or not retryable:
                 raise GoogleAdapterError(
                     f"GET {urllib.parse.urlsplit(url).path} failed (HTTP {exc.code})",

@@ -99,7 +99,11 @@ class CalendarAdapter:
             params["orderBy"] = "updated"
 
         while True:
-            payload = get_json(self._events_url(params), self.token_provider)
+            payload = get_json(
+                self._events_url(params),
+                self.token_provider,
+                cursor_request="syncToken" in params,
+            )
             for event in payload.get("items", []):
                 if event.get("status") == "transparent":  # not a real event state; skip noise
                     continue
