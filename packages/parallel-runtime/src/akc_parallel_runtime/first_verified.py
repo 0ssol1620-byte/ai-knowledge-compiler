@@ -1,4 +1,10 @@
-"""Deterministic first-verified arbitration with immutable tie-breaking."""
+"""Deterministic first-verified arbitration with immutable tie-breaking.
+
+This helper is offline arbitration only (replaying recorded candidates). Runtime
+acceptance is "first durable accept per shard" in ``AttemptStore.accept``: a
+validation-failed attempt never wins, and the accepted winner supersedes its live
+siblings through ``AttemptStore.supersede_siblings``.
+"""
 
 from __future__ import annotations
 
