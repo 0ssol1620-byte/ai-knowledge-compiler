@@ -7,6 +7,7 @@ from typing import Any
 
 import pytest
 
+from benchmark.runners.base import RunnerUnavailable
 from benchmark.runners.registry import EXTERNAL_RUNNERS
 from benchmark.screen.critical_fields import canonical_values, score_critical_fields
 from benchmark.screen.manifest import HoldoutGuard, HoldoutSealedError
@@ -64,7 +65,9 @@ def _setup(tmp_path: Path, pages: int = 2) -> tuple[HoldoutGuard, Path, dict[str
         f"d1.txt#{p}": {
             "text": f"{GOLD_MARKER} 1,234.5억",
             "blocks": [],
-            "critical_fields": [{"field_id": "f", "kind": "number", "value": "123450000000"}],
+            "critical_fields": [
+                {"field_id": "f", "kind": "number", "value": "123450000000", "anchor": "영업이익"}
+            ],
         }
         for p in range(pages)
     }
@@ -108,8 +111,8 @@ def test_provider_exception_is_a_record_and_run_continues(tmp_path, monkeypatch)
     def runner(payload, **_):
         calls.append(payload["benchmark_case_id"])
         if len(calls) == 1:
-            raise RuntimeError("pod died")
-        return _output(payload, "1,234.5억")
+            raise RunnerUnavailable("pod died")
+        return _output(payload, "영업이익 1,234.5억")
 
     monkeypatch.setitem(EXTERNAL_RUNNERS, "mineru", runner)
     recs = _run(tmp_path, guard, corpus, gold)
@@ -126,7 +129,7 @@ def test_resume_does_not_call_provider_twice_and_retries_failures(tmp_path, monk
     def runner(payload, **_):
         calls.append(1)
         if len(calls) == 1:
-            raise RuntimeError("down")
+            raise RunnerUnavailable("down")
         return _output(payload, "x")
 
     monkeypatch.setitem(EXTERNAL_RUNNERS, "mineru", runner)
@@ -201,7 +204,7 @@ def test_holdout_needs_frozen_recipe(tmp_path):
 
 def test_accepted_wrong_number_is_critical_error(tmp_path, monkeypatch):
     guard, corpus, gold = _setup(tmp_path, pages=1)
-    monkeypatch.setitem(EXTERNAL_RUNNERS, "mineru", lambda p, **_: _output(p, "1,234.6억"))
+    monkeypatch.setitem(EXTERNAL_RUNNERS, "mineru", lambda p, **_: _output(p, "영업이익 1,234.6억"))
     (rec,) = _run(tmp_path, guard, corpus, gold)
     assert rec["accepted"] and rec["critical"] == {"n": 1, "exact": 0, "accepted_errors": 1}
 
@@ -229,6 +232,113 @@ def test_date_and_identifier_normalisation():
 
 def test_unparseable_gold_fails_closed():
     with pytest.raises(ValueError):
-        score_critical_fields([{"field_id": "f", "kind": "number", "value": "n/a"}], "5")
-    s = score_critical_fields([{"field_id": "f", "kind": "number", "value": "-5%"}], "5% up")
+        score_critical_fields(
+            [{"field_id": "f", "kind": "number", "value": "n/a", "anchor": "a"}], "a 5"
+        )
+    s = score_critical_fields(
+        [{"field_id": "f", "kind": "number", "value": "-5%", "anchor": "growth"}], "growth 5% up"
+    )
     assert (s.n, s.exact, s.mismatched) == (1, 0, ("f",))
+
+
+def _field(value: str, anchor: str = "a", kind: str = "number") -> dict[str, str]:
+    return {"field_id": "f", "kind": kind, "value": value, "anchor": anchor}
+
+
+@pytest.mark.parametrize(
+    ("text", "want"),
+    [
+        ("영업이익은 1,234.5억원으로 증가", ("123450000000", "KRW")),
+        ("가격 3,000원에 판매", ("3000", "KRW")),
+        ("매출액1,234억 달성", ("123400000000", None)),
+        ("금리는 -5%로", ("-5", "pct")),
+        ("성장률 5%로", ("5", "pct")),
+    ],
+)
+def test_korean_particles_do_not_break_numbers(text, want):
+    (got,) = canonical_values("number", text)
+    n, k, cur = got
+    assert n == want[0] and (cur == want[1] or k == want[1])
+
+
+def test_particle_after_number_is_not_a_false_match():
+    assert score_critical_fields([_field("5", "성장률")], "성장률 5%로").exact == 0
+    assert score_critical_fields([_field("3", "가격")], "가격 3,000원에").exact == 0
+    assert score_critical_fields([_field("1,234.5억원", "a")], "a 1,234.5억원이").exact == 1
+
+
+def test_trailing_comma_does_not_truncate():
+    assert canonical_values("number", "1,234, and 5") == {("1234", "num", None), ("5", "num", None)}
+
+
+def test_single_letter_scale_needs_no_space():
+    assert canonical_values("number", "A: 200  B: 100") == {
+        ("200", "num", None),
+        ("100", "num", None),
+    }
+    assert canonical_values("number", "width 5 m") == {("5", "num", None)}
+    assert canonical_values("number", "5m") == {("5000000", "num", None)}
+    assert canonical_values("number", "3 million") == {("3000000", "num", None)}
+
+
+def test_swapped_values_are_not_exact():
+    gold = [
+        {**_field("100", "A="), "field_id": "a"},
+        {**_field("200", "B="), "field_id": "b"},
+    ]
+    assert score_critical_fields(gold, "A=200; B=100").mismatched == ("a", "b")
+    assert score_critical_fields(gold, "A=100; B=200").exact == 2
+
+
+def test_value_elsewhere_on_page_is_not_exact():
+    s = score_critical_fields([_field("1,000", "Revenue")], "Revenue 2,000; note 1,000")
+    assert (s.exact, s.mismatched) == (0, ("f",))
+    assert score_critical_fields([_field("1,000", "Revenue")], "no label 1,000").exact == 0
+
+
+@pytest.mark.parametrize("bad", [None, "", "  "])
+def test_gold_without_anchor_is_refused(bad):
+    f = {"field_id": "f", "kind": "number", "value": "5"}
+    if bad is not None:
+        f["anchor"] = bad
+    with pytest.raises(ValueError):
+        score_critical_fields([f], "5")
+
+
+def test_local_write_failure_propagates_not_a_provider_failure(tmp_path, monkeypatch):
+    guard, corpus, gold = _setup(tmp_path, pages=1)
+    monkeypatch.setitem(EXTERNAL_RUNNERS, "mineru", lambda p, **_: _output(p, "x"))
+    (tmp_path / "raw").write_text("a file, so the raw directory cannot be made")
+    with pytest.raises(OSError):
+        _run(tmp_path, guard, corpus, gold)
+    assert not (tmp_path / "rec.jsonl").exists() or not (tmp_path / "rec.jsonl").read_text()
+
+
+def test_unserializable_output_is_contract_failed(tmp_path, monkeypatch):
+    guard, corpus, gold = _setup(tmp_path, pages=1)
+    monkeypatch.setitem(EXTERNAL_RUNNERS, "mineru", lambda p, **_: {"x": object()})
+    (rec,) = _run(tmp_path, guard, corpus, gold)
+    assert rec["hard_failures"] == ["contract_failed"] and rec["raw_sha256"] is None
+
+
+def test_unparseable_gold_stops_before_any_call(tmp_path, monkeypatch):
+    guard, corpus, gold = _setup(tmp_path)
+    gold["d1.txt#1"]["critical_fields"] = [_field("n/a")]
+    monkeypatch.setitem(EXTERNAL_RUNNERS, "mineru", lambda p, **_: pytest.fail("called"))
+    with pytest.raises(ValueError):
+        _run(tmp_path, guard, corpus, gold)
+
+
+def test_holdout_with_tune_purpose_raises(tmp_path):
+    guard, corpus, gold = _setup(tmp_path)
+    with pytest.raises(HoldoutSealedError):
+        run_screen(
+            guard=guard,
+            split="holdout",
+            purpose="tune",
+            candidate=_candidate(),
+            corpus_root=corpus,
+            gold=gold,
+            raw_dir=tmp_path / "r",
+            records_path=tmp_path / "x.jsonl",
+        )

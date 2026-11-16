@@ -20,10 +20,10 @@ from typing import Any
 
 from benchmark.evaluators.metrics import score_case
 from benchmark.run_benchmark import parser_output_validator
-from benchmark.runners.base import build_provider_payload
+from benchmark.runners.base import RunnerUnavailable, build_provider_payload
 from benchmark.runners.native import run as run_native
 from benchmark.runners.registry import EXTERNAL_RUNNERS
-from benchmark.screen.critical_fields import score_critical_fields
+from benchmark.screen.critical_fields import gold_value, score_critical_fields
 from benchmark.screen.manifest import HoldoutGuard
 from benchmark.v6.contracts import ContractError, canonical_sha256, require_sha256
 
@@ -129,6 +129,9 @@ def run_screen(
     missing = [f"{d['doc_id']}#{p}" for d, p in pages if f"{d['doc_id']}#{p}" not in gold]
     if missing:
         raise ContractError(f"gold missing for {len(missing)} page(s), first {missing[0]!r}")
+    for d, p in pages:  # an unparseable gold field must stop the run before any paid call
+        for f in gold[f"{d['doc_id']}#{p}"].get("critical_fields") or []:
+            gold_value(f)
     validator = parser_output_validator(_REPO / "benchmark" / "manifest.yaml")
     ledger: dict[str, dict[str, Any]] = {}
     if records_path.is_file():
@@ -163,22 +166,28 @@ def run_screen(
         parsed: Any = None
         failures: list[str] = []
         raw_sha: str | None = None
-        try:
-            if raw_path.is_file():
-                data = raw_path.read_bytes()
-            else:
+        data: bytes | None = None
+        if raw_path.is_file():
+            data = raw_path.read_bytes()
+        else:
+            try:
                 result = call(candidate, case, corpus_root)
-                data = (
-                    json.dumps(result, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
-                    + "\n"
-                ).encode()
+            except (RunnerUnavailable, ValueError):
+                failures = ["provider_unavailable"]  # operational: nothing came back
+            else:
+                try:
+                    data = (
+                        json.dumps(
+                            result, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+                        )
+                        + "\n"
+                    ).encode()
+                except (TypeError, ValueError):
+                    failures = ["contract_failed"]  # semantic: the output cannot be recorded
+        if data is not None:
             parsed = json.loads(data)
-            _write_once(raw_path, data)
+            _write_once(raw_path, data)  # a local write error propagates, never a record
             raw_sha = _sha(data)
-        except ImmutableOutputError:
-            raise
-        except Exception:
-            failures = ["provider_unavailable"]
         wall_ms = (time.perf_counter() - started) * 1000.0
         output: dict[str, Any] | None = None
         if raw_sha is not None:
