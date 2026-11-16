@@ -1132,7 +1132,7 @@ async def test_runtime_zero_task_reuse_starts_durable_finalizer_with_zero_reserv
         executor=_NoopPostgresMutationExecutor(),
         row_attestor=HmacSha256RowAttestor(b"z" * 32),
     )
-    app.state.collection_semantic_retrieval_batch_factory = lambda _prepared: None
+    app.state.collection_semantic_retrieval_batch_factory = lambda _prepared, *, recorded_at: None
     compile_headers = {"Idempotency-Key": "zero-task-runtime-start"}
     started = await client.post(
         f"/v1/collections/{collection_id}/compile",

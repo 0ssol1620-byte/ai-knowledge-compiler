@@ -17,7 +17,7 @@ from akc_retrieval import (
     RetrievalUnavailable,
 )
 from fastapi import APIRouter, Depends, HTTPException, Request
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -46,6 +46,11 @@ class CollectionRetrievalSearchRequest(_WireModel):
     graph_seed_ids: tuple[Annotated[str, Field(min_length=1, max_length=240)], ...] = ()
     candidate_k: Annotated[int, Field(ge=30, le=100)] = 50
     top_k: Annotated[int, Field(ge=5, le=15)] = 10
+    # Timezone-aware instants only; a naive value is a 422. Rows carry recorded_at
+    # only, so an availableAt cut abstains until sources declare availability.
+    valid_at: AwareDatetime | None = Field(default=None, alias="validAt")
+    known_at: AwareDatetime | None = Field(default=None, alias="knownAt")
+    available_at: AwareDatetime | None = Field(default=None, alias="availableAt")
 
     @field_validator("query")
     @classmethod
@@ -291,6 +296,9 @@ async def search_collection_retrieval(
             graph_seed_ids=payload.graph_seed_ids,
             candidate_k=payload.candidate_k,
             top_k=payload.top_k,
+            valid_at=payload.valid_at,
+            known_at=payload.known_at,
+            available_at=payload.available_at,
         )
     except (ProviderAttestationError, RetrievalUnavailable, ValueError) as exc:
         raise _runtime_unavailable("COLLECTION_RETRIEVAL_FAILED_CLOSED") from exc
