@@ -1618,6 +1618,100 @@ def test_property_value_read_is_the_generated_value_or_nothing(kind, data, pre, 
         token,
         trail,
     )
+    # (v) amendment A.4: a standalone sign or currency field, an ASCII space, then label
+    # separators or opening punctuation: refused, never the unsigned or currency-less value.
+    if kind == "number":
+        alone = data.draw(st.sampled_from(_STANDALONE))
+        lead = data.draw(st.text(_LABEL_SEPARATORS + "([{\"'", min_size=1, max_size=3))
+        assert value_after_anchor(field, f"A {alone} {lead}{token}\n{later}") is None, (
+            alone,
+            lead,
+            token,
+        )
+
+
+# A sign, an accounting "(" or a currency, each a field of its own before a number.
+_STANDALONE = ["-", "+", "△", "▲", "(", "$", "₩", "€", "£", "¥"]
+_STANDALONE += ["\uff04", "\u2212", "USD", "krw", "Eur", "원", "달러", "엔"]
+
+
+# --- Amendment A.4: once a sign, "(" or currency is consumed for a number, the number is read
+# with it or refused; the scan never restarts past it and reads the number without it.
+@pytest.mark.parametrize(
+    "candidate",
+    [
+        "A - :5",
+        "A - =5",
+        "A - |5|",
+        "A + :5",
+        "A △ :5",
+        "A ( :5 )",
+        "A - :5억",
+        "A $ :5",
+        "A $ =5",
+        "A ₩ :5",
+        "A USD :5",
+        "A - [5]",
+        'A - "5"',
+        "A $ [5]",
+        "A $ - 5",
+        # The same class, not listed in A.4: whitespace other than a space, a table cell, a
+        # field of two prefixes that the grammar does not join, an opening run glued to "(".
+        "A -\t5",
+        "A $\n5",
+        "A | - | 5 |",
+        "A -- 5",
+        "A $- 5",
+        "A -( 5)",
+        'A ("5")',
+        "A ([5])",
+        "A - x 5",
+        "A $USD 5",
+        "A - (5)",
+    ],
+)
+def test_a_consumed_sign_paren_or_currency_is_never_dropped(candidate):
+    assert value_after_anchor(_field("x", "A"), candidate) is None
+    assert score_critical_fields([_field("5", "A")], candidate).exact == 0
+
+
+@pytest.mark.parametrize(
+    ("candidate", "want"),
+    [
+        # A prefix glued into a word is not a prefix: the word is text, the number after it reads.
+        ("A 원가 5", ("5", "num", None)),  # 원가: cost
+        ("A (주) 5", ("5", "num", None)),  # (주)
+        ("A (단위: 원) 1,234", ("1234", "num", None)),  # (단위: 원), a unit header
+        ("A (USD) 5", ("5", "num", None)),
+        ("A -$ 5", ("-5", "num", "USD")),
+        ("A ( 5 )", ("-5", "num", None)),
+    ],
+)
+def test_a_prefix_glued_into_a_word_or_a_unit_label_is_text(candidate, want):
+    assert value_after_anchor(_field("x", "A"), candidate) == want
+
+
+@seed(20261117)
+@settings(max_examples=500, deadline=None)
+@given(
+    _number_token(),
+    st.sampled_from(_STANDALONE),
+    st.text(" \t\n\r", min_size=1, max_size=3),
+    st.text(_PROPERTY_JUNK + " " + "△▲₩원", max_size=4),
+)
+def test_property_a_standalone_prefix_field_is_read_with_the_number_or_refuses(
+    rendered, alone, ws, junk
+):
+    """A standalone sign, "(" or currency field, whitespace, then anything that does not start
+    with a digit, then a token: the prefix was consumed and nothing joins it to the number, so
+    the result is None. Past spaces alone the prefix joins the token; with a digit right after
+    the whitespace the field is a different, longer number, which this property does not judge.
+    """
+    token, _ = rendered
+    assume(junk[:1] not in string.digits + " ")
+    assume(junk or ws.strip(" "))
+    got = value_after_anchor(_field("x", "A"), f"A {alone}{ws}{junk}{token}\n7")
+    assert got is None, (alone, ws, junk, token, got)
 
 
 # --- Continuation property (amendment A.2.2): the field after a Korean scale group, or after a

@@ -331,20 +331,35 @@ def _ends_scaled(text: str, s: int, english: bool) -> bool:
 def _number_at(text: str, i: int) -> tuple[int, Any] | None:
     """The token starting at ``i`` as ``(end, canonical value or None when refused)``.
 
-    None when no digit follows the sign, paren or currency at ``i``: not a number at all.
-    Once a digit is reached the token is read whole or refused.
+    None when nothing was consumed at ``i``, or when the sign, paren or currency consumed there
+    is glued into a word ("원가", "-x", "(주)") or closes a bracketed unit label ("(원)",
+    "(단위: 원)"): that is text, not a number. Any other consumed prefix with no digit after it
+    is refused, so the scan never restarts past it and reads the number without it ("- :5",
+    "$ [5]", "$ - 5", "-\\t5", "-- 5"). Once a digit is reached the token is read whole or
+    refused.
     """
     n = len(text)
     k, opened, negative = i, False, False
     if text[k] == "(":
-        opened, k = True, _skip(text, k + 1, _SPACE)
+        opened, k = True, k + 1
     elif text[k] in _SIGN:
-        negative, k = _SIGN[text[k]], _skip(text, k + 1, _SPACE)
+        negative, k = _SIGN[text[k]], k + 1
+    end_of_prefix = k
+    k = _skip(text, k, _SPACE)
     prefix = _currency_at(text, k)
     if prefix:
-        k = _skip(text, prefix[1], _SPACE)
+        end_of_prefix = prefix[1]
+        k = _skip(text, end_of_prefix, _SPACE)
     if k >= n or text[k] not in _DIGIT:
-        return None
+        c = text[k : k + 1]
+        glued = k == end_of_prefix > i and c != ""
+        # A currency symbol before a letter is two currencies, not a word ("$USD").
+        symbol = prefix is not None and not text[end_of_prefix - 1].isalpha()
+        word = glued and (c in _ASCII_LETTER or _hangul(c)) and not symbol
+        unit_label = glued and prefix is not None and c in ")]}"
+        if k == i or word or unit_label:
+            return None
+        return k, None
     body = _body(text, k)
     if body is None:
         return k + 1, None
