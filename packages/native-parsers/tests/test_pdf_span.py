@@ -354,6 +354,134 @@ def test_forged_text_is_never_exact_under_any_locator() -> None:
             assert ledger.resolved_exact == 0, (document.metadata["documentType"], locator)
 
 
+def _verdict(ledger: Any, unit_id: str) -> str:
+    if unit_id in ledger.resolved_mismatch:
+        return "mismatch"
+    if any(u == unit_id for u, _ in ledger.unresolvable):
+        return "unresolvable"
+    return "exact"
+
+
+def _structural_failures() -> Iterator[tuple[str, bytes, CanonicalDocument, Any]]:
+    # Units that must fail whatever their text says: the locator, page, object ordinal,
+    # asset or cue range contradicts the original. Each yields (kind, data, document, unit).
+    data = _text_pdf(_LINES)
+    document = _parse(data)
+    unit = next(b for b in document.blocks if "/drawing/" in b.source_refs[0].native_object_id)
+    object.__setattr__(unit.source_refs[0], "native_object_id", "pdf/page/0/drawing/7")
+    yield "pdf", data, document, unit  # object_not_in_original
+    for field in ("text", "drawing"):
+        data = _mixed_pdf()
+        document = _parse(data)
+        unit = next(
+            b
+            for b in document.blocks
+            if f"/{field}/" in b.source_refs[0].native_object_id
+            and b.source_refs[0].page_index0 == 0
+        )
+        object.__setattr__(unit.source_refs[0], "page_index0", 1)
+        yield "pdf", data, document, unit  # locator_page_differs
+    bad_assets: tuple[Any, ...] = ([], "abc")
+    for assets in bad_assets:
+        data = _scan_pdf()
+        document = _parse(data)
+        document.metadata["assets"] = assets
+        yield "pdf", data, document, document.blocks[0]  # asset_unregistered
+    srt_data, srt = next(
+        (d, doc) for d, doc in _nonpdf_documents() if doc.metadata["documentType"] == "srt"
+    )
+    unit = srt.blocks[0]
+    ref = unit.source_refs[0]
+    # cues 0 and 1 say different things, so no single text is the range's text; the
+    # timing is set to the range's own so only the text could decide the verdict
+    object.__setattr__(ref, "native_object_id", "srt/cue/000000-000001")
+    object.__setattr__(ref, "time_start_ms", 1000)
+    object.__setattr__(ref, "time_end_ms", 5000)
+    yield "srt", srt_data, srt, unit  # range_text_differs
+
+
+def test_a_failure_is_never_spelled_as_text_a_forger_can_match(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Class property, not one input: whatever a resolver hands back as "the original's
+    # text" for a unit that must fail, writing exactly that into raw_text must not turn it
+    # exact. A failure returned as an in-band marker string (the "\x00..." sentinels this
+    # guards) is caught by recording every string each resolver returns and forging it.
+    from akc_native_parsers import span_ledger
+
+    seen: set[str] = set()
+
+    def spying(kind: str) -> None:
+        real = span_ledger._FACTORIES[kind]
+
+        def factory(data: bytes) -> Any:
+            resolver = real(data)
+
+            def spy(*args: Any) -> Any:
+                text, span = resolver(*args)
+                seen.add(text)
+                return text, span
+
+            spy.__dict__.update(vars(resolver))  # units, wants_ref
+            return spy
+
+        monkeypatch.setitem(span_ledger._FACTORIES, kind, factory)
+
+    spying("pdf")
+    spying("srt")
+    reasons = (
+        "locator_page_differs",
+        "object_not_in_original",
+        "asset_unregistered",
+        "range_text_differs",
+    )
+    cases = list(_structural_failures())
+    assert len(cases) == 6
+    for _kind, data, document, unit in cases:
+        seen.clear()
+        assert _verdict(build_ledger(data, document), unit.id) == "mismatch"
+        forgeries = {"", unit.raw_text or "", *seen, *("\x00" + r for r in reasons), *reasons}
+        for forged in sorted(forgeries):
+            object.__setattr__(unit, "raw_text", forged)
+            verdict = _verdict(build_ledger(data, document), unit.id)
+            assert verdict == "mismatch", (unit.source_refs[0].native_object_id, forged)
+
+
+@pytest.mark.parametrize(
+    "assets", [None, "abc", ["x"], [1], [{"id": None, "sha256": "sha256:" + "0" * 64}], {}]
+)
+def test_malformed_asset_metadata_fails_closed_without_raising(assets: Any) -> None:
+    data = _scan_pdf()
+    document = _parse(data)
+    document.metadata["assets"] = assets
+    assert build_ledger(data, document).resolved_mismatch == (document.blocks[0].id,)
+    # no other format reads metadata.assets: its ledger is unchanged by it
+    for data, other in _nonpdf_documents():
+        before = build_ledger(data, other)
+        other.metadata["assets"] = assets
+        assert build_ledger(data, other) == before
+
+
+def test_page_objects_are_scanned_once_per_page(monkeypatch: pytest.MonkeyPatch) -> None:
+    pypdfium2 = pytest.importorskip("pypdfium2")
+
+    data = _text_pdf(b"".join(b"%d 100 2 2 re S " % (10 + i) for i in range(60)))
+    document = _parse(data)
+    drawings = [b for b in document.blocks if "/drawing/" in b.source_refs[0].native_object_id]
+    assert len(drawings) == 60
+    calls: list[int] = []
+    real = pypdfium2.PdfPage.get_objects
+
+    def counting(self: Any, *args: Any, **kwargs: Any) -> Any:
+        calls.append(1)
+        return real(self, *args, **kwargs)
+
+    monkeypatch.setattr(pypdfium2.PdfPage, "get_objects", counting)
+    ledger = build_ledger(data, document)
+    assert ledger.resolved_exact == len(document.blocks) and ledger.resolved_mismatch == ()
+    assert len(calls) == 1
+
+
 def test_non_pdf_unit_under_pdf_locator_is_unknown_grammar() -> None:
     for data, document in _nonpdf_documents():
         unit = next(u for u in _units(document) if u.source_refs and u.raw_text)

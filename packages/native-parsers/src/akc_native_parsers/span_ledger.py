@@ -4,7 +4,10 @@ For every block and table cell that carries a ``native_object_id`` the locator
 is resolved against the *original bytes* by a resolver that never calls the
 parser, and the resolved text is compared with the CIR text. Nothing is filled
 in: a locator that cannot be resolved is reported with its reason, never
-passed. The ledger holds counts and ids only, no document text.
+passed. The ledger holds counts and ids only, no document text. A resolver
+returns only text read from the original; every failure is raised
+(``_Unresolvable`` or ``_Mismatch``), never returned as a marker string that a
+forged unit text could equal.
 
 Ceilings (stated, not hidden):
 * The HTML resolver uses the stdlib tokenizer, which does not repair markup the
@@ -63,6 +66,11 @@ class _Unresolvable(Exception):
         self.reason = reason
 
 
+class _Mismatch(Exception):
+    """The original was read and contradicts the unit. Raised, never returned as text:
+    a failure spelled as a resolved string can be matched by a forged raw_text."""
+
+
 @dataclass(frozen=True, slots=True)
 class SpanLedger:
     document_type: str
@@ -107,7 +115,7 @@ def build_ledger(data: bytes, document: CanonicalDocument) -> SpanLedger:
     observed_pages: set[int] = set()
     observed_cues: set[int] = set()
 
-    assets = {str(a.get("id")): str(a.get("sha256")) for a in document.metadata.get("assets", ())}
+    assets = _registered_assets(document.metadata.get("assets")) if document_type == "pdf" else {}
 
     def check(unit_id: str, locator: str, expected: str, ref: Any) -> str:
         nonlocal exact, tokens_total, tokens_ok
@@ -130,6 +138,9 @@ def build_ledger(data: bytes, document: CanonicalDocument) -> SpanLedger:
         except _Unresolvable as exc:
             unresolvable.append((unit_id, exc.reason))
             return "unresolvable"
+        except _Mismatch:
+            mismatch.append(unit_id)
+            return "mismatch"
         except Exception as exc:
             unresolvable.append((unit_id, f"resolver_error:{type(exc).__name__}"))
             return "unresolvable"
@@ -189,6 +200,18 @@ def build_ledger(data: bytes, document: CanonicalDocument) -> SpanLedger:
         omitted=tuple(str(w) for w in document.metadata.get("warnings", ())),
         held=tuple(held),
     )
+
+
+def _registered_assets(raw: Any) -> dict[str, str]:
+    # Untrusted metadata: an entry that is not {"id": str, "sha256": str} registers
+    # nothing, so a placement that names it fails as unregistered, never passes.
+    if not isinstance(raw, (list, tuple)):
+        return {}
+    return {
+        a["id"]: a["sha256"]
+        for a in raw
+        if isinstance(a, dict) and isinstance(a.get("id"), str) and isinstance(a.get("sha256"), str)
+    }
 
 
 def _expected_units(resolver: _Resolver | None) -> tuple[int, set[int]]:
@@ -689,7 +712,7 @@ def _subtitle_factory(kind: str) -> Callable[[bytes], _Resolver]:
             key = _merge_key(kind, cues[first][0])
             if any(_merge_key(kind, c[0]) != key for c in inside):
                 # a merged range is only exact if every cue in it says the same thing
-                return "\x00range_text_differs", (cues[first][1], end)
+                raise _Mismatch("range_text_differs")
             return cues[first][0], (cues[first][1], end)
 
         return _with_units(resolve, set(cues))
@@ -707,6 +730,7 @@ def _pdf_resolver(data: bytes) -> _Resolver:
     pdf = pypdfium2.PdfDocument(data)
     pages = len(pdf)
     cache: dict[int, Any] = {}
+    kinds: dict[int, Counter[int]] = {}  # page -> pdfium object type counts, scanned once
 
     def resolve(locator: str, ref: Any, assets: dict[str, str]) -> _Resolved:
         geometry = _PDF_GEOMETRY.fullmatch(locator)
@@ -720,7 +744,7 @@ def _pdf_resolver(data: bytes) -> _Resolver:
         if bbox is None:
             raise _Unresolvable("no_bbox")
         if index != ref.page_index0:
-            return "\x00locator_page_differs", None  # the block claims another page
+            raise _Mismatch("locator_page_differs")  # the block claims another page
         if index not in cache:
             page = pdf[index]
             cache[index] = (page, page.get_textpage(), page.get_cropbox(), page.get_rotation())
@@ -735,10 +759,12 @@ def _pdf_resolver(data: bytes) -> _Resolver:
             # of that kind and ordinal on that page of the original", not "the same pixels".
             image = "/image-placement/" in locator
             kind = pdfium_c.FPDF_PAGEOBJ_IMAGE if image else pdfium_c.FPDF_PAGEOBJ_PATH
-            if sum(o.type == kind for o in page.get_objects(max_depth=15)) <= int(geometry["n"]):
-                return "\x00object_not_in_original", None
+            if index not in kinds:
+                kinds[index] = Counter(o.type for o in page.get_objects(max_depth=15))
+            if kinds[index][kind] <= int(geometry["n"]):
+                raise _Mismatch("object_not_in_original")
             if image and not assets.get(str(ref.image_asset_id), "").startswith("sha256:"):
-                return "\x00asset_unregistered", None
+                raise _Mismatch("asset_unregistered")
             return "", None
         width, height = right - left, top - bottom
         x1, y1, x2, y2 = (v / 1000 for v in bbox.root)
