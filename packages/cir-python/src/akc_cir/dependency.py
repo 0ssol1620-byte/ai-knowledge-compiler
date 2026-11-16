@@ -265,12 +265,17 @@ class DependencyGraph:
         # first reached it. Two sibling branches that point at each other are
         # each reached first from the seed, so the loop is missed (F30-04). An
         # SCC pass over the reached nodes finds every loop; one the walk did not
-        # already name is reported as its sorted member list, closed on itself.
+        # already name is reported as a real closed walk instead.
         reached = set(seeds) | {path.node_id for path in affected}
         covered = {node for cycle in cycles for node in cycle}
         for component in self._cyclic_components(reached, as_of):
-            if not covered.issuperset(component):
-                cycles.append((*component, component[0]))
+            members = set(component)
+            for start in component:  # sorted, so the choice is deterministic
+                if start in covered:
+                    continue
+                cycle = self._shortest_cycle(start, members, as_of)
+                cycles.append(cycle)
+                covered.update(cycle)
 
         return ImpactReport(
             changed=tuple(seeds),
@@ -279,6 +284,31 @@ class DependencyGraph:
             cycles_detected=tuple(cycles),
             unknown_nodes=unknown,
         )
+
+    def _shortest_cycle(
+        self, start: str, members: set[str], moment: datetime | None
+    ) -> tuple[str, ...]:
+        """Shortest closed walk through `start` over live successor edges.
+
+        `start` lies in a strongly connected component, so one always exists.
+        Successors are sorted, so ties break the same way on every run.
+        """
+        parent: dict[str, str] = {}
+        queue: deque[str] = deque([start])
+        while queue:
+            node = queue.popleft()
+            for nxt, _ in self._successors(node, moment):
+                if nxt not in members:
+                    continue
+                if nxt == start:
+                    walk = [node]
+                    while walk[-1] != start:
+                        walk.append(parent[walk[-1]])
+                    return (*reversed(walk), start)
+                if nxt not in parent:
+                    parent[nxt] = node
+                    queue.append(nxt)
+        raise AssertionError(f"{start} is in a cyclic component but closes no walk")
 
     def _cyclic_components(
         self, nodes: set[str], moment: datetime | None

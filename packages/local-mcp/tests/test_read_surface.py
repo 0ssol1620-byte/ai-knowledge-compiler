@@ -10,6 +10,7 @@ what was missing.
 from __future__ import annotations
 
 import json
+from itertools import pairwise
 from pathlib import Path
 from typing import Any
 
@@ -539,3 +540,23 @@ class TestTraceImpactSiblingCycle:
 
         assert [entry["node_id"] for entry in document["affected"]] == ["b", "c"]
         assert document["cycles_detected"] == ["b -> c -> b"]
+
+    def test_three_node_sibling_loop_prints_only_existing_hops(self, tmp_path: Path) -> None:
+        names = ("root", "a", "b", "c")
+        topics = [
+            {"topic_id": t, "title": t, "claim_ids": [], "keywords": [], "summary": ""}
+            for t in names
+        ]
+        pairs = (("root", "a"), ("root", "b"), ("root", "c"), ("a", "c"), ("c", "b"), ("b", "a"))
+        edges = [{"source_id": s, "target_id": t, "edge_type": "SUPPORTS"} for s, t in pairs]
+        state = {"topics": topics, "claims": [], "dependencies": edges}
+        store = _write_world(tmp_path / "ws", "sibling-loop-3", state=state)
+
+        document = trace_impact(store, "root").to_dict()
+
+        assert document["cycles_detected"]
+        for printed in document["cycles_detected"]:
+            nodes = printed.split(" -> ")
+            assert nodes[0] == nodes[-1]
+            for hop in pairwise(nodes):
+                assert hop in pairs, f"printed hop {hop} is not a dependency edge"

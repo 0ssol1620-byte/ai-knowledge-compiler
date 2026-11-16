@@ -6,7 +6,9 @@ F30-04: a directed cycle reached through sibling BFS branches is reported.
 
 from __future__ import annotations
 
+import random
 from datetime import UTC, datetime
+from itertools import pairwise
 
 import pytest
 from akc_cir.dependency import DependencyEdge, DependencyGraph, EdgeType
@@ -181,3 +183,85 @@ def test_scc_pass_is_iterative_on_a_deep_graph() -> None:
     report = _graph(pairs).impact_of(["n0"])
     assert len(report.affected) == n
     assert len(report.cycles_detected) == 1
+
+
+# --------------------------------------------------------------------------
+# F30-04 follow-up: every reported cycle is a real walk, never a sorted list
+# --------------------------------------------------------------------------
+
+
+def _live_edges(graph: DependencyGraph, moment: datetime | None = None) -> set[tuple[str, str]]:
+    return {(a, b) for a in graph.nodes for b, _ in graph._successors(a, moment)}
+
+
+def _assert_real_cycle(cycle: tuple[str, ...], live: set[tuple[str, str]]) -> None:
+    assert len(cycle) >= 2 and cycle[0] == cycle[-1]
+    for hop in pairwise(cycle):
+        assert hop in live, f"{hop} is not a dependency edge in {cycle}"
+
+
+def test_three_node_sibling_scc_reports_real_walks() -> None:
+    # sorted members (a, b, c) would print a -> b -> c, but there is no a->b or b->c edge
+    graph = _graph(
+        [("root", "a"), ("root", "b"), ("root", "c"), ("a", "c"), ("c", "b"), ("b", "a")]
+    )
+    report = graph.impact_of(["root"])
+    live = _live_edges(graph)
+    assert report.cycles_detected
+    for cycle in report.cycles_detected:
+        _assert_real_cycle(cycle, live)
+    assert report.cycles_detected == (("a", "c", "b", "a"),)
+
+
+def _random_graph(seed: int) -> DependencyGraph:
+    rng = random.Random(seed)
+    names = [f"n{i}" for i in range(rng.randint(3, 9))]
+    pairs = {(rng.choice(names), rng.choice(names)) for _ in range(rng.randint(2, 18))}
+    edges = [DependencyEdge(a, b, EdgeType.SUPPORTS) for a, b in sorted(pairs) if a != b]
+    return DependencyGraph(edges)
+
+
+def _acyclic_graph(seed: int) -> DependencyGraph:
+    rng = random.Random(seed)
+    names = [f"n{i}" for i in range(8)]
+    draws = [(rng.choice(names), rng.choice(names)) for _ in range(14)]
+    pairs = {(a, b) for a, b in draws if a < b}
+    return DependencyGraph([DependencyEdge(a, b, EdgeType.SUPPORTS) for a, b in sorted(pairs)])
+
+
+def _reachable(graph: DependencyGraph, seed: str) -> set[str]:
+    seen, todo = {seed}, [seed]
+    while todo:
+        for nxt, _ in graph._successors(todo.pop(), None):
+            if nxt not in seen:
+                seen.add(nxt)
+                todo.append(nxt)
+    return seen
+
+
+def _sccs(graph: DependencyGraph, nodes: set[str]) -> list[set[str]]:
+    reach = {n: _reachable(graph, n) & nodes for n in nodes}
+    comps = {frozenset(m for m in nodes if m in reach[n] and n in reach[m]) for n in nodes}
+    return [set(c) for c in comps if len(c) > 1]
+
+
+@pytest.mark.parametrize("seed", range(300))
+def test_every_reported_cycle_is_a_real_walk_on_random_graphs(seed: int) -> None:
+    graph = _random_graph(seed)
+    live = _live_edges(graph)
+    for root in sorted(graph.nodes)[:2]:
+        report = graph.impact_of([root])
+        covered = set()
+        for cycle in report.cycles_detected:
+            _assert_real_cycle(cycle, live)
+            covered.update(cycle)
+        reached = {root, *report.affected_ids}
+        for component in _sccs(graph, reached):
+            assert component <= covered
+
+
+@pytest.mark.parametrize("seed", range(50))
+def test_dags_report_no_cycle(seed: int) -> None:
+    graph = _acyclic_graph(seed)
+    for root in sorted(graph.nodes):
+        assert graph.impact_of([root]).cycles_detected == ()
