@@ -31,6 +31,7 @@ from akc_source_adapters.public_data import rights
 from akc_source_adapters.public_data.sources import DEFAULT_RIGHTS, PUBLIC_SOURCES
 from akc_source_adapters.public_data.vintage import VintageObservation, available_upper_bound
 
+from benchmark.local_public import sources
 from benchmark.local_public.sources import ALLOWED_ALFRED_SERIES
 from benchmark.retrieval_baselines.metrics import TaskError, parse_task
 
@@ -155,9 +156,16 @@ def corpus_row(o: VintageObservation) -> dict[str, Any]:
 def load_chain_verified(path: Path, csv_sha256: str) -> dict[str, list[str]]:
     """{series: vintage dates} of a `--vintage-chain-verified` file; refuses another CSV's."""
     doc = json.loads(path.read_text("utf-8"))
-    if doc.get("schema") != CHAIN_SCHEMA or doc.get("csv_sha256") != csv_sha256:
+    if (
+        not isinstance(doc, dict)
+        or doc.get("schema") != CHAIN_SCHEMA
+        or doc.get("csv_sha256") != csv_sha256
+    ):
         raise AlfredError("vintage-chain file is not for this CSV")
-    return {s: sorted(v) for s, v in doc["series"].items()}
+    try:
+        return {s: sorted(v) for s, v in doc["series"].items()}
+    except (KeyError, TypeError, AttributeError) as exc:
+        raise AlfredError("vintage-chain file has no valid 'series' map") from exc
 
 
 def generate(
@@ -283,19 +291,30 @@ def generate(
 
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    p.add_argument("--csv", type=Path, required=True)
+    p.add_argument("--manifest", type=Path, default=sources.DEFAULT_MANIFEST)
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--series", nargs="+", default=list(ALLOWED_ALFRED_SERIES))
     p.add_argument("--vintage-chain-verified", type=Path)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--max-per-stratum", type=int)
     a = p.parse_args(argv)
+    if sources._inside_git_tree(a.out):
+        print(f"refused: --out {a.out} is inside a git work tree", file=sys.stderr)
+        return 2
+    # The only door to the data: the pinned manifest. A changed CSV raises HashMismatch here.
+    loader = sources.configure(a.manifest)
+    csv_path = loader.verified_path("alfred_vintages")
     try:
         # ponytail: DEFAULT_RIGHTS refuses until WO-D21-5 supplies verified per-series records.
-        obs, counts = read_local_vintages(a.csv, a.series, DEFAULT_RIGHTS, datetime.now(UTC).date())
-        sha = hashlib.sha256(a.csv.read_bytes()).hexdigest()
+        obs, counts = read_local_vintages(
+            csv_path, a.series, DEFAULT_RIGHTS, datetime.now(UTC).date()
+        )
         chain = (
-            load_chain_verified(a.vintage_chain_verified, sha) if a.vintage_chain_verified else None
+            load_chain_verified(
+                a.vintage_chain_verified, loader.resolve("alfred_vintages")["sha256"]
+            )
+            if a.vintage_chain_verified
+            else None
         )
         rows, tasks, skipped = generate(
             obs, chain_verified=chain, seed=a.seed, max_per_stratum=a.max_per_stratum
@@ -304,11 +323,19 @@ def main(argv: list[str] | None = None) -> int:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
     a.out.mkdir(parents=True, exist_ok=True)
+    outs = []
     for name, data in (("corpus_alfred.jsonl", rows), ("tasks_alfred.jsonl", tasks)):
-        (a.out / name).write_text(
-            "".join(json.dumps(x, sort_keys=True) + "\n" for x in data), encoding="utf-8"
-        )
-    print(json.dumps({"rows": len(rows), "tasks": len(tasks), "skipped": {**counts, **skipped}}))
+        outs.append(a.out / name)
+        with outs[-1].open("x", encoding="utf-8") as f:  # evidence is never overwritten
+            f.write("".join(json.dumps(x, sort_keys=True) + "\n" for x in data))
+    summary = {"rows": len(rows), "tasks": len(tasks), "skipped": {**counts, **skipped}}
+    sources.write_receipt(
+        sources.receipt(
+            loader.ledger, outs, [f"alfred_local summary: {json.dumps(summary, sort_keys=True)}"]
+        ),
+        a.out,
+    )
+    print(json.dumps(summary))
     return 0
 
 

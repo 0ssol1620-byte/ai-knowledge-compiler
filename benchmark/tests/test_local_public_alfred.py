@@ -14,6 +14,7 @@ from akc_source_adapters.public_data.sources import DEFAULT_RIGHTS
 
 from benchmark.local_public import alfred_local as al
 from benchmark.local_public import pit_tasks as pt
+from benchmark.local_public import sources as S
 from benchmark.retrieval_baselines.metrics import parse_moment, parse_task, violates_cut
 
 TODAY = date(2026, 11, 17)
@@ -67,7 +68,49 @@ def test_excluded_series_refused_before_reading(tmp_path: Path) -> None:
 def test_default_rights_denied(tmp_path: Path) -> None:
     with pytest.raises(RightsDenied):
         al.read_local_vintages(tmp_path / "missing.csv", ["CPIAUCSL"], DEFAULT_RIGHTS, TODAY)
-    assert al.main(["--csv", str(write(tmp_path)), "--out", str(tmp_path / "o")]) == 2
+    m = manifest_for(tmp_path, write(tmp_path))
+    assert al.main(["--manifest", str(m), "--out", str(tmp_path / "o")]) == 2
+
+
+def manifest_for(tmp: Path, csv_path: Path) -> Path:
+    sha = hashlib.sha256(csv_path.read_bytes()).hexdigest()
+    e = {"name": "alfred_vintages", "role": "vintages", "path": csv_path.as_posix(),
+         "bytes": csv_path.stat().st_size, "sha256": sha}  # fmt: skip
+    m = {"schema": S.SCHEMA, "entries": [e], "excluded": []}
+    m["manifest_sha256"] = S._digest(m)
+    p = tmp / "m.json"
+    p.write_text(json.dumps(m))
+    return p
+
+
+def test_changed_csv_is_hash_mismatch_and_writes_nothing(tmp_path: Path) -> None:
+    csv_path = write(tmp_path)
+    m = manifest_for(tmp_path, csv_path)
+    write(
+        tmp_path,
+        [*LINES, "CPIAUCSL,2024-03-01,2024-04-01,2024-04-01,2024-04-01,9.9,alfred_vintage"],
+    )
+    out = tmp_path / "o"
+    with pytest.raises(S.HashMismatch):
+        al.main(["--manifest", str(m), "--out", str(out)])
+    assert not out.exists()
+
+
+def test_receipt_carries_manifest_sha_and_output_hashes(tmp_path: Path, monkeypatch) -> None:
+    m = manifest_for(tmp_path, write(tmp_path))
+    monkeypatch.setattr(al, "DEFAULT_RIGHTS", REGISTER)
+    out = tmp_path / "o"
+    monkeypatch.setattr(S, "_inside_git_tree", lambda _p: False)
+    assert al.main(["--manifest", str(m), "--out", str(out)]) == 0
+    rec = json.loads((out / "receipt.json").read_text())
+    assert rec["lpc_manifest_sha256"] == json.loads(m.read_text())["manifest_sha256"]
+    assert [i["name"] for i in rec["inputs_consumed"]] == ["alfred_vintages"]
+    assert {Path(o["path"]).name for o in rec["outputs"]} == {
+        "corpus_alfred.jsonl",
+        "tasks_alfred.jsonl",
+    }
+    with pytest.raises(FileExistsError):  # never overwritten
+        al.main(["--manifest", str(m), "--out", str(out)])
 
 
 def test_mapping_and_lagged_rows(tmp_path: Path) -> None:
