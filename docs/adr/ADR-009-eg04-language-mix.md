@@ -1,6 +1,6 @@
 # ADR-009: EG-04 language mix — per-stratum floors replace the Korean >=50% rule
 
-- Status: **Proposed** — the lead adopts or changes the numbers at review. Nothing is enforced until WO-LPC-ADR-IMPL.
+- Status: **Accepted 2026-11-16 (lead, V34 campaign ledger)**
 - Date: 2026-11-16
 - Work order: WO-LPC-ADR (`v34-lanes/workorders/local-public-corpus.md`). The rule change is decided by Amendment 4 of
   `v34-lanes/adr/SCOPE-FOUNDER-20261116.md` (decision L-1), on Amendment 2's global-first gold.

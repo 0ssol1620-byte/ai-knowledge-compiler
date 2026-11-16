@@ -1,6 +1,8 @@
 # Screen strata: nine profiles from benchmark/manifest.yaml.
-# Page targets: dev 300 / holdout 100. Korean strata (language: ko) must be >= 50% of pages
-# (benchmark/corpus/CORPUS_POLICY.md). A target is a plan, not a measured corpus.
+# Page targets: dev 300 / holdout 100. Korean strata (language: ko) are >= 50% of pages by this
+# screen's own plan (235 of 300 dev, 79 of 100 holdout). The EG-04 per-stratum floors live with the
+# eg04 profile (benchmark/screen/manifest.py, ADR-009), not in this list.
+# A target is a plan, not a measured corpus.
 strata:
   - { id: ko_native,   language: ko, dev_pages: 60, holdout_pages: 20 }
   - { id: ko_scan,     language: ko, dev_pages: 60, holdout_pages: 20 }

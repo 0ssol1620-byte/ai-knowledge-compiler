@@ -29,6 +29,17 @@ _RIGHTS_FIELDS = (
 )
 HOLDOUT_MAX_OVERSHOOT = 10
 EG04_MIN_PAGES, EG04_MIN_DOCS, EG04_MIN_CLASSES = 1500, 150, 10
+# ADR-009: (stratum id, language or "open", page floor, minimum documents). Floors sum to
+# 1,500 pages / 150 documents; a surplus in one stratum never covers another's shortfall.
+EG04_STRATA: tuple[tuple[str, str, int, int], ...] = (
+    ("en_native", "en", 225, 20), ("en_tables", "en", 225, 20),
+    ("ko_native", "ko", 250, 20), ("ko_scan", "ko", 150, 15),
+    ("ko_tables", "ko", 150, 15), ("ko_hwp", "ko", 75, 10),
+    ("slides", "open", 100, 10), ("formulas", "en", 75, 10),
+    ("handwriting", "open", 75, 10), ("distorted", "open", 100, 10),
+    ("adversarial", "en", 75, 10),
+)
+EG04_SCAN_STRATA = ("ko_scan", "handwriting", "distorted")
 
 
 class HoldoutSealedError(RuntimeError):
@@ -206,8 +217,7 @@ def freeze(
             or c["document_classes"] < EG04_MIN_CLASSES
         ):
             raise ContractError(f"eg04 minimums not met: {c}")
-        if c["korean_pages"] * 2 < c["pages"]:
-            raise ContractError(f"eg04 needs >=50% Korean pages: {c['korean_pages']}/{c['pages']}")
+        check_eg04_strata(docs)
         body = {k: v for k, v in screen_manifest.items() if k != "manifest_sha256"}
         if screen_manifest.get("profile") != "screen" or (
             canonical_sha256(body) != screen_manifest.get("manifest_sha256")
@@ -219,6 +229,37 @@ def freeze(
             raise ContractError(f"eg04 shares {len(shared)} source(s) with the screen manifest")
     body = {"profile": profile, "salt": salt, "counts": c, "documents": docs}
     return {**body, "manifest_sha256": canonical_sha256(body)}
+
+
+def check_eg04_strata(docs: list[dict[str, Any]]) -> None:
+    """ADR-009 per-stratum rules; every refusal names the stratum and the rule."""
+    plan = {sid: (lang, floor, mind) for sid, lang, floor, mind in EG04_STRATA}
+    errors: list[str] = []
+    counted: dict[str, list[int]] = {sid: [] for sid in plan}
+    for d in docs:
+        sid = d["stratum"]
+        if sid not in plan:
+            errors.append(f"stratum {sid!r} ({d['doc_id']}): unknown stratum")
+            continue
+        lang, floor, _ = plan[sid]
+        if lang != "open" and d["language"] != lang:
+            errors.append(
+                f"stratum {sid!r} ({d['doc_id']}): fixed language {lang!r}, document is "
+                f"{d['language']!r}"
+            )
+        synthetic = d["rights"]["rights_class"] == "synthetic"
+        if synthetic and sid in EG04_SCAN_STRATA:
+            errors.append(f"stratum {sid!r} ({d['doc_id']}): synthetic document in a scan stratum")
+        elif not synthetic or sid == "adversarial":
+            counted[sid].append(min(d["page_count"], -(-floor // 10)))  # cap = ceil(floor/10)
+    for sid, (_, floor, mind) in plan.items():
+        pages, n = sum(counted[sid]), len(counted[sid])
+        if pages < floor:
+            errors.append(f"stratum {sid!r}: page floor {floor} not met ({pages} counted)")
+        if n < mind:
+            errors.append(f"stratum {sid!r}: minimum documents {mind} not met ({n} counted)")
+    if errors:
+        raise ContractError("eg04 stratum rules: " + "; ".join(errors))
 
 
 def _default_pages(data: bytes) -> int:
