@@ -137,8 +137,49 @@ def test_hwpx_corrupt_deflate_member_is_held_not_raised() -> None:
     raw = bytearray(_zip(HWPX, compression=zipfile.ZIP_STORED))
     at = raw.index(b"Contents/content.hpf")  # local header name; method field is 8 bytes before
     raw[at - 22 + 0 : at - 22 + 2] = b"\x08\x00"
-    raw[raw.index(b"PK\x01\x02", 0) :][:0] = b""
     # patch the central directory entry too
     cd = raw.index(b"Contents/content.hpf", raw.index(b"PK\x01\x02"))
     raw[cd - 46 + 10 : cd - 46 + 12] = b"\x08\x00"
     _held(detect_hwp_format(bytes(raw)), "HWP_SIGNATURE_MISMATCH")
+
+
+def _seed_zip(method: int) -> bytes:
+    out = io.BytesIO()
+    with zipfile.ZipFile(out, "w", compression=method) as z:
+        z.writestr("mimetype", b"application/hwp+zip")
+        z.writestr("Contents/content.hpf", b"<package>" + b"x" * 200 + b"</package>")
+        z.writestr("META-INF/container.xml", b"<container/>")
+    return out.getvalue()
+
+
+def test_mutated_archives_never_raise() -> None:
+    # Root-cause guard: any 1-4 byte mutation of a valid package (all four compression
+    # methods) must come back as a format or Held, never as an exception from the zip stack
+    # (LZMAError, negative seek ValueError, unsupported zip version, UnicodeDecodeError, ...).
+    state = 7
+
+    def rand(n: int) -> int:  # fixed-seed LCG: reproducible, no stdlib PRNG
+        nonlocal state
+        state = (state * 6364136223846793005 + 1442695040888963407) % 2**64
+        return (state >> 33) % n
+
+    seeds = [
+        _seed_zip(m)
+        for m in (zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED, zipfile.ZIP_BZIP2, zipfile.ZIP_LZMA)
+    ]
+    for _ in range(6000):
+        buf = bytearray(seeds[rand(len(seeds))])
+        for _ in range(1 + rand(4)):
+            buf[rand(len(buf))] = rand(256)
+        result = detect_hwp_format(bytes(buf))
+        assert result == "hwpx" or isinstance(result, Held)
+
+
+def test_hwpx_corrupt_lzma_and_unsupported_zip_version_are_held() -> None:
+    raw = bytearray(_seed_zip(zipfile.ZIP_LZMA))
+    at = raw.index(b"Contents/content.hpf") + len(b"Contents/content.hpf")
+    raw[at + 4 : at + 8] = bytes([255]) * 4  # corrupt LZMA header/props of the member
+    assert isinstance(detect_hwp_format(bytes(raw)), Held)
+    ver = bytearray(_seed_zip(zipfile.ZIP_STORED))
+    ver[ver.index(b"PK" + bytes([1, 2])) + 6] = 116  # central-directory "version needed" 11.6
+    assert isinstance(detect_hwp_format(bytes(ver)), Held)

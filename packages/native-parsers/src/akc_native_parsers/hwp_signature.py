@@ -18,6 +18,7 @@ Any OLE file that is not HWP5 is held; it is never handed to another parser.
 from __future__ import annotations
 
 import io
+import lzma
 import zipfile
 import zlib
 
@@ -36,6 +37,22 @@ HWPX_REQUIRED_MEMBERS = frozenset({"mimetype", "contents/content.hpf", "meta-inf
 MAX_XML_DEPTH = 256
 
 DetectedFormat = HwpFormat
+
+# Everything the stdlib zip stack raises on hostile bytes: truncated/corrupt members (EOFError,
+# zlib.error, LZMAError, OSError from bz2), bad headers or seeks and non-UTF-8 names (ValueError
+# incl. UnicodeDecodeError), unsupported zip version/method (NotImplementedError), encrypted
+# members (RuntimeError). StructuredParseError is a ValueError, so it is caught first.
+_ARCHIVE_ERRORS = (
+    OSError,
+    EOFError,
+    ValueError,
+    RuntimeError,
+    NotImplementedError,
+    zipfile.BadZipFile,
+    zipfile.LargeZipFile,
+    zlib.error,
+    lzma.LZMAError,
+)
 
 
 def detect_hwp_format(data: bytes, limits: ParserLimits | None = None) -> DetectedFormat | Held:
@@ -63,7 +80,7 @@ def _detect_ole(data: bytes) -> DetectedFormat | Held:
 def _detect_hwpx(data: bytes, limits: ParserLimits) -> DetectedFormat | Held:
     try:
         archive = zipfile.ZipFile(io.BytesIO(data))
-    except (OSError, zipfile.BadZipFile):
+    except _ARCHIVE_ERRORS:
         return Held(reason_code="HWP_SIGNATURE_MISMATCH", detail="INVALID_ARCHIVE")
     with archive:
         try:
@@ -80,8 +97,7 @@ def _detect_hwpx(data: bytes, limits: ParserLimits) -> DetectedFormat | Held:
                         return Held(reason_code="HWP_XML_UNSAFE")
         except StructuredParseError as exc:
             return Held(reason_code="HWP_CONTAINER_LIMIT", detail=exc.code)
-        except (OSError, zipfile.BadZipFile, EOFError, NotImplementedError, zlib.error):
-            # truncated member data, bad CRC, unsupported compression
+        except _ARCHIVE_ERRORS:
             return Held(reason_code="HWP_SIGNATURE_MISMATCH", detail="INVALID_ARCHIVE")
     return "hwpx"
 
@@ -112,6 +128,6 @@ def _detect_hwpml(data: bytes) -> DetectedFormat | Held:
     except (ValueError, LookupError):
         # declared encoding the parser cannot decode (euc-kr, cp949, utf-32, unknown names)
         return Held(reason_code="HWP_SIGNATURE_MISMATCH", detail="XML_ENCODING")
-    except (SafeElementTree.ParseError, UnicodeError):
+    except SafeElementTree.ParseError:
         return Held(reason_code="HWP_SIGNATURE_MISMATCH", detail="XML_MALFORMED")
     return "hwpml" if root == "HWPML" else Held(reason_code="HWP_SIGNATURE_MISMATCH")
