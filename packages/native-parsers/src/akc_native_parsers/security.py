@@ -147,6 +147,44 @@ def _looks_like_html(source: str) -> bool:
     )
 
 
+def _check_zip_members(archive: zipfile.ZipFile, limits: ParserLimits) -> set[str]:
+    """Container-level member checks shared by OOXML and HWPX; returns folded names."""
+
+    entries = archive.infolist()
+    if len(entries) > limits.max_archive_entries:
+        raise StructuredParseError("ARCHIVE_ENTRY_LIMIT")
+    names: set[str] = set()
+    total_uncompressed = 0
+    total_compressed = 0
+    for entry in entries:
+        normalized_name = entry.filename.replace("\\", "/")
+        candidate = normalized_name.rstrip("/")
+        if candidate:
+            try:
+                safe_relative_path(candidate)
+            except ValueError as exc:
+                raise StructuredParseError("ARCHIVE_PATH_TRAVERSAL") from exc
+        folded_name = normalized_name.casefold()
+        if folded_name in names:
+            raise StructuredParseError("ARCHIVE_DUPLICATE_ENTRY")
+        names.add(folded_name)
+        if entry.flag_bits & 0x1:
+            raise StructuredParseError("ARCHIVE_ENCRYPTED_ENTRY")
+        if stat.S_ISLNK(entry.external_attr >> 16):
+            raise StructuredParseError("ARCHIVE_SYMLINK")
+        if entry.file_size > limits.max_archive_member_bytes:
+            raise StructuredParseError("ARCHIVE_MEMBER_LIMIT")
+        total_uncompressed += entry.file_size
+        total_compressed += entry.compress_size
+        if total_uncompressed > limits.max_archive_uncompressed_bytes:
+            raise StructuredParseError("ARCHIVE_SIZE_LIMIT")
+        if any(folded_name.endswith(suffix) for suffix in _BLOCKED_MEMBER_SUFFIXES):
+            raise StructuredParseError("OFFICE_ACTIVE_CONTENT")
+    if total_uncompressed / max(total_compressed, 1) > limits.max_compression_ratio:
+        raise StructuredParseError("ARCHIVE_RATIO_LIMIT")
+    return names
+
+
 def _validate_office_archive(
     data: bytes,
     extension: str,
@@ -161,34 +199,10 @@ def _validate_office_archive(
 
     with archive:
         entries = archive.infolist()
-        if len(entries) > limits.max_archive_entries:
-            raise StructuredParseError("ARCHIVE_ENTRY_LIMIT")
-        names: set[str] = set()
-        total_uncompressed = 0
-        total_compressed = 0
+        names = _check_zip_members(archive, limits)
         embedded_chart_workbooks: list[zipfile.ZipInfo] = []
         for entry in entries:
-            normalized_name = entry.filename.replace("\\", "/")
-            candidate = normalized_name.rstrip("/")
-            if candidate:
-                try:
-                    safe_relative_path(candidate)
-                except ValueError as exc:
-                    raise StructuredParseError("ARCHIVE_PATH_TRAVERSAL") from exc
-            folded_name = normalized_name.casefold()
-            if folded_name in names:
-                raise StructuredParseError("ARCHIVE_DUPLICATE_ENTRY")
-            names.add(folded_name)
-            if entry.flag_bits & 0x1:
-                raise StructuredParseError("ARCHIVE_ENCRYPTED_ENTRY")
-            if stat.S_ISLNK(entry.external_attr >> 16):
-                raise StructuredParseError("ARCHIVE_SYMLINK")
-            if entry.file_size > limits.max_archive_member_bytes:
-                raise StructuredParseError("ARCHIVE_MEMBER_LIMIT")
-            total_uncompressed += entry.file_size
-            total_compressed += entry.compress_size
-            if total_uncompressed > limits.max_archive_uncompressed_bytes:
-                raise StructuredParseError("ARCHIVE_SIZE_LIMIT")
+            folded_name = entry.filename.replace("\\", "/").casefold()
             member_path = f"/{folded_name}"
             if any(part in member_path for part in _BLOCKED_MEMBER_PARTS):
                 is_chart_workbook = (
@@ -199,11 +213,7 @@ def _validate_office_archive(
                 if not is_chart_workbook:
                     raise StructuredParseError("OFFICE_EMBEDDED_OBJECT")
                 embedded_chart_workbooks.append(entry)
-            if any(folded_name.endswith(suffix) for suffix in _BLOCKED_MEMBER_SUFFIXES):
-                raise StructuredParseError("OFFICE_ACTIVE_CONTENT")
 
-        if total_uncompressed / max(total_compressed, 1) > limits.max_compression_ratio:
-            raise StructuredParseError("ARCHIVE_RATIO_LIMIT")
         if "[content_types].xml" not in names:
             raise StructuredParseError("OOXML_CONTENT_TYPES_MISSING")
         if not any(name.startswith(_OFFICE_MARKER[extension]) for name in names):
