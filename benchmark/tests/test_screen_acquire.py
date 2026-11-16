@@ -66,8 +66,8 @@ def test_acquire_records_rights_fields(tmp_path: Path) -> None:
     sha = hashlib.sha256(DOC).hexdigest()
     assert (tmp_path / "corpus" / "docs" / f"{sha}.pdf").read_bytes() == DOC
     rights = json.loads(out.read_text(encoding="utf-8"))["rights"]
-    assert recs[0]["source_sha256"] == sha and recs[0]["byte_size"] == len(DOC)
-    assert rights["licence_snapshot_sha256"] == hashlib.sha256(LICENCE).hexdigest()
+    assert recs[0]["source_sha256"] == f"sha256:{sha}" and recs[0]["byte_size"] == len(DOC)
+    assert rights["licence_snapshot_sha256"] == "sha256:" + hashlib.sha256(LICENCE).hexdigest()
     assert rights["rights_class"] == "public_domain"
 
 
@@ -191,7 +191,65 @@ def test_output_matches_manifest_schema(tmp_path: Path) -> None:
     rec = acq.acquire(
         _csv(tmp_path, ROW), tmp_path / "c", tmp_path / "o.jsonl", _client(_ok), recorded_by="t"
     )[0]
-    rights_schema = (
-        schema["$defs"]["rights"] if "$defs" in schema else schema["definitions"]["rights"]
-    )
-    jsonschema.validate(rec["rights"], rights_schema)
+    props = schema["properties"]["documents"]["items"]["properties"]
+    jsonschema.validate(rec["rights"], props["rights"])
+    jsonschema.validate(rec["source_sha256"], props["source_sha256"])
+
+
+def test_digests_prefixed_and_redistribution_boolean(tmp_path: Path) -> None:
+    rec = acq.acquire(
+        _csv(tmp_path, ROW), tmp_path / "c", tmp_path / "o.jsonl", _client(_ok), recorded_by="t"
+    )[0]
+    assert rec["source_sha256"] == "sha256:" + hashlib.sha256(DOC).hexdigest()
+    snap = "sha256:" + hashlib.sha256(LICENCE).hexdigest()
+    assert rec["rights"]["licence_snapshot_sha256"] == snap
+    assert rec["rights"]["redistribution"] is False
+
+
+def _arxiv(abs_body: bytes):
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, content=abs_body if "/abs/" in request.url.path else DOC)
+
+    return handler
+
+
+ARXIV_ROW = ("https://arxiv.org/pdf/2401.00001.pdf", "arxiv_cc_by", "CC-BY-4.0")
+
+
+def test_arxiv_snapshot_is_the_paper_abs_page(tmp_path: Path) -> None:
+    page = b'<a href="http://creativecommons.org/licenses/by/4.0/">license</a>'
+    rec = acq.acquire(
+        _csv(tmp_path, ARXIV_ROW),
+        tmp_path / "c",
+        tmp_path / "o.jsonl",
+        _client(_arxiv(page)),
+        recorded_by="t",
+    )[0]
+    assert rec["rights"]["licence_snapshot_sha256"] == "sha256:" + hashlib.sha256(page).hexdigest()
+
+
+def test_arxiv_without_cc_by_link_refused(tmp_path: Path) -> None:
+    page = b'<a href="http://arxiv.org/licenses/nonexclusive-distrib/1.0/">license</a>'
+    with pytest.raises(acq.AcquireError, match="does not link"):
+        acq.acquire(
+            _csv(tmp_path, ARXIV_ROW),
+            tmp_path / "c",
+            tmp_path / "o.jsonl",
+            _client(_arxiv(page)),
+            recorded_by="t",
+        )
+
+
+def test_empty_recorded_by_refused(tmp_path: Path) -> None:
+    with pytest.raises(acq.AcquireError, match="recorded_by"):
+        acq.acquire(
+            _csv(tmp_path, ROW), tmp_path / "c", tmp_path / "o.jsonl", _client(_ok), recorded_by=" "
+        )
+
+
+def test_cli_refuses_unlisted_family(tmp_path: Path) -> None:
+    bad = _csv(tmp_path, ("https://x.example/a.pdf", "nope", "X"))
+    argv = ["--csv", str(bad), "--corpus-root", str(tmp_path / "c")]
+    argv += ["--out", str(tmp_path / "o.jsonl"), "--user-agent", "ua", "--recorded-by", "t"]
+    assert acq.main(argv) == 1
+    assert not (tmp_path / "o.jsonl").exists()

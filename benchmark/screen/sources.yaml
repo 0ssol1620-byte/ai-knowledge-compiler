@@ -31,8 +31,10 @@ families:
     snapshot_required: true
     clearance: decision_required
   arxiv_cc_by:
-    # The paper's own licence is checked per paper: the CSV row must name a CC-BY licence below.
+    # Per paper: the snapshot is the paper's own abs page, and acquisition is refused unless that
+    # page links to the CC-BY licence URL the CSV row names.
     rights_class: permissive_licence
+    licence_per_document: true
     download: true
     hosts: [arxiv.org, export.arxiv.org]
     licences:

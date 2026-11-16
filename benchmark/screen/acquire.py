@@ -7,10 +7,13 @@ rights fields of the screen manifest. Rights decisions are not made here (see so
 
 from __future__ import annotations
 
+import argparse
 import csv
 import email.utils
 import hashlib
 import json
+import re
+import sys
 import time
 from collections.abc import Callable
 from datetime import UTC, datetime
@@ -51,7 +54,10 @@ def _retry_after(value: str | None) -> float | None:
         return None
     if value.strip().isdigit():
         return float(value)
-    parsed = email.utils.parsedate_to_datetime(value)
+    try:
+        parsed = email.utils.parsedate_to_datetime(value)
+    except (TypeError, ValueError):
+        raise AcquireError(f"unparseable Retry-After: {value!r}") from None
     return max(0.0, (parsed - datetime.now(UTC)).total_seconds())
 
 
@@ -127,6 +133,22 @@ def _check_row(
     return fam, licence_url
 
 
+def _snapshot_url(row: dict[str, str], fam: dict[str, Any], licence_url: str) -> str:
+    """The page whose bytes are the licence evidence for this row."""
+    if not fam.get("licence_per_document"):
+        return licence_url
+    m = re.fullmatch(r"/(?:pdf|abs)/(.+?)(?:\.pdf)?", urlparse(row["url"]).path)
+    if m is None:
+        raise AcquireError(f"cannot derive the per-paper abs page from {row['url']}")
+    return f"https://arxiv.org/abs/{m.group(1)}"
+
+
+def _links_to(page: bytes, licence_url: str) -> bool:
+    """True when the page links to the licence URL (scheme-insensitive)."""
+    bare = re.escape(licence_url.split("://", 1)[1].rstrip("/").encode())
+    return re.search(rb"https?://" + bare + rb"/?[\"'<\s>]", page) is not None
+
+
 def acquire(
     csv_path: Path,
     corpus_root: Path,
@@ -137,9 +159,11 @@ def acquire(
     families: dict[str, dict[str, Any]] | None = None,
 ) -> list[dict[str, Any]]:
     """Acquire every row. All rows are validated before the first request."""
+    if not recorded_by.strip():
+        raise AcquireError("recorded_by is required")
     root = check_corpus_root(corpus_root)
     families = families or load_families()
-    with csv_path.open(encoding="utf-8", newline="") as fh:
+    with csv_path.open(encoding="utf-8-sig", newline="") as fh:
         rows = list(csv.DictReader(fh))
     for row in rows:
         if set(row) != {"url", "source_family", "licence"}:
@@ -152,12 +176,15 @@ def acquire(
     snapshots: dict[str, str] = {}
     for row in rows:
         fam, licence_url = _check_row(row, families)
-        if licence_url not in snapshots:
-            snap = client.get(licence_url)
+        snap_url = _snapshot_url(row, fam, licence_url)
+        if snap_url not in snapshots:
+            snap = client.get(snap_url)
             if not snap:
-                raise AcquireError(f"empty licence snapshot: {licence_url}")
-            snapshots[licence_url] = hashlib.sha256(snap).hexdigest()
-            (root / "licences" / f"{snapshots[licence_url]}.html").write_bytes(snap)
+                raise AcquireError(f"empty licence snapshot: {snap_url}")
+            if fam.get("licence_per_document") and not _links_to(snap, licence_url):
+                raise AcquireError(f"{snap_url} does not link to {licence_url}; refused")
+            snapshots[snap_url] = hashlib.sha256(snap).hexdigest()
+            (root / "licences" / f"{snapshots[snap_url]}.html").write_bytes(snap)
         data = client.get(row["url"])
         if not data:
             raise AcquireError(f"empty download: {row['url']}")
@@ -170,14 +197,14 @@ def acquire(
         records.append(
             {
                 "doc_id": f"d-{sha[:16]}",
-                "source_sha256": sha,
+                "source_sha256": f"sha256:{sha}",
                 "byte_size": len(data),
                 "rights": {
                     "source_url": row["url"],
                     "licence_id": row["licence"],
-                    "licence_snapshot_sha256": snapshots[licence_url],
+                    "licence_snapshot_sha256": f"sha256:{snapshots[snap_url]}",
                     "rights_class": fam["rights_class"],
-                    "redistribution": "unreviewed",
+                    "redistribution": False,  # conservative until a rights decision is recorded
                     "recorded_by": recorded_by,
                     "recorded_at": datetime.now(UTC).isoformat(timespec="seconds"),
                 },
@@ -188,3 +215,26 @@ def acquire(
         for rec in records:
             fh.write(json.dumps(rec, ensure_ascii=False, sort_keys=True) + "\n")
     return records
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--csv", type=Path, required=True)
+    ap.add_argument("--corpus-root", type=Path, required=True)
+    ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--user-agent", required=True)
+    ap.add_argument("--recorded-by", required=True)
+    ap.add_argument("--min-interval-s", type=float, default=0.5)
+    a = ap.parse_args(argv)
+    try:
+        client = PacedClient(a.user_agent, min_interval_s=a.min_interval_s)
+        recs = acquire(a.csv, a.corpus_root, a.out, client, recorded_by=a.recorded_by)
+    except AcquireError as e:
+        print(f"refused: {e}", file=sys.stderr)
+        return 1
+    print(f"acquired {len(recs)} documents -> {a.out}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
