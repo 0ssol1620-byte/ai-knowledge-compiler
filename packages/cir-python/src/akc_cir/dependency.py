@@ -261,6 +261,19 @@ class DependencyGraph:
                 affected.append(ImpactPath(node_id=neighbour, depth=depth + 1, via=trail))
                 queue.append((neighbour, depth + 1, trail, (*lineage, neighbour)))
 
+        # The lineage check above only sees a cycle that closes on the path that
+        # first reached it. Two sibling branches that point at each other are
+        # each reached first from the seed, so the loop is missed (F30-04). An
+        # SCC pass over the reached nodes finds every cyclic component; each one
+        # no reported cycle touches gets exactly one real closed walk, through
+        # its first member in sorted order. One BFS per uncovered component,
+        # inside that component, so the added cost is linear in the reached graph.
+        reached = set(seeds) | {path.node_id for path in affected}
+        covered = {node for cycle in cycles for node in cycle}
+        for component in self._cyclic_components(reached, as_of):
+            if covered.isdisjoint(component):
+                cycles.append(self._shortest_cycle(component[0], set(component), as_of))
+
         return ImpactReport(
             changed=tuple(seeds),
             affected=tuple(affected),
@@ -268,6 +281,85 @@ class DependencyGraph:
             cycles_detected=tuple(cycles),
             unknown_nodes=unknown,
         )
+
+    def _shortest_cycle(
+        self, start: str, members: set[str], moment: datetime | None
+    ) -> tuple[str, ...]:
+        """Shortest closed walk through `start` over live successor edges.
+
+        `start` lies in a strongly connected component, so one always exists.
+        Successors are sorted, so ties break the same way on every run.
+        """
+        parent: dict[str, str] = {}
+        queue: deque[str] = deque([start])
+        while queue:
+            node = queue.popleft()
+            for nxt, _ in self._successors(node, moment):
+                if nxt not in members:
+                    continue
+                if nxt == start:
+                    walk = [node]
+                    while walk[-1] != start:
+                        walk.append(parent[walk[-1]])
+                    return (*reversed(walk), start)
+                if nxt not in parent:
+                    parent[nxt] = node
+                    queue.append(nxt)
+        raise AssertionError(f"{start} is in a cyclic component but closes no walk")
+
+    def _cyclic_components(
+        self, nodes: set[str], moment: datetime | None
+    ) -> list[tuple[str, ...]]:
+        """Strongly connected components larger than one node, within `nodes`.
+
+        Iterative Tarjan so a deep graph cannot exhaust the recursion limit.
+        """
+
+        def nexts(node: str) -> list[str]:
+            return [n for n, _ in self._successors(node, moment) if n in nodes]
+
+        index: dict[str, int] = {}
+        low: dict[str, int] = {}
+        stack: list[str] = []
+        on_stack: set[str] = set()
+        found: list[tuple[str, ...]] = []
+        for root in sorted(nodes):
+            if root in index:
+                continue
+            index[root] = low[root] = len(index)
+            stack.append(root)
+            on_stack.add(root)
+            work = [(root, iter(nexts(root)))]
+            while work:
+                node, pending = work[-1]
+                descended = False
+                for nxt in pending:
+                    if nxt not in index:
+                        index[nxt] = low[nxt] = len(index)
+                        stack.append(nxt)
+                        on_stack.add(nxt)
+                        work.append((nxt, iter(nexts(nxt))))
+                        descended = True
+                        break
+                    if nxt in on_stack:
+                        low[node] = min(low[node], index[nxt])
+                if descended:
+                    continue
+                work.pop()
+                if work:
+                    parent = work[-1][0]
+                    low[parent] = min(low[parent], low[node])
+                if low[node] == index[node]:
+                    members: list[str] = []
+                    while True:
+                        top = stack.pop()
+                        on_stack.discard(top)
+                        members.append(top)
+                        if top == node:
+                            break
+                    if len(members) > 1:
+                        found.append(tuple(sorted(members)))
+        return found
 
     def provenance_of(
         self, node_id: str, *, max_depth: int | None = None, as_of: datetime | None = None

@@ -105,8 +105,12 @@ class TemporalFact:
         return begun and not_ended
 
     def known_at(self, moment: datetime) -> bool:
-        """Had the system recorded this by `moment`, and not yet retracted it?"""
-        recorded = self.recorded_at is None or moment >= self.recorded_at
+        """Had the system recorded this by `moment`, and not yet retracted it?
+
+        A fact with no `recorded_at` carries no evidence that it was known at any
+        past moment, so a system-time question never admits it (F30-03).
+        """
+        recorded = self.recorded_at is not None and moment >= self.recorded_at
         not_retracted = self.superseded_at is None or moment < self.superseded_at
         return recorded and not_retracted
 
@@ -126,6 +130,9 @@ class AsOfAnswer:
     policy: TemporalPolicy
     included_unknown: tuple[str, ...] = ()
     excluded_unknown: tuple[str, ...] = ()
+    #: Left out of a `known_at` question because the system never recorded when
+    #: it learned them. Not a validity gap, so not folded into `excluded_unknown`.
+    excluded_unrecorded: tuple[str, ...] = ()
 
     @property
     def values(self) -> tuple[str, ...]:
@@ -147,6 +154,11 @@ class AsOfAnswer:
             note = (
                 f"; {len(self.excluded_unknown)} fact(s) with no stated validity "
                 "were excluded"
+            )
+        if self.excluded_unrecorded:
+            note += (
+                f"; {len(self.excluded_unrecorded)} fact(s) with no recorded time "
+                "were excluded from the as-known answer"
             )
         return (", ".join(parts) or "no temporal bound") + note
 
@@ -180,11 +192,14 @@ class TemporalTimeline:
         selected: list[TemporalFact] = []
         included_unknown: list[str] = []
         excluded_unknown: list[str] = []
+        excluded_unrecorded: list[str] = []
 
         for fact in self._facts:
             if logical_id is not None and fact.logical_id != logical_id:
                 continue
             if known_at is not None and not fact.known_at(known_at):
+                if fact.recorded_at is None:
+                    excluded_unrecorded.append(fact.logical_id)
                 continue
             if valid_at is not None:
                 if not fact.validity_known:
@@ -203,6 +218,7 @@ class TemporalTimeline:
             policy=policy,
             included_unknown=tuple(dict.fromkeys(included_unknown)),
             excluded_unknown=tuple(dict.fromkeys(excluded_unknown)),
+            excluded_unrecorded=tuple(dict.fromkeys(excluded_unrecorded)),
         )
 
     def history(self, logical_id: str) -> tuple[TemporalFact, ...]:
@@ -299,4 +315,5 @@ def replay_context(
         policy=answer.policy,
         included_unknown=answer.included_unknown,
         excluded_unknown=tuple(lid for lid in answer.excluded_unknown if lid in wanted),
+        excluded_unrecorded=tuple(lid for lid in answer.excluded_unrecorded if lid in wanted),
     )
