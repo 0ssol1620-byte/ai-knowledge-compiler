@@ -55,6 +55,18 @@ class ProductCoreDocument(ContractModel):
     source_filename: Annotated[str, Field(min_length=1, max_length=500)]
     page_count: Annotated[int, Field(ge=1, le=100_000)]
     regions: Annotated[tuple[ProductCoreRegion, ...], Field(min_length=1, max_length=100_000)]
+    # Dates the SOURCE declares (a release's `published`, an effective date). Never filled
+    # from fetch or ingest time: an undeclared date stays None and reads as unknown.
+    available_at: datetime | None = None
+    valid_from: datetime | None = None
+    valid_to: datetime | None = None
+
+    @field_validator("available_at", "valid_from", "valid_to")
+    @classmethod
+    def declared_date_is_timezone_aware(cls, value: datetime | None) -> datetime | None:
+        if value is not None and value.utcoffset() is None:
+            raise ValueError("a declared date must be timezone-aware")
+        return value
 
     @field_validator("immutable_object_key", "ocr_object_key")
     @classmethod
@@ -73,6 +85,8 @@ class ProductCoreDocument(ContractModel):
             raise ValueError("region order values must be unique within a document")
         if max(region.page_number1 for region in self.regions) > self.page_count:
             raise ValueError("region page exceeds pageCount")
+        if self.valid_from and self.valid_to and self.valid_to < self.valid_from:
+            raise ValueError("validTo precedes validFrom")
         return self
 
 
