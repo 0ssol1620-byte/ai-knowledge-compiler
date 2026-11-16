@@ -565,3 +565,64 @@ def test_a_split_refuses_a_non_member_and_an_existing_target() -> None:
         registry.split(new_entity_id="ent_3", mention_ids=["m9"], **kw)
     with pytest.raises(ValueError, match="exists"):
         registry.split(new_entity_id="ent_2", mention_ids=["m1"], **kw)
+
+
+def test_a_conflict_on_any_same_id_candidate_blocks_the_merge_in_either_order() -> None:
+    conflicting = _mention(
+        "m1", "Acme Corporation", type_candidate="organization", external_ids={"lei": "LEI-1"}
+    )
+    bare = _mention("m3", "Acme Corporation", type_candidate="organization")
+    mention = _mention(
+        "m2", "ACME", type_candidate="organization", external_ids={"lei": "LEI-2"}
+    )
+    for candidates in (
+        [("ent_1", conflicting), ("ent_1", bare)],
+        [("ent_1", bare), ("ent_1", conflicting)],
+    ):
+        decision = resolve_mention(mention, candidates, aliases={"acme": "ent_1"})
+        assert decision.verdict is MergeVerdict.REVIEW
+
+
+def test_a_split_refuses_a_duplicated_mention() -> None:
+    registry = _three_mention_registry()
+    with pytest.raises(ValueError, match="once"):
+        registry.split(
+            split_id="sp_1",
+            entity_id="ent_1",
+            new_entity_id="ent_2",
+            mention_ids=["m2", "m2"],
+            decided_by="ops@acme",
+        )
+    assert registry.members("ent_1") == ("m1", "m2", "m3")
+
+
+def _split(registry: EntityRegistry, split_id: str, new: str, mention: str) -> None:
+    registry.split(
+        split_id=split_id,
+        entity_id="ent_1",
+        new_entity_id=new,
+        mention_ids=[mention],
+        decided_by="ops@acme",
+    )
+
+
+def test_unsplit_refuses_when_the_split_off_entity_changed() -> None:
+    registry = _three_mention_registry()
+    _split(registry, "sp_1", "ent_2", "m2")
+    registry.add("ent_2", "m9")
+    with pytest.raises(ValueError, match="split-off"):
+        registry.unsplit("sp_1")
+    assert registry.members("ent_2") == ("m2", "m9")
+
+
+def test_unsplit_refuses_when_the_source_entity_changed() -> None:
+    registry = _three_mention_registry()
+    _split(registry, "sp_1", "ent_2", "m2")
+    _split(registry, "sp_2", "ent_3", "m3")
+    with pytest.raises(ValueError, match="source"):
+        registry.unsplit("sp_1")
+    assert registry.members("ent_1") == ("m1",)
+    assert registry.members("ent_3") == ("m3",)
+    registry.unsplit("sp_2")
+    registry.unsplit("sp_1")
+    assert registry.members("ent_1") == ("m1", "m2", "m3")

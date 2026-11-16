@@ -228,23 +228,27 @@ def resolve_mention(
         context_threshold=context_threshold,
         model_proposals=model_proposals,
     )
-    if decision.merged and decision.tier is not ResolutionTier.SYSTEM_OF_RECORD:
-        other = dict(candidates)[decision.entity_id or ""]
-        if any(
+    if (
+        decision.merged
+        and decision.tier is not ResolutionTier.SYSTEM_OF_RECORD
+        and any(
             system in other.external_ids and other.external_ids[system] != value
+            for entity_id, other in candidates
+            if entity_id == decision.entity_id
             for system, value in mention.external_ids.items()
-        ):
-            return MergeDecision(
-                verdict=MergeVerdict.REVIEW,
-                entity_id=None,
-                tier=ResolutionTier.SYSTEM_OF_RECORD,
-                score=decision.score,
-                reason=(
-                    "conflicting system identifiers: a merge would give one "
-                    "entity two authoritative records"
-                ),
-                candidates=(decision.entity_id or "",),
-            )
+        )
+    ):
+        return MergeDecision(
+            verdict=MergeVerdict.REVIEW,
+            entity_id=None,
+            tier=ResolutionTier.SYSTEM_OF_RECORD,
+            score=decision.score,
+            reason=(
+                "conflicting system identifiers: a merge would give one "
+                "entity two authoritative records"
+            ),
+            candidates=(decision.entity_id or "",),
+        )
     return decision
 
 
@@ -524,6 +528,8 @@ class EntityRegistry:
         if new_entity_id in self._members:
             raise ValueError(f"entity {new_entity_id} already exists")
         moved = tuple(mention_ids)
+        if len(set(moved)) != len(moved):
+            raise ValueError("a mention can be moved only once")
         current = self._members[entity_id]
         if not moved or any(m not in current for m in moved):
             raise ValueError("every moved mention must be a member of the entity")
@@ -556,6 +562,13 @@ class EntityRegistry:
             if self._members.get(record.new_entity_id) != list(record.moved_members):
                 raise ValueError(
                     "the split-off entity has changed since the split; undo what "
+                    "followed it first"
+                )
+            if self._members.get(record.entity_id) != [
+                m for m in record.previous_members if m not in record.moved_members
+            ]:
+                raise ValueError(
+                    "the source entity has changed since the split; undo what "
                     "followed it first"
                 )
             self._members[record.entity_id] = list(record.previous_members)
