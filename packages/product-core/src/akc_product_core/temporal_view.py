@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, cast
 
+from akc_cir.identity import document_version_id, source_id
 from akc_cir.temporal import TemporalFact, TemporalSource, TemporalTimeline
 
 from .contracts import ProductCoreCompileRequest, ProductCoreCompileResponse
@@ -18,22 +19,27 @@ def timeline_from_compile(
     Validity comes only from dates the source document declared. `recorded_at` is the
     request's `requested_at`: the moment the system recorded the claim, which is system time.
     """
-    documents = {
-        (document.source_id, document.source_version_id): document
-        for document in request.documents
-    }
+    # Keyed as the compiler derives them: the request's own ids are optional.
+    documents = {}
+    for doc in request.documents:
+        sid = source_id(
+            tenant_id=request.tenant_id,
+            connector_type=doc.connector_type,
+            native_id=doc.native_id,
+        )
+        documents[(sid, document_version_id(source=sid, content_sha256=doc.content_sha256))] = doc
     timeline = TemporalTimeline()
     available: dict[str, datetime | None] = {}
-    objects = cast(
-        "list[dict[str, Any]]", response.candidate.canonical_knowledge_model["objects"]
-    )
+    objects = cast("list[dict[str, Any]]", response.candidate.canonical_knowledge_model["objects"])
     for item in objects:
         if item["kind"] != "claim":
             continue
         payload = item["payload"]
         document = documents.get((payload["sourceId"], payload["sourceVersionId"]))
-        valid_from = document.valid_from if document else None
-        valid_to = document.valid_to if document else None
+        if document is None:
+            raise ValueError("claim has no matching request document")
+        valid_from = document.valid_from
+        valid_to = document.valid_to
         declared = valid_from is not None or valid_to is not None
         logical_id = payload["logicalId"]
         timeline.add(
@@ -47,5 +53,5 @@ def timeline_from_compile(
                 evidence_id=payload["evidenceId"],
             )
         )
-        available[logical_id] = document.available_at if document else None
+        available[logical_id] = document.available_at
     return timeline, available

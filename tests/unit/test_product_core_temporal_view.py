@@ -99,6 +99,34 @@ def test_omitting_the_new_fields_leaves_the_candidate_bytes_unchanged() -> None:
     assert "availableAt" not in plain.model_dump(mode="json", by_alias=True, exclude_none=True)
 
 
+def _without_ids(**fields):
+    base = _document("filing-a", "Revenue is 100 million won.")
+    data = base.model_dump(by_alias=True)
+    data.pop("sourceId", None)
+    data.pop("sourceVersionId", None)
+    data.update(fields)
+    return type(base).model_validate(data)
+
+
+def test_a_document_without_source_ids_still_maps_to_its_claims() -> None:
+    document = _without_ids(availableAt=PUBLISHED, validFrom=FROM, validTo=TO)
+    assert document.source_id is None and document.source_version_id is None
+    request, response = _compile(document)
+    timeline, available = timeline_from_compile(request, response)
+
+    assert {
+        f.temporal_source for f in timeline.as_of(valid_at=datetime(2026, 6, 1, tzinfo=UTC)).facts
+    } == {TemporalSource.EXPLICIT}
+    assert set(available.values()) == {PUBLISHED}
+
+
+def test_a_claim_with_no_matching_request_document_is_refused() -> None:
+    request, response = _compile(_without_ids(validFrom=FROM))
+    orphaned = request.model_copy(update={"documents": ()})
+    with pytest.raises(ValueError, match="no matching request document"):
+        timeline_from_compile(orphaned, response)
+
+
 def _dated_validated(**fields):
     base = _document("filing-a", "Revenue is 100 million won.")
     camel = {"available_at": "availableAt", "valid_from": "validFrom", "valid_to": "validTo"}
