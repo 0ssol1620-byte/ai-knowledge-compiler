@@ -13,8 +13,6 @@ _TIMING_LINE = re.compile(
     r"^(?P<start>\d{1,2}:\d{2}(?::\d{2})?[,.]\d{3})\s*-->\s*"
     r"(?P<end>\d{1,2}:\d{2}(?::\d{2})?[,.]\d{3})(?:\s+.*)?$"
 )
-_TAG = re.compile(r"<[^>]+>")
-_VTT_SPEAKER = re.compile(r"^<v(?:\.[^ >]+)*\s+([^>]+)>(.*)$", re.DOTALL)
 _TEXT_SPEAKER = re.compile(r"^([^\n:]{1,80}):\s+(.+)$", re.DOTALL)
 
 
@@ -267,7 +265,7 @@ def _cue(
     if end_ms < start_ms:
         raise StructuredParseError("SUBTITLE_TIME_ORDER")
     speaker, text = _speaker_and_text(raw_text)
-    normalized = normalize_text(_TAG.sub("", text))
+    normalized = normalize_text(_strip_tags(text))
     if not normalized:
         raise StructuredParseError("SUBTITLE_EMPTY_CUE")
     return Cue(
@@ -282,11 +280,63 @@ def _cue(
     )
 
 
+def _strip_tags(text: str) -> str:
+    """Linear equivalent of ``re.sub(r"<[^>]+>", "", text)``."""
+    parts: list[str] = []
+    index = 0
+    while (start := text.find("<", index)) >= 0:
+        end = text.find(">", start + 1)
+        if end < 0:
+            break
+        if end == start + 1:  # "<>" has no tag body: keep it, scan on
+            parts.append(text[index : start + 1])
+            index = start + 1
+            continue
+        parts.append(text[index:start])
+        index = end + 1
+    parts.append(text[index:])
+    return "".join(parts)
+
+
+def _vtt_speaker(raw_text: str) -> tuple[str, str] | None:
+    """Linear form of the old ``<v`` voice-span regex (DOTALL, class list, whitespace, name).
+
+    The regex backtracks over where the class list ends; trying each end from the
+    longest down, the first one followed by whitespace and a non-empty name wins.
+    """
+    if not raw_text.startswith("<v"):
+        return None
+    close = raw_text.find(">", 2)
+    if close < 0:
+        return None
+    ends = [2]
+    if raw_text.startswith(".", 2):
+        limit = 3
+        while limit < len(raw_text) and raw_text[limit] not in " >":
+            limit += 1
+        ends = [*range(limit, 3, -1), 2]  # class list is "." plus at least one more char
+    space_end = previous = -1
+    for end in ends:
+        if end >= len(raw_text) or not raw_text[end].isspace():
+            previous = -1
+            continue
+        if previous != end + 1:  # else `end` extends the whitespace run just measured
+            space_end = end + 1
+            while space_end < len(raw_text) and raw_text[space_end].isspace():
+                space_end += 1
+        previous = end
+        # \s+ gives back one char when the name would otherwise be empty
+        name_start = space_end if close > space_end else space_end - 1
+        if name_start > end:
+            return raw_text[name_start:close], raw_text[close + 1 :]
+    return None
+
+
 def _speaker_and_text(raw_text: str) -> tuple[str | None, str]:
-    vtt_match = _VTT_SPEAKER.match(raw_text)
+    vtt_match = _vtt_speaker(raw_text)
     if vtt_match:
-        return normalize_text(vtt_match.group(1)), vtt_match.group(2)
-    plain = _TAG.sub("", raw_text)
+        return normalize_text(vtt_match[0]), vtt_match[1]
+    plain = _strip_tags(raw_text)
     text_match = _TEXT_SPEAKER.match(plain)
     if text_match:
         return normalize_text(text_match.group(1)), text_match.group(2)
