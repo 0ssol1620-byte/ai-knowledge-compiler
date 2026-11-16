@@ -1,0 +1,276 @@
+from __future__ import annotations
+
+import hashlib
+import time
+from collections.abc import Callable
+
+import pytest
+from akc_native_parsers.differential import compare_readers
+from akc_native_parsers.hwp_contract import (
+    HwpAdapterResult,
+    HwpBlock,
+    HwpManifest,
+    ResourceReceipt,
+    TableCell,
+    build_result,
+)
+
+SHA = hashlib.sha256(b"x").hexdigest()
+
+
+def _para(text: str, anchor: str = "s0/p1", kind: str = "paragraph") -> HwpBlock:
+    return HwpBlock(
+        id=anchor.replace("/", "_"),
+        kind=kind,
+        text=text,
+        bbox_or_element_anchor=anchor,
+        original_ref=anchor,
+    )
+
+
+def _table(*cells: tuple[int, int, str], anchor: str = "s0/t1") -> HwpBlock:
+    return HwpBlock(
+        id="t",
+        kind="table",
+        table_grid=tuple(TableCell(row=r, col=c, text=t) for r, c, t in cells),
+        bbox_or_element_anchor=anchor,
+        original_ref=anchor,
+    )
+
+
+def _result(*blocks: HwpBlock) -> HwpAdapterResult:
+    return build_result(
+        engine_id="e",
+        engine_version="1",
+        manifest=HwpManifest(source_sha256=SHA, detected_format="hwp5"),
+        blocks=blocks,
+        resource_receipt=ResourceReceipt(wall_ms=0, input_bytes=1, output_bytes=0, exit_code=0),
+    )
+
+
+def test_identical_readers_hold_nothing() -> None:
+    r = _result(_para("Total 5 kg on 2026-11-16"), _table((0, 0, "A"), (1, 0, "1")))
+    assert compare_readers(r, r) == ()
+
+
+@pytest.mark.parametrize(
+    ("a", "b", "field"),
+    [
+        ("Total 1,200 items", "Total 1,300 items", "number"),
+        ("Weight 5 kg", "Weight 5 g", "text"),
+        ("Delta -5", "Delta 5", "sign"),
+        ("Delta -5", f"Delta {chr(0x2212)}5", ""),
+        ("Due 2026-11-16", "Due 2026-11-17", "date"),
+    ],
+)
+def test_number_unit_sign_and_date_disagreements_each_hold_the_region(
+    a: str, b: str, field: str
+) -> None:
+    held = compare_readers(_result(_para(a)), _result(_para(b)))
+    if not field:  # unicode minus is the same sign
+        assert held == ()
+        return
+    assert [(h.anchor, h.field) for h in held] == [("s0/p1", field)]
+    h = held[0]
+    assert h.a_value_sha256 != h.b_value_sha256
+    assert a not in h.model_dump_json() and b not in h.model_dump_json()
+
+
+def test_footnote_and_equation_text_hold_by_kind() -> None:
+    for kind in ("footnote", "equation"):
+        held = compare_readers(
+            _result(_para("see ref A", kind=kind)), _result(_para("see ref B", kind=kind))
+        )
+        assert [h.field for h in held] == [kind]
+
+
+def test_cell_shift_holds_the_table() -> None:
+    a = _result(_table((0, 0, "Year"), (0, 1, "Cost"), (1, 0, "2025"), (1, 1, "40")))
+    b = _result(_table((0, 0, "Year"), (0, 1, "Cost"), (1, 0, "40"), (1, 1, "2025")))
+    held = compare_readers(a, b)
+    assert held and {h.anchor for h in held} == {"s0/t1"}
+    assert {h.field for h in held} == {"cell:r1c0:number", "cell:r1c1:number"}
+
+
+def test_table_shape_and_header_association_hold() -> None:
+    base = _result(_table((0, 0, "A"), (1, 0, "1")))
+    wider = _result(_table((0, 0, "A"), (1, 0, "1"), (1, 1, "2")))
+    assert "table_shape" in {h.field for h in compare_readers(base, wider)}
+    rehead = _result(_table((0, 0, "B"), (1, 0, "1")))
+    assert [h.field for h in compare_readers(base, rehead)] == [
+        "cell:r0c0:text",
+        "cell:r1c0:header",
+    ]
+
+
+def test_whitespace_and_markup_only_differences_are_ignored() -> None:
+    a = _result(_para(f"Total  5{chr(0xA0)}kg\r\n"), _para("note one", anchor="s0/p2"))
+    b = _result(_para("**Total** 5 kg"), _para("# note_one".replace("_", " "), anchor="s0/p2"))
+    assert compare_readers(a, b) == ()
+
+
+def test_unalignable_anchor_is_held_not_dropped() -> None:
+    a = _result(_para("same"), _para("only in a", anchor="s0/p9"))
+    b = _result(_para("same"), _para("only in b", anchor="s0/p8"))
+    held = compare_readers(a, b)
+    assert [(h.anchor, h.field) for h in held] == [("s0/p8", "unaligned"), ("s0/p9", "unaligned")]
+    assert held[0].a_value_sha256 is None and held[0].b_value_sha256
+    assert held[1].a_value_sha256 and held[1].b_value_sha256 is None
+
+
+_VALUE_CASES = [
+    ("2026. 11. 16.", "2027. 11. 16."),
+    ("3. 500", "4. 500"),
+    ("5~10%", "510%"),
+    ("- 5", "+ 5"),
+    ("- 1,200", "1,200"),
+    ("x_1 + y", "x1 + y"),
+    ("2*3", "23"),
+    ("|a|", "a"),
+]
+
+
+@pytest.mark.parametrize(("a", "b"), _VALUE_CASES)
+@pytest.mark.parametrize("kind", ["paragraph", "equation"])
+def test_characters_that_carry_values_are_never_stripped_as_markup(
+    a: str, b: str, kind: str
+) -> None:
+    assert compare_readers(_result(_para(a, kind=kind)), _result(_para(b, kind=kind)))
+
+
+@pytest.mark.parametrize(("a", "b"), _VALUE_CASES)
+def test_value_characters_in_cells_hold(a: str, b: str) -> None:
+    assert compare_readers(
+        _result(_table((0, 0, "H"), (1, 0, a))), _result(_table((0, 0, "H"), (1, 0, b)))
+    )
+
+
+def test_paired_emphasis_is_still_ignored() -> None:
+    a = _result(_para("**Total** _net_ 5 kg"), _para("# Note", anchor="s0/p2"))
+    b = _result(_para("Total net 5 kg"), _para("Note", anchor="s0/p2"))
+    assert compare_readers(a, b) == ()
+
+
+def _timed_compare(a: HwpAdapterResult, b: HwpAdapterResult) -> float:
+    start = time.perf_counter()
+    compare_readers(a, b)
+    return time.perf_counter() - start
+
+
+_HOSTILE_UNITS = (
+    "**a ",
+    " _a",
+    "*",
+    "_",
+    "**",
+    "__",
+    "**a\n",
+    "\n# ",
+    "9",
+    "-1 ",
+    "1,",
+    "1 %",
+    "$ ",
+    "2026.1.",
+    "a_b*",
+)
+
+
+@pytest.mark.parametrize("unit", _HOSTILE_UNITS)
+def test_text_cost_is_linear_in_hostile_input(unit: str) -> None:
+    # every text pass (emphasis, heading, numeric tokens, dates) must stay linear:
+    # doubling a hostile text may not quadruple the time, and 200k chars stays bounded
+    def run(n: int) -> float:
+        text = (unit * (n // len(unit) + 1))[:n]
+        para, cell = _result(_para(text)), _result(_table((0, 0, "H"), (1, 0, text)))
+        return _timed_compare(para, _result(_para(text + "9"))) + _timed_compare(cell, cell)
+
+    small, big = run(100_000), run(200_000)
+    assert big < 2.0, f"{unit!r}: 200k chars took {big:.2f}s"
+    assert big < 4 * small + 0.25, f"{unit!r}: superlinear {small:.3f}s -> {big:.3f}s"
+
+
+def _row0_last(n: int) -> HwpAdapterResult:
+    return _result(_table(*[(1, c, "1") for c in range(n)], *[(0, c, "h") for c in range(n)]))
+
+
+def _wide_header(n: int, text: str) -> HwpAdapterResult:
+    # every row-0 cell spans every column: the first one (grid order) heads them all
+    header = HwpBlock(
+        id="t",
+        kind="table",
+        table_grid=(
+            TableCell(row=0, col=0, col_span=10**9, text=text),
+            *(TableCell(row=0, col=c, col_span=10**9, text="x") for c in range(1, n)),
+            *(TableCell(row=1, col=c, text="1") for c in range(n)),
+        ),
+        bbox_or_element_anchor="s0/t1",
+        original_ref="s0/t1",
+    )
+    return _result(header)
+
+
+@pytest.mark.parametrize(
+    "build",
+    [
+        lambda n: _row0_last(n),
+        lambda n: _result(_table(*[(1 + i // 50, i % 50, "1") for i in range(n)])),
+        lambda n: _wide_header(n, "H" * 20_000),
+    ],
+    ids=["row0_last", "no_row0", "spanning_long_header"],
+)
+def test_table_cost_is_near_linear_in_cells(build: Callable[[int], HwpAdapterResult]) -> None:
+    small, big = build(4_000), build(8_000)
+    t_small, t_big = _timed_compare(small, small), _timed_compare(big, big)
+    assert t_big < 2.0, f"8k cells took {t_big:.2f}s"
+    assert t_big < 4 * t_small + 0.25, f"superlinear {t_small:.3f}s -> {t_big:.3f}s"
+
+
+def test_long_header_disagreement_is_hashed_once_per_header() -> None:
+    n = 8_000
+    a, b = _wide_header(n, "H" * 20_000), _wide_header(n, "H" * 19_999 + "J")
+    start = time.perf_counter()
+    held = compare_readers(a, b)
+    assert time.perf_counter() - start < 2.0
+    assert held[0].field == "cell:r0c0:text"
+    under = {f"cell:r{r}c{c}:header" for r in (0, 1) for c in range(n)} - {"cell:r0c0:header"}
+    assert len(held) == 1 + len(under) and {h.field for h in held[1:]} == under
+    pairs = {(h.a_value_sha256, h.b_value_sha256) for h in held[1:]}
+    canon_a, canon_b = "H" * 20_000, "H" * 19_999 + "J"
+    assert pairs == {
+        (hashlib.sha256(canon_a.encode()).hexdigest(), hashlib.sha256(canon_b.encode()).hexdigest())
+    }
+
+
+def test_first_covering_header_in_grid_order_wins() -> None:
+    # overlapping row-0 spans: the same cells in another order change which header heads col 1
+    wide = TableCell(row=0, col=0, col_span=2, text="A")
+    narrow, body = TableCell(row=0, col=1, text="B"), TableCell(row=1, col=1, text="5")
+
+    def grid(*cells: TableCell) -> HwpAdapterResult:
+        block = HwpBlock(
+            id="t",
+            kind="table",
+            table_grid=cells,
+            bbox_or_element_anchor="s0/t1",
+            original_ref="s0/t1",
+        )
+        return _result(block)
+
+    a, b = grid(wide, narrow, body), grid(narrow, wide, body)
+    assert compare_readers(a, a) == ()
+    assert [h.field for h in compare_readers(a, b)] == ["cell:r0c1:header", "cell:r1c1:header"]
+
+
+def test_heading_mark_is_stripped_only_from_paragraphs_and_headings() -> None:
+    cell = compare_readers(
+        _result(_table((0, 0, "H"), (1, 0, "# 5"))), _result(_table((0, 0, "H"), (1, 0, "5")))
+    )
+    assert [h.field for h in cell] == ["cell:r1c0:text"]
+    assert compare_readers(_result(_para("# 5")), _result(_para("5"))) == ()
+
+
+def test_duplicate_grid_position_holds_the_table() -> None:
+    a = _result(_table((0, 0, "A"), (1, 0, "X"), (1, 0, "5")))
+    b = _result(_table((0, 0, "A"), (1, 0, "Y"), (1, 0, "5")))
+    assert [h.field for h in compare_readers(a, b)] == ["table_grid_ambiguous"]
