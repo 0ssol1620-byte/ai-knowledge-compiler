@@ -16,16 +16,32 @@ The rule "EG-04 corpus is at least 50% Korean pages" lives in five places:
 | `docs/masterplan/AI_Knowledge_Compiler_SaaS_Masterplan_FINAL_v2_KO_2026-07-29.md` §37.1 "Private beta 전 최소" (line ~6650) | "한국어 페이지 50% 이상". The frozen source (`docs/IMPLEMENTATION_MATRIX.md` line 4) and the origin of the CORPUS_POLICY bullet | Not edited: the file is frozen. For EG-04 only, this ADR supersedes that one bullet; the rest of §37.1 stands |
 | `benchmark/corpus/CORPUS_POLICY.md`, "Minimum corpus gates" | "Private beta: 1,500 pages, 150 documents, at least 50% Korean, at least ten document classes" | WO-LPC-ADR-IMPL |
 | `benchmark/screen/manifest.py` (lines ~165, ~209-210) | `korean_pages` count and `ContractError("eg04 needs >=50% Korean pages ...")` | WO-LPC-ADR-IMPL |
-| `benchmark/screen/strata.yaml` header comment | "Korean strata (language: ko) must be >= 50% of pages" (the screen's own plan happens to satisfy it: 235 of 300 dev pages) | WO-LPC-ADR-IMPL (comment only) |
-| `v34-lanes/workorders/core-runtime-arena.md` (outside the repository): §7 EG-04 plan (line ~412), and the already-implemented WO-D02-1 (lines ~111, ~114) and WO-D02-2 (line ~123) specs | ">=50% Korean pages"; §7 source plan ≈ 40% OpenDART/KOGL, 15% SEC, 10% CC-BY, 20% owned scans, 15% synthetic | The lead (plan text). The two WO specs are history; their code is changed by WO-LPC-ADR-IMPL |
+| `benchmark/screen/strata.yaml` header comment (lines 2-3) | "Korean strata (language: ko) must be >= 50% of pages (benchmark/corpus/CORPUS_POLICY.md)" (the screen's own plan meets it: 235 of 300 dev, 79 of 100 holdout pages) | Comment only, and **not** in WO-LPC-ADR-IMPL's write scope as written. The screen share stays; only its stated basis moves from CORPUS_POLICY to the screen's own plan. The lead adds that one comment to IMPL's scope or leaves it until a screen work order touches the file |
+| `v34-lanes/workorders/core-runtime-arena.md` (outside the repository): §7 EG-04 plan (line ~412), and the already-implemented WO-D02-1 (lines ~111, ~114) and WO-D02-2 (line ~123) specs | ">=50% Korean pages"; §7 source plan ≈ 40% OpenDART/KOGL, 15% SEC, 10% CC-BY, 20% owned scans, 15% synthetic | The lead (plan text). The two WO specs are history. WO-D02-1's eg04 code (`manifest.py`, `test_screen_manifest.py`) is changed by WO-LPC-ADR-IMPL; WO-D02-2's code (`strata.yaml`, `test_screen_acquire.py`) is the screen profile and keeps its numbers (see the tests below) |
 
-It is also pinned by `benchmark/tests/test_screen_manifest.py::test_eg04_profile_accepts_disjoint_and_rejects_overlap_and_low_korean`
-(lines ~175-186, the 40%-Korean fixture). `docs/release/EXTERNAL_GATES.md` describes EG-04 (>=1,500 pages, >=150 documents) without a
-language share, so it does not change.
+It is also pinned by two tests:
 
-How the list was made, so it can be re-run: a case-insensitive search for a Korean/한국어 term within a line of `50%`, `>=50`, `≥50`,
-`과반` or `majority`, plus `korean_pages`, over the repository (`git grep`, excluding JSON and `apps/`) and over `v34-lanes/workorders/`.
-Hits that only record the decision to change the rule (`local-public-corpus.md` §2.7 and L-1, `LPC.json`, `ALL.json`) are not rule
+- `benchmark/tests/test_screen_manifest.py::test_eg04_profile_accepts_disjoint_and_rejects_overlap_and_low_korean` (lines ~167-187:
+  the `_eg04_docs(korean_ratio=…)` fixture at 167, the 40%-Korean rejection at 186-187). It tests the EG-04 rule, and WO-LPC-ADR-IMPL
+  changes it.
+- `benchmark/tests/test_screen_acquire.py::test_strata_targets_sum_and_korean_share` (lines ~44-49; line 49 asserts
+  `sum(s[split] for s in strata if s["language"] == "ko") * 2 >= total` over `strata.yaml`, for dev and holdout). It is WO-D02-2's code,
+  written to that spec's "Korean strata >=50% of pages, matching CORPUS_POLICY" (core-runtime-arena.md line ~123). It tests the
+  **screen** plan, which this ADR does not change, so it is **not edited**: it stays as an invariant of the screen's own plan, not of
+  CORPUS_POLICY. When the `strata.yaml` comment is next changed, its basis is rewritten to the screen's own plan in the same way.
+
+`docs/release/EXTERNAL_GATES.md` describes EG-04 (>=1,500 pages, >=150 documents) without a language share, so it does not change.
+
+How the list was made, so it can be re-run. A share rule can be written as prose or as arithmetic, so one pattern is not enough; three
+passes run over the repository (`git grep`, excluding JSON and `apps/`) and over `v34-lanes/workorders/` and `v34-lanes/adr/`:
+
+1. prose: a case-insensitive Korean term (`korean`, `한국어`, `ko`) within a line of a share (`50%`, `>=50`, `≥50`, `과반`, `절반`,
+   `majority`, `half`), in either order;
+2. code: the names `korean_pages`, `korean_share`, `korean_ratio`, and **every** comparison of a `language`/`lang` field with `"ko"`
+   (that is how the `korean_pages * 2 < pages` and `… == "ko") * 2 >= total` checks are written), each read by hand for a share;
+3. every reader of `benchmark/screen/strata.yaml` (today only `test_screen_acquire.py`).
+
+For each hit, the row's "Changed by" was checked against that work order's write scope. Hits that only record the decision to change the rule (`local-public-corpus.md` §2.7 and L-1, `LPC.json`, `ALL.json`) are not rule
 places. The masterplan's §22.2 golden-corpus table plans Korean pages by area but states no share, so it is not one either.
 
 Amendment 2 made the target customer global and the gold global-first (SEC EDGAR, ESEF, UK iXBRL, NIST OSCAL, US federal data). Korean
@@ -82,7 +98,8 @@ moves numbers nothing requires one to.
 
 Difference from the core-runtime-arena §7 plan: the Korean fixed strata are 625 pages against §7's ≈ 40% OpenDART/KOGL (≈ 600); the
 English floors are 450 pages (30%) against §7's 15% SEC (≈ 225, the share WO-LPC-R2 selects); `adversarial` (75) and any synthetic
-degradation stay inside §7's 15% synthetic cap.
+degradation stay inside §7's 15% synthetic cap. A synthetic degradation is never placed in a scan stratum (`ko_scan`, `handwriting`,
+`distorted`) and never counts toward any floor in this table.
 
 ## What the local SEC corpus can and cannot fill
 
@@ -129,10 +146,11 @@ as they are.
 
 1. `benchmark/screen/manifest.py`: replace the `korean_pages` check (eg04 only) with a per-stratum floor check and the two guards; the screen profile is untouched.
 2. `benchmark/corpus/CORPUS_POLICY.md`: private-beta bullet.
-3. `benchmark/screen/strata.yaml`: header comment only (the screen strata list is unchanged); EG-04 floors live with the profile, not in the screen list.
+3. `benchmark/screen/strata.yaml`: header comment only — its basis becomes the screen's own plan instead of CORPUS_POLICY (the screen strata and their Korean share are unchanged); EG-04 floors live with the profile, not in the screen list. Not in IMPL's write scope as written: the lead adds it or defers it.
 4. `benchmark/tests/test_screen_manifest.py`: `test_eg04_profile_...` (the 40%-Korean fixture no longer fails on language; with every floor met it passes, and a fixture missing the `en_tables` floor fails).
-5. `docs/masterplan/AI_Knowledge_Compiler_SaaS_Masterplan_FINAL_v2_KO_2026-07-29.md` §37.1: **not edited** (frozen); this ADR is the superseding record for its Korean bullet, for EG-04 only.
-6. `v34-lanes/workorders/core-runtime-arena.md` §7 (outside this repository): the lead updates the plan text.
+5. `benchmark/tests/test_screen_acquire.py::test_strata_targets_sum_and_korean_share`: **not edited**. It pins the screen plan, which keeps its Korean share; it is no longer read as enforcing CORPUS_POLICY.
+6. `docs/masterplan/AI_Knowledge_Compiler_SaaS_Masterplan_FINAL_v2_KO_2026-07-29.md` §37.1: **not edited** (frozen); this ADR is the superseding record for its Korean bullet, for EG-04 only.
+7. `v34-lanes/workorders/core-runtime-arena.md` §7 (outside this repository): the lead updates the plan text.
 
 ## Rollback
 
