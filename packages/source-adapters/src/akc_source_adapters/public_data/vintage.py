@@ -157,10 +157,13 @@ def to_temporal_facts(
             held.extend(HeldObservation(o, "ambiguous_vintage") for o in usable)
             continue
         # Same day, same value: one vintage; the first by vintage_id represents it.
-        chain = [by_day[d][0] for d in sorted(by_day)]
+        # Every duplicate's stated superseded_on is still checked: none may be dropped.
+        days = sorted(by_day)
+        chain = [by_day[d][0] for d in days]
         if any(
-            cur.superseded_on is not None and cur.superseded_on + _DAY != nxt.available_on
-            for cur, nxt in pairwise(chain)
+            o.superseded_on is not None and o.superseded_on + _DAY != nxt
+            for d, nxt in pairwise(days)
+            for o in by_day[d]
         ):
             held.extend(HeldObservation(o, "vintage_chain_inconsistent") for o in usable)
             continue

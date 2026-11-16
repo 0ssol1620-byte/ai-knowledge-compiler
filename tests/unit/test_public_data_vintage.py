@@ -126,6 +126,21 @@ def test_inconsistent_vintage_chain_is_held() -> None:
     assert len(held) == 2
 
 
+def test_duplicate_vintage_contradicting_supersession_holds_chain_in_any_id_order() -> None:
+    day, nxt = date(2020, 1, 1), date(2020, 6, 1)
+    for a, b in (("v1", "v2"), ("v2", "v1")):
+        facts, held = to_temporal_facts(
+            [
+                obs(a, day, "1.0", superseded_on=date(2020, 5, 31)),
+                obs(b, day, "1.0", superseded_on=date(2020, 3, 1)),
+                obs("v3", nxt, "2.0"),
+            ]
+        )
+        assert facts == ()
+        assert {h.reason for h in held} == {"vintage_chain_inconsistent"}
+        assert len(held) == 3
+
+
 def test_same_day_conflicting_vintages_are_held() -> None:
     day = date(2020, 3, 1)
     facts, held = to_temporal_facts([obs("v1", day, "1.0"), obs("v2", day, "2.0")])
