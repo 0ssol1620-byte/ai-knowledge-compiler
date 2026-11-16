@@ -7,7 +7,7 @@
   },
   "container_images": {
     "grafana/k6:0.57.0": "sha256:70af91f86cd8e142e0544a4edaf79835a80033f71974b92edd5ac36fd4442a7b",
-    "gcr.io/distroless/nodejs24-debian13:nonroot": "sha256:b8cec4b2f2126ff7bd034ec9ac207ffb3272667dfdc48376e3b035d3270549ba",
+    "gcr.io/distroless/nodejs24-debian13:nonroot": "sha256:6abfcb367ebc291572c774c1592a986be2ab26a2486f73093401327495a5962a",
     "node:24.18.0-bookworm-slim": "sha256:6f7b03f7c2c8e2e784dcf9295400527b9b1270fd37b7e9a7285cf83b6951452d",
     "nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04": "sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802",
     "pgvector/pgvector:pg17": "sha256:7d0a41464797aeb9862dfdc0bbf1526b82cfd324cdd8036df19e3545f4a9ccb8",
@@ -15,6 +15,7 @@
     "python:3.13-slim-bookworm": "sha256:a5a7017efc5969e00ae2b91c8eb0631049a569652aa4ffc4501769049ae45c72"
   },
   "github_actions": {
+    "actions/cache@v4.3.0": "0057852bfaa89a56745cba8c7296529d2fc39830",
     "actions/checkout@v4.4.0": "11d5960a326750d5838078e36cf38b85af677262",
     "actions/dependency-review-action@v4.9.0": "2031cfc080254a8a887f58cffee85186f0e49e48",
     "actions/setup-node@v4.4.0": "49933ea5288caeca8642d1e84afbd3f7d6820020",

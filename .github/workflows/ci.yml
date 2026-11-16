@@ -244,6 +244,8 @@ jobs:
         run: python -m uv run --locked --extra dev python infra/model-registry/validate_registry.py
       # Live GitHub/HF API reads flake on rate limits; retry with backoff, assertion unchanged.
       - name: Verify pinned public benchmark metadata
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           for attempt in 1 2 3 4; do
             python -m uv run --locked --extra dev python benchmark/public_suite.py verify-registry --online && exit 0

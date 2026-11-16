@@ -41,3 +41,12 @@ EG-01 stays OPEN until a hosted run on the release commit is recorded.
 ## Needs a hosted run to prove
 CI on this branch (visual matrix time, contracts), Security on the PR (web image, pip-audit,
 filesystem-and-iac, api/scheduler/cpu-document images), and a green `CI` run on the release commit for EG-01.
+
+## 4. Supply-chain pins registration (review fix round)
+- `infra/supply-chain/verified-pins.json`: distroless entry updated to the new digest
+  `sha256:6abfcb36...5962a` (matches `apps/web/Dockerfile`); `actions/cache@v4.3.0` ->
+  `0057852bfaa89a56745cba8c7296529d2fc39830` registered under `github_actions`.
+  Both were failing `infra/security/validate_repository.py`.
+- `benchmark/public_suite.py` `_get_json` sends `Authorization: Bearer $GITHUB_TOKEN` only for
+  `api.github.com` when the variable is set; ci.yml passes `secrets.GITHUB_TOKEN` to the
+  verify-registry step (avoids unauthenticated rate-limit flakes). Unit test added.
