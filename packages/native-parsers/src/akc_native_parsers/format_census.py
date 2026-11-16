@@ -49,7 +49,8 @@ CENSUS: tuple[CensusRow, ...] = (
         G1_ACCEPT,
         G2_ACCEPT,
         NATIVE_CIR,
-        notes="text-layer and image-only PDFs share the parser; scans take the visual route",
+        notes="text-layer and image-only PDFs share the parser; scans take the visual route; "
+        "D-1 strata #1 and #2 merged under the one-row-per-extension rule",
     ),
     CensusRow("docx", "DOCX", (".docx",), G1_ACCEPT, G2_ACCEPT, NATIVE_CIR),
     CensusRow("xlsx", "XLSX", (".xlsx",), G1_ACCEPT, G2_ACCEPT, NATIVE_CIR),
@@ -151,11 +152,18 @@ CONDITIONS: tuple[dict[str, str], ...] = (
         "note": "a password-protected OOXML is an OLE file, reported only as a signature mismatch",
     },
     {"id": "huge", "g1": "file_too_large", "g2": "FILE_TOO_LARGE", "reason_quality": "specific"},
-    {"id": "malformed", "ooxml_g1": "ooxml_*", "reason_quality": "specific"},
+    {
+        "id": "malformed",
+        "ooxml_g1": "archive_invalid",
+        "note": "a broken container is archive_invalid; ooxml_* codes cover content-level faults",
+        "reason_quality": "specific",
+    },
     {
         "id": "lying_member_size",
-        "expect": "stable parse error, never a successful parse",
-        "reason_quality": "specific",
+        "g1": "zipfile's own message, e.g. Bad CRC-32 for file 'word/document.xml' (unstable)",
+        "native": "unwrapped zipfile.BadZipFile",
+        "expect": "never a successful parse",
+        "reason_quality": "generic",
     },
 )
 

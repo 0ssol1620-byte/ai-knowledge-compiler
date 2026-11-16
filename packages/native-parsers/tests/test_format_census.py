@@ -250,12 +250,16 @@ def test_condition_locked_pdf_needs_a_password(fixtures: dict[str, Path], tmp_pa
         )
 
 
+def _cond(cid: str) -> dict[str, str]:
+    return next(c for c in CONDITIONS if c["id"] == cid)
+
+
 def test_condition_password_protected_ooxml_is_only_a_generic_signature_mismatch() -> None:
+    locked = _cond("locked")
     # A password-protected OOXML file is an OLE compound file wearing a .docx name.
     ole = b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1" + b"\x00" * 512
     result = validate_upload_bytes("locked.docx", ole)
     assert not result.accepted and result.reason_code == "file_signature_mismatch"
-    locked = next(c for c in CONDITIONS if c["id"] == "locked")
     assert locked["reason_quality"] == "generic"
     assert locked["ooxml_g1"] == result.reason_code
 
@@ -304,7 +308,7 @@ def test_condition_g2_size_limit(tmp_path: Path) -> None:
 def test_condition_malformed_container_is_refused(ext: str) -> None:
     bad = b"PK\x03\x04" + b"\x00" * 64
     result = validate_upload_bytes(f"s{ext}", bad)
-    assert not result.accepted and result.reason_code == "archive_invalid"
+    assert not result.accepted and result.reason_code == _cond("malformed")["ooxml_g1"]
     with pytest.raises(StructuredParseError):
         parse_non_pdf_to_cir(
             filename=f"s{ext}", declared_mime=EXPECTED_MIME[ext], data=bad, context=CTX
@@ -341,9 +345,12 @@ def test_condition_lying_member_size_is_never_a_successful_parse(
     data = _lying_member_docx(samples[".docx"])
     result = validate_upload_bytes("s.docx", data)
     # zipfile stops at the declared size and fails the CRC check.
-    assert not result.accepted and "crc" in (result.reason_code or "").casefold()
-    # The native parser surfaces zipfile's own error today, not a StructuredParseError.
-    with pytest.raises((StructuredParseError, zipfile.BadZipFile)):
+    cond = _cond("lying_member_size")
+    assert cond["reason_quality"] == "generic"
+    assert not result.accepted and result.reason_code
+    assert result.reason_code.startswith("Bad CRC-32")  # unstable zipfile text, declared as such
+    assert cond["native"] == "unwrapped zipfile.BadZipFile"
+    with pytest.raises(zipfile.BadZipFile):
         parse_non_pdf_to_cir(
             filename="s.docx", declared_mime=EXPECTED_MIME[".docx"], data=data, context=CTX
         )
@@ -359,8 +366,8 @@ _HOSTILE_VERDICTS: dict[str, tuple[str, str]] = {
     "hostile-external-relationship": ("g1", "ooxml_external_relationship"),
     "hostile-svg-script": ("g1", "extension_blocked"),
     "hostile-malformed-xref": ("later", "PDF_PARSE_FAILED"),
-    "hostile-oversized-image": ("later", "declared pixel quota is enforced at raster time"),
-    "hostile-javascript-link": ("later", "sanitised at export, not at intake"),
+    "hostile-oversized-image": ("later", "INVALID_IMAGE"),  # refused by parse_document
+    "hostile-javascript-link": ("later", "observed gap: not enforced in Core"),
     "hostile-prompt-injection": ("later", "flagged downstream, never trusted"),
     "valid-encrypted-pdf": ("later", "ENCRYPTED_PDF"),
 }
@@ -402,6 +409,25 @@ def test_fixture_matrix_late_verdicts_are_stopped_after_g1(
             data=fixtures["valid-encrypted-pdf"].read_bytes(),
             context=CTX,
         )
+    big = fixtures["hostile-oversized-image"]
+    with pytest.raises(FileValidationError) as exc:
+        parse_document(big.name, big.read_bytes(), _settings(tmp_path))
+    assert _code(exc) == "INVALID_IMAGE"
+    # Observed gap (follow-up): nothing in Core sanitises javascript: links; they pass as text.
+    js = fixtures["hostile-javascript-link"]
+    parsed = parse_document(js.name, js.read_bytes(), _settings(tmp_path))
+    assert "javascript:alert(1)" in "".join(p.text for p in parsed.pages)
+
+
+def test_scan_pdf_parses_to_figure_blocks_without_text(fixtures: dict[str, Path]) -> None:
+    doc = parse_pdf_to_cir(
+        filename="s.pdf",
+        declared_mime=EXPECTED_MIME[".pdf"],
+        data=fixtures["valid-scan-pdf"].read_bytes(),
+        context=CTX,
+    )
+    kinds = {str(getattr(b.type, "value", b.type)).lower() for b in doc.blocks}
+    assert kinds == {"figure"}
 
 
 # --- HWP stays refused ----------------------------------------------------------
