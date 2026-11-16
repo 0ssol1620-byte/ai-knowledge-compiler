@@ -34,8 +34,8 @@ It is also pinned by two tests:
 
 How the list was made, so it can be re-run. A share rule can be written as prose or as arithmetic, so one pattern is not enough. These
 are the exact commands, run from the repository root in Git Bash; the patterns avoid a literal `'` (they use `\x27`) so they paste
-unchanged. JSON (so `benchmark/schemas/`) and `apps/` are searched; only the generated `apps/web/public` and `docs/adr/` (this record)
-are excluded:
+unchanged. JSON (so `benchmark/schemas/`) and `apps/` are searched; only the generated `apps/web/public` and this record (by
+its name, so it still matches after renumbering; the other ADRs are searched) are excluded:
 
 ```bash
 V34=D:/CodexProjects/v34-lanes
@@ -43,7 +43,7 @@ PROSE='(korean|한국어|\bko\b)[^\n]{0,60}(50 ?%|>= ?50|≥ ?50|과반|절반|m
 CODE='korean_(pages|share|ratio)|ko_share|language_distribution|\b(language|lang)[\x27"]?\]?\s*(==|!=)\s*[\x27"]ko[\x27"]|[\x27"]ko[\x27"]\s*(==|!=)\s*\w*\[?[\x27"]?(language|lang)|\* ?2 ?(>=|<)'
 READERS='strata\.yaml'
 for P in "$PROSE" "$CODE" "$READERS"; do
-  git grep -n -I -i -P "$P" -- . ':!apps/web/public' ':!docs/adr/*'
+  git grep -n -I -i -P "$P" -- . ':!apps/web/public' ':!docs/adr/*eg04-language-mix.md'
   grep -rnIiP "$P" "$V34/workorders" "$V34/adr"
 done
 ```
@@ -112,8 +112,11 @@ Two guards go with the floors, because floors alone can be gamed by one large do
   the **floor**, not from the stratum's actual page count, so adding pages to a stratum never raises it. Pages above the cap are still
   evaluated; they do not count toward the floor. With the minimum documents above, every floor stays reachable under the cap (tightest:
   `slides` and `distorted`, 10 × 10 = 100 = floor);
-- each stratum has at least 5 distinct issuers/publishers (or authors, for handwriting). No manifest field records a publisher, so
-  this guard is checked by a person at corpus freeze, not by `manifest.py` (see "Where each rule is checked" below).
+- each stratum has at least 5 distinct issuers/publishers (or authors, for handwriting). This is a corpus-policy rule, stated in the
+  CORPUS_POLICY private-beta bullet (place 2 below). No manifest field records an issuer, so `manifest.py` does not check it: it is
+  checked at freeze by the corpus builder's freeze receipt, computed from the source records where the issuer is recorded (for SEC
+  filings, WO-LPC-4's `provenance.cik`; for OpenDART, the corporation code a filing is fetched by). A stratum whose source records do
+  not record an issuer is reported by name as unverified, and EG-04 is not marked passed (see "Where each rule is checked" below).
 
 Language shares are an **outcome, not a rule**. With these floors, fixed-language pages are Korean 625 (41.7%) and English 600 (40%);
 the other 275 pages (18.3%) are `open` and are not sourced from Korean material. No share is required to exceed 50%, and if the lead
@@ -129,8 +132,9 @@ degradation stay inside §7's 15% synthetic cap. A synthetic degradation is neve
 A manifest document carries exactly `doc_id`, `source_sha256`, `byte_size`, `page_count`, `stratum`, `language`, `document_class`,
 `rights` and an optional `split` (`manifest.py` `_DOC_FIELDS`; `benchmark/schemas/screen-manifest.schema.json` closes the record with
 `additionalProperties: false`). Its fields record what a person decided and `manifest.py` never infers one, so a rule is checked in
-`manifest.py` only when these fields decide it. The rest is checked by a person at corpus freeze and written into the freeze report;
-it is not dropped.
+`manifest.py` only when these fields decide it. The rest is checked at corpus freeze by the corpus builder's freeze receipt, computed
+from the source records the documents were built from; it is not dropped. A rule whose input the source records do not carry is
+reported in the receipt by name as unverified, and EG-04 is not marked passed while any row below is unverified.
 
 | Rule | Fields read | Checked by |
 |---|---|---|
@@ -140,9 +144,9 @@ it is not dropped.
 | Per-document cap ⌈floor / 10⌉ | `stratum`, `page_count` | `manifest.py`, WO-LPC-ADR-IMPL |
 | A fixed-language stratum holds only documents of that language; `open` holds any | `stratum`, `language` | `manifest.py`, WO-LPC-ADR-IMPL |
 | A `synthetic` document is rejected in `ko_scan`, `handwriting` and `distorted`, and counts toward no floor except `adversarial`'s | `stratum`, `rights.rights_class` | `manifest.py`, WO-LPC-ADR-IMPL |
-| At least 5 distinct issuers/publishers (authors, for handwriting) per stratum | none: the record has no publisher field, and reading one out of `source_url` would be inferring it | A person at corpus freeze; the freeze report lists the publishers per stratum. Moving it into `manifest.py` needs a person-recorded `publisher` field in `_DOC_FIELDS` and in `benchmark/schemas/screen-manifest.schema.json`, which is **not** in WO-LPC-ADR-IMPL's write scope: the lead adds it or it stays a freeze-report check |
-| `adversarial` holds constructed hostile pages only, never a synthetic degradation | none: `rights_class` says `synthetic` for both and no field tells them apart | A person at corpus freeze; written into the freeze report |
-| A rasterised print is never in a scan stratum (Amendment 4) | none: a rendered print is recorded as `public_record` like a real scan | A person at corpus freeze, from the renderer receipt; written into the freeze report |
+| At least 5 distinct issuers/publishers (authors, for handwriting) per stratum; a corpus-policy rule | No manifest field (the record has no issuer, and reading one out of `source_url` would be inferring it). The source records carry it where the issuer is known: WO-LPC-4's `provenance.cik`, the OpenDART corporation code. A `sources.yaml` family names the source (`sec_edgar`), not the issuer, so it does not count | The corpus builder's freeze receipt, listing the distinct issuers per stratum from the source records; a stratum whose records do not record an issuer is reported by name as unverified and EG-04 is not marked passed |
+| `adversarial` holds constructed hostile pages only, never a synthetic degradation | No manifest field (`rights_class` says `synthetic` for both). The source record of a constructed page is the expected outcome written with it (table above) | The corpus builder's freeze receipt, from each page's source record; an `adversarial` page without a written expected outcome is reported as unverified and EG-04 is not marked passed |
+| A rasterised print is never in a scan stratum (Amendment 4) | No manifest field (a rendered print is recorded as `public_record` like a real scan). The source record carries it: a page made by the pinned renderer has WO-LPC-4's `provenance.renderer_sha256` | The corpus builder's freeze receipt, from the renderer receipt; a scan-stratum document whose source record does not say how its image was made is reported as unverified and EG-04 is not marked passed |
 
 `_counts` keeps its `korean_pages` entry: it is part of every frozen screen manifest's digest, and removing it would change those
 digests. Only the eg04 comparison against it goes.
@@ -193,8 +197,11 @@ as they are.
 1. `benchmark/screen/manifest.py`: replace the eg04 `korean_pages * 2 < pages` check with the rows of "Where each rule is checked"
    that say WO-LPC-ADR-IMPL (stratum ids, floors and minimum documents, the per-document cap, fixed-language strata, `synthetic`
    placement). Nothing else in the file changes: `_DOC_FIELDS`, `_counts` (including `korean_pages`) and the screen profile stay. The
-   publisher guard and the rasterised-print rule are **not** in `manifest.py`; they are freeze-report checks.
-2. `benchmark/corpus/CORPUS_POLICY.md`: private-beta bullet.
+   five-issuer guard, the `adversarial` rule and the rasterised-print rule are **not** in `manifest.py`; the corpus builder's freeze
+   receipt checks them.
+2. `benchmark/corpus/CORPUS_POLICY.md`: the private-beta bullet replaces "at least 50% Korean" with the per-stratum floors (and minimum
+   documents and per-document cap) above, and states the five-issuer rule as corpus policy, checked by the corpus builder's freeze
+   receipt from the source records; a stratum the receipt cannot verify leaves EG-04 not passed.
 3. `benchmark/screen/strata.yaml`: header comment only — its basis becomes the screen's own plan instead of CORPUS_POLICY (the screen strata and their Korean share are unchanged); EG-04 floors live with the profile, not in the screen list. Not in IMPL's write scope as written: the lead adds it or defers it.
 4. `benchmark/tests/test_screen_manifest.py`: `test_eg04_profile_...` and its helper `_eg04_docs` (line ~167). The old fixture puts
    every document in stratum `s0`, so it fails on the unknown-stratum check, not on language, at any Korean ratio. The helper is rebuilt
@@ -206,10 +213,6 @@ as they are.
 5. `benchmark/tests/test_screen_acquire.py::test_strata_targets_sum_and_korean_share`: **not edited**. It pins the screen plan, which keeps its Korean share; it is no longer read as enforcing CORPUS_POLICY.
 6. `docs/masterplan/AI_Knowledge_Compiler_SaaS_Masterplan_FINAL_v2_KO_2026-07-29.md` §37.1: **not edited** (frozen); this ADR is the superseding record for its Korean bullet, for EG-04 only.
 7. `v34-lanes/workorders/core-runtime-arena.md` §7 (outside this repository): the lead updates the plan text.
-8. `benchmark/schemas/screen-manifest.schema.json` and `_DOC_FIELDS` in `manifest.py`: a person-recorded `publisher` field, only if
-   the publisher guard is to move from the freeze report into `manifest.py`. **Not** in WO-LPC-ADR-IMPL's write scope: the lead adds it
-   to a work order or the guard stays a freeze-report check. Either way the field is recorded by a person, never derived from
-   `source_url`.
 
 ## Rollback
 
