@@ -1,0 +1,254 @@
+from __future__ import annotations
+
+import copy
+import hashlib
+import json
+import os
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any
+
+import pytest
+
+from benchmark.screen.manifest import (
+    HoldoutGuard,
+    HoldoutSealedError,
+    assign_split,
+    freeze,
+    verify,
+)
+from benchmark.v6.contracts import ContractError
+
+ROOT = Path(__file__).resolve().parents[2]
+SCHEMA = ROOT / "benchmark" / "schemas" / "screen-manifest.schema.json"
+RECIPE_A = "sha256:" + "a" * 64
+RECIPE_B = "sha256:" + "b" * 64
+
+
+def _digest(tag: str) -> str:
+    return "sha256:" + hashlib.sha256(tag.encode()).hexdigest()
+
+
+def _doc(
+    i: int, stratum: str = "s0", pages: int = 2, lang: str = "ko", cls: str = "c0"
+) -> dict[str, Any]:
+    return {
+        "doc_id": f"d{i:04d}.pdf",
+        "source_sha256": _digest(f"doc{i}"),
+        "byte_size": 100 + i,
+        "page_count": pages,
+        "stratum": stratum,
+        "language": lang,
+        "document_class": cls,
+        "rights": {
+            "source_url": f"https://example.invalid/{i}",
+            "licence_id": "CC0-1.0",
+            "licence_snapshot_sha256": _digest(f"lic{i}"),
+            "rights_class": "public_domain",
+            "redistribution": True,
+            "recorded_by": "tester",
+            "recorded_at": "2026-11-16T00:00:00Z",
+        },
+    }
+
+
+def _screen_docs() -> list[dict[str, Any]]:
+    # 4 strata x 50 docs x 2 pages = 400 pages
+    return [_doc(i, stratum=f"s{i % 4}") for i in range(200)]
+
+
+def _frozen() -> dict[str, Any]:
+    return freeze(assign_split(_screen_docs(), "salt"), "salt")
+
+
+def test_split_counts_and_both_splits_per_stratum() -> None:
+    m = _frozen()
+    c = m["counts"]
+    assert c["dev_pages"] >= 300 and 100 <= c["holdout_pages"] <= 110
+    assert c["dev_pages"] + c["holdout_pages"] == 400
+    for s in {"s0", "s1", "s2", "s3"}:
+        splits = {d["split"] for d in m["documents"] if d["stratum"] == s}
+        assert splits == {"dev", "holdout"}
+    jsonschema = pytest.importorskip("jsonschema")
+    jsonschema.validate(m, json.loads(SCHEMA.read_text(encoding="utf-8")))
+
+
+def test_split_is_independent_of_input_order() -> None:
+    docs = _screen_docs()
+    a = {d["doc_id"]: d["split"] for d in assign_split(docs, "salt")}
+    docs = docs[57:] + docs[:57][::-1]
+    b = {d["doc_id"]: d["split"] for d in assign_split(docs, "salt")}
+    assert a == b
+    c = {d["doc_id"]: d["split"] for d in assign_split(docs, "other-salt")}
+    assert a != c
+
+
+def test_split_is_independent_of_pythonhashseed() -> None:
+    code = (
+        "import hashlib,sys;sys.path.insert(0,'.');"
+        "from benchmark.tests.test_screen_manifest import _screen_docs;"
+        "from benchmark.screen.manifest import assign_split;"
+        "print(hashlib.sha256(''.join(d['doc_id']+d['split'] for d in "
+        "sorted(assign_split(_screen_docs(),'salt'),"
+        "key=lambda d:d['doc_id'])).encode()).hexdigest())"
+    )
+    outs = set()
+    for seed in ("0", "1", "12345"):
+        env = {**os.environ, "PYTHONHASHSEED": seed, "PYTHONDONTWRITEBYTECODE": "1"}
+        r = subprocess.run(
+            [sys.executable, "-c", code],
+            cwd=ROOT, env=env, capture_output=True, text=True, check=True,
+        )
+        outs.add(r.stdout.strip())
+    assert len(outs) == 1
+
+
+def test_missing_rights_field_rejected() -> None:
+    docs = _screen_docs()
+    del docs[0]["rights"]["recorded_by"]
+    with pytest.raises(ContractError, match="recorded_by"):
+        assign_split(docs, "salt")
+    docs = _screen_docs()
+    del docs[0]["rights"]
+    with pytest.raises(ContractError, match="rights"):
+        assign_split(docs, "salt")
+
+
+def test_rights_class_outside_enum_rejected() -> None:
+    docs = _screen_docs()
+    docs[3]["rights"]["rights_class"] = "research_only_non_commercial"
+    with pytest.raises(ContractError, match="rights_class"):
+        assign_split(docs, "salt")
+
+
+def test_non_owned_without_licence_snapshot_rejected() -> None:
+    docs = _screen_docs()
+    docs[0]["rights"]["licence_snapshot_sha256"] = None
+    with pytest.raises(ContractError, match="snapshot"):
+        assign_split(docs, "salt")
+
+
+def test_same_source_in_both_splits_rejected() -> None:
+    docs = assign_split(_screen_docs(), "salt")
+    dev = next(d for d in docs if d["split"] == "dev")
+    twin = copy.deepcopy(dev)
+    twin["doc_id"] = "twin.pdf"
+    twin["split"] = "holdout"
+    with pytest.raises(ContractError, match="more than one document"):
+        freeze([*docs, twin], "salt")
+    dup = copy.deepcopy(dev)
+    with pytest.raises(ContractError, match="duplicate doc_id"):
+        freeze([*docs, dup], "salt")
+
+
+def test_counts_below_300_100_refuse_freeze() -> None:
+    docs = assign_split(_screen_docs(), "salt")
+    with pytest.raises(ContractError, match="below 300/100"):
+        freeze(docs[:150], "salt")
+    with pytest.raises(ContractError, match="every document assigned"):
+        freeze(_screen_docs(), "salt")
+
+
+def test_single_document_stratum_refused() -> None:
+    docs = [*_screen_docs(), _doc(999, stratum="lonely")]
+    with pytest.raises(ContractError, match="one document"):
+        assign_split(docs, "salt")
+
+
+def test_holdout_overshoot_beyond_10_pages_refused() -> None:
+    docs = _screen_docs() + [_doc(i, stratum=f"s{i % 4}") for i in range(200, 300)]
+    for d in docs:
+        d["split"] = "holdout" if d["doc_id"] < "d0070" else "dev"
+    with pytest.raises(ContractError, match="overshoots"):
+        freeze(docs, "salt")
+
+
+def _eg04_docs(korean_ratio: float = 0.6, offset: int = 10_000) -> list[dict[str, Any]]:
+    n = 150
+    return [
+        _doc(offset + i, pages=10, lang="ko" if i < n * korean_ratio else "en", cls=f"c{i % 10}")
+        for i in range(n)
+    ]
+
+
+def test_eg04_profile_accepts_disjoint_and_rejects_overlap_and_low_korean() -> None:
+    screen = _frozen()
+    ok = freeze(_eg04_docs(), "s", profile="eg04", screen_manifest=screen)
+    assert ok["profile"] == "eg04"
+    overlap = _eg04_docs()
+    overlap[0] = copy.deepcopy(screen["documents"][0])
+    overlap[0]["doc_id"] = "x.pdf"
+    overlap[0]["page_count"] = 10
+    overlap[0].pop("split")
+    with pytest.raises(ContractError, match="shares 1 source"):
+        freeze(overlap, "s", profile="eg04", screen_manifest=screen)
+    with pytest.raises(ContractError, match="50% Korean"):
+        freeze(_eg04_docs(korean_ratio=0.4), "s", profile="eg04", screen_manifest=screen)
+    with pytest.raises(ContractError, match="minimums"):
+        freeze(_eg04_docs()[:100], "s", profile="eg04", screen_manifest=screen)
+    with pytest.raises(ContractError, match="screen manifest"):
+        freeze(_eg04_docs(), "s", profile="eg04")
+
+
+def _real_corpus(tmp_path: Path) -> dict[str, Any]:
+    docs = []
+    for i in range(4):
+        data = f"payload-{i}".encode()
+        (tmp_path / f"f{i}.txt").write_bytes(data)
+        d = _doc(i)
+        d.update(doc_id=f"f{i}.txt", source_sha256="sha256:" + hashlib.sha256(data).hexdigest(),
+                 byte_size=len(data), page_count=1)
+        docs.append(d)
+    # profile screen floors do not apply to this verify-only fixture
+    body = {"profile": "screen", "salt": "s", "counts": {}, "documents": docs}
+    from benchmark.v6.contracts import canonical_sha256
+
+    return {**body, "manifest_sha256": canonical_sha256(body)}
+
+
+def test_verify_passes_then_catches_one_byte_change(tmp_path: Path) -> None:
+    m = _real_corpus(tmp_path)
+    verify(m, tmp_path)
+    p = tmp_path / "f2.txt"
+    p.write_bytes(b"payload-3")  # same length, one byte differs
+    with pytest.raises(ContractError, match="byte hash mismatch"):
+        verify(m, tmp_path)
+
+
+def test_verify_catches_missing_file_page_count_and_tampered_manifest(tmp_path: Path) -> None:
+    m = _real_corpus(tmp_path)
+    with pytest.raises(ContractError, match="page count"):
+        verify(m, tmp_path, page_counter=lambda _b: 2)
+    tampered = copy.deepcopy(m)
+    tampered["documents"][0]["page_count"] = 9
+    with pytest.raises(ContractError, match="manifest_sha256"):
+        verify(tampered, tmp_path)
+    (tmp_path / "f1.txt").unlink()
+    with pytest.raises(ContractError, match="missing"):
+        verify(m, tmp_path)
+
+
+def test_holdout_guard(tmp_path: Path) -> None:
+    m = _frozen()
+    log = tmp_path / "log" / "access.jsonl"
+    guard = HoldoutGuard(m, log)
+    assert guard.load("dev", "tune")
+    for purpose in ("tune", "calibrate"):
+        with pytest.raises(HoldoutSealedError):
+            guard.load("holdout", purpose, RECIPE_A)
+    with pytest.raises(HoldoutSealedError, match="frozen_recipe_sha256"):
+        guard.load("holdout", "evaluate_frozen")
+    assert not log.exists()  # refusals never open the seal
+    docs = guard.load("holdout", "evaluate_frozen", RECIPE_A)
+    assert docs and all(d["split"] == "holdout" for d in docs)
+    assert len(log.read_text(encoding="utf-8").splitlines()) == 1
+    # same recipe is idempotent, including from a fresh guard on the same log
+    assert HoldoutGuard(m, log).load("holdout", "evaluate_frozen", RECIPE_A) == docs
+    assert len(log.read_text(encoding="utf-8").splitlines()) == 1
+    with pytest.raises(HoldoutSealedError, match="different frozen recipe"):
+        HoldoutGuard(m, log).load("holdout", "evaluate_frozen", RECIPE_B)
+    with pytest.raises(HoldoutSealedError):
+        guard.load("holdout", "tune", RECIPE_A)  # still sealed for tuning after evaluation
+    with pytest.raises(ValueError):
+        guard.load("holdout", "peek")
