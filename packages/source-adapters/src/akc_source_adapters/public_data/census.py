@@ -13,6 +13,7 @@ from __future__ import annotations
 import csv
 import io
 from datetime import date
+from typing import Any
 
 from .vintage import VintageObservation
 
@@ -37,7 +38,7 @@ def parse_census_bps_csv(
     if missing:
         raise ValueError(f"Census header lacks columns {missing}")
     out: list[VintageObservation] = []
-    seen: dict[tuple[str, date], str] = {}
+    seen: dict[tuple[str, date], dict[str | None, Any]] = {}
     for row in reader:
         if None in row.values():
             raise ValueError(f"Census row: ragged row: {row}")
@@ -50,11 +51,12 @@ def parse_census_bps_csv(
             raise ValueError(
                 f"Census row: bad year/month {row['year']!r}/{row['month']!r}"
             ) from exc
+        # only a byte-identical row is a duplicate; any other difference contradicts the file
         if (cbsa, start) in seen:
-            if seen[(cbsa, start)] != row["permit_units"]:
+            if seen[(cbsa, start)] != row:
                 raise ValueError(f"Census rows conflict for {cbsa} {start}")
             continue
-        seen[(cbsa, start)] = row["permit_units"]
+        seen[(cbsa, start)] = row
         out.append(
             VintageObservation(
                 source_id="census_bps",

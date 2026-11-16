@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import dataclasses
+import itertools
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -145,3 +146,85 @@ def test_same_period_rows_with_different_values_raise() -> None:
     with pytest.raises(ValueError, match="conflict"):
         _census(b"cbsa_code,year,month,permit_units\n1,2020,1,5\n1,2020,1,9\n")
     assert len(_census(b"cbsa_code,year,month,permit_units\n1,2020,1,5\n1,2020,1,5\n")) == 1
+
+
+def test_same_value_rows_that_differ_in_any_other_field_raise() -> None:
+    # a same-value duplicate must not silently drop a contradicting geography field
+    with pytest.raises(ValueError, match="conflict"):
+        _census(
+            b"cbsa_code,year,month,permit_units,delineation_vintage\n"
+            b"1,2020,1,5,2013\n1,2020,1,5,2023\n"
+        )
+    with pytest.raises(ValueError, match="conflict"):
+        _fhfa(
+            b"hpi_type,hpi_flavor,frequency,level,place_id,yr,period,index_nsa,index_sa\n"
+            b"t,f,quarterly,MSA,1,2020,1,100,1\nt,f,quarterly,State,1,2020,1,100,1\n"
+        )
+    with pytest.raises(ValueError, match="conflict"):
+        _eia(
+            b'{"response": {"data": [{"period": "2020-01", "stateid": "CA", "value": "1"},'
+            b' {"period": "2020-01", "stateid": "TX", "value": "1"}]}}'
+        )
+
+
+def _assert_no_row_dropped(parse, raws: list[tuple[bytes, int]]) -> None:  # type: ignore[no-untyped-def]
+    """Each (payload, distinct row count): ValueError, or one observation per distinct row."""
+    for raw, distinct in raws:
+        try:
+            out = parse(raw)
+        except ValueError:
+            continue
+        assert len(out) == distinct, raw
+        assert len({o.logical_id for o in out}) == len(out), raw
+
+
+def _csv_pairs(header: str, cells: tuple[tuple[str, ...], ...]) -> list[tuple[bytes, int]]:
+    rows = [",".join(r) for r in itertools.product(*cells)]
+    return [
+        (f"{header}\n{a}\n{b}\n".encode(), len({a, b}))
+        for a, b in itertools.product(rows, repeat=2)
+    ]
+
+
+def test_csv_parsers_never_drop_a_non_identical_row_property() -> None:
+    census = _csv_pairs(
+        "cbsa_code,year,month,permit_units,delineation_vintage",
+        (("1", "2"), ("2020",), ("1", "01"), ("5", "9", ""), ("", "2013", "2023")),
+    )
+    _assert_no_row_dropped(_census, census)
+    fhfa = _csv_pairs(
+        "hpi_type,hpi_flavor,frequency,level,place_id,yr,period,index_nsa,index_sa,"
+        "delineation_vintage",
+        (
+            ("t",),
+            ("f",),
+            ("quarterly", "monthly"),
+            ("MSA", "State"),
+            ("1",),
+            ("2020",),
+            ("1", "01"),
+            ("100", "200"),
+            ("100", "101"),
+            ("", "2013"),
+        ),
+    )
+    _assert_no_row_dropped(lambda raw: _fhfa(raw, sa=False), fhfa)
+    _assert_no_row_dropped(lambda raw: _fhfa(raw, sa=True), fhfa)
+
+
+def test_eia_parser_never_drops_a_non_identical_row_property() -> None:
+    rows = [
+        f'{{"period": "{p}", "value": {v}{f}}}'
+        for p, v, f in itertools.product(
+            ("2020", "2020-01", "2020-01-01"),
+            ("1", "1.0", "null", '"2"'),
+            ("", ', "stateid": "CA"', ', "stateid": "TX"'),
+        )
+    ]
+    _assert_no_row_dropped(
+        _eia,
+        [
+            (f'{{"response": {{"data": [{a}, {b}]}}}}'.encode(), len({a, b}))
+            for a, b in itertools.product(rows, repeat=2)
+        ],
+    )

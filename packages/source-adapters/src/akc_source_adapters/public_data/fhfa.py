@@ -12,6 +12,7 @@ from __future__ import annotations
 import csv
 import io
 from datetime import date
+from typing import Any
 
 from .vintage import VintageObservation
 
@@ -38,7 +39,7 @@ def parse_fhfa_hpi_csv(
     if missing:
         raise ValueError(f"FHFA header lacks columns {missing}")
     out: list[VintageObservation] = []
-    seen: dict[tuple[str, date], str] = {}
+    seen: dict[tuple[str, date], dict[str | None, Any]] = {}
     for row in reader:
         freq = (row["frequency"] or "").strip().lower()
         if freq not in _MONTHS_PER_PERIOD or None in row.values():
@@ -52,11 +53,12 @@ def parse_fhfa_hpi_csv(
             raise ValueError("FHFA row: empty place_id")
         flavor = f"{row['hpi_type'].strip()}:{row['hpi_flavor'].strip()}"
         sid = f"{flavor}:{freq}:{place}:{value_col}"
+        # only a byte-identical row is a duplicate; any other difference contradicts the file
         if (sid, start) in seen:
-            if seen[(sid, start)] != row[value_col]:
+            if seen[(sid, start)] != row:
                 raise ValueError(f"FHFA rows conflict for {sid} {start}")
             continue
-        seen[(sid, start)] = row[value_col]
+        seen[(sid, start)] = row
         out.append(
             VintageObservation(
                 source_id="fhfa_hpi",

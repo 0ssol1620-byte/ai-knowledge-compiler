@@ -47,7 +47,7 @@ def parse_eia_v2(
     if not isinstance(rows, list):
         raise ValueError("EIA payload: field 'response.data' must be a list")
     out: list[VintageObservation] = []
-    seen: dict[date, str] = {}
+    seen: dict[date, dict[str, Any]] = {}
     for row in rows:
         if not isinstance(row, dict):
             raise ValueError("EIA row: not an object")
@@ -60,13 +60,14 @@ def parse_eia_v2(
         elif not isinstance(value, str):
             raise ValueError("EIA row: field 'value' must be text, number or null")
         start = _period(period)
+        # only an identical row is a duplicate; any other field (period text, facet) contradicts
         if start in seen:
-            if seen[start] != value:
+            if seen[start] != row:
                 raise ValueError(
-                    f"EIA rows conflict for {series_id} {start}: {seen[start]!r} vs {value!r}"
+                    f"EIA rows conflict for {series_id} {start}: {seen[start]!r} vs {row!r}"
                 )
             continue
-        seen[start] = value
+        seen[start] = row
         out.append(
             VintageObservation(
                 source_id="eia",
