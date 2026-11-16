@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import string
 import sys
 import time
 import unicodedata
@@ -15,7 +16,12 @@ from hypothesis import strategies as st
 
 from benchmark.runners.base import RunnerUnavailable
 from benchmark.runners.registry import EXTERNAL_RUNNERS
-from benchmark.screen.critical_fields import canonical_values, gold_value, score_critical_fields
+from benchmark.screen.critical_fields import (
+    canonical_values,
+    gold_value,
+    score_critical_fields,
+    value_after_anchor,
+)
 from benchmark.screen.manifest import HoldoutGuard, HoldoutSealedError
 from benchmark.screen.run_screen import Candidate, ImmutableOutputError, run_screen
 from benchmark.v6.contracts import ContractError
@@ -1129,3 +1135,122 @@ def test_property_wide_junk_around_a_date_or_identifier_reads_it_whole_or_not_at
         assert _gold_refused(text, kind)
     else:
         assert gold_value(_field(text, "A", kind)) == want
+
+
+# --- First token or nothing: what follows the anchor is read whole or refused, and a later ----
+# token is never read in its place.
+@pytest.mark.parametrize(
+    ("gold", "candidate", "kind"),
+    [
+        *[
+            ("2024-03-06", f"A 2024{sep}03{sep}05 2024-03-06", "date")
+            for sep in string.punctuation.replace("-", "").replace("/", "").replace(".", "")
+            + "가월"
+        ],
+        ("2024-03-06", "A 2024 _ 03 _ 05 2024-03-06", "date"),
+        ("2024-03-06", "A 05.03.2024, 2024-03-06", "date"),
+        ("2024-03-06", "A 03/05/2024, 2024-03-06", "date"),
+        ("2024-03-06", "A 24.03.05, 2024-03-06", "date"),
+        ("2024-03-06", "A 20240305, 2024-03-06", "date"),
+        ("2024-03-06", "A 2024-03-05가3 2024-03-06", "date"),
+        ("12", "A 12가3456", "identifier"),
+        ("AB", "A AB가CD", "identifier"),
+        ("INV", "A INV번호123", "identifier"),
+        ("2024", "A 2024년3월", "identifier"),
+        ("AB", "A AB가_CD", "identifier"),
+        ("AB", "A AB:가CD", "identifier"),
+        *[
+            ("12억", f"A 12억 {tail}", "number")
+            for tail in [
+                "l456만",
+                "O456만",
+                "x3456만",
+                ",3456만",
+                ".3456만",
+                "_3456만",
+                "/3456만",
+                "+3456만",
+                "~3456만",
+                "'3456만",
+                "원3456만",
+                "가3456만",
+            ]
+        ],
+        ("5천만", "A 5천만 ,2천", "number"),
+        ("5", "A 5. 만", "number"),
+        ("5", "A 5, 억원", "number"),
+        ("5", "A 5 , 억", "number"),
+        ("5", "A 5:3", "number"),
+        ("5", "A 5가3", "number"),
+        ("5억", "A 5억가3", "number"),
+        ("5", "A 5(3)", "number"),
+        ("5", "A (5\n)", "number"),
+        ("5", "A (5 ", "number"),
+        ("5", "A 5-", "number"),
+        ("5", "A 5- 3", "number"),
+        ("3000000", "A 3 million 500 thousand", "number"),
+        ("1000000000", "A 1 billion 200 million", "number"),
+        ("5000", "A 5k 3", "number"),
+    ],
+)
+def test_first_token_after_the_anchor_is_read_whole_or_refused(gold, candidate, kind):
+    assert score_critical_fields([_field(gold, "A", kind)], candidate).exact == 0
+    assert _gold_refused(candidate[2:], kind)
+
+
+@pytest.mark.parametrize(
+    ("gold", "candidate", "kind"),
+    [
+        ("12억", "A 12억 (전년 10억)", "number"),
+        ("12억원", "A 12억 원", "number"),
+        ("12억원", "A 12억 KRW", "number"),
+        ("12억", "A 12억, 전년 10억", "number"),
+        ("12억", "A 12억\n3456만", "number"),
+        ("3000000", "A 3 million and more", "number"),
+        ("5", "A 5:", "number"),
+        ("5억원", "A 5억원이다.", "number"),
+        ("INV2024", "A INV-2024를 확인", "identifier"),
+        ("INV2024", "A 번호:INV-2024.", "identifier"),
+        ("2024-03-05", "A (2024-03-05) 이후", "date"),
+        ("2024-03-05", "A 2024년 3월 5일에", "date"),
+    ],
+)
+def test_a_separated_token_is_still_read(gold, candidate, kind):
+    assert score_critical_fields([_field(gold, "A", kind)], candidate).exact == 1
+
+
+# The separator alphabet: every ASCII punctuation character, Hangul units and particles, ASCII
+# letters and junk. A separator joins two token runs into one word with no space in it.
+_SEPARATOR = (
+    string.punctuation
+    + "조억만천백십가년월일원을이"
+    + string.ascii_letters
+    + "\u200b\u00b9\u2010\u00e9\uff29"
+)
+_DIGITS = st.text("0123456789", min_size=1, max_size=4)
+_KO_GROUP = st.tuples(_DIGITS, st.sampled_from(["억", "만", "조", "천", "천만", "백억"]))
+_FIRST_RUNS = {
+    "number": st.one_of(_DIGITS, _KO_GROUP.map("".join)),
+    "date": st.one_of(
+        st.sampled_from(["2024", "1999"]), st.text("0123456789", min_size=1, max_size=2)
+    ),
+    "identifier": st.text(string.digits + string.ascii_letters, min_size=1, max_size=4),
+}
+_LATER = {"number": "987654321", "date": "2031-12-31", "identifier": "ZZ9QQ"}
+
+
+@settings(max_examples=400, deadline=None)
+@given(st.sampled_from(sorted(_FIRST_RUNS)), st.data())
+def test_property_value_after_anchor_is_the_first_token_or_nothing(kind, data):
+    runs = data.draw(st.lists(_FIRST_RUNS[kind], min_size=1, max_size=4))
+    sep = st.text(_SEPARATOR, min_size=1, max_size=2)
+    seps = data.draw(st.lists(sep, min_size=len(runs) - 1, max_size=len(runs) - 1))
+    first = runs[0] + "".join(s + r for s, r in zip(seps, runs[1:], strict=True))
+    try:
+        whole = gold_value(_field(first, "A", kind))
+    except ValueError:
+        whole = None
+    later = gold_value(_field(_LATER[kind], "A", kind))
+    got = value_after_anchor(_field("x", "A", kind), f"A {first} {_LATER[kind]}")
+    assert got in (None, whole), (first, got, whole)
+    assert got != later or whole == later, first
