@@ -35,7 +35,6 @@ from openpyxl import load_workbook
 from openpyxl.cell.cell import MergedCell
 
 from .models import LOCATOR_PAGE_SEMANTICS, ParserLimits, StructuredParseError, normalize_text
-from .subtitle_parser import _TAG, _speaker_and_text
 
 _HELD_MARKERS = ("held", "unresolved")
 _MEMBER_LIMIT = ParserLimits().max_archive_member_bytes
@@ -590,10 +589,32 @@ def _ms(stamp: str) -> int:
     return ((hours * 60 + minutes) * 60 + seconds) * 1000 + int(millis)
 
 
-def _merge_key(raw: str) -> tuple[str | None, str]:
-    # the parser's own merge key (_merge_repeated_cues): speaker + tag-stripped text
-    speaker, text = _speaker_and_text(raw)
-    return speaker, normalize_text(_TAG.sub("", text))
+# Cue markup by each format's own grammar, never the parser's: SRT knows i/b/u/font,
+# WebVTT knows c/i/b/u/ruby/rt, lang (annotated), v and timestamp tags. Anything
+# else in angle brackets ("<10%>", "<USD -1,234.50>") is cue text and stays in the key.
+_CUE_MARKUP = {
+    "srt": re.compile(r"</?(?:i|b|u)>|<font(?:\s[^>]*)?>|</font>", re.IGNORECASE),
+    "vtt": re.compile(
+        r"</?(?:c|i|b|u|ruby|rt)(?:\.[^\s>]*)?>|<lang(?:\.[^\s>]*)?\s[^>]*>|</lang>"
+        r"|<v(?:\.[^\s>]*)?>|</v>|<\d+(?::\d{2}){1,2}\.\d{3}>"
+    ),
+}
+# A leading WebVTT voice span names the speaker; an annotated <v name> later in the
+# cue is not markup to strip, so that name stays in the key.
+_VOICE = re.compile(r"<v(?:\.[^\s>]*)*\s+([^>]+)>(.*)", re.DOTALL)
+_SPEAKER_LABEL = re.compile(r"([^\n:]{1,80}):\s+(.+)", re.DOTALL)
+
+
+def _merge_key(kind: str, raw: str) -> tuple[str | None, str]:
+    # speaker + markup-free text: what two cues must share to be one CIR block
+    voice = _VOICE.fullmatch(raw) if kind == "vtt" else None
+    if voice is not None:
+        return normalize_text(voice[1]), normalize_text(_CUE_MARKUP[kind].sub("", voice[2]))
+    text = _CUE_MARKUP[kind].sub("", raw)
+    label = _SPEAKER_LABEL.fullmatch(text)
+    if label is not None:
+        return normalize_text(label[1]), normalize_text(label[2])
+    return None, normalize_text(text)
 
 
 def _subtitle_factory(kind: str) -> Callable[[bytes], _Resolver]:
@@ -603,6 +624,8 @@ def _subtitle_factory(kind: str) -> Callable[[bytes], _Resolver]:
         if kind == "srt":
             blocks = list(enumerate(re.split(r"\n{2,}", source.strip())))
         else:
+            if not re.match(r"WEBVTT(?:[ \t\n]|$)", source):
+                raise _Unresolvable("vtt_signature_missing")
             payload = source.split("\n", 1)[1] if "\n" in source else ""
             blocks = list(enumerate(re.split(r"\n{2,}", payload.strip())))
         counter = 0
@@ -630,11 +653,13 @@ def _subtitle_factory(kind: str) -> Callable[[bytes], _Resolver]:
                 raise _Unresolvable("unknown_locator_grammar")
             first = int(match["a"])
             last = int(match["b"] or match["a"])
+            if last < first:
+                raise _Unresolvable("locator_range_reversed")
             if first not in cues:
                 raise _Unresolvable("locator_out_of_range")
             inside = [cues[i] for i in range(first, last + 1) if i in cues]
             end = max(cue[2] for cue in inside)
-            if any(_merge_key(cue[0]) != _merge_key(cues[first][0]) for cue in inside):
+            if any(_merge_key(kind, c[0]) != _merge_key(kind, cues[first][0]) for c in inside):
                 # a merged range is only exact if every cue in it says the same thing
                 return "\x00range_text_differs", (cues[first][1], end)
             return cues[first][0], (cues[first][1], end)

@@ -296,3 +296,133 @@ def test_vtt_note_style_blocks_do_not_shift_cue_numbering() -> None:
     ledger = build_ledger(data, document)
     assert ledger.resolved_mismatch == ()
     assert {r for _, r in ledger.unresolvable} == {"parser_generated_text"}
+
+
+def _cues(kind: str, texts: list[str]) -> bytes:
+    sep = "," if kind == "srt" else "."
+    cues = [
+        f"{i + 1}\n00:00:0{i}{sep}000 --> 00:00:0{i + 1}{sep}000\n{t}"
+        if kind == "srt"
+        else f"00:00:0{i}{sep}000 --> 00:00:0{i + 1}{sep}000\n{t}"
+        for i, t in enumerate(texts)
+    ]
+    return (("" if kind == "srt" else "WEBVTT\n\n") + "\n\n".join(cues) + "\n").encode()
+
+
+def _merged_block(document: object) -> object:
+    merged = [
+        b
+        for b in document.blocks  # type: ignore[attr-defined]
+        if b.source_refs
+        and "/cue/" in b.source_refs[0].native_object_id
+        and "-" in b.source_refs[0].native_object_id
+    ]
+    assert len(merged) == 1, "parser should merge the first two cues"
+    return merged[0]
+
+
+@pytest.mark.parametrize("kind", ["srt", "vtt"])
+@pytest.mark.parametrize(
+    ("first", "second"),
+    [("rate 5", "rate<10%> 5"), ("total due", "total<USD -1,234.50> due")],
+)
+def test_angle_bracket_text_is_not_markup_so_a_lossy_merge_is_mismatch(
+    kind: str, first: str, second: str
+) -> None:
+    # The parser strips anything in <...> and merges; the number is gone from the CIR.
+    data = _cues(kind, [first, second, "other 1"])
+    document = _parse(kind, data)
+    block = _merged_block(document)
+    assert block.id in build_ledger(data, document).resolved_mismatch  # type: ignore[attr-defined]
+
+
+@pytest.mark.parametrize("kind", ["srt", "vtt"])
+def test_angle_bracket_tamper_of_a_clean_merged_cue_is_mismatch(kind: str) -> None:
+    clean = _cues(kind, ["total due", "total due", "x 1"])
+    document = _parse(kind, clean)
+    block = _merged_block(document)
+    tampered = _cues(kind, ["total due", "total<999> due", "x 1"])
+    assert block.id in build_ledger(tampered, document).resolved_mismatch  # type: ignore[attr-defined]
+
+
+@pytest.mark.parametrize("kind", ["srt", "vtt"])
+def test_grid_non_markup_angle_text_in_a_merged_cue_never_passes(kind: str) -> None:
+    # every word x sign x number x suffix x position: angle-bracketed cue text the
+    # parser drops must never let the merged block through as exact
+    import itertools
+
+    clean = _cues(kind, ["sold due", "sold due", "x 1"])
+    document = _parse(kind, clean)
+    block = _merged_block(document)
+    grid = itertools.product(
+        ["", "USD ", "rate ", "v ", "i ", "font"],
+        ["", "-", "+"],
+        ["0", "7", "1,234", "99999"],
+        ["", "%", ".50", " KRW"],
+        [0, 4, 8],
+    )
+    for word, sign, number, suffix, at in grid:
+        middle = "sold due"[:at] + f"<{word}{sign}{number}{suffix}>" + "sold due"[at:]
+        ledger = build_ledger(_cues(kind, ["sold due", middle, "x 1"]), document)
+        assert block.id in ledger.resolved_mismatch, middle  # type: ignore[attr-defined]
+
+
+@pytest.mark.parametrize(
+    ("kind", "second"),
+    [
+        ("srt", '<i>sold</i> <font color="#ff0000">due</font>'),
+        ("srt", "<B>sold due</B>"),
+        ("vtt", "sold<00:00:01.500><c.yellow> due</c>"),
+        ("vtt", "<ruby>sold<rt></rt></ruby> <lang en>due</lang>"),
+    ],
+)
+def test_format_markup_only_differences_stay_exact(kind: str, second: str) -> None:
+    data = _cues(kind, ["sold due", second, "x 1"])
+    document = _parse(kind, data)
+    _merged_block(document)
+    ledger = build_ledger(data, document)
+    assert ledger.resolved_mismatch == ()
+
+
+def test_vtt_voice_names_stay_in_the_merge_key() -> None:
+    clean = _cues("vtt", ["<v Alice>sold 42", "<v Alice>sold 42", "x 1"])
+    document = _parse("vtt", clean)
+    block = _merged_block(document)
+    assert build_ledger(clean, document).resolved_mismatch == ()
+    tampered = _cues("vtt", ["<v Alice>sold 42", "<v Alice>sold <v Bob>42", "x 1"])
+    assert block.id in build_ledger(tampered, document).resolved_mismatch  # type: ignore[attr-defined]
+
+
+def test_reversed_cue_range_and_missing_vtt_signature_are_named() -> None:
+    data = _cues("vtt", ["a 1", "b 2"])
+    document = _parse("vtt", data)
+    cue = next(b for b in document.blocks if "/cue/" in b.source_refs[0].native_object_id)
+    ref = cue.source_refs[0].model_copy(update={"native_object_id": "vtt/cue/000001-000000"})
+    odd = document.model_copy(
+        update={
+            "blocks": tuple(
+                b.model_copy(update={"source_refs": (ref,)}) if b.id == cue.id else b
+                for b in document.blocks
+            )
+        }
+    )
+    assert (cue.id, "locator_range_reversed") in build_ledger(data, odd).unresolvable
+    unsigned = build_ledger(data.replace(b"WEBVTT", b"WEBVTX"), document)
+    assert unsigned.resolved_exact == 0
+    assert {r for _, r in unsigned.unresolvable} == {"vtt_signature_missing"}
+
+
+def test_resolver_imports_no_parser_module() -> None:
+    # The resolver must not inherit the parser's blind spots through its code.
+    import ast
+
+    import akc_native_parsers.span_ledger as module
+
+    tree = ast.parse(Path(module.__file__).read_text(encoding="utf-8"))
+    own = {
+        (node.level, node.module)
+        for node in ast.walk(tree)
+        if isinstance(node, ast.ImportFrom)
+        and (node.level or "native_parsers" in (node.module or ""))
+    }
+    assert own <= {(1, "models")}, own
