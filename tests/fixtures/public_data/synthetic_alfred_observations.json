@@ -1,0 +1,8 @@
+{
+  "observations": [
+    {"realtime_start": "2020-01-15", "realtime_end": "2021-02-09", "date": "2019-12-01", "value": "100.10"},
+    {"realtime_start": "2021-02-10", "realtime_end": "9999-12-31", "date": "2019-12-01", "value": "101.50"},
+    {"realtime_start": "2020-02-14", "realtime_end": "9999-12-31", "date": "2020-01-01", "value": "102.00"},
+    {"realtime_start": "2020-03-13", "realtime_end": "9999-12-31", "date": "2020-02-01", "value": "."}
+  ]
+}
