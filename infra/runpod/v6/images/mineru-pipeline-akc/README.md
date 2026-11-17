@@ -261,3 +261,38 @@ the output directory. The registry contract test requires `image_build` to be a 
   0 of a one-page source; a later page is 400 `page_index_unsupported` and a multi-page source
   at page 0 is the failure row `page_count_unsupported`. C1 needs one-page sources from the
   driver, or a page selection the vendor documents, before it can screen multi-page documents.
+
+## How the image is built and where its digest is recorded
+
+This machine has no Docker, so the images are built on GitHub Actions by
+`.github/workflows/build-arena-page-servers.yml` (WO-D10-0K), on the precedent of
+`build-ovis-runtime.yml`: the same pinned actions, `contents: read` and `packages: write`, the
+workflow's own token for GHCR and no other secret. It runs on `workflow_dispatch` and on a push to
+`codex/v34-c-arena-build` that touches this directory, `../paddleocr-vl-akc/`, the two
+`workers/gpu-common` files the C1 image copies, or the workflow itself.
+
+| Slot | Dockerfile, target | Build context, and why | Tag |
+|---|---|---|---|
+| C0 | `Dockerfile --target c0` | this directory: every `COPY` names one of its files | `ghcr.io/<owner>/<repo>/arena-mineru-pipeline-akc-c0:<commit>` |
+| C3 | `Dockerfile --target c3` | this directory, as C0 | `ghcr.io/<owner>/<repo>/arena-mineru-pipeline-akc-c3:<commit>` |
+| C1 | `../paddleocr-vl-akc/Dockerfile` | the repository root: it copies `workers/gpu-common/{pyproject.toml,uv.lock}` and this directory's server, weights checker and C1 recipes | `ghcr.io/<owner>/<repo>/arena-paddleocr-vl-akc:<commit>` |
+
+`<owner>/<repo>` is the repository name in lower case and `<commit>` the commit the run checked
+out (the job fails if that is not the workflow's commit). Each job builds `linux/amd64` without
+provenance or SBOM attestations, pushes, then reads the manifest digest back from GHCR with
+`docker buildx imagetools inspect` and **fails if it cannot read one or if it differs from the
+digest the build reported**. The job also fails if the Dockerfile does not name exactly one base
+image by digest, or if the package listing is missing, clipped by BuildKit's log limit, came from
+a cached step or did not finish.
+
+The package listing is the build log section of the steps that print it: for C0 and C3 the
+`pip install --require-hashes` steps (C3 has two), for C1 the step that runs `uv pip freeze` and
+`pip inspect`. Each job writes to its job summary the pinned image (`…@sha256:…`), the manifest
+digest, the base image, the source commit and the listing's sha256, and uploads the artifact
+`arena-page-server-<slot>-<commit>` (30 days) with `build-receipt.json` (the same fields plus
+the build log's sha256 and the run id), `build-metadata.json`, the full `build.log` and
+`package-listing.log`. The workflow never changes the package's visibility.
+
+The lead pushes the build branch, reads the digests from the run, saves the artifact as a
+receipt and records each digest in its row of `infra/model-registry/models.yaml`
+(`built: true`, `image: ghcr.io/…@sha256:…`).
