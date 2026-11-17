@@ -135,8 +135,8 @@ class Corpus:
         for fam in self.chain:
             self._family_rows(fam)
         self.rows.sort(key=lambda r: r["logical_id"])
-        # Gold may only name evidence the harness can retrieve: parts that compile to no claim
-        # (e.g. a withdrawn stub that is not a sentence) cannot be found by any retriever.
+        # Gold may only name evidence the harness can retrieve. Since WO-D14-8 (D14-D9) every
+        # row is a candidate, so a part that compiles to no claim (a withdrawn stub) is gold too.
         compiled = HarnessCorpus(self.rows)
         self.known = {e for ids in compiled.evidence_of.values() for e in ids}
 
@@ -372,9 +372,9 @@ def build(
     ids = [t["task_id"] for t in tasks]
     if len(set(ids)) != len(ids):
         raise CorpusError("duplicate task ids")
-    skipped["corpus parts that compile to no claim (never used as gold)"] = len(corpus.rows) - len(
-        corpus.known
-    )
+    skipped["corpus parts the harness cannot retrieve (never used as gold)"] = len(
+        corpus.rows
+    ) - len(corpus.known)
     rows = [{k: v for k, v in r.items() if k != "_title"} for r in corpus.rows]
     return {
         "tasks": tasks,

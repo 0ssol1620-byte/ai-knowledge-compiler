@@ -41,6 +41,7 @@ class Task:
     provenance: str
     generator: str
     seed: int
+    stratum: str | None = None  # optional in the contract; per-stratum results group by it
 
 
 def parse_task(row: Mapping[str, Any]) -> Task:
@@ -55,6 +56,8 @@ def parse_task(row: Mapping[str, Any]) -> Task:
         for field in ("task_id", "tenant", "query", "generator"):
             if not isinstance(row[field], str):
                 raise TaskError(f"{field} must be a string")
+        if "stratum" in row and not isinstance(row["stratum"], str):
+            raise TaskError("stratum must be a string when present")
         task = Task(
             task_id=str(row["task_id"]),
             kind=kind,
@@ -66,6 +69,7 @@ def parse_task(row: Mapping[str, Any]) -> Task:
             provenance=provenance,
             generator=str(row["generator"]),
             seed=int(row["seed"]),
+            stratum=row.get("stratum"),  # optional; type checked above when present
         )
     except KeyError as exc:
         raise TaskError(f"task is missing field {exc.args[0]!r}") from exc
