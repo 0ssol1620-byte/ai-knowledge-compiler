@@ -273,4 +273,7 @@ def test_on_this_base_every_parent_is_held_so_the_duplicate_class_is_never_met(
         dup = summary["faults"][arm]["duplicate_region_text"]
         assert (dup["cases"], dup["parent_already_held"], dup["expectation_met"]) == (1, 1, 0)
         assert dup["joined"] == 0 and "met in" not in dup["status"]
-    assert summary["faults"]["off"]["duplicate_region_text"]["status"] == "parent_already_held"
+        # every case held: the status says both things, on both arms (WO-D12-16r ruling C)
+        assert dup["status"] == "not exercised; 1 parent_already_held"
+    cand = summary["faults"]["candidate"]["duplicate_region_text"]
+    assert cand["declared_documents_touched"] == cand["declared_documents_exercised"] == 0

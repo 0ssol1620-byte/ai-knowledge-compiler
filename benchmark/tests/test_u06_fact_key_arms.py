@@ -11,6 +11,7 @@ import hashlib
 import inspect
 import json
 import re
+from collections import Counter
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from pathlib import Path
@@ -442,6 +443,8 @@ def test_faults_run_on_both_arms_and_a_class_without_a_keyed_document_is_not_exe
         if r["expectation_not_met"] or r["joined"]
     ]
     assert code == (1 if unmet else 0)
+    lines = {arm: _jsonl(out / f"faults.{arm}.jsonl") for arm in ("off", "candidate")}
+    _assert_held_cases_are_not_exercise(summary, lines)
 
 
 OUTCOMES = {"expectation_met", "expectation_not_met", "joined", "parent_already_held"}
@@ -488,6 +491,11 @@ def test_the_c10k_shape_is_joined_in_both_arms_and_the_run_exits_1(tmp_path: Pat
         row = summary["faults"][arm]["duplicate_region_text"]
         assert (row["joined"], row["expectation_met"]) == (1, 0)
         assert "joined in 1 of 1 cases" in row["status"]
+    # a joined case is evaluated, so its declared document counts as touched (not as keyed)
+    row = summary["faults"]["candidate"]["duplicate_region_text"]
+    assert (row["declared_documents_touched"], row["declared_documents_exercised"]) == (1, 0)
+    assert row["touched_declared_paths"] == {"refused:D-MISSING": 1}
+    _assert_held_cases_are_not_exercise(summary, lines)
     # the joined case is the only reason for exit 1: nothing else failed
     assert summary["by_construction_held"] is True
     assert not any(
@@ -533,11 +541,105 @@ def test_a_case_held_for_its_parents_reason_is_parent_already_held_not_met(
     _, summary, lines = _faults_run(tmp_path, [("c-10k", "sec_successor", *CASES[2][2:])])
     row = summary["faults"]["off"]["source_rename_same_content"]
     assert (row["cases"], row["parent_already_held"], row["expectation_met"]) == (1, 1, 0)
-    assert row["status"] == "parent_already_held"
+    assert row["status"] == "not exercised; 1 parent_already_held"  # both things (ruling C)
     for line in lines["off"]:
         if line["outcome"] == "parent_already_held":
             assert line["verdict"] == "HOLD"
             assert set(line["hold_reasons"]) <= {"IDENTITY_UNRESOLVED"}
+    _assert_held_cases_are_not_exercise(summary, lines)
+
+
+def _assert_held_cases_are_not_exercise(
+    summary: dict[str, Any], lines: dict[str, list[dict[str, Any]]]
+) -> None:
+    """Every figure that is a denominator of "met" or of a by-construction entry is the sum over
+    the evaluated cases (`joined` included) of the case lines; a `parent_already_held` case is
+    counted only in its own columns. Read against the run's own per-case output."""
+    held = "parent_already_held"
+    for arm in ("off", "candidate"):
+        for name, row in summary["faults"][arm].items():
+            mine = [line for line in lines[arm] if line["fault_class"] == name]
+            evaluated = [line for line in mine if line["outcome"] != held]
+            n_held = len(mine) - len(evaluated)
+            assert (row["cases"], row[held]) == (len(mine), n_held), (arm, name)
+            assert row["expectation_met"] + row["expectation_not_met"] + row["joined"] == len(
+                evaluated
+            )
+            if row["status"] == "not_applicable":
+                assert not mine
+                continue
+            exercised = sum(line["touched_declared_paths"].get("keyed", 0) for line in evaluated)
+            joined = f"; joined in {row['joined']} of {len(mine)} cases" if row["joined"] else ""
+            assert row["status"].endswith(joined), (arm, name)
+            if not evaluated or (arm == "candidate" and not exercised):
+                tail = f"; {n_held} {held}" if n_held else ""
+                assert row["status"] == "not exercised" + tail + joined, (arm, name, row["status"])
+            else:
+                assert row["status"].startswith(
+                    f"expectation met in {row['expectation_met']} of {len(evaluated)} cases"
+                )
+            if arm == "off":
+                assert "declared_documents_exercised" not in row
+                continue
+            paths: Counter[str] = Counter()
+            for line in evaluated:
+                paths.update(line["touched_declared_paths"])
+            assert row["touched_declared_paths"] == dict(sorted(paths.items())), name
+            assert row["declared_documents_touched"] == sum(paths.values()), name
+            assert row["declared_documents_exercised"] == exercised, name
+            assert row[f"{held}_declared_documents_touched"] == sum(
+                sum(line["touched_declared_paths"].values())
+                for line in mine
+                if line["outcome"] == held
+            ), name
+    block = summary["by_construction"]
+    keyed = summary["arms"]["candidate"]["counts"].get("declared_documents_keyed", 0) + sum(
+        line["declared_documents_keyed"] or 0
+        for line in lines["candidate"]
+        if line["outcome"] != held
+    )
+    denominator = block["candidate.fact_key_disagreements"]["denominator"]
+    assert denominator == {"declared_documents_keyed": keyed}
+    dup = summary["faults"]["candidate"].get("duplicate_region_text")
+    if dup is not None:
+        figure = block["faults.candidate.duplicate_region_text.declared_documents_exercised"]
+        assert figure["denominator"] == {
+            "declared_documents_touched": dup["declared_documents_touched"]
+        }
+
+
+# The reviewer's probe (r20): a pair HOLD on the off and candidate arm for an undeclared 10-K's
+# tie, with a keyed document beside it, and a plain pair. Faults that touch the keyed document
+# of the held pair are parent_already_held; before WO-D12-16r's closing round they made six
+# classes "exercised" ("met in 2 of 2 cases, 1 parent_already_held") over no keyed evaluated case.
+HELD_BESIDE_KEYED = [
+    ("p-held", "mixed", (TENK_UNDECLARED[0][0], ROLL_BEFORE), (TENK_UNDECLARED[1][0], ROLL_AFTER)),
+    ("p-plain", "undeclared", (PLAIN_A,), (PLAIN_A, PLAIN_B)),
+]
+
+
+@pytest.mark.parametrize("n", [32, 64])
+def test_a_class_exercised_only_by_parent_held_cases_is_not_exercised(
+    tmp_path: Path, n: int
+) -> None:
+    _, summary, lines = _faults_run(tmp_path, HELD_BESIDE_KEYED, n=n)
+    _assert_held_cases_are_not_exercise(summary, lines)
+    cand = summary["faults"]["candidate"]
+    only_held = [
+        name
+        for name, row in cand.items()
+        if row["parent_already_held_declared_documents_touched"]
+        and not row["declared_documents_exercised"]
+        and any(
+            line["touched_declared_paths"].get("keyed")
+            for line in lines["candidate"]
+            if line["fault_class"] == name and line["outcome"] == "parent_already_held"
+        )
+    ]
+    assert only_held  # the probe's shape is on this base
+    for name in only_held:
+        assert cand[name]["status"].startswith("not exercised; "), name
+        assert "met in" not in cand[name]["status"], name
 
 
 def test_without_a_keyed_document_every_by_construction_figure_is_not_exercised(
@@ -653,6 +755,16 @@ def _bad_base(tmp_path: Path, how: str) -> Path:
     if how == "not json":
         path.write_text("{not json", encoding="utf-8")
         return path
+    if how == "nested too deep":  # json raises RecursionError, not ValueError
+        deep = "[" * 100_000 + "]" * 100_000
+        path.write_text(f'{{"requested_at": "{NOW.isoformat()}", "cases": {deep}}}', "utf-8")
+        return path
+    if how == "document nested too deep":
+        data = ("[" * 100_000 + "]" * 100_000).encode()
+        (tmp_path / "deep.json").write_bytes(data)
+        manifest["cases"][0]["after"] = {"path": "deep.json", "sha256": _sha(data)}
+    if how == "tenant not a string":
+        manifest["tenant_id"] = 5
     if how == "no requested_at":
         del manifest["requested_at"]
     elif how == "naive requested_at":
@@ -686,6 +798,9 @@ def _bad_base(tmp_path: Path, how: str) -> Path:
         "missing file",
         "invalid document",
         "no regions anywhere",
+        "nested too deep",
+        "document nested too deep",
+        "tenant not a string",
     ],
 )
 @pytest.mark.parametrize("mode", ["off", "candidate"])
@@ -699,3 +814,53 @@ def test_an_unusable_base_exits_2_with_nothing_written(
     err = capsys.readouterr().err
     assert err.startswith("REFUSED: unusable base (") and "1000 USD" not in err
     assert not out.exists()
+
+
+# Every field the loader reads, and values of every wrong type, including what the JSON parser
+# turns into a RecursionError (nesting), a non-finite float or an int no string field takes.
+FIELDS: list[tuple[str | int, ...]] = [
+    (),
+    ("requested_at",),
+    ("tenant_id",),
+    ("workspace_id",),
+    ("collection_id",),
+    ("cases",),
+    ("cases", 0),
+    ("cases", 0, "case_id"),
+    ("cases", 0, "stratum"),
+    ("cases", 0, "before"),
+    ("cases", 0, "after", "path"),
+    ("cases", 0, "after", "sha256"),
+]
+DEEP = "@@deep@@"
+HOSTILE: list[Any] = [None, 0, 10**400, 1.5, float("nan"), float("inf"), True, [], {}, [[]], DEEP]
+
+
+@pytest.mark.parametrize("field", FIELDS, ids=lambda f: "/".join(map(str, f)) or "root")
+@pytest.mark.parametrize("mode", ["off", "candidate"])
+def test_any_field_of_the_wrong_type_is_an_unusable_base(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], field: tuple[str | int, ...], mode: str
+) -> None:
+    """Property over the loader: whatever wrong-typed value replaces whichever field, the run
+    exits 2 with nothing written and no document text echoed; it never raises and never turns a
+    bad base into a measured HOLD."""
+    path = _manifest(tmp_path, CASES[:1])
+    original = json.loads(path.read_text(encoding="utf-8"))
+    flags = ["--fact-key-mode", mode] + (["--faults", "16"] if mode == "candidate" else [])
+    for k, value in enumerate(HOSTILE):
+        manifest = json.loads(json.dumps(original))
+        if field:
+            *parents, last = field
+            node: Any = manifest
+            for step in parents:
+                node = node[step]
+            node[last] = value
+        else:
+            manifest = value
+        text = json.dumps(manifest).replace(f'"{DEEP}"', "[" * 100_000 + "]" * 100_000)
+        path.write_text(text, encoding="utf-8")
+        out = tmp_path / f"out-{k}"
+        code = u06_run.main(["--manifest", str(path), "--out", str(out), *flags])
+        assert code == 2, (field, value)
+        assert capsys.readouterr().err.startswith("REFUSED: "), (field, value)
+        assert not out.exists(), (field, value)

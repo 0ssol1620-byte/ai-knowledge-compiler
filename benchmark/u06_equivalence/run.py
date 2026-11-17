@@ -13,9 +13,13 @@ the manifest's pairs on both arms, into `faults.<arm>.jsonl`. Without these flag
 today's, byte for byte. Nothing here is identity accuracy and nothing is a gate result.
 
 Fault outcomes per case (WO-D12-16r): `parent_already_held` (a HOLD that adds no reason to its
-parent pair's HOLD; never counted as met), `joined` (D12-D13r, `duplicate_region_text` only: an
-abstention lost or a join added), `expectation_met`, `expectation_not_met`. A class that applies
-to no pair is `not_applicable` with 0 cases. Exit 0; 1 when an arm or a fault class has DIVERGED,
+parent pair's HOLD; never counted as met, nor as exercise: its declared documents are counted
+only in `parent_already_held_declared_documents_touched`, and a class with no other case, or on
+the candidate arm none that reached a keyed path, reads "not exercised; N parent_already_held"),
+`joined` (D12-D13r, `duplicate_region_text` only: an abstention lost - an untouched anchor
+unresolved (AMBIGUOUS or collision-held) in the parent's compile and matched in the case's - or a
+join added), `expectation_met`, `expectation_not_met`. A class that applies to no pair is
+`not_applicable` with 0 cases. Exit 0; 1 when an arm or a fault class has DIVERGED,
 a phantom, a compile error (pairs), an unmet or `joined` case, or a by-construction figure that
 is off or not exercised; 2 when a flag or the base is unusable, with nothing written.
 """
@@ -316,8 +320,9 @@ def _lineage(
 ) -> dict[str, Any] | None:
     """D12-D13r, from what the two incremental compiles returned (None when either raised).
     `abstention_lost`: anchors the fault did not touch (same region, same title) that the parent
-    pair's incremental compile left unresolved and the case's matched. `joins_added`: cross-key
-    MATCHED and cross-key MODIFIED_CLAIM above the parent pair's counts."""
+    pair's incremental compile left unresolved (AMBIGUOUS or collision-held) and the case's
+    matched. `joins_added`: cross-key MATCHED and cross-key MODIFIED_CLAIM above the parent
+    pair's counts."""
     (_, parent_counts, _, parent_states), (_, counts, _, states) = parent, case
     if parent_counts is None or counts is None or parent_states is None or states is None:
         return None
@@ -387,8 +392,9 @@ def _run_faults(
     scope: dict[str, str],
     sink_path: Path,
 ) -> tuple[dict[str, Any], list[CaseResult], int]:
-    """Per class report, the case results, and how many documents of the fault cases took the
-    keyed path. `parents[k]` is this arm's measurement of base pair k."""
+    """Per class report, the case results, and how many documents of the evaluated fault cases
+    (not `parent_already_held`) took the keyed path. `parents[k]` is this arm's measurement of
+    base pair k."""
     declared = {item.connector_type for item in DECLARATIONS} if arm == "candidate" else set()
     tenant = scope.get("tenant_id", DEFAULT_TENANT)
     classes: dict[str, Counter[str]] = {}
@@ -406,7 +412,10 @@ def _run_faults(
             parent_after = base[case.parent_pair_id][1]
             lineage = _lineage(parent, measured, parent_after, case.after_docs, tenant)
             outcome = _outcome(case, result, parent[0], lineage)
-            keyed_documents += sum(path == "keyed" for path in (paths or {}).values())
+            # a case not counted as met is not counted as exercise either (WO-D12-16r A)
+            counted = outcome != "parent_already_held"
+            keyed = sum(path == "keyed" for path in (paths or {}).values())
+            keyed_documents += keyed if counted else 0
             touched = _touched(case, parent_after, tenant)
             # the path each touched declared document took: "absent" when the fault removed it,
             # "not_compiled" when the compile raised (that case is a COMPILE_ERROR hold)
@@ -426,9 +435,12 @@ def _run_faults(
                 bucket["abstention_lost"] += lineage["abstention_lost"]
                 for name, added in lineage["joins_added"].items():
                     bucket[f"joins_added_{name}"] += added
-            bucket["declared_documents_touched"] += len(mine)
-            bucket["declared_documents_exercised"] += mine.count("keyed")
-            touched_paths[case.fault_class].update(mine)
+            if counted:
+                bucket["declared_documents_touched"] += len(mine)
+                bucket["declared_documents_exercised"] += mine.count("keyed")
+                touched_paths[case.fault_class].update(mine)
+            else:  # shown in its own column, never mixed into the exercise figures
+                bucket["parent_already_held_declared_documents_touched"] += len(mine)
             line = {
                 "case_id": case.case_id,
                 "fault_class": case.fault_class,
@@ -436,6 +448,7 @@ def _run_faults(
                 "expected": case.expected,
                 **asdict(result),
                 "touched_declared_paths": dict(Counter(mine)),
+                "declared_documents_keyed": None if paths is None else keyed,
                 "outcome": outcome,
                 "abstention_lost": None if lineage is None else lineage["abstention_lost"],
                 "joins_added": None if lineage is None else lineage["joins_added"],
@@ -446,19 +459,23 @@ def _run_faults(
     report: dict[str, Any] = {}
     for name, bucket in classes.items():
         row: dict[str, Any] = {k: bucket[k] for k in _FAULT_COLUMNS}
-        evaluated = bucket["cases"] - bucket["parent_already_held"]
+        held = bucket["parent_already_held"]
+        evaluated = bucket["cases"] - held
         status = f"expectation met in {bucket['expectation_met']} of {evaluated} cases"
-        if bucket["parent_already_held"]:
-            status += f", {bucket['parent_already_held']} parent_already_held"
-        if not evaluated:
-            status = "parent_already_held"
+        if held:
+            status += f", {held} parent_already_held"
+        # never a pass for a class no evaluated case exercised: on the candidate arm, one that
+        # reached no declared document's keyed path outside the parent-held cases
+        if not evaluated or (arm == "candidate" and not bucket["declared_documents_exercised"]):
+            status = "not exercised" + (f"; {held} parent_already_held" if held else "")
         if arm == "candidate":
-            row["declared_documents_touched"] = bucket["declared_documents_touched"]
-            row["declared_documents_exercised"] = bucket["declared_documents_exercised"]
+            for column in (
+                "declared_documents_touched",
+                "declared_documents_exercised",
+                "parent_already_held_declared_documents_touched",
+            ):
+                row[column] = bucket[column]
             row["touched_declared_paths"] = dict(sorted(touched_paths[name].items()))
-            # never a pass for a class that reached no declared document's keyed path
-            if not bucket["declared_documents_exercised"]:
-                status = "not exercised"
         if bucket["joined"]:
             status += f"; joined in {bucket['joined']} of {bucket['cases']} cases"
         row["status"] = "not_applicable" if name in skipped else status
@@ -635,6 +652,8 @@ def main(argv: list[str] | None = None) -> int:
         scope = {
             k: manifest[k] for k in ("tenant_id", "workspace_id", "collection_id") if k in manifest
         }
+        if not all(isinstance(value, str) for value in scope.values()):
+            raise TypeError("a scope field is not a string")
         requested_at = datetime.fromisoformat(manifest["requested_at"])
         if requested_at.utcoffset() is None:
             raise ValueError("requested_at carries no timezone")
@@ -655,7 +674,7 @@ def main(argv: list[str] | None = None) -> int:
     except ManifestHashMismatch as exc:
         print(f"REFUSED: {exc}", file=sys.stderr)
         return 2
-    except (OSError, ValueError, KeyError, TypeError, AttributeError) as exc:
+    except (OSError, ValueError, KeyError, TypeError, AttributeError, RecursionError) as exc:
         # the type only: a validation message can carry document text
         print(f"REFUSED: unusable base ({type(exc).__name__})", file=sys.stderr)
         return 2
