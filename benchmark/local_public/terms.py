@@ -22,16 +22,13 @@ from benchmark.screen.acquire import AcquireError, PacedClient
 
 DEFAULT_OUT = Path("D:/CodexProjects/v34-lanes/corpus/licences")
 _SEC = "https://www.sec.gov/about/privacy-information#copyright"
-_FRED = "https://fred.stlouisfed.org"
+# FRED/ALFRED content is denied for every action (D21-L1, register row data_alfred_vintages;
+# FRED legal terms API prohibitions (k) and (l)): no request to fred.stlouisfed.org is made.
+DENIED_SOURCE_PREFIXES = ("data_alfred_vintages",)
 # (source_id, snapshot_url) from the register rows of WO-LPC-0.
 SOURCES: list[tuple[str, str]] = [
     ("data_sec_fsds", _SEC),
     ("data_sec_edgar_filings", _SEC),
-    ("data_alfred_vintages", f"{_FRED}/docs/api/terms_of_use.html"),
-    *[
-        (f"data_alfred_vintages/{s}", f"{_FRED}/series/{s}")
-        for s in ("CPIAUCSL", "UNRATE", "INDPRO", "DFF", "DGS10", "DGS2")
-    ],
 ]
 
 
@@ -43,6 +40,9 @@ def snapshot(
     transport: httpx.BaseTransport | None = None,
 ) -> list[dict[str, Any]]:
     """Fetch each distinct URL once. Raises SourceError, writing no terms.json, on any failure."""
+    denied = [i for i, _ in sources if i.startswith(DENIED_SOURCE_PREFIXES)]
+    if denied:
+        raise SourceError(f"rights denied for every action, no request made: {denied}")
     ua = os.environ.get("SEC_USER_AGENT", "") if user_agent is None else user_agent
     if not ua.strip():
         raise SourceError("SEC_USER_AGENT is not set; refusing to fetch")

@@ -93,9 +93,9 @@ PUBLIC_SOURCES: dict[str, PublicSource] = {
                 "https://www.eia.gov/opendata/terms-of-service.php",
                 "https://www.eia.gov/about/copyrights_reuse.php",
             ),
-            # The documentation page says "You must use the API key"; the field stays
-            # "unverified" until the register test that pins it is updated (WO-D21-5 delta).
-            "unverified",
+            # EIA API documentation (snapshot sha256 in the WO-D21-5 receipt): "You must use
+            # the API key."
+            "required",
             "EIA_API_KEY",
             "unknown",
             False,
@@ -226,12 +226,14 @@ REVIEWED_RIGHTS: tuple[RightsRecord, ...] = (
     # "U.S. government publications are in the public domain and are not subject to
     # copyright protection. You may use and/or distribute any of our data, files,
     # databases, reports, graphs, charts, and other information products ..."
+    # The same page also says contributed or licensed material may be protected, so
+    # quote/display/export stay unknown until a human legal reviewer reads it (D21-L2).
     _reviewed(
         "eia",
         "https://www.eia.gov/about/copyrights_reuse.php",
         "sha256:33c1a9f95672c78e3ebdbbe5cd30edd0065029174391188f458ca8651204f05a",
         "Source: U.S. Energy Information Administration (<publication date>)",
-        allow=(*_PROCESSING, *_OUTPUT),
+        allow=_PROCESSING,
     ),
     # "Generally, information and materials produced by Federal agencies, including
     # FHFA, are in the public domain and may be copied and distributed without

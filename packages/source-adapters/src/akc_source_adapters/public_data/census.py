@@ -3,9 +3,8 @@
 `parse_census_bps_cbsa_ascii` reads the publisher's CBSA current-month file
 (`CBSA<YYMM>C.TXT`) in the record layout of the Census "CBSA ASCII
 Documentation" (01/22/2024), checked in WO-D21-5 against a recording of
-`cbsa2609c.txt`. `parse_census_bps_csv` reads a synthetic shape (cbsa_code,
-year, month, permit_units) that no Census file has; it serves the synthetic
-fixtures only.
+`cbsa2609c.txt`. The recording is a shape check only (WO-D21-6, D21-L3): no
+reuse sentence was found for the `www2` files, so its rights stay unknown.
 
 A value is an aggregated count of authorized housing units for an area and
 month; it is never a parcel-level or individual legal approval
@@ -20,11 +19,9 @@ import io
 import re
 import urllib.parse
 from datetime import date
-from typing import Any
 
 from .vintage import VintageObservation
 
-REQUIRED = ("cbsa_code", "year", "month", "permit_units")
 MEASURE = "housing_units_authorized_by_permit_count"
 
 # Record layout fields 7, 10, 13, 16 ("Estimates With Imputation" units), keyed by
@@ -61,18 +58,26 @@ def parse_census_bps_cbsa_ascii(
         or [rows[0][i].strip() if i < len(rows[0]) else "" for i in _CBSA_UNIT_COLUMNS]
         != list(_CBSA_UNIT_COLUMNS.values())
         or [c.strip() for c in rows[1][5:8]] != ["Bldgs", "Units", "Value"]
+        or any(
+            (rows[1][i].strip() if i < len(rows[1]) else "") != "Units" for i in _CBSA_UNIT_COLUMNS
+        )
     ):
         raise ValueError("Census BPS: header lines differ from the CBSA ASCII record layout")
     out: list[VintageObservation] = []
     seen: dict[str, list[str]] = {}
     for row in rows[2:]:
-        if not "".join(row).strip():
-            continue
+        if len(row) <= 1 and not "".join(row).strip():
+            continue  # a blank line (the layout has one after the headers); separators are data
         if len(row) != _CBSA_FIELDS:
             raise ValueError(f"Census BPS row: {len(row)} fields, layout has {_CBSA_FIELDS}")
         survey, cbsa = row[0].strip(), row[2].strip()
-        if not (len(survey) == 6 and survey.isdigit() and survey[2:] == yymm):
+        # ponytail: century fixed at 20; the layout dates files from 2024, revisit in 2100
+        if not (
+            len(survey) == 6 and survey.isdigit() and survey.startswith("20") and survey[2:] == yymm
+        ):
             raise ValueError(f"Census BPS row: survey date {survey!r} is not this file's month")
+        if not 1 <= int(survey[4:]) <= 12:
+            raise ValueError(f"Census BPS row: survey date {survey!r} has no valid month")
         if not (len(cbsa) == 5 and cbsa.isdigit()):
             raise ValueError(f"Census BPS row: CBSA code {cbsa!r} is not five digits")
         if cbsa in seen:
@@ -108,66 +113,6 @@ def parse_census_bps_cbsa_ascii(
                     rights_id=rights_id,
                 )
             )
-    return tuple(out)
-
-
-def parse_census_bps_csv(
-    raw: bytes,
-    source_uri: str,
-    raw_sha256: str,
-    *,
-    rights_id: str,
-) -> tuple[VintageObservation, ...]:
-    """Synthetic shape only (see module docstring); one monthly area count per row."""
-    try:
-        reader = csv.DictReader(io.StringIO(raw.decode("utf-8-sig")))
-        fields = reader.fieldnames or ()
-    except UnicodeDecodeError as exc:
-        raise ValueError(f"Census payload is not UTF-8: {exc}") from exc
-    missing = [c for c in REQUIRED if c not in fields]
-    if missing:
-        raise ValueError(f"Census header lacks columns {missing}")
-    out: list[VintageObservation] = []
-    seen: dict[tuple[str, date], dict[str | None, Any]] = {}
-    for row in reader:
-        if None in row.values():
-            raise ValueError(f"Census row: ragged row: {row}")
-        cbsa = row["cbsa_code"].strip()
-        if not cbsa:
-            raise ValueError("Census row: empty cbsa_code")
-        try:
-            start = date(int(row["year"]), int(row["month"]), 1)
-        except ValueError as exc:
-            raise ValueError(
-                f"Census row: bad year/month {row['year']!r}/{row['month']!r}"
-            ) from exc
-        # only a byte-identical row is a duplicate; any other difference contradicts the file
-        if (cbsa, start) in seen:
-            if seen[(cbsa, start)] != row:
-                raise ValueError(f"Census rows conflict for {cbsa} {start}")
-            continue
-        seen[(cbsa, start)] = row
-        out.append(
-            VintageObservation(
-                source_id="census_bps",
-                series_id=f"{MEASURE}:{cbsa}",
-                period_start=start,
-                period_end=None,
-                value=row["permit_units"],
-                unit="count",
-                frequency="monthly",
-                seasonal_adjustment="NSA",
-                measure=MEASURE,
-                geography_id=cbsa,
-                geography_level="CBSA",
-                geography_vintage=(row.get("delineation_vintage") or "").strip() or None,
-                vintage_id=raw_sha256,
-                available_on=None,
-                available_precision=None,
-                superseded_on=None,
-                source_uri=source_uri,
-                raw_sha256=raw_sha256,
-                rights_id=rights_id,
-            )
-        )
+    if not out:
+        raise ValueError("Census BPS: the file has no data rows")
     return tuple(out)

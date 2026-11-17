@@ -8,13 +8,15 @@ import json
 from datetime import UTC, date, datetime
 from pathlib import Path
 
+import httpx
 import pytest
 from akc_source_adapters.public_data.rights import RightsDenied, RightsRecord
-from akc_source_adapters.public_data.sources import DEFAULT_RIGHTS
+from akc_source_adapters.public_data.sources import DEFAULT_RIGHTS, REVIEWED_RIGHTS
 
 from benchmark.local_public import alfred_local as al
 from benchmark.local_public import pit_tasks as pt
 from benchmark.local_public import sources as S
+from benchmark.local_public import terms
 from benchmark.retrieval_baselines.metrics import parse_moment, parse_task, violates_cut
 
 TODAY = date(2026, 11, 17)
@@ -188,3 +190,28 @@ def test_merges_into_pit_tasks_and_duplicates_refused(tmp_path: Path) -> None:
     obs, _ = al.read_local_vintages(dup, ["CPIAUCSL"], REGISTER, TODAY)
     with pytest.raises(al.AlfredError):
         al.generate(obs)
+
+
+def test_reviewed_rights_deny_alfred_before_the_file_is_opened(tmp_path: Path) -> None:
+    missing = tmp_path / "never_opened.csv"  # opening it would raise FileNotFoundError instead
+    with pytest.raises(RightsDenied):
+        al.read_local_vintages(missing, S.ALLOWED_ALFRED_SERIES, REVIEWED_RIGHTS, TODAY)
+    assert not missing.exists()
+
+
+def test_terms_snapshot_refuses_alfred_sources_without_a_request(tmp_path: Path) -> None:
+    calls: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(str(request.url))
+        return httpx.Response(200, content=b"x")
+
+    with pytest.raises(S.SourceError, match="rights denied"):
+        terms.snapshot(
+            tmp_path / "o",
+            sources=[("data_alfred_vintages", "https://fred.stlouisfed.org/legal/")],
+            user_agent="t t@example.org",
+            transport=httpx.MockTransport(handler),
+        )
+    assert calls == []
+    assert all(s.startswith("data_sec") for s, _ in terms.SOURCES)

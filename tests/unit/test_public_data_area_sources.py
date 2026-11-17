@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pytest
 from akc_cir.temporal import TemporalTimeline
-from akc_source_adapters.public_data.census import parse_census_bps_csv
+from akc_source_adapters.public_data.census import parse_census_bps_cbsa_ascii
 from akc_source_adapters.public_data.eia import parse_eia_v2
 from akc_source_adapters.public_data.fhfa import parse_fhfa_hpi_csv
 from akc_source_adapters.public_data.sources import PUBLIC_SOURCES
@@ -17,6 +17,17 @@ from akc_source_adapters.public_data.vintage import comparability_blockers, to_t
 
 FIX = Path(__file__).resolve().parents[1] / "fixtures" / "public_data"
 URI = "https://example.org/synthetic"
+CENSUS_URI = "https://example.org/synthetic/cbsa2601c.txt"
+# Synthetic file in the publisher's CBSA ASCII layout (publisher's two header lines, invented rows).
+CENSUS_FILE = (FIX / "synthetic_cbsa2601c.txt").read_bytes()
+CENSUS_HEAD = b"".join(CENSUS_FILE.splitlines(keepends=True)[:3])
+
+
+def _crow(cbsa: str, units: str = "5", survey: str = "202601", extra: str = "") -> bytes:
+    counts = "0,0,0,0,0,0,1,7,900,1,2,300,0,0,0,0,0,0,1,7,900"
+    return f"{survey},999,{cbsa},4,Synthetic{extra},1,{units},300,{counts}\r\n".encode()
+
+
 SHA = "sha256:" + "d" * 64
 
 
@@ -44,9 +55,9 @@ def _fhfa(raw: bytes | None = None, *, sa: bool = False):  # type: ignore[no-unt
 
 
 def _census(raw: bytes | None = None):  # type: ignore[no-untyped-def]
-    return parse_census_bps_csv(
-        raw if raw is not None else (FIX / "synthetic_census_bps.csv").read_bytes(),
-        URI,
+    return parse_census_bps_cbsa_ascii(
+        raw if raw is not None else CENSUS_FILE,
+        CENSUS_URI,
         SHA,
         rights_id="census_bps:default",
     )
@@ -108,15 +119,20 @@ def test_census_source_forbids_parcel_level_approval_claim() -> None:
 def test_bad_csv_header_raises() -> None:
     with pytest.raises(ValueError, match="header lacks"):
         _fhfa(b"place_id,yr\n1,2020\n")
-    with pytest.raises(ValueError, match="header lacks"):
+    with pytest.raises(ValueError, match="header lines differ"):
         _census(b"cbsa_code,year\n1,2020\n")
     with pytest.raises(ValueError, match="header lacks"):
         _fhfa(b"hpi_type,hpi_flavor,frequency,level,place_id,yr,period,index_nsa\n", sa=True)
 
 
 def test_bad_rows_and_payloads_raise_not_skip() -> None:
-    with pytest.raises(ValueError, match="bad year/month"):
-        _census(b"cbsa_code,year,month,permit_units\n1,2020,13,5\n")
+    with pytest.raises(ValueError, match="no valid month"):
+        parse_census_bps_cbsa_ascii(
+            CENSUS_HEAD + _crow("90001", survey="202613"),
+            CENSUS_URI.replace("2601", "2613"),
+            SHA,
+            rights_id="census_bps:default",
+        )
     with pytest.raises(ValueError, match="not JSON"):
         _eia(b"not json")
     with pytest.raises(ValueError, match=r"response.data"):
@@ -144,17 +160,15 @@ def test_same_period_rows_with_different_values_raise() -> None:
             b"t,f,quarterly,MSA,1,2020,1,100,100\nt,f,quarterly,MSA,1,2020,1,200,200\n"
         )
     with pytest.raises(ValueError, match="conflict"):
-        _census(b"cbsa_code,year,month,permit_units\n1,2020,1,5\n1,2020,1,9\n")
-    assert len(_census(b"cbsa_code,year,month,permit_units\n1,2020,1,5\n1,2020,1,5\n")) == 1
+        _census(CENSUS_HEAD + _crow("90001", "5") + _crow("90001", "9"))
+    # one identical duplicate row is one area: four structure-type observations, not eight
+    assert len(_census(CENSUS_HEAD + _crow("90001") + _crow("90001"))) == 4
 
 
 def test_same_value_rows_that_differ_in_any_other_field_raise() -> None:
     # a same-value duplicate must not silently drop a contradicting geography field
     with pytest.raises(ValueError, match="conflict"):
-        _census(
-            b"cbsa_code,year,month,permit_units,delineation_vintage\n"
-            b"1,2020,1,5,2013\n1,2020,1,5,2023\n"
-        )
+        _census(CENSUS_HEAD + _crow("90001", extra="2013") + _crow("90001", extra="2023"))
     with pytest.raises(ValueError, match="conflict"):
         _fhfa(
             b"hpi_type,hpi_flavor,frequency,level,place_id,yr,period,index_nsa,index_sa\n"
@@ -187,11 +201,17 @@ def _csv_pairs(header: str, cells: tuple[tuple[str, ...], ...]) -> list[tuple[by
 
 
 def test_csv_parsers_never_drop_a_non_identical_row_property() -> None:
-    census = _csv_pairs(
-        "cbsa_code,year,month,permit_units,delineation_vintage",
-        (("1", "2"), ("2020",), ("1", "01"), ("5", "9", ""), ("", "2013", "2023")),
+    census_rows = [
+        _crow(c, u, extra=e)
+        for c, u, e in itertools.product(("90001", "90002"), ("5", "9"), ("", "x"))
+    ]
+    _assert_no_row_dropped(
+        _census,
+        [
+            (CENSUS_HEAD + a + b, len({a, b}) * 4)  # four structure types per distinct row
+            for a, b in itertools.product(census_rows, repeat=2)
+        ],
     )
-    _assert_no_row_dropped(_census, census)
     fhfa = _csv_pairs(
         "hpi_type,hpi_flavor,frequency,level,place_id,yr,period,index_nsa,index_sa,"
         "delineation_vintage",
@@ -228,3 +248,28 @@ def test_eia_parser_never_drops_a_non_identical_row_property() -> None:
             for a, b in itertools.product(rows, repeat=2)
         ],
     )
+
+
+def test_census_century_must_be_the_files_not_the_last_two_digits() -> None:
+    with pytest.raises(ValueError, match="not this file's month"):
+        _census(CENSUS_HEAD + _crow("90001", survey="192601"))
+
+
+def test_census_file_without_data_rows_raises() -> None:
+    with pytest.raises(ValueError, match="no data rows"):
+        _census(CENSUS_HEAD)
+
+
+def test_census_row_of_only_separators_raises_not_skipped() -> None:
+    with pytest.raises(ValueError, match="fields"):
+        _census(CENSUS_HEAD + b",,,,\r\n")
+    with pytest.raises(ValueError, match="not this file's month"):
+        _census(CENSUS_HEAD + b"," * 28 + b"\r\n")
+
+
+def test_census_units_label_is_checked_at_every_units_column() -> None:
+    old = b"Units,Value,Bldgs,Units,Value,Bldgs,Units"
+    changed = CENSUS_HEAD.replace(old, b"Units,Value,Bldgs,Cost,Value,Bldgs,Units", 1)
+    assert changed != CENSUS_HEAD
+    with pytest.raises(ValueError, match="header lines differ"):
+        _census(changed + _crow("90001"))

@@ -235,14 +235,27 @@ datasets_evaluation_only:
     reference: "FRED/ALFRED vintage observations, local CSV sha256 f01bc6cff96e4582fbac059c08dee7dc93fe9a81ce3463f2187c1a41fa8e8d40 (a derived CSV of another project; API responses not retained)"
     publisher: "Federal Reserve Bank of St. Louis (FRED/ALFRED); series owned by their original sources"
     classification: ORANGE
-    status: HELD
-    held_reason: >-
-      The CSV was retrieved under another project's FRED API key, and the API
-      terms snapshot does not settle whether a party that never used the API may
-      use data retrieved that way (verify_at_merge_separately below). Held until
-      a document that settles it is snapshotted and read, or the data is
-      retrieved again under a key held for TAVONEL.
-    held_for: "Every run that reads the CSV's values: the ALFRED half of WO-LPC-R4 (the WO-LPC-7 reader and its leak and late_recorded tasks)."
+    status: DENIED
+    denied_on: "2026-11-17"
+    denied_reason: >-
+      The FRED legal terms prohibit this use. Snapshot "https://fred.stlouisfed.org/legal/"
+      (WO-D21-5 receipt fetch_log.jsonl, sha256 7d032ef70fb1e934f5ca76dc69e0ba941f09620078c7d138d4c39dc664abc8b4),
+      API prohibitions: (k) "Use the FRED® API to access the FRED® Services or FRED® Content in
+      connection with the development or training of any software program or system or machine learning,
+      including, but not limited to, large language models, deep learning, generative artificial
+      intelligence, or any other program or process commonly known as artificial intelligence."
+      (l) "Use the FRED® API in connection with storing, caching, or archiving any portion of the FRED®
+      Services or FRED® Content; providing any stored, cached, or archived portion of the FRED®
+      Services or FRED® Content to any third party; or incorporating any FRED® Content in any
+      database, compilation, archive, cache, or other medium." The same page's general prohibition
+      repeats (k)'s text for the FRED® Services and FRED® Content without the API qualifier.
+    decision: >-
+      D21-L1 (WO-D21-6): FRED/ALFRED content is not used by this program. Every ALFRED action is deny
+      in the rights register, no FRED or ALFRED request is made, and the local vintage CSV is not read
+      for any purpose. Point-in-time ground truth is the EDGAR acceptance timestamp only. Written
+      permission from the Bank would be a new intake row, a founder matter. Nothing was fetched and
+      nothing is in a build, so there is nothing to roll back.
+    held_for: "Nothing; the rows below record what was read before the denial and are kept as history."
     snapshot_url: "https://fred.stlouisfed.org/docs/api/terms_of_use.html"
     snapshot_sha256: "1b363c108142640f7e3a450169808cf195117fa3d7771651ae52bea5e515935c"
     fetched_at: "2026-11-16T19:59:46.070812+00:00"
@@ -310,9 +323,9 @@ datasets_evaluation_only:
       - { series: DTWEXBGS,     reason: "terms not read" }
     verify_at_merge_separately:
       - question: "Reuse of data retrieved under ANOTHER project's FRED API key: do the terms bind the key holder only, or the data?"
-        state: HELD
+        state: MOOT_DENIED
         finding: >-
-          Not settled by the snapshot. The opening paragraph binds whoever uses
+          Superseded by the denial above (clauses (k) and (l) bind regardless of whose key retrieved the data). Earlier reading: not settled by the R0 snapshot. The opening paragraph binds whoever uses
           the API. Section "API Key" issues each key to one registrant and makes
           that registrant alone answerable to the St. Louis Fed for its use of
           the API. Section "Property Rights" extends the St. Louis Fed's rights

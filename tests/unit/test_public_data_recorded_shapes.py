@@ -14,10 +14,11 @@ import urllib.parse
 from pathlib import Path
 
 import pytest
-from akc_source_adapters.public_data.census import parse_census_bps_cbsa_ascii, parse_census_bps_csv
+from akc_source_adapters.public_data.census import parse_census_bps_cbsa_ascii
 from akc_source_adapters.public_data.eia import parse_eia_v2
 from akc_source_adapters.public_data.rights import ACTIONS, permits, require
 from akc_source_adapters.public_data.sources import PUBLIC_SOURCES, REVIEWED_RIGHTS
+from akc_source_adapters.public_data.vintage import VintageObservation
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "tests" / "fixtures" / "public_data" / "recorded_manifest.json"
@@ -39,18 +40,18 @@ def _census_row(survey: str, cbsa: str, name: bytes = b"Synthetic Metro  ZZ ") -
     return f"{survey},999,{cbsa},4,".encode() + name + f",{counts}\r\n".encode()
 
 
-def _census(body: bytes, uri: str = CENSUS_URI):  # type: ignore[no-untyped-def]
+def _census(body: bytes, uri: str = CENSUS_URI) -> tuple[VintageObservation, ...]:
     return parse_census_bps_cbsa_ascii(
         CENSUS_HEADER.encode() + body, uri, SHA, rights_id="census_bps:default"
     )
 
 
 def test_census_publisher_layout_is_not_the_assumed_csv() -> None:
-    # The WO-D21-4 parser assumed a header (cbsa_code, year, month, permit_units)
-    # that the publisher's file does not have.
-    with pytest.raises(ValueError, match="header lacks columns"):
-        parse_census_bps_csv(
-            CENSUS_HEADER.encode() + _census_row("202609", "90001"),
+    # The retired WO-D21-4 parser assumed a header (cbsa_code, year, month, permit_units)
+    # that the publisher's file does not have; the layout parser refuses that shape.
+    with pytest.raises(ValueError, match="header lines differ"):
+        parse_census_bps_cbsa_ascii(
+            b"cbsa_code,cbsa_name,year,month,permit_units\n90001,Synthetic,2026,9,120\n",
             CENSUS_URI,
             SHA,
             rights_id="census_bps:default",
@@ -112,7 +113,7 @@ def test_census_changed_header_raises() -> None:
         parse_census_bps_cbsa_ascii(raw, CENSUS_URI, SHA, rights_id="census_bps:default")
 
 
-def _eia(rows: list[dict[str, object]], **kw: str):  # type: ignore[no-untyped-def]
+def _eia(rows: list[dict[str, object]], **kw: str) -> tuple[VintageObservation, ...]:
     raw = json.dumps({"response": {"data": rows}}).encode()
     return parse_eia_v2(
         raw,
@@ -189,15 +190,26 @@ def test_reviewed_allows_are_exactly_the_quoted_ones_and_expire() -> None:
     processing = {"ingest", "model_processing", "derive"}
     assert allowed == {
         "sec_edgar": processing | output,
-        "eia": processing | output,
+        "eia": processing,
         "fhfa_hpi": processing,
         "alfred": set(),
         "census_bps": set(),
     }
     sec = PUBLIC_SOURCES["sec_edgar"]
-    record = require(sec, None, "ingest", REVIEWED_RIGHTS, today=REVIEWED_RIGHTS[0].verified_on)  # type: ignore[arg-type]
+    today = REVIEWED_RIGHTS[0].verified_on
+    assert today is not None
+    record = require(sec, None, "ingest", REVIEWED_RIGHTS, today=today)
     assert record.source_id == "sec_edgar"
     assert record.expires_on is not None
     assert not permits(
         record, "ingest", today=record.expires_on.replace(year=record.expires_on.year + 1)
     )
+
+
+def test_manifest_marks_the_shape_check_and_the_over_cap_recording() -> None:
+    doc = json.loads(MANIFEST.read_text(encoding="utf-8"))
+    by_source = {r["source_id"]: r for r in doc["recordings"]}
+    assert by_source["census_bps"]["purpose"] == "shape_check_only"  # D21-L3
+    assert by_source["sec_edgar"]["over_cap_decoded"] is True  # D21-L4, 2 MB decoded cap
+    assert by_source["sec_edgar"]["decoded_bytes"] > 2 * 1024 * 1024
+    assert "over_cap_decoded" not in by_source["census_bps"]

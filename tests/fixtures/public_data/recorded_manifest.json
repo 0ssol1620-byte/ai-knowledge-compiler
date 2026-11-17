@@ -1,5 +1,5 @@
 {
-  "work_order": "WO-D21-5",
+  "work_order": "WO-D21-5 (annotated by WO-D21-6)",
   "note": "Recordings live in the untracked cache benchmark/cache/public_data/ and are not committed: no source has a verified redistribute right for its data and none is committed on a quote right alone. URLs carry no key and no query string. sha256 and bytes are of the bytes as received (gzip transfer for SEC).",
   "cache_dir": "benchmark/cache/public_data",
   "recordings": [
@@ -11,7 +11,8 @@
       "bytes": 89396,
       "retrieved_at": "2026-11-17T09:42:48+00:00",
       "http_status": null,
-      "parser": "akc_source_adapters.public_data.census.parse_census_bps_cbsa_ascii"
+      "parser": "akc_source_adapters.public_data.census.parse_census_bps_cbsa_ascii",
+      "purpose": "shape_check_only"
     },
     {
       "source_id": "fhfa_hpi",
@@ -34,7 +35,9 @@
       "retrieved_at": "2026-11-17T09:46:04+00:00",
       "http_status": 200,
       "content_encoding": "gzip",
-      "parser": "akc_source_adapters.public_data.edgar.parse_edgar_companyfacts (on the gunzipped body)"
+      "parser": "akc_source_adapters.public_data.edgar.parse_edgar_companyfacts (on the gunzipped body)",
+      "over_cap_decoded": true,
+      "decoded_bytes": 3859564
     }
   ],
   "not_recorded": [
