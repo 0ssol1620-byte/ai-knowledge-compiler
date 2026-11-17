@@ -527,7 +527,8 @@ arena_intake:
         the PaddlePaddle cu126 index; paddleocr[doc-parser] 3.7.0 with paddlex
         3.7.2, and whatever they resolve to at build time. Not hash-locked: for this
         evaluation-only image the pin is the built digest plus the `uv pip freeze`
-        and `pip inspect` output the build prints, saved by the lead as a receipt;
+        and `uv pip list --format json` output the build prints, saved by the lead
+        as a receipt;
         a hash-locked requirements file comes before any production use
       licences: >-
         paddleocr 3.7.0: "Apache License 2.0" (PyPI licence field). paddlex
