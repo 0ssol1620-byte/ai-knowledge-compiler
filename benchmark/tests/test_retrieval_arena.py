@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import builtins
 import hashlib
 import json
 from pathlib import Path
@@ -134,6 +135,7 @@ def _entry(recall: dict[str, float], not_run: int = 0) -> dict[str, Any]:
         "cpu_seconds": 1.0,
         "recall_at_k": {},
         "per_task_recall_at_k": recall,
+        "tie_at_k": {"tie_rate": 0.25},
     }
 
 
@@ -166,6 +168,9 @@ def test_outcome_simplest_wins_when_the_incumbent_is_non_inferior_to_every_compl
     assert out["comparisons"]["hybrid_current"]["incumbent_non_inferior"] is True
     assert set(out["comparisons"]) == {"exact_token", "hybrid_current", "graph_entity"}
     assert "cpu_seconds_per_task" in out["comparisons"]["graph_entity"]["cost_per_task"]
+    assert out["separation"]["against_label_blind"]["graph_entity"]["cost_per_task"]
+    assert out["separation"]["floor_cost_per_task"]["wall_seconds_per_task"] == 2.0 / len(TASKS)
+    assert out["tie_at_k"] == {"bm25_rows": {"tie_rate": 0.25}, "label_blind": {"tie_rate": 0.25}}
 
 
 def test_outcome_candidate_adr_shadow_when_a_complex_arm_beats_the_incumbent():
@@ -407,24 +412,209 @@ def test_main_without_prereg_is_an_unranked_report(tmp_path: Path):
         run_baselines.main([*plain, "--holdout", "--out", str(out)])
 
 
-def test_a_second_holdout_run_is_refused_before_reading_anything(
+def _holdout(args: list[str], digest: str, out: Path, rdir: Path, *extra: str) -> int:
+    return run_baselines.main(
+        [
+            *args,
+            "--prereg-sha256",
+            digest,
+            "--holdout",
+            "--holdout-receipt-dir",
+            str(rdir),
+            "--out",
+            str(out),
+            *extra,
+        ]
+    )
+
+
+def _receipt_dir(tmp_path: Path) -> Path:
+    rdir = tmp_path / "receipts"
+    rdir.mkdir()
+    return rdir
+
+
+def test_the_holdout_receipt_is_keyed_by_the_prereg_hash_not_its_path(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ):
     args, digest = _files(tmp_path)
+    rdir = _receipt_dir(tmp_path)
     first = tmp_path / "holdout.json"
-    assert (
-        run_baselines.main([*args, "--prereg-sha256", digest, "--holdout", "--out", str(first)])
-        == 0
-    )
-    receipt = json.loads(
-        (tmp_path / ("prereg.json" + arena.HOLDOUT_RECEIPT_SUFFIX)).read_text(encoding="utf-8")
-    )
+    assert _holdout(args, digest, first, rdir) == 0
+    receipt_path = rdir / (digest + arena.HOLDOUT_RECEIPT_SUFFIX)
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
     assert receipt["prereg_sha256"] == digest
     assert receipt["report_sha256"] == hashlib.sha256(first.read_bytes()).hexdigest()
     assert json.loads(first.read_text(encoding="utf-8"))["arena"]["run"] == "holdout"
+    assert [p.name for p in rdir.iterdir()] == [receipt_path.name]
+    assert not (tmp_path / ("holdout.json" + arena.HOLDOUT_PENDING_SUFFIX)).exists()
+    # a byte-identical copy at another path, and the same path spelled differently
+    copy = tmp_path / "elsewhere.json"
+    copy.write_bytes((tmp_path / "prereg.json").read_bytes())
     (tmp_path / "c.jsonl").write_bytes(b"not json\n")  # read it and the run would crash
-    second = tmp_path / "holdout2.json"
     capsys.readouterr()
-    code = run_baselines.main([*args, "--prereg-sha256", digest, "--holdout", "--out", str(second)])
-    assert code == 1 and not second.exists()
-    assert "holdout receipt already exists" in capsys.readouterr().err
+    for prereg_path in (copy, tmp_path / "." / "prereg.json"):
+        second = tmp_path / f"second-{prereg_path.name}"
+        again = [*args[:-1], str(prereg_path)]
+        assert _holdout(again, digest, second, rdir) == 1 and not second.exists()
+        assert "receipt for pre-registration" in capsys.readouterr().err
+
+
+def test_holdout_refuses_before_the_corpus_is_read_and_leaves_nothing_behind(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    args, digest = _files(tmp_path)
+    rdir = _receipt_dir(tmp_path)
+    broken = tmp_path / "c.jsonl"
+    good = broken.read_bytes()
+    broken.write_bytes(b"not json\n")  # any read of the corpus would raise
+    # --out in a missing directory: refused, no receipt, no pending file
+    assert _holdout(args, digest, tmp_path / "nodir" / "h.json", rdir) == 1
+    assert "existing directory" in capsys.readouterr().err
+    assert list(rdir.iterdir()) == []
+    # an existing --out is never overwritten under --holdout
+    existing = tmp_path / "existing.json"
+    existing.write_text("EVIDENCE", encoding="utf-8")
+    assert _holdout(args, digest, existing, rdir) == 1
+    assert existing.read_text(encoding="utf-8") == "EVIDENCE" and list(rdir.iterdir()) == []
+    # a receipt directory that is not one
+    assert _holdout(args, digest, tmp_path / "h.json", tmp_path / "absent") == 1
+    # the same command, once the cause is fixed, runs
+    broken.write_bytes(good)
+    assert _holdout(args, digest, tmp_path / "h.json", rdir) == 0
+    assert len(list(rdir.iterdir())) == 1
+
+
+def test_a_dev_run_with_a_missing_out_directory_is_refused_before_the_corpus_is_read(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    args, digest = _files(tmp_path)
+    (tmp_path / "c.jsonl").write_bytes(b"not json\n")
+    code = run_baselines.main(
+        [*args, "--prereg-sha256", digest, "--out", str(tmp_path / "x" / "r")]
+    )
+    assert code == 1 and "existing directory" in capsys.readouterr().err
+
+
+def test_a_crash_between_the_report_and_the_rename_leaves_a_named_state_the_command_refuses(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+):
+    args, digest = _files(tmp_path)
+    rdir = _receipt_dir(tmp_path)
+    out = tmp_path / "h.json"
+    pending = tmp_path / ("h.json" + arena.HOLDOUT_PENDING_SUFFIX)
+
+    def boom(self: Path, target: object) -> Path:
+        raise OSError("crash")
+
+    with monkeypatch.context() as m:
+        m.setattr(Path, "rename", boom)
+        with pytest.raises(OSError, match="crash"):
+            _holdout(args, digest, out, rdir)
+    receipt = rdir / (digest + arena.HOLDOUT_RECEIPT_SUFFIX)
+    assert pending.exists() and receipt.exists() and not out.exists()
+    # the receipt names the report that sits at the pending name
+    assert (
+        json.loads(receipt.read_text(encoding="utf-8"))["report_sha256"]
+        == hashlib.sha256(pending.read_bytes()).hexdigest()
+    )
+    capsys.readouterr()
+    assert _holdout(args, digest, out, rdir) == 1
+    assert f"still at {pending.name}" in capsys.readouterr().err
+    assert not out.exists()
+
+
+def test_a_crash_before_the_receipt_leaves_no_receipt_and_the_command_refuses_the_pending_report(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+):
+    args, digest = _files(tmp_path)
+    rdir = _receipt_dir(tmp_path)
+    out = tmp_path / "h.json"
+    pending = tmp_path / ("h.json" + arena.HOLDOUT_PENDING_SUFFIX)
+    real_open = builtins.open
+
+    def failing_open(file: Any, mode: str = "r", *a: Any, **kw: Any) -> Any:
+        if str(file).endswith(arena.HOLDOUT_RECEIPT_SUFFIX) and "x" in mode:
+            raise OSError("crash")
+        return real_open(file, mode, *a, **kw)
+
+    with monkeypatch.context() as m:
+        m.setattr(builtins, "open", failing_open)
+        with pytest.raises(OSError, match="crash"):
+            _holdout(args, digest, out, rdir)
+    assert pending.exists() and not out.exists() and list(rdir.iterdir()) == []
+    capsys.readouterr()
+    assert _holdout(args, digest, out, rdir) == 1
+    assert "pending holdout report" in capsys.readouterr().err
+    pending.unlink()  # the lead inspected it; the run is repeatable and ends complete
+    assert _holdout(args, digest, out, rdir) == 0
+    assert out.exists() and not pending.exists() and len(list(rdir.iterdir())) == 1
+
+
+def test_a_holdout_run_without_a_receipt_dir_or_a_dir_without_holdout_is_a_usage_error(
+    tmp_path: Path,
+):
+    args, digest = _files(tmp_path)
+    out = str(tmp_path / "r.json")
+    base = [*args, "--prereg-sha256", digest, "--out", out]
+    for extra in (["--holdout"], ["--holdout-receipt-dir", str(tmp_path)]):
+        with pytest.raises(SystemExit) as exc:
+            run_baselines.main([*base, *extra])
+        assert exc.value.code == 2
+    assert not Path(out).exists()
+
+
+def test_a_prereg_hash_or_rows_index_without_a_prereg_is_a_usage_error(tmp_path: Path):
+    args, digest = _files(tmp_path)
+    plain = args[:4]
+    out = str(tmp_path / "r.json")
+    for extra in (
+        ["--prereg-sha256", digest],
+        ["--rows-index", str(tmp_path / "i.jsonl")],
+        ["--prereg-sha256", digest, "--rows-index", str(tmp_path / "i.jsonl")],
+    ):
+        with pytest.raises(SystemExit) as exc:
+            run_baselines.main([*plain, *extra, "--out", out])
+        assert exc.value.code == 2
+    assert not Path(out).exists()
+
+
+def test_the_recorded_prereg_hash_is_the_computed_digest(tmp_path: Path):
+    args, digest = _files(tmp_path)
+    out = tmp_path / "u.json"
+    typed = " " + digest.upper() + " "
+    assert run_baselines.main([*args, "--prereg-sha256", typed, "--out", str(out)]) == 0
+    assert json.loads(out.read_text(encoding="utf-8"))["arena"]["prereg_sha256"] == digest
+
+
+def test_hybrid_cap_flag_is_written_into_the_report_and_changes_what_runs(tmp_path: Path):
+    args, digest = _files(tmp_path)
+
+    def hybrid(*cap: str) -> tuple[dict[str, Any], dict[str, Any]]:
+        out = tmp_path / f"cap{'-'.join(cap) or 'default'}.json"
+        run_baselines.main([*args, "--prereg-sha256", digest, "--out", str(out), *cap])
+        report = json.loads(out.read_text(encoding="utf-8"))
+        return report["candidate_caps"], report["retrievers"]["hybrid_current"]
+
+    caps, entry = hybrid()
+    assert caps == {"hybrid_current": 1000} and entry["not_run_tasks"] == 0
+    caps, entry = hybrid("--hybrid-cap", "5")  # every task's candidate set is 24 rows
+    assert caps == {"hybrid_current": 5} and entry["tasks"] == 0 and entry["not_run_tasks"] == 12
+    assert "cap of 5" in entry["not_run_reason"]
+    caps, entry = hybrid("--hybrid-cap", "0")
+    assert caps == {"hybrid_current": 0} and entry["tasks"] == 12 and entry["not_run_tasks"] == 0
+    with pytest.raises(SystemExit) as exc:
+        hybrid("--hybrid-cap", "-1")
+    assert exc.value.code == 2
+
+
+def test_separation_carries_cost_per_task_and_the_arena_cites_both_tie_rates(tmp_path: Path):
+    args, digest = _files(tmp_path)
+    out = tmp_path / "dev.json"
+    assert run_baselines.main([*args, "--prereg-sha256", digest, "--out", str(out)]) == 0
+    a = json.loads(out.read_text(encoding="utf-8"))["arena"]
+    for c in a["separation"]["against_label_blind"].values():
+        assert set(c["cost_per_task"]) == set(a["comparisons"]["graph_entity"]["cost_per_task"])
+    assert "wall_seconds_per_task" in a["separation"]["floor_cost_per_task"]
+    assert set(a["tie_at_k"]) == {"bm25_rows", "label_blind"}
+    assert all("tie_rate" in t for t in a["tie_at_k"].values())

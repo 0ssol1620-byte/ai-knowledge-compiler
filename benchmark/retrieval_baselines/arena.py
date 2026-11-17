@@ -39,6 +39,7 @@ PREREG_MAX_BYTES = 65_536
 RESAMPLES_RANGE = (1_000, 100_000)
 CONFIDENCE_TAIL_PER_MILLE = 25  # 95% two-sided percentile interval
 HOLDOUT_RECEIPT_SUFFIX = ".holdout-receipt.json"
+HOLDOUT_PENDING_SUFFIX = ".holdout-pending"
 NO_PREREG = "no --prereg: a ranked report needs a pre-registration"
 EXACTNESS_NOT_MEASURED = (
     "not measured: exactness here equals precision@1 (top-1 is the gold row), so it is not an "
@@ -346,10 +347,15 @@ def decide(
     out["recall_at_k_mean"] = {a: _mean(list(recall[a].values())) for a in recall}
     out["recall_at_k_per_company_macro"] = {a: macro(a) for a in recall}
     separation = {a: compare(a, LABEL_BLIND) for a in ranked}
+    for arm, c in separation.items():
+        c["cost_per_task"] = _cost(entries[arm])
     out["separation"] = {
         "separates": any(s["ci95"][0] > 0 for s in separation.values()),
         "against_label_blind": separation,
+        "floor_cost_per_task": _cost(entries[LABEL_BLIND]),
     }
+    # a tie at k is broken by logical_id, so a high rate means the order there is arbitrary
+    out["tie_at_k"] = {a: entries[a]["tie_at_k"] for a in (INCUMBENT, LABEL_BLIND)}
     if not out["separation"]["separates"]:
         out["not_ranked_reason"] = (
             f"the family does not separate retrievers: no arm's 95% lower bound beats "
