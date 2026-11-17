@@ -103,7 +103,15 @@ def fsds_rows(
 
 
 def _local(el: Any) -> str:
-    return etree.QName(el).localname if isinstance(el.tag, str) else ""
+    """Element name without its namespace; never raises, for any node of either parser.
+
+    `{ns}td` and `td` -> "td". An unbound prefix keeps the whole name: lxml's XML recover parser
+    names it "zz:td", and an HTML parser (lxml's, and Chromium's for the printed excerpt) binds no
+    prefix at all, so every `ix:*` element of an excerpt is "ix:...". No HTML element name has a
+    colon, so such a name never matches td/tr/table/style/body. Comment, PI, entity -> "".
+    (`etree.QName` raised ValueError on the colon: R2 run 2, `ix:continuation`.)
+    """
+    return el.tag.rpartition("}")[2] if isinstance(el.tag, str) else ""
 
 
 def _text(el: Any) -> str:

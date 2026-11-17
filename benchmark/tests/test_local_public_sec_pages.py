@@ -13,7 +13,7 @@ from hypothesis import strategies as st
 from lxml import etree
 
 from benchmark.local_public import sec_pages
-from benchmark.local_public.sec_align import IX, Candidate
+from benchmark.local_public.sec_align import IX, Candidate, _local
 from benchmark.local_public.sec_pages import (
     SegmentRefused,
     accept,
@@ -208,6 +208,86 @@ def test_anchor_inside_earlier_row_label_shadows() -> None:
     d = html(p, page(row("Other", 9)))
     ok, bad = accept(segments(d)[0], cands(d))
     assert reasons((ok, bad)) == ["anchor_shadowed", "anchor_shadowed"] and len(ok) == 3
+
+
+# ---------------------------------------------------------------- WO-LPC-4C element names
+
+
+def test_prefixed_element_outside_a_table_reaches_dom_text() -> None:
+    # R2 run 2 crashed here: the excerpt is HTML, and an HTML parser (lxml's and Chromium's)
+    # binds no prefix, so every ix:* element of every excerpt is named "ix:..."; one outside a
+    # table cell (ix:continuation, ix:nonNumeric) reached _local, whose QName raised on the colon
+    d = html('<p>Note <ix:continuation id="k">carried</ix:continuation> on</p>' + GOOD, page())
+    ex = excerpt_html(d, segments(d)[0])
+    assert b'xmlns:ix="http://www.xbrl.org/2013/inlineXBRL"' in ex  # declared, and inert in HTML
+    assert dom_text(ex) == "Note carried on Revenue 1 Cost 2 Profit 3"
+
+
+def test_unbound_prefix_is_read_as_text_and_names_no_html_element() -> None:
+    # the XML recover parser keeps an unbound prefix in the tag ("zz:td"); it is not a cell,
+    # and its text still shadows a later anchor
+    p = "<zz:td>Revenue</zz:td>" + page(
+        row("Revenue", 1), row("Cost", 2), row("Profit", 3), row("Net", 4)
+    )
+    d = html(p, page(row("Other", 9)))
+    s = segments(d)
+    ok, bad = accept(s[0], cands(d))
+    assert reasons((ok, bad)) == ["anchor_shadowed"] and len(ok) == 3
+    assert dom_text(excerpt_html(d, s[0])).startswith("Revenue Revenue 1")
+
+
+def _names(markup: bytes) -> dict[str, list[str]]:
+    out: dict[str, list[str]] = {}
+    for name, parser in (("xml", etree.XMLParser(recover=True)), ("html", etree.HTMLParser())):
+        root = etree.fromstring(markup, parser)
+        out[name] = [_local(n) for n in root.iter()]  # every node kind: element, comment, PI
+    return out
+
+
+def test_local_name_of_every_node_kind() -> None:
+    got = _names(
+        f"{NS}<body><td/><ix:nonFraction/><zz:td/><!-- c --><?pi x?></body></html>".encode()
+    )
+    # bound prefix and default namespace: the local name; unbound prefix: the whole qualified
+    # name (no HTML element name has a colon, so it never matches td/tr/table/style/body);
+    # comment and processing instruction: ""
+    assert got["xml"] == ["html", "body", "td", "nonFraction", "zz:td", "", ""]
+    # an HTML parser binds nothing and lower-cases: ix:* keeps its prefix
+    assert got["html"][:6] == ["html", "body", "td", "ix:nonfraction", "zz:td", ""]
+
+
+def test_text_after_a_comment_or_pi_is_page_text_and_shadows() -> None:
+    # iterwalk yields no comment/PI unless asked: their tail text, visible on the page, was
+    # missing from the acceptance text, so an anchor shown earlier after a comment was accepted
+    p = "<p><!-- c -->Revenue<?pi x?>Cost</p>" + page(
+        row("Revenue", 1), row("Cost", 2), row("Profit", 3), row("Net", 4), row("Tax", 5)
+    )
+    d = html(p, page(row("Other", 9)))
+    s = segments(d)
+    ok, bad = accept(s[0], cands(d))
+    assert reasons((ok, bad)) == ["anchor_shadowed", "anchor_shadowed"] and len(ok) == 3
+    assert dom_text(excerpt_html(d, s[0])).startswith("Revenue Cost Revenue 1")
+
+
+def test_text_after_a_comment_of_another_segment_is_not_printed() -> None:
+    # a comment was in no segment, so _clone never dropped it: its tail text was printed on
+    # every page whose excerpt kept its parent
+    d = html(GOOD, "<!-- c -->Leaked" + page(row("Other", 9)))
+    s = segments(d)
+    ex0, ex1 = (excerpt_html(d, x) for x in s)
+    assert b"Leaked" not in ex0 and dom_text(ex0) == "Revenue 1 Cost 2 Profit 3"
+    assert b"<!-- c -->Leaked" in ex1 and dom_text(ex1) == "Leaked Other 9"
+
+
+_NAME = st.text(alphabet="aZ9:-_.{}/ ", min_size=1, max_size=8)
+
+
+@settings(max_examples=300, deadline=None)
+@given(st.lists(st.tuples(_NAME, st.sampled_from(["", "text"])), max_size=6))
+def test_local_never_raises_on_any_parsed_tag(names: list[tuple[str, str]]) -> None:
+    body = "".join(f"<{n}>{t}</{n}><!--{t}--><?p {t}?>" for n, t in names)
+    for seen in _names(f"{NS}<body>{body}</body></html>".encode()).values():
+        assert all(isinstance(x, str) for x in seen)
 
 
 # ---------------------------------------------------------------- WO-LPC-4B delivery tag

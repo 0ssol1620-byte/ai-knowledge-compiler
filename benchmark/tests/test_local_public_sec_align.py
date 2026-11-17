@@ -432,3 +432,10 @@ def test_fsds_rows_streams_one_adsh() -> None:
 def test_module_does_not_import_the_scorer() -> None:
     with open(sa.__file__, encoding="utf-8") as f:
         assert "critical_fields" not in f.read()
+
+
+def test_unbound_prefix_around_a_fact_is_not_a_cell_and_does_not_crash() -> None:
+    # WO-LPC-4C: the XML recover parser names an unbound-prefix element "zz:span"; _local's QName
+    # raised on it for every ancestor walk (_probe's td/tr search, _cells)
+    c = cand(run([row(f"<zz:span>{fact('1,234')}</zz:span>")]))
+    assert (c.gold, c.anchor) == ("1,234", "Total revenues")

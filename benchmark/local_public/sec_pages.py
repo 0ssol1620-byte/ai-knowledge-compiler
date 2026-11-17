@@ -23,6 +23,8 @@ XHTML = "http://www.w3.org/1999/xhtml"
 _BEFORE = re.compile(r"(?<![\w-])(page-break-before:always|break-before:page)")
 _AFTER = re.compile(r"(?<![\w-])(page-break-after:always|break-after:page)")
 _DROP = ("script", "link", "base", "style")  # style moves to <head>; ix:header is dropped by name
+# comments and PIs are walked too: their tail is page text, and belongs to the segment it is in
+_WALK = ("start", "end", "comment", "pi")
 
 
 class SegmentRefused(ValueError):
@@ -91,8 +93,9 @@ def segments(html_bytes: bytes) -> list[Segment]:
     tail_seg: dict[Any, int] = {}
     nested: set[int] = set()
     cur = tables = markers = 0
-    for ev, el in etree.iterwalk(root, events=("start", "end")):
+    for ev, el in etree.iterwalk(root, events=_WALK):
         if not isinstance(el.tag, str):
+            seg_of[el] = tail_seg[el] = cur
             continue
         before, after = _marker(el)
         if ev == "start":
@@ -136,7 +139,7 @@ def _clone(seg: Segment) -> tuple[Any, dict[Any, Any], list[Any]]:
             keep.add(el)
             el = el.getparent()
     clone = copy.deepcopy(root)
-    pairs = {o: c for o, c in zip(root.iter(), clone.iter(), strict=True) if isinstance(o.tag, str)}
+    pairs = dict(zip(root.iter(), clone.iter(), strict=True))  # elements, comments, PIs
 
     def drop(c: Any, keep_tail: bool) -> None:
         par = c.getparent()
@@ -160,6 +163,8 @@ def _clone(seg: Segment) -> tuple[Any, dict[Any, Any], list[Any]]:
         if o is not root and o not in keep and o.getparent() in keep:
             drop(c, seg.tail_seg[o] == k)
     for o, c in pairs.items():
+        if not isinstance(o.tag, str):
+            continue
         hidden = "display:none" in "".join((c.get("style") or "").split()).lower()
         if (
             o in keep
@@ -195,10 +200,13 @@ def _nodes(root: Any, marks: set[Any] | None = None) -> tuple[list[str], dict[An
     nodes: list[str] = []
     at: dict[Any, int] = {}
     skip = None
-    for ev, el in etree.iterwalk(root, events=("start", "end")):
-        if not isinstance(el.tag, str) or (skip is not None and el is not skip):
+    for ev, el in etree.iterwalk(root, events=_WALK):
+        if skip is not None and el is not skip:
             continue
-        if ev == "start":
+        if not isinstance(el.tag, str):  # comment, PI: only its tail is page text
+            if el.tail:
+                nodes.append(" ".join(el.tail.split()))
+        elif ev == "start":
             if marks is not None and el in marks:
                 at[el] = len(nodes)
             if _local(el) in ("td", "th"):
