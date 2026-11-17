@@ -405,6 +405,8 @@ def run(loader: sources.Loader, excluded: frozenset[int], seed: str) -> Result: 
             try:
                 fh = loader.open_verified(f"sec_filing/{adsh}")
             except sources.SourceMissing as exc:
+                if f"sec_filing/{adsh}" in loader._by_name:
+                    raise  # pinned file gone from disk is an integrity failure, not a drop
                 raise MissingSide(f"filing not in manifest: {adsh}") from exc
             with gzip.open(fh) as g:
                 html = g.read()

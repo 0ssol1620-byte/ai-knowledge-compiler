@@ -333,3 +333,78 @@ def test_the_drop_counts_reach_the_written_manifest(tmp_path: Path):
     prov = json.loads(path.read_text())["provenance"]
     assert prov["strata"][sp.SUCC_10K]["dropped_by_reason"] == {"side_not_in_manifest": 1}
     assert prov["strata"][sp.SUCC_10K]["shortfall"] == 2
+
+
+# --- run() through a real Loader over synthetic tmp files (no corpus) ---
+
+_SUB = ["adsh", "cik", "form", "period", "instance", "fy", "fp", "filed", "accepted"]
+_A1, _A2, _S1, _S2 = (f"0000000001-24-00000{i}" for i in range(1, 5))
+
+
+def _tsv(header, rows):
+    return "\t".join(header) + "\n" + "".join("\t".join(r) + "\n" for r in rows)
+
+
+def _run_with(tmp_path: Path, in_manifest: dict[str, str | None]):
+    """in_manifest: adsh -> sha256 to pin (None = real hash of the gz); absent adsh = not listed."""
+    import gzip
+    import hashlib
+    import zipfile
+
+    rows = [
+        [_A1, "1", "10-K", "20231231", "x_htm.xml", "2023", "FY", "20240301", ""],
+        [_A2, "1", "10-K/A", "20231231", "x_htm.xml", "2023", "FY", "20240401", ""],
+        [_S1, "2", "10-K", "20221231", "x_htm.xml", "2022", "FY", "20230301", ""],
+        [_S2, "2", "10-K", "20231231", "x_htm.xml", "2023", "FY", "20240301", ""],
+    ]
+    fsds = tmp_path / "2024q1.zip"
+    with zipfile.ZipFile(fsds, "w") as z:
+        z.writestr("sub.txt", _tsv(_SUB, rows))
+        z.writestr("num.txt", _tsv(["adsh", "tag", "version", "ddate", "qtrs", "uom", "value"], []))
+        z.writestr(
+            "pre.txt", _tsv(["adsh", "report", "line", "stmt", "tag", "version", "plabel"], [])
+        )
+    bulk = tmp_path / "bulk.zip"
+    with zipfile.ZipFile(bulk, "w") as z:
+        z.writestr("a.json", json.dumps({"accessionNumber": [], "acceptanceDateTime": []}))
+    gz = tmp_path / "f.gz"
+    gz.write_bytes(gzip.compress(b"<html/>"))
+
+    def sha(p: Path) -> str:
+        return hashlib.sha256(p.read_bytes()).hexdigest()
+
+    entries = [
+        {"name": "sec_fsds/2024q1", "path": str(fsds), "sha256": sha(fsds)},
+        {"name": "sec_submissions_bulk", "path": str(bulk), "sha256": sha(bulk)},
+    ]
+    for adsh, pin in in_manifest.items():
+        path = gz if pin != "gone" else tmp_path / "gone.gz"
+        entries.append(
+            {"name": f"sec_filing/{adsh}", "path": str(path), "sha256": pin or sha(gz)}
+            if pin != "gone"
+            else {"name": f"sec_filing/{adsh}", "path": str(path), "sha256": "a" * 64}
+        )
+    loader = object.__new__(sp.sources.Loader)
+    loader.manifest = {"manifest_sha256": "0" * 64}
+    loader.ledger = sp.sources.InputLedger("0" * 64)
+    loader._by_name = {e["name"]: e for e in entries}
+    loader._stale = []
+    return sp.run(loader, frozenset(), "s")
+
+
+def test_run_drops_filings_not_in_the_manifest_in_every_stratum(tmp_path: Path):
+    res = _run_with(tmp_path, {_A2: None})  # _A1, _S1, _S2 not listed
+    assert {d.reason for d in res.drops} == {"side_not_in_manifest"}
+    assert res.strata[sp.SUCC_10K]["dropped_by_reason"] == {"side_not_in_manifest": 1}
+    assert res.strata[sp.RESTATED]["dropped_by_reason"] == {"side_not_in_manifest": 1}
+    assert res.strata[sp.SAME_VALUES]["dropped_by_reason"] == {"side_not_in_manifest": 1}
+
+
+def test_run_raises_when_a_listed_filing_is_gone_from_disk(tmp_path: Path):
+    with pytest.raises(sp.sources.SourceMissing):
+        _run_with(tmp_path, {_A1: "gone", _A2: None, _S1: None, _S2: None})
+
+
+def test_run_raises_on_a_hash_mismatch(tmp_path: Path):
+    with pytest.raises(sp.sources.HashMismatch):
+        _run_with(tmp_path, {_A1: "b" * 64, _A2: None, _S1: None, _S2: None})
