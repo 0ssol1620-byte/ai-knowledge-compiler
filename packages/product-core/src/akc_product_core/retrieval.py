@@ -94,21 +94,32 @@ def _bm25_scores(
 ) -> dict[str, float]:
     if not query_terms or not candidates:
         return {candidate.logical_id: 0.0 for candidate in candidates}
-    document_terms = {candidate.logical_id: tuple(candidate.terms) for candidate in candidates}
+    document_terms = {candidate.logical_id: candidate.terms for candidate in candidates}
     frequencies = {key: Counter(terms) for key, terms in document_terms.items()}
     average_length = sum(len(terms) for terms in document_terms.values()) / len(candidates)
+    # Document frequency is counted once per call, over the same keyed documents as before
+    # (duplicate logical ids collapse exactly as they did), so every score is bit-identical.
+    document_frequencies: Counter[str] = Counter()
+    for frequency in frequencies.values():
+        document_frequencies.update(frequency.keys())
+    inverse_frequencies = {
+        term: math.log(
+            1
+            + (len(candidates) - document_frequencies[term] + 0.5)
+            / (document_frequencies[term] + 0.5)
+        )
+        for term in query_terms
+        if document_frequencies[term]
+    }
     scores: dict[str, float] = {}
     for candidate in candidates:
         frequency = frequencies[candidate.logical_id]
         length = len(document_terms[candidate.logical_id])
         score = 0.0
         for term in query_terms:
-            document_frequency = sum(1 for terms in document_terms.values() if term in terms)
-            if document_frequency == 0:
+            inverse_frequency = inverse_frequencies.get(term)
+            if inverse_frequency is None:
                 continue
-            inverse_frequency = math.log(
-                1 + (len(candidates) - document_frequency + 0.5) / (document_frequency + 0.5)
-            )
             count = frequency[term]
             denominator = count + 1.2 * (1 - 0.75 + 0.75 * length / max(1.0, average_length))
             score += inverse_frequency * (count * 2.2) / denominator
