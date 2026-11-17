@@ -22,6 +22,7 @@ from .base import RunnerConfig, RunnerUnavailable, post_bytes
 
 _REVISION = re.compile(r"^[0-9a-f]{40,64}$")
 RENDER_SCALE = 2.0  # 144 dpi; the image digest is recorded in every receipt
+MAX_RENDER_PIXELS = 2880 * 2880  # same cap as the OvisOCR2 stage-2 runner; a PDF is hostile input
 
 
 class ResponseRefused(ValueError):
@@ -41,8 +42,12 @@ def render_pdf_page(data: bytes, page_index: int, scale: float) -> bytes:
     pdf = pypdfium2.PdfDocument(data)
     if not 0 <= page_index < len(pdf):
         raise RunnerUnavailable("page_index is outside the document")
+    page = pdf[page_index]
+    width, height = page.get_size()
+    if width * height * scale * scale > MAX_RENDER_PIXELS:
+        raise RunnerUnavailable("page would render above the pixel cap; refused")
     buffer = io.BytesIO()
-    pdf[page_index].render(scale=scale).to_pil().save(buffer, format="PNG")
+    page.render(scale=scale).to_pil().save(buffer, format="PNG")
     return buffer.getvalue()
 
 
@@ -116,7 +121,7 @@ def exchange(
         if not isinstance(decoded, dict):
             raise ResponseRefused("response is not a JSON object")
         text, usage = extract(decoded)
-    except (ValueError, KeyError, TypeError, IndexError, AttributeError) as exc:
+    except Exception as exc:  # raw is already in the receipt: any parse failure is a failure row
         reason = str(exc) if isinstance(exc, ResponseRefused) else "malformed_response"
         return _failure(config, payload, reason, receipt)
     receipt["usage"] = usage

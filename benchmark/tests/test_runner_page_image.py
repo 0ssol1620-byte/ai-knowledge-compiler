@@ -171,13 +171,44 @@ def test_refused_or_malformed_response_is_a_failure_row_with_raw_bytes(
     assert errors  # the screen runner records contract_failed and keeps the raw output
 
 
-def test_raw_is_captured_before_parse_even_if_parse_blows_up(monkeypatch) -> None:
-    def boom(_: bytes) -> Any:
-        raise RecursionError("parser died")
+def test_raw_is_kept_even_if_parse_blows_up(monkeypatch) -> None:
+    raw = _chat(VLLM["ovis_ocr2"])
+
+    real = json.loads
+
+    def boom(data: Any) -> Any:
+        if data == raw:
+            raise RecursionError("parser died")
+        return real(data)
 
     monkeypatch.setattr(vlm.json, "loads", boom)
-    with pytest.raises(RecursionError):  # not swallowed into a silent success
-        _call("ovis_ocr2", FakeTransport(200, _chat(VLLM["ovis_ocr2"])), monkeypatch)
+    out = _call("ovis_ocr2", FakeTransport(200, raw), monkeypatch)
+    assert out["failure"]["reason"] and "text" not in out
+    assert base64.b64decode(out["receipt"]["raw_response_b64"]) == raw
+
+
+def test_deeply_nested_json_is_a_failure_row_with_raw_bytes(monkeypatch) -> None:
+    raw = b"[" * 200000 + b"]" * 200000
+    out = _call("ovis_ocr2", FakeTransport(200, raw), monkeypatch)
+    assert out["failure"]["reason"] == "malformed_response"
+    assert base64.b64decode(out["receipt"]["raw_response_b64"]) == raw
+
+
+def test_oversized_pdf_page_is_refused_before_rendering(monkeypatch) -> None:
+    import sys
+    import types
+
+    class Page:
+        def get_size(self) -> tuple[float, float]:
+            return 14400.0, 14400.0
+
+        def render(self, **_: Any) -> Any:
+            raise AssertionError("must not render above the cap")
+
+    fake = types.SimpleNamespace(PdfDocument=lambda _data: [Page()])
+    monkeypatch.setitem(sys.modules, "pypdfium2", fake)
+    with pytest.raises(RunnerUnavailable):
+        vlm.render_pdf_page(b"%PDF", 0, vlm.RENDER_SCALE)
 
 
 def test_transport_failure_is_unavailable_not_a_fallback(monkeypatch) -> None:
