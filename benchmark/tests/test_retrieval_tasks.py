@@ -222,4 +222,6 @@ def test_retrieval_is_backfilled_when_leading_candidates_have_no_compilable_gold
     manifest = bc.build(tmp_path, 7, 100, fetch, include_ecfr=False)
     out = bt.build(manifest, tmp_path, 11)
     assert len(_by(out, kind="retrieval")) == bt.FLOORS["retrieval"]
-    assert out["skipped"].get("retrieval: no compilable gold part", 0) > 0
+    # WO-D14-8 (D14-D9): every row is a harness candidate, so a stub that compiles to no claim
+    # is retrievable gold and no candidate is skipped any more (was > 0 with claim-only rows).
+    assert out["skipped"].get("retrieval: no compilable gold part", 0) == 0
