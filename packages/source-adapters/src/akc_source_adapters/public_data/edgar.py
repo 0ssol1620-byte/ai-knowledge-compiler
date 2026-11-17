@@ -1,7 +1,9 @@
 """EDGAR XBRL companyfacts -> VintageObservation. Offline parser only.
 
-Field names (`start`, `end`, `val`, `accn`, `filed`) are second-hand
-(EXP-0103 3.2) and UNVERIFIED until WO-D21-5 records real responses.
+Field names (`cik`, `facts`, `units`, `start`, `end`, `val`, `accn`, `filed`)
+match a WO-D21-5 recording of `data.sec.gov/api/xbrl/companyfacts` (one filer);
+SEC's API page names the endpoint but documents no field. Fields the parser does
+not read (`fy`, `fp`, `form`, `frame`) are present in that recording.
 """
 
 from __future__ import annotations

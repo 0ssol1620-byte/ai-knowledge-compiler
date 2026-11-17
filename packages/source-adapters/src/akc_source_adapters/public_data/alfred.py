@@ -1,7 +1,12 @@
 """ALFRED (vintage) observations -> VintageObservation. Offline parser only.
 
-Endpoint, parameter and field names are second-hand (repository notes cite only
-the FRED/ALFRED doc pages) and UNVERIFIED until WO-D21-5 records real responses.
+Endpoint, parameters and the JSON row fields (`realtime_start`, `realtime_end`,
+`date`, `value`) match the FRED API pages `series_observations.html` and
+`realtime_period.html` (snapshots read in WO-D21-5). No response was recorded:
+the FRED API terms prohibit caching FRED content and its use in connection with
+developing AI systems (see the WO-D21-5 rights record), so the parser has never
+seen a real response, and `9999-12-31` as a row's open end is from the
+realtime-period page's request examples, not from a response.
 """
 
 from __future__ import annotations
@@ -19,9 +24,9 @@ OPEN_ENDED = "9999-12-31"
 def build_alfred_request_url(series_id: str) -> str:
     """Request URL for every vintage of a series, without any key.
 
-    UNVERIFIED: host, path and parameter names are from memory of the FRED API
-    docs (series observations, realtime period), not from a verified
-    primary-source read. Replace after WO-D21-5.
+    Host, path and parameters as in the FRED API page `realtime_period.html`
+    ("all known information from the first available (1776-07-04) to the last
+    available (9999-12-31)"); `file_type=json` per `series_observations.html`.
     """
     if not series_id.strip():
         raise ValueError("series_id must be non-empty")

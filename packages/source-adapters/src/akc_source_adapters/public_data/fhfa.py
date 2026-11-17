@@ -1,7 +1,11 @@
 """FHFA House Price Index CSV -> VintageObservation. Offline parser only.
 
 Column names (hpi_type, hpi_flavor, frequency, level, place_name, place_id,
-yr, period, index_nsa, index_sa) are second-hand and UNVERIFIED until WO-D21-5.
+yr, period, index_nsa, index_sa) are those of FHFA's master file
+(`hpi_master.csv`) as FHFA's `hpi_dictionary.xlsx` lists them, and match the
+first 64 KiB of that file recorded in WO-D21-5 (the whole file was over the
+size cap). The recorded file also has `rstderr` and `note` columns, and the
+dictionary lists a `Median Price ($)` the file does not have; none is read.
 An index of an area is an aggregate: it is never a property valuation.
 `available_on` is never set (no release time in the file); `geography_vintage`
 is set only if an optional `delineation_vintage` column states one.
