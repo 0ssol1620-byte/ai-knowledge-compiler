@@ -158,7 +158,7 @@ def page_image(payload: dict[str, Any]) -> tuple[str, bytes, dict[str, Any] | No
     raise PageRefused("page_content_type_unsupported")
 
 
-def _failure(
+def failure(
     config: RunnerConfig, payload: dict[str, Any], reason: str, receipt: dict[str, Any]
 ) -> dict[str, Any]:
     return {
@@ -195,9 +195,12 @@ def exchange(
     build: Callable[[str, bytes], tuple[dict[str, Any], dict[str, str]]],
     extract: Callable[[dict[str, Any]], tuple[str, Any, bool]],
     receipt_base: dict[str, Any],
+    unavailable_statuses: frozenset[int] = frozenset(),
 ) -> dict[str, Any]:
     """``build(mime, image)`` -> (request JSON, headers);
     ``extract(response)`` -> (text, usage, whether the response attests the pinned revision).
+    A status in ``unavailable_statuses`` (e.g. a rate limit) is ``RunnerUnavailable`` before
+    anything is stored, so the page is retried rather than frozen as a failure row.
     The exchange runs inside ``seal``: a result or error that would carry a credential is
     replaced before it leaves the runner."""
     if not config.model_revision:
@@ -206,7 +209,14 @@ def exchange(
     return seal(
         config,
         payload,
-        lambda: _exchange(config, payload, build=build, extract=extract, receipt_base=receipt_base),
+        lambda: _exchange(
+            config,
+            payload,
+            build=build,
+            extract=extract,
+            receipt_base=receipt_base,
+            unavailable_statuses=unavailable_statuses,
+        ),
     )
 
 
@@ -217,6 +227,7 @@ def _exchange(
     build: Callable[[str, bytes], tuple[dict[str, Any], dict[str, str]]],
     extract: Callable[[dict[str, Any]], tuple[str, Any, bool]],
     receipt_base: dict[str, Any],
+    unavailable_statuses: frozenset[int],
 ) -> dict[str, Any]:
     mime, image, render = page_image(payload)
     request, headers = build(mime, image)
@@ -236,7 +247,24 @@ def _exchange(
         config, body, {"Content-Type": "application/json", **headers}
     )
     latency_ms = (time.perf_counter() - started) * 1000.0
-    # raw bytes first, before any parsing
+    if status in unavailable_statuses:
+        raise RunnerUnavailable("benchmark provider is unavailable")
+    return finish(config, payload, receipt, status, content_type, raw, latency_ms, extract)
+
+
+def finish(
+    config: RunnerConfig,
+    payload: dict[str, Any],
+    receipt: dict[str, Any],
+    status: int,
+    content_type: str,
+    raw: bytes,
+    latency_ms: float,
+    extract: Callable[[dict[str, Any]], tuple[str, Any, bool]],
+) -> dict[str, Any]:
+    """One answer to a result or a failure row: the raw bytes go into the receipt before any
+    parsing. Shared by the sync exchange and each entry of a collected batch."""
+    receipt = dict(receipt)
     receipt.update(
         http_status=status,
         response_content_type=content_type,
@@ -244,7 +272,7 @@ def _exchange(
         raw_response_b64=base64.b64encode(raw).decode("ascii"),
     )
     if status != 200:
-        return _failure(config, payload, f"http_{status}", receipt)
+        return failure(config, payload, f"http_{status}", receipt)
     try:
         decoded = json.loads(raw)
         if not isinstance(decoded, dict):
@@ -255,7 +283,7 @@ def _exchange(
         text.encode("utf-8")  # a lone surrogate would make the result unstorable
     except Exception as exc:  # raw is already in the receipt: any parse failure is a failure row
         reason = str(exc) if isinstance(exc, ResponseRefused) else "malformed_response"
-        return _failure(config, payload, reason, receipt)
+        return failure(config, payload, reason, receipt)
     receipt["usage"] = _flat_usage(usage)
     receipt["revision_attested"] = attested is True
     return {

@@ -858,16 +858,28 @@ def test_gemini_bad_response_is_a_failure_row(raw: bytes, monkeypatch) -> None:
 # --- Mistral OCR: the model id is required; the retired id and aliases are refused ---
 
 
-def _mistral_result(model: str) -> bytes:
-    return json.dumps(
-        {
-            "schema_version": "1.0",
-            "benchmark_case_id": "page-1",
-            "provider": "mistral_ocr_4",
-            "model_revision": model,
-            "text": "x",
-        }
-    ).encode()
+MISTRAL = "mistral-ocr-4-1"
+MISTRAL_URL = "https://api.mistral.example/v1/ocr"
+
+
+def _mistral_result(model: str | None, **over: Any) -> bytes:
+    body: dict[str, Any] = {
+        "model": model,
+        "pages": [{"index": 0, "markdown": "x"}],
+        "usage_info": {"pages_processed": 1, "doc_size_bytes": 10},
+    }
+    if model is None:
+        del body["model"]
+    body.update(over)
+    return json.dumps(body).encode()
+
+
+def _mistral(transport: Any, monkeypatch: pytest.MonkeyPatch, **kw: Any) -> dict[str, Any]:
+    monkeypatch.setattr(vlm, "post_bytes", transport)
+    monkeypatch.setenv("MISTRAL_API_KEY", KEY)
+    kwargs: dict[str, Any] = {"endpoint": MISTRAL_URL, "allow_network": True, "model": MISTRAL}
+    kwargs.update(kw)
+    return EXTERNAL_RUNNERS["mistral_ocr_4"](_payload(), **kwargs)
 
 
 @pytest.mark.parametrize(
@@ -893,34 +905,85 @@ def _mistral_result(model: str) -> bytes:
 def test_mistral_refuses_a_missing_retired_or_alias_model_before_any_call(
     model: str | None, monkeypatch
 ) -> None:
-    transport = FakeTransport(200, _mistral_result("mistral-ocr-4-1"))
-    monkeypatch.setattr(base, "post_bytes", transport)
-    kwargs: dict[str, Any] = {"endpoint": "https://m.example/x", "allow_network": True}
-    if model is not None:
-        kwargs["model"] = model
+    transport = FakeTransport(200, _mistral_result(MISTRAL))
     with pytest.raises(RunnerUnavailable):
-        EXTERNAL_RUNNERS["mistral_ocr_4"](_payload(), **kwargs)
+        _mistral(transport, monkeypatch, model=model)
     assert transport.calls == []
 
 
 def test_mistral_sends_the_pinned_model_id(monkeypatch) -> None:
-    transport = FakeTransport(200, _mistral_result("mistral-ocr-4-1"))
-    monkeypatch.setattr(base, "post_bytes", transport)
-    out = EXTERNAL_RUNNERS["mistral_ocr_4"](
-        _payload(), endpoint="https://m.example/x", allow_network=True, model="mistral-ocr-4-1"
-    )
-    config, _, headers = transport.calls[0]
-    assert config.model_revision == "mistral-ocr-4-1"
-    assert headers["X-AKC-Model-Revision"] == "mistral-ocr-4-1"
-    assert out["model_revision"] == "mistral-ocr-4-1"
+    transport = FakeTransport(200, _mistral_result(MISTRAL))
+    out = _mistral(transport, monkeypatch)
+    config, request, _ = transport.calls[0]
+    assert config.model_revision == MISTRAL and request["model"] == MISTRAL
+    assert out["model_revision"] == MISTRAL and out["text"] == "x"
     with pytest.raises(RunnerUnavailable, match="revision"):
-        EXTERNAL_RUNNERS["mistral_ocr_4"](
-            _payload(),
-            endpoint="https://m.example/x",
-            allow_network=True,
-            model="mistral-ocr-4-1",
-            revision=REVISION,
-        )
+        _mistral(transport, monkeypatch, revision=REVISION)
+
+
+# --- WO-D10-0D item 3: Mistral on its own API (tests 10-14) ---
+
+
+def test_d0d_10_mistral_sends_the_page_image_unchanged_with_the_key_in_the_header_only(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    transport = FakeTransport(200, _mistral_result(MISTRAL))
+    out = _mistral(transport, monkeypatch)
+    _, request, headers = transport.calls[0]
+    assert headers["Authorization"] == f"Bearer {KEY}"
+    assert set(headers) == {"Authorization", "Content-Type"}
+    assert request["document"]["type"] == "image_url"
+    prefix, data = request["document"]["image_url"].split(",", 1)
+    mime, image, _ = vlm.page_image(_payload())
+    assert prefix == f"data:{mime};base64"
+    assert hashlib.sha256(base64.b64decode(data)).digest() == hashlib.sha256(image).digest()
+    assert request["include_image_base64"] is False
+    assert KEY not in json.dumps(request) and KEY not in json.dumps(out)
+    assert out["metrics"]["receipt"]["image_sha256"] == hashlib.sha256(image).hexdigest()
+
+
+@pytest.mark.parametrize("served", ["mistral-ocr-4-0", "mistral-ocr-latest", "mistral-ocr-4", None])
+def test_d0d_11_mistral_served_model_must_be_the_pinned_id(
+    served: str | None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    out = _mistral(FakeTransport(200, _mistral_result(served)), monkeypatch)
+    assert out["failure"] == {"reason": "served_model_differs"}
+
+
+@pytest.mark.parametrize(
+    "over",
+    [
+        {"pages": [{"index": 0, "markdown": "a"}, {"index": 1, "markdown": "b"}]},
+        {"usage_info": {"pages_processed": 2}},
+        {"pages": []},
+        {"usage_info": {}},
+    ],
+)
+def test_d0d_11_mistral_needs_exactly_one_processed_page(
+    over: dict[str, Any], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    out = _mistral(FakeTransport(200, _mistral_result(MISTRAL, **over)), monkeypatch)
+    assert out["failure"] == {"reason": "malformed_response"}
+
+
+def test_d0d_12_a_mistral_answer_echoing_its_key_is_withheld(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    raw = _mistral_result(MISTRAL, pages=[{"index": 0, "markdown": f"page {KEY}"}])
+    out = _mistral(FakeTransport(200, raw), monkeypatch)
+    assert out["failure"] == {"reason": base.CREDENTIAL_IN_RESULT}
+    assert "MISTRAL_API_KEY" in base.CREDENTIAL_ENV
+
+
+def test_d0d_13_a_mistral_429_is_unavailable_and_a_500_is_a_failure_row(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with pytest.raises(RunnerUnavailable, match="unavailable"):
+        _mistral(FakeTransport(429, b'{"message": "Too Many Requests"}'), monkeypatch)
+    out = _mistral(FakeTransport(500, b'{"message": "internal"}'), monkeypatch)
+    assert out["failure"] == {"reason": "http_500"}
+    kept = out["receipt"]["raw_response_b64"]
+    assert base64.b64decode(kept) == b'{"message": "internal"}'
 
 
 # --- screen.Candidate: API candidates are pinned by model id; configs are bound ---
@@ -1063,7 +1126,8 @@ def _runner_kwargs(provider: str, endpoint: str | None, *, pinned: bool = True) 
 
 
 def _credential_of(provider: str) -> str:
-    return "GEMINI_API_KEY" if provider == "gemini_api" else "AKC_BENCHMARK_PROVIDER_TOKEN"
+    named = {"gemini_api": "GEMINI_API_KEY", "mistral_ocr_4": "MISTRAL_API_KEY"}
+    return named.get(provider, "AKC_BENCHMARK_PROVIDER_TOKEN")
 
 
 def _chain_text(exc: BaseException | None) -> str:
@@ -1130,7 +1194,7 @@ def test_runners_read_credentials_only_through_the_door() -> None:
     import ast
 
     allowed = {("base.py", "read_credential"), ("base.py", "carries_credential")}
-    allowed.add(("base.py", "post_bytes"))  # the host allowlist, not a credential
+    allowed.add(("base.py", "request_bytes"))  # the host allowlist, not a credential
     hits = set()
     for path in sorted((ROOT / "benchmark" / "runners").glob("*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -1527,6 +1591,15 @@ class _Echo:
                 "choices": [{"finish_reason": "stop", "message": {"content": text}}],
                 "usage": {m: 1} if self.leak == "usage_key" else {},
             }
+        elif config.provider == "mistral_ocr_4":
+            usage: dict[str, Any] = {"pages_processed": 1}
+            if self.leak == "usage_key":
+                usage[m] = 1
+            doc = {
+                "model": m if self.leak == "model_field" else config.model_revision,
+                "pages": [{"index": 0, "markdown": text}],
+                "usage_info": usage,
+            }
         else:
             doc = {
                 "schema_version": "1.0",
@@ -1861,3 +1934,72 @@ def test_d0d_08_every_runner_passes_its_own_model_or_revision_to_the_door(
         "ovis_ocr3": REVISION,
         "mineru": REVISION,
     }
+
+
+# --- WO-D10-0D item 2: request_bytes, a transport with a closed query (test 9) ---
+
+
+@pytest.mark.parametrize(
+    ("method", "query"),
+    [
+        ("GET", {"key": "x"}),
+        ("GET", {"pageToken": "a%2F"}),
+        ("GET", {"pageToken": "a=b"}),
+        ("GET", {"pageToken": "a b"}),
+        ("GET", {"pageToken": ""}),
+        ("GET", {"pageSize": 5}),
+        ("GET", ["pageToken"]),
+        ("PUT", None),
+        ("get", None),
+    ],
+)
+def test_d0d_09_request_bytes_refuses_an_open_query_or_method_before_dns(
+    method: str, query: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import socket
+
+    looked_up: list[Any] = []
+    monkeypatch.setattr(socket, "getaddrinfo", lambda *a, **k: looked_up.append(a))
+    monkeypatch.setenv("AKC_BENCHMARK_ENDPOINT_ALLOWLIST", "g.example")
+    config = base.RunnerConfig("p", "", "https://g.example/v1beta/batches", True)
+    with pytest.raises(RunnerUnavailable):
+        base.request_bytes(config, method, None, {}, query=query)
+    assert looked_up == []
+
+
+def test_d0d_09_the_query_reaches_the_target_only(monkeypatch: pytest.MonkeyPatch) -> None:
+    sent: list[tuple[str, str]] = []
+
+    class Connection:
+        def __init__(self, *a: Any, **k: Any) -> None:
+            pass
+
+        def request(self, method: str, target: str, **_: Any) -> None:
+            sent.append((method, target))
+
+        def getresponse(self) -> Any:
+            message = types.SimpleNamespace(get_content_type=lambda: "application/json")
+            return types.SimpleNamespace(status=200, headers=message, read=lambda n: b"{}")
+
+        def close(self) -> None:
+            pass
+
+    resolved = types.SimpleNamespace(hostname_ascii="g.example", resolved_ips=["8.8.8.8"])
+    monkeypatch.setattr(base, "_PinnedHTTPSConnection", Connection)
+    monkeypatch.setattr(base, "validate_resolved_url", lambda *a: resolved)
+    monkeypatch.setattr(
+        base.socket, "getaddrinfo", lambda *a, **k: [(0, 0, 0, "", ("8.8.8.8", 443))]
+    )
+    monkeypatch.setenv("AKC_BENCHMARK_ENDPOINT_ALLOWLIST", "g.example")
+    config = base.RunnerConfig("p", "", "https://g.example/v1beta/batches", True)
+    query = {"pageToken": "t-1", "pageSize": "50"}
+    assert base.request_bytes(config, "GET", None, {}, query=query) == (
+        200,
+        "application/json",
+        b"{}",
+    )
+    base.request_bytes(config, "DELETE", None, {})
+    assert sent == [
+        ("GET", "/v1beta/batches?pageSize=50&pageToken=t-1"),
+        ("DELETE", "/v1beta/batches"),
+    ]

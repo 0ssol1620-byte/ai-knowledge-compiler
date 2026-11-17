@@ -17,7 +17,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
-from urllib.parse import quote, urlparse, urlunsplit
+from urllib.parse import quote, urlencode, urlparse, urlunsplit
 
 from akc_security import UnsafeUrlError, validate_resolved_url
 
@@ -426,10 +426,39 @@ def post_bytes(
     *,
     max_response_bytes: int = 10 * 1024 * 1024,
 ) -> tuple[int, str, bytes]:
-    """POST over the pinned, allowlisted HTTPS path; returns (status, content type, raw bytes).
+    """POST over the pinned, allowlisted HTTPS path; returns (status, content type, raw bytes)."""
+    return request_bytes(config, "POST", body, headers, max_response_bytes=max_response_bytes)
 
-    Nothing is interpreted here: the caller decides what a status or body means.
-    """
+
+_METHODS = frozenset({"GET", "POST", "DELETE"})
+_QUERY_NAMES = frozenset({"pageSize", "pageToken"})
+_QUERY_VALUE = re.compile(r"[A-Za-z0-9._~-]{1,512}")
+
+
+def request_bytes(
+    config: RunnerConfig,
+    method: str,
+    body: bytes | None,
+    headers: dict[str, str],
+    *,
+    query: dict[str, str] | None = None,
+    max_response_bytes: int = 10 * 1024 * 1024,
+) -> tuple[int, str, bytes]:
+    """One request over the pinned, allowlisted HTTPS path; returns (status, content type, raw
+    bytes). Nothing is interpreted here: the caller decides what a status or body means.
+
+    The query is closed: names from ``_QUERY_NAMES`` only, each value unreserved characters
+    only, refused before any DNS lookup. It is added to the request target and to nothing else
+    (the endpoint, which receipts record, keeps its allow-listed shape)."""
+    require_clean_endpoint(config.endpoint)
+    if method not in _METHODS:
+        raise RunnerUnavailable("request method must be GET, POST or DELETE")
+    if query is not None and not (
+        isinstance(query, dict)
+        and set(query) <= _QUERY_NAMES
+        and all(isinstance(v, str) and _QUERY_VALUE.fullmatch(v) for v in query.values())
+    ):
+        raise RunnerUnavailable("query must be pageSize/pageToken of unreserved characters only")
     if not config.allow_network:
         raise RunnerUnavailable("network runner requires explicit --allow-network")
     if not config.endpoint:
@@ -461,9 +490,10 @@ def post_bytes(
         pinned_ip=validated_endpoint.resolved_ips[0],
         timeout=config.timeout_seconds,
     )
-    target = urlunsplit(("", "", parsed.path or "/", parsed.query, ""))
+    query_text = urlencode(sorted(query.items())) if query else ""
+    target = urlunsplit(("", "", parsed.path or "/", query_text, ""))
     try:
-        connection.request("POST", target, body=body, headers=headers)
+        connection.request(method, target, body=body, headers=headers)
         response = connection.getresponse()
         status = response.status
         content_type = response.headers.get_content_type()
