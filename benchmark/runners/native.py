@@ -46,7 +46,7 @@ def _native_revision() -> str:
         try:
             versions[dependency] = importlib.metadata.version(dependency)
         except importlib.metadata.PackageNotFoundError as exc:
-            raise RunnerUnavailable(f"native dependency is missing: {dependency}") from exc
+            raise RunnerUnavailable("a native dependency is missing") from exc
     identity = {
         "contract": "akc-native-parser-benchmark-v1",
         "python": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
