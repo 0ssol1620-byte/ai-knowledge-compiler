@@ -10,7 +10,8 @@ no server 45 minutes after the pod was created ends it (exit 3). Then ``run_scre
 is kept in ``metrics.normaliser``), and its cost is derived from the price stated when the pod
 was created and the runner's measured request latency (labelled "not billed"). A pod that is
 down (a status that means "no answer from the model") is a retried page, never a stored model
-failure; one retry per page. The driver enforces its own deadlines (two hours after creation;
+failure; one retry per page, spent in the same run only on a pod that answers healthy, else
+kept for the resume. The driver enforces its own deadlines (two hours after creation;
 180 s for the server to go idle after a proxy cut) and stops after three operational failures
 in a row (exit 3; resume with the same ``--out`` on a new pod). A wrong served model or recipe
 is an integrity stop (exit 4). Nothing printed carries page text, a doc id, gold or a
@@ -129,11 +130,21 @@ def _reason(value: Any) -> str:
     return value if isinstance(value, str) and _TOKEN.fullmatch(value) else "other"
 
 
+def _zero(value: str) -> bool:
+    """A /metrics sample that reads as exactly zero; one that does not parse is not zero."""
+    try:
+        return float(value) == 0
+    except ValueError:
+        return False
+
+
 def failure_class(reason: str) -> str:
     if reason == "provider_unavailable":
         return "operational"
     if reason in TIME_LIMIT:
         return "time_limit"
+    if reason == "provider_error":
+        return "runner_error"  # the runner raised: neither the pod's answer nor the model's
     if reason == "pipeline_exit_nonzero":
         return "exit_unclassified"  # cause from the pod log, not a model failure until then
     if reason.startswith("page_"):
@@ -312,10 +323,33 @@ class Driver:
             return 0, "", b""
 
     def _json(self, body: bytes) -> Any:
+        """The pod's JSON, or None for anything that does not parse (bad UTF-8, too deep)."""
         try:
             return json.loads(body)
-        except ValueError:
+        except (ValueError, RecursionError):
             return None
+
+    def _served(self, body: bytes) -> bool:
+        """A /v1/models listing names the pinned served model."""
+        listing = self._json(body)
+        data = listing.get("data") if isinstance(listing, dict) else None
+        return isinstance(data, list) and any(
+            isinstance(m, dict) and m.get("id") == self.served for m in data
+        )
+
+    def _healthy(self) -> bool:
+        """The pod still serves the pinned model: checked before a page spends its retry."""
+        if self.kind == "chat":
+            status, _, body = self._get("/v1/models", auth=True)
+            return status == 200 and self._served(body)
+        status, _, body = self._get("/health", auth=False)
+        health = self._json(body) if status == 200 else None
+        return (
+            isinstance(health, dict)
+            and health.get("ready") is True
+            and health.get("provider") == self.provider
+            and health.get("model_revision") == self.args.revision
+        )
 
     def wait_ready(self) -> None:
         while True:
@@ -341,14 +375,7 @@ class Driver:
                 raise Exit(EXIT_OPERATIONAL, "KEY-MISMATCH")
             if status != 200:
                 return False
-            listing = self._json(body)
-            data = listing.get("data") if isinstance(listing, dict) else None
-            ids = (
-                {m.get("id") for m in data if isinstance(m, dict)}
-                if isinstance(data, list)
-                else set()
-            )
-            if self.served not in ids:
+            if not self._served(body):
                 raise Exit(EXIT_REFUSED, "the server does not serve the pinned revision")
             return True
         status, _, body = self._get("/health", auth=False)
@@ -377,7 +404,7 @@ class Driver:
             status, _, body = self._get("/metrics", auth=True)
             if status == 200:
                 found = _RUNNING.findall(body.decode("utf-8", "replace"))
-                if found and all(float(v) == 0 for v in found):
+                if found and all(_zero(v) for v in found):
                     return True
             if self.now() >= deadline:
                 return False
@@ -460,9 +487,12 @@ class Driver:
             self._unavailable(n, case_id)
             raise RunnerUnavailable("pod answered with an unavailable status; not stored")
         if self.kind == "page":
-            receipt = (
-                result.get("receipt") if reason else (result.get("metrics") or {}).get("receipt")
-            )
+            shaped = result if isinstance(result, dict) else {}
+            runtime = shaped.get("metrics")
+            if reason:
+                receipt = shaped.get("receipt")
+            else:
+                receipt = runtime.get("receipt") if isinstance(runtime, dict) else None
             recipe = receipt.get("recipe") if isinstance(receipt, dict) else None
             got = recipe.get("sha256") if isinstance(recipe, dict) else None
             attested = isinstance(receipt, dict) and receipt.get("revision_attested") is True
@@ -480,7 +510,8 @@ class Driver:
         return self._finish(n, case_id, result)
 
     def _finish(self, n: int, case_id: str, result: dict[str, Any]) -> dict[str, Any]:
-        text, metrics = result.get("text"), result.get("metrics")
+        shaped = result if isinstance(result, dict) else {}
+        text, metrics = shaped.get("text"), shaped.get("metrics")
         if not isinstance(text, str) or not isinstance(metrics, dict):
             self._attempt(case_id, "unshaped")
             self._log(n, "failure:unshaped")
@@ -513,7 +544,10 @@ class Driver:
 
     def run(self) -> int:
         records: list[dict[str, Any]] = []
-        for _ in range(MAX_ATTEMPTS):  # a second pass gives an unavailable page its retry
+        for attempt in range(MAX_ATTEMPTS):  # a second pass gives an unavailable page its retry
+            if attempt and not self._healthy():  # a dead pod would spend it: keep it for resume
+                self._halt("operational", "pod not healthy before the retry pass")
+                break
             records = run_screen(
                 guard=self.guard,
                 split="dev",
@@ -541,9 +575,9 @@ class Driver:
         for r in records:
             if r["raw_sha256"] is not None and _sha_file(self._raw(r)) != r["raw_sha256"]:
                 raise Exit(EXIT_INTEGRITY, "a raw output differs from its record")
+        summary = self.summary(records)  # refuses first: no final records without a summary
         body = "".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n" for r in records)
         _atomic_write(self.out / "final-records.jsonl", body.encode("utf-8"))
-        summary = self.summary(records)
         _atomic_write(
             self.out / "s0-summary.json",
             (json.dumps(summary, indent=2, sort_keys=True) + "\n").encode(),
@@ -559,7 +593,15 @@ class Driver:
 
     def summary(self, records: list[dict[str, Any]]) -> dict[str, Any]:
         classes = dict.fromkeys(
-            ("operational", "time_limit", "exit_unclassified", "page_refused", "model"), 0
+            (
+                "operational",
+                "time_limit",
+                "runner_error",
+                "exit_unclassified",
+                "page_refused",
+                "model",
+            ),
+            0,
         )
         reasons: Counter[str] = Counter()
         flags: Counter[str] = Counter()
@@ -568,7 +610,9 @@ class Driver:
             raw = json.loads(self._raw(r).read_bytes()) if r["raw_sha256"] is not None else None
             reason: str | None = None
             if raw is None:
-                reason = _reason(r["hard_failures"][0]) if r["hard_failures"] else "other"
+                if not r["hard_failures"]:
+                    raise Exit(EXIT_INTEGRITY, "a record without output names no failure")
+                reason = _reason(r["hard_failures"][0])
             elif isinstance(raw.get("failure"), dict):
                 reason = _reason(raw["failure"].get("reason"))
             elif "contract_failed" in r["hard_failures"]:
@@ -594,7 +638,10 @@ class Driver:
             "accepted": sum(1 for r in records if r["accepted"]),
             "failure_classes": classes,
             "failure_reasons": dict(sorted(reasons.items())),
-            "operational_plus_time_limit": classes["operational"] + classes["time_limit"],
+            # 5H-12's mechanical rejection count: a candidate is out above 20 of the 99 pages
+            "operational_plus_time_limit_plus_runner_error": (
+                classes["operational"] + classes["time_limit"] + classes["runner_error"]
+            ),
             "score_flags_not_failures": dict(sorted(flags.items())),
             "attempts": sum(tried.values()),
             "retries": sum(c - 1 for c in tried.values() if c > 1),

@@ -12,9 +12,16 @@ Profiles: ``html`` (table cells and lines, numeric and named character reference
 and escapes everywhere; ``&`` becomes a cell boundary only inside ``\\begin{tabular}`` ...
 ``\\end{tabular}``, so "Research & development" keeps its ampersand). Last, for all
 profiles: U+00A0 becomes a space, and on a line with ``|`` a cell holding only ``$ € £ ¥ (``
-loses its boundary to the next cell and a cell holding only ``)`` or ``%`` loses its boundary
-to the previous one, mirroring how the gold builder joins symbol-only cells to their number
-(``benchmark/local_public/sec_align.py``).
+belongs to the nearest non-empty cell after it and a cell holding only ``)`` or ``%`` to the
+nearest non-empty cell before it, mirroring how the gold builder joins symbol-only cells to
+their number across empty cells (``benchmark/local_public/sec_align.py``). Only boundaries and
+whitespace are removed for that; two cells that hold values stay apart.
+
+Layout is not structure: in ``html`` a cell end and the next cell start, with only whitespace
+between them, are one boundary; inside a tabular span a line break is a space (rows end at
+``\\\\``), and ``&`` after an even run of backslashes is a boundary (``\\\\&`` ends a row, then a
+cell). Wrappers are removed to a fixed point, at most ``TEX_PASSES`` passes; deeper nesting is
+left as it is and counted in ``residual``.
 """
 
 from __future__ import annotations
@@ -38,7 +45,10 @@ PROFILES = {
 
 CELL = " | "
 
-_HTML_CELL = re.compile(r"</?t[dh]\b[^<>]{0,200}>", re.IGNORECASE)
+_HTML_CELL = re.compile(
+    r"(?:</t[dh]\b[^<>]{0,200}>\s{0,200})?<t[dh]\b[^<>]{0,200}>|</t[dh]\b[^<>]{0,200}>",
+    re.IGNORECASE,
+)
 _HTML_LINE = re.compile(
     r"</?(?:tr|table|thead|tbody|tfoot|p|div)\b[^<>]{0,200}>|<br\s{0,20}/?>", re.IGNORECASE
 )
@@ -53,7 +63,8 @@ _TEX_MULTI = re.compile(r"\\multi(?:column|row)\{[^{}]{0,40}\}\{[^{}]{0,40}\}\{(
 _BEGIN = "\\begin{tabular}"
 _END = "\\end{tabular}"
 _COLSPEC = re.compile(r"\{[^{}]{0,200}\}")
-_TEX_AMP = re.compile(r"(?<!\\)&")
+_TEX_AMP = re.compile(r"(?<!\\)((?:\\\\){0,50})&")  # after an even run of backslashes
+TEX_PASSES = 8
 
 _OPEN_CELL = re.compile(r"[$€£¥(]{1,3}")
 _CLOSE_CELL = re.compile(r"[)%]{1,2}")
@@ -73,13 +84,17 @@ def _otsl(text: str) -> str:
 def _tabular(body: str) -> str:
     """Inside one tabular span: unescaped ``&`` is a cell boundary, ``\\\\`` and ``\\hline``
     end a line."""
-    body = _TEX_AMP.sub(CELL, body)
+    body = _TEX_AMP.sub(lambda m: m.group(1) + CELL, body.replace("\n", " "))
     return body.replace("\\\\", "\n").replace("\\hline", "\n")
 
 
 def _nemotron(text: str) -> str:
     text = _CLASS.sub("\n", _POSITION.sub(" ", text))
-    text = _TEX_MULTI.sub(r"\1", _TEX_WRAP.sub(r"\1", text))
+    for _ in range(TEX_PASSES):  # nested wrappers, innermost first, to a fixed point
+        unwrapped = _TEX_MULTI.sub(r"\1", _TEX_WRAP.sub(r"\1", text))
+        if unwrapped == text:
+            break
+        text = unwrapped
     parts: list[str] = []
     at = 0
     while (begin := text.find(_BEGIN, at)) >= 0:
@@ -107,7 +122,11 @@ def _join_symbol_cells(line: str) -> str:
     cells = line.split("|")
     out = [cells[0]]
     for cell in cells[1:]:
-        if _OPEN_CELL.fullmatch(_compact(out[-1])) or _CLOSE_CELL.fullmatch(_compact(cell)):
+        if _CLOSE_CELL.fullmatch(_compact(cell)):
+            while len(out) > 1 and not _compact(out[-1]):  # to the nearest non-empty cell
+                out.pop()
+            out[-1] = out[-1].rstrip() + " " + cell.lstrip()
+        elif _OPEN_CELL.fullmatch(_compact(out[-1])):  # absorbs the empty cells after it too
             out[-1] = out[-1].rstrip() + " " + cell.lstrip()
         else:
             out.append(cell)

@@ -156,6 +156,113 @@ def test_symbol_cells_join_their_number() -> None:
     assert value_after_anchor(neg, n1.normalise("ovis_ocr2", "| x | (1,234 | ) |")[0]) is None
     assert "$ | 1" not in n1.normalise("ovis_ocr2", "| Total revenue | $ | 1,234 |")[0]
     assert value_after_anchor(neg, "| Total revenue | (1,234) |") == ("-1234", "num", None)
+    # the reviewer's html inputs (round 1): two boundaries between adjacent cells
+    for field, text in (
+        (neg, "<tr><td>Total revenue</td><td>(1,234</td><td>)</td></tr>"),
+        (pct, "<tr><td>Margin</td><td>1.5</td><td>%</td></tr>"),
+        (
+            _field("Total revenue", "$ (1,234)"),
+            "<tr><td>Total revenue</td><td>$</td><td>(1,234</td><td>)</td></tr>",
+        ),
+    ):
+        out = n1.normalise("ovis_ocr2", text)[0]
+        assert value_after_anchor(field, out) == gold_value(field), repr(out)
+
+
+# ------------------------------------------------- one logical row, every rendering (5H-11)
+# The class: after normalising, a cell holding only ) or % belongs to the nearest non-empty cell
+# before it, and a cell holding only $ € £ ¥ ( to the nearest non-empty cell after it, whatever
+# markup the cells came from; two value cells stay apart even with an empty cell between them.
+
+FORMS = [
+    "html",
+    "html_pretty",
+    "otsl",
+    "nemotron",
+    "nemotron_wrapped",
+    "md_html",
+    "md_otsl",
+    "md_nemotron",
+]
+
+
+def _render(form: str, cells: list[str]) -> tuple[str, str]:
+    """(provider, text): one table row written in one of the forms candidates emit."""
+    if form == "html":
+        return "ovis_ocr2", "<table><tr>" + "".join(f"<td>{c}</td>" for c in cells) + "</tr>"
+    if form == "html_pretty":
+        body = "".join(f"    <td>{c}</td>\n" for c in cells)
+        return "mineru", f"<table>\n  <tr>\n{body}  </tr>\n</table>"
+    if form == "otsl":
+        return "xiaomi_ocr_0", "".join(f"<fcel>{c}" if c else "<ecel>" for c in cells) + "<nl>"
+    if form.startswith("nemotron"):
+        tex = [c.replace("$", "\\$").replace("%", "\\%") for c in cells]
+        sep = " &\n" if form == "nemotron_wrapped" else " & "
+        spec = "c" * len(cells)
+        return (
+            "nemotron_parse_3_5",
+            f"\\begin{{tabular}}{{{spec}}}\n{sep.join(tex)} \\\\\n\\end{{tabular}}",
+        )
+    provider = {"md_html": "paddleocr_vl_1_6", "md_otsl": "xiaomi_ocr_0"}.get(
+        form, "nemotron_parse_3_5"
+    )
+    return provider, "| " + " | ".join(cells) + " |"
+
+
+SYMBOL_ROWS = [
+    (["Total revenue", "(1,234", ")"], "(1,234)"),
+    (["Total revenue", "(1,234", "", ")"], "(1,234)"),
+    (["Total revenue", "$", "(1,234", ")"], "$ (1,234)"),
+    (["Total revenue", "$", "", "(1,234", "", ")"], "$ (1,234)"),
+    (["Total revenue", "(", "1,234", ")"], "(1,234)"),
+    (["Margin", "1.5", "%"], "1.5%"),
+    (["Margin", "1.5", "", "%"], "1.5%"),
+    (["Total revenue", "$", "1,234"], "$ 1,234"),
+    (["Total revenue", "1,234"], "1,234"),
+]
+
+
+@pytest.mark.parametrize("form", FORMS)
+@pytest.mark.parametrize(("cells", "value"), SYMBOL_ROWS)
+def test_a_symbol_cell_joins_its_number_in_every_rendering(
+    form: str, cells: list[str], value: str
+) -> None:
+    field = _field(cells[0], value)
+    provider, text = _render(form, cells)
+    out, residual = n1.normalise(provider, text)
+    assert value_after_anchor(field, out) == gold_value(field), repr(out)
+    assert residual == 0
+    assert n1.normalise(provider, out) == (out, 0)
+
+
+@pytest.mark.parametrize("form", FORMS)
+@pytest.mark.parametrize("cells", [["Revenue", "1,234", "5"], ["Revenue", "1,234", "", "5"]])
+def test_two_value_cells_are_never_joined(form: str, cells: list[str]) -> None:
+    provider, text = _render(form, cells)
+    out = n1.normalise(provider, text)[0]
+    held = [c.strip() for line in out.split("\n") for c in line.split("|")]
+    assert "1,234" in held and "5" in held, repr(out)
+    assert value_after_anchor(_field("Revenue", "1,234"), out) == ("1234", "num", None)
+
+
+def test_nested_wrappers_unwrap_to_a_fixed_point_within_the_bound() -> None:
+    text = "\\textbf{Revenue \\textit{net \\text{of tax}}} \\multicolumn{2}{c}{\\thead{1,234}}"
+    out, residual = n1.normalise("nemotron_parse_3_5", text)
+    assert out == "Revenue net of tax 1,234" and residual == 0
+    assert n1.normalise("nemotron_parse_3_5", out) == (out, 0)
+    deep = "\\textbf{" * (n1.TEX_PASSES + 1) + "x" + "}" * (n1.TEX_PASSES + 1)
+    out, residual = n1.normalise("nemotron_parse_3_5", deep)
+    assert out == "\\textbf{x}" and residual == 1  # past the bound: left visible, counted
+
+
+def test_a_row_end_before_an_ampersand_is_a_row_end_and_a_cell_boundary() -> None:
+    bs = "\\"
+    body = f"Revenue & 1,234 {bs * 2}& 5 {bs * 2}\nR {bs}& D & 7 {bs * 3}& x"
+    text = f"{bs}begin{{tabular}}{{cc}}\n{body}\n{bs}end{{tabular}}"
+    out, residual = n1.normalise("nemotron_parse_3_5", text)
+    lines = [[c.strip() for c in line.split("|")] for line in out.split("\n") if line.strip()]
+    assert lines == [["Revenue", "1,234"], ["", "5"], ["R & D", "7"], ["& x"]], repr(out)
+    assert residual == 0
 
 
 ROW = "<tr><td>Revenue</td><td>1,234</td><td>5</td></tr>"

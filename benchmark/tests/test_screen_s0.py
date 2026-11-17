@@ -60,6 +60,7 @@ class Pod:
         self.parse_unauth = 401
         self.running = "0.0"
         self.down = False
+        self.body: dict[str, bytes] = {}  # a path answering 200 with these bytes, as-is
 
     def __call__(
         self, method: str, url: str, body: bytes | None, headers: dict[str, str]
@@ -69,6 +70,8 @@ class Pod:
         self.calls.append((method, path, auth))
         if self.down:
             return 502, "text/html", b""
+        if path in self.body and (path != "/v1/models" or auth):
+            return 200, "application/octet-stream", self.body[path]
         if path == "/akc-state":
             return self.state[0], "text/plain", self.state[1]
         if path == "/v1/models":
@@ -508,6 +511,138 @@ def test_three_unavailable_in_a_row_exit_3_and_resume_gives_one_record_per_page(
     assert len(attempts) == 2
 
 
+def dies(pod: Pod) -> Behaviour:
+    """The pod goes down while serving this page."""
+
+    def run(case: dict[str, Any]) -> dict[str, Any]:
+        pod.down = True
+        raise RunnerUnavailable("benchmark provider is unavailable")
+
+    return run
+
+
+def served_by(pod: Pod, kind: str) -> Behaviour:
+    """A page answer while the pod is up; unavailable once it is down."""
+    healthy = ok(kind)
+
+    def run(case: dict[str, Any]) -> dict[str, Any]:
+        if pod.down:
+            raise RunnerUnavailable("benchmark provider is unavailable")
+        return healthy(case)
+
+    return run
+
+
+@pytest.mark.parametrize("kind", ["chat", "page"])
+@pytest.mark.parametrize("dies_at", [2, 3, 4])
+def test_a_dead_pod_never_spends_a_retry_and_a_resume_completes(
+    tmp_path, monkeypatch, kind, dies_at
+):
+    """The retry is spent in the same invocation only while the pod is healthy; a page that
+    failed on a dead pod keeps it for the resume on a new pod, and is never tried a third time."""
+    w = world(tmp_path, monkeypatch, pages=5)
+    pod = Pod(kind)
+    model = Model({f"p{dies_at}.pdf": dies(pod)}, served_by(pod, kind))
+    rc, _, _ = run(w, monkeypatch, model, kind=kind, pod=pod)
+    assert rc == 3
+    assert model.calls == [f"p{i}.pdf" for i in range(5)]  # one attempt each, no retry pass
+    assert not (w / "out" / "final-records.jsonl").exists()
+    resumed = Model({}, ok(kind))
+    rc, _, _ = run(w, monkeypatch, resumed, kind=kind, pod=Pod(kind))
+    assert rc == 0
+    assert resumed.calls == [f"p{i}.pdf" for i in range(dies_at, 5)]
+    assert [r["accepted"] for r in final(w)] == [True] * 5
+    transport = (w / "out" / "transport.jsonl").read_text(encoding="utf-8").splitlines()
+    tried = [json.loads(x)["case"] for x in transport]
+    assert max(tried.count(c) for c in tried) == 2
+
+
+def test_a_record_without_output_or_failure_is_integrity_not_a_model_failure(tmp_path, monkeypatch):
+    w = world(tmp_path, monkeypatch, pages=1)
+    record = {"page_id": "p0.pdf#0", "raw_sha256": None, "hard_failures": [], "accepted": False}
+    monkeypatch.setattr(s0, "run_screen", lambda **kw: [record])
+    rc, _, _ = run(w, monkeypatch, Model({}, ok()))
+    assert rc == 4
+    assert not (w / "out" / "final-records.jsonl").exists()
+
+
+def boom(case: dict[str, Any]) -> dict[str, Any]:
+    raise ValueError("the runner raised")
+
+
+def test_a_runner_exception_is_its_own_class_and_counts_toward_rejection(tmp_path, monkeypatch):
+    w = world(tmp_path, monkeypatch)
+    model = Model({"p0.pdf": row("http_500"), "p1.pdf": boom, "p2.pdf": row("http_524")}, ok())
+    rc, _, _ = run(w, monkeypatch, model)
+    assert rc == 0 and model.calls.count("p1.pdf") == 2
+    summary = json.loads((w / "out" / "s0-summary.json").read_text(encoding="utf-8"))
+    assert summary["failure_classes"] == {
+        "operational": 1,
+        "time_limit": 1,
+        "runner_error": 1,
+        "exit_unclassified": 0,
+        "page_refused": 0,
+        "model": 0,
+    }
+    assert summary["operational_plus_time_limit_plus_runner_error"] == 3
+
+
+@pytest.mark.parametrize("value", ["1e", "e", "+-", ".", "1e5e5", "1.2.3"])
+def test_a_metrics_value_that_does_not_parse_is_not_idle_and_the_524_row_is_kept(
+    tmp_path, monkeypatch, value
+):
+    w = world(tmp_path, monkeypatch)
+    pod = Pod()
+    pod.running = value
+    model = Model({"p0.pdf": row("http_524")}, ok())
+    rc, _, _ = run(w, monkeypatch, model, pod=pod)
+    assert rc == 3 and model.calls == ["p0.pdf"]
+    lines = (w / "out" / "records.jsonl").read_text(encoding="utf-8").splitlines()
+    p0 = [r for r in map(json.loads, lines) if r["doc_id"] == "p0.pdf"]
+    assert len(p0) == 1 and p0[0]["raw_sha256"] is not None
+    assert p0[0]["provider_error_type"] is None  # the wrapper returned; nothing escaped it
+
+
+HOSTILE = [
+    b"\xff\xfe\x00not utf-8",
+    b"[" * 50_000,
+    b"null",
+    b"[]",
+    b'{"data": 5}',
+    b'{"data": [{"id": [1]}, {"id": {"a": 1}}]}',
+    b'{"ready": "true", "provider": [1], "model_revision": {}}',
+]
+
+
+@pytest.mark.parametrize("body", HOSTILE, ids=range(len(HOSTILE)))
+def test_a_hostile_pod_answer_is_a_refusal_or_a_wait_never_a_crash(tmp_path, monkeypatch, body):
+    """Whatever the pod answers, the driver refuses (2) or stops (3); an exception never
+    leaves it (1), and a page the pod failed stays operational, never a runner error."""
+    w = world(tmp_path, monkeypatch)
+    pod = Pod()
+    pod.body["/v1/models"] = body
+    model = Model({}, ok())
+    rc, _, _ = run(w, monkeypatch, model, pod=pod, out="models")
+    assert rc == 2 and model.calls == []
+    pod = Pod("page")
+    pod.body["/health"] = body
+    model = Model({}, ok("page"))
+    rc, _, _ = run(w, monkeypatch, model, kind="page", pod=pod, out="health")
+    assert rc in (2, 3) and model.calls == []
+    pod = Pod()
+    pod.body["/metrics"] = body
+    model = Model({"p0.pdf": row("http_524")}, ok())
+    rc, _, _ = run(w, monkeypatch, model, pod=pod, out="metrics")
+    assert rc == 3 and model.calls == ["p0.pdf"]
+    pod = Pod("page")
+    model = Model({"p0.pdf": down}, ok("page"))
+    model.on_call = lambda: pod.body.__setitem__("/health", body)
+    rc, _, _ = run(w, monkeypatch, model, kind="page", pod=pod, out="health-mid")
+    lines = (w / "health-mid" / "records.jsonl").read_text(encoding="utf-8").splitlines()
+    p0 = [r for r in map(json.loads, lines) if r["doc_id"] == "p0.pdf"]
+    assert rc in (0, 3) and p0[0]["hard_failures"] == ["provider_unavailable"]
+
+
 def test_two_hours_after_creation_the_driver_stops_before_the_next_page(tmp_path, monkeypatch):
     w = world(tmp_path, monkeypatch)
     clock = Clock()
@@ -535,20 +670,27 @@ def test_a_changed_pin_on_resume_is_refused(tmp_path, monkeypatch):
     assert rc == 2
 
 
-def test_nothing_printed_or_written_carries_the_token_text_or_doc_id(tmp_path, monkeypatch, capsys):
+def test_the_token_is_in_no_file_and_no_stream_and_doc_ids_and_text_are_on_no_stream(
+    tmp_path, monkeypatch, capsys
+):
+    """Exactly what this asserts: the fake token is in no file under out/ and on neither
+    stdout nor stderr; document ids, page text and gold text are on neither stream.
+    records.jsonl and final-records.jsonl carry doc_id by design (the record schema)."""
     w = world(tmp_path, monkeypatch)
     model = Model({"p1.pdf": row("http_400"), "p2.pdf": [down, ok()]}, ok())
     rc, pod, _ = run(w, monkeypatch, model)
     assert rc == 0
     assert ("GET", "/v1/models", True) in pod.calls  # the bearer was sent, as a header
-    printed = capsys.readouterr().out
-    assert MARKER not in printed
-    for leak in ("p0.pdf", "p1.pdf", "Revenue", "GOLD-ONLY-TEXT"):
-        assert leak not in printed
-    assert "S0 C2 page 1/3 ok" in printed
+    streams = capsys.readouterr()
+    for printed in (streams.out, streams.err):
+        for leak in (MARKER, "p0.pdf", "p1.pdf", "p2.pdf", "Revenue", "GOLD-ONLY-TEXT"):
+            assert leak not in printed
+    assert "S0 C2 page 1/3 ok" in streams.out
     for path in (w / "out").rglob("*"):
         if path.is_file():
             assert MARKER.encode() not in path.read_bytes(), path.name
+    for name in ("records.jsonl", "final-records.jsonl"):  # by design, not a leak
+        assert b'"doc_id": "p0.pdf"' in (w / "out" / name).read_bytes()
 
 
 def test_a_crash_is_exit_1_with_the_type_only(tmp_path, monkeypatch, capsys):
@@ -567,6 +709,7 @@ def test_failure_classes() -> None:
     assert s0.failure_class("pipeline_exit_nonzero") == "exit_unclassified"
     assert s0.failure_class("page_over_pixel_cap") == "page_refused"
     assert s0.failure_class("finish_reason_not_stop") == "model"
+    assert s0.failure_class("provider_error") == "runner_error"
 
 
 # ---------------------------------------------------------------- select_5h compatibility
