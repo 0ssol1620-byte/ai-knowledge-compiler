@@ -67,6 +67,7 @@ from benchmark.screen.run_screen import (
 )
 from benchmark.screen.select_5h import (
     FAILURE_CLASSES,
+    INTEGRITY,
     MECHANICAL,
     OPERATIONAL,
     READER_V1_SHA256,
@@ -531,7 +532,7 @@ class Driver:
             return self._row(case_id, UNSHAPED, {"result_type": type(result).__name__})
         failure = result.get("failure")
         reason = _reason(failure.get("reason")) if isinstance(failure, dict) else None
-        if reason == "served_model_differs":
+        if reason in INTEGRITY:  # 5H-19: halted on, never stored
             self._attempt(case_id, reason)
             self._halt("integrity", "the server answered with another served model")
             raise RunnerUnavailable("served model differs; not stored")
@@ -568,9 +569,12 @@ class Driver:
             return result  # run_screen records contract_failed
         latency = metrics.get("latency_ms")
         if not (
-            isinstance(latency, int | float) and not isinstance(latency, bool) and latency >= 0
+            isinstance(latency, int | float)
+            and not isinstance(latency, bool)
+            and math.isfinite(latency)
+            and latency >= 0
         ):
-            latency = None  # the predicate the cost has always used; nan fails it
+            latency = None  # a measurement or nothing: nan and inf fail it
         if len(text) > MAX_TEXT_CHARS:  # not normalised; a failed page, stored, never retried
             self._attempt(case_id, OUTPUT_TOO_LARGE)
             self._log(n, f"failure:{OUTPUT_TOO_LARGE}")

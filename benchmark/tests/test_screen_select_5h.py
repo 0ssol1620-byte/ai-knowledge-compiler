@@ -765,6 +765,24 @@ def test_failure_classes_are_the_5h17_tokens_and_unknown_tokens_refuse() -> None
         "pipeline_output_missing": "pipeline_failure",
         "page_count_unsupported": "page_refused",
         "page_index_unsupported": "page_refused",
+        # 5H-19
+        "finish_reason_not_stop": "model_answer",
+        "output_token_cutoff": "model_answer",
+        "output_tokens_over_bound": "model_answer",
+        "prompt_blocked": "model_answer",
+        "empty_completion": "model_answer",
+        "empty_output": "model_answer",
+        "malformed_response": "runner_error",
+        "response_not_object": "runner_error",
+        "result_not_serialisable": "runner_error",
+        "pipeline_error": "pipeline_failure",
+        "credential_in_result": "operational",
+        "http_408": "time_limit",
+        "http_504": "time_limit",
+        "http_501": "operational",
+        "http_400": "runner_error",
+        "http_418": "runner_error",
+        "http_301": "runner_error",
     }
     for token, cls in expect.items():
         assert s5.failure_class(token) == cls, token
@@ -772,10 +790,47 @@ def test_failure_classes_are_the_5h17_tokens_and_unknown_tokens_refuse() -> None
     assert set(s5.MECHANICAL) == {"operational", "time_limit", "runner_error", "pipeline_failure"}
     for flag in s5.SCORER_FLAGS:
         assert s5.failure_class(flag) is None, flag
-    near = ("http_418", "pipeline_", "pipeline_error_x", "output_too_large_x", "runner_result")
-    for bad in (*near, "other", "page_", "", "HTTP_503", None, 5):
+    near = ("http_200", "pipeline_", "pipeline_error_x", "output_too_large_x", "runner_result")
+    http_near = ("http_", "http_5", "http_50", "http_0503", "http_5030", "http_600", "http_+503")
+    other = ("http_\u0665\u0660\u0663", "http_503\n", " http_503", "model_answer", "other")
+    for bad in (*near, *http_near, *other, "page_", "", "HTTP_503", None, 5, 503):
         with pytest.raises(ContractError):
             s5.failure_class(bad)
+    for token in s5.INTEGRITY:  # 5H-19: outside the table, refused by name
+        with pytest.raises(ContractError, match="integrity"):
+            s5.failure_class(token)
+    # the driver's retry rule reads OPERATIONAL: 5H-19 adds to the class, not to that set
+    assert "credential_in_result" not in s5.OPERATIONAL
+
+
+def _http_rule(status: int) -> str | None:
+    """5H-19 written out status by status, independently of the module."""
+    if status in (408, 504, 524):
+        return "time_limit"
+    if status in (401, 403, 404, 429) or 500 <= status <= 599:
+        return "operational"
+    if 300 <= status <= 499:
+        return "runner_error"
+    return None
+
+
+def test_http_status_is_classed_by_rule_over_100_to_599() -> None:
+    """5H-19: one rule over every status; 1xx and 2xx are not failure tokens and refuse."""
+    for status in range(100, 600):
+        token, want = f"http_{status}", _http_rule(status)
+        assert s5.http_class(token) == want, status
+        if want is None:
+            with pytest.raises(ContractError):
+                s5.failure_class(token)
+        else:
+            assert s5.failure_class(token) == want, status
+    for status in (*range(0, 100), *range(600, 1000)):
+        assert s5.http_class(f"http_{status}") is None, status
+    # the constants keep their members, and each agrees with the rule
+    for cls, members in (("operational", s5.OPERATIONAL), ("time_limit", s5.TIME_LIMIT)):
+        for token in members:
+            if token.startswith("http_"):
+                assert s5.http_class(token) == cls, token
 
 
 def test_scorer_flag_set_is_every_flag_the_scorer_raises() -> None:
@@ -799,6 +854,7 @@ REASON_NAMES = {"reason", "failures"}  # a variable that is written as a reason 
 REASON_SETS = {"REFUSAL_REASONS"}  # every member is a reason (ResponseRefused admits only these)
 REASON_KEYS = {"FAILURE_EXITS"}  # the C1 service: reason -> exit code
 HTTP = re.compile(r"http_\{[a-z_]+\}")  # f"http_{status}": any status a server can answer
+HTTP_FAILURE_STATUSES = range(300, 600)  # the statuses 5H-19's rule classes; 1xx/2xx refuse
 
 
 def _literals(node: Any, consts: dict[str, str]) -> list[Any]:
@@ -819,7 +875,8 @@ def _literals(node: Any, consts: dict[str, str]) -> list[Any]:
 
 def producer_tokens() -> list[tuple[str, str]]:
     """(file:line, token) for every string a producer passes as a failure reason or a
-    hard_failures entry. A template ``http_{status}`` stands for every status 100-599."""
+    hard_failures entry. A template ``http_{status}`` stands for every status 5H-19's rule
+    classes (300-599); that 1xx and 2xx refuse is asserted on its own."""
     found: list[tuple[str, str]] = []
     for path in PRODUCERS:
         tree = ast.parse(path.read_text(encoding="utf-8"))
@@ -858,7 +915,7 @@ def producer_tokens() -> list[tuple[str, str]]:
                 if HTTP.fullmatch(token):
                     found += [
                         (f"{rel}:{getattr(node, 'lineno', 0)}", f"http_{s}")
-                        for s in range(100, 600)
+                        for s in HTTP_FAILURE_STATUSES
                     ]
                 else:
                     found.append((f"{rel}:{getattr(node, 'lineno', 0)}", token))
@@ -895,10 +952,15 @@ def test_the_producer_scan_finds_what_the_producers_write() -> None:
 
 
 def test_every_failure_token_a_producer_writes_is_in_one_class() -> None:
-    """5H-18: a token any producer can write that the table does not class fails here, by name
-    and place, until the lead classes it; a scorer flag written as a failure fails too."""
+    """5H-18/5H-19: a token any producer can write that the table does not class fails here, by
+    name and place, until the lead classes it; a scorer flag written as a failure fails too.
+    Exempt is exactly the named integrity set, and each member of it is written somewhere."""
     unclassed: dict[str, list[str]] = {}
-    for at, token in producer_tokens():
+    found = producer_tokens()
+    assert {token for _, token in found} >= s5.INTEGRITY
+    for at, token in found:
+        if token in s5.INTEGRITY:
+            continue
         try:
             ok = s5.failure_class(token) is not None
         except ContractError:
@@ -908,6 +970,62 @@ def test_every_failure_token_a_producer_writes_is_in_one_class() -> None:
     http = sorted(t for t in unclassed if t.startswith("http_"))
     shown = {t: sorted(set(a))[:3] for t, a in sorted(unclassed.items()) if t not in http}
     assert not unclassed, {"unclassed": shown, "http_statuses": [t[5:] for t in http]}
+    for status in range(100, 300):  # not failure tokens: a stored one is refused as unknown
+        with pytest.raises(ContractError):
+            s5.failure_class(f"http_{status}")
+
+
+def test_model_answer_fails_pages_but_never_rejects_and_pipeline_error_does(
+    tmp_path: Path,
+) -> None:
+    """5H-19 through the real run_screen and select_s1: model_answer pages are failed (every
+    critical field wrong) and counted per class, never in the mechanical count; a candidate
+    with model_answer on more than a fifth of its pages stays, one with pipeline_error is out.
+    The http rule is read the same way from a stored failure.reason."""
+    plans = {
+        "C0": {},
+        "answer": {  # 4 > 2, yet kept
+            0: "finish_reason_not_stop",
+            1: "empty_output",
+            2: "prompt_blocked",
+            3: "empty_completion",
+        },
+        "pipe": {0: "pipeline_error", 1: "pipeline_error", 2: "pipeline_error"},  # 3 > 2: out
+        "http": {0: "http_504", 1: "http_408", 2: "http_400", 3: "http_501"},  # 4 > 2: out
+        "ok": {},
+    }
+    g, recs, _, raw = _screen(tmp_path, plans)
+    s1 = s5.select_s1(recs, guard=g, baseline="C0", raw_dir=raw)
+    mech = s1["mechanical_rejection"]
+    assert mech["bound"] == 2
+    assert mech["counts"] == {"C0": 0, "answer": 0, "http": 4, "ok": 0, "pipe": 3}
+    assert mech["rejected"] == ["http", "pipe"]
+    assert "model_answer" not in mech["classes_counted"] and "5H-19" in mech["rule"]
+    got = s1["failures"]["answer"]
+    assert got["classes"] == {**dict.fromkeys(s5.FAILURE_CLASSES, 0), "model_answer": 4}
+    assert got["reasons"] == {
+        "empty_completion": 1,
+        "empty_output": 1,
+        "finish_reason_not_stop": 1,
+        "prompt_blocked": 1,
+    }
+    assert s1["cells"]["H"]["answer"]["failures"] == 4  # failed pages, every field wrong
+    assert s1["cells"]["H"]["answer"]["critical_exact"] == 2 * (6 - 4)
+    assert "answer" in s1["kept"]
+    assert s1["failures"]["pipe"]["classes"]["pipeline_failure"] == 3
+    assert s1["failures"]["http"]["classes"] == {
+        **dict.fromkeys(s5.FAILURE_CLASSES, 0),
+        "time_limit": 2,
+        "runner_error": 1,
+        "operational": 1,
+    }
+
+
+@pytest.mark.parametrize("token", sorted(s5.INTEGRITY))
+def test_a_stored_integrity_token_refuses_selection(tmp_path: Path, token: str) -> None:
+    g, recs, _, raw = _screen(tmp_path, {"C0": {}, "x": {0: token}})
+    with pytest.raises(ContractError, match="integrity"):
+        s5.select_s1(recs, guard=g, baseline="C0", raw_dir=raw)
 
 
 def test_mechanical_rejection_counts_operational_time_limit_runner_error_and_pipeline(

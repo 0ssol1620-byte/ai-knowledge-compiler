@@ -468,11 +468,12 @@ def test_proxy_cut_with_a_busy_server_stops_with_exit_3(tmp_path, monkeypatch):
 def test_a_token_outside_the_table_is_refused_by_the_summary_as_by_the_selection(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """5H-18: a 400 is stored (one call, no retry), but http_400 is in no class of the one
-    table (it is before the lead): the driver's summary refuses it (exit 4, no final records, no
-    summary, nothing printed that names the page) and S1 refuses the same records."""
+    """5H-18/5H-19: an http_200 failure row is stored (one call, no retry), but 1xx/2xx are not
+    failure tokens and in no class of the one table (5H-19 classes 400 by rule, so it is no
+    longer the example): the driver's summary refuses it (exit 4, no final records, no summary,
+    nothing printed that names the page) and S1 refuses the same records."""
     w = world(tmp_path, monkeypatch)
-    model = Model({"p0.pdf": row("http_400")}, ok())
+    model = Model({"p0.pdf": row("http_200")}, ok())
     rc, _, _ = run(w, monkeypatch, model)
     assert rc == 4 and model.calls.count("p0.pdf") == 1
     assert not (w / "out" / "final-records.jsonl").exists()
@@ -482,7 +483,7 @@ def test_a_token_outside_the_table_is_refused_by_the_summary_as_by_the_selection
     records = [json.loads(x) for x in lines]
     assert records[0]["raw_sha256"] is not None
     manifest = json.loads((w / "manifest.json").read_text(encoding="utf-8"))
-    with pytest.raises(ContractError, match="http_400"):
+    with pytest.raises(ContractError, match="http_200"):
         select_5h.select_s1(
             records,
             guard=HoldoutGuard(manifest, w / "access.jsonl"),
@@ -517,6 +518,25 @@ def test_served_model_differs_is_integrity(tmp_path, monkeypatch):
     model = Model({"p0.pdf": row("served_model_differs")}, ok())
     rc, _, _ = run(w, monkeypatch, model)
     assert rc == 4 and model.calls == ["p0.pdf"]
+
+
+@pytest.mark.parametrize("kind", ["chat", "page"])
+@pytest.mark.parametrize("token", sorted(select_5h.INTEGRITY))
+def test_every_integrity_token_halts_with_exit_4_and_is_never_stored(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, token: str, kind: str
+) -> None:
+    """5H-19: each member of the named integrity set stops the run on the page that carries
+    it (exit 4); no final record, no raw output and no working record holds the token."""
+    w = world(tmp_path, monkeypatch)
+    model = Model({"p0.pdf": row(token, kind)}, ok(kind))
+    rc, _, _ = run(w, monkeypatch, model, kind=kind, pod=Pod(kind))
+    assert rc == 4 and model.calls == ["p0.pdf"]
+    out = w / "out"
+    assert not (out / "final-records.jsonl").exists()
+    assert not (out / "s0-summary.json").exists()
+    assert not (out / "raw").exists() or not any((out / "raw").iterdir())
+    working = out / "records.jsonl"
+    assert not working.exists() or token not in working.read_text(encoding="utf-8")
 
 
 def test_cost_is_price_times_latency_and_none_on_failure_rows(tmp_path, monkeypatch):
@@ -626,6 +646,7 @@ def test_a_runner_exception_is_its_own_class_and_counts_toward_rejection(tmp_pat
         "contract": 0,
         "page_refused": 0,
         "pipeline_failure": 0,
+        "model_answer": 0,
     }
     assert summary["mechanical"] == {"classes_counted": list(select_5h.MECHANICAL), "pages": 3}
 
@@ -887,7 +908,7 @@ def test_the_summary_counts_pages_with_a_dash_cell_before_a_number(tmp_path, mon
     assert "- | 1,234" in raw(w, recs["p0.pdf"])["text"]  # never joined into -1,234
 
 
-@pytest.mark.parametrize("latency", [None, "1800", True, -1.0, math.nan])
+@pytest.mark.parametrize("latency", [None, "1800", True, -1.0, math.nan, math.inf, -math.inf])
 def test_an_oversized_answer_keeps_only_a_latency_that_is_a_measurement(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, latency: Any
 ) -> None:
@@ -900,6 +921,21 @@ def test_an_oversized_answer_keeps_only_a_latency_that_is_a_measurement(
     assert raw(w, final(w)[0])["metrics"] == {"text_chars": s0.MAX_TEXT_CHARS + 1}
 
 
+@pytest.mark.parametrize("latency", [math.inf, math.nan])
+def test_a_latency_that_is_not_finite_is_never_priced(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, latency: float
+) -> None:
+    """The same predicate decides the price of an answered page: a non-finite latency gives no
+    cost (None), never an infinite or NaN one."""
+    w = world(tmp_path, monkeypatch, pages=1)
+    rc, _, _ = run(w, monkeypatch, Model({}, ok(latency=latency)))
+    assert rc == 0
+    rec = final(w)[0]
+    assert rec["provider_cost_usd"] is None
+    assert "estimated_cost_usd" not in raw(w, rec)["metrics"]
+    assert summary_of(w)["cost"]["pages_with_cost"] == 0
+
+
 def test_the_driver_has_no_failure_table_of_its_own() -> None:
     """5H-18: the table has one home, select_5h; the driver imports it."""
     for name in ("failure_class", "TIME_LIMIT", "UNAVAILABLE", "FAILURE_CLASSES", "MECHANICAL"):
@@ -909,6 +945,7 @@ def test_the_driver_has_no_failure_table_of_its_own() -> None:
     shared = {
         "failure_class": select_5h.failure_class,
         "OPERATIONAL": select_5h.OPERATIONAL,
+        "INTEGRITY": select_5h.INTEGRITY,
         "selection_reason": select_5h._reason,
     }
     for name, theirs in shared.items():
@@ -985,11 +1022,12 @@ def test_driver_summary_and_s1_count_the_same_failures_from_the_real_driver(
         row("pipeline_exit_nonzero", "page"),  # pipeline_failure
         row("pipeline_raised", "page"),  # pipeline_failure
         row("pipeline_output_missing", "page"),  # pipeline_failure
+        row("empty_output", "page"),  # model_answer (5H-19): failed, never mechanical
         ok("page"),
         ok("page"),
         ok("page"),
     ]
-    origins = [select_5h.DEGRADED if i % 2 else "born_digital_html_print" for i in range(16)]
+    origins = [select_5h.DEGRADED if i % 2 else "born_digital_html_print" for i in range(17)]
     w = world(tmp_path, monkeypatch, origins=origins)
     pod = Pod("page")
     pod.health = {**pod.health, "provider": "mineru_vlm"}
@@ -1019,8 +1057,13 @@ def test_driver_summary_and_s1_count_the_same_failures_from_the_real_driver(
         "contract": 1,
         "page_refused": 3,
         "pipeline_failure": 3,
+        "model_answer": 1,
     }
     assert summary["failure_classes"] == s1["failures"]["C0"]["classes"]
+    assert summary["failure_reasons"]["empty_output"] == 1
+    # every class is a failed page in S1's cells (all fields wrong), model_answer included
+    failed = sum(s1["cells"][s]["C0"]["failures"] for s in (select_5h.H, select_5h.R))
+    assert failed == sum(summary["failure_classes"].values()) == 14
     assert summary["failure_reasons"] == s1["failures"]["C0"]["reasons"]
     assert summary["score_flags_not_failures"] == s1["failures"]["C0"]["score_flags"]
     assert summary["mechanical"]["pages"] == s1["mechanical_rejection"]["counts"]["C0"] == 9
