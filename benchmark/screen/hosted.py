@@ -15,10 +15,13 @@ since one could carry a URL).
   fixed continues. A declared credential in an endpoint or a case id is an integrity stop
   (recorded, the arm stopped).
 * **Evidence is written once.** Every receipt is created exclusively (``_write_receipt``):
-  temporary file, the dry stage's sha256 into the ledger, then the receipt; no command replaces
-  a receipt. ``dry`` refuses when any trace of a dry stage exists; a partial dry stage (a
-  temporary receipt, an event without its receipt or the reverse) refuses every stage with
-  ``dry_incomplete``: the recovery is a new output directory.
+  temporary file, its sha256 into the ledger (dry and paid stages), then the receipt; no
+  command replaces a receipt. ``dry`` refuses when any trace of a dry stage exists; a partial
+  dry stage (a temporary receipt, an event without its receipt or the reverse) refuses every
+  stage with ``dry_incomplete``: the recovery is a new output directory. A paid stage is
+  completed (``complete_stage``) only after its bound receipt is on disk, and the next stage
+  checks the recorded sha256; the same command finishes what a crash between those steps left
+  without sending anything, or refuses with ``receipt_incomplete`` (``resume_receipt``).
 
 * **Completion.** One function (``stage_gaps``) decides whether a paid stage is complete: every
   page of the stage's dry plan has a terminal outcome (a collected result, a failure row, or a
@@ -155,6 +158,9 @@ RECEIPT_KEYS = (
 _loads = json.loads  # the one parser of provider bytes here (tests make it raise)
 RECEIPT, RECEIPT_TMP = "receipt.json", "receipt.json.tmp"
 DRY_INCOMPLETE = "dry_incomplete"
+RECEIPT_INCOMPLETE = "receipt_incomplete"
+PAID_STAGES = ("rehearsal", "full")
+STAGE_RECEIPT = "hosted.stage_receipt.v1"  # a paid stage's receipt sha256, recorded once
 
 
 class HostedPageRefused(ContractError):
@@ -680,6 +686,10 @@ class Arm:
             path = self.out / needed / "receipt.json"
             if not self.campaign.has_receipt(needed) or not path.is_file():
                 raise ContractError(f"stage {stage} requires the {needed} stage receipt")
+            if needed in PAID_STAGES:
+                bound = [p for p in self.events(STAGE_RECEIPT) if p.get("stage") == needed]
+                if len(bound) != 1 or bound[0].get("sha256") != _sha(path.read_bytes()):
+                    raise ContractError(f"the {needed} receipt is not the one the ledger recorded")
             if _read_receipt(path).get("spec_sha256") != self.spec.sha256:
                 raise ContractError(f"the {needed} receipt was written under another spec")
 
@@ -1429,14 +1439,32 @@ def _receipt(arm: Arm, stage: str, **values: Any) -> dict[str, Any]:
 
 
 def _create_once(path: Path, data: bytes) -> None:
-    """Create ``path`` with ``data``; an existing file is a refusal and is left as it is."""
+    """Create ``path`` with ``data``; an existing file is a refusal and is left as it is. A
+    write that fails removes the partial file this call created."""
     try:
-        with path.open("xb") as handle:
-            handle.write(data)
+        handle = path.open("xb")
     except FileExistsError:
         raise ContractError(
             f"{path.parent.name}/{path.name} already exists; a receipt is written once"
         ) from None
+    try:
+        with handle:
+            handle.write(data)
+    except BaseException:
+        path.unlink(missing_ok=True)
+        raise
+
+
+def _publish(tmp: Path, path: Path) -> None:
+    """``path`` becomes the temporary's bytes in one step (a hard link: never partial, refused
+    when ``path`` exists), then the temporary name is removed."""
+    try:
+        os.link(tmp, path)
+    except FileExistsError:
+        raise ContractError(
+            f"{path.parent.name}/{path.name} already exists; a receipt is written once"
+        ) from None
+    tmp.unlink()
 
 
 def _write_receipt(
@@ -1446,8 +1474,8 @@ def _write_receipt(
     bind: Callable[[str], object] | None = None,
 ) -> Path:
     """Every receipt of the arm, written once: the bytes go to ``receipt.json.tmp`` (created
-    exclusively), ``bind`` records their sha256 (the dry stage's ledger event), then
-    ``receipt.json`` is created exclusively and the temporary removed. No path is overwritten:
+    exclusively), ``bind`` records their sha256 in the ledger (dry and paid stages), then
+    ``receipt.json`` is linked to them and the temporary name removed. No path is overwritten:
     an existing receipt or temporary refuses the write."""
     path = arm.out / stage / RECEIPT
     data = json.dumps(receipt, ensure_ascii=False, indent=1, sort_keys=True).encode("utf-8")
@@ -1457,8 +1485,7 @@ def _write_receipt(
     _create_once(path.with_name(RECEIPT_TMP), data)
     if bind is not None:
         bind(_sha(data))
-    _create_once(path, data)
-    path.with_name(RECEIPT_TMP).unlink()
+    _publish(path.with_name(RECEIPT_TMP), path)
     return path
 
 
@@ -1891,17 +1918,22 @@ def _stage_jobs(arm: Arm, stage: str) -> list[dict[str, Any]]:
     ]
 
 
-def _teardown_stopped(arm: Arm, stage: str) -> None:
-    """A stopped stage that cannot finish still deletes its jobs and proves the 404, once."""
+def _unproven(arm: Arm, stage: str) -> list[str]:
+    """The stage's jobs that no teardown has yet proven gone (GET 404)."""
     proven = {
         rid
         for p in arm.events("campaign.teardown.v1")
         if p["stage"] == stage
         for rid in p["confirmed_404"]
     }
-    ids = [_resource_id(j["job"]) for j in _stage_jobs(arm, stage)]
-    if any(rid not in proven for rid in ids):
-        arm.campaign.teardown(stage, [rid for rid in ids if rid not in proven])
+    return [rid for j in _stage_jobs(arm, stage) if (rid := _resource_id(j["job"])) not in proven]
+
+
+def _teardown_stopped(arm: Arm, stage: str) -> None:
+    """A stopped stage that cannot finish still deletes its jobs and proves the 404, once."""
+    ids = _unproven(arm, stage)
+    if ids:
+        arm.campaign.teardown(stage, ids)
 
 
 def _run_paid(
@@ -1921,8 +1953,10 @@ def _run_paid(
     dry_state(arm)  # a partial dry stage refuses every stage
     if arm.campaign.has_receipt(stage):
         raise ContractError(f"the {stage} stage is already complete")
-    if any((arm.out / stage / name).exists() for name in (RECEIPT, RECEIPT_TMP)):
-        raise ContractError(f"{stage}/{RECEIPT} exists without its stage record; written once")
+    if resume_receipt(arm, stage):  # a crash after the receipt: only its completion is left
+        _refuse_environment(arm, stage, [GEMINI])
+        _complete(Arm(spec, arm.out, arm.campaign.provider), stage)
+        return 0
     arm.require(stage)
     env = (environment or (lambda: check_environment(WORKTREE, spec.renderer_version)))()
     snapshots = check_snapshots(spec, snapshot_dir)
@@ -1951,15 +1985,7 @@ def _run_paid(
     needed = [GEMINI]
     if todo_m and not arm.campaign.stopped and not arm.provider_stopped(MISTRAL):
         needed.append(MISTRAL)
-    refusals = [(p, r) for p in needed if (r := operator_refusal(spec, p)) is not None]
-    for provider, reason in refusals:
-        _record_local_refusal(arm, provider, stage, reason)
-    if refusals:
-        named = ", ".join(f"{p}: {r}" for p, r in refusals)
-        raise ContractError(
-            f"local refusal ({named}); nothing was sent or cancelled: fix the environment "
-            "and run the same command"
-        )
+    _refuse_environment(arm, stage, needed)
     before = _budgets(arm)
     plan = build_plan(spec, todo_g, corpus_root)  # renders only; nothing is sent
     _bind(plan, pages)
@@ -2012,6 +2038,18 @@ def _run_paid(
     return _finish_stage(arm, stage, pages, env, snapshots, manifest, refused, before)
 
 
+def _refuse_environment(arm: Arm, stage: str, needed: Sequence[str]) -> None:
+    refusals = [(p, r) for p in needed if (r := operator_refusal(arm.spec, p)) is not None]
+    for provider, reason in refusals:
+        _record_local_refusal(arm, provider, stage, reason)
+    if refusals:
+        named = ", ".join(f"{p}: {r}" for p, r in refusals)
+        raise ContractError(
+            f"local refusal ({named}); nothing was sent or cancelled: fix the environment "
+            "and run the same command"
+        )
+
+
 def operational(reason: str) -> bool:
     """A failure that says what happened to the request, not what the model wrote."""
     return reason in OPERATIONAL_REASONS or reason.startswith("http_")
@@ -2027,23 +2065,30 @@ def _finish_stage(
     refused: list[dict[str, str]],
     before: dict[str, Any],
 ) -> int:
+    """The stage's last steps, in this order: teardown proven (the jobs deleted, GET 404, the
+    orphan audit passed), the receipt to ``receipt.json.tmp``, the credential scan of those
+    bytes and their sha256 into the ledger (``hosted.stage_receipt.v1``), ``receipt.json``,
+    and only then ``complete_stage`` (settlement and ``campaign.stage_receipt.v1``). A stage is
+    therefore never complete without its bound receipt; ``resume_receipt`` finishes or refuses
+    whatever a crash between two steps left. ``budget_after`` is the budgets when the receipt
+    is written: ``complete_stage`` then settles the stage at ``results.mistral_actual_usd``."""
     gaps = stage_gaps(arm, stage, pages)
     if gaps:
         raise ContractError(f"the {stage} stage is not complete: {len(gaps)} without outcome")
-    settled = [p for p in arm.events("hosted.page.settled.v1") if p.get("stage") == stage]
-    actual = sum((Decimal(str(p["actual_usd"])) for p in settled), Decimal(0))
+    settled, actual = _settled(arm, stage)
     jobs = _stage_jobs(arm, stage)
-    arm.campaign.complete_stage(
-        stage,
-        actual_cost_usd=actual,
-        partial_results={"mistral_attempts": len(settled), "gemini_jobs": len(jobs)},
-        resource_ids=[_resource_id(j["job"]) for j in jobs],
-    )
+    ids = _unproven(arm, stage)
+    if arm.campaign.stopped and arm.campaign.provider is not None:  # as complete_stage sweeps
+        tagged = arm.campaign.provider.tagged_resource_ids(arm.spec.campaign.run_tag)
+        ids += [r for r in tagged if r not in ids]
+    if not arm.campaign.teardown(stage, ids):
+        raise ContractError(f"teardown of {stage} is not proven; no stage receipt")
     teardown = [p for p in arm.events("campaign.teardown.v1") if p["stage"] == stage]
     timeline = arm.events("hosted.job.polled.v1")
     for job in jobs:
         job["states"] = [p["state"] for p in timeline if p["job"] == job["job"]]
     scan = scan_credentials(arm, [arm.out / stage, arm.out / "collected"])
+    provider = arm.campaign.provider
     arm = Arm(arm.spec, arm.out, NoNetwork())
     keys = {j["idempotency_key"] for j in jobs}
     not_run = [
@@ -2080,12 +2125,97 @@ def _finish_stage(
         budget_before=before,
         budget_after=_budgets(arm),
         ledger_terminal_sha256=arm.ledger.terminal_sha256(),
-        teardown=teardown[-1] if teardown else None,
+        teardown=teardown[-1],
         credential_scan=scan,
     )
-    path = _write_receipt(arm, stage, receipt)
-    scan_credentials(arm, [path])  # the last step, in the same process
+    _write_receipt(arm, stage, receipt, bind=lambda sha: _bind_paid(arm, stage, sha))
+    _complete(Arm(arm.spec, arm.out, provider), stage)
     return 0
+
+
+def _settled(arm: Arm, stage: str) -> tuple[list[Mapping[str, Any]], Decimal]:
+    settled = [p for p in arm.events("hosted.page.settled.v1") if p.get("stage") == stage]
+    return settled, sum((Decimal(str(p["actual_usd"])) for p in settled), Decimal(0))
+
+
+def _bind_paid(arm: Arm, stage: str, sha: str) -> None:
+    """The temporary receipt through the credential scan, then its sha256 into the ledger."""
+    if scan_credentials(arm, [arm.out / stage / RECEIPT_TMP])["hits"]:
+        raise ContractError(
+            f"the {stage} receipt carried a credential; it is in quarantine and the arm is "
+            "stopped: the lead decides"
+        )
+    arm.ledger.append(STAGE_RECEIPT, {"stage": stage, "sha256": sha})
+
+
+def _complete(arm: Arm, stage: str) -> None:
+    """The last step of a paid stage, after its receipt is bound and on disk: settlement from
+    the ledger, the teardown of any job not yet proven gone (none after ``_finish_stage``'s)
+    with the orphan audit, then ``campaign.stage_receipt.v1``."""
+    settled, actual = _settled(arm, stage)
+    arm.campaign.complete_stage(
+        stage,
+        actual_cost_usd=actual,
+        partial_results={
+            "mistral_attempts": len(settled),
+            "gemini_jobs": len(_stage_jobs(arm, stage)),
+        },
+        resource_ids=_unproven(arm, stage),
+    )
+
+
+def _incomplete(stage: str, why: str) -> ContractError:
+    return ContractError(
+        f"{RECEIPT_INCOMPLETE}: {stage}: {why}; its evidence is written once and nothing was "
+        "sent: the lead decides"
+    )
+
+
+def resume_receipt(arm: Arm, stage: str) -> bool:
+    """Where a crash left a paid stage's receipt (order in ``_finish_stage``), before anything
+    else of the stage runs. False: no trace of a receipt (the stage runs; a crash while
+    writing the temporary removes the partial file). True: ``receipt.json`` holds the bytes
+    whose sha256 the ledger recorded, and only ``complete_stage`` is left. In between, with no
+    provider call: a temporary whose sha256 was not recorded is bound when it is this stage's
+    receipt for the ledger exactly as it stands (else refused); a bound temporary becomes
+    ``receipt.json``; a temporary left beside the bound receipt is removed. Any other state is
+    refused with ``receipt_incomplete``."""
+    tmp, path = arm.out / stage / RECEIPT_TMP, arm.out / stage / RECEIPT
+    bound = [p for p in arm.events(STAGE_RECEIPT) if p.get("stage") == stage]
+    if len(bound) > 1:
+        raise _incomplete(stage, f"the ledger records {len(bound)} receipts")
+    if not bound:
+        if path.exists():
+            raise _incomplete(stage, f"{RECEIPT} has no ledger record")
+        if not tmp.exists():
+            return False
+        data = tmp.read_bytes()
+        try:
+            draft = json.loads(data)
+        except (ValueError, RecursionError):
+            draft = None
+        if not (
+            isinstance(draft, dict)
+            and draft.get("stage") == stage
+            and draft.get("dry_run") is False
+            and draft.get("spec_sha256") == arm.spec.sha256
+            and draft.get("ledger_terminal_sha256") == arm.ledger.terminal_sha256()
+        ):
+            raise _incomplete(stage, f"{RECEIPT_TMP} is not its receipt for the ledger as it is")
+        _bind_paid(arm, stage, _sha(data))
+        bound = [p for p in arm.events(STAGE_RECEIPT) if p.get("stage") == stage]
+    sha = bound[0].get("sha256")
+    if not path.exists():
+        if not tmp.is_file() or _sha(tmp.read_bytes()) != sha:
+            raise _incomplete(stage, "no file holds the bytes the ledger recorded")
+        _publish(tmp, path)
+    elif _sha(path.read_bytes()) != sha:
+        raise _incomplete(stage, f"{RECEIPT} is not the one the ledger recorded")
+    elif tmp.exists():
+        if _sha(tmp.read_bytes()) != sha:
+            raise _incomplete(stage, f"{RECEIPT_TMP} differs from the bound receipt")
+        tmp.unlink()
+    return True
 
 
 def in_progress_stage(arm: Arm) -> str:
