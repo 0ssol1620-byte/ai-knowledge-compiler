@@ -167,6 +167,7 @@ def run(
             thinking_config=thinking_config,
             media_resolution=media_resolution,
         ),
+        model_revision=model,
     )
 
 

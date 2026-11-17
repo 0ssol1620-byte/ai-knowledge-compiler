@@ -38,4 +38,4 @@ def run(
         run_config = RunnerConfig(PROVIDER, pinned["model"], endpoint, allow_network)
         return external_exchange(run_config, case, token)
 
-    return guarded(PROVIDER_CREDENTIAL, endpoint, PROVIDER, case, body)
+    return guarded(PROVIDER_CREDENTIAL, endpoint, PROVIDER, case, body, model_revision=model)

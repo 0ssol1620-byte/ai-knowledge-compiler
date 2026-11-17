@@ -82,6 +82,7 @@ def run_chat(
             revision=revision,
             allow_network=allow_network,
         ),
+        model_revision=revision,
     )
 
 

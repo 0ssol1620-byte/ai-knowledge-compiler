@@ -1682,3 +1682,182 @@ def test_exit_an_unserialisable_result_or_a_credential_in_the_inputs_fails_close
     with pytest.raises(RunnerUnavailable) as caught:
         base.seal(tainted, _payload(), lambda: {"model_revision": marker})
     _assert_absent(marker, None, caught.value, "")
+
+
+# --- WO-D10-0D: the WO-D10-0C review notes closed (tests 1-8 of the work order) ---
+
+
+def _escaped(value: str) -> str:
+    return "".join(f"\\u{ord(c):04x}" for c in value)
+
+
+@pytest.mark.parametrize("provider", ["gemini_api", "mineru"])
+@pytest.mark.parametrize("hide", ["b64_hex", "b64_escaped"])
+def test_d0d_01_a_caller_id_that_hides_the_key_withholds_the_failure_row(
+    provider: str, hide: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    marker = _marker()
+    monkeypatch.setenv(_credential_of(provider), marker)
+    hidden = {
+        "b64_hex": base64.b64encode(marker.encode().hex().encode()).decode(),
+        "b64_escaped": base64.b64encode(f'"{_escaped(marker)}"'.encode()).decode(),
+    }[hide]
+    monkeypatch.setattr(vlm, "post_bytes", _Echo("echo_text", marker))
+    monkeypatch.setattr(base, "post_bytes", _Echo("echo_text", marker))
+    with pytest.raises(RunnerUnavailable, match="inputs carried a credential") as caught:
+        EXTERNAL_RUNNERS[provider](
+            {**_payload(), "benchmark_case_id": hidden}, **_runner_kwargs(provider, None)
+        )
+    _assert_absent(marker, None, caught.value, "")
+
+
+def test_d0d_02_a_parse_error_whose_attributes_echo_the_key_is_withheld(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    marker = _marker()
+    monkeypatch.setenv("AKC_BENCHMARK_PROVIDER_TOKEN", marker)
+    raw = ('{"provider": "mineru", "echo": "' + marker + '"').encode()  # broken JSON
+    monkeypatch.setattr(base, "post_bytes", FakeTransport(200, raw))
+    with pytest.raises(RunnerUnavailable, match="withheld") as caught:
+        EXTERNAL_RUNNERS["mineru"](_payload(), **_runner_kwargs("mineru", None))
+    chain: list[BaseException | None] = [caught.value]
+    while chain:
+        exc = chain.pop()
+        if exc is None:
+            continue
+        seen = f"{exc!s} {exc.args!r} {vars(exc)!r} {getattr(exc, 'doc', '')}"
+        assert marker not in seen
+        chain += [exc.__cause__, exc.__context__]
+
+
+@pytest.mark.parametrize("status", [200, 401])
+def test_d0d_03_a_broken_json_body_holding_the_key_escaped_is_caught(
+    status: int, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    raw = ('{"modelVersion": "' + GEMINI + '", "x": "' + _escaped(KEY) + '"').encode()
+    assert KEY.encode() not in raw
+    out = _call("gemini_api", FakeTransport(status, raw), monkeypatch)
+    assert out["failure"] == {"reason": base.CREDENTIAL_IN_RESULT}
+    assert "raw_response_b64" not in json.dumps(out)
+
+
+@pytest.mark.parametrize("shift", range(5))
+@pytest.mark.parametrize("case", ["upper", "lower"])
+def test_d0d_04_the_key_in_base32_is_seen_at_every_alignment(
+    shift: int, case: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spelled = base64.b32encode(b"x" * shift + KEY.encode() + b"tail").decode()
+    spelled = spelled.lower() if case == "lower" else spelled
+    parts = [{"text": "page " + spelled}]
+    raw = _gemini(candidates=[{"finishReason": "STOP", "content": {"parts": parts}}])
+    out = _call("gemini_api", FakeTransport(200, raw), monkeypatch)
+    assert out["failure"] == {"reason": base.CREDENTIAL_IN_RESULT}
+
+
+def test_d0d_04_an_endpoint_path_in_base32_of_the_key_is_refused_at_the_door(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    b32 = base64.b32encode(KEY.encode()).decode().rstrip("=")
+    endpoint = f"https://g.example/{b32}/v1beta/models/{GEMINI}:generateContent"
+    transport = FakeTransport(200, _gemini())
+    with pytest.raises(RunnerUnavailable, match="credential"):
+        _call("gemini_api", transport, monkeypatch, endpoint=endpoint)
+    assert transport.calls == []
+
+
+def test_d0d_05_an_exception_whose_text_cannot_be_read_is_withheld(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("AKC_BENCHMARK_PROVIDER_TOKEN", _marker())
+
+    class Unreadable(RuntimeError):
+        def __str__(self) -> str:
+            raise ValueError("no text")
+
+    def produce() -> dict[str, Any]:
+        raise Unreadable()
+
+    with pytest.raises(RunnerUnavailable, match="withheld"):
+        base.seal(base.RunnerConfig("p", REVISION), _payload(), produce)
+
+
+def test_d0d_06_a_dict_key_holding_the_key_is_seen(monkeypatch: pytest.MonkeyPatch) -> None:
+    marker = _marker()
+    monkeypatch.setenv("AKC_BENCHMARK_PROVIDER_TOKEN", marker)
+    hidden = base64.b64encode(marker.encode().hex().encode()).decode()
+    out = base.seal(base.RunnerConfig("p", REVISION), _payload(), lambda: {"m": {hidden: 1}})
+    assert out["failure"] == {"reason": base.CREDENTIAL_IN_RESULT}
+
+
+def test_d0d_07_a_percent_encoded_key_is_seen(monkeypatch: pytest.MonkeyPatch) -> None:
+    from urllib.parse import quote
+
+    marker = _marker() + "/+="
+    monkeypatch.setenv("AKC_BENCHMARK_PROVIDER_TOKEN", marker)
+
+    def produce() -> dict[str, Any]:
+        return {"t": quote(marker, safe="")}
+
+    out = base.seal(base.RunnerConfig("p", REVISION), _payload(), produce)
+    assert out["failure"] == {"reason": base.CREDENTIAL_IN_RESULT}
+
+
+@pytest.mark.parametrize(
+    ("label", "named"),
+    [
+        (GEMINI, GEMINI),
+        (REVISION, REVISION),
+        ("ATH-MaaS/OvisOCR3@" + REVISION, "ATH-MaaS/OvisOCR3@" + REVISION),
+        ("gemini 4", ""),
+        ("KEY", ""),
+        (None, ""),
+        (5, ""),
+        ("x" * 129, ""),
+        ("-leading", ""),
+    ],
+)
+def test_d0d_08_the_outer_seal_names_the_requested_model_or_nothing(
+    label: Any, named: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    marker = _marker()
+    monkeypatch.setenv("GEMINI_API_KEY", marker)
+    label = marker if label == "KEY" else label
+    out = base.guarded(
+        "GEMINI_API_KEY",
+        None,
+        "gemini_api",
+        _payload(),
+        lambda _: {"t": marker},
+        model_revision=label,
+    )
+    assert out["failure"] == {"reason": base.CREDENTIAL_IN_RESULT}
+    assert out["model_revision"] == named
+
+
+def test_d0d_08_every_runner_passes_its_own_model_or_revision_to_the_door(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import importlib
+
+    seen: dict[str, Any] = {}
+    real = base.guarded
+
+    def spy(name: str, endpoint: Any, provider: str, payload: Any, body: Any, **kw: Any) -> Any:
+        seen[provider] = kw.get("model_revision")
+        return real(name, endpoint, provider, payload, body, **kw)
+
+    for module in ("base", "gemini_api", "mistral_ocr", "openai_chat"):
+        monkeypatch.setattr(importlib.import_module(f"benchmark.runners.{module}"), "guarded", spy)
+    for name in base.CREDENTIAL_ENV:
+        monkeypatch.setenv(name, _marker())
+    monkeypatch.setattr(vlm, "post_bytes", FakeTransport(500, b"{}"))
+    monkeypatch.setattr(base, "post_bytes", FakeTransport(500, b"{}"))
+    for provider in ("gemini_api", "mistral_ocr_4", "ovis_ocr3", "mineru"):
+        with contextlib.suppress(RunnerUnavailable):
+            EXTERNAL_RUNNERS[provider](_payload(), **_runner_kwargs(provider, None))
+    assert seen == {
+        "gemini_api": GEMINI,
+        "mistral_ocr_4": "mistral-ocr-4-1",
+        "ovis_ocr3": REVISION,
+        "mineru": REVISION,
+    }

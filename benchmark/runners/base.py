@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import base64
-import contextlib
 import copy
 import hashlib
 import hmac
@@ -29,7 +28,7 @@ class RunnerUnavailable(RuntimeError):
 
 # Every environment value a runner sends as a credential. A runner reads one only through
 # ``read_credential``; ``seal`` keeps all of them out of what any runner returns or raises.
-CREDENTIAL_ENV = ("AKC_BENCHMARK_PROVIDER_TOKEN", "GEMINI_API_KEY")
+CREDENTIAL_ENV = ("AKC_BENCHMARK_PROVIDER_TOKEN", "GEMINI_API_KEY", "MISTRAL_API_KEY")
 PROVIDER_CREDENTIAL = CREDENTIAL_ENV[0]  # the bearer token of chat and external runners
 CREDENTIAL_IN_RESULT = "credential_in_result"
 
@@ -66,25 +65,43 @@ def read_credential(name: str, endpoint: object) -> str | None:
     return os.getenv(name) or None
 
 
+_LABEL = re.compile(r"[A-Za-z0-9][A-Za-z0-9._@/-]{0,127}")
+
+
 def guarded(
     name: str,
     endpoint: object,
     provider: str,
     payload: object,
     body: Callable[[str | None], dict[str, Any]],
+    *,
+    model_revision: object = "",
 ) -> dict[str, Any]:
     """The shape of every public runner entry point: the door first (credential read, endpoint
     checked) before any other argument is looked at, then everything else, every validation
-    and every refusal it raises included, inside ``seal``."""
+    and every refusal it raises included, inside ``seal``. ``model_revision`` is the model id
+    or revision the caller asked for: the outer seal's failure row names it when it is a
+    plain label (``_LABEL``) that carries no credential, and ``""`` otherwise."""
     credential = read_credential(name, endpoint)
-    return seal(RunnerConfig(provider, ""), payload, lambda: body(credential))
+    label = ""
+    if (
+        isinstance(model_revision, str)
+        and _LABEL.fullmatch(model_revision)
+        and not carries_credential(model_revision)
+    ):
+        label = model_revision
+    return seal(RunnerConfig(provider, label), payload, lambda: body(credential))
 
 
 def _needles(value: str) -> list[str]:
     """The value as it can appear in a serialised result: itself, JSON-escaped,
-    percent-encoded, hex (both cases), and inside base64 or URL-safe base64 (raw response bytes
-    are stored base64) at each of the three byte alignments. Case-insensitive and NFKC-folded
-    matches of the value itself are made by ``carries_credential``."""
+    percent-encoded, hex (both cases), inside base64 or URL-safe base64 (raw response bytes
+    are stored base64) at each of the three byte alignments, and inside RFC 4648 base32 (upper
+    and lower case, padding-free core) at each of the five byte alignments. Case-insensitive
+    and NFKC-folded matches of the value itself are made by ``carries_credential``.
+
+    Not modelled, and not claimed: the value reversed, split by separators, interleaved with
+    zero-width characters, or encoded as UTF-16 before base64."""
     data = value.encode("utf-8")
     found = {value, json.dumps(value)[1:-1], json.dumps(value, ensure_ascii=False)[1:-1]}
     found.add(quote(value, safe=""))
@@ -95,6 +112,12 @@ def _needles(value: str) -> list[str]:
         core = encoded[(0, 2, 3)[shift] : (8 * (shift + len(data))) // 6]
         if core:
             found.update({core, core.translate(_URLSAFE)})
+    for shift in range(5):
+        encoded = base64.b32encode(b"\0" * shift + data).decode("ascii")
+        # a base32 character is 5 bits: keep only those made of the value's bits alone
+        core = encoded[-(-8 * shift // 5) : (8 * (shift + len(data))) // 5]
+        if core:
+            found.update({core, core.lower()})
     return sorted(found)
 
 
@@ -116,7 +139,8 @@ def carries_credential(text: str) -> bool:
 
 
 def _exception_text(exc: BaseException) -> str:
-    """Every text a caller could print: each exception of the cause/context chain, its notes,
+    """Every text a caller could print or read: each exception of the cause/context chain, its
+    notes, its attributes (``vars``: e.g. ``JSONDecodeError.doc``; ``UnicodeError.object``),
     and the members of an exception group."""
     texts: list[str] = []
     seen: set[int] = set()
@@ -127,6 +151,13 @@ def _exception_text(exc: BaseException) -> str:
             continue
         seen.add(id(current))
         texts.append(f"{type(current).__name__}: {current!s} {current.args!r}")
+        attributes = list(getattr(current, "__dict__", {}).values())
+        if isinstance(current, UnicodeError):
+            attributes.append(getattr(current, "object", None))
+        for value in attributes:
+            if isinstance(value, bytes | bytearray):
+                value = bytes(value).decode("utf-8", "replace")
+            texts.append(value if isinstance(value, str) else repr(value))
         notes = getattr(current, "__notes__", None)
         texts.append(repr(notes))
         if isinstance(notes, list | tuple):
@@ -152,9 +183,31 @@ def _strings(value: Any) -> list[str]:
     return found
 
 
+_ESCAPE = re.compile(
+    r"\\u(d[89ab][0-9a-f]{2})\\u(d[c-f][0-9a-f]{2})|\\u([0-9a-f]{4})|\\/", re.IGNORECASE
+)
+
+
+def _unescape(text: str) -> str:
+    """JSON string escapes resolved in text that is not valid JSON: ``\\uXXXX`` (a surrogate
+    pair joined; a lone surrogate and a malformed escape left as they are) and ``\\/``."""
+
+    def one(match: re.Match[str]) -> str:
+        high, low, single = match.groups()
+        if high:
+            return chr(0x10000 + ((int(high, 16) - 0xD800) << 10) + (int(low, 16) - 0xDC00))
+        if single:
+            code = int(single, 16)
+            return match.group(0) if 0xD800 <= code <= 0xDFFF else chr(code)
+        return "/"
+
+    return _ESCAPE.sub(one, text)
+
+
 def _result_text(result: Any) -> str:
     """The serialised result, plus each base64 string in it decoded (a stored raw response)
-    and, where that is JSON, re-serialised after ``json.loads`` so escapes are resolved."""
+    and, where that is JSON, re-serialised after ``json.loads`` so escapes are resolved; where
+    it is not JSON (a broken body), with its JSON escapes resolved by ``_unescape``."""
     views = [json.dumps(result, ensure_ascii=False, sort_keys=True)]
     for text in _strings(result):
         try:
@@ -162,8 +215,10 @@ def _result_text(result: Any) -> str:
         except ValueError:
             continue
         views.append(decoded)
-        with contextlib.suppress(ValueError, RecursionError):
+        try:
             views.append(json.dumps(json.loads(decoded), ensure_ascii=False))
+        except (ValueError, RecursionError):
+            views.append(_unescape(decoded))
     return "\n".join(views)
 
 
@@ -204,7 +259,11 @@ def seal(
         "failure": {"reason": reason},
         "receipt": {"revision_attested": False},
     }
-    if carries_credential(json.dumps(failure, ensure_ascii=False, default=str)):
+    try:  # the same view as the result check: base64 strings decoded, escapes resolved
+        failure_text = _result_text(failure)
+    except (TypeError, ValueError, RecursionError):
+        raise RunnerUnavailable("runner inputs could not be checked; result withheld") from None
+    if carries_credential(failure_text):
         raise RunnerUnavailable("runner inputs carried a credential; result withheld")
     return failure
 
@@ -426,6 +485,7 @@ def run_external(config: RunnerConfig, payload: dict[str, Any]) -> dict[str, Any
         config.provider,
         payload,
         lambda token: external_exchange(config, payload, token),
+        model_revision=config.model_revision,
     )
 
 
