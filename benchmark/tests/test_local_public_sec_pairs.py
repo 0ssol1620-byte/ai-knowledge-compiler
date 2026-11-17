@@ -275,3 +275,61 @@ def test_ixbrl_context_length_must_match_qtrs_so_q2_pair_is_exact():
     assert case.date_basis == "exact"
     text = " ".join(r.text for d in case.after for r in d.regions)
     assert "2025-04-01 to 2025-06-30" in text and "2025-01-01 to 2025-06-30" in text
+
+
+def _builder(missing: set[str], boom: Exception | None = None):
+    def build(k: str):
+        if k in missing:
+            raise sp.MissingSide(k)
+        if boom is not None:
+            raise boom
+        return _case("B")
+
+    return sp.drop_missing(build)
+
+
+def test_a_missing_side_is_a_counted_drop_and_the_quota_is_filled_later():
+    keys = [f"k{i}" for i in range(6)]
+    first = sp.order(keys, "s")[:2]
+    got, drops = sp.fill(keys, "s", 3, _builder(set(first)))
+    assert len(got) == 3
+    assert [d.key for d in drops] == first
+    assert {d.reason for d in drops} == {"side_not_in_manifest"}
+    stats = sp.stratum_stats(len(keys), got, drops, 3)
+    assert stats == {
+        "candidates": 6, "built": 3, "shortfall": 0,
+        "dropped_by_reason": {"side_not_in_manifest": 2},
+    }  # fmt: skip
+
+
+def test_nothing_missing_gives_the_same_pairs_as_before():
+    keys = [f"k{i}" for i in range(5)]
+    plain = sp.fill(keys, "s", 3, lambda k: _case("B"))
+    wrapped = sp.fill(keys, "s", 3, _builder(set()))
+    assert plain == wrapped and wrapped[1] == []
+
+
+@pytest.mark.parametrize(
+    "err", [sp.sources.HashMismatch("h"), sp.sources.SourceError("io"), OSError("x")]
+)
+def test_an_integrity_or_read_error_is_not_a_drop(err):
+    with pytest.raises(type(err)):
+        sp.fill(["k"], "s", 1, _builder(set(), err))
+
+
+def test_missing_sec_filing_is_the_only_missing_that_drops():
+    # a non-filing SourceMissing is not wrapped into MissingSide, so drop_missing lets it through
+    with pytest.raises(sp.sources.SourceMissing):
+        sp.fill(["k"], "s", 1, _builder(set(), sp.sources.SourceMissing("sec_fsds/x")))
+
+
+def test_the_drop_counts_reach_the_written_manifest(tmp_path: Path):
+    stats = sp.stratum_stats(4, [_case("B")], [Dropped("side_not_in_manifest", "k")], 3)
+    res = sp.Result(cases=[_case("B")], drops=[Dropped("side_not_in_manifest", "k")],
+                    strata={sp.SUCC_10K: stats})  # fmt: skip
+    path = sp.write(
+        res, tmp_path, requested_at=NOW, lpc_manifest_sha256="a" * 64, excluded=frozenset({9})
+    )
+    prov = json.loads(path.read_text())["provenance"]
+    assert prov["strata"][sp.SUCC_10K]["dropped_by_reason"] == {"side_not_in_manifest": 1}
+    assert prov["strata"][sp.SUCC_10K]["shortfall"] == 2
