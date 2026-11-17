@@ -357,6 +357,9 @@ def align(
     ctxs, facts, root = (
         contexts(html_bytes) if sub["instance"].endswith("_htm.xml") else ({}, [], None)
     )
+    by_name: dict[str, list[_Fact]] = {}  # document order kept within a name
+    for f in facts:
+        by_name.setdefault(f.name, []).append(f)
     out: list[Candidate | Excluded] = []
     for r in num_rows:
 
@@ -373,7 +376,7 @@ def align(
         elif not sub["instance"].endswith("_htm.xml"):
             no("no_inline_xbrl")
         else:
-            _row(sub, r, pre, ctxs, facts, root, gold_value, out, no)
+            _row(sub, r, pre, ctxs, by_name.get(r["tag"], []), root, gold_value, out, no)
     return out
 
 
@@ -382,7 +385,7 @@ def _row(
     r: dict[str, str],
     pre: dict[str, str],
     ctxs: dict[str, _Ctx],
-    facts: list[_Fact],
+    facts: list[_Fact],  # those named r["tag"], in document order
     root: Any,
     gold_value: Callable[[dict[str, Any]], Any],
     out: list[Candidate | Excluded],
