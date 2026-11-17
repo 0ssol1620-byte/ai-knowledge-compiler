@@ -519,6 +519,16 @@ def test_holdout_output_is_compared_with_the_frozen_recipe_body(tmp_path: Path) 
         "no body": {"recipe": None},
         "tampered": {"recipe": {**recipe, "member_order": ["P", "Q", "S"]}},
     }
+    for pin, value in (
+        ("revision", "e" * 40),
+        ("image_digest", "sha256:" + "e" * 64),
+        ("config_sha256", "sha256:" + "e" * 64),
+    ):
+        moved = copy.deepcopy(hold)
+        next(r for r in moved if r["candidate_id"] == "Q")[pin] = value
+        with pytest.raises(ContractError, match="pins differ"):
+            s5.signals_s3(moved, htexts, GOLD, **base)
+        assert not (tmp_path / "holdout-access.jsonl").exists(), pin
     for name, change in bad.items():
         with pytest.raises(ContractError):
             s5.signals_s3(hold, htexts, GOLD, **{**base, **change})

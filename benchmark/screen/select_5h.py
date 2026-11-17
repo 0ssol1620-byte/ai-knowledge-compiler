@@ -403,8 +403,10 @@ def _check_recipe(
     digest: str,
     members: Sequence[str],
     escalate_on: Sequence[str],
+    records: Sequence[dict[str, Any]],
 ) -> None:
-    """The run must be the frozen recipe: same digest, same body, same members and signals."""
+    """The run must be the frozen recipe: same digest, same body, same members and signals,
+    and every record carries the pins (revision, image digest, config digest) the recipe froze."""
     if recipe is None:
         raise ContractError("a frozen recipe digest needs the recipe body it names")
     body = {k: v for k, v in recipe.items() if k != "recipe_sha256"}
@@ -416,6 +418,19 @@ def _check_recipe(
         raise ContractError("members differ from the frozen recipe")
     if sorted(escalate_on) != recipe["escalate_on"]:
         raise ContractError("escalation signals differ from the frozen recipe")
+    frozen = {
+        m["candidate_id"]: (m["revision"], m["image_digest"], m["config_sha256"])
+        for m in recipe["members"]
+    }
+    for r in records:
+        if r["candidate_id"] in frozen and frozen[r["candidate_id"]] != (
+            r["revision"],
+            r["image_digest"],
+            r["config_sha256"],
+        ):
+            raise ContractError(
+                f"{r['candidate_id']} {r['page_id']}: pins differ from the frozen recipe"
+            )
 
 
 def signals_s3(
@@ -444,7 +459,7 @@ def signals_s3(
         raise ValueError(f"escalate_on must name measured signals of {sorted(SIGNALS)}")
     purpose = "calibrate" if split == "dev" else "evaluate_frozen"
     if frozen_recipe_sha256 is not None:
-        _check_recipe(recipe, frozen_recipe_sha256, members, escalate_on)
+        _check_recipe(recipe, frozen_recipe_sha256, members, escalate_on, records)
     scope = _scope(guard, split, purpose, frozen_recipe_sha256)
     mine = [r for r in records if r["candidate_id"] in members]
     by = _check(mine, scope)
