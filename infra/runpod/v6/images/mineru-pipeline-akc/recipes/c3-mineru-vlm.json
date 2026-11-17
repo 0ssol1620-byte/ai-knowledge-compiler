@@ -17,6 +17,7 @@
   "accelerate": "1.14.0",
   "pypdfium2": "4.30.0"
  },
+ "absent_packages": ["vllm", "lmdeploy"],
  "service": {
   "argv": [
    "/usr/local/bin/mineru-api", "--host", "127.0.0.1", "--port", "8000",
@@ -35,11 +36,11 @@
  "lang_by_language": {},
  "env": {"MINERU_TOOLS_CONFIG_JSON": "/opt/akc/mineru-vlm.json"},
  "output_glob": "**/*.md",
- "timeout_s": 175,
+ "timeout_s": 90,
  "options": {
   "tool": "mineru 3.4.4",
   "backend": "vlm-engine",
-  "inference_engine": "transformers (vllm not installed), as the recorded C1 bootstrap",
+  "inference_engine": "transformers: the documented engine modules vllm and lmdeploy are not installed (the server refuses to start if either is), as the recorded C1 bootstrap",
   "formula": true,
   "table": true,
   "image_analysis": true,

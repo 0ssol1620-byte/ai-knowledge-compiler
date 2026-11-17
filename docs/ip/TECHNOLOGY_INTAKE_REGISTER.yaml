@@ -494,7 +494,11 @@ arena_intake:
         verdict: not_applicable
         basis: "Self-hosted."
     # What the arena C1 image installs (WO-D10-0I): the production stage of
-    # workers/gpu-parser/Dockerfile, wrapped as it is. PyPI metadata read 2026-11-17,
+    # workers/gpu-parser/Dockerfile, wrapped as it is, plus paddlex pinned to 3.7.2
+    # (round 2). paddlepaddle-gpu 3.2.1's METADATA read 2026-11-17 from the cp312 wheel
+    # on the PaddlePaddle cu126 index by HTTP range requests (the wheel was not
+    # downloaded), sha256 dd212a7daa6096e03fe86d24adab878b41a335046e49b8cd7d29bcd2192c553d,
+    # in receipts/WO-D10-0I/round2/snap/. PyPI metadata read 2026-11-17,
     # kept outside the repository in receipts/WO-D10-0I/doc-snapshots/ (paddleocr 3.7.0
     # 4c639433fe1162458c51df797e0190b5fa7141b276dc4c3e3da86fce22f25be5, paddlex 3.7.0
     # 9ce4d641fe3b5b773de2521bd6f5935c639260a5665807833e67277f08c6c116); no licence file
@@ -506,16 +510,64 @@ arena_intake:
       base: "nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04@sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802; Ubuntu python3, python3-pip, ca-certificates, libglib2.0-0, libgl1 unpinned; the NVIDIA container licence and the Ubuntu package licences not read"
       python_packages: >-
         workers/gpu-common/uv.lock (uv sync --locked); paddlepaddle-gpu 3.2.1 from
-        the PaddlePaddle cu126 index; paddleocr[doc-parser] 3.7.0 and whatever it
-        resolves to at build time (not locked; the set is unknown until a build)
+        the PaddlePaddle cu126 index; paddleocr[doc-parser] 3.7.0 with paddlex
+        3.7.2, and whatever they resolve to at build time. Not hash-locked: for this
+        evaluation-only image the pin is the built digest plus the `uv pip freeze`
+        and `pip inspect` output the build prints, saved by the lead as a receipt;
+        a hash-locked requirements file comes before any production use
       licences: >-
         paddleocr 3.7.0: "Apache License 2.0" (PyPI licence field). paddlex
-        3.7.0: Apache-2.0 (licence expression); the 3.7.x version paddleocr
-        resolves to at build is not fixed. paddlepaddle-gpu 3.2.1 is not on PyPI
-        (latest there 2.6.2, "Apache Software License"); the index it comes from
-        was not read, so its licence for this version is UNVERIFIED. Every
-        transitive package: UNVERIFIED until the image is locked.
-    not_cleared: "Production use; the paddlepaddle-gpu runtime licence; Korean capability (card language tags: en, zh, multilingual -- Korean not named, UNVERIFIED); the C1 image's transitive packages and the layout model v1.6 loads (repository, revision and licence unread); redistribution of the C1 image."
+        3.7.0: Apache-2.0 (licence expression); 3.7.2 is pinned, its LICENSE at
+        tag v3.7.2 is Apache License 2.0 text (sha256
+        accc36c817ac5ede473d05732e14afc11cb6e55ef5919bc826b653f631165043).
+        paddlepaddle-gpu 3.2.1 (not on PyPI): its wheel METADATA says
+        "License: Apache Software License" and "Classifier: License :: OSI
+        Approved :: Apache Software License" and names License-File LICENSE and
+        AUTHORS.md, which were not read. Every transitive package: UNVERIFIED
+        until the build log's freeze is read.
+    not_cleared: "Production use; the paddlepaddle-gpu runtime licence; Korean capability (card language tags: en, zh, multilingual -- Korean not named, UNVERIFIED); the C1 image's transitive packages; redistribution of the C1 image. The layout model is its own row (model_pp_doclayoutv3)."
+
+  # The layout model C1's page pipeline loads (WO-D10-0I round 2). PaddleX 3.7.0, 3.7.1
+  # and 3.7.2 name it in paddlex/configs/pipelines/PaddleOCR-VL-1.6.yaml (byte-identical,
+  # sha256 af89f00e3a470066d88f429ac9d3f905cdbcddf954ee41e516bfd9767696dbd6):
+  # SubModules.LayoutDetection.model_name PP-DocLayoutV3. Its doc-preprocessor models
+  # (PP-LCNet_x1_0_doc_ori, UVDoc) are switched off by the recipe and get no row.
+  # Snapshots in receipts/WO-D10-0I/round2/snap/; no weights read.
+  - id: model_pp_doclayoutv3
+    kind: model
+    arena_slot: C1-layout
+    reference: "PaddlePaddle/PP-DocLayoutV3"
+    publisher: "PaddlePaddle (Baidu)"
+    upstream_id: PaddlePaddle/PP-DocLayoutV3
+    upstream_revision: "241f8bdfc77a7c7bee915a5057aaee58c235a8d3"
+    classification: GREEN
+    status: EVALUATION_ONLY
+    deciding_axis: weights
+    use: "Layout model of the C1 page pipeline (recipe c1-paddleocr-vl), loaded from a launcher-downloaded directory checked against recipes/c1-layout-weights-manifest.json."
+    snapshot_url: "https://huggingface.co/PaddlePaddle/PP-DocLayoutV3/raw/241f8bdfc77a7c7bee915a5057aaee58c235a8d3/README.md"
+    snapshot_sha256: "08b60d8d7a14ddfbe29bcef9e2c2c75bf012bb0412f4e41a2bdfe5687a741dc7"
+    fetched_at: "2026-11-17T14:08:32.929286+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/PaddlePaddle/PaddleX/v3.7.2/LICENSE", sha256: "accc36c817ac5ede473d05732e14afc11cb6e55ef5919bc826b653f631165043" }
+      - { axis: weights, url: "https://huggingface.co/api/models/PaddlePaddle/PP-DocLayoutV3/revision/241f8bdfc77a7c7bee915a5057aaee58c235a8d3?blobs=true", sha256: "6f73f8576cbb83e79dbbff10abd0ed689848d754225065cb4907e1da6e981f70", note: "file list and LFS digests; the manifest's source" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: "Run by PaddleX 3.7.2 inside paddleocr 3.7.0: PaddleX LICENSE at tag v3.7.2 is Apache License 2.0 text."
+      weights:
+        verdict: cleared_evaluation_only
+        basis: >-
+          Card front matter at the pin: license apache-2.0, and an Apache 2.0 badge
+          linking ./LICENSE. The repository has no LICENSE file at the pin (five
+          files: .gitattributes, README.md, inference.json, inference.pdiparams,
+          inference.yml), so the licence rests on the card's metadata only.
+      dataset:
+        verdict: review_required
+        basis: "Training data is not named in the card read."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    not_cleared: "Production use (the weights licence is card metadata only; no LICENSE file in the repository); redistribution of the weights."
 
   - id: model_ovisocr2
     kind: model

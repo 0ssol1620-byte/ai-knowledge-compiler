@@ -90,7 +90,9 @@ def test_the_key_is_registered_and_the_external_c1_key_is_unchanged() -> None:
 
 
 def test_the_withdrawn_two_step_runner_is_not_registered() -> None:
-    assert "mineru_vlm" not in EXTERNAL_RUNNERS and "mineru_vlm" not in RUNNER_CONFIGS
+    """``mineru_vlm`` is now the external-protocol key (WO-D10-0I); the chat runner is gone."""
+    assert "mineru_vlm" not in RUNNER_CONFIGS  # no chat profile for C3
+    assert not (ROOT / "benchmark" / "runners" / "mineru_vlm.py").exists()
 
 
 def test_runner_config_docstring_and_registry_row_name_the_variant() -> None:
@@ -98,11 +100,9 @@ def test_runner_config_docstring_and_registry_row_name_the_variant() -> None:
     assert VARIANT in RUNNER_CONFIGS[C1](revision=REVISION)["prompt_source"]
     assert VARIANT.capitalize() in (paddleocr_vl_vllm.__doc__ or "")
     models = yaml.safe_load((ROOT / "infra/model-registry/models.yaml").read_text("utf-8"))
-    rows = [r for r in models["releases"] if r.get("runtime", {}).get("serving")]
-    serving = {r["provider_key"]: r["runtime"]["serving"] for r in rows}
-    assert serving["paddleocr_vl_1_6"]["runner"] == C1
-    assert serving["paddleocr_vl_1_6"]["variant"] == VARIANT
-    assert "mineru_vlm" not in serving  # C3 is served by WO-D10-0I, not by this lane
+    (row,) = [r for r in models["releases"] if r["provider_key"] == "paddleocr_vl_1_6"]
+    (variant,) = [v for v in row["runtime"]["serving_variants"] if v["runner"] == C1]
+    assert variant["variant"] == VARIANT  # the variant row carries its label
 
 
 # --- C1 ---

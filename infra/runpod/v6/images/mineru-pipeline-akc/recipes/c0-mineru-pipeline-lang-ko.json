@@ -15,6 +15,7 @@
   "transformers": "4.57.3",
   "pypdfium2": "4.30.0"
  },
+ "absent_packages": [],
  "service": {
   "argv": ["/usr/local/bin/mineru-api", "--host", "127.0.0.1", "--port", "8000"],
   "health_url": "http://127.0.0.1:8000/health",
@@ -30,7 +31,7 @@
  "lang_by_language": {"ko": "korean"},
  "env": {"MINERU_TOOLS_CONFIG_JSON": "/opt/akc/mineru.json"},
  "output_glob": "**/*.md",
- "timeout_s": 175,
+ "timeout_s": 90,
  "options": {
   "tool": "mineru 3.4.4",
   "backend": "pipeline",

@@ -16,6 +16,7 @@ from . import (
     teleocr,
     xiaomi_ocr,
 )
+from .base import RunnerConfig, run_external
 from .deepseek_ocr import run as run_deepseek_ocr
 from .hpd_parsing import run as run_hpd_parsing
 from .infinity_parser2_flash import run as run_infinity_parser2_flash
@@ -27,6 +28,14 @@ from .unlimited_ocr import run as run_unlimited_ocr
 
 type ExternalRunner = Callable[..., dict[str, Any]]
 
+
+def run_mineru_vlm(
+    case: dict[str, Any], *, endpoint: str, revision: str, allow_network: bool = False
+) -> dict[str, Any]:
+    """C3: MinerU's own VLM backend behind the external protocol (WO-D10-0I page server)."""
+    return run_external(RunnerConfig("mineru_vlm", revision, endpoint, allow_network), case)
+
+
 EXTERNAL_RUNNERS: Mapping[str, ExternalRunner] = {
     "deepseek_ocr_2": run_deepseek_ocr,
     "gemini_api": gemini_api.run,
@@ -34,6 +43,7 @@ EXTERNAL_RUNNERS: Mapping[str, ExternalRunner] = {
     "infinity_parser2_flash": run_infinity_parser2_flash,
     "infinity_parser2_pro": run_infinity_parser2_pro,
     "mineru": run_mineru,
+    "mineru_vlm": run_mineru_vlm,
     "minicpm_ocr_1": minicpm_ocr.run,
     "mistral_ocr_4": mistral_ocr.run,
     "nemotron_parse_3_5": nemotron_parse.run,

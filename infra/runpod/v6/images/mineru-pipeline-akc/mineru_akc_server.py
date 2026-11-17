@@ -45,7 +45,7 @@ from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib import metadata
 from pathlib import Path
-from typing import Any
+from typing import Any, TypeGuard
 from urllib.parse import urlsplit
 
 ROUTE = "/parse"
@@ -55,6 +55,14 @@ MAX_REQUEST_BYTES = 96 * 1024 * 1024
 # The client refuses a response above 10 MiB; the serialized response stays below this.
 MAX_RESPONSE_BYTES = 8 * 1024 * 1024
 SOCKET_TIMEOUT_S = 30.0  # per read or write on the socket; a stalled client is dropped
+# The pod proxy cuts a request at 100 s (§5G). A page gets at most this long, so a slow page is
+# answered with the fixed failure row ``page_timeout`` before the proxy cuts the connection. A
+# recipe may set a lower or higher value, but never one the proxy would cut first.
+PAGE_TIMEOUT_S = 90
+PROXY_CUT_S = 100
+MAX_CASE_ID_BYTES = 256  # the case id is echoed in every result, so it is bounded
+MAX_PAGE_INDEX = 9999  # a page index is passed to the vendor command, so it is bounded
+MAX_CONTENT_TYPE_BYTES = 128  # echoed in the receipt
 CONTENT_SUFFIX = {"application/pdf": ".pdf", "image/png": ".png", "image/jpeg": ".jpg"}
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 _REVISION = re.compile(r"[0-9a-f]{40}")
@@ -64,6 +72,7 @@ _RECIPE_KEYS = {
     "model",
     "aux_models",
     "packages",
+    "absent_packages",
     "service",
     "argv",
     "page_argv",
@@ -167,9 +176,18 @@ def load_recipe(path: Path) -> dict[str, Any]:
     env = recipe["env"]
     if not isinstance(env, dict) or not all(isinstance(v, str) for v in env.values()):
         raise ValueError("env maps names to strings")
+    packages = recipe["packages"]
+    if not isinstance(packages, dict) or not all(
+        isinstance(v, str) or v is None for v in packages.values()
+    ):
+        raise ValueError("packages maps names to a pinned version or null")
+    if not _strings(recipe["absent_packages"]) and recipe["absent_packages"] != []:
+        raise ValueError("absent_packages must be a list of package names")
     timeout = recipe["timeout_s"]
     if not isinstance(timeout, (int, float)) or isinstance(timeout, bool) or timeout <= 0:
         raise ValueError("timeout_s must be a positive number")
+    if timeout >= PROXY_CUT_S:
+        raise ValueError(f"timeout_s must be below the proxy's {PROXY_CUT_S} s cut")
     if not isinstance(recipe["output_glob"], str) or not recipe["output_glob"]:
         raise ValueError("output_glob must be a pattern")
     return recipe
@@ -191,6 +209,16 @@ class Settings:
         object.__setattr__(self, "model_revision", self.recipe["model"]["revision"])
 
 
+def _printable_ascii(value: Any, limit: int) -> bool:
+    if not isinstance(value, str):
+        return False
+    return 0 < len(value) <= limit and value.isascii() and value.isprintable()
+
+
+def _page_number(value: Any) -> TypeGuard[int]:
+    return type(value) is int and 0 <= value <= MAX_PAGE_INDEX
+
+
 def page_request(
     payload: Any, recipe: dict[str, Any]
 ) -> tuple[str, bytes, str, int | None, str | None]:
@@ -198,8 +226,10 @@ def page_request(
     if not isinstance(payload, dict):
         raise Refused(400, "payload_not_object")
     case_id = payload.get("benchmark_case_id")
-    if not isinstance(case_id, str) or not case_id:
+    if case_id is None or case_id == "":
         raise Refused(400, "case_id_missing")
+    if not _printable_ascii(case_id, MAX_CASE_ID_BYTES):
+        raise Refused(400, "case_id_invalid")
     source = payload.get("source")
     if payload.get("claim_class") != "approved_internal_source" or not isinstance(source, dict):
         raise Refused(400, "source_required")  # a synthetic fixture has no page to run
@@ -216,15 +246,17 @@ def page_request(
     content_type = source.get("content_type")
     if not isinstance(content_type, str):
         raise Refused(400, "content_type_missing")
+    if not _printable_ascii(content_type, MAX_CONTENT_TYPE_BYTES):
+        raise Refused(400, "content_type_invalid")
     index = payload.get("page_index")
     page: int | None = None
     if content_type == "application/pdf":
-        if not isinstance(index, int) or isinstance(index, bool) or index < 0:
+        if not _page_number(index):
             raise Refused(400, "page_index_invalid")
         if index > 0 and recipe["page_argv"] is None:
             raise Refused(400, "page_index_unsupported")  # the vendor command runs whole files
         page = index
-    elif isinstance(index, bool) or index not in (None, 0):
+    elif index is not None and not (_page_number(index) and index == 0):
         raise Refused(400, "page_index_invalid")  # an image is one page
     language = payload.get("language")
     if language is not None and not isinstance(language, str):
@@ -314,6 +346,9 @@ def make_server(
 
         def _send(self, status: int, value: dict[str, Any]) -> None:
             body = _encode(value)
+            if len(body) > settings.max_response_bytes:  # every answer, whatever built it
+                print(f"refused to send {len(body)} bytes", file=sys.stderr, flush=True)
+                status, body = 500, _encode({"error": "response_too_large"})
             self.send_response(status)
             self.send_header("Content-Type", "application/json")
             self.send_header("Content-Length", str(len(body)))
@@ -373,7 +408,8 @@ def make_server(
             """Route and length: the checks made before any of the body is read."""
             if self.path != ROUTE:
                 raise Refused(404, "not_found")
-            length = self.headers.get("Content-Length") or ""
+            lengths = self.headers.get_all("Content-Length") or []
+            length = lengths[0] if len(lengths) == 1 else ""  # two lengths: which one is true?
             valid = length.isascii() and length.isdigit() and len(length) <= 12
             if self.headers.get("Transfer-Encoding") is not None or not valid:
                 raise Refused(411, "length_required")
@@ -416,23 +452,27 @@ def make_server(
 
 
 def _kill_group(process: subprocess.Popen[bytes]) -> None:
-    """The process and every child it started (its own session on POSIX)."""
+    """The process and every child it started (its own session on POSIX), also after the
+    process itself has exited: a grandchild that outlived it must not run into the next page."""
     if sys.platform == "win32":
         process.kill()
     else:
-        with contextlib.suppress(ProcessLookupError):  # already gone
+        with contextlib.suppress(ProcessLookupError):  # the whole group is already gone
             os.killpg(process.pid, signal.SIGKILL)
     process.wait()
 
 
 class Service:
-    """The recipe's long-lived child (models loaded), restarted after an interrupted page."""
+    """The recipe's long-lived child (models loaded), restarted after an interrupted page, or
+    once when it died on its own between pages. A restart that fails leaves it down: 503 and
+    ``ready: false`` from then on, which a launcher treats as a dead pod."""
 
     def __init__(self, spec: dict[str, Any], env: dict[str, str]) -> None:
         self.spec = spec
         self.env = env
         self.child: subprocess.Popen[bytes] | None = None
         self.recovering = threading.Event()
+        self.gave_up = False
 
     def _healthy(self) -> bool:
         url = urlsplit(self.spec["health_url"])
@@ -446,7 +486,9 @@ class Service:
             connection.close()
 
     def start(self) -> bool:
-        self.child = subprocess.Popen(self.spec["argv"], env=self.env, start_new_session=True)
+        self.child = subprocess.Popen(  # noqa: S603 - argv comes from the image's own recipe file checked by load_recipe, never from a request
+            self.spec["argv"], env=self.env, start_new_session=True
+        )
         deadline = time.monotonic() + self.spec["startup_timeout_s"]
         while not self._healthy():
             if self.child.poll() is not None or time.monotonic() > deadline:
@@ -459,6 +501,17 @@ class Service:
         child = self.child
         return not self.recovering.is_set() and child is not None and child.poll() is None
 
+    def available(self) -> bool:
+        """Whether a page may run now. A child that died on its own is restarted once, in the
+        background; this page and every page until it is healthy get 503."""
+        if self.ready():
+            return True
+        child = self.child
+        if not self.recovering.is_set() and child is not None and not self.gave_up:
+            print(f"service exited on its own ({child.poll()}); restarting", file=sys.stderr)
+            self.recover()
+        return False
+
     def recover(self) -> None:
         """Answer 503 until a fresh child is healthy: no orphan work reaches the next page."""
         self.recovering.set()
@@ -469,6 +522,7 @@ class Service:
             if self.start():
                 self.recovering.clear()
             else:
+                self.gave_up = True
                 print("service did not come back; answering 503", file=sys.stderr, flush=True)
 
         threading.Thread(target=restart, daemon=True).start()
@@ -480,27 +534,48 @@ class NoService:
     def ready(self) -> bool:
         return True
 
+    def available(self) -> bool:
+        return True
+
     def recover(self) -> None:
         return None
 
 
-def command_pipeline(recipe: dict[str, Any], service: Any, env: dict[str, str]) -> Pipeline:
+def vendor_argv(
+    recipe: dict[str, Any], source: Path, out: Path, page: int | None, lang: str | None
+) -> list[str]:
+    """The vendor command for one page. Every item is the recipe's; the only values a request
+    decides are the bounded page number and a language value the recipe itself maps to."""
+    if page is not None and not _page_number(page):
+        raise ValueError("page is not a bounded page number")
+    if lang is not None and lang not in recipe["lang_by_language"].values():
+        raise ValueError("lang is not one of the recipe's language values")
+    argv = [item.format(source=source, out=out) for item in recipe["argv"]]
+    if page is not None and recipe["page_argv"] is not None:
+        argv += [item.format(page=page) for item in recipe["page_argv"]]
+    if lang is not None:
+        argv += [item.format(lang=lang) for item in recipe["lang_argv"]]
+    return argv
+
+
+def command_pipeline(
+    recipe: dict[str, Any],
+    service: Any,
+    env: dict[str, str],
+    max_output_bytes: int = MAX_RESPONSE_BYTES,
+) -> Pipeline:
     """The recipe's vendor command for one page, in a fresh temporary directory."""
 
     def run(data: bytes, suffix: str, page: int | None, lang: str | None) -> str:
-        if not service.ready():
+        if not service.available():
             raise ServiceDown
         with tempfile.TemporaryDirectory(prefix="akc-page-") as work:
             source = Path(work) / f"page{suffix}"
             source.write_bytes(data)
             out = Path(work) / "out"
             out.mkdir()
-            argv = [item.format(source=source, out=out) for item in recipe["argv"]]
-            if page is not None and recipe["page_argv"] is not None:
-                argv += [item.format(page=page) for item in recipe["page_argv"]]
-            if lang is not None:
-                argv += [item.format(lang=lang) for item in recipe["lang_argv"]]
-            process = subprocess.Popen(
+            argv = vendor_argv(recipe, source, out, page, lang)
+            process = subprocess.Popen(  # noqa: S603 - argv comes from the image's own recipe file checked by load_recipe, never from a request
                 argv, env=env, cwd=work, stdin=subprocess.DEVNULL, start_new_session=True
             )
             try:
@@ -508,22 +583,26 @@ def command_pipeline(recipe: dict[str, Any], service: Any, env: dict[str, str]) 
             except subprocess.TimeoutExpired:
                 _kill_group(process)
                 service.recover()
-                raise PageFailure("pipeline_timeout") from None
+                raise PageFailure("page_timeout") from None
+            _kill_group(process)  # whatever the command left running dies with it
             if code != 0:
                 service.recover()  # a client that gave up may leave the service working
                 raise PageFailure("pipeline_exit_nonzero")
             found = sorted(p for p in out.glob(recipe["output_glob"]) if p.is_file())
             if len(found) != 1:
                 raise PageFailure("pipeline_output_missing")
+            if found[0].stat().st_size > max_output_bytes:  # never read a file this large
+                raise PageFailure("output_too_large")
             return found[0].read_text(encoding="utf-8")
 
     return run
 
 
 def recipe_receipt(
-    recipe: dict[str, Any], versions: dict[str, str], weights_manifest_sha256: str
+    recipe: dict[str, Any], versions: dict[str, str], manifests: dict[str, str]
 ) -> dict[str, Any]:
-    """What every result of this server says about how it was made."""
+    """What every result of this server says about how it was made. ``manifests``: the sha256
+    of each verified weights manifest by role (``model`` and each aux model's role)."""
     return {
         "recipe": {
             "name": recipe["name"],
@@ -533,15 +612,29 @@ def recipe_receipt(
         "weights": {
             "repo_id": recipe["model"]["repo_id"],
             "revision": recipe["model"]["revision"],
-            "manifest_sha256": weights_manifest_sha256,
+            "manifest_sha256": manifests["model"],
+            "aux": [
+                {
+                    "role": aux["role"],
+                    "repo_id": aux["repo_id"],
+                    "revision": aux["revision"],
+                    "manifest_sha256": manifests[aux["role"]],
+                }
+                for aux in recipe["aux_models"]
+            ],
         },
+        # No long-lived service: the command loads every model for each page, so its latency
+        # and cost per page are not comparable with a recipe that keeps them loaded.
+        "includes_model_load": recipe["service"] is None,
         "versions": versions,
+        "absent_packages": recipe["absent_packages"],
         "python": sys.version.split()[0],
     }
 
 
-def installed_versions(packages: dict[str, str | None]) -> dict[str, str]:
-    """Installed versions; refuses to start when a pinned one differs or one is missing."""
+def installed_versions(packages: dict[str, str | None], absent: list[str]) -> dict[str, str]:
+    """Installed versions; refuses to start when a pinned one differs or one is missing, or
+    when a package the recipe rules out (another inference engine) is installed."""
     found: dict[str, str] = {}
     for name, pinned in packages.items():
         try:
@@ -550,14 +643,20 @@ def installed_versions(packages: dict[str, str | None]) -> dict[str, str]:
             raise SystemExit(f"{name} is not installed") from None
         if pinned is not None and found[name] != pinned:
             raise SystemExit(f"{name} {found[name]} installed, the recipe pins {pinned}")
+    for name in absent:
+        try:
+            version = metadata.version(name)
+        except metadata.PackageNotFoundError:
+            continue
+        raise SystemExit(f"{name} {version} installed, the recipe rules it out")
     return found
 
 
-def verified_weights(recipe: dict[str, Any]) -> str:
-    """Every model the recipe loads is on disk exactly as its manifest says; the attested
-    manifest's sha256. Prints one line per model to the pod log."""
+def verified_weights(recipe: dict[str, Any]) -> dict[str, str]:
+    """Every model the recipe loads is on disk exactly as its manifest says; the sha256 of each
+    manifest by role. Prints one line per model to the pod log."""
     weights = importlib.import_module("mineru_akc_weights")
-    digest = ""
+    digests: dict[str, str] = {}
     for role, model in [
         ("model", recipe["model"]),
         *((a["role"], a) for a in recipe["aux_models"]),
@@ -571,14 +670,20 @@ def verified_weights(recipe: dict[str, Any]) -> str:
         errors = weights.verify_tree(Path(model["dir"]), manifest)
         if errors:
             raise SystemExit(f"{role}: weights differ from the manifest:\n" + "\n".join(errors))
-        sha = hashlib.sha256(raw).hexdigest()
+        digests[role] = hashlib.sha256(raw).hexdigest()
         print(
-            f"weights {role} {model['repo_id']}@{model['revision']} manifest {sha} "
+            f"weights {role} {model['repo_id']}@{model['revision']} manifest {digests[role]} "
             f"{manifest['file_count']} files verified",
             flush=True,
         )
-        digest = digest or sha
-    return digest
+    return digests
+
+
+def child_env(recipe: dict[str, Any], environ: dict[str, str]) -> dict[str, str]:
+    """The vendor tool's environment: the pod's plus the recipe's, never the bearer token."""
+    env = {**environ, **recipe["env"]}
+    env.pop(BEARER_ENV, None)
+    return env
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -590,22 +695,24 @@ def main(argv: list[str] | None = None) -> None:
         recipe = load_recipe(args.recipe)
     except ValueError as exc:
         raise SystemExit(f"recipe refused: {exc}") from None
-    versions = installed_versions(recipe["packages"])
+    versions = installed_versions(recipe["packages"], recipe["absent_packages"])
     settings = Settings(
         recipe=recipe,
         token=os.environ.get(BEARER_ENV) or None,
         receipt=recipe_receipt(recipe, versions, verified_weights(recipe)),
     )
     print(f"recipe {recipe['name']} sha256 {settings.receipt['recipe']['sha256']}", flush=True)
-    env = {**os.environ, **recipe["env"]}
-    env.pop(BEARER_ENV, None)  # the vendor tool never sees the token
+    env = child_env(recipe, dict(os.environ))
     service: Service | NoService = NoService()
     if recipe["service"] is not None:
         service = Service(recipe["service"], env)
         if not service.start():
             raise SystemExit("the recipe's service did not become healthy")
     server = make_server(
-        settings, command_pipeline(recipe, service, env), ("0.0.0.0", args.port), service.ready
+        settings,
+        command_pipeline(recipe, service, env, settings.max_response_bytes),
+        ("0.0.0.0", args.port),
+        service.ready,
     )
     try:
         server.serve_forever()

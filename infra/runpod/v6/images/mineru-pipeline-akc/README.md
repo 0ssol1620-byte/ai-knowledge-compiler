@@ -13,7 +13,7 @@ Nothing here has been built, pushed or run on a pod.
 | C0 | `recipes/c0-mineru-pipeline.json` (default) | `mineru -b pipeline -m ocr` against a loopback `mineru-api` | `opendatalab/PDF-Extract-Kit-1.0@ed6b654c`, baked | `Dockerfile --target c0` |
 | C0, named deviation | `recipes/c0-mineru-pipeline-lang-ko.json` | the same plus `-l korean` when the payload language is `ko` | as C0 | as C0 |
 | C3 | `recipes/c3-mineru-vlm.json` | `mineru -b vlm-engine` against a loopback `mineru-api --enable-vlm-preload true` | `opendatalab/MinerU2.5-Pro-2605-1.2B@bff20d4a`, downloaded at launch | `Dockerfile --target c3` |
-| C1 | `recipes/c1-paddleocr-vl.json` | `paddleocr doc_parser --pipeline_version v1.6 …` | `PaddlePaddle/PaddleOCR-VL-1.6@c5630aba`, downloaded at launch; **layout model unpinned** | `../paddleocr-vl-akc/Dockerfile` |
+| C1 | `recipes/c1-paddleocr-vl.json` | `paddleocr doc_parser --pipeline_version v1.6 …` | `PaddlePaddle/PaddleOCR-VL-1.6@c5630aba` and the layout model `PaddlePaddle/PP-DocLayoutV3@241f8bdf`, both downloaded at launch | `../paddleocr-vl-akc/Dockerfile` |
 
 **Rebuilt, not a production digest.** The repository records no image digest for the MinerU or
 the PaddleOCR production workers (`infra/runpod/v6/pool-registry.yaml`:
@@ -27,6 +27,7 @@ the PaddleOCR production workers (`infra/runpod/v6/pool-registry.yaml`:
 | `mineru_akc_weights.py` | Download a manifest's files at its revision and refuse any size, digest or extra-file difference; also used by the server before it serves |
 | `recipes/*.json` | One declarative recipe per slot (below) |
 | `recipes/c3-weights-manifest.json`, `recipes/c1-weights-manifest.json` | Every file of the C3 / C1 weights repository at the pin (13 files, 2,328,028,720 B / 20 files, 1,930,462,423 B), from the WO-D10-0A API read |
+| `recipes/c1-layout-weights-manifest.json` | Every file of `PaddlePaddle/PP-DocLayoutV3` at `241f8bdf` (5 files, 132,018,611 B), from the Hub API read at that revision (snapshot sha256 `6f73f857…`) |
 | `weights-manifest.json` | The 40 files (2,595,586,833 B) of PDF-Extract-Kit-1.0 @ `ed6b654c` that MinerU 3.4.4 loads (C0) |
 | `Dockerfile` | Targets `c0` and `c3`. Base by digest, Debian packages by version from a dated snapshot, Python packages by version and sha256 |
 | `requirements.in` / `requirements.lock` | C0: top-level pins / the full hashed closure (98 packages) |
@@ -46,11 +47,16 @@ the installed versions go into every receipt, and a pinned one that differs stop
 command; `{source}` and `{out}` are the page file and the output directory), `page_argv`
 (appended for a PDF page, `{page}`; `null` = the command reads whole files, so a page index
 above 0 is refused), `lang_argv` / `lang_by_language` (appended when the payload language maps),
-`env`, `output_glob` (exactly one file must match), `timeout_s`, `options` (what it does, stated).
+`absent_packages` (packages that must not be installed, for example another inference engine;
+one that is stops the server), `env`, `output_glob` (exactly one file must match), `timeout_s`
+(the page limit: 90 in every recipe, refused at 100 or more, below), `options` (what it does,
+stated).
 
 Every result's receipt carries the recipe name, its sha256 (canonical JSON) and options, the
-installed package versions, the weights repository, revision and manifest sha256, the Python
-version, input and source digests, page index, language value, latency and the markdown sha256.
+installed package versions and the packages ruled out, the weights repository, revision and
+manifest sha256 of the model and of every aux model, `includes_model_load` (true when the recipe
+has no long-lived service, so the command loads every model for each page), the Python version,
+input and source digests, page index, language value, latency and the markdown sha256.
 
 ## Launch on a pod (the A0 shape: download at the revision, checksum to the log, serve)
 
@@ -67,19 +73,24 @@ command never sees it.
 - **C3**: `sh -c 'HF_HUB_OFFLINE=0 python /opt/akc/mineru_akc_weights.py /opt/akc/recipes/c3-weights-manifest.json /opt/akc/models/MinerU2.5-Pro-2605-1.2B && exec python /opt/akc/mineru_akc_server.py --recipe /opt/akc/recipes/c3-mineru-vlm.json'`.
   The download is the only step with network; it prints `13 files, 2328028720 bytes, verified`;
   the server then logs the manifest sha256 (`43f70d9f…`) and serves with every hub offline.
-- **C1**: the same shape with `recipes/c1-weights-manifest.json`, `/opt/akc/models/PaddleOCR-VL-1.6`
-  and `recipes/c1-paddleocr-vl.json`. **It stops at start today** with
-  `layout_detection: not pinned in the recipe; refusing to serve` (below).
+- **C1**: the same shape, twice: `recipes/c1-weights-manifest.json` into
+  `/opt/akc/models/PaddleOCR-VL-1.6`, then `recipes/c1-layout-weights-manifest.json` into
+  `/opt/akc/models/PP-DocLayoutV3` (`5 files, 132018611 bytes, verified`); the server logs a
+  `weights` line for each (`model` and `layout_detection`) and serves with `recipes/c1-paddleocr-vl.json`.
+  The image's `CMD` does exactly this.
 
 ## What a failure looks like in the log
 
 | Kind | Log | Answer |
 |---|---|---|
 | Operational, at start | `recipe refused: …`, `<pkg> … installed, the recipe pins …`, `<role>: weights differ from the manifest`, `<role>: not pinned in the recipe`, `the recipe's service did not become healthy` | the process exits; the pod is not serving |
-| Operational, serving | `service did not come back; answering 503`; the vendor service's own crash output | `503 pipeline_unavailable`, nothing recorded for the page |
+| Operational, serving | the vendor service's own crash output | `503 pipeline_unavailable`, nothing recorded for the page |
 | Recovery | after a timed-out page or a non-zero exit of a recipe with a service, the service is killed and restarted | `503 pipeline_unavailable` until it is healthy again, so no abandoned work runs into the next page |
-| Model / page | the vendor command's own stdout and stderr; for `pipeline_error` the Python trace | `200` with a failure row: `pipeline_exit_nonzero`, `pipeline_timeout`, `pipeline_output_missing`, `empty_output`, `output_too_large`, `page_content_type_unsupported`, `pipeline_error`; never a trace in the body |
-| Request | — | `400/401/404/409/411/413/429` with `{"error": "<fixed code>"}` |
+| Service died between pages | `service exited on its own (<code>); restarting`: the next page starts **one** restart | that page and every page until the new child is healthy: `503 pipeline_unavailable` |
+| Restart failed | `service did not come back; answering 503`; no further restart | `503` for every page and `/health` `ready: false` for good. **A launcher treats this as a dead pod** (operational): it tears the pod down and records it, it does not retry pages into it |
+| Model / page | the vendor command's own stdout and stderr; for `pipeline_error` the Python trace | `200` with a failure row: `pipeline_exit_nonzero`, `page_timeout`, `pipeline_output_missing`, `empty_output`, `output_too_large`, `page_content_type_unsupported`, `pipeline_error`; never a trace in the body |
+| Request | — | `400/401/404/409/411/413/429` with `{"error": "<fixed code>"}`; never a page failure, never a restart |
+| Server bug | `refused to send <n> bytes` or the trace | `500 response_too_large` / `500 internal_error` |
 
 A timed-out or out-of-memory run is recorded as a page failure; the vendor's stderr in the log is
 what tells an operational cause from a model one.
@@ -98,9 +109,26 @@ of the body, `Authorization: Bearer <token>` when `AKC_BENCHMARK_PROVIDER_TOKEN`
 - **After the body is in:** a page already running **429** (the slot is taken only now, so a slow
   upload holds nothing); body digest not 64 lowercase hex or not matching, JSON, payload shape,
   source digest, page index, non-string language **400**; pipeline recovering or down **503**.
+  Every request field the server echoes or passes on is bounded: `benchmark_case_id` 1–256
+  printable ASCII (`case_id_invalid`), `page_index` an integer 0–9999 (`page_index_invalid`),
+  `source.content_type` 1–128 printable ASCII (`content_type_invalid`). Two `Content-Length`
+  headers are **411**.
+- **What reaches the vendor command.** Its argv is the recipe's own items (`vendor_argv`); a
+  request decides only the page number (bounded above) and, through the recipe's own mapping,
+  a language value. A test drives 454 generated payloads through the server to show it.
+- **Page limit 90 s.** The pod's HTTP proxy cuts a request at 100 s (§5G). Each recipe's
+  `timeout_s` is 90, so a slow page is killed with its process group and answered with the
+  failure row `page_timeout` before the proxy cuts the connection: a recorded failure, not a
+  transport error. The value is configurable per recipe; a recipe at 100 s or more is refused
+  at start. The launcher (WO-D10-0G) reads it from the recipe or the registry row
+  (`page_timeout_s`).
+- **After every command exit** (success, failure, timeout) its process group is killed, so a
+  grandchild that outlives the vendor CLI cannot run into the next page. The output file is
+  stat'ed before it is read: above the response bound it is `output_too_large`, unread.
 - Every read and write on the socket times out after 30 s; a stalled client is dropped.
 - **200** only for a page the command ran: the output (`benchmark/schemas/parser-output.schema.json`)
-  or a failure row. The 8 MiB bound applies to the serialized response, not the text.
+  or a failure row. The 8 MiB bound applies to the serialized response, not the text, and is
+  checked where every answer is written.
 - An unexpected server error is **500** `internal_error` with the trace in the log.
 
 The pod proxy terminates TLS (`https://<podId>-8080.proxy.runpod.net/parse`).
@@ -121,41 +149,51 @@ the candidate registry's `runtime_recipe` for `mineru-3.4.4-pipeline`.
 | Other packages | no pip freeze in the repository | resolved as of 2026-08-01, hashed |
 | pypdfium2 | unrecorded | 4.30.0 (the arena's one renderer, §5F decision 5) |
 | Weights | artifact manifest `sha256:fc2064a5…` (contents not in the repository) | the ModelPath subtree at `ed6b654c`, per-file digests |
-| Invocation | `mineru --path <dir> --backend pipeline --method ocr`, a batch per call | one page per call: `-s N -e N`, `-f true -t true` (the documented defaults, stated), against a long-lived loopback `mineru-api` so models stay loaded; the CLI runs as a child process with a 175 s limit |
+| Invocation | `mineru --path <dir> --backend pipeline --method ocr`, a batch per call | one page per call: `-s N -e N`, `-f true -t true` (the documented defaults, stated), against a long-lived loopback `mineru-api` so models stay loaded; the CLI runs as a child process with a 90 s limit |
 | Language | no `-l` | **no `-l`** (same). `-l korean` for `ko` only in the named recipe `c0-mineru-pipeline-lang-ko` |
 | Concurrency | `MINERU_API_MAX_CONCURRENT_REQUESTS=1` | same, and the server refuses a second page |
 
 **C3** — recorded: `infra/runpod/v6/bootstrap/mineru-3.4.4-transformers-c1.sh` with
 `run-mineru-3.4.4-public-core-worker.sh` (`--backend vlm-engine`), the only MinerU script under
-`infra/`; it runs this model at this revision. MinerU 3.4.4's own default VLM model is this
-repository (`ModelPath.vlm_root_hf` in `mineru/utils/enum_class.py` at `mineru-3.4.4-released`,
-snapshot sha256 `f3c6d71d…`), so the pinned tool runs the pinned revision; the card at
-`bff20d4a` asks for `transformers>=4.56.0` (4.57.3 here) and, for the vLLM engine only,
-`vllm>=0.10.1`.
+`infra/`; it runs this model at this revision. The attested weights are the ones the tool loads
+because `mineru-vlm.json` points `models-dir.vlm` at the verified directory and
+`MINERU_MODEL_SOURCE=local`; the card at `bff20d4a` asks for `transformers>=4.56.0` (4.57.3
+here) and, for the vLLM engine only, `vllm>=0.10.1`.
 
 | | Recorded | `c3-mineru-vlm` |
 |---|---|---|
 | MinerU | git `79d6d8d7`, `[core]` | PyPI `mineru==3.4.4`, `[pipeline]` + `[vlm]` (the C0 image plus accelerate and psutil); `[core]`'s gradio is not installed |
-| Inference engine | transformers (no vLLM installed) | transformers (no vLLM installed) — same. MinerU's card recommends vLLM; a vLLM-engine recipe would be a named deviation (not built) |
+| Inference engine | transformers (no vLLM installed) | **transformers**, stated in the recipe and fixed: `absent_packages: [vllm, lmdeploy]`, so the server refuses to start if either is installed. MinerU's card recommends vLLM; a vLLM-engine recipe would be a named deviation (not built) |
 | Torch / transformers / accelerate / mineru-vl-utils | 2.8.0+cu128 / 4.57.3 / 1.14.0 / 1.0.5 | 2.8.0 PyPI / 4.57.3 / 1.14.0 / 1.0.5 |
 | Weights | `snapshot_download` at `bff20d4a`, no file check | the same download plus a per-file manifest check, then again at server start |
 | Invocation | batch per call, `--method ocr` (applies to pipeline/hybrid only per the CLI help) | one page per call, `-s N -e N`, no `-m`; `-f true -t true --image-analysis true` (the CLI's documented defaults, stated) |
 | Preload | not recorded | `mineru-api --enable-vlm-preload true` |
 
 Same tool as C0: same MinerU version, image and server; only the backend, the weights and
-two packages differ. Which engine `vlm-engine` picks when vLLM is absent is not stated in the
-documentation read; the recorded run and the log at A0 show it.
+two packages differ.
+
+**Engine.** The 3.4.4 documents read (`docs/en/usage/cli_tools.md`, sha256 `c33cd86d…`;
+`quick_start/extension_modules.md`, `061f634c…`; `quick_start/index.md`, `usage/quick_usage.md`)
+list the backends `pipeline`, `vlm-engine`, `hybrid-engine`, `vlm-http-client`,
+`hybrid-http-client`, and name `vllm` and `lmdeploy` as optional modules that accelerate VLM
+inference ("choose one of them to install"). They document no option of `mineru` or
+`mineru-api` that selects the engine for `vlm-engine` (`--engine` is documented only for
+`mineru-openai-server`). The documented selection is which module is installed, so the recipe
+selects transformers by installing neither and the server enforces it at start
+(`absent_packages`); the receipt records `options.inference_engine` and `absent_packages`.
 
 **C1** — production: `workers/gpu-parser/paddleocr_adapter.py` in the `production` stage of
 `workers/gpu-parser/Dockerfile`.
 
 | | Production | `c1-paddleocr-vl` |
 |---|---|---|
-| Image | CUDA 12.9.1 cuDNN Ubuntu 24.04 by digest, apt unpinned, gpu-common `uv.lock`, `paddlepaddle-gpu==3.2.1` (cu126 index), `paddleocr[doc-parser]==3.7.0`, transitive packages resolved at build | the same, the same commands (`../paddleocr-vl-akc/Dockerfile`) — **not hash-locked, as production is not**; the paddle index's hashes are outside what this work order could read |
+| Image | CUDA 12.9.1 cuDNN Ubuntu 24.04 by digest, apt unpinned, gpu-common `uv.lock`, `paddlepaddle-gpu==3.2.1` (cu126 index), `paddleocr[doc-parser]==3.7.0`, transitive packages resolved at build | the same, the same commands (`../paddleocr-vl-akc/Dockerfile`), plus `paddlex==3.7.2` (the release whose v1.6 pipeline config names the pinned layout model; production lets it resolve). **Not hash-locked.** For this evaluation-only image the pin is the built image digest plus the `uv pip freeze` and `pip inspect` output the build prints to its log, which the lead saves as a receipt. **A hash-locked requirements file is required before any production use** and is not part of this work order |
 | Entry | the generic runtime handler → `PaddleOcrVlAdapter` (Python API) | the vendor CLI `paddleocr doc_parser` |
 | Arguments | `PaddleOCRVL(pipeline_version="v1.6", use_layout_detection=True, use_doc_orientation_classify=False, use_doc_unwarping=False, use_queues=True, engine=$PADDLEOCR_ENGINE (default paddle), device=$PADDLEOCR_DEVICE (default gpu:0))`; `predict(…, chart/seal/ocr_image_blocks False by default, format_block_content=True, temperature=0.0, max_new_tokens=4096)` | the same values as CLI flags; **`max_new_tokens` has no CLI flag** in the 3.7.0 documentation, so the vendor default applies (value not read) |
 | Output | blocks with bbox and confidences; the adapter **requires** `token_confidences`/`token_scores`/`rec_scores` on every block | the vendor's Markdown (`save_to_markdown`). The documented `parsing_res_list` fields are `block_bbox`, `block_label`, `block_content`, `block_id`, `block_order` — no confidences — so, per the documentation, the production adapter would refuse every page with `paddleocr_token_confidence_required` (not run; recorded for the production lane) |
-| Models | `PADDLEOCR_MODEL_MANIFEST` (+ sha256): a layout directory and the VLM directory with file digests; contents not in the repository | the VLM repository at `c5630aba`, every file; **the layout model is unpinned**: the v1.6 pipeline's layout model is not named in the documentation read (v1 used PP-DocLayoutV2), so the recipe lists it with `null` repository and revision and the server refuses to start |
+| Models | `PADDLEOCR_MODEL_MANIFEST` (+ sha256): a layout directory and the VLM directory with file digests; contents not in the repository | the VLM repository at `c5630aba`, every file; the layout model **`PaddlePaddle/PP-DocLayoutV3` @ `241f8bdfc77a7c7bee915a5057aaee58c235a8d3`**, every file (`recipes/c1-layout-weights-manifest.json`), passed as `--layout_detection_model_name PP-DocLayoutV3 --layout_detection_model_dir …`. The name is PaddleX's: `paddlex/configs/pipelines/PaddleOCR-VL-1.6.yaml` at v3.7.0, v3.7.1 and v3.7.2 (byte-identical, sha256 `af89f00e…`) sets `LayoutDetection.model_name: PP-DocLayoutV3`; the repository's `inference.yml` at the pin says `model_name: PP-DocLayoutV3`. Weights licence: the card's `license: apache-2.0` (no LICENSE file in the repository), its own intake row `model_pp_doclayoutv3` |
+| Auxiliary models | orientation and unwarping off (`use_doc_orientation_classify=False`, `use_doc_unwarping=False`) | the same, so neither PP-LCNet_x1_0_doc_ori nor UVDoc (the config's doc-preprocessor models) is loaded: switched off by the documented options `--use_doc_orientation_classify False --use_doc_unwarping False`, not pinned |
+| Model load | the Python object stays loaded across pages | **per page**: the CLI loads both models on every call, and the receipt says `includes_model_load: true`. **C1's latency and cost per page are therefore not comparable** with C0's and C3's (models kept loaded). The vendor documents a long-lived server (`paddlex --serve --pipeline …` after `paddlex --install serving`, `POST /layout-parsing`), but the documents read give it no health route for the server to wait on, it needs a plugin installed at build and a pipeline config file naming the model directories; it is proposed to the lead, not built |
 | Pages | one page per request | one-page sources only (the CLI has no page range; `page_index` above 0 → 400 `page_index_unsupported`) |
 
 ## Review notes closed (review of WO-D10-0F, r20)
@@ -168,6 +206,16 @@ timeout or a non-zero exit the server answers 503 until the service is fresh and
 killed with its process group; PDF `page_index` true, an image with a page index, an unsupported
 content type, the refused body read off the socket, `/health`'s revision — each tested.
 
+**Round 2 (review of WO-D10-0I).** Each with a test and a mutant
+(`receipts/WO-D10-0I/round2/mutants.out.txt`): every request field the server echoes or passes
+on is bounded, and a generated-payload test covers the class, not the probe's one input; the
+response bound is enforced where every answer is written; the command's process group is killed
+after every exit; the output file is stat'ed before it is read; `main()` gives the vendor command
+no bearer token; the real `Service` restarts after `recover`, restarts once after its child died
+on its own, and stops trying after a failed restart; the 90 s page limit; C3's engine and C1's
+layout model pinned; the two recipe-driven `Popen` calls carry `# noqa: S603` with the reason the
+generated-payload test checks.
+
 **Debian packages.** `libgl1=1.6.0-1` and `libglib2.0-0=2.74.6-2+deb12u9` are pinned by version
 as well as by the snapshot date: those are the versions the snapshot's indexes carry at
 `20261116T000000Z` (bookworm main `Packages.xz` sha256 `9e0b5aab…`, bookworm-updates `87e7e940…`,
@@ -178,16 +226,9 @@ change, so the date fixes every version apt resolves.
 ## Open before real pages (not checked here)
 
 - No image is built: the locks, the Debian versions and the weights are verified only by a build
-  and a launch.
-- **C3's runner key.** `infra/model-registry/models.yaml` names C3 `mineru_vlm`, and
-  `benchmark/runners/registry.py` has no external-protocol entry for it. The one-line change for
-  the lead to route (with `RunnerConfig, run_external` imported from `.base`):
-  `"mineru_vlm": lambda case, *, endpoint, revision, allow_network=False: run_external(RunnerConfig("mineru_vlm", revision, endpoint, allow_network), case),`
-  The withdrawn chat runner on `codex/v34-c-arena-serve` registers the same key; only one of the
-  two can stay.
-- **C1's layout model**: name, repository, revision, licence and a manifest; until then C1 does not
-  start. The C1 image's transitive packages are not locked.
+  and a launch. The C1 image's transitive packages are known only from its build log.
+- C3's runner key `mineru_vlm` is registered (`benchmark/runners/registry.py`, round 2).
 - "No outbound request at inference" is configured (`HF_HUB_OFFLINE`, `TRANSFORMERS_OFFLINE`,
   `MINERU_MODEL_SOURCE=local`), not proven. PaddleX may check its model hosters at import; A0 runs
   each image with egress observed.
-- The 100 s proxy limit against a page's latency (§5G A0-4); the server's own limit is 175 s.
+- Whether 90 s is enough per page is measured at A0; C1 loads its models within those 90 s.

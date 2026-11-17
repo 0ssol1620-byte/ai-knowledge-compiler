@@ -8,7 +8,12 @@
 #
 # Build context: the repository root.
 #   docker build -f infra/runpod/v6/images/paddleocr-vl-akc/Dockerfile .
-# NOT hash-locked, exactly as production is not (README.md of mineru-pipeline-akc, C1).
+# NOT hash-locked, exactly as production is not. For this evaluation-only image the pin is the
+# built image digest plus the `uv pip freeze` and `pip inspect` output this build prints to its
+# log, which the lead saves as a receipt; a hash-locked requirements file comes before any
+# production use (README.md of mineru-pipeline-akc, C1). paddlex is pinned to 3.7.2, a release
+# whose PaddleOCR-VL-1.6 pipeline config names the layout model the recipe pins (production
+# lets it resolve).
 FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04@sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -30,15 +35,19 @@ RUN python3 -m pip install --break-system-packages "uv==0.13.4" \
       --index-url https://www.paddlepaddle.org.cn/packages/stable/cu126/ \
       "paddlepaddle-gpu==3.2.1" \
     && uv pip install --python /app/.venv/bin/python \
-      "paddleocr[doc-parser]==3.7.0" \
-    && uv pip check --python /app/.venv/bin/python
+      "paddleocr[doc-parser]==3.7.0" "paddlex==3.7.2" \
+    && uv pip check --python /app/.venv/bin/python \
+    && uv pip freeze --python /app/.venv/bin/python \
+    && python3 -m pip inspect --path /app/.venv/lib/python3.12/site-packages
 
 COPY infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_server.py \
      infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_weights.py /opt/akc/
 COPY infra/runpod/v6/images/mineru-pipeline-akc/recipes/c1-paddleocr-vl.json \
-     infra/runpod/v6/images/mineru-pipeline-akc/recipes/c1-weights-manifest.json /opt/akc/recipes/
+     infra/runpod/v6/images/mineru-pipeline-akc/recipes/c1-weights-manifest.json \
+     infra/runpod/v6/images/mineru-pipeline-akc/recipes/c1-layout-weights-manifest.json \
+     /opt/akc/recipes/
 RUN useradd --system --uid 10001 --home /nonexistent --shell /usr/sbin/nologin akc \
-    && install -d -o 10001 -g 10001 /opt/akc/models/PaddleOCR-VL-1.6 /opt/akc/models/layout
+    && install -d -o 10001 -g 10001 /opt/akc/models/PaddleOCR-VL-1.6 /opt/akc/models/PP-DocLayoutV3
 
 # Serving is offline: the weights are downloaded at launch, then every hub is told not to fetch.
 ENV HOME=/tmp \
@@ -49,5 +58,5 @@ ENV HOME=/tmp \
 USER 10001
 EXPOSE 8080
 # Download at the revision (the only step with network), check every file, then serve offline.
-# The server refuses to start until the recipe's layout model is pinned (README.md, C1).
-CMD ["sh", "-c", "HF_HUB_OFFLINE=0 python /opt/akc/mineru_akc_weights.py /opt/akc/recipes/c1-weights-manifest.json /opt/akc/models/PaddleOCR-VL-1.6 && exec python /opt/akc/mineru_akc_server.py --recipe /opt/akc/recipes/c1-paddleocr-vl.json"]
+# Both models C1 loads, the VLM and the layout model, each checked file by file.
+CMD ["sh", "-c", "HF_HUB_OFFLINE=0 python /opt/akc/mineru_akc_weights.py /opt/akc/recipes/c1-weights-manifest.json /opt/akc/models/PaddleOCR-VL-1.6 && HF_HUB_OFFLINE=0 python /opt/akc/mineru_akc_weights.py /opt/akc/recipes/c1-layout-weights-manifest.json /opt/akc/models/PP-DocLayoutV3 && exec python /opt/akc/mineru_akc_server.py --recipe /opt/akc/recipes/c1-paddleocr-vl.json"]

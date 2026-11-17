@@ -10,22 +10,24 @@
  "aux_models": [
   {
    "role": "layout_detection",
-   "repo_id": null,
-   "revision": null,
-   "dir": "/opt/akc/models/layout",
-   "manifest": null
+   "repo_id": "PaddlePaddle/PP-DocLayoutV3",
+   "revision": "241f8bdfc77a7c7bee915a5057aaee58c235a8d3",
+   "dir": "/opt/akc/models/PP-DocLayoutV3",
+   "manifest": "/opt/akc/recipes/c1-layout-weights-manifest.json"
   }
  ],
  "packages": {
   "paddleocr": "3.7.0",
   "paddlepaddle-gpu": "3.2.1",
-  "paddlex": null
+  "paddlex": "3.7.2"
  },
+ "absent_packages": [],
  "service": null,
  "argv": [
   "/app/.venv/bin/paddleocr", "doc_parser", "-i", "{source}", "--save_path", "{out}",
   "--pipeline_version", "v1.6",
-  "--layout_detection_model_dir", "/opt/akc/models/layout",
+  "--layout_detection_model_name", "PP-DocLayoutV3",
+  "--layout_detection_model_dir", "/opt/akc/models/PP-DocLayoutV3",
   "--vl_rec_model_dir", "/opt/akc/models/PaddleOCR-VL-1.6",
   "--use_layout_detection", "True",
   "--use_doc_orientation_classify", "False",
@@ -44,12 +46,15 @@
  "lang_by_language": {},
  "env": {},
  "output_glob": "**/*.md",
- "timeout_s": 175,
+ "timeout_s": 90,
  "options": {
   "tool": "paddleocr 3.7.0 doc_parser",
   "pipeline_version": "v1.6",
   "arguments": "the production adapter's PaddleOCRVL(...) and predict(...) values, as CLI flags",
   "max_new_tokens": "vendor default: the CLI has no flag (production passes 4096)",
-  "page_selection": "none: one-page sources only"
+  "page_selection": "none: one-page sources only",
+  "layout_model": "PP-DocLayoutV3, the layout model PaddleX 3.7.0-3.7.2 names for pipeline PaddleOCR-VL-1.6",
+  "doc_preprocessor": "off: orientation (PP-LCNet_x1_0_doc_ori) and unwarping (UVDoc) switched off by --use_doc_orientation_classify False and --use_doc_unwarping False, so neither model is loaded",
+  "model_load": "per page: the CLI loads every model on each call"
  }
 }

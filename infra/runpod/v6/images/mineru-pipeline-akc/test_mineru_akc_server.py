@@ -9,12 +9,15 @@ fake script that records the arguments it was given.
 
 from __future__ import annotations
 
+import contextlib
 import copy
 import hashlib
 import http.client
 import importlib.util
+import itertools
 import json
 import os
+import re
 import socket
 import sys
 import threading
@@ -29,7 +32,7 @@ import yaml
 
 from benchmark.run_benchmark import parser_output_validator
 from benchmark.runners import base
-from benchmark.runners.base import RunnerConfig, RunnerUnavailable, build_provider_payload
+from benchmark.runners.base import RunnerUnavailable, build_provider_payload
 from benchmark.runners.registry import EXTERNAL_RUNNERS
 
 _HERE = Path(__file__).resolve().parent
@@ -116,9 +119,13 @@ def _serve(settings: Any, pipeline: Any, ready: Any = lambda: True) -> Iterator[
         thread.join(5)
 
 
+def _manifests(recipe: dict[str, Any]) -> dict[str, str]:
+    return {"model": "a" * 64, **{aux["role"]: "b" * 64 for aux in recipe["aux_models"]}}
+
+
 def _settings(recipe: dict[str, Any] | None = None, **overrides: Any) -> Any:
     recipe = recipe or _recipe()
-    receipt = srv.recipe_receipt(recipe, {"mineru": "3.4.4"}, "a" * 64)
+    receipt = srv.recipe_receipt(recipe, {"mineru": "3.4.4"}, _manifests(recipe))
     return srv.Settings(**{"recipe": recipe, "token": None, "receipt": receipt, **overrides})
 
 
@@ -157,9 +164,6 @@ def harness(
 
 
 def _client(payload: dict[str, Any], revision: str = REVISION, provider: str = "mineru") -> Any:
-    if provider not in EXTERNAL_RUNNERS:  # mineru_vlm: no registry key yet (README, C3)
-        config = RunnerConfig(provider, revision, ENDPOINT, True)
-        return base.run_external(config, payload)
     return EXTERNAL_RUNNERS[provider](
         payload, endpoint=ENDPOINT, revision=revision, allow_network=True
     )
@@ -541,9 +545,18 @@ if mode == "sleep":
     sys.exit(0)
 target = os.path.join(out, "page", "ocr")
 os.makedirs(target, exist_ok=True)
+text = "# page from the fake tool\n"
+if mode == "env":
+    text = json.dumps(sorted(os.environ))
+if mode == "big":
+    text = "x" * 4096
 for n in range({"none": 0, "two": 2}.get(mode, 1)):
     with open(os.path.join(target, f"page{n}.md"), "w", encoding="utf-8") as f:
-        f.write("# page from the fake tool\n")
+        f.write(text)
+if mode == "grandchild":  # outlives the command, in the command's process group
+    import subprocess
+    late = "import time, sys; time.sleep(2); open(sys.argv[1], 'w').close()"
+    subprocess.Popen([sys.executable, "-c", late, os.environ["FAKE_LATE"]])
 if mode == "exit3":
     sys.exit(3)
 """
@@ -555,6 +568,9 @@ class FakeService:
         self.recovered = 0
 
     def ready(self) -> bool:
+        return self.up
+
+    def available(self) -> bool:
         return self.up
 
     def recover(self) -> None:
@@ -664,8 +680,13 @@ def test_the_recipes_match_the_registry_rows() -> None:
             recipe["model"]["repo_id"],
             recipe["model"]["revision"],
         )
-        assert row["serving"]["enabled"] is False
-        assert recipe["name"] in row["serving"]["recipes"]
+        serving = row["runtime"]["serving"]
+        assert serving["enabled"] is False and serving["built"] is False
+        assert recipe["name"] in serving["recipes"]
+        assert serving["runner"] == recipe["provider"] in EXTERNAL_RUNNERS
+        assert serving["attested_revision"] == recipe["model"]["revision"]
+        assert serving["page_timeout_s"] == recipe["timeout_s"] == srv.PAGE_TIMEOUT_S
+        assert serving.get("includes_model_load", False) is (recipe["service"] is None)
 
 
 @pytest.mark.parametrize(
@@ -705,7 +726,7 @@ def test_a_timed_out_page_is_killed_and_the_server_answers_503_until_idle(
     for server in _serve(_settings(), pipeline, service.ready):
         transport = Loopback(server.server_address[1])
         monkeypatch.setattr(base, "post_bytes", transport)
-        assert _client(payload)["failure"] == {"reason": "pipeline_timeout"}
+        assert _client(payload)["failure"] == {"reason": "page_timeout"}
         assert service.recovered == 1
         with pytest.raises(RunnerUnavailable):
             _client(payload)
@@ -771,11 +792,11 @@ def test_a_malformed_recipe_is_refused(
 
 
 def test_a_pinned_package_must_be_installed_at_its_version() -> None:
-    assert srv.installed_versions({"pytest": None})["pytest"] == pytest.__version__
+    assert srv.installed_versions({"pytest": None}, [])["pytest"] == pytest.__version__
     with pytest.raises(SystemExit, match="recipe pins"):
-        srv.installed_versions({"pytest": "0.0.1"})
+        srv.installed_versions({"pytest": "0.0.1"}, [])
     with pytest.raises(SystemExit, match="not installed"):
-        srv.installed_versions({"akc-no-such-package": None})
+        srv.installed_versions({"akc-no-such-package": None}, [])
 
 
 def _tree(tmp_path: Path, name: str, revision: str) -> dict[str, Any]:
@@ -800,7 +821,11 @@ def test_the_weights_are_verified_before_serving(
     model = _tree(tmp_path, "main", REVISION)
     aux = {"role": "layout", **_tree(tmp_path, "layout", OTHER_REVISION)}
     manifest_sha = hashlib.sha256(Path(model["manifest"]).read_bytes()).hexdigest()
-    assert srv.verified_weights(_recipe(model=model, aux_models=[aux])) == manifest_sha
+    aux_sha = hashlib.sha256(Path(aux["manifest"]).read_bytes()).hexdigest()
+    assert srv.verified_weights(_recipe(model=model, aux_models=[aux])) == {
+        "model": manifest_sha,
+        "layout": aux_sha,
+    }
     assert f"org/main@{REVISION} manifest {manifest_sha}" in capsys.readouterr().out
     (Path(aux["dir"]) / "w.bin").write_bytes(b"changed")
     with pytest.raises(SystemExit, match="layout: weights differ"):
@@ -810,13 +835,13 @@ def test_the_weights_are_verified_before_serving(
 
 
 def test_an_unpinned_model_refuses_to_serve(tmp_path: Path) -> None:
-    """C1's layout model has no pinned repository yet: the server does not start."""
+    """An aux model without a pinned repository: the server does not start."""
     c1 = _recipe("c1-paddleocr-vl")
-    unpinned = c1["aux_models"]
-    assert [a["role"] for a in unpinned if a["revision"] is None] == ["layout_detection"]
+    assert [a["role"] for a in c1["aux_models"]] == ["layout_detection"]
+    unpinned = [{**c1["aux_models"][0], "repo_id": None, "revision": None}]
     model = _tree(tmp_path, "main", c1["model"]["revision"])
     with pytest.raises(SystemExit, match="layout_detection: not pinned"):
-        srv.verified_weights({**c1, "model": model})
+        srv.verified_weights({**c1, "model": model, "aux_models": unpinned})
 
 
 def test_the_debian_packages_are_pinned_by_version() -> None:
@@ -866,3 +891,467 @@ def test_the_weights_check_refuses_any_difference(tmp_path: Path) -> None:
     (tmp_path / "extra.bin").unlink()
     (tmp_path / "models" / "config.json").unlink()
     assert weights.verify_tree(tmp_path, manifest) == ["missing file models/config.json"]
+
+
+# --- round 2: every request field bounded, fuzzed (lead decision B) ---------------------------
+
+
+@pytest.mark.parametrize(
+    ("change", "code"),
+    [
+        ({"benchmark_case_id": "c" * 257}, "case_id_invalid"),
+        ({"benchmark_case_id": "page\n0001"}, "case_id_invalid"),
+        ({"benchmark_case_id": "페이지-1"}, "case_id_invalid"),
+        ({"benchmark_case_id": 7}, "case_id_invalid"),
+        ({"page_index": 10_000}, "page_index_invalid"),
+        ({"page_index": 10**30}, "page_index_invalid"),
+        ({"page_index": -1}, "page_index_invalid"),
+    ],
+)
+def test_an_unbounded_request_field_is_a_400_never_a_page(
+    harness: Any, change: dict[str, Any], code: str
+) -> None:
+    """Mutants: no length bound on the case id (echoed unbounded); no upper bound on the page
+    index (reaches the vendor command)."""
+    pipeline, transport, payload = harness
+    with pytest.raises(RunnerUnavailable):
+        _client({**payload, **change})
+    assert (transport.seen[0][0], json.loads(transport.seen[0][1])) == (400, {"error": code})
+    assert pipeline.calls == []
+    case_id = {**payload, "benchmark_case_id": "c" * 256, "page_index": 9999}
+    assert _client(case_id)["benchmark_case_id"] == "c" * 256  # the bounds are inclusive
+    assert pipeline.calls[-1][2] == 9999
+
+
+def test_a_content_type_that_is_not_a_short_ascii_token_is_a_400(harness: Any) -> None:
+    """The content type is echoed in the receipt of a failure row, so it is bounded too."""
+    pipeline, transport, payload = harness
+    for value in ("x/" + "y" * 200, "image/p\x00ng"):
+        with pytest.raises(RunnerUnavailable):
+            _client(_image_payload(payload, value, None))
+    assert [json.loads(raw) for _, raw, _ in transport.seen] == [
+        {"error": "content_type_invalid"}
+    ] * 2
+    assert pipeline.calls == []
+
+
+def test_two_content_lengths_are_a_411(harness: Any) -> None:
+    pipeline, _, payload = harness
+    body = json.dumps(payload).encode()
+    connection = http.client.HTTPConnection("127.0.0.1", _port(harness), timeout=10)
+    try:
+        connection.putrequest("POST", "/parse", skip_accept_encoding=True)
+        for key, value in _headers(body).items():
+            connection.putheader(key, value)
+        connection.putheader("Content-Length", "1")
+        connection.endheaders()
+        connection.send(body)
+        response = connection.getresponse()
+        status, raw = response.status, response.read()
+    finally:
+        connection.close()
+    assert (status, json.loads(raw)) == (411, {"error": "length_required"})
+    assert pipeline.calls == []
+
+
+@pytest.mark.parametrize(
+    "harness",
+    [dict(receipt={"padding": "p" * 5000}, max_response_bytes=4000)],
+    indirect=True,
+)
+def test_no_answer_leaves_the_server_above_the_response_bound(harness: Any) -> None:
+    """The bound is enforced where every answer is written, not only on a successful page: a
+    failure row that would exceed it is refused as a 500. Mutant: the bound only in run_page."""
+    pipeline, transport, payload = harness
+    pipeline.error = srv.PageFailure("pipeline_exit_nonzero")
+    with pytest.raises(RunnerUnavailable):
+        _client(payload)
+    status, raw, _ = transport.seen[0]
+    assert (status, json.loads(raw)) == (500, {"error": "response_too_large"})
+
+
+_FUZZ_VALUES: list[Any] = [
+    None,
+    True,
+    False,
+    0,
+    -1,
+    1,
+    9999,
+    10_000,
+    10**30,
+    1.5,
+    float("nan"),
+    float("inf"),
+    "",
+    "ko",
+    "en",
+    "korean",
+    "application/pdf",
+    "image/png",
+    "é",
+    "\x00",
+    "‮",
+    "x" * 300,
+    "z" * 20_000,
+    "{page}",
+    "{source}",
+    [],
+    ["ko"],
+    {},
+    {"a": 1},
+]
+_FUZZ_FIELDS = [
+    ("benchmark_case_id",),
+    ("page_index",),
+    ("language",),
+    ("claim_class",),
+    ("source",),
+    ("source", "content_type"),
+    ("source", "sha256"),
+    ("source", "bytes_base64"),
+    ("source", "filename"),
+    ("extra_field",),
+]
+# Every fixed refusal code the server can send: read from its own source.
+_FIXED_CODES = set(
+    re.findall(
+        r'Refused\(\d+, "([a-z0-9_]+)"\)', (_HERE / "mineru_akc_server.py").read_text("utf-8")
+    )
+)
+
+
+def _changed(payload: dict[str, Any], changes: Any) -> dict[str, Any]:
+    value = copy.deepcopy(payload)
+    for path, new in changes:
+        target = value
+        if len(path) == 2:
+            if not isinstance(target.get(path[0]), dict):
+                continue
+            target = target[path[0]]
+        target[path[-1]] = new
+    return value
+
+
+def _fuzz_cases(payload: dict[str, Any]) -> Iterator[Any]:
+    """Every value as the whole payload, every value in every field, and three deterministic
+    value pairs for every pair of fields (454 requests)."""
+    yield from _FUZZ_VALUES  # not an object at all
+    for path in _FUZZ_FIELDS:
+        for new in _FUZZ_VALUES:
+            yield _changed(payload, [(path, new)])
+    n = len(_FUZZ_VALUES)
+    for i, (a, b) in enumerate(itertools.combinations(_FUZZ_FIELDS, 2)):
+        for k in range(3):
+            pair = [(a, _FUZZ_VALUES[(7 * i + k) % n]), (b, _FUZZ_VALUES[(11 * i + 5 * k) % n])]
+            yield _changed(payload, pair)
+
+
+@pytest.mark.parametrize(
+    "harness",
+    [dict(recipe=_recipe("c0-mineru-pipeline-lang-ko"), max_response_bytes=4000)],
+    indirect=True,
+)
+def test_fuzzed_requests_get_a_fixed_answer_and_reach_the_command_only_bounded(
+    harness: Any,
+) -> None:
+    """Property, over 454 generated payloads (wrong types, huge or non-ASCII strings,
+    NaN, out-of-range numbers, format fields, missing parts): every answer is a 200 or a 4xx
+    with one fixed code, never above the response bound and never a 500 or a dropped
+    connection; a 4xx never reaches the pipeline; and what reaches the pipeline (and so the
+    vendor's argv, ``vendor_argv``) is only a bounded page number and a language value of
+    the recipe's own mapping. This is the reason the two ``Popen`` calls carry ``# noqa: S603``."""
+    pipeline, _, payload = harness
+    recipe = _recipe("c0-mineru-pipeline-lang-ko")
+    statuses: set[int] = set()
+    for case in _fuzz_cases(payload):
+        body = json.dumps(case).encode()
+        calls = len(pipeline.calls)
+        status, raw = _raw(_port(harness), body, _headers(body))
+        statuses.add(status)
+        assert len(raw) <= 4000
+        value = json.loads(raw)
+        if status == 200:
+            assert len(pipeline.calls) <= calls + 1  # a failure row may come before the run
+            assert isinstance(value["benchmark_case_id"], str)
+            assert len(value["benchmark_case_id"]) <= srv.MAX_CASE_ID_BYTES
+        else:
+            assert status == 400, (status, value)
+            assert set(value) == {"error"} and value["error"] in _FIXED_CODES
+            assert len(pipeline.calls) == calls
+    assert statuses == {200, 400}
+    for _, suffix, page, lang in pipeline.calls:
+        assert suffix in srv.CONTENT_SUFFIX.values()
+        assert page is None or (type(page) is int and 0 <= page <= srv.MAX_PAGE_INDEX)
+        assert lang is None or lang in recipe["lang_by_language"].values()
+        srv.vendor_argv(recipe, Path("s"), Path("o"), page, lang)  # accepted as built
+
+
+def test_the_vendor_argv_takes_nothing_unbounded_from_a_request() -> None:
+    recipe = _recipe("c0-mineru-pipeline-lang-ko")
+    argv = srv.vendor_argv(recipe, Path("s.pdf"), Path("o"), 3, "korean")
+    assert argv == [
+        *(a.format(source=Path("s.pdf"), out=Path("o")) for a in recipe["argv"]),
+        "-s",
+        "3",
+        "-e",
+        "3",
+        "-l",
+        "korean",
+    ]
+    for page, lang in ((10_000, None), (True, None), (-1, None), (None, "ko"), (None, "x")):
+        with pytest.raises(ValueError):
+            srv.vendor_argv(recipe, Path("s.pdf"), Path("o"), page, lang)
+
+
+# --- round 2: the command, its group and its output -------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("mode", "recovered"), [("ok", 0), ("exit3", 1), ("none", 0), ("sleep", 1)]
+)
+def test_the_command_group_is_killed_after_every_exit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mode: str, recovered: int
+) -> None:
+    """Success, failure, no output and timeout alike. Mutant: killing only on timeout."""
+    killed: list[int] = []
+    real = srv._kill_group
+
+    def counted(process: Any) -> None:
+        killed.append(process.pid)
+        real(process)
+
+    monkeypatch.setattr(srv, "_kill_group", counted)
+    service = FakeService()
+    recipe = _faked(_recipe(timeout_s=1), tmp_path)
+    run = srv.command_pipeline(recipe, service, _env(tmp_path, mode))
+    with contextlib.suppress(srv.PageFailure):
+        run(SOURCE, ".pdf", 0, None)
+    assert len(killed) == 1 and service.recovered == recovered
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="process groups are POSIX")
+def test_a_grandchild_that_outlives_a_successful_command_is_killed(tmp_path: Path) -> None:
+    service = FakeService()
+    run = srv.command_pipeline(_faked(_recipe(), tmp_path), service, _env(tmp_path, "grandchild"))
+    assert run(SOURCE, ".pdf", 0, None) == "# page from the fake tool\n"
+    time.sleep(3)
+    assert not (tmp_path / "late").exists()
+
+
+def test_an_oversize_output_file_is_refused_without_reading_it(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Mutant: reading the file before checking its size (the read below would fail)."""
+    service = FakeService()
+    run = srv.command_pipeline(_faked(_recipe(), tmp_path), service, _env(tmp_path, "big"), 1000)
+
+    def no_read(*_: Any, **__: Any) -> str:
+        raise AssertionError("the oversize file was read")
+
+    monkeypatch.setattr(Path, "read_text", no_read)
+    with pytest.raises(srv.PageFailure) as caught:
+        run(SOURCE, ".pdf", 0, None)
+    assert caught.value.reason == "output_too_large"
+
+
+def test_main_gives_the_vendor_command_no_bearer_token(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``main()`` itself: the server gets the token, the vendor command's environment does not.
+    Mutant: dropping the ``pop`` of the bearer variable."""
+    recipe = {
+        **_faked(_recipe("c1-paddleocr-vl"), tmp_path),
+        "env": {"AKC_RECIPE_ENV": "1"},
+    }
+    path = tmp_path / "recipe.json"
+    path.write_text(json.dumps(recipe), encoding="utf-8")
+    captured: dict[str, Any] = {}
+
+    class Stub:
+        def serve_forever(self) -> None:
+            return None
+
+    def fake_make_server(settings: Any, pipeline: Any, address: Any, ready: Any) -> Stub:
+        captured.update(settings=settings, pipeline=pipeline)
+        return Stub()
+
+    monkeypatch.setattr(srv, "installed_versions", lambda packages, absent: {})
+    monkeypatch.setattr(srv, "verified_weights", lambda r: _manifests(r))
+    monkeypatch.setattr(srv, "make_server", fake_make_server)
+    fake = _env(tmp_path, "env")
+    for key in ("FAKE_LOG", "FAKE_MODE", "FAKE_LATE"):
+        monkeypatch.setenv(key, fake[key])
+    monkeypatch.setenv(srv.BEARER_ENV, _BEARER)
+    srv.main(["--recipe", str(path), "--port", "0"])
+    assert captured["settings"].token == _BEARER
+    names = json.loads(captured["pipeline"](SOURCE, ".pdf", 0, None))
+    assert "AKC_RECIPE_ENV" in names and "FAKE_LOG" in names
+    assert srv.BEARER_ENV not in names
+
+
+# --- round 2: the real Service class -----------------------------------------------------------
+
+HEALTH = r"""
+import http.server, os, sys
+open(os.environ["PIDLOG"], "a").write(f"{os.getpid()}\n")
+if os.environ.get("HEALTH_FAIL_AFTER") and os.path.exists(os.environ["HEALTH_FAIL_AFTER"]):
+    sys.exit(4)
+class H(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+    def log_message(self, *a):
+        pass
+http.server.HTTPServer(("127.0.0.1", int(sys.argv[1])), H).serve_forever()
+"""
+
+
+def _wait(predicate: Any, seconds: float = 30) -> bool:
+    deadline = time.monotonic() + seconds
+    while time.monotonic() < deadline:
+        if predicate():
+            return True
+        time.sleep(0.1)
+    return False
+
+
+def test_the_real_service_restarts_after_recover_and_once_after_dying_on_its_own(
+    tmp_path: Path,
+) -> None:
+    """Mutants: no restart when the child dies between pages (503 for ever while the pod
+    looks alive); restarting again after a failed restart."""
+    script = tmp_path / "health.py"
+    script.write_text(HEALTH, encoding="utf-8")
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+    broken = tmp_path / "broken"
+    env = {**os.environ, "PIDLOG": str(tmp_path / "pids"), "HEALTH_FAIL_AFTER": str(broken)}
+    spec = {
+        "argv": [sys.executable, str(script), str(port)],
+        "health_url": f"http://127.0.0.1:{port}/",
+        "startup_timeout_s": 20,
+    }
+    service = srv.Service(spec, env)
+    try:
+        assert service.start() and service.ready() and service.available()
+        first = service.child
+        assert first is not None
+        service.recover()  # after a timed-out page
+        assert not service.ready() and not service.available()
+        assert _wait(service.ready)
+        assert first.poll() is not None and service.child is not first
+        second = service.child
+        assert second is not None
+        second.kill()  # dies on its own between pages
+        second.wait()
+        assert not service.available()  # this page: 503, one restart begins
+        assert _wait(service.ready) and service.child is not second
+        broken.touch()  # from now on the child cannot start
+        assert service.child is not None
+        service.child.kill()
+        service.child.wait()
+        assert not service.available()
+        assert _wait(lambda: service.gave_up)
+        starts = len((tmp_path / "pids").read_text().split())
+        assert not service.available() and not service.ready()
+        time.sleep(0.5)
+        assert len((tmp_path / "pids").read_text().split()) == starts  # no second attempt
+    finally:
+        if service.child is not None:
+            srv._kill_group(service.child)
+
+
+def test_no_service_is_always_available() -> None:
+    no = srv.NoService()
+    assert no.ready() and no.available() and no.recover() is None
+
+
+# --- round 2: C1, C3, the registry key and the receipt ----------------------------------------
+
+
+def test_c3_is_served_through_its_registry_key(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """``EXTERNAL_RUNNERS["mineru_vlm"]`` is the external-protocol runner: it sends provider
+    ``mineru_vlm`` and the pinned revision, and the C3 recipe's server answers it."""
+    recipe = _recipe("c3-mineru-vlm")
+    monkeypatch.delenv(base.PROVIDER_CREDENTIAL, raising=False)
+    service = FakeService()
+    pipeline = srv.command_pipeline(_faked(recipe, tmp_path), service, _env(tmp_path))
+    for server in _serve(_settings(recipe), pipeline, service.ready):
+        transport = Loopback(server.server_address[1])
+        monkeypatch.setattr(base, "post_bytes", transport)
+        result = EXTERNAL_RUNNERS["mineru_vlm"](
+            _case(tmp_path),
+            endpoint=ENDPOINT,
+            revision=recipe["model"]["revision"],
+            allow_network=True,
+        )
+    _, _, headers = transport.seen[0]
+    assert headers["X-AKC-Benchmark-Provider"] == "mineru_vlm"
+    assert headers["X-AKC-Model-Revision"] == recipe["model"]["revision"]
+    assert result["provider"] == "mineru_vlm" and "failure" not in result
+
+
+def test_the_receipt_says_which_recipes_load_models_per_page_and_every_manifest() -> None:
+    c1 = _recipe("c1-paddleocr-vl")
+    receipt = srv.recipe_receipt(c1, {}, {"model": "a" * 64, "layout_detection": "b" * 64})
+    assert receipt["includes_model_load"] is True
+    assert receipt["weights"]["aux"] == [
+        {
+            "role": "layout_detection",
+            "repo_id": "PaddlePaddle/PP-DocLayoutV3",
+            "revision": "241f8bdfc77a7c7bee915a5057aaee58c235a8d3",
+            "manifest_sha256": "b" * 64,
+        }
+    ]
+    for name in ("c0-mineru-pipeline", "c3-mineru-vlm"):
+        assert (
+            srv.recipe_receipt(_recipe(name), {}, {"model": "a" * 64})["includes_model_load"]
+            is False
+        )
+
+
+def test_c3_names_its_engine_and_refuses_another() -> None:
+    c3 = _recipe("c3-mineru-vlm")
+    assert c3["absent_packages"] == ["vllm", "lmdeploy"]
+    assert c3["options"]["inference_engine"].startswith("transformers")
+    assert srv.installed_versions({}, ["akc-no-such-package"]) == {}
+    with pytest.raises(SystemExit, match="rules it out"):
+        srv.installed_versions({}, ["pytest"])
+
+
+def test_c1_pins_its_layout_model_and_switches_the_preprocessors_off() -> None:
+    c1 = _recipe("c1-paddleocr-vl")
+    (layout,) = c1["aux_models"]
+    assert (layout["repo_id"], layout["revision"]) == (
+        "PaddlePaddle/PP-DocLayoutV3",
+        "241f8bdfc77a7c7bee915a5057aaee58c235a8d3",
+    )
+    pairs = {c1["argv"][i]: c1["argv"][i + 1] for i in range(len(c1["argv"]) - 1)}
+    assert pairs["--layout_detection_model_name"] == "PP-DocLayoutV3"
+    assert pairs["--layout_detection_model_dir"] == layout["dir"]
+    assert pairs["--use_doc_orientation_classify"] == pairs["--use_doc_unwarping"] == "False"
+    assert c1["packages"]["paddlex"] == "3.7.2"
+    docker = (_HERE.parent / "paddleocr-vl-akc" / "Dockerfile").read_text(encoding="utf-8")
+    assert '"paddlex==3.7.2"' in docker and "c1-layout-weights-manifest.json" in docker
+    assert "uv pip freeze" in docker and "pip inspect" in docker
+
+
+@pytest.mark.parametrize(
+    ("change", "message"),
+    [
+        ({"timeout_s": 100}, "proxy"),
+        ({"absent_packages": "vllm"}, "absent_packages"),
+        ({"packages": {"mineru": 3}}, "packages"),
+    ],
+)
+def test_a_recipe_the_proxy_would_cut_or_with_bad_package_lists_is_refused(
+    tmp_path: Path, change: dict[str, Any], message: str
+) -> None:
+    path = tmp_path / "r.json"
+    path.write_text(json.dumps({**_recipe(), **change}), encoding="utf-8")
+    with pytest.raises(ValueError, match=message):
+        srv.load_recipe(path)

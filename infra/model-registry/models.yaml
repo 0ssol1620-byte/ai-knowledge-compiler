@@ -55,37 +55,44 @@ releases:
       engine: paddle_or_vllm
       version: null
       image_digest: null
-      # WO-D10-0E: how A0 serves it. vLLM 0.22.1's supported-models page lists
+      # Arena C1 serving (WO-D10-0I, decision A0-7): PaddleOCR's own page pipeline
+      # (`paddleocr doc_parser`, pipeline v1.6, paddle engine) with the production adapter's
+      # arguments, in the production stage of workers/gpu-parser/Dockerfile wrapped as it
+      # is, plus paddlex pinned to 3.7.2. Layout model PP-DocLayoutV3 @ 241f8bdf, pinned and
+      # checked per file like the VLM; orientation and unwarping switched off by option.
+      # The CLI loads its models on every page (no documented health route for the
+      # vendor's long-lived server), so C1's latency and cost per page are not comparable
+      # (receipt includes_model_load: true). Not built: no digest until the lead builds it.
+      serving:
+        enabled: false
+        image: null
+        image_build: infra/runpod/v6/images/paddleocr-vl-akc/Dockerfile
+        built: false
+        recipes: [c1-paddleocr-vl]
+        default_recipe: c1-paddleocr-vl
+        runner: paddleocr_vl_1_6
+        protocol: akc-external-runner
+        attested_revision: c5630abae1d940eafe0697512a0325494b02ab42
+        route: /parse
+        port: 8080
+        page_timeout_s: 90
+        weights_manifest_sha256: "sha256:5e66eef6314fb4cdf5272717d72ff7774319288cb21f5403a9fd98063b3f5868"
+        layout_model: PaddlePaddle/PP-DocLayoutV3@241f8bdfc77a7c7bee915a5057aaee58c235a8d3
+        layout_weights_manifest_sha256: "sha256:44603209f1a6f357df1e4b0881791c437b27497e3f27f80f5d03b2ce25f6436e"
+        includes_model_load: true
+        requirements_lock_sha256: null
+      # WO-D10-0E: the labelled chat variant. vLLM 0.22.1's supported-models page lists
       # PaddleOCRVLForConditionalGeneration (config.json at the pin names that
       # architecture); that it serves this pin is UNVERIFIED until A0, so
       # version and image_digest above stay unattested. --trust-remote-code
       # runs the repository's Python at the pin inside the server.
-      serving:
-        runner: paddleocr_vl_1_6_vllm
-        variant: "whole-page element prompt; not the card's page pipeline"
-        image: "vllm/vllm-openai@sha256:e1668bce9790a4b86682f8fcc99678153a13e12dc70e05348d8e239ffa474b05"
-        served_model_name: "PaddlePaddle/PaddleOCR-VL-1.6@c5630abae1d940eafe0697512a0325494b02ab42"
-        serve_args: [--trust-remote-code, --max-num-batched-tokens, "16384", --no-enable-prefix-caching, --mm-processor-cache-gb, "0"]
-        serve_args_source: "vLLM Recipes, PaddleOCR-VL Usage Guide, 'Deploying PaddleOCR-VL' (snapshot sha256 d295d897e63477438d0c6f19aa3ec18a964740dc269ba267f652e3d27a7789e2)"
-    # Arena C1 serving (WO-D10-0I, decision A0-7): PaddleOCR's own page pipeline
-    # (`paddleocr doc_parser`, pipeline v1.6, paddle engine) with the production adapter's
-    # arguments, in the production stage of workers/gpu-parser/Dockerfile wrapped as it is.
-    # Not servable yet: the layout model v1.6 loads has no pinned repository, revision or
-    # manifest, and the server refuses to start without one. The whole-page chat runner stays
-    # a labelled variant.
-    serving:
-      enabled: false
-      image_recipe: infra/runpod/v6/images/paddleocr-vl-akc
-      image_rebuilt: true
-      recipes: [c1-paddleocr-vl]
-      default_recipe: c1-paddleocr-vl
-      runner: paddleocr_vl_1_6
-      protocol: akc-external-runner
-      route: /parse
-      port: 8080
-      weights_manifest_sha256: "sha256:5e66eef6314fb4cdf5272717d72ff7774319288cb21f5403a9fd98063b3f5868"
-      layout_model: unpinned
-      requirements_lock_sha256: null
+      serving_variants:
+        - runner: paddleocr_vl_1_6_vllm
+          variant: "whole-page element prompt; not the card's page pipeline"
+          image: "vllm/vllm-openai@sha256:e1668bce9790a4b86682f8fcc99678153a13e12dc70e05348d8e239ffa474b05"
+          served_model_name: "PaddlePaddle/PaddleOCR-VL-1.6@c5630abae1d940eafe0697512a0325494b02ab42"
+          serve_args: [--trust-remote-code, --max-num-batched-tokens, "16384", --no-enable-prefix-caching, --mm-processor-cache-gb, "0"]
+          serve_args_source: "vLLM Recipes, PaddleOCR-VL Usage Guide, 'Deploying PaddleOCR-VL' (snapshot sha256 d295d897e63477438d0c6f19aa3ec18a964740dc269ba267f652e3d27a7789e2)"
     claimed_languages: [multilingual, ko, en, zh]
     internal_validation:
       corpus: akc-golden-2026q3-v1
@@ -304,27 +311,32 @@ releases:
       engine: vllm
       version: "mineru-vl-utils[vllm], vllm >= 0.10.1 for MinerULogitsProcessor"
       image_digest: null
-    # Arena C3 serving (WO-D10-0I, decision A0-7): the vendor tool's own VLM backend, MinerU
-    # 3.4.4 `-b vlm-engine` on transformers, in the C0 image plus its [vlm] extra -- the same
-    # tool and version as C0 and the recorded bootstrap
-    # (infra/runpod/v6/bootstrap/mineru-3.4.4-transformers-c1.sh). Weights downloaded at
-    # launch at the revision and checked against the manifest before serving. The runner
-    # key `mineru_vlm` has no external-protocol entry in benchmark/runners/registry.py yet
-    # (README of the image directory). Independent of any C3 serving fields another lane adds.
-    serving:
-      enabled: false
-      image_recipe: infra/runpod/v6/images/mineru-pipeline-akc
-      image_target: c3
-      image_rebuilt: true
-      recipes: [c3-mineru-vlm]
-      default_recipe: c3-mineru-vlm
-      runner: null
-      protocol: akc-external-runner
-      route: /parse
-      port: 8080
-      weights_manifest_sha256: "sha256:43f70d9fbfac33dc296d0d3afb88a104194494a29c49b9b1c5db1e56d3f677b5"
-      requirements_lock_sha256: "sha256:ce626026066540ddd5f5536dd45836a9e2ff7b1002bacd75effcdbcb2c6dcd16"
-      layer_lock_sha256: "sha256:203f592b8e6bf2a45776b6f1b62669cbb586b807596d79c89f2bb9755422c793"
+      # Arena C3 serving (WO-D10-0I, decision A0-7): the vendor tool's own VLM backend, MinerU
+      # 3.4.4 `-b vlm-engine` on transformers, in the C0 image plus its [vlm] extra -- the same
+      # tool and version as C0 and the recorded bootstrap
+      # (infra/runpod/v6/bootstrap/mineru-3.4.4-transformers-c1.sh). Weights downloaded at
+      # launch at the revision and checked against the manifest before serving. The runner
+      # key `mineru_vlm` is the external-protocol runner (WO-D10-0I round 2). Engine:
+      # transformers, fixed by the documented engine modules vllm and lmdeploy being
+      # absent (the server refuses to start if either is installed).
+      serving:
+        enabled: false
+        image: null
+        image_build: infra/runpod/v6/images/mineru-pipeline-akc/Dockerfile
+        image_target: c3
+        built: false
+        recipes: [c3-mineru-vlm]
+        default_recipe: c3-mineru-vlm
+        runner: mineru_vlm
+        protocol: akc-external-runner
+        attested_revision: bff20d4ae2bf202df9f45284b4d43681555a97ed
+        inference_engine: transformers
+        route: /parse
+        port: 8080
+        page_timeout_s: 90
+        weights_manifest_sha256: "sha256:43f70d9fbfac33dc296d0d3afb88a104194494a29c49b9b1c5db1e56d3f677b5"
+        requirements_lock_sha256: "sha256:ce626026066540ddd5f5536dd45836a9e2ff7b1002bacd75effcdbcb2c6dcd16"
+        layer_lock_sha256: "sha256:203f592b8e6bf2a45776b6f1b62669cbb586b807596d79c89f2bb9755422c793"
     claimed_languages: [multilingual]
     internal_validation:
       corpus: akc-golden-2026q3-v1
@@ -363,25 +375,28 @@ releases:
       engine: mineru_pipeline
       version: "mineru==3.4.4 (pipeline backend)"
       image_digest: null
-    # Arena C0 serving (WO-D10-0F). Benchmark only: not the production endpoint and
-    # never enabled for production. The digest production runs is not recorded in
-    # this repository, so the arena image is a rebuild of the 3.4.4 release and its
-    # receipts say "rebuilt"; image_digest stays null until the lead builds it.
-    # WO-D10-0I: one page server, a recipe per slot; the default recipe follows the recorded
-    # one (no -l), the Korean mapping is a named, separate recipe (decision A0-8).
-    serving:
-      enabled: false
-      image_recipe: infra/runpod/v6/images/mineru-pipeline-akc
-      image_target: c0
-      image_rebuilt: true
-      recipes: [c0-mineru-pipeline, c0-mineru-pipeline-lang-ko]
-      default_recipe: c0-mineru-pipeline
-      runner: mineru
-      protocol: akc-external-runner
-      route: /parse
-      port: 8080
-      weights_manifest_sha256: "sha256:5b704468344d9c5a995b0fba9a79c927ae7b554727b15cb9eaa024b0d9f66475"
-      requirements_lock_sha256: "sha256:ce626026066540ddd5f5536dd45836a9e2ff7b1002bacd75effcdbcb2c6dcd16"
+      # Arena C0 serving (WO-D10-0F). Benchmark only: not the production endpoint and
+      # never enabled for production. The digest production runs is not recorded in
+      # this repository, so the arena image is a rebuild of the 3.4.4 release and its
+      # receipts say "rebuilt"; image_digest stays null until the lead builds it.
+      # WO-D10-0I: one page server, a recipe per slot; the default recipe follows the recorded
+      # one (no -l), the Korean mapping is a named, separate recipe (decision A0-8).
+      serving:
+        enabled: false
+        image: null
+        image_build: infra/runpod/v6/images/mineru-pipeline-akc/Dockerfile
+        image_target: c0
+        built: false
+        recipes: [c0-mineru-pipeline, c0-mineru-pipeline-lang-ko]
+        default_recipe: c0-mineru-pipeline
+        runner: mineru
+        protocol: akc-external-runner
+        attested_revision: ed6b654c018d742e65a17671e379c5e6ecc87ec9
+        route: /parse
+        port: 8080
+        page_timeout_s: 90
+        weights_manifest_sha256: "sha256:5b704468344d9c5a995b0fba9a79c927ae7b554727b15cb9eaa024b0d9f66475"
+        requirements_lock_sha256: "sha256:ce626026066540ddd5f5536dd45836a9e2ff7b1002bacd75effcdbcb2c6dcd16"
     claimed_languages: [multilingual]
     internal_validation:
       corpus: akc-golden-2026q3-v1
