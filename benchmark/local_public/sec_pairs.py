@@ -22,6 +22,7 @@ from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime
 from pathlib import Path
+from typing import Any
 
 from akc_product_core.contracts import ProductCoreDocument
 from pydantic import TypeAdapter
@@ -264,6 +265,36 @@ def fill(
     return cases, drops
 
 
+class MissingSide(PairError):
+    """A candidate names a filing the sources manifest does not hold."""
+
+
+def drop_missing(build: Callable[[str], Case | Dropped]) -> Callable[[str], Case | Dropped]:
+    """Only a missing filing is a counted drop; hash or read errors still stop the run."""
+
+    def wrapped(k: str) -> Case | Dropped:
+        try:
+            return build(k)
+        except MissingSide:
+            return Dropped("side_not_in_manifest", k)
+
+    return wrapped
+
+
+def stratum_stats(
+    candidates: int, got: list[Case], drops: list[Dropped], quota: int
+) -> dict[str, Any]:
+    reasons: dict[str, int] = {}
+    for d in drops:
+        reasons[d.reason] = reasons.get(d.reason, 0) + 1
+    return {
+        "candidates": candidates,
+        "built": len(got),
+        "dropped_by_reason": reasons,
+        "shortfall": max(quota - len(got), 0),
+    }
+
+
 def load_excluded(path: Path | None) -> frozenset[int]:
     """The holdout list is required: a missing file refuses the run."""
     if path is None or not path.is_file():
@@ -277,6 +308,7 @@ class Result:
     cases: list[Case] = field(default_factory=list)
     drops: list[Dropped] = field(default_factory=list)
     shortfall: dict[str, int] = field(default_factory=dict)
+    strata: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 
 def write(
@@ -324,6 +356,7 @@ def write(
             "counts": {s: sum(c.stratum == s for c in result.cases) for s in QUOTAS},
             "quotas": QUOTAS,
             "shortfall": result.shortfall,
+            "strata": result.strata,
             "dropped": [{"key": d.key, "reason": d.reason} for d in result.drops],
         },
     }
@@ -369,7 +402,13 @@ def run(loader: sources.Loader, excluded: frozenset[int], seed: str) -> Result: 
             raise PairError(f"{adsh} is not in its FSDS quarter")
         html = None
         if sub["instance"].endswith("_htm.xml"):
-            with gzip.open(loader.open_verified(f"sec_filing/{adsh}")) as g:
+            try:
+                fh = loader.open_verified(f"sec_filing/{adsh}")
+            except sources.SourceMissing as exc:
+                if f"sec_filing/{adsh}" in loader._by_name:
+                    raise  # pinned file gone from disk is an integrity failure, not a drop
+                raise MissingSide(f"filing not in manifest: {adsh}") from exc
+            with gzip.open(fh) as g:
                 html = g.read()
         return Side(sub, num, pre, html)
 
@@ -394,7 +433,8 @@ def run(loader: sources.Loader, excluded: frozenset[int], seed: str) -> Result: 
         def wanted(c: Case, want: str = stratum) -> bool:
             return c.stratum == want
 
-        got, drops = fill(amend, seed, QUOTAS[stratum], build_amend, wanted)
+        got, drops = fill(amend, seed, QUOTAS[stratum], drop_missing(build_amend), wanted)
+        result.strata[stratum] = stratum_stats(len(amend), got, drops, QUOTAS[stratum])
         result.cases += got
         result.drops += drops
     for stratum, form in ((SUCC_10K, "10-K"), (SUCC_10Q, "10-Q")):
@@ -414,7 +454,8 @@ def run(loader: sources.Loader, excluded: frozenset[int], seed: str) -> Result: 
             a1, a2 = k.split(">")
             return successor_case(side(a1), side(a2), st, bulk)
 
-        got, drops = fill(keys, seed, QUOTAS[stratum], build_succ)
+        got, drops = fill(keys, seed, QUOTAS[stratum], drop_missing(build_succ))
+        result.strata[stratum] = stratum_stats(len(keys), got, drops, QUOTAS[stratum])
         result.cases += got
         result.drops += drops
     for stratum, quota in QUOTAS.items():
