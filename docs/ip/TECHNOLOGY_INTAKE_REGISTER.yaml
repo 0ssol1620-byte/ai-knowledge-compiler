@@ -428,10 +428,35 @@ arena_intake:
       hosted:
         verdict: not_applicable
         basis: "Self-hosted."
+    # What the arena C0 image installs (WO-D10-0F). Licences are the PyPI
+    # metadata of each pinned version, read 2026-11-17 (index sha256
+    # 3f91e0781664fb8882c74cf1dce48f74215fad430a45a6e49bc98dc8ab1c3647,
+    # kept outside the repository in receipts/WO-D10-0F/doc-snapshots/); no
+    # licence file inside a wheel was read.
+    image:
+      recipe: infra/runpod/v6/images/mineru-pipeline-akc
+      provenance: "rebuilt from the 3.4.4 release; not the production digest, which the repository does not record"
+      use: evaluation_only
+      base: "python:3.11-slim-bookworm@sha256:e8c69d86735f6df3efa06b324694fe51f0422785f83a3bd463052636c2421944 (amd64); Debian libgl1 and libglib2.0-0 from snapshot 20261116T000000Z, their licences not read"
+      python_packages: "98, version and sha256 in requirements.lock"
+      licences: >-
+        mineru 3.4.4: LicenseRef-MinerU-Open-Source-License (the code axis
+        above). 14 nvidia-* CUDA 12.8 wheels pulled by torch 2.8.0: metadata
+        says NVIDIA proprietary (for nvidia-nccl-cu12 and nvidia-nvtx-cu12 the
+        licence field says BSD-3-Clause / Apache 2.0 while the classifier says
+        Other/Proprietary); the NVIDIA licence text was not read. pypdfium2
+        4.30.0: (Apache-2.0 OR BSD-3-Clause) AND LicenseRef-PdfiumThirdParty.
+        fsspec 2026.7.0: no licence in its PyPI metadata, UNVERIFIED. certifi
+        and tqdm: MPL-2.0 (tqdm MPL-2.0 AND MIT). The rest state MIT, BSD,
+        Apache-2.0, PSF-2.0, MIT-CMU, CNRI-Python (regex), 0BSD, Zlib or
+        CC0-1.0 (numpy), or a combination of them, in their metadata (field,
+        expression or classifier).
     not_cleared: >-
       Production use (code thresholds and the attribution duty need a recorded
       decision; the AGPL statement in the weights card body needs counsel); redistribution of
-      the weights; any licence claim for sub-models whose cards were not read.
+      the weights; any licence claim for sub-models whose cards were not read;
+      redistribution of the C0 image (NVIDIA wheels, Debian packages, fsspec and
+      the weights inside it); any use of the image outside the arena.
 
   - id: model_paddleocr_vl_1_6
     kind: model

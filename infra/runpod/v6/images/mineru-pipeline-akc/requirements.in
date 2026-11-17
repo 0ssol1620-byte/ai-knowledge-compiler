@@ -1,0 +1,9 @@
+# Top-level pins for the C0 image. requirements.lock is compiled from this file by
+# uv pip compile --generate-hashes --python-version 3.11
+#   --python-platform x86_64-manylinux_2_28 --no-build --exclude-newer 2026-08-01T00:00:00Z
+# (README.md says why each pin and the date).
+mineru[pipeline]==3.4.4
+torch==2.8.0
+torchvision==0.23.0
+transformers==4.57.3
+pypdfium2==4.30.0

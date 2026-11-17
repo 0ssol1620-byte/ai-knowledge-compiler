@@ -309,8 +309,22 @@ releases:
       license_snapshot_sha256: "sha256:96da5ddde73c3f578b9eab235ac59cbb5f512755090779a14461863767b70f34"
     runtime:
       engine: mineru_pipeline
-      version: null
+      version: "mineru==3.4.4 (pipeline backend)"
       image_digest: null
+    # Arena C0 serving (WO-D10-0F). Benchmark only: not the production endpoint and
+    # never enabled for production. The digest production runs is not recorded in
+    # this repository, so the arena image is a rebuild of the 3.4.4 release and its
+    # receipts say "rebuilt"; image_digest stays null until the lead builds it.
+    serving:
+      enabled: false
+      image_recipe: infra/runpod/v6/images/mineru-pipeline-akc
+      image_rebuilt: true
+      runner: mineru
+      protocol: akc-external-runner
+      route: /parse
+      port: 8080
+      weights_manifest_sha256: "sha256:5b704468344d9c5a995b0fba9a79c927ae7b554727b15cb9eaa024b0d9f66475"
+      requirements_lock_sha256: "sha256:ce626026066540ddd5f5536dd45836a9e2ff7b1002bacd75effcdbcb2c6dcd16"
     claimed_languages: [multilingual]
     internal_validation:
       corpus: akc-golden-2026q3-v1
