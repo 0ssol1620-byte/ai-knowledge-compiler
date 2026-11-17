@@ -59,6 +59,7 @@ EXCLUDED = [
     {"pattern": "external/*", "reason": "not official / not read"},
     {"pattern": "free/*", "reason": "not official / not read"},
     {"pattern": "alfred_vintages*", "reason": "denied for every action (D21-L1)"},
+    {"pattern": "terms/data_alfred_vintages*", "reason": "denied for every action (D21-L1)"},
     {"pattern": "alfred_series/BAMLH0A0HYM2", "reason": "third-party owned (ICE)"},
     {"pattern": "alfred_series/VIXCLS", "reason": "third-party owned (Cboe)"},
     {"pattern": "alfred_series/DTWEXBGS", "reason": "terms not read"},
@@ -216,6 +217,9 @@ def build(
     # terms snapshots written by WO-LPC-1T
     raw = json.loads(terms_json.read_text("utf-8"))
     for t in raw["snapshots"] if isinstance(raw, dict) else raw:
+        # Denied sources: skipped before the snapshot is opened or hashed (D21-L1).
+        if any(fnmatch.fnmatchcase(f"terms/{t['source_id']}", x["pattern"]) for x in EXCLUDED):
+            continue
         snap = terms_json.parent / f"{t['sha256']}.html"
         e = pin(
             f"terms/{t['source_id']}",

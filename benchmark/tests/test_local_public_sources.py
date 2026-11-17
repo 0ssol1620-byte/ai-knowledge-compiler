@@ -262,3 +262,46 @@ def test_stale_manifest_with_alfred_entries_refused_nothing_opened(
         lo.verified_path("alfred_vintages")
     with pytest.raises(S.ExcludedSource, match="rebuild"):
         lo.verified_path("sec_fsds/2024q1")
+
+
+def test_alfred_terms_rows_are_neither_pinned_nor_hashed(
+    tree: dict[str, Path], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    page = b"<html>fred page</html>"
+    snap = tree["terms"].parent / f"{_h(page)}.html"
+    snap.write_bytes(page)
+    rows = json.loads(tree["terms"].read_text())
+    for sid in ("data_alfred_vintages", "data_alfred_vintages/UNRATE"):
+        rows.append(
+            {
+                "source_id": sid,
+                "url": "https://fred.stlouisfed.org/x",
+                "fetched_at": "2026-11-16T00:00:00+00:00",
+                "sha256": _h(page),
+                "http_status": 200,
+            }
+        )
+    tree["terms"].write_text(json.dumps(rows))
+    real = S._sha256_file
+
+    def guarded(path: Path) -> tuple[str, int]:
+        if path == snap:
+            raise AssertionError(f"ALFRED terms snapshot hashed: {path}")
+        return real(path)
+
+    monkeypatch.setattr(S, "_sha256_file", guarded)
+    m = _build(tree)
+    assert not [e for e in m["entries"] if "alfred" in e["name"]]
+    assert "terms/sec" in {e["name"] for e in m["entries"]}
+
+
+def test_loader_refuses_manifest_with_alfred_terms_entry(tree: dict[str, Path]) -> None:
+    _build(tree)
+    m = json.loads(tree["out"].read_text())
+    m["entries"].append(
+        {"name": "terms/data_alfred_vintages/UNRATE", "path": "x", "sha256": "0" * 64}
+    )
+    m["manifest_sha256"] = S._digest({k: v for k, v in m.items() if k != "manifest_sha256"})
+    tree["out"].write_text(json.dumps(m))
+    with pytest.raises(S.ExcludedSource, match="rebuild"):
+        S.Loader(tree["out"]).verified_path("sec_fsds/2024q1")
