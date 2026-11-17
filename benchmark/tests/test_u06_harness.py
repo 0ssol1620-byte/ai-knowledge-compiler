@@ -12,6 +12,7 @@ from typing import Any
 import pytest
 from akc_cir.identity import document_version_id, source_id
 from akc_cir.models import BBox1000, BlockType
+from akc_product_core import ProductCoreCompiler
 from akc_product_core.contracts import (
     PreviousWorldSnapshot,
     ProductCoreCompileResponse,
@@ -19,6 +20,7 @@ from akc_product_core.contracts import (
     ProductCoreRegion,
 )
 
+from benchmark.u06_equivalence import harness
 from benchmark.u06_equivalence import run as u06_run
 from benchmark.u06_equivalence.harness import compile_pair, judge, run_case
 from benchmark.u06_equivalence.normalize import NormalizationAmbiguous, normalize
@@ -221,3 +223,85 @@ def test_run_refuses_a_manifest_hash_mismatch(tmp_path: Path) -> None:
     manifest = _write_manifest(tmp_path, sha="0" * 64)
     assert u06_run.main(["--manifest", str(manifest), "--out", str(out)]) == 2
     assert not out.exists()
+
+
+DOCUMENT_TEXT = "Confidential: the merger closes on 2026-12-01."
+
+
+class _RaisingCompiler(ProductCoreCompiler):
+    def compile(self, request: Any, *, input_sha256: str) -> ProductCoreCompileResponse:
+        if any(d.native_id == "boom" for d in request.documents):
+            raise ValueError(DOCUMENT_TEXT)
+        return super().compile(request, input_sha256=input_sha256)
+
+
+def test_a_compile_error_is_that_cases_hold_and_the_run_continues(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(harness, "ProductCoreCompiler", _RaisingCompiler)
+
+    def ref(name: str, docs: tuple[ProductCoreDocument, ...]) -> dict[str, str]:
+        data = json.dumps([json.loads(d.model_dump_json(by_alias=True)) for d in docs]).encode()
+        (tmp_path / name).write_bytes(data)
+        return {"path": name, "sha256": hashlib.sha256(data).hexdigest()}
+
+    boom = _doc("boom", "Revenue is 300 million won.")
+    cases = [("c1", (A,), (A, B)), ("c2", (A,), (A, boom)), ("c3", (B,), (B, A))]
+    manifest = {
+        "requested_at": NOW.isoformat(),
+        "cases": [
+            {
+                "case_id": cid,
+                "stratum": "s",
+                "before": ref(f"{cid}-b.json", before),
+                "after": ref(f"{cid}-a.json", after),
+            }
+            for cid, before, after in cases
+        ],
+    }
+    path = tmp_path / "manifest.json"
+    path.write_text(json.dumps(manifest))
+    out = tmp_path / "out"
+
+    assert u06_run.main(["--manifest", str(path), "--out", str(out)]) == 1
+
+    rows = {
+        r["case_id"]: r for r in map(json.loads, (out / "results.jsonl").read_text().splitlines())
+    }
+    assert rows["c2"]["verdict"] == "HOLD"
+    assert rows["c2"]["hold_reasons"] == ["COMPILE_ERROR:ValueError"]
+    assert rows["c1"]["verdict"] == rows["c3"]["verdict"] == "EQUAL"
+    summary = json.loads((out / "summary.json").read_text())
+    assert summary["cases"] == 3 and summary["equal"] == 2 and summary["hold"] == 1
+    assert summary["hold_by_reason"] == {"COMPILE_ERROR:ValueError": 1}
+    for written in out.iterdir():
+        assert "merger" not in written.read_text(encoding="utf-8")
+
+
+def test_a_compile_error_is_hold_not_equal_without_the_runner() -> None:
+    def raising(*_: object, **__: object) -> None:
+        raise KeyError(DOCUMENT_TEXT)
+
+    original = harness.compile_pair
+    harness.compile_pair = raising  # type: ignore[assignment]
+    try:
+        result = run_case((A,), (A, B), requested_at=NOW)
+    finally:
+        harness.compile_pair = original
+    assert result.verdict == "HOLD"
+    assert result.hold_reasons == ("COMPILE_ERROR:KeyError",)
+
+
+def test_a_document_that_repeats_a_text_is_judged_not_a_compile_error() -> None:
+    repeated = "Mercury Systems reported revenue of 100 million won in 2025."
+    plain = _doc("filing-r", repeated, "The board approved the policy.")
+    twice = plain.model_copy(
+        update={
+            "regions": tuple(
+                r.model_copy(update={"bbox1000": None, "text": repeated}) for r in plain.regions
+            )
+        }
+    )
+    result = run_case((plain,), (twice,), requested_at=NOW)
+    assert not any(reason.startswith("COMPILE_ERROR:") for reason in result.hold_reasons)
+    assert result.incremental_status and result.cold_status
