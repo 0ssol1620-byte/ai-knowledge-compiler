@@ -12,6 +12,7 @@ from . import (
     nemotron_parse,
     ovis_ocr2,
     ovis_ocr3,
+    paddleocr_vl_vllm,
     teleocr,
     xiaomi_ocr,
 )
@@ -40,6 +41,7 @@ EXTERNAL_RUNNERS: Mapping[str, ExternalRunner] = {
     "ovis_ocr2": ovis_ocr2.run,
     "ovis_ocr3": ovis_ocr3.run,
     "paddleocr_vl_1_6": run_paddleocr_vl,
+    "paddleocr_vl_1_6_vllm": paddleocr_vl_vllm.run,
     "teleocr": teleocr.run,
     "unlimited_ocr": run_unlimited_ocr,
     "xiaomi_ocr_0": xiaomi_ocr.run,
@@ -55,6 +57,7 @@ RUNNER_CONFIGS: Mapping[str, Callable[..., dict[str, Any]]] = {
     "nemotron_parse_3_5": nemotron_parse.config,
     "ovis_ocr2": ovis_ocr2.config,
     "ovis_ocr3": ovis_ocr3.config,
+    "paddleocr_vl_1_6_vllm": paddleocr_vl_vllm.config,
     "teleocr": teleocr.config,
     "xiaomi_ocr_0": xiaomi_ocr.config,
 }

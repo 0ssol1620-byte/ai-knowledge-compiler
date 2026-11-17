@@ -55,6 +55,18 @@ releases:
       engine: paddle_or_vllm
       version: null
       image_digest: null
+      # WO-D10-0E: how A0 serves it. vLLM 0.22.1's supported-models page lists
+      # PaddleOCRVLForConditionalGeneration (config.json at the pin names that
+      # architecture); that it serves this pin is UNVERIFIED until A0, so
+      # version and image_digest above stay unattested. --trust-remote-code
+      # runs the repository's Python at the pin inside the server.
+      serving:
+        runner: paddleocr_vl_1_6_vllm
+        variant: "whole-page element prompt; not the card's page pipeline"
+        image: "vllm/vllm-openai@sha256:e1668bce9790a4b86682f8fcc99678153a13e12dc70e05348d8e239ffa474b05"
+        served_model_name: "PaddlePaddle/PaddleOCR-VL-1.6@c5630abae1d940eafe0697512a0325494b02ab42"
+        serve_args: [--trust-remote-code, --max-num-batched-tokens, "16384", --no-enable-prefix-caching, --mm-processor-cache-gb, "0"]
+        serve_args_source: "vLLM Recipes, PaddleOCR-VL Usage Guide, 'Deploying PaddleOCR-VL' (snapshot sha256 d295d897e63477438d0c6f19aa3ec18a964740dc269ba267f652e3d27a7789e2)"
     # Arena C1 serving (WO-D10-0I, decision A0-7): PaddleOCR's own page pipeline
     # (`paddleocr doc_parser`, pipeline v1.6, paddle engine) with the production adapter's
     # arguments, in the production stage of workers/gpu-parser/Dockerfile wrapped as it is.
