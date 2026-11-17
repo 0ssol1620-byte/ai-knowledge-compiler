@@ -365,8 +365,10 @@ def _attempts(
 ) -> Iterator[tuple[str, str, Attempt | None, dict[str, Any] | None]]:
     """(cik, adsh, fresh attempt, journal entry) in the serial order, skipping every filing of a
     CIK in `done` (checked when it is reached, so the consumer decides). Journal entries come first
-    and must follow the same order. With a pool, up to `window` later filings are judged ahead;
-    their results are used only when the serial order reaches them."""
+    and must follow the same order. With a pool, up to `window` filings are being judged at any
+    time, ahead of the serial order: every CIK's first filing before any CIK's second (a later
+    filing is needed only when the earlier ones fail). A result is used only when the serial order
+    reaches it; one the serial run would not have tried is never used."""
     i = 0
     while replay:
         if i == len(seq):
@@ -380,7 +382,27 @@ def _attempts(
             raise ScreenError(f"journal entry {e['adsh']} is out of this run's order (want {adsh})")
         yield cik, adsh, None, e
     futs: dict[int, Future[Attempt]] = {}
-    nxt = i
+    sent: set[int] = set()
+    tryno = [0] * len(seq)
+    for k in range(1, len(seq)):
+        tryno[k] = tryno[k - 1] + 1 if seq[k][0] == seq[k - 1][0] else 0
+    ahead = sorted(range(i, len(seq)), key=lambda k: (tryno[k], k))
+    at = 0
+
+    def send(k: int) -> bool:
+        if pool is None or k in sent or seq[k][0] in done:
+            return False
+        sent.add(k)
+        futs[k] = pool.submit(_attempt_in_worker, run(seq[k][1]))
+        return True
+
+    def refill() -> None:
+        nonlocal at
+        busy = sum(not f.done() for f in futs.values())
+        while busy < window and at < len(ahead):
+            busy += send(ahead[at])
+            at += 1
+
     try:
         for j in range(i, len(seq)):
             cik, adsh = seq[j]
@@ -392,12 +414,18 @@ def _attempts(
             if pool is None:
                 yield cik, adsh, _attempt(ctx, run(adsh)), None
                 continue
-            while nxt < len(seq) and (nxt <= j or len(futs) < window):
-                c, a = seq[nxt]
-                if c not in done:
-                    futs[nxt] = pool.submit(_attempt_in_worker, run(a))
-                nxt += 1
-            yield cik, adsh, futs.pop(j).result(), None  # a worker's exception is raised here
+            send(j)
+            refill()
+            while True:  # wait for filing j, keeping the workers busy meanwhile
+                try:
+                    att = futs[j].result(timeout=0.5)  # a worker's exception is raised here
+                    break
+                except TimeoutError:
+                    if futs[j].done():
+                        raise
+                    refill()
+            del futs[j]
+            yield cik, adsh, att, None
     finally:
         for f in futs.values():
             f.cancel()

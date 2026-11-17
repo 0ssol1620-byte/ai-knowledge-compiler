@@ -11,6 +11,7 @@ import json
 import tempfile
 import time
 from collections import Counter
+from concurrent.futures import Future
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
@@ -265,8 +266,18 @@ def outputs(out: Path) -> dict[str, Any]:
     return {"files": files, "receipt": rec}
 
 
-def outputs_of(w: World, out: Path, seed: str, workers: int) -> dict[str, Any]:
-    build(w, out, seed, workers=workers)
+class SlowReads(Fake):
+    """Reads that take 0-400 ms by the filing name: a pool finishes filings out of order."""
+
+    def open_verified(self, name: str) -> Any:
+        time.sleep(hashlib.sha256(name.encode()).digest()[0] / 255 * 0.4)
+        return super().open_verified(name)
+
+
+def outputs_of(w: World, out: Path, seed: str, workers: int, slow: bool = True) -> dict[str, Any]:
+    base = cast(Fake, w.loader())
+    loader = SlowReads(base.paths, base._by_name) if slow else base
+    build(w, out, seed, workers=workers, loader=loader)
     return outputs(out)
 
 
@@ -316,6 +327,54 @@ def test_a_killed_run_resumes_to_the_uninterrupted_output(
     whole = outputs_of(w, tmp_path / "whole", "s1", 1)
     build(w, out, "s1", workers=2)  # the resumed run may use another worker count
     assert outputs(out) == whole
+
+
+class ShuffledPool:
+    """A stand-in executor, in this process: waiting on one future completes queued tasks in a
+    seeded random order until that one is done, so later filings often finish first."""
+
+    order = 0
+
+    def __init__(self, workers: int, initializer: Any, initargs: tuple[Any, ...]) -> None:
+        initializer(*initargs)
+        self.queue: list[tuple[Future[Any], Any, Any]] = []
+        self.draws = 0
+
+    def submit(self, fn: Any, arg: Any) -> Future[Any]:
+        pool = self
+
+        class Lazy(Future[Any]):
+            def result(self, timeout: float | None = None) -> Any:
+                while not self.done():
+                    f, g, a = pool.queue.pop(pool.pick())
+                    if f.set_running_or_notify_cancel():
+                        f.set_result(g(a))
+                return super().result()
+
+        fut: Future[Any] = Lazy()
+        self.queue.append((fut, fn, arg))
+        return fut
+
+    def pick(self) -> int:
+        self.draws += 1
+        h = hashlib.sha256(f"{ShuffledPool.order}:{self.draws}".encode()).digest()
+        return int.from_bytes(h[:4]) % len(self.queue)
+
+    def shutdown(self, wait: bool = True, cancel_futures: bool = False) -> None:
+        for f, _, _ in self.queue:
+            f.cancel()
+
+
+@pytest.mark.parametrize("order", range(6))
+def test_output_is_byte_identical_for_shuffled_completion_order(
+    tmp_path: Path, order: int, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(sec_screen, "datetime", FixedClock)
+    w = adversarial(tmp_path)
+    serial = outputs_of(w, tmp_path / "serial", "s2", 1, slow=False)
+    monkeypatch.setattr(sec_screen, "ProcessPoolExecutor", ShuffledPool)
+    monkeypatch.setattr(ShuffledPool, "order", order)
+    assert outputs_of(w, tmp_path / "shuffled", "s2", 5, slow=False) == serial
 
 
 def test_resume_judges_only_what_the_journal_does_not_hold(
