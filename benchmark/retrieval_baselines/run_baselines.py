@@ -11,7 +11,8 @@ the harness admitted, or an answerable task's gold cannot be reached.
 WO-D17-4: ``--prereg`` (with ``--prereg-sha256`` and ``--rows-index``) adds the ranked arena
 section (benchmark.retrieval_baselines.arena); ``--holdout`` is the single blind run (WO-D17-4b):
 its receipt lives in ``--holdout-receipt-dir``, named by the pre-registration's sha256, and is
-refused when it exists. ``--hybrid-cap`` sets the hybrid_current candidate cap (0 = none).
+refused when it exists. Under --prereg the hybrid_current cap (0 = none) is the
+pre-registration's hybrid_cap; a differing --hybrid-cap is refused.
 """
 
 from __future__ import annotations
@@ -735,17 +736,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--hybrid-cap",
         type=int,
-        default=HYBRID_CAP,
-        help=f"hybrid_current candidate cap, 0 = none (default {HYBRID_CAP}); set in the prereg",
+        default=None,
+        help=f"hybrid_current candidate cap, 0 = none (default {HYBRID_CAP} without --prereg); "
+        "under --prereg the cap is the pre-registration's hybrid_cap; a differing flag is refused",
     )
     args = parser.parse_args(argv)
-    if (args.prereg_sha256 or args.rows_index or args.holdout) and not args.prereg:
+    if (
+        args.prereg_sha256 is not None or args.rows_index is not None or args.holdout
+    ) and not args.prereg:
         parser.error("--prereg-sha256, --rows-index and --holdout require --prereg")
     if args.prereg and not (args.prereg_sha256 and args.rows_index):
         parser.error("--prereg requires --prereg-sha256 and --rows-index")
     if args.holdout != bool(args.holdout_receipt_dir):
         parser.error("--holdout and --holdout-receipt-dir go together")
-    if args.hybrid_cap < 0:
+    if args.hybrid_cap is not None and args.hybrid_cap < 0:
         parser.error("--hybrid-cap must be 0 (no cap) or a positive integer")
     prereg: dict[str, Any] | None = None
     digest = ""
@@ -758,6 +762,11 @@ def main(argv: Sequence[str] | None = None) -> int:
             raw = Path(args.prereg).read_bytes()
             prereg = arena.load_prereg(raw, args.prereg_sha256)
             digest = hashlib.sha256(raw).hexdigest()  # the computed digest, not the typed one
+            if args.hybrid_cap is not None and args.hybrid_cap != prereg["hybrid_cap"]:
+                raise arena.ArenaError(
+                    f"--hybrid-cap {args.hybrid_cap} differs from the pre-registration's "
+                    f"hybrid_cap {prereg['hybrid_cap']}"
+                )
         if args.holdout:
             receipt, pending = _holdout_paths(args, digest)
     except (arena.ArenaError, OSError) as exc:
@@ -779,16 +788,19 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 1
     blind = _blind_queries(lines)
     retrievers: dict[str, Retriever] = {**BASELINES, A0: A0_RETRIEVER}
-    retrievers["hybrid_current"] = functools.partial(hybrid_current, cap=args.hybrid_cap)
+    cap = (
+        prereg["hybrid_cap"]
+        if prereg is not None
+        else (HYBRID_CAP if args.hybrid_cap is None else args.hybrid_cap)
+    )
+    retrievers["hybrid_current"] = functools.partial(hybrid_current, cap=cap)
     not_run: dict[str, str] = {}
     pin: dict[str, str] | None = None
     if args.embeddings:
         retrievers["dense"], pin = load_dense(args.embeddings)
     else:
         not_run["dense"] = "no pinned embedding provider"
-    report = run(
-        corpus, tasks, retrievers, not_run=not_run, blind_queries=blind, hybrid_cap=args.hybrid_cap
-    )
+    report = run(corpus, tasks, retrievers, not_run=not_run, blind_queries=blind, hybrid_cap=cap)
     report["host"] = {
         "cpu": platform.processor() or platform.machine(),
         "python": platform.python_version(),
@@ -825,6 +837,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         "corpus_sha256": _sha256(args.corpus),
         "tasks_sha256": _sha256(args.tasks),
         "rows_index_sha256": _sha256(args.rows_index),
+        "hybrid_cap": cap,
         "report_file": Path(args.out).name,
         "outcome": report["arena"]["outcome"],
         "blocking": report["blocking"],

@@ -31,9 +31,9 @@ OUTSIDE_RULE = {
     "no_cut_bm25_rows": "the cut is not applied; it measures the cut's value, not a retriever",
     LABEL_BLIND: "the floor every family is checked against (D17-D3)",
 }
-PREREG_SCHEMA = "tavonel.retrieval-arena.prereg/v1"
+PREREG_SCHEMA = "tavonel.retrieval-arena.prereg/v2"
 PREREG_KEYS = frozenset(
-    {"schema", "incumbent", "arms", "margin", "stratum_floor", "seed", "resamples"}
+    {"schema", "incumbent", "arms", "margin", "stratum_floor", "seed", "resamples", "hybrid_cap"}
 )
 PREREG_MAX_BYTES = 65_536
 RESAMPLES_RANGE = (1_000, 100_000)
@@ -137,7 +137,11 @@ def load_prereg(raw: bytes, expected_sha256: str) -> dict[str, Any]:
         raise ArenaError("pre-registration arms must hold the incumbent and at least one other arm")
     _number(data, "margin", 1e-9, 1.0)
     _number(data, "stratum_floor", 0.0, 1.0)
-    for key, (low, high) in (("seed", (0, 2**63)), ("resamples", RESAMPLES_RANGE)):
+    for key, (low, high) in (
+        ("seed", (0, 2**63)),
+        ("resamples", RESAMPLES_RANGE),
+        ("hybrid_cap", (0, 2**31)),  # 0 = no cap; the holdout runs under exactly this value
+    ):
         value = data[key]
         if isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high:
             raise ArenaError(f"pre-registration {key} must be an integer in [{low}, {high}]")

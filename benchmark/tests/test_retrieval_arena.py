@@ -26,6 +26,7 @@ def _prereg(**over: Any) -> dict[str, Any]:
         "stratum_floor": 0.02,
         "seed": 20261118,
         "resamples": 2000,
+        "hybrid_cap": 1000,
         **over,
     }
 
@@ -587,25 +588,76 @@ def test_the_recorded_prereg_hash_is_the_computed_digest(tmp_path: Path):
     assert json.loads(out.read_text(encoding="utf-8"))["arena"]["prereg_sha256"] == digest
 
 
-def test_hybrid_cap_flag_is_written_into_the_report_and_changes_what_runs(tmp_path: Path):
-    args, digest = _files(tmp_path)
-
-    def hybrid(*cap: str) -> tuple[dict[str, Any], dict[str, Any]]:
-        out = tmp_path / f"cap{'-'.join(cap) or 'default'}.json"
-        run_baselines.main([*args, "--prereg-sha256", digest, "--out", str(out), *cap])
+def test_hybrid_cap_comes_from_the_prereg_and_is_written_into_the_report(tmp_path: Path):
+    def hybrid(cap: int, *flag: str) -> tuple[dict[str, Any], dict[str, Any]]:
+        args, digest = _files(tmp_path, _prereg(hybrid_cap=cap))
+        out = tmp_path / f"cap{cap}.json"
+        assert run_baselines.main([*args, "--prereg-sha256", digest, "--out", str(out), *flag]) == 0
         report = json.loads(out.read_text(encoding="utf-8"))
         return report["candidate_caps"], report["retrievers"]["hybrid_current"]
 
-    caps, entry = hybrid()
+    caps, entry = hybrid(1000)
     assert caps == {"hybrid_current": 1000} and entry["not_run_tasks"] == 0
-    caps, entry = hybrid("--hybrid-cap", "5")  # every task's candidate set is 24 rows
+    caps, entry = hybrid(5)  # every task's candidate set is 24 rows
     assert caps == {"hybrid_current": 5} and entry["tasks"] == 0 and entry["not_run_tasks"] == 12
     assert "cap of 5" in entry["not_run_reason"]
-    caps, entry = hybrid("--hybrid-cap", "0")
+    caps, entry = hybrid(0, "--hybrid-cap", "0")  # a flag equal to the prereg is accepted
     assert caps == {"hybrid_current": 0} and entry["tasks"] == 12 and entry["not_run_tasks"] == 0
     with pytest.raises(SystemExit) as exc:
-        hybrid("--hybrid-cap", "-1")
+        hybrid(1000, "--hybrid-cap", "-1")
     assert exc.value.code == 2
+
+
+def test_the_prereg_must_name_a_valid_hybrid_cap():
+    for bad in (-1, True, 1.5, "1000", None, 2**31 + 1):
+        with pytest.raises(arena.ArenaError):
+            arena.load_prereg(*_raw(_prereg(hybrid_cap=bad)))
+    with pytest.raises(arena.ArenaError):
+        arena.load_prereg(*_raw({k: v for k, v in _prereg().items() if k != "hybrid_cap"}))
+    assert arena.load_prereg(*_raw(_prereg(hybrid_cap=0)))["hybrid_cap"] == 0
+
+
+def test_a_holdout_under_a_cap_the_prereg_does_not_name_is_refused_and_uses_nothing_up(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+):
+    args, digest = _files(tmp_path)  # the prereg names 1000
+    rdir = _receipt_dir(tmp_path)
+    out = tmp_path / "h.json"
+    for cap in ("5", "0", "1001"):
+        assert _holdout(args, digest, out, rdir, "--hybrid-cap", cap) == 1
+        assert "differs from the pre-registration" in capsys.readouterr().err
+        assert list(rdir.iterdir()) == [] and list(tmp_path.glob("h.json*")) == []
+    assert _holdout(args, digest, out, rdir, "--hybrid-cap", "1000") == 0  # still available
+    receipt = json.loads(next(rdir.iterdir()).read_text(encoding="utf-8"))
+    assert receipt["hybrid_cap"] == 1000
+    assert json.loads(out.read_text(encoding="utf-8"))["candidate_caps"] == {"hybrid_current": 1000}
+
+
+def test_a_holdout_without_the_flag_runs_under_the_prereg_cap(tmp_path: Path):
+    args, digest = _files(tmp_path, _prereg(hybrid_cap=5))
+    rdir = _receipt_dir(tmp_path)
+    out = tmp_path / "h.json"
+    assert _holdout(args, digest, out, rdir) == 0
+    assert json.loads(out.read_text(encoding="utf-8"))["candidate_caps"] == {"hybrid_current": 5}
+    assert json.loads(next(rdir.iterdir()).read_text(encoding="utf-8"))["hybrid_cap"] == 5
+
+
+def test_an_empty_prereg_hash_without_a_prereg_is_a_usage_error(tmp_path: Path):
+    args, _ = _files(tmp_path)
+    with pytest.raises(SystemExit) as exc:
+        run_baselines.main([*args[:4], "--prereg-sha256", "", "--out", str(tmp_path / "r.json")])
+    assert exc.value.code == 2
+    assert not (tmp_path / "r.json").exists()
+
+
+def test_an_unranked_run_keeps_the_default_cap_and_the_flag(tmp_path: Path):
+    args, _ = _files(tmp_path)
+    plain = args[:4]
+    for flag, cap in (([], 1000), (["--hybrid-cap", "7"], 7)):
+        out = tmp_path / f"u{cap}.json"
+        assert run_baselines.main([*plain, "--out", str(out), *flag]) == 0
+        report = json.loads(out.read_text(encoding="utf-8"))
+        assert report["candidate_caps"] == {"hybrid_current": cap}
 
 
 def test_separation_carries_cost_per_task_and_the_arena_cites_both_tie_rates(tmp_path: Path):
