@@ -194,3 +194,179 @@ def test_string_gold_and_non_string_fields_are_rejected():
         metrics.parse_task({**_row("t", "a", "q", ["ev-a2"]), "gold_evidence_ids": "ev-a2"})
     with pytest.raises(metrics.TaskError):
         metrics.parse_task({**_row("t", "a", "q", ["ev-a2"]), "query": None})
+
+
+# ---- WO-D17-1: one admitted set per task, graph on entity rows, cut oracle, label_blind ----
+
+from akc_product_core.retrieval import (  # noqa: E402
+    SemanticRetrievalCandidate,
+    rank_semantic_candidates,
+)
+from akc_product_core.semantics import semantic_tokens  # noqa: E402
+
+KNOWN = "2025-01-01T00:00:00+00:00"
+_PAST = {"recorded_at": "2024-06-01T00:00:00+00:00"}
+_FUTURE = {"recorded_at": "2025-06-01T00:00:00+00:00"}
+
+
+def _real_admit(metadata, cut):  # a faithful known_at filter, independent of akc_retrieval
+    rec = metadata.get("recorded_at")
+    return SimpleNamespace(admitted=rec is not None and rec <= cut.known_at.isoformat())
+
+
+def _old_graph_entity(query, candidates, k):  # the pre-change implementation, verbatim
+    hits = [
+        h
+        for i in range(0, len(candidates), 100)
+        for h in rank_semantic_candidates(
+            query, candidates[i : i + 100], top_k=len(candidates[i : i + 100])
+        )
+    ]
+    ordered = sorted(hits, key=lambda h: (-h.graph_score, h.logical_id))
+    return tuple(h.logical_id for h in ordered[:k])
+
+
+class _Lcg:  # deterministic, no `random` (lint forbids it in this tree)
+    def __init__(self, seed):
+        self.state = seed
+
+    def below(self, n):
+        self.state = (self.state * 6364136223846793005 + 1442695040888963407) % 2**64
+        return (self.state >> 33) % n
+
+    def rand(self):
+        return self.below(1000) / 1000
+
+    def randrange(self, n):
+        return self.below(n)
+
+    def randint(self, a, b):
+        return a + self.below(b - a + 1)
+
+    def choice(self, xs):
+        return xs[self.below(len(xs))]
+
+    def sample(self, xs, n):
+        pool = list(xs)
+        return [pool.pop(self.below(len(pool))) for _ in range(n)]
+
+
+def test_graph_entity_on_entity_rows_equals_the_full_sort_on_seeded_sets():
+    rng = _Lcg(17)
+    words = ["alpha", "beta", "gamma", "delta", "omega", "sigma"]
+    for trial in range(40):
+        n = rng.choice([0, 1, 5, 30, 130, 250])
+        cands = tuple(
+            SemanticRetrievalCandidate(
+                logical_id=f"r{rng.randrange(10**6):06d}-{i}",
+                text="x",
+                terms=("x",),
+                entity_names=tuple(rng.sample(words, rng.randint(0, 2)))
+                if rng.rand() < 0.3
+                else (),
+                temporal_refs=(),
+                authority_score=0.5,
+                claim_ids=(),
+            )
+            for i in range(n)
+        )
+        query = " ".join(rng.sample(words, rng.randint(1, 3)))
+        for k in (1, 10, 400):
+            assert run_baselines.graph_entity(query, cands, k) == _old_graph_entity(
+                query, cands, k
+            ), trial
+    assert semantic_tokens("alpha")  # the words above are real tokens, so some scores are > 0
+
+
+def _cut_corpus():
+    return Corpus(
+        [
+            _src("a", "p1", "Revenue increased.", _PAST),
+            _src("a", "p2", "Revenue grew.", _PAST),
+            _src("a", "f1", "Revenue later.", _FUTURE),
+        ]
+    )
+
+
+def test_admit_runs_once_per_task_row_not_per_arm_and_sets_do_not_leak_across_tasks():
+    calls = []
+
+    def admit(metadata, cut):
+        calls.append(1)
+        return _real_admit(metadata, cut)
+
+    seen = {}
+
+    def spy(query, candidates, k):
+        seen.setdefault(query, []).append(tuple(c.logical_id for c in candidates))
+        return ()
+
+    early = {"known_at": "2024-01-01T00:00:00+00:00"}
+    tasks = [
+        _task("t1", "a", "q1", ["ev-p1"], kind="temporal", cut={"known_at": KNOWN}),
+        _task("t2", "a", "q2", ["ev-p1"], kind="temporal", cut=early),
+    ]
+    run(_cut_corpus(), tasks, {}, admit=admit)
+    no_arm_calls, calls[:] = len(calls), []  # reachability's own calls + one pass per task
+    report = run(_cut_corpus(), tasks, {"s1": spy, "s2": spy}, admit=admit)
+    assert len(calls) == no_arm_calls  # adding arms adds no admit call
+    assert seen["q1"] == [("p1", "p2")] * 2  # both arms, the same set
+    assert seen["q2"] == [()] * 2  # not the first task's set
+    assert report["cut_oracle_disagreements"] == 0
+    assert report["cut_oracle_rows_checked"] == 2
+    assert report["blocking"] == [] or all("cut_oracle" not in b for b in report["blocking"])
+
+
+def test_a_widened_admit_is_counted_by_the_independent_oracle_over_every_admitted_row():
+    task = _task("t1", "a", "q", ["ev-p1"], kind="temporal", cut={"known_at": KNOWN})
+    never_returns = lambda q, c, k: ()  # noqa: E731 - no arm ever returns the leaking row
+    report = run(_cut_corpus(), [task], {"quiet": never_returns}, admit=ADMIT_ALL)
+    assert report["retrievers"]["quiet"]["denied_content"] == 0
+    assert report["cut_oracle_disagreements"] == 1
+    assert any(b.startswith("cut_oracle_disagreements: 1") for b in report["blocking"])
+
+
+def test_main_exits_one_when_admit_is_widened(tmp_path, monkeypatch):
+    rows = [_src("a", "p1", "Revenue.", _PAST), _src("a", "f1", "Revenue later.", _FUTURE)]
+    (tmp_path / "c.jsonl").write_text("\n".join(json.dumps(r) for r in rows), encoding="utf-8")
+    row = _row("t1", "a", "revenue", ["ev-p1"], kind="temporal", cut={"known_at": KNOWN})
+    (tmp_path / "t.jsonl").write_text(json.dumps(row), encoding="utf-8")
+    args = ["--corpus", str(tmp_path / "c.jsonl"), "--tasks", str(tmp_path / "t.jsonl")]
+    monkeypatch.setattr(run_baselines, "_admit", _real_admit)
+    assert run_baselines.main([*args, "--out", str(tmp_path / "ok.json")]) == 0
+    monkeypatch.setattr(run_baselines, "_admit", ADMIT_ALL)
+    assert run_baselines.main([*args, "--out", str(tmp_path / "bad.json")]) == 1
+    bad = json.loads((tmp_path / "bad.json").read_text(encoding="utf-8"))
+    assert bad["cut_oracle_disagreements"] > 0
+
+
+def test_label_blind_runs_on_the_blind_query_and_is_not_run_without_one(tmp_path):
+    rows = [_src("a", "z1", "Mercury gadget 2023."), _src("a", "x2", "Quartz widget 2023.")]
+    rows += [_src("a", f"f{i:02d}", f"Filler {i} 2023.") for i in range(11)]  # z1 ranks last
+    (tmp_path / "c.jsonl").write_text("\n".join(json.dumps(r) for r in rows), encoding="utf-8")
+    base = _row("t1", "a", "gadget 2023", ["ev-z1"])
+    args = ["--corpus", str(tmp_path / "c.jsonl"), "--tasks", str(tmp_path / "t.jsonl")]
+    (tmp_path / "t.jsonl").write_text(json.dumps(base), encoding="utf-8")
+    run_baselines.main([*args, "--out", str(tmp_path / "n.json")])
+    none = json.loads((tmp_path / "n.json").read_text(encoding="utf-8"))
+    assert none["retrievers"]["label_blind"]["status"] == "not_run"
+    (tmp_path / "t.jsonl").write_text(
+        json.dumps({**base, "label_blind_query": "widget"}), encoding="utf-8"
+    )
+    run_baselines.main([*args, "--out", str(tmp_path / "b.json")])
+    blind = json.loads((tmp_path / "b.json").read_text(encoding="utf-8"))["retrievers"]
+    assert (
+        blind["label_blind"]["recall_at_k"]["retrieval"] == 0.0
+    )  # blind query ranks x2 first; z1 is outside the top 10
+    assert blind["bm25_rows"]["recall_at_k"]["retrieval"] == 1.0
+    (tmp_path / "t.jsonl").write_text(json.dumps({**base, "label_blind_query": 5}), "utf-8")
+    with pytest.raises(metrics.TaskError):
+        run_baselines.main([*args, "--out", str(tmp_path / "x.json")])
+
+
+def test_a_task_without_a_blind_query_is_counted_not_run_for_that_arm_only():
+    tasks = [_task("t1", "a", "contract", ["ev-a2"]), _task("t2", "a", "contract", ["ev-a2"])]
+    report = run(Corpus(CORPUS), tasks, {}, blind_queries={"t1": "termination"})
+    entry = report["retrievers"]["label_blind"]
+    assert (entry["tasks"], entry["not_run_tasks"]) == (1, 1)
+    assert entry["recall_at_k"]["retrieval"] == 1.0
