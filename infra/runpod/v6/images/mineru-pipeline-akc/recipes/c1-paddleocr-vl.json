@@ -1,0 +1,73 @@
+{
+ "name": "c1-paddleocr-vl",
+ "provider": "paddleocr_vl_1_6",
+ "model": {
+  "repo_id": "PaddlePaddle/PaddleOCR-VL-1.6",
+  "revision": "c5630abae1d940eafe0697512a0325494b02ab42",
+  "dir": "/opt/akc/models/PaddleOCR-VL-1.6",
+  "manifest": "/opt/akc/recipes/c1-weights-manifest.json"
+ },
+ "aux_models": [
+  {
+   "role": "layout_detection",
+   "repo_id": "PaddlePaddle/PP-DocLayoutV3",
+   "revision": "241f8bdfc77a7c7bee915a5057aaee58c235a8d3",
+   "dir": "/opt/akc/models/PP-DocLayoutV3",
+   "manifest": "/opt/akc/recipes/c1-layout-weights-manifest.json"
+  }
+ ],
+ "packages": {
+  "paddleocr": "3.7.0",
+  "paddlepaddle-gpu": "3.2.1",
+  "paddlex": "3.7.2"
+ },
+ "absent_packages": [],
+ "service": {
+  "argv": [
+   "/app/.venv/bin/python",
+   "/opt/akc/paddleocr_vl_service.py",
+   "serve",
+   "--port",
+   "8081",
+   "--layout-dir",
+   "/opt/akc/models/PP-DocLayoutV3",
+   "--vl-rec-dir",
+   "/opt/akc/models/PaddleOCR-VL-1.6",
+   "--engine",
+   "paddle",
+   "--device",
+   "gpu:0"
+  ],
+  "health_url": "http://127.0.0.1:8081/health",
+  "startup_timeout_s": 600,
+  "page_failure_exits": {
+   "3": "pipeline_raised",
+   "4": "page_count_unsupported"
+  }
+ },
+ "argv": [
+  "/app/.venv/bin/python",
+  "/opt/akc/paddleocr_vl_service.py",
+  "page",
+  "--url",
+  "http://127.0.0.1:8081/page",
+  "--source",
+  "{source}"
+ ],
+ "page_argv": null,
+ "lang_argv": null,
+ "lang_by_language": {},
+ "env": {},
+ "output_glob": "**/*.md",
+ "timeout_s": 90,
+ "options": {
+  "tool": "paddleocr 3.7.0 PaddleOCRVL (the documented Python object), kept loaded by paddleocr_vl_service.py",
+  "pipeline_version": "v1.6",
+  "arguments": "the production adapter's PaddleOCRVL(...) and predict(...) arguments, as Python arguments (paddleocr_vl_service.construct_kwargs, PREDICT_KWARGS)",
+  "max_new_tokens": "4096, production's default",
+  "page_selection": "none: one-page sources only; a source the object reads as more than one page is the failure row page_count_unsupported",
+  "layout_model": "PP-DocLayoutV3, the layout model PaddleX 3.7.0-3.7.2 names for pipeline PaddleOCR-VL-1.6; its directory is passed, its name is the pipeline config's (as production)",
+  "doc_preprocessor": "off: orientation (PP-LCNet_x1_0_doc_ori) and unwarping (UVDoc) switched off by use_doc_orientation_classify=False and use_doc_unwarping=False, so neither model is loaded",
+  "model_load": "once, when the service starts; a page's time is its request"
+ }
+}

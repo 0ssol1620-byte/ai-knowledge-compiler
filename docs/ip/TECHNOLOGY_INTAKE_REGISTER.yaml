@@ -442,10 +442,35 @@ arena_intake:
       hosted:
         verdict: not_applicable
         basis: "Self-hosted."
+    # What the arena C0 image installs (WO-D10-0F). Licences are the PyPI
+    # metadata of each pinned version, read 2026-11-17 (index sha256
+    # 3f91e0781664fb8882c74cf1dce48f74215fad430a45a6e49bc98dc8ab1c3647,
+    # kept outside the repository in receipts/WO-D10-0F/doc-snapshots/); no
+    # licence file inside a wheel was read.
+    image:
+      recipe: infra/runpod/v6/images/mineru-pipeline-akc
+      provenance: "rebuilt from the 3.4.4 release; not the production digest, which the repository does not record"
+      use: evaluation_only
+      base: "python:3.11-slim-bookworm@sha256:e8c69d86735f6df3efa06b324694fe51f0422785f83a3bd463052636c2421944 (amd64); Debian libgl1 and libglib2.0-0 from snapshot 20261116T000000Z, their licences not read"
+      python_packages: "98, version and sha256 in requirements.lock"
+      licences: >-
+        mineru 3.4.4: LicenseRef-MinerU-Open-Source-License (the code axis
+        above). 14 nvidia-* CUDA 12.8 wheels pulled by torch 2.8.0: metadata
+        says NVIDIA proprietary (for nvidia-nccl-cu12 and nvidia-nvtx-cu12 the
+        licence field says BSD-3-Clause / Apache 2.0 while the classifier says
+        Other/Proprietary); the NVIDIA licence text was not read. pypdfium2
+        4.30.0: (Apache-2.0 OR BSD-3-Clause) AND LicenseRef-PdfiumThirdParty.
+        fsspec 2026.7.0: no licence in its PyPI metadata, UNVERIFIED. certifi
+        and tqdm: MPL-2.0 (tqdm MPL-2.0 AND MIT). The rest state MIT, BSD,
+        Apache-2.0, PSF-2.0, MIT-CMU, CNRI-Python (regex), 0BSD, Zlib or
+        CC0-1.0 (numpy), or a combination of them, in their metadata (field,
+        expression or classifier).
     not_cleared: >-
       Production use (code thresholds and the attribution duty need a recorded
       decision; the AGPL statement in the weights card body needs counsel); redistribution of
-      the weights; any licence claim for sub-models whose cards were not read.
+      the weights; any licence claim for sub-models whose cards were not read;
+      redistribution of the C0 image (NVIDIA wheels, Debian packages, fsspec and
+      the weights inside it); any use of the image outside the arena.
 
   - id: model_paddleocr_vl_1_6
     kind: model
@@ -482,7 +507,81 @@ arena_intake:
       hosted:
         verdict: not_applicable
         basis: "Self-hosted."
-    not_cleared: "Production use; the paddlepaddle-gpu runtime licence; Korean capability (card language tags: en, zh, multilingual -- Korean not named, UNVERIFIED)."
+    # What the arena C1 image installs (WO-D10-0I): the production stage of
+    # workers/gpu-parser/Dockerfile, wrapped as it is, plus paddlex pinned to 3.7.2
+    # (round 2). paddlepaddle-gpu 3.2.1's METADATA read 2026-11-17 from the cp312 wheel
+    # on the PaddlePaddle cu126 index by HTTP range requests (the wheel was not
+    # downloaded), sha256 dd212a7daa6096e03fe86d24adab878b41a335046e49b8cd7d29bcd2192c553d,
+    # in receipts/WO-D10-0I/round2/snap/. PyPI metadata read 2026-11-17,
+    # kept outside the repository in receipts/WO-D10-0I/doc-snapshots/ (paddleocr 3.7.0
+    # 4c639433fe1162458c51df797e0190b5fa7141b276dc4c3e3da86fce22f25be5, paddlex 3.7.0
+    # 9ce4d641fe3b5b773de2521bd6f5935c639260a5665807833e67277f08c6c116); no licence file
+    # inside a wheel was read.
+    image:
+      recipe: infra/runpod/v6/images/paddleocr-vl-akc
+      provenance: "the production stage's base, apt packages, uv lock and package versions; not hash-locked, as production is not"
+      use: evaluation_only
+      base: "nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04@sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802; Ubuntu python3, python3-pip, ca-certificates, libglib2.0-0, libgl1 unpinned; the NVIDIA container licence and the Ubuntu package licences not read"
+      python_packages: >-
+        workers/gpu-common/uv.lock (uv sync --locked); paddlepaddle-gpu 3.2.1 from
+        the PaddlePaddle cu126 index; paddleocr[doc-parser] 3.7.0 with paddlex
+        3.7.2, and whatever they resolve to at build time. Not hash-locked: for this
+        evaluation-only image the pin is the built digest plus the `uv pip freeze`
+        and `pip inspect` output the build prints, saved by the lead as a receipt;
+        a hash-locked requirements file comes before any production use
+      licences: >-
+        paddleocr 3.7.0: "Apache License 2.0" (PyPI licence field). paddlex
+        3.7.0: Apache-2.0 (licence expression); 3.7.2 is pinned, its LICENSE at
+        tag v3.7.2 is Apache License 2.0 text (sha256
+        accc36c817ac5ede473d05732e14afc11cb6e55ef5919bc826b653f631165043).
+        paddlepaddle-gpu 3.2.1 (not on PyPI): its wheel METADATA says
+        "License: Apache Software License" and "Classifier: License :: OSI
+        Approved :: Apache Software License" and names License-File LICENSE and
+        AUTHORS.md, which were not read. Every transitive package: UNVERIFIED
+        until the build log's freeze is read.
+    not_cleared: "Production use; the text of paddlepaddle-gpu 3.2.1's licence files (LICENSE and AUTHORS.md, which its METADATA names and which were not read; the METADATA licence field is recorded under licences); Korean capability (card language tags: en, zh, multilingual -- Korean not named, UNVERIFIED); the C1 image's transitive packages; redistribution of the C1 image. The layout model is its own row (model_pp_doclayoutv3)."
+
+  # The layout model C1's page pipeline loads (WO-D10-0I round 2). PaddleX 3.7.0, 3.7.1
+  # and 3.7.2 name it in paddlex/configs/pipelines/PaddleOCR-VL-1.6.yaml (byte-identical,
+  # sha256 af89f00e3a470066d88f429ac9d3f905cdbcddf954ee41e516bfd9767696dbd6):
+  # SubModules.LayoutDetection.model_name PP-DocLayoutV3. Its doc-preprocessor models
+  # (PP-LCNet_x1_0_doc_ori, UVDoc) are switched off by the recipe and get no row.
+  # Snapshots in receipts/WO-D10-0I/round2/snap/; no weights read.
+  - id: model_pp_doclayoutv3
+    kind: model
+    arena_slot: C1-layout
+    reference: "PaddlePaddle/PP-DocLayoutV3"
+    publisher: "PaddlePaddle (Baidu)"
+    upstream_id: PaddlePaddle/PP-DocLayoutV3
+    upstream_revision: "241f8bdfc77a7c7bee915a5057aaee58c235a8d3"
+    classification: GREEN
+    status: EVALUATION_ONLY
+    deciding_axis: weights
+    use: "Layout model of the C1 page pipeline (recipe c1-paddleocr-vl), loaded from a launcher-downloaded directory checked against recipes/c1-layout-weights-manifest.json."
+    snapshot_url: "https://huggingface.co/PaddlePaddle/PP-DocLayoutV3/raw/241f8bdfc77a7c7bee915a5057aaee58c235a8d3/README.md"
+    snapshot_sha256: "08b60d8d7a14ddfbe29bcef9e2c2c75bf012bb0412f4e41a2bdfe5687a741dc7"
+    fetched_at: "2026-11-17T14:08:32.929286+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/PaddlePaddle/PaddleX/v3.7.2/LICENSE", sha256: "accc36c817ac5ede473d05732e14afc11cb6e55ef5919bc826b653f631165043" }
+      - { axis: weights, url: "https://huggingface.co/api/models/PaddlePaddle/PP-DocLayoutV3/revision/241f8bdfc77a7c7bee915a5057aaee58c235a8d3?blobs=true", sha256: "6f73f8576cbb83e79dbbff10abd0ed689848d754225065cb4907e1da6e981f70", note: "file list and LFS digests; the manifest's source" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: "Run by PaddleX 3.7.2 inside paddleocr 3.7.0: PaddleX LICENSE at tag v3.7.2 is Apache License 2.0 text."
+      weights:
+        verdict: cleared_evaluation_only
+        basis: >-
+          Card front matter at the pin: license apache-2.0, and an Apache 2.0 badge
+          linking ./LICENSE. The repository has no LICENSE file at the pin (five
+          files: .gitattributes, README.md, inference.json, inference.pdiparams,
+          inference.yml), so the licence rests on the card's metadata only.
+      dataset:
+        verdict: review_required
+        basis: "Training data is not named in the card read."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    not_cleared: "Production use (the weights licence is card metadata only; no LICENSE file in the repository); redistribution of the weights."
 
   - id: model_ovisocr2
     kind: model
@@ -559,7 +658,24 @@ arena_intake:
       hosted:
         verdict: not_applicable
         basis: "Self-hosted."
-    not_cleared: "Production use (weights licence is metadata only); redistribution of the weights."
+    # What the arena C3 image installs (WO-D10-0I): the C0 image of model_mineru_pipeline
+    # (target c3 of the same Dockerfile, so the code axis is MinerU's own licence, as the
+    # basis above says) plus MinerU 3.4.4's [vlm] extra, which adds two packages. PyPI
+    # metadata read 2026-11-17, outside the repository in receipts/WO-D10-0I/doc-snapshots/pypi/
+    # (accelerate fa2e4204b2ac4c95770d9d016c76a55f591f3e030adff66aaa0863db9366c0d6, psutil
+    # 84f9d2597c3c15fe19d1ce069bfdbf25951dc423dc51d67c3979468c029b6415). The weights are
+    # downloaded at launch, not baked.
+    image:
+      recipe: infra/runpod/v6/images/mineru-pipeline-akc
+      provenance: "Dockerfile target c3: the rebuilt C0 image plus requirements-c3.lock"
+      use: evaluation_only
+      base: "the C0 image (model_mineru_pipeline.image)"
+      python_packages: "the C0 image's 98, plus accelerate 1.14.0 and psutil 7.2.2 by version and sha256 in requirements-c3.lock"
+      licences: >-
+        accelerate 1.14.0: Apache (licence field; classifier Apache Software
+        License). psutil 7.2.2: BSD-3-Clause (licence field). The rest as
+        model_mineru_pipeline.image.
+    not_cleared: "Production use (weights licence is metadata only); redistribution of the weights; redistribution of the C3 image (as the C0 image)."
 
   - id: model_minicpm_ocr_1_0
     kind: model
@@ -651,7 +767,7 @@ arena_intake:
     classification: ORANGE
     status: EVALUATION_ONLY
     deciding_axis: weights
-    use: "A2a 30-page smoke; A2b if a finalist. Download (file list and sizes in REPORT.md) is stated to the founder before it starts."
+    use: "Out of the smoke (A0-6): WO-D10-0H found no documented vLLM setting that serves the weights without the repository's own modeling code (registry row teleocr, runtime.serving). The licence verdicts below are unchanged."
     snapshot_url: "https://huggingface.co/XingChen-AGI/TeleOCR/raw/a32e21d4f766317a6f42f341be57d374362bf843/LICENSE"
     snapshot_sha256: "b57e12ce9b9129b792539c7b1c259ea1d5c058a63866f16296787a1aaf80e2a6"
     fetched_at: "2026-11-17T04:51:49.757580+00:00"
@@ -969,3 +1085,110 @@ arena_intake:
           2026-11-30, then 4.00 / 20.00. No Gemini 4 lite tier is listed, so
           gemini-4-hydrogen is the cheapest non-lite Gemini 4 tier.
     not_cleared: "Free tier; using outputs as gold or training data; the Google APIs Terms (captured, not read); any capability claim before the hosted smoke measures it."
+
+  - id: tool_vllm_openai_0_33_0
+    kind: tool
+    arena_slot: C5_serving_image
+    reference: "vllm/vllm-openai@sha256:d825baf9ce4b1b6bfc5ecc7b79880c7e6748c65a72d697ce3d47607aafa84c6e (tag v0.33.0, Docker Hub 2026-11-02; amd64 manifest sha256:91ee972ab751fb7180bc71c175865e36b091686600dca783d52b2511399810b3)"
+    publisher: "vLLM project"
+    upstream_id: vllm-project/vllm
+    upstream_tag: v0.33.0
+    classification: GREEN
+    status: EVALUATION_ONLY
+    deciding_axis: code
+    use: >-
+      Serves C5 Nemotron-3.5-Parse (registry row nemotron_3_5_parse,
+      runtime.serving) in the A0-6 attempt: the first vLLM release whose
+      supported-models page lists RadioMBartPrefixForCausalLM. Pulled on the
+      pod by digest; not built, not modified. Not the arena's common stack:
+      that is vllm/vllm-openai@sha256:e1668bce... = tag v0.22.1-cu129 (vLLM
+      0.22.1+cu129, CUDA 12.9, PyTorch 2.11); this image is CUDA 13.0 only
+      with PyTorch 2.14.0 (v0.33.0rc3 release notes). Host precondition: a
+      driver of the R580 branch or newer (NVIDIA: CUDA 13.x needs >= 580);
+      the pod is limited to hosts with CUDA 13.0 or newer, and a start
+      failure from a driver mismatch is an operational failure, not A0-6's
+      model verdict.
+    snapshot_url: "https://raw.githubusercontent.com/vllm-project/vllm/v0.33.0/LICENSE"
+    snapshot_sha256: "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    fetched_at: "2026-11-17T12:24:29.648803+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/vllm-project/vllm/v0.33.0/docs/models/supported_models.md", sha256: "66c77abb76a21e3e184c49ef889be91debb43c823c45e7decce531d46d719134", note: "lists RadioMBartPrefixForCausalLM (Nemotron Parse 3.5); the v0.32.0 page (sha256 bd5879be29836d74b2e974d107f1a9fe50706ba5f9a0d854edc497981d98fb94) does not" }
+      - { axis: code, url: "https://hub.docker.com/v2/repositories/vllm/vllm-openai/tags/v0.33.0", sha256: "65ce1a00a72f2a41908aa7a97b07996fadb1324772280cad94db0254d3855e2c", note: "registry metadata: index and per-platform digests" }
+      - { axis: code, url: "https://api.github.com/repos/vllm-project/vllm/releases?per_page=40", sha256: "65ab2830c18aedb2312d7ac1560157aea2447c70c5ca9606a90cf3b0f4e5f10a", note: "v0.33.0rc3: CUDA 12.9 dropped, images CUDA 13.0 only; PyTorch 2.14.0, torchvision 0.29.0, Triton 3.8.0. v0.20.0: PyTorch 2.11 for CUDA" }
+      - { axis: code, url: "https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html", sha256: "ad6659640c0ce3153dcca0e4cf87731eccf298ac88751df20848df23c99dff52", note: "Table 2: CUDA 13.0 = driver branch R580; Table 3: CUDA 13.x minor-version compatibility >= 580" }
+      - { axis: code, url: "https://hub.docker.com/v2/repositories/vllm/vllm-openai/tags/v0.22.1-cu129", sha256: "d711dcdb0e3a08bab1d25c54b30c0e5c112906927104a1082c00ecd7da08d928", note: "the arena's existing pin sha256:e1668bce... is this tag's index digest; registry manifest read by digest, content sha256 matches" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: >-
+          LICENSE at tag v0.33.0: Apache License 2.0 text, byte-identical to the
+          v0.22.1 LICENSE the arena already runs (sha256 c71d239d...). That covers
+          vLLM's own source. The image also carries PyTorch, CUDA libraries and
+          other packages under their own terms; none of those was read, and no
+          SBOM of the image exists.
+      weights:
+        verdict: not_applicable
+        basis: "No weights in the image; C5's weights are model_nemotron_3_5_parse."
+      dataset:
+        verdict: not_applicable
+        basis: "No dataset."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted server on a pod."
+    not_cleared: "Production use before an SBOM of the image; the bundled CUDA, PyTorch and other third-party components (unread); any claim that it serves C5 before A0 shows it."
+
+  - id: tool_minicpm_ocr_vendor_image
+    kind: tool
+    arena_slot: C4_vendor_image_candidate
+    reference: "openbmbofficial/minicpm-ocr@sha256:3cfeaf0d251ecb4e5615cf5ce97cb8c90583cfb70dc21d6978ca50a4bfc6fdd9 (tags 105-vlm-with-model and latest, Docker Hub 2026-11-16; amd64 manifest sha256:42773d0ece292c0d8abe9edd92d5a405f37849db134c094554532880ab0d7a12, 11,207,282,798 B; config sha256:eaca12947aceac14cd4ffd7aba3e8ef255d8fbdb2376df4874a2572fc0c51343)"
+    publisher: "OpenBMB"
+    upstream_id: openbmbofficial/minicpm-ocr
+    upstream_tag: 105-vlm-with-model
+    classification: ORANGE
+    status: HELD
+    held_reason: >-
+      Image licence unread (WO-D10-0H round 2, lead decision B). The Docker
+      Hub page states Apache-2.0 for MiniCPM-OCR code and weights and says
+      "Third-party components retain their respective licenses" without
+      naming them; the config document has no labels and the index has no
+      SBOM attestation. The bundled third-party contents (from the config
+      history: a vendor-staged vLLM 0.31.1rc1.dev379+g484a12539 over the
+      precompiled wheel of vLLM commit 5555a2d8, a vendor-staged
+      transformers 5.19.0.dev0, PyTorch for CUDA 12.9, paddlepaddle-gpu,
+      paddlex[ocr] 3.7.2, opencv-contrib-python 4.10.0.84, torchcodec, a
+      requirements.lock, a layout model and the PP-LCNet_x1_0_doc_ori
+      orientation model) have no licence in any document read. Separately,
+      its vllm wrapper fixes the served name minicpm-ocr-1.0 and serves the
+      bundled weights of unstated revision, so the runner's attestation
+      cannot be met through it (registry row minicpm_ocr_1_0).
+    deciding_axis: code
+    use: "None until released from HELD. C4 is not attempted in A0-6 (verdict not_attempted_image_licence_unread in registry row minicpm_ocr_1_0)."
+    snapshot_url: "https://hub.docker.com/v2/repositories/openbmbofficial/minicpm-ocr/tags?page_size=50"
+    snapshot_sha256: "38489be93c57706eea8369552c05e8df96034337fe0fea309186b9b88c9b121b"
+    fetched_at: "2026-11-17T12:24:18.617489+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/OpenBMB/MiniCPM-OCR/sdk-v1.0.5/README.md", sha256: "67a8a3edbb61273d129591c7390086e1b99e69bbdc2df6204df3f43543aa61f4", note: "Docker Deployment section" }
+      - { axis: code, url: "https://hub.docker.com/v2/repositories/openbmbofficial/minicpm-ocr/", sha256: "38974d2226fab5c9373bb08fad40c4572f536a61fe4bb0ef832b95009c0bcf0b", note: "overview: start command, wrapper, served name minicpm-ocr-1.0, weight sync, licence sentence" }
+      - { axis: code, url: "https://registry-1.docker.io/v2/openbmbofficial/minicpm-ocr/blobs/sha256:eaca12947aceac14cd4ffd7aba3e8ef255d8fbdb2376df4874a2572fc0c51343", sha256: "eaca12947aceac14cd4ffd7aba3e8ef255d8fbdb2376df4874a2572fc0c51343", note: "image config: env, entrypoint, build history; no labels" }
+      - { axis: code, url: "https://registry-1.docker.io/v2/openbmbofficial/minicpm-ocr/manifests/sha256:baf1d4553906664e7b69e1f5bc5411bdfd4b05ef8d7ebd4e1938049e5886ff07", sha256: "baf1d4553906664e7b69e1f5bc5411bdfd4b05ef8d7ebd4e1938049e5886ff07", note: "attestation manifest: one SLSA provenance v0.2 layer, no SBOM; layer not read" }
+      - { axis: code, url: "https://raw.githubusercontent.com/OpenBMB/MiniCPM-OCR/sdk-v1.0.5/docs/minicpm_ocr_tutorial_en.md", sha256: "8d3346c371378076ce735d8b8d564606393c2621a8f38c8ed67ea53e55d6fe08", note: "vendor deployment guide: source build of vLLM and transformers, vllm serve command" }
+      - { axis: code, url: "https://raw.githubusercontent.com/OpenBMB/MiniCPM-OCR/sdk-v1.0.5/scripts/install.sh", sha256: "5b0b8f2690dcabae82aeb4b74231a271689670dd109658f21205afa2610c61ff", note: "named by the guide; pins vLLM and transformers sources by commit from pyproject.toml (not read)" }
+    axes:
+      code:
+        verdict: review_required
+        basis: >-
+          MiniCPM-OCR code (the SDK 1.0.5 from commit f5357c72 and the web
+          backend under /opt/app) is Apache-2.0 per the Docker Hub page. Every
+          other component listed in held_reason has no licence in any
+          document read, and the vLLM and transformers builds are from
+          vendor-staged sources whose changes are unread.
+      weights:
+        verdict: review_required
+        basis: "Bundled /opt/models/ocr of unstated revision (copied 2026-10-20), replaced at start from Hugging Face or ModelScope unless HF_WEIGHT_SYNC=0; Apache-2.0 per the Docker Hub page. The layout and orientation models have no stated licence. The documented wrapper cannot serve the pinned C4 weights (883ca368)."
+      dataset:
+        verdict: not_applicable
+        basis: "No dataset."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    not_cleared: "Any use: the licences of the bundled third-party components; the revision of the bundled weights; a documented way to set the served name."

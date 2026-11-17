@@ -55,6 +55,45 @@ releases:
       engine: paddle_or_vllm
       version: null
       image_digest: null
+      # Arena C1 serving (WO-D10-0I, decision A0-7): PaddleOCR's own page pipeline, the
+      # documented PaddleOCRVL Python object (pipeline v1.6, paddle engine) with the
+      # production adapter's arguments, in the production stage of
+      # workers/gpu-parser/Dockerfile wrapped as it is, plus paddlex pinned to 3.7.2. Layout
+      # model PP-DocLayoutV3 @ 241f8bdf, pinned and checked per file like the VLM;
+      # orientation and unwarping switched off by option. Round 3: a loopback service
+      # (paddleocr_vl_service.py) keeps the object loaded, as production does, so the models
+      # load once at start and a page's time is its request (receipt includes_model_load:
+      # false). Not built: no digest until the lead builds it.
+      serving:
+        enabled: false
+        image: null
+        image_build: infra/runpod/v6/images/paddleocr-vl-akc/Dockerfile
+        built: false
+        recipes: [c1-paddleocr-vl]
+        default_recipe: c1-paddleocr-vl
+        runner: paddleocr_vl_1_6
+        protocol: akc-external-runner
+        attested_revision: c5630abae1d940eafe0697512a0325494b02ab42
+        route: /parse
+        port: 8080
+        page_timeout_s: 90
+        weights_manifest_sha256: "sha256:5e66eef6314fb4cdf5272717d72ff7774319288cb21f5403a9fd98063b3f5868"
+        layout_model: PaddlePaddle/PP-DocLayoutV3@241f8bdfc77a7c7bee915a5057aaee58c235a8d3
+        layout_weights_manifest_sha256: "sha256:44603209f1a6f357df1e4b0881791c437b27497e3f27f80f5d03b2ce25f6436e"
+        includes_model_load: false
+        requirements_lock_sha256: null
+      # WO-D10-0E: the labelled chat variant. vLLM 0.22.1's supported-models page lists
+      # PaddleOCRVLForConditionalGeneration (config.json at the pin names that
+      # architecture); that it serves this pin is UNVERIFIED until A0, so
+      # version and image_digest above stay unattested. --trust-remote-code
+      # runs the repository's Python at the pin inside the server.
+      serving_variants:
+        - runner: paddleocr_vl_1_6_vllm
+          variant: "whole-page element prompt; not the card's page pipeline"
+          image: "vllm/vllm-openai@sha256:e1668bce9790a4b86682f8fcc99678153a13e12dc70e05348d8e239ffa474b05"
+          served_model_name: "PaddlePaddle/PaddleOCR-VL-1.6@c5630abae1d940eafe0697512a0325494b02ab42"
+          serve_args: [--trust-remote-code, --max-num-batched-tokens, "16384", --no-enable-prefix-caching, --mm-processor-cache-gb, "0"]
+          serve_args_source: "vLLM Recipes, PaddleOCR-VL Usage Guide, 'Deploying PaddleOCR-VL' (snapshot sha256 d295d897e63477438d0c6f19aa3ec18a964740dc269ba267f652e3d27a7789e2)"
     claimed_languages: [multilingual, ko, en, zh]
     internal_validation:
       corpus: akc-golden-2026q3-v1
@@ -273,6 +312,32 @@ releases:
       engine: vllm
       version: "mineru-vl-utils[vllm], vllm >= 0.10.1 for MinerULogitsProcessor"
       image_digest: null
+      # Arena C3 serving (WO-D10-0I, decision A0-7): the vendor tool's own VLM backend, MinerU
+      # 3.4.4 `-b vlm-engine` on transformers, in the C0 image plus its [vlm] extra -- the same
+      # tool and version as C0 and the recorded bootstrap
+      # (infra/runpod/v6/bootstrap/mineru-3.4.4-transformers-c1.sh). Weights downloaded at
+      # launch at the revision and checked against the manifest before serving. The runner
+      # key `mineru_vlm` is the external-protocol runner (WO-D10-0I round 2). Engine:
+      # transformers, fixed by the documented engine modules vllm and lmdeploy being
+      # absent (the server refuses to start if either is installed).
+      serving:
+        enabled: false
+        image: null
+        image_build: infra/runpod/v6/images/mineru-pipeline-akc/Dockerfile
+        image_target: c3
+        built: false
+        recipes: [c3-mineru-vlm]
+        default_recipe: c3-mineru-vlm
+        runner: mineru_vlm
+        protocol: akc-external-runner
+        attested_revision: bff20d4ae2bf202df9f45284b4d43681555a97ed
+        inference_engine: transformers
+        route: /parse
+        port: 8080
+        page_timeout_s: 90
+        weights_manifest_sha256: "sha256:43f70d9fbfac33dc296d0d3afb88a104194494a29c49b9b1c5db1e56d3f677b5"
+        requirements_lock_sha256: "sha256:ce626026066540ddd5f5536dd45836a9e2ff7b1002bacd75effcdbcb2c6dcd16"
+        layer_lock_sha256: "sha256:203f592b8e6bf2a45776b6f1b62669cbb586b807596d79c89f2bb9755422c793"
     claimed_languages: [multilingual]
     internal_validation:
       corpus: akc-golden-2026q3-v1
@@ -309,8 +374,30 @@ releases:
       license_snapshot_sha256: "sha256:96da5ddde73c3f578b9eab235ac59cbb5f512755090779a14461863767b70f34"
     runtime:
       engine: mineru_pipeline
-      version: null
+      version: "mineru==3.4.4 (pipeline backend)"
       image_digest: null
+      # Arena C0 serving (WO-D10-0F). Benchmark only: not the production endpoint and
+      # never enabled for production. The digest production runs is not recorded in
+      # this repository, so the arena image is a rebuild of the 3.4.4 release and its
+      # receipts say "rebuilt"; image_digest stays null until the lead builds it.
+      # WO-D10-0I: one page server, a recipe per slot; the default recipe follows the recorded
+      # one (no -l), the Korean mapping is a named, separate recipe (decision A0-8).
+      serving:
+        enabled: false
+        image: null
+        image_build: infra/runpod/v6/images/mineru-pipeline-akc/Dockerfile
+        image_target: c0
+        built: false
+        recipes: [c0-mineru-pipeline, c0-mineru-pipeline-lang-ko]
+        default_recipe: c0-mineru-pipeline
+        runner: mineru
+        protocol: akc-external-runner
+        attested_revision: ed6b654c018d742e65a17671e379c5e6ecc87ec9
+        route: /parse
+        port: 8080
+        page_timeout_s: 90
+        weights_manifest_sha256: "sha256:5b704468344d9c5a995b0fba9a79c927ae7b554727b15cb9eaa024b0d9f66475"
+        requirements_lock_sha256: "sha256:ce626026066540ddd5f5536dd45836a9e2ff7b1002bacd75effcdbcb2c6dcd16"
     claimed_languages: [multilingual]
     internal_validation:
       corpus: akc-golden-2026q3-v1
@@ -347,6 +434,99 @@ releases:
       engine: vllm_or_transformers
       version: null
       image_digest: null
+      # WO-D10-0H round 2, from the vendor deployment guide
+      # (docs/minicpm_ocr_tutorial_en.md at sdk-v1.0.5, sha256 8d3346c3...),
+      # scripts/install.sh it names (sha256 5b0b8f26...), the Docker Hub
+      # overview of openbmbofficial/minicpm-ocr (sha256 38974d22...) and the
+      # image's config document (sha256 eaca1294...; no layer pulled). Not
+      # attempted: the image's bundled third-party components have no licence
+      # in any of these documents, and an evaluation run of an image whose
+      # licence is unknown is not made (lead decision B). The image stays HELD
+      # in the intake register (tool_minicpm_ocr_vendor_image).
+      serving:
+        runner: minicpm_ocr_1
+        verdict: not_attempted_image_licence_unread
+        a0_exception: >-
+          vllm/vllm-openai@sha256:e1668bce... (tag v0.22.1-cu129; vLLM 0.22.1,
+          transformers 5.10.2):
+          "Value error, The checkpoint you are trying to load has model type
+          `minicpm_ocr` but Transformers does not recognize this architecture."
+          (pydantic ValidationError for ModelConfig, before any weight loaded).
+        documented_paths:
+          - >-
+            Guide (tutorial step 2-3): bash scripts/install.sh vllm checks out
+            vLLM and Transformers source at commits pinned in the repository's
+            pyproject.toml (not read) and builds vLLM in .venv-vllm (about 40 min
+            on 96 cores; driver >= 580, CUDA 13). Start: vllm serve
+            openbmb/MiniCPM-OCR-1.0 --served-model-name minicpm-ocr --port 18499
+            --max-model-len 40960 --max-num-batched-tokens 40960 --max-num-seqs 32
+            --limit-mm-per-prompt '{"image":36,"video":0}' --attention-backend
+            FLASH_ATTN --mm-encoder-attn-backend FLASH_ATTN --mm-processor-kwargs
+            '{"downsample_mode":"4x"}' --gpu-memory-utilization 0.85
+            --trust-request-mm-kwargs --default-chat-template-kwargs
+            '{"enable_thinking":false}', with --speculative-config (DSpark draft
+            openbmb/MiniCPM-OCR-1.0-DSpark) removed for standard decoding as the
+            guide allows. A source build is a new image this work order may not
+            make; not usable for A0-6 as it stands.
+          - >-
+            Image (Docker Hub, OCR-only quick start): docker run ... -p 8000:8000
+            openbmbofficial/minicpm-ocr:latest vllm serve /opt/models/ocr. In the
+            image /usr/local/bin/vllm is a wrapper that execs /entrypoint.sh
+            (config history step 32); the page says it "does not forward
+            arbitrary vLLM arguments" and serves the name minicpm-ocr-1.0
+            (env OCR_SERVED_NAME=minicpm-ocr-1.0). No documented option sets the
+            served name, so through the wrapper the runner's attestation
+            <repo>@<revision> cannot be met: cannot be attested as launched.
+        weights: >-
+          The wrapper serves /opt/models/ocr, copied into the image on
+          2026-10-20 (history step 24); a build step bakes a fingerprint with the
+          sha256 of every weights file to /opt/models/.hf-ocr-manifest.json. The
+          revision of those files is not stated in any document read, and at
+          start the wrapper checks Hugging Face, then ModelScope, for newer
+          weights and replaces them unless HF_WEIGHT_SYNC=0. The pinned weights
+          (883ca368, largest file sha256 83f4e433...) are therefore served only
+          by pointing a vLLM server at a launcher-downloaded directory, which the
+          wrapper does not allow (above).
+        image_contents: >-
+          From the config history: Debian trixie with Python 3.12.15; one venv
+          /opt/venv holding vLLM 0.31.1rc1.dev379+g484a12539 installed from
+          vendor-staged source over the precompiled wheel of vLLM commit
+          5555a2d8f7116b2b4877f66516f4128176cf722a (VLLM_MAIN_CUDA_VERSION 12.9),
+          transformers 5.19.0.dev0 from vendor-staged source, PyTorch for CUDA
+          12.9 (asserted at build), paddlepaddle-gpu (cu129), paddlex[ocr] 3.7.2,
+          opencv-contrib-python 4.10.0.84, torchcodec and a requirements.lock
+          (not read); the layout model at /opt/models/layout and the orientation
+          model PP-LCNet_x1_0_doc_ori at /opt/models/paddle_upright; the SDK
+          1.0.5 from OpenBMB/MiniCPM-OCR commit f5357c72.... The checkpoint's
+          config.json names transformers 5.21.0; the image has 5.19.0.dev0.
+        licence: >-
+          Docker Hub page: "MiniCPM-OCR code and model weights are released under
+          the Apache License 2.0. Third-party components retain their respective
+          licenses." No document read names those licences; the image has no
+          labels and no SBOM attestation (its index carries one SLSA provenance
+          attestation, not read). The staged vLLM and transformers sources are
+          the vendor's and their changes are unread.
+        request_shape: >-
+          The runner sends POST /v1/chat/completions with model
+          <repo>@<revision>, one user message [image_url data URL, text "Text
+          Recognition:"], temperature 0.0 and max_tokens 8192, an optional
+          Bearer header, and requires the echoed model and finish_reason stop.
+          The Docker Hub example has the same message shape, prompt and
+          temperature on port 8000, health GET /health, models GET /v1/models.
+          Not in the guides: max_tokens; a model value other than
+          minicpm-ocr-1.0; the Bearer header (no --api-key is documented for
+          the image); a whole page as one image (the page says full pages and
+          PDFs go through the SDK pipeline, and the guide's server runs with
+          --mm-processor-kwargs downsample_mode 4x and enable_thinking false,
+          whose values in the image's wrapper are unread).
+        findings:
+          - "config.json at the pin: architectures [MiniCPMOcrForConditionalGeneration], model_type minicpm_ocr, transformers_version 5.21.0, no auto_map; the 14-file weights repository has no Python file, so no remote-code path exists."
+          - "vLLM supported-models docs at v0.22.1, v0.26.0, v0.30.0, v0.32.0, v0.33.0, v0.34.0 and main (read 2026-11-17) list no MiniCPMOcrForConditionalGeneration; MiniCPM-V 4.6/4.7 are listed under MiniCPMV, a different architecture name."
+          - "Whether a public transformers release registers minicpm_ocr is UNVERIFIED (not read). vLLM's Transformers modeling backend is documented for full and sliding attention only; the text model has linear_attention layers."
+          - "PyPI minicpm-ocr 1.0.5 (Apache-2.0) requires no vLLM and no transformers: it is the client of a separately started service."
+        candidate_image: "openbmbofficial/minicpm-ocr@sha256:3cfeaf0d251ecb4e5615cf5ce97cb8c90583cfb70dc21d6978ca50a4bfc6fdd9"
+        candidate_image_note: "tags 105-vlm-with-model and latest (Docker Hub, 2026-11-16); amd64 manifest sha256:42773d0ece292c0d8abe9edd92d5a405f37849db134c094554532880ab0d7a12, config sha256:eaca12947aceac14cd4ffd7aba3e8ef255d8fbdb2376df4874a2572fc0c51343. CUDA 12.9 runtime; the page's verification names this digest (printed one hex digit short) on an RTX 5090 with driver 590.48.01."
+        missing: "a licence for the image's third-party contents (vLLM and transformers builds, PyTorch, Paddle packages and models, requirements.lock); then either a documented served-name option for the image or a server started outside the wrapper on a launcher-downloaded pinned directory, which would be a new decision"
     claimed_languages: [zh, en]
     internal_validation:
       corpus: d10-screen-v1
@@ -378,6 +558,72 @@ releases:
       engine: vllm_or_transformers
       version: null
       image_digest: null
+      # WO-D10-0H: the card's documented native path, base inference. vLLM
+      # 0.22.1 refused the checkpoint's architecture RadioMBartPrefixForCausalLM;
+      # the supported-models docs list it from v0.33.0 (absent at v0.32.0), and
+      # docs/serving-reference.md at the pin says the native path was validated
+      # on 0.32.1rc1.dev505 and "needs no additional model package or worker
+      # plugin". vllm_tied_patch/ is the repository's own vLLM general plugin
+      # (pyproject entry point nemotron_parse_35 = vllm_tied_patch.plugin:register),
+      # used only by the reference MTP environment on vLLM 0.26.0; not used here.
+      # Version and image_digest above stay null: serving is UNVERIFIED until A0.
+      serving:
+        runner: nemotron_parse_3_5
+        image: "vllm/vllm-openai@sha256:d825baf9ce4b1b6bfc5ecc7b79880c7e6748c65a72d697ce3d47607aafa84c6e"
+        image_note: "tag v0.33.0 (Docker Hub index digest, 2026-11-02; amd64 manifest sha256:91ee972ab751fb7180bc71c175865e36b091686600dca783d52b2511399810b3). Intake row tool_vllm_openai_0_33_0."
+        served_model_name: "nvidia/Nemotron-3.5-Parse@ea2e1fe486bea3e7d0d505df9bafa4ad562407a0"
+        serve_args: [--trust-remote-code]
+        serve_args_source: >-
+          docs/serving.md at the pin (sha256 c30801acbeee10336dc4cb59e48d784f6f6ccc8bb9a8369c22300dc410705b8a),
+          "Native DFlash2": `vllm serve ./parse35 --served-model-name nemotron-parse
+          --trust-remote-code --speculative-config ...`, and "For base inference,
+          omit --speculative-config". Served name replaced by <repo>@<revision>;
+          no speculator, so decoding is ordinary, as for every other candidate.
+          --trust-remote-code runs the weights repository's own Python at the pin
+          (OpenMDW-1.1), as the A0 attempt already did.
+        a0_exception: "vLLM 0.22.1: \"Model architectures ['RadioMBartPrefixForCausalLM'] are not supported for now.\" (ModelConfig validation, before any weight loaded)."
+        serving_stack_note: >-
+          Not the stack every other served candidate runs. Theirs is
+          vllm/vllm-openai@sha256:e1668bce... = tag v0.22.1-cu129 (Docker Hub
+          tag metadata and the registry index manifest read 2026-11-17; amd64
+          manifest sha256:e3443c4b...; the plain v0.22.1 tag is the CUDA 13.0
+          build 953d3a06...): vLLM 0.22.1+cu129, CUDA 12.9, PyTorch 2.11 (the
+          v0.20.0 release notes move CUDA builds to 2.11 and no later note
+          before v0.27.0 changes it), transformers 5.10.2 (A0 log). C5's is
+          v0.33.0: vLLM 0.33.0, CUDA 13.0 only ("CUDA 12.9 dropped: release
+          wheels and images are CUDA 13.0 only", v0.33.0rc3 notes; GitHub
+          releases snapshot sha256 65ab2830c18aedb2312d7ac1560157aea2447c70c5ca9606a90cf3b0f4e5f10a),
+          PyTorch 2.14.0 with torchvision 0.29.0 and Triton 3.8.0 (same notes;
+          v0.34.0 says PyTorch stays at 2.14.0); its transformers version is
+          unread. Engine, CUDA major and PyTorch all differ, so C5's latency,
+          cost and output are not same-stack with the others: a difference may
+          come from the stack as well as the model. The A2a receipt states this
+          for C5. The card's reference hardware is H100/H200; the arena's RTX
+          4090 / A40 / L4 hosts are UNVERIFIED for it.
+        host_precondition: >-
+          A host driver that runs CUDA 13.0: NVIDIA's CUDA Toolkit release notes
+          (snapshot sha256 ad6659640c0ce3153dcca0e4cf87731eccf298ac88751df20848df23c99dff52,
+          2026-11-17) give R580 as CUDA 13.0's driver branch and >= 580 as the
+          minimum for CUDA 13.x minor-version compatibility. Measured on the A0
+          hosts (receipts/d10-screen-v1/A0/pods/): A40 with driver 595.112.07
+          (C2, C5) and 595.91.07 (C4, C6), RTX PRO 6000 with 595.91.07 (C7, C8),
+          host CUDA 13.2 (C2 receipt). The pod is created with RunPod
+          allowedCudaVersions limited to 13.0 and newer, and the launch command
+          prints nvidia-smi name,driver_version first and exits with its own
+          marker, before vLLM starts, when the driver major is below 580.
+        failure_classification: >-
+          Operational, not A0-6's model verdict, and recorded as such: the image
+          was not pulled (no A0-START line; the pod's own status names the
+          pull); the driver check above failed, or the CUDA runtime reports the
+          driver too old; download or checksum failed before the manifest and
+          checksum verdict (as C7's A0-PREP-FAILED); out of memory (a CUDA
+          out-of-memory error, or vLLM finding no memory for the KV cache after
+          the weights loaded). The model does not load, which is A0-6's
+          verdict: after a MATCH checksum, a passing driver check and the vLLM
+          0.33.0 banner, a traceback in model-config validation (architecture
+          not supported), in importing or initialising the repository's code
+          under --trust-remote-code, or in weight loading (missing, unexpected
+          or mis-shaped parameters), before "Application startup complete".
     claimed_languages: [multilingual]
     internal_validation:
       corpus: d10-screen-v1
@@ -410,6 +656,38 @@ releases:
       engine: vllm
       version: null
       image_digest: null
+      # WO-D10-0H, from config.json at the pin and vLLM's documentation only.
+      # Out of the smoke under decision A0-6.
+      serving:
+        runner: teleocr
+        verdict: cannot_be_served_under_the_licence_constraint
+        a0_exception: >-
+          vLLM 0.22.1, Resolved architecture Qwen2_5_VLForConditionalGeneration;
+          building Qwen2Attention -> get_rope -> MRotaryEmbedding:
+          "assert sum(self.mrope_section) == rotary_dim // 2" AssertionError
+          (vllm/model_executor/layers/rotary_embedding/mrope.py line 251).
+        why: >-
+          config.json: text hidden_size 1024, num_attention_heads 16,
+          num_key_value_heads 8, head_dim 128, rope_scaling.mrope_section
+          [16, 24, 24] (sum 64). The assertion holds for rotary_dim 128
+          (= head_dim) and fails for 64 (= hidden_size / num_attention_heads),
+          so the layer was built with a head size derived from hidden_size, not
+          the declared head_dim (inferred from the arithmetic; vLLM's source was
+          not read). The card says the model is built on Qwen2.5-VL and Qwen3,
+          and config.json maps every Auto class to the repository's own
+          modeling_naviocr.py: the stock Qwen2.5-VL decoder does not describe
+          this checkpoint.
+        options_considered: >-
+          (1) --hf-overrides on num_attention_heads or hidden_size: changes the
+          projection shapes, so the weights no longer load as trained; rejected.
+          (2) --hf-overrides architectures to another vLLM class: a different
+          model, and no documented class matches; rejected. (3) --model-impl
+          transformers without remote code: depends on the stock transformers
+          Qwen2.5-VL class honouring head_dim, which vLLM's documentation does
+          not establish and the repository's own modeling file argues against;
+          not offered as a documented setting. (4) modeling_naviocr.py through
+          --trust-remote-code: the weights repository's own file (Apache-2.0
+          per its LICENSE), excluded by A0-6; the lead's to decide.
     claimed_languages: [zh, en]
     internal_validation:
       corpus: d10-screen-v1
