@@ -51,3 +51,13 @@ Public references reviewed:
 Re-fetch and archive these sources under the release-owned model supply-chain
 process before promotion; current metadata is drift-prone and does not close
 `EG-03`, `EG-04`, `EG-05`, or `EG-10`.
+
+## Serving blocks built from this repository
+
+A `runtime.serving` block (or variant) with `built` names the image of its `image_build`
+Dockerfile. `built: false` needs `image: null` and no provenance. `built: true` needs a
+digest-pinned `ghcr.io/...@sha256:<64 hex>` image whose name is `arena-<Dockerfile directory>`
+plus `-<image_target>` when the block names one (so a C3 block cannot carry the C0 image), and the
+build receipt's `source_commit` (40 hex), `workflow_run_id`, `package_listing_sha256` and
+`build_log_sha256`. These are not the row's `image_digest`, which attests the vendor image.
+Being built changes no status: `enabled`, traffic and `internal_validation` are untouched.

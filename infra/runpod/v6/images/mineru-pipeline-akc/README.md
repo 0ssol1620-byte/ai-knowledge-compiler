@@ -249,8 +249,10 @@ the output directory. The registry contract test requires `image_build` to be a 
 
 ## Open before real pages (not checked here)
 
-- No image is built: the locks, the Debian versions and the weights are verified only by a build
-  and a launch. The C1 image's transitive packages are known only from its build log.
+- The three images are built (GitHub Actions run 44145574050, source commit 9754168c, digests
+  in their registry blocks) but none has been launched: the weights, the launch checks and the
+  server's behaviour on a page are verified only by a launch. The C1 image's transitive packages
+  are known only from its package listing and build log (hashes in its registry block).
 - C3's runner key `mineru_vlm` is registered (`benchmark/runners/registry.py`, round 2).
 - "No outbound request at inference" is configured (`HF_HUB_OFFLINE`, `TRANSFORMERS_OFFLINE`,
   `MINERU_MODEL_SOURCE=local`), not proven. PaddleX may check its model hosters at import; A0 runs
@@ -300,4 +302,6 @@ the build log's sha256 and the run id), `build-metadata.json`, the full `build.l
 
 The lead pushes the build branch, reads the digests from the run, saves the artifact as a
 receipt and records each digest in its row of `infra/model-registry/models.yaml`
-(`built: true`, `image: ghcr.io/…@sha256:…`).
+(`built: true`, `image: ghcr.io/…@sha256:…`, plus `source_commit`, `workflow_run_id`,
+`package_listing_sha256` and `build_log_sha256` from the receipt; `validate_registry.py` refuses a
+built block without them, and an image that is not its slot's: `arena-<image dir>[-<target>]`).

@@ -63,12 +63,18 @@ releases:
       # orientation and unwarping switched off by option. Round 3: a loopback service
       # (paddleocr_vl_service.py) keeps the object loaded, as production does, so the models
       # load once at start and a page's time is its request (receipt includes_model_load:
-      # false). Not built: no digest until the lead builds it.
+      # false). Built by GitHub Actions run 44145574050 from source_commit; the image
+      # is still evaluation-only (enabled: false, zero traffic): the text of
+      # paddlepaddle-gpu 3.2.1's licence files is uncleared (docs/ip intake row).
       serving:
         enabled: false
-        image: null
+        image: "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/arena-paddleocr-vl-akc@sha256:58ea9013f47ccaace013f6df86faeeac0870365bfa4fdf186913748e0866137f"
         image_build: infra/runpod/v6/images/paddleocr-vl-akc/Dockerfile
-        built: false
+        built: true
+        source_commit: "9754168c92969e17a12c3877c3c0ba44de690918"
+        workflow_run_id: "44145574050"
+        package_listing_sha256: "sha256:ed9a4ef84920eeaad56fb3e2c04c658a3bcb95943d639f745852f6779516d729"
+        build_log_sha256: "sha256:04a8c087430c495e37972e35ff7044f9c7bb6dca8d02b7a37dfd0efa8c357681"
         recipes: [c1-paddleocr-vl]
         default_recipe: c1-paddleocr-vl
         runner: paddleocr_vl_1_6
@@ -322,10 +328,14 @@ releases:
       # absent (the server refuses to start if either is installed).
       serving:
         enabled: false
-        image: null
+        image: "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/arena-mineru-pipeline-akc-c3@sha256:78146880edb1121ae51be005b4e65d21522f03220d85f789c554f2b9ea966a5c"
         image_build: infra/runpod/v6/images/mineru-pipeline-akc/Dockerfile
         image_target: c3
-        built: false
+        built: true
+        source_commit: "9754168c92969e17a12c3877c3c0ba44de690918"
+        workflow_run_id: "44145574050"
+        package_listing_sha256: "sha256:1b8ebf35e002904fefa8edc2c6a512ae780ae48799d66ea65d206c577d1a0028"
+        build_log_sha256: "sha256:c7dc3b86bbe0a3e1dabdb1c2f53593f75c7b6c1ba2af18eaddd299d20efa01ab"
         recipes: [c3-mineru-vlm]
         default_recipe: c3-mineru-vlm
         runner: mineru_vlm
@@ -379,15 +389,20 @@ releases:
       # Arena C0 serving (WO-D10-0F). Benchmark only: not the production endpoint and
       # never enabled for production. The digest production runs is not recorded in
       # this repository, so the arena image is a rebuild of the 3.4.4 release and its
-      # receipts say "rebuilt"; image_digest stays null until the lead builds it.
+      # receipts say "rebuilt"; the vendor-image attestation image_digest stays null (it is
+      # not the serving image below, which run 44145574050 built).
       # WO-D10-0I: one page server, a recipe per slot; the default recipe follows the recorded
       # one (no -l), the Korean mapping is a named, separate recipe (decision A0-8).
       serving:
         enabled: false
-        image: null
+        image: "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/arena-mineru-pipeline-akc-c0@sha256:c798e46e5181b76b2cb98982669f289fba1bbd2682de47d5839058c370134298"
         image_build: infra/runpod/v6/images/mineru-pipeline-akc/Dockerfile
         image_target: c0
-        built: false
+        built: true
+        source_commit: "9754168c92969e17a12c3877c3c0ba44de690918"
+        workflow_run_id: "44145574050"
+        package_listing_sha256: "sha256:e93a753676e0a4c3d1d044c1c5f8cdaf8450fe7f5bef2e3ebc6d2fc8764a4bd6"
+        build_log_sha256: "sha256:03a52f8c4071359a95249c1a391b7d093bdca7c33ec107442910a3e05f296634"
         recipes: [c0-mineru-pipeline, c0-mineru-pipeline-lang-ko]
         default_recipe: c0-mineru-pipeline
         runner: mineru

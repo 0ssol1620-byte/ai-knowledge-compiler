@@ -22,6 +22,15 @@ LICENSE_FIELDS = {
     "runtime_license",
     "license_snapshot_sha256",
 }
+BUILT_IMAGE = re.compile(r"^ghcr\.io/[a-z0-9._/-]+@sha256:[0-9a-f]{64}$")
+COMMIT = re.compile(r"^[0-9a-f]{40}$")
+RUN_ID = re.compile(r"^[0-9]{1,20}$")
+BUILD_PROVENANCE = (
+    "source_commit",
+    "workflow_run_id",
+    "package_listing_sha256",
+    "build_log_sha256",
+)
 PRODUCTION_VALIDATION_STATUSES = {"champion", "canary", "fallback", "shadow"}
 
 
@@ -88,6 +97,36 @@ def verify_revision_source(
     return None
 
 
+def serving_build_problems(serving: dict[str, Any]) -> list[str]:
+    """Rules for a serving block that carries ``built``: the image was built from
+    ``image_build`` (a Dockerfile of this repository) or it was not, and nothing between."""
+    if "built" not in serving:
+        return []
+    built, image = serving["built"], serving.get("image")
+    if built is False:
+        found = [f for f in BUILD_PROVENANCE if f in serving]
+        out = ["image named while built is false"] if image is not None else []
+        return out + [f"{f} given while built is false" for f in found]
+    if built is not True:
+        return ["built is not a boolean"]
+    out = []
+    if not (isinstance(image, str) and BUILT_IMAGE.fullmatch(image)):
+        return ["built image is not a digest-pinned ghcr.io reference"]
+    build, target = serving.get("image_build"), serving.get("image_target")
+    if not isinstance(build, str) or "/" not in build:
+        out.append("built image without image_build")
+    else:
+        slot = f"arena-{build.rsplit('/', 2)[-2]}" + (f"-{target}" if target else "")
+        if image.split("@")[0].rsplit("/", 1)[-1] != slot:
+            out.append(f"built image is not the {slot} image of this block")
+    for field in BUILD_PROVENANCE:
+        value = serving.get(field)
+        pattern = {"source_commit": COMMIT, "workflow_run_id": RUN_ID}.get(field, SHA256_DIGEST)
+        if not (isinstance(value, str) and pattern.fullmatch(value)):
+            out.append(f"{field} missing or malformed")
+    return out
+
+
 def validate(strict: bool = False) -> list[str]:
     models = load_yaml(ROOT / "models.yaml")
     recipe_data = load_yaml(ROOT / "recipes.yaml")
@@ -137,6 +176,11 @@ def validate(strict: bool = False) -> list[str]:
             isinstance(license_snapshot, str) and SHA256_DIGEST.fullmatch(license_snapshot)
         ):
             errors.append(f"{prefix}: license snapshot must be a sha256 digest or null")
+        runtime = release.get("runtime") or {}
+        for serving in [runtime.get("serving"), *(runtime.get("serving_variants") or [])]:
+            if isinstance(serving, dict):
+                for problem in serving_build_problems(serving):
+                    errors.append(f"{prefix}: serving: {problem}")
         if traffic < 0 or traffic > 100:
             errors.append(f"{prefix}: rollout traffic must be 0..100")
         if traffic > 0 and not release_is_attested(release):
