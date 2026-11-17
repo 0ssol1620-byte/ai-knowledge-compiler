@@ -5,11 +5,16 @@ at, the dev gold and the frozen manifest behind a ``HoldoutGuard``.
 
 * H (hard) = pages whose manifest ``page_origin`` is ``synthetic_degradation``
   (synthetically degraded prints, never real scans); R (representative) = every other page.
-* S1 reuses ``paired_report.build_report`` cells, never its routes. Leader L = best on H by
-  the report's rank key (baseline first on a tie, then id). A clear loser has its Wilson upper
-  bound below L's Wilson lower bound on H and on R. McNemar (page all-exact against L) is
-  reported, not a gate. The top five non-losers by rank are kept, plus the baseline
-  when it is itself a clear loser (at most six); fewer than four are topped up.
+* A page is failed only when it carries a 5H-17 failure class (by ``hard_failures``, or by
+  the ``failure.reason`` a page server answered with); scorer flags are tallied per candidate
+  and never fail a page or zero its critical fields (5H-10). Any other token is refused.
+* S1 reuses ``paired_report.build_report`` cells, never its routes. A candidate other than the
+  baseline with more operational + time_limit + runner_error pages than ceil(0.2 x dev pages)
+  is out first (5H-12). Leader L = best on H by the report's rank key (baseline first on a
+  tie, then id). A clear loser has its Wilson upper bound below L's Wilson lower bound on H and
+  on R. McNemar (page all-exact against L) is reported, not a gate. The top five non-baseline
+  non-losers by rank are kept, topped up to four non-baseline candidates by H rank, and the
+  baseline is always carried in addition (5H-16). S1 carries a digest of its own body.
 * S2 reads every kept candidate's value per critical field with reader v1 (a failed page is
   all wrong) and gives the rescue matrix on H, R and pooled with its denominators, then picks
   the second and third member by rescued fields on H per measured USD per page. A candidate
@@ -28,6 +33,9 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
+import re
+from collections import Counter
 from collections.abc import Iterable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -58,6 +66,92 @@ SIGNALS = {
     "reread_differs": "P read a second time gives a different value after the anchor",
 }
 _Key = tuple[str, str]  # (page_id, field_id)
+
+# 5H-17: the classes of a failed page, by hard_failures / failure.reason.
+OPERATIONAL = frozenset(
+    {"provider_unavailable", *(f"http_{s}" for s in (401, 403, 404, 429, 500, 502, 503))}
+)
+TIME_LIMIT = frozenset({"http_524", "page_timeout"})
+RUNNER_ERROR = frozenset({"provider_error"})
+CONTRACT = frozenset({"contract_failed"})
+PAGE_REFUSED = re.compile(r"page_[a-z0-9_]+")  # page_* other than page_timeout
+FAILURE_CLASSES = ("operational", "time_limit", "runner_error", "contract", "page_refused")
+MECHANICAL = ("operational", "time_limit", "runner_error")  # 5H-12 counts these
+MECHANICAL_SHARE = 0.2
+# Every flag benchmark.evaluators.metrics.score_case raises: reported, never a failure (5H-10).
+SCORER_FLAGS = frozenset(
+    {
+        "high_risk_numeric_below_threshold",
+        "high_risk_date_unit_below_threshold",
+        "severe_table_error",
+        "unsupported_statement",
+        "missing_page",
+        "repetition_loop",
+        "provenance_below_threshold",
+    }
+)
+
+
+def failure_class(token: Any) -> str | None:
+    """The 5H-17 class of one hard_failures / failure.reason token; None for a scorer flag.
+    Anything else is refused, never passed through as either."""
+    if isinstance(token, str):
+        if token in OPERATIONAL:
+            return "operational"
+        if token in TIME_LIMIT:
+            return "time_limit"
+        if token in RUNNER_ERROR:
+            return "runner_error"
+        if token in CONTRACT:
+            return "contract"
+        if PAGE_REFUSED.fullmatch(token):
+            return "page_refused"
+        if token in SCORER_FLAGS:
+            return None
+    raise ContractError(f"{str(token)[:60]!r} is neither a 5H-17 failure class nor a scorer flag")
+
+
+def _failure(r: Mapping[str, Any]) -> str | None:
+    """The record's one failure token, or None for a scored page (scorer flags only)."""
+    tokens = r["hard_failures"]
+    if not isinstance(tokens, list):
+        raise ContractError(f"{r['page_id']}: hard_failures is not a list")
+    failures = [t for t in tokens if failure_class(t) is not None]
+    if len(failures) > 1 or (failures and len(tokens) > 1):
+        raise ContractError(f"{r['page_id']}: hard_failures mixes a failure with other tokens")
+    if not failures and r["raw_sha256"] is None:
+        raise ContractError(f"{r['page_id']}: a record without output names no failure")
+    return failures[0] if failures else None
+
+
+def _read_raw(r: Mapping[str, Any], raw_dir: Path) -> bytes:
+    """run_screen's raw file of a record; a changed byte refuses."""
+    name = require_sha256(str(r["record_key"]), "record_key").removeprefix("sha256:") + ".json"
+    data = (Path(raw_dir) / name).read_bytes()
+    if "sha256:" + hashlib.sha256(data).hexdigest() != r["raw_sha256"]:
+        raise ContractError(f"{r['page_id']}: raw output differs from its record")
+    return data
+
+
+def _reason(r: Mapping[str, Any], raw_dir: Path | None) -> str | None:
+    """The failure a page is classed by: the failure.reason a page server answered with (stored
+    raw, recorded contract_failed by run_screen), else the record's own failure token."""
+    token = _failure(r)
+    if token not in CONTRACT or r["raw_sha256"] is None:
+        return token
+    if raw_dir is None:
+        raise ContractError(
+            f"{r['page_id']}: a contract failure with stored output needs raw_dir to read "
+            "its failure.reason"
+        )
+    raw = json.loads(_read_raw(r, raw_dir))
+    failure = raw.get("failure") if isinstance(raw, dict) else None
+    if not isinstance(failure, dict):
+        return token
+    reason = failure.get("reason")
+    if failure_class(reason) is None:
+        raise ContractError(f"{r['page_id']}: failure.reason names a scorer flag")
+    return str(reason)
 
 
 def dump(obj: Any) -> bytes:
@@ -96,6 +190,18 @@ def _check(
     for r in records:
         if r["doc_id"] not in doc_ids or r["page_id"] not in subset or r.get("split") != split:
             raise HoldoutSealedError(f"{r['page_id']}: not a {split} page this stage may read")
+        cost = r["provider_cost_usd"]
+        if cost is not None and not (
+            isinstance(cost, int | float)
+            and not isinstance(cost, bool)
+            and math.isfinite(cost)
+            and cost >= 0
+        ):
+            raise ContractError(
+                f"{r['page_id']}: provider_cost_usd {str(cost)[:40]!r} is not None or a finite "
+                "non-negative number"
+            )
+        _failure(r)
         pages = by.setdefault(r["candidate_id"], {})
         if r["page_id"] in pages:
             raise ValueError(f"duplicate record for {r['candidate_id']} {r['page_id']}")
@@ -120,17 +226,70 @@ def _order(cells: Mapping[str, dict[str, Any]], baseline: str) -> list[str]:
     return sorted(cells, key=lambda c: (_rank_key(cells[c]), c != baseline, c))
 
 
-def select_s1(
-    records: Sequence[dict[str, Any]], *, guard: HoldoutGuard, baseline: str
+def _tally(
+    pages: Mapping[str, dict[str, Any]], reasons: Mapping[str, str | None]
 ) -> dict[str, Any]:
-    """S1: leader on H, clear losers on H and R, keep rules, McNemar against the leader."""
+    """Failure classes and reasons, and scorer flags (never failures), over one candidate."""
+    classes = dict.fromkeys(FAILURE_CLASSES, 0)
+    why: Counter[str] = Counter()
+    flags: Counter[str] = Counter()
+    for page_id, r in pages.items():
+        reason = reasons[page_id]
+        if reason is None:
+            flags.update(r["hard_failures"])
+        else:
+            classes[str(failure_class(reason))] += 1
+            why[reason] += 1
+    return {
+        "classes": classes,
+        "reasons": dict(sorted(why.items())),
+        "score_flags": dict(sorted(flags.items())),
+    }
+
+
+def _s1_body(s1: Mapping[str, Any]) -> dict[str, Any]:
+    return {k: v for k, v in s1.items() if k != "s1_sha256"}
+
+
+def select_s1(
+    records: Sequence[dict[str, Any]],
+    *,
+    guard: HoldoutGuard,
+    baseline: str,
+    raw_dir: Path | None = None,
+) -> dict[str, Any]:
+    """S1: mechanical outs (5H-12), leader on H, clear losers on H and R, keep rules (5H-16),
+    McNemar against the leader. ``raw_dir`` is read only for contract failures with stored
+    output, to class them by the failure.reason the page server answered with; such a record
+    without ``raw_dir`` is refused."""
     scope = _scope(guard, "dev", "tune")
     by = _check(records, scope)
     if baseline not in by:
         raise ValueError(f"baseline {baseline!r} has no records")
-    if len(by) < 2:
+    reasons = {c: {p: _reason(r, raw_dir) for p, r in pages.items()} for c, pages in by.items()}
+    failures = {c: _tally(by[c], reasons[c]) for c in sorted(by)}
+    n_pages = len(scope[0])
+    bound = math.ceil(MECHANICAL_SHARE * n_pages)
+    counts = {c: sum(failures[c]["classes"][k] for k in MECHANICAL) for c in sorted(by)}
+    rejected = sorted(c for c in by if c != baseline and counts[c] > bound)
+    if len(by) - len(rejected) < 2:
         raise ValueError("fewer than 2 candidates: stop and report (5H stop rule)")
-    relabelled = [{**r, "stratum": scope[0][r["page_id"]]} for r in records]
+    relabelled = []
+    for r in records:
+        if r["candidate_id"] in rejected:
+            continue
+        reason = reasons[r["candidate_id"]][r["page_id"]]
+        crit = dict(r["critical"])
+        if reason is None:  # a scored page: scorer flags never zero its fields (5H-10)
+            crit["accepted_errors"] = crit["n"] - crit["exact"]
+        relabelled.append(
+            {
+                **r,
+                "stratum": scope[0][r["page_id"]],
+                "hard_failures": [] if reason is None else [reason],
+                "critical": crit,
+            }
+        )
     first = build_report(relabelled, incumbent=baseline)
     if set(first["strata"]) != {H, R}:
         raise ValueError(f"dev pages must cover H and R, got {sorted(first['strata'])}")
@@ -140,37 +299,52 @@ def select_s1(
     paired = build_report(relabelled, incumbent=leader)["strata"]
     losers = {
         c
-        for c in by
+        for c in order[H]
         if c != leader
         and all(
             cells[s][c]["critical_exact_ci"][1] < cells[s][leader]["critical_exact_ci"][0]
             for s in (H, R)
         )
     }
-    survivors = [c for c in order[H] if c not in losers]
     best_r = next(c for c in order[R] if c not in losers)
-    # Up to five non-losers by rank; the reference is added when it is itself a clear loser.
-    keep = set(survivors[:KEEP_MAX])
-    if baseline in losers:
-        keep.add(baseline)
-    if len(keep) < KEEP_MIN:
-        keep |= set([c for c in order[H] if c not in keep][: KEEP_MIN - len(keep)])
-    return {
+    # 5H-16: five places for non-baseline non-losers by rank, topped up to four non-baseline
+    # candidates by H rank; the baseline never takes a place and is always carried beside them.
+    others = [c for c in order[H] if c != baseline]
+    keep = [c for c in others if c not in losers][:KEEP_MAX]
+    keep += [c for c in others if c not in keep][: max(0, KEEP_MIN - len(keep))]
+    keep.append(baseline)
+    body = {
         "stage": "S1",
         "inputs": {
             "records_sha256": _records_sha(records),
             "manifest_sha256": guard._manifest["manifest_sha256"],
             "baseline": baseline,
         },
+        "mechanical_rejection": {
+            "rule": "out when operational + time_limit + runner_error pages exceed the bound; "
+            "never the baseline (5H-12)",
+            "classes_counted": list(MECHANICAL),
+            "pages": n_pages,
+            "bound": bound,
+            "counts": counts,
+            "rejected": rejected,
+        },
+        "failures": failures,
         "leader": leader,
         "order": order,
         "best_on_R": best_r,
         "clear_losers": sorted(losers),
+        "baseline": {
+            "candidate_id": baseline,
+            "baseline": True,
+            "baseline_loser": baseline in losers,
+        },
         "kept": [c for c in order[H] if c in keep],
         "dropped": [c for c in order[H] if c not in keep],
         "cells": cells,
         "mcnemar_vs_leader": {s: paired[s]["paired_vs_incumbent"] for s in (H, R)},
     }
+    return {**body, "s1_sha256": canonical_sha256(body)}
 
 
 def load_texts(records: Sequence[dict[str, Any]], raw_dir: Path) -> dict[str, str]:
@@ -179,10 +353,8 @@ def load_texts(records: Sequence[dict[str, Any]], raw_dir: Path) -> dict[str, st
     for r in records:
         if r["raw_sha256"] is None:
             continue
-        data = (Path(raw_dir) / (r["record_key"].removeprefix("sha256:") + ".json")).read_bytes()
-        if "sha256:" + hashlib.sha256(data).hexdigest() != r["raw_sha256"]:
-            raise ContractError(f"{r['page_id']}: raw output differs from its record")
-        out[r["raw_sha256"]] = str(json.loads(data).get("text") or "")
+        raw = json.loads(_read_raw(r, raw_dir))  # a non-object is a contract failure: no text
+        out[r["raw_sha256"]] = str(raw.get("text") or "") if isinstance(raw, dict) else ""
     return out
 
 
@@ -208,7 +380,7 @@ def _reads(
                 fields
             ):
                 raise ValueError(f"{page_id}: gold fields do not match the record's critical n")
-            failed = bool(r["hard_failures"])
+            failed = _failure(r) is not None  # 5H-17; scorer flags leave the page scored
             text = None if failed else texts[r["raw_sha256"]]
             for f in fields:
                 key = (page_id, str(f["field_id"]))
@@ -283,6 +455,8 @@ def complementarity_s2(
     s1: Mapping[str, Any],
 ) -> dict[str, Any]:
     """S2: field rescue matrix on H / R / pooled; second and third member per rescued USD."""
+    if canonical_sha256(_s1_body(s1)) != s1.get("s1_sha256"):
+        raise ContractError("the S1 body does not match its own s1_sha256: S1 was edited")
     scope = _scope(guard, "dev", "calibrate")
     by = _check(records, scope)
     if (
@@ -457,14 +631,15 @@ def signals_s3(
     unknown = set(escalate_on) - set(SIGNALS)
     if unknown or not escalate_on or (reread_texts is None and "reread_differs" in escalate_on):
         raise ValueError(f"escalate_on must name measured signals of {sorted(SIGNALS)}")
+    absent = set(members) - {r["candidate_id"] for r in records}
+    if absent:  # before the guard: a refusal leaves no holdout access line
+        raise ValueError(f"members without records: {sorted(absent)}")
     purpose = "calibrate" if split == "dev" else "evaluate_frozen"
     if frozen_recipe_sha256 is not None:
         _check_recipe(recipe, frozen_recipe_sha256, members, escalate_on, records)
     scope = _scope(guard, split, purpose, frozen_recipe_sha256)
     mine = [r for r in records if r["candidate_id"] in members]
     by = _check(mine, scope)
-    if set(by) != set(members):
-        raise ValueError(f"members without records: {sorted(set(members) - set(by))}")
     p, peers = members[0], list(members[1:])
     read, right = _reads(by, texts, gold, members)
     reread: dict[_Key, Any] = {}
@@ -542,6 +717,13 @@ def build_recipe(
         "s1_sha256"
     ] != canonical_sha256(s1):
         raise ContractError("lineage: S2 was not computed from these records and this S1")
+    chosen = [step["chosen"] for step in s2["pick_steps"]]
+    if (
+        s2["primary"] != s1["leader"]
+        or None in chosen[:-1]
+        or names != [s2["primary"], *(c for c in chosen if c is not None)]
+    ):
+        raise ContractError("S2 members are not the chain of S1's leader and pick_steps[].chosen")
     members = []
     for c in names:
         pins = {
