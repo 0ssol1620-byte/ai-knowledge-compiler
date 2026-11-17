@@ -489,7 +489,12 @@ def _derived(src: dict[str, Any], level: str) -> dict[str, Any]:
         derived_from=src["source_sha256"],
         page_origin="synthetic_degradation",
         stratum="distorted",
-        degradation={"level": level, "parameters": {"dpi": 100}},
+        degradation={
+            "level": level,
+            "seed": "5h-2",
+            "renderer": {"pypdfium2": "4.30.0", "pillow": "12.3.0"},
+            "parameters": {"dpi": 100},
+        },
     )
     return d
 
@@ -757,3 +762,190 @@ def test_freeze_then_split_gold_end_to_end(
     dev = (tmp_path / "gold.dev.jsonl").read_text("utf-8").splitlines()
     assert sorted(json.loads(x)["page_id"] for x in dev) == sorted(r["doc_id"] + "#0" for r in recs)
     assert (tmp_path / "gold.holdout.jsonl").read_text("utf-8") == ""
+
+
+# ---------------------------------------------------------------- WO-D02-3C round 2 (lead A, D)
+
+
+def test_lpc_sec_level_is_never_defaulted_in_either_direction() -> None:
+    cases: list[tuple[str, Any]] = [
+        ("needs degradation.level", lambda ds: ds[2].pop("degradation")),
+        ("needs degradation.level", lambda ds: ds[2]["degradation"].pop("level")),
+        ("needs degradation.level", lambda ds: ds[2]["degradation"].update(level="scan_awful")),
+        ("needs degradation.level", lambda ds: ds[2].update(degradation="scan_fair")),
+        ("source page carries degradation", lambda ds: ds[0].update(degradation={})),
+        (
+            "source page carries degradation",
+            lambda ds: ds[0].update(degradation=copy.deepcopy(ds[2]["degradation"])),
+        ),
+    ]
+    for match, mutate in cases:
+        docs = _sec_set(0, n=2, derived=True)
+        mutate(docs)
+        with pytest.raises(ContractError, match=match):
+            freeze(docs, "s", "lpc_sec", split="dev")
+
+
+def test_lpc_sec_derived_pages_come_from_one_degrade_run() -> None:
+    src = _sec_set(0, n=2)
+    twice = [*src, _derived(src[0], "scan_fair"), _derived(src[0], "scan_fair")]
+    twice[-1]["doc_id"] = "b-" + twice[-1]["doc_id"]
+    twice[-1]["source_sha256"] = "sha256:" + "c" * 64
+    with pytest.raises(ContractError, match="second scan_fair page of the same source"):
+        freeze(twice, "s", "lpc_sec", split="dev")
+    for key, value, match in (
+        ("seed", "other", "more than one degrade run"),
+        ("renderer", {"pypdfium2": "5.15.2", "pillow": "12.3.0"}, "more than one degrade run"),
+        ("seed", " ", "degradation.seed"),
+        ("renderer", {}, "degradation.renderer"),
+        ("renderer", {"pypdfium2": 4}, "degradation.renderer"),
+    ):
+        docs = _sec_set(0, n=2, derived=True)
+        docs[3]["degradation"][key] = value
+        with pytest.raises(ContractError, match=match):
+            freeze(docs, "s", "lpc_sec", split="dev")
+    for key in ("seed", "renderer"):
+        docs = _sec_set(0, n=2, derived=True)
+        del docs[3]["degradation"][key]
+        with pytest.raises(ContractError, match=f"degradation.{key}"):
+            freeze(docs, "s", "lpc_sec", split="dev")
+
+
+def _refrozen(m: dict[str, Any]) -> dict[str, Any]:
+    body = {k: v for k, v in m.items() if k != "manifest_sha256"}
+    return {**body, "manifest_sha256": canonical_sha256(body)}
+
+
+def test_lpc_sec_disjoint_from_is_an_all_dev_lpc_sec_manifest_and_is_recorded() -> None:
+    hold = _sec_set(100, n=3, derived=True)
+    dev = _dev()
+    m = freeze(hold, "s", "lpc_sec", split="holdout", disjoint_from=dev)
+    assert m["disjoint_from_sha256"] == dev["manifest_sha256"]
+    assert "disjoint_from_sha256" not in dev
+    jsonschema = pytest.importorskip("jsonschema")
+    jsonschema.validate(m, json.loads(SCHEMA.read_text(encoding="utf-8")))
+    not_dev = copy.deepcopy(dev)
+    not_dev["documents"][0]["split"] = "holdout"
+    eg = _frozen()  # an intact manifest of another profile
+    empty = _refrozen({**dev, "documents": []})
+    no_docs = _refrozen({k: v for k, v in dev.items() if k != "documents"})
+    junk = _refrozen({**dev, "documents": ["x"]})
+    for other, match in (
+        (_refrozen(not_dev), "must be all dev"),
+        (eg, "lpc_sec manifest"),
+        (empty, "at least one document"),
+        (no_docs, "at least one document"),
+        (junk, "JSON object"),
+    ):
+        with pytest.raises(ContractError, match=match):
+            freeze(hold, "s", "lpc_sec", split="holdout", disjoint_from=other)
+
+
+def test_lpc_sec_cik_is_a_positive_number_and_adsh_is_not_blank() -> None:
+    for cik in (0, -5, "0", "000", "12a", "", " 12", "١٢", 1.5, None, [1], True):
+        docs = _sec_set(0, n=2)
+        docs[1]["provenance"]["cik"] = cik
+        with pytest.raises(ContractError, match=r"provenance\.cik"):
+            freeze(docs, "s", "lpc_sec", split="dev")
+    for adsh in (" ", "\t", 5, None):
+        docs = _sec_set(0, n=2)
+        docs[1]["provenance"]["adsh"] = adsh
+        with pytest.raises(ContractError, match=r"provenance\.adsh"):
+            freeze(docs, "s", "lpc_sec", split="dev")
+    docs = _sec_set(0, n=2)
+    docs[1]["provenance"]["cik"] = "0001000"  # == 1000 of docs[0]
+    with pytest.raises(ContractError, match="company 1000 has more than one source page"):
+        freeze(docs, "s", "lpc_sec", split="dev")
+
+
+def test_lpc_sec_optional_fields_are_type_checked() -> None:
+    for which, field, value, match in (
+        (0, "page_origin", 5, "page_origin"),
+        (0, "page_origin", "", "page_origin"),
+        (0, "notes", 5, "notes"),
+        (2, "derived_from", 5, "derived_from"),
+        (2, "derived_from", None, "derived_from"),
+        (2, "degradation", "scan_fair", "degradation"),
+        (0, "provenance", "adsh", "provenance object"),
+    ):
+        docs = _sec_set(0, n=2, derived=True)
+        docs[which][field] = value
+        with pytest.raises(ContractError, match=match):
+            freeze(docs, "s", "lpc_sec", split="dev")
+
+
+WRONG = (None, True, 0, -1, 1.5, "", " ", "x", [], ["x"], {}, {"x": 1})
+
+
+def field_paths(d: dict[str, Any], prefix: tuple[str, ...] = ()) -> list[tuple[str, ...]]:
+    out: list[tuple[str, ...]] = []
+    for k, v in d.items():
+        out.append((*prefix, k))
+        if isinstance(v, dict):
+            out += field_paths(v, (*prefix, k))
+    return out
+
+
+def mutated(docs: list[dict[str, Any]], which: int, path: tuple[str, ...], value: Any) -> Any:
+    """A deep copy with ``docs[which][path]`` set to ``value`` (or deleted when ``value`` is
+    the ``mutated`` function itself)."""
+    out = copy.deepcopy(docs)
+    target = out[which]
+    for k in path[:-1]:
+        target = target[k]
+    if value is mutated:
+        del target[path[-1]]
+    else:
+        target[path[-1]] = value
+    return out
+
+
+def test_freeze_fuzz_any_wrong_type_is_a_contract_error_and_what_passes_fits_the_schema() -> None:
+    """Every field of a source page and of a derived page, set to each wrong-typed value or
+    deleted: freeze either refuses with ContractError or returns a schema-valid manifest. No
+    TypeError, KeyError or AttributeError escapes, and nothing the schema refuses is frozen."""
+    jsonschema = pytest.importorskip("jsonschema")
+    schema = json.loads(SCHEMA.read_text(encoding="utf-8"))
+    base = _sec_set(0, n=2, derived=True)
+    refused = accepted = 0
+    for which in (0, 2):  # a source page, a derived page
+        for path in field_paths(base[which]):
+            for value in (*WRONG, mutated):
+                docs = mutated(base, which, path, value)
+                try:
+                    m = freeze(docs, "s", "lpc_sec", split="dev")
+                except ContractError:
+                    refused += 1
+                    continue
+                jsonschema.validate(m, schema)
+                accepted += 1
+    assert refused > 300 and accepted > 0  # both outcomes exercised
+    for bad in (None, 1, "x", [], [["doc_id", "x"]], True):
+        with pytest.raises(ContractError, match="JSON object"):
+            freeze([*base, bad], "s", "lpc_sec", split="dev")  # type: ignore[list-item]
+    extra = copy.deepcopy(base)
+    extra[0]["gold"] = "x"  # a field the schema does not know is not frozen
+    with pytest.raises(ContractError, match="schema"):
+        freeze(extra, "s", "lpc_sec", split="dev")
+
+
+def test_cli_refuses_non_object_lines_and_wrong_types_without_a_traceback(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    good = [json.dumps(r) for r in _sec_set(0, n=2)]
+    wrong_type = dict(_sec_set(0, n=2)[1], page_origin=5)
+    for i, extra in enumerate(("[1]", '"x"', "5", "null", json.dumps(wrong_type), "{")):
+        records = tmp_path / f"r{i}.jsonl"
+        records.write_text("\n".join([good[0], extra]) + "\n", "utf-8")
+        out = tmp_path / f"m{i}.json"
+        code, text = _cli(
+            capsys,
+            *("freeze", "--records", records, "--profile", "lpc_sec", "--split", "dev"),
+            *("--salt", "s", "--out", out),
+        )
+        assert code == 1 and text.startswith("REFUSED:") and "Traceback" not in text, text
+        assert not out.exists()
+    m = tmp_path / "bad.json"  # verify validates the manifest before reading any file
+    m.write_text(json.dumps(_refrozen({**_dev(), "documents": [5]})), "utf-8")
+    code, text = _cli(capsys, "verify", "--manifest", m, "--corpus-root", tmp_path)
+    assert code == 1 and text.startswith("REFUSED:"), text

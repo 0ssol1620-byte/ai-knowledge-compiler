@@ -9,7 +9,16 @@ parameters are recorded per page; a second run with the same renderer versions i
 A derived page must have no text layer, so a candidate cannot read the answer from the file.
 Gold is not touched here: ``sec_screen split-gold`` gives a derived page its source's gold rows.
 
+The output directory is one complete profile: ``corpus/`` holds the clean sources (copied byte for
+byte, hash-checked after the copy) and the derived pages, ``records.jsonl`` lists all of them
+(33 sources -> 99 records with both levels; 225 -> 675, or 450 with ``--levels scan_poor``).
+Degrade is all-or-nothing: every source is verified before anything is written, the output is
+built in a temporary sibling directory and renamed at the end, so a refusal leaves nothing.
+
     python -m benchmark.screen.degrade --profile-dir D --out D2 --seed S [--levels scan_poor]
+
+Order: degrade -> freeze (``--records D2/records.jsonl``) -> verify (``--corpus-root D2/corpus``)
+-> split-gold once (the sealed gold stays in the source profile directory D).
 """
 
 from __future__ import annotations
@@ -20,12 +29,14 @@ import hashlib
 import importlib.metadata
 import io
 import json
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
 import PIL
-import pypdfium2 as pdfium
+import pypdfium2 as pdfium  # type: ignore[import-untyped]
 from PIL import Image, ImageChops, ImageEnhance, ImageFilter
 from pypdf import PdfReader
 
@@ -35,6 +46,11 @@ from benchmark.screen import manifest as screen_manifest
 LABEL = "synthetically degraded print"
 ORIGIN = "synthetic_degradation"
 STRATUM = "distorted"
+# A source page wider or taller than this is refused before rendering. SEC prints are US Letter
+# (612 x 792 pt); the bound is the largest common office sheet, US Tabloid (11 x 17 in), so a
+# Legal print still passes while a page sized to exhaust memory (150 dpi grey raster, then
+# rotate with expand) does not: at the bound a page renders to at most 2,550 px a side.
+MAX_PAGE_PT = 1224.0
 # fixed values, or (low, high) drawn per page; skew is drawn in [-skew_max_deg, +skew_max_deg]
 LEVELS: dict[str, dict[str, Any]] = {
     "scan_fair": {"dpi": 150, "skew_max_deg": 1.0, "jpeg_quality": 60},
@@ -86,12 +102,34 @@ def draw(level: str, key: str) -> dict[str, Any]:
     return p
 
 
-def degrade_pdf(data: bytes, p: dict[str, Any], key: str) -> bytes:
-    """One-page PDF in, image-only one-page PDF out; ``key`` (``page_seed``) seeds the noise."""
-    doc = pdfium.PdfDocument(data)
+def _open(data: bytes, name: str) -> Any:
+    """The source as a pdfium document of exactly one page of at most MAX_PAGE_PT a side;
+    anything else is a DegradeError, raised before any rendering."""
+    try:
+        doc = pdfium.PdfDocument(data)
+    except pdfium.PdfiumError as exc:
+        raise DegradeError(f"{name}: not a readable PDF ({exc})") from exc
     try:
         if len(doc) != 1:
             raise DegradeError(f"source has {len(doc)} pages; one-page sources only")
+        w, h = doc[0].get_size()
+        if not (0 < w <= MAX_PAGE_PT and 0 < h <= MAX_PAGE_PT):
+            raise DegradeError(f"{name}: page size {w:.0f} x {h:.0f} pt exceeds {MAX_PAGE_PT:.0f}")
+    except BaseException:
+        doc.close()
+        raise
+    return doc
+
+
+def check_source(data: bytes, name: str) -> None:
+    """What ``degrade_pdf`` refuses, checked without rendering."""
+    _open(data, name).close()
+
+
+def degrade_pdf(data: bytes, p: dict[str, Any], key: str) -> bytes:
+    """One-page PDF in, image-only one-page PDF out; ``key`` (``page_seed``) seeds the noise."""
+    doc = _open(data, "source")
+    try:
         img = doc[0].render(scale=p["dpi"] / 72, grayscale=True).to_pil()
     finally:
         doc.close()
@@ -134,6 +172,13 @@ def _write_once(path: Path, data: bytes) -> None:
         f.write(data)
 
 
+def _source_bytes(profile_dir: Path, r: dict[str, Any]) -> bytes:
+    data: bytes = (profile_dir / "corpus" / r["doc_id"]).read_bytes()
+    if _sha(data) != r["source_sha256"] or len(data) != r["byte_size"]:
+        raise DegradeError(f"{r['doc_id']}: bytes do not match the record")
+    return data
+
+
 def build(
     profile_dir: Path, out: Path, *, seed: str, levels: tuple[str, ...] = tuple(LEVELS)
 ) -> dict[str, Any]:
@@ -145,22 +190,42 @@ def build(
         raise DegradeError(f"output {out} is inside a git work tree")
     if out.exists():
         raise DegradeError(f"{out} exists; degrade is write-once")
+    if not out.parent.is_dir():
+        raise DegradeError(f"{out.parent} does not exist")
     text = (profile_dir / "records.jsonl").read_text("utf-8")
     sources = [json.loads(line) for line in text.splitlines() if line.strip()]
     if not sources:
         raise DegradeError("records.jsonl has no records")
-    for r in sources:
+    for r in sources:  # every source verified before anything is written
         screen_manifest._check_doc(r)  # also refuses a doc_id that leaves corpus/
-        if "derived_from" in r or r["page_count"] != 1:
+        if "derived_from" in r or "degradation" in r or r["page_count"] != 1:
             raise DegradeError(f"{r['doc_id']}: sources are clean one-page records only")
+        check_source(_source_bytes(profile_dir, r), r["doc_id"])
     runtime = renderer()
-    (out / "corpus").mkdir(parents=True)
+    tmp = Path(tempfile.mkdtemp(prefix=f".{out.name}.", suffix=".partial", dir=out.parent))
+    try:
+        receipt = _write(profile_dir, tmp, sources, text, seed, levels, runtime)
+        tmp.rename(out)
+    except BaseException:
+        shutil.rmtree(tmp, ignore_errors=True)
+        raise
+    return receipt
+
+
+def _write(
+    profile_dir: Path,
+    tmp: Path,
+    sources: list[dict[str, Any]],
+    text: str,
+    seed: str,
+    levels: tuple[str, ...],
+    runtime: dict[str, str],
+) -> dict[str, Any]:
+    (tmp / "corpus").mkdir()
     records: list[dict[str, Any]] = []
     for r in sources:
-        data = (profile_dir / "corpus" / r["doc_id"]).read_bytes()
-        if _sha(data) != r["source_sha256"] or len(data) != r["byte_size"]:
-            raise DegradeError(f"{r['doc_id']}: bytes do not match the record")
-        _write_once(out / "corpus" / r["doc_id"], data)
+        data = _source_bytes(profile_dir, r)  # read again: refuses a change since the check
+        _write_once(tmp / "corpus" / r["doc_id"], data)
         records.append(r)
         for level in levels:
             key = page_seed(seed, r["source_sha256"], level)
@@ -184,10 +249,16 @@ def build(
                     "renderer": runtime,
                 },
             )
-            _write_once(out / "corpus" / d["doc_id"], pdf)
+            _write_once(tmp / "corpus" / d["doc_id"], pdf)
             records.append(d)
+    for d in records:  # every written file, clean copies included, against its record
+        got = (tmp / "corpus" / d["doc_id"]).read_bytes()
+        if _sha(got) != d["source_sha256"] or len(got) != d["byte_size"]:
+            raise DegradeError(
+                f"{d['doc_id']}: written bytes do not match the record after the copy"
+            )
     records.sort(key=lambda x: x["doc_id"])
-    with (out / "records.jsonl").open("x", encoding="utf-8", newline="\n") as f:
+    with (tmp / "records.jsonl").open("x", encoding="utf-8", newline="\n") as f:
         f.writelines(json.dumps(x, sort_keys=True, ensure_ascii=False) + "\n" for x in records)
     per_level = [x["degradation"]["level"] for x in records if "degradation" in x]
     receipt = {
@@ -200,13 +271,13 @@ def build(
         "levels": {lv: LEVELS[lv] for lv in levels},
         "renderer": runtime,
         "source_records_sha256": _sha(text.encode("utf-8")),
-        "records_sha256": _sha((out / "records.jsonl").read_bytes()),
+        "records_sha256": _sha((tmp / "records.jsonl").read_bytes()),
         "documents": {
             "source": len(sources),
             **{lv: per_level.count(lv) for lv in levels},
         },
     }
-    (out / "degrade_receipt.json").write_text(
+    (tmp / "degrade_receipt.json").write_text(
         json.dumps(receipt, indent=1, sort_keys=True) + "\n", "utf-8", newline="\n"
     )
     return receipt

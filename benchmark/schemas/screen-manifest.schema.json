@@ -8,6 +8,7 @@
     "profile": { "enum": ["screen", "eg04", "lpc_sec"] },
     "salt": { "type": "string" },
     "manifest_sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "disjoint_from_sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
     "counts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
     "documents": {
       "type": "array",
@@ -29,7 +30,19 @@
           "page_origin": { "type": "string", "minLength": 1 },
           "notes": { "type": "string" },
           "derived_from": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
-          "degradation": { "type": "object" },
+          "degradation": {
+            "type": "object",
+            "required": ["level", "seed", "renderer"],
+            "properties": {
+              "level": { "enum": ["scan_fair", "scan_poor"] },
+              "seed": { "type": "string", "minLength": 1 },
+              "renderer": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": { "type": "string", "minLength": 1 }
+              }
+            }
+          },
           "rights": {
             "type": "object",
             "additionalProperties": false,

@@ -15,6 +15,7 @@ import io
 import json
 import sys
 from collections.abc import Callable, Iterable
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -26,6 +27,9 @@ PURPOSES = ("tune", "calibrate", "evaluate_frozen")
 PROFILES = ("screen", "eg04", "lpc_sec")
 # == benchmark.local_public.sec_screen.LICENCE (that module imports this one; a test pins it)
 SEC_LICENCE = "SEC-WEBSITE-POLICY"
+# == tuple(benchmark.screen.degrade.LEVELS) (that module imports this one; a test pins it)
+DERIVED_LEVELS = ("scan_fair", "scan_poor")
+SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schemas" / "screen-manifest.schema.json"
 _DOC_FIELDS = (
     "doc_id",
     "source_sha256",
@@ -69,7 +73,16 @@ class HoldoutSealedError(RuntimeError):
     """Holdout already evaluated under another frozen recipe, or asked for tuning."""
 
 
+def _sha256(value: Any, field: str) -> str:
+    """require_sha256 for untrusted input: a non-string is a ContractError, not a TypeError."""
+    if not isinstance(value, str):
+        raise ContractError(f"{field} must be an exact sha256:<64 lowercase hex> digest")
+    return require_sha256(value, field)
+
+
 def _check_doc(doc: dict[str, Any]) -> None:
+    if not isinstance(doc, dict):
+        raise ContractError(f"a document must be a JSON object, got {type(doc).__name__}")
     for f in _DOC_FIELDS:
         if f not in doc:
             raise ContractError(f"document missing field {f!r}")
@@ -84,7 +97,7 @@ def _check_doc(doc: dict[str, Any]) -> None:
         or Path(name).is_absolute()
     ):
         raise ContractError(f"doc_id {name!r} must be a plain file name inside the corpus root")
-    require_sha256(doc["source_sha256"], "source_sha256")
+    _sha256(doc["source_sha256"], "source_sha256")
     for f in ("byte_size", "page_count"):
         if not isinstance(doc[f], int) or isinstance(doc[f], bool) or doc[f] < 1:
             raise ContractError(f"{name}: {f} must be a positive integer")
@@ -106,7 +119,7 @@ def _check_doc(doc: dict[str, Any]) -> None:
         if rights["rights_class"] not in ("owned", "synthetic"):
             raise ContractError(f"{name}: licence snapshot required for {rights['rights_class']}")
     else:
-        require_sha256(snap, "licence_snapshot_sha256")
+        _sha256(snap, "licence_snapshot_sha256")
     for f in ("source_url", "licence_id", "recorded_by", "recorded_at"):
         if not isinstance(rights[f], str) or not rights[f]:
             raise ContractError(f"{name}: rights.{f} must be a non-empty string")
@@ -213,11 +226,62 @@ def _company(d: dict[str, Any]) -> str:
     if not isinstance(prov, dict):
         raise ContractError(f"{d.get('doc_id')}: provenance object required")
     cik, adsh = prov.get("cik"), prov.get("adsh")
-    if isinstance(cik, bool) or not isinstance(cik, int | str) or not str(cik).strip():
-        raise ContractError(f"{d.get('doc_id')}: provenance.cik (company id) required")
-    if not isinstance(adsh, str) or not adsh:
+    number = 0
+    if isinstance(cik, str) and cik.isascii() and cik.isdigit():
+        number = int(cik)
+    elif isinstance(cik, int) and not isinstance(cik, bool):
+        number = cik
+    if number < 1:
+        raise ContractError(
+            f"{d.get('doc_id')}: provenance.cik (company id) must be a positive integer "
+            "or a digit-only string"
+        )
+    if not isinstance(adsh, str) or not adsh.strip():
         raise ContractError(f"{d.get('doc_id')}: provenance.adsh required")
-    return str(cik).strip().lstrip("0") or "0"
+    return str(number)  # leading zeros are not a new company
+
+
+def page_levels(docs: Iterable[dict[str, Any]]) -> dict[str, str]:
+    """doc_id -> ``"source"`` or the derived page's degradation level, never a default.
+
+    A page with ``derived_from`` carries ``degradation.level`` in DERIVED_LEVELS; a page without
+    it carries no ``degradation``. One page per (source, level), and every derived page comes
+    from one degrade run (same seed, same renderer versions). Anything else is a ContractError.
+    """
+    levels: dict[str, str] = {}
+    pairs: set[tuple[str, str]] = set()
+    runs: set[str] = set()
+    for d in docs:
+        name = d["doc_id"]
+        deg = d.get("degradation")
+        if "derived_from" not in d:
+            if "degradation" in d:
+                raise ContractError(f"{name}: a source page carries degradation")
+            levels[name] = "source"
+            continue
+        src = _sha256(d["derived_from"], "derived_from")
+        if not isinstance(deg, dict) or deg.get("level") not in DERIVED_LEVELS:
+            raise ContractError(
+                f"{name}: a derived page needs degradation.level in {DERIVED_LEVELS}"
+            )
+        level = deg["level"]
+        if (src, level) in pairs:
+            raise ContractError(f"{name}: a second {level} page of the same source")
+        pairs.add((src, level))
+        seed, rend = deg.get("seed"), deg.get("renderer")
+        if not isinstance(seed, str) or not seed.strip():
+            raise ContractError(f"{name}: degradation.seed must be a non-empty string")
+        if (
+            not isinstance(rend, dict)
+            or not rend
+            or not all(isinstance(v, str) and v for v in rend.values())
+        ):
+            raise ContractError(f"{name}: degradation.renderer must name each version")
+        runs.add(json.dumps([seed, rend], sort_keys=True))
+        levels[name] = level
+    if len(runs) > 1:
+        raise ContractError("derived pages come from more than one degrade run (seed or renderer)")
+    return levels
 
 
 def _source_hashes(docs: Iterable[dict[str, Any]]) -> set[str]:
@@ -231,17 +295,17 @@ def _check_lpc_sec(
     their source (same company, same split, named by sha256); holdout proven disjoint."""
     if split not in SPLITS:
         raise ContractError(f"lpc_sec needs split in {SPLITS}, got {split!r}")
+    page_levels(docs)
     sources = {d["source_sha256"]: d for d in docs if "derived_from" not in d}
     owner: dict[str, str] = {}
     for d in docs:
-        name = d["doc_id"]
+        name = d["doc_id"]  # page_origin and notes are typed by the schema check in freeze
         if d["rights"]["licence_id"] != SEC_LICENCE:
             raise ContractError(f"{name}: licence_id must be {SEC_LICENCE!r}")
         company = _company(d)
         if d.setdefault("split", split) != split:
             raise ContractError(f"{name}: split {d['split']!r} is not the manifest's {split!r}")
         if "derived_from" in d:
-            require_sha256(d["derived_from"], "derived_from")
             src = sources.get(d["derived_from"])
             if src is None:
                 raise ContractError(f"{name}: derived_from names no source page in this manifest")
@@ -260,7 +324,13 @@ def _check_lpc_sec(
     body = {k: v for k, v in disjoint_from.items() if k != "manifest_sha256"}
     if canonical_sha256(body) != disjoint_from.get("manifest_sha256"):
         raise ContractError("disjoint_from is not an intact frozen manifest")
-    other = disjoint_from["documents"]
+    other = disjoint_from.get("documents")
+    if disjoint_from.get("profile") != "lpc_sec" or not isinstance(other, list) or not other:
+        raise ContractError("disjoint_from must be an lpc_sec manifest with at least one document")
+    for d in other:
+        _check_doc(d)
+        if d.get("split") != "dev":
+            raise ContractError(f"disjoint_from: {d['doc_id']} is not dev; it must be all dev")
     shared = _source_hashes(docs) & _source_hashes(other)
     if shared:
         raise ContractError(f"shares {len(shared)} source sha256 with disjoint_from")
@@ -285,9 +355,9 @@ def freeze(
         raise ContractError(f"profile {profile!r} not in {PROFILES}")
     if profile != "lpc_sec" and (split is not None or disjoint_from is not None):
         raise ContractError(f"split/disjoint_from apply to profile 'lpc_sec', not {profile!r}")
+    for d in records:
+        _check_doc(d)  # before the sort, which reads doc_id
     docs = sorted((dict(d) for d in records), key=lambda d: d["doc_id"])
-    for d in docs:
-        _check_doc(d)
     _check_unique(docs)
     if profile == "lpc_sec":
         _check_lpc_sec(docs, split, disjoint_from)
@@ -330,7 +400,27 @@ def freeze(
         if shared:
             raise ContractError(f"eg04 shares {len(shared)} source(s) with the screen manifest")
     body = {"profile": profile, "salt": salt, "counts": c, "documents": docs}
-    return {**body, "manifest_sha256": canonical_sha256(body)}
+    if disjoint_from is not None:
+        body["disjoint_from_sha256"] = disjoint_from["manifest_sha256"]
+    frozen = {**body, "manifest_sha256": canonical_sha256(body)}
+    check_schema(frozen)
+    return frozen
+
+
+@cache
+def _schema() -> dict[str, Any]:
+    return _read_json(SCHEMA_PATH)
+
+
+def check_schema(manifest: dict[str, Any]) -> None:
+    """The manifest against ``screen-manifest.schema.json``; a violation is a ContractError."""
+    import jsonschema
+
+    try:
+        jsonschema.validate(manifest, _schema())
+    except jsonschema.ValidationError as exc:
+        where = "/".join(str(p) for p in exc.absolute_path)
+        raise ContractError(f"manifest fails its schema at {where or '/'}: {exc.message}") from exc
 
 
 def check_eg04_strata(docs: list[dict[str, Any]]) -> None:
@@ -381,6 +471,7 @@ def verify(
     body = {k: v for k, v in manifest.items() if k != "manifest_sha256"}
     if canonical_sha256(body) != manifest.get("manifest_sha256"):
         raise ContractError("manifest_sha256 does not match manifest content")
+    check_schema(manifest)  # types and doc_id shape before any path is built
     for d in manifest["documents"]:
         path = Path(corpus_root) / d["doc_id"]
         if not path.is_file():

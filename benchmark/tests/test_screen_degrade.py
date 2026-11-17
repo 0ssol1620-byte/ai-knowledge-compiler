@@ -16,13 +16,13 @@ from akc_api.settings import Settings
 from benchmark.local_public import sec_screen
 from benchmark.screen import degrade
 from benchmark.screen import manifest as screen_manifest
-from benchmark.tests.test_screen_manifest import _sec
+from benchmark.tests.test_screen_manifest import WRONG, _sec, _sec_set, field_paths, mutated
 from benchmark.v6.contracts import ContractError, canonical_sha256
 
 LEVELS = ("scan_fair", "scan_poor")
 
 
-def _pdf(*texts: str) -> bytes:
+def _pdf(*texts: str, box: bytes = b"0 0 300 200") -> bytes:
     """A small born-digital PDF with a real text layer, one page per text."""
     n = len(texts)
     objs = [
@@ -35,8 +35,9 @@ def _pdf(*texts: str) -> bytes:
     for i, text in enumerate(texts):
         stream = b"BT /F1 14 Tf 20 150 Td (" + text.encode("ascii") + b") Tj ET"
         objs.append(
-            b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 300 200] "
-            b"/Resources << /Font << /F1 3 0 R >> >> /Contents %d 0 R >>" % (5 + 2 * i)
+            b"<< /Type /Page /Parent 2 0 R /MediaBox ["
+            + box
+            + b"] /Resources << /Font << /F1 3 0 R >> >> /Contents %d 0 R >>" % (5 + 2 * i)
         )
         objs.append(b"<< /Length %d >>\nstream\n" % len(stream) + stream + b"\nendstream")
     out = bytearray(b"%PDF-1.4\n")
@@ -113,6 +114,7 @@ def test_second_run_is_byte_identical_and_records_describe_each_page(tmp_path: P
     # the output freezes as one lpc_sec dev manifest: 3 clean + 6 derived
     m = screen_manifest.freeze(out, "s", "lpc_sec", split="dev")
     assert m["counts"]["dev_pages"] == 9
+    screen_manifest.verify(m, tmp_path / "a/corpus")  # one corpus root holds every page
 
 
 def test_a_different_seed_changes_every_derived_file(tmp_path: Path) -> None:
@@ -303,3 +305,208 @@ def test_command_line_writes_once_and_takes_levels(
     assert json.loads(capsys.readouterr().out)["documents"] == {"source": 1, "scan_poor": 1}
     assert degrade.main(args) == 1
     assert "write-once" in capsys.readouterr().err
+
+
+# ---------------------------------------------------------------- round 2 (lead A, B, C)
+
+
+def test_level_names_are_the_manifest_rule() -> None:
+    assert tuple(degrade.LEVELS) == screen_manifest.DERIVED_LEVELS
+
+
+def _dev_docs() -> list[dict[str, Any]]:
+    return [dict(d, split="dev") for d in _sec_set(0, n=2, derived=True)]
+
+
+def test_split_gold_never_defaults_a_level(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    cases: list[Any] = [
+        lambda ds: ds[2].pop("degradation"),
+        lambda ds: ds[2]["degradation"].pop("level"),
+        lambda ds: ds[2]["degradation"].update(level="scan_awful"),
+        lambda ds: ds[2].update(degradation=None),
+        lambda ds: ds[0].update(degradation={"level": "scan_fair"}),
+    ]
+    for i, mutate in enumerate(cases):
+        docs = _dev_docs()
+        mutate(docs)
+        sealed = tmp_path / "gold.sealed.jsonl"
+        _sealed(sealed, docs[:2])
+        manifest = _write_manifest(tmp_path / f"m{i}.json", docs)
+        with pytest.raises(ContractError, match="degradation"):
+            sec_screen.split_gold(manifest, sealed)
+        assert sealed.exists() and not (tmp_path / "gold.dev.jsonl").exists()
+        assert sec_screen.main(["split-gold", "--manifest", str(manifest), "--gold", str(sealed)])
+        assert capsys.readouterr().err.startswith("REFUSED: ContractError")
+    # the reviewer's probe P1: a real degrade output with `degradation` removed
+    src, recs = _profile(tmp_path / "p1", n=2)
+    degrade.build(src, tmp_path / "p1/out", seed="s")
+    stripped = [
+        {k: v for k, v in d.items() if k != "degradation"}
+        for d in _lines(tmp_path / "p1/out/records.jsonl")
+    ]
+    with pytest.raises(ContractError, match=r"degradation\.level"):
+        screen_manifest.freeze(stripped, "s", "lpc_sec", split="dev")
+    _sealed(src / "gold.sealed.jsonl", recs)
+    with pytest.raises(ContractError, match=r"degradation\.level"):
+        sec_screen.split_gold(
+            _write_manifest(tmp_path / "p1.json", [dict(d, split="dev") for d in stripped]),
+            src / "gold.sealed.jsonl",
+        )
+
+
+def test_split_gold_fuzz_refuses_with_its_own_errors_and_counts_only_validated_levels(
+    tmp_path: Path,
+) -> None:
+    """Each field of a source page and of a derived page, set to each wrong-typed value or
+    deleted: split_gold's manifest side (``split_documents``) refuses with ScreenError or
+    ContractError (nothing else escapes) or gives a validated level to every SEC page.
+    Accepted cases run end to end: rows land only under validated levels, one page row per SEC
+    page, and a refusal writes nothing."""
+    base = _dev_docs()
+    levels = {"source", *screen_manifest.DERIVED_LEVELS}
+    refused, accepted = 0, []
+    for which in (0, 2):
+        for path in field_paths(base[which]):
+            for value in (*WRONG, mutated):
+                docs = mutated(base, which, path, value)
+                try:
+                    mine, level_of, source_of = sec_screen.split_documents(docs)
+                except (sec_screen.ScreenError, ContractError):
+                    refused += 1
+                    continue
+                assert set(level_of) == set(mine) and set(level_of.values()) <= levels
+                assert all(level_of[d] != "source" for d in source_of)
+                accepted.append(docs)
+    assert refused > 300 and accepted
+    twin = [*base, dict(base[0], source_sha256="sha256:" + "d" * 64)]  # same doc_id twice
+    with pytest.raises(ContractError, match="duplicate doc_id"):
+        sec_screen.split_documents(twin)
+    for i, docs in enumerate(accepted[::7]):  # end to end on a spread of the accepted cases
+        case = tmp_path / f"c{i}"
+        case.mkdir()
+        sealed = case / "gold.sealed.jsonl"
+        _sealed(sealed, base[:2])
+        try:
+            rec = sec_screen.split_gold(_write_manifest(case / "m.json", docs), sealed)
+        except sec_screen.ScreenError:  # e.g. a renamed source no longer matches its gold
+            assert sealed.exists() and not (case / "gold.dev.jsonl").exists()
+            continue
+        by = rec["gold_rows_by_level"]["dev"]
+        assert {k.split(".")[0] for k in by} <= levels
+        sec = [d for d in docs if isinstance(p := d.get("provenance"), dict) and "adsh" in p]
+        assert sum(v for k, v in by.items() if k.endswith(".pages")) == len(sec)
+    for i, row in enumerate(
+        (
+            "5",
+            '"x"',
+            '{"page_id": 5, "truth": {"critical_fields": []}}',
+            '{"page_id": "sec-0000.pdf", "truth": {"critical_fields": []}}',
+            '{"page_id": "sec-0000.pdf#a", "truth": {"critical_fields": []}}',
+            '{"page_id": "sec-0000.pdf#0"}',
+            '{"page_id": "sec-0000.pdf#0", "truth": {"critical_fields": 5}}',
+        )
+    ):
+        case = tmp_path / f"g{i}"
+        case.mkdir()
+        sealed = case / "gold.sealed.jsonl"
+        _sealed(sealed, base[:2])
+        lines = sealed.read_text("utf-8").splitlines()
+        sealed.write_text("\n".join([row, *lines[1:]]) + "\n", "utf-8")
+        with pytest.raises(sec_screen.ScreenError, match="gold row"):
+            sec_screen.split_gold(_write_manifest(case / "m.json", base), sealed)
+        assert sealed.exists() and not (case / "gold.dev.jsonl").exists()
+    with pytest.raises((sec_screen.ScreenError, ContractError)):
+        sec_screen.split_gold(_write_manifest(tmp_path / "x.json", [*base, 5]), sealed)
+
+
+def test_a_refusal_leaves_nothing_behind(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    src, recs = _profile(tmp_path, n=3)
+    good = (src / "records.jsonl").read_text("utf-8")
+
+    def left() -> list[str]:
+        return sorted(p.name for p in tmp_path.iterdir())
+
+    before = left()
+    rendered: list[int] = []
+    real = degrade.degrade_pdf
+
+    def counting(*a: Any) -> bytes:
+        rendered.append(1)
+        return real(*a)
+
+    monkeypatch.setattr(degrade, "degrade_pdf", counting)
+    last = dict(recs[-1], byte_size=recs[-1]["byte_size"] + 1)
+    (src / "records.jsonl").write_text(
+        "".join(json.dumps(r) + "\n" for r in [*recs[:-1], last]), "utf-8"
+    )
+    with pytest.raises(degrade.DegradeError, match="do not match"):
+        degrade.build(src, tmp_path / "out", seed="s")
+    assert rendered == [] and left() == before  # every source verified before any write
+    (tmp_path / "taken").mkdir()
+    with pytest.raises(degrade.DegradeError, match="write-once"):
+        degrade.build(src, tmp_path / "taken", seed="s")
+    assert rendered == [] and not any((tmp_path / "taken").iterdir())
+    (tmp_path / "taken").rmdir()
+    (src / "records.jsonl").write_text(good, "utf-8")
+
+    def flaky(*a: Any) -> bytes:
+        rendered.append(1)
+        if len(rendered) == 4:
+            raise degrade.DegradeError("render failed")
+        return real(*a)
+
+    monkeypatch.setattr(degrade, "degrade_pdf", flaky)
+    with pytest.raises(degrade.DegradeError, match="render failed"):
+        degrade.build(src, tmp_path / "out", seed="s")
+    assert left() == before
+    monkeypatch.setattr(degrade, "degrade_pdf", real)
+    real_write = degrade._write_once
+
+    def corrupt(path: Path, data: bytes) -> None:
+        real_write(path, data[:-1] + b"X" if path.name == recs[1]["doc_id"] else data)
+
+    monkeypatch.setattr(degrade, "_write_once", corrupt)
+    with pytest.raises(degrade.DegradeError, match="after the copy"):
+        degrade.build(src, tmp_path / "out", seed="s")
+    assert left() == before
+    monkeypatch.undo()
+    with pytest.raises(degrade.DegradeError, match="does not exist"):
+        degrade.build(src, tmp_path / "missing" / "out", seed="s")
+    assert left() == before
+    degrade.build(src, tmp_path / "out", seed="s")
+    assert left() == sorted([*before, "out"])
+    tagged = dict(recs[0], degradation={"level": "scan_fair"})  # a source must be clean
+    (src / "records.jsonl").write_text(json.dumps(tagged) + "\n", "utf-8")
+    with pytest.raises(degrade.DegradeError, match="clean one-page"):
+        degrade.build(src, tmp_path / "out2", seed="s")
+    assert left() == sorted([*before, "out"])
+
+
+def test_an_oversized_or_unreadable_page_is_refused_before_rendering(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    for box in (b"0 0 612 792", b"0 0 1224 200", b"0 0 200 1224"):  # Letter; at the bound
+        degrade.check_source(_pdf("x", box=box), "x")
+
+    def no_render(*_: Any, **__: Any) -> Any:
+        raise AssertionError("rendered")
+
+    monkeypatch.setattr(pdfium.PdfPage, "render", no_render)
+    p = degrade.draw("scan_fair", "k")
+    for box in (b"0 0 1300 200", b"0 0 200 1300", b"0 0 14400 14400"):
+        with pytest.raises(degrade.DegradeError, match="page size"):
+            degrade.degrade_pdf(_pdf("x", box=box), p, "k")
+    with pytest.raises(degrade.DegradeError, match="not a readable PDF"):
+        degrade.degrade_pdf(b"%PDF-1.4 not really", p, "k")
+    root = tmp_path / "big"
+    (root / "corpus").mkdir(parents=True)
+    recs = []
+    for i, data in enumerate((_pdf("a"), _pdf("b", box=b"0 0 1300 200"))):
+        recs.append(_sec(i, data=data))
+        (root / "corpus" / recs[-1]["doc_id"]).write_bytes(data)
+    (root / "records.jsonl").write_text("".join(json.dumps(r) + "\n" for r in recs), "utf-8")
+    with pytest.raises(degrade.DegradeError, match="page size"):
+        degrade.build(root, tmp_path / "o", seed="s")
+    assert sorted(p.name for p in tmp_path.iterdir()) == ["big"]
