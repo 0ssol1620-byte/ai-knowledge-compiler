@@ -5,28 +5,48 @@ profiles, the companies of the amendment pairs reserved), prints one filer-marke
 one-page PDF, and emits WO-D02-1 document records (it does not freeze). Gold goes only to
 `<profile>/gold.sealed.jsonl`; `split-gold` writes per-split files from a frozen manifest and
 removes the sealed one. Local data is reached only through the pinned loader.
+
+Filings are judged in a process pool (`workers`); the result never depends on the worker count or
+on completion order, because results are committed one by one in the serial order (CIK rank, then
+filing rank) and only the filings the serial run would have tried are committed. Each committed
+decision is appended to `journal.jsonl` (fsync'ed, hash-chained); a restart with the same
+arguments, seed and code replays it and continues. The final files are written once, at the end.
 """
 
 from __future__ import annotations
 
 import argparse
+import copy
 import csv
+import functools
 import gzip
 import hashlib
 import io
 import json
+import os
 import shutil
 import sys
+import threading
+import time
 import zipfile
-from collections import Counter
-from collections.abc import Callable, Iterable
-from dataclasses import dataclass
+from collections import Counter, deque
+from collections.abc import Callable, Iterable, Iterator
+from concurrent.futures import Future, ProcessPoolExecutor
+from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
 
-from benchmark.local_public import sec_pages, sec_print, sec_time, sources
+from benchmark.local_public import (
+    pit_rows,
+    pit_tasks,
+    sec_align,
+    sec_pages,
+    sec_print,
+    sec_time,
+    sources,
+)
 from benchmark.local_public.pit_rows import _group
 from benchmark.local_public.pit_tasks import SPEC_STATEMENTS
 from benchmark.local_public.sec_align import Candidate, Excluded, align
@@ -46,6 +66,11 @@ CLASS = {
 STRATUM = {"screen": "en_native", "eg04": "en_native"}
 TRIES = 3  # filings tried per CIK, in seed-hash order
 POOL = 6  # candidate CIKs preloaded per wanted page; ponytail: raise --pool when a run falls short
+# CLI default: half the logical cores, at most 6 (each worker holds one parsed filing); build()=1
+WORKERS = max(1, min(6, (os.cpu_count() or 2) // 2))
+HEARTBEAT_S = 60.0
+JOURNAL = "journal.jsonl"
+JOURNAL_SCHEMA = "tavonel.lpc-screen-journal.v1"
 SELECTION = "dom_rule_v2 (§2.3)"
 NOTE = "Chromium print of one filer-marked page of the filed HTML; external images not fetched"
 _NOT_PRESENTED = ("dimensional", "coregistrant", "not_presented", "no_inline_xbrl")
@@ -130,6 +155,33 @@ class Page:
     fields: list[Candidate]
 
 
+_busy: dict[str, Any] = {}  # the filing this process is judging now, for the heartbeat
+
+
+def _phase(name: str) -> None:
+    _busy["phase"] = name
+
+
+@functools.cache
+def _heartbeat() -> None:
+    """Once per process: a line every HEARTBEAT_S while a filing is judged. The phase tells a slow
+    filing (phase moves) from a stuck one (phase stays)."""
+
+    def beat() -> None:
+        while True:
+            time.sleep(HEARTBEAT_S)
+            b = dict(_busy)
+            if b.get("adsh"):
+                print(
+                    f"  heartbeat pid={os.getpid()} {b['adsh']} {b.get('phase')} "
+                    f"{time.monotonic() - b['t0']:.0f}s",
+                    file=sys.stderr,
+                    flush=True,
+                )
+
+    threading.Thread(target=beat, name="lpc-heartbeat", daemon=True).start()
+
+
 def pick_page(
     sub: dict[str, str],
     num: list[dict[str, str]],
@@ -146,6 +198,7 @@ def pick_page(
 ) -> Page | None:
     """First segment, in seed-hash order, that is eligible and prints to one page; else None."""
     adsh = sub["adsh"]
+    _phase("align")
     # align before the DOM refusals: a refused filing's rows stay in the yield denominator
     cands: list[Candidate] = []
     for item in align(sub, num, pre, html, signed(gold_value)):
@@ -161,6 +214,7 @@ def pick_page(
     if sec_pages.has_script(html):
         reasons["script_refused"] += 1
         return None
+    _phase("segments")
     try:
         segs = sec_pages.segments(html)
     except sec_pages.SegmentRefused as exc:
@@ -168,7 +222,9 @@ def pick_page(
         return None
     dom_ok: set[str] = set()
     eligible: list[tuple[Any, list[Candidate]]] = []
-    for seg in sorted(segs, key=lambda s: _rank(seed, "segment", f"{adsh}:{s.index}")):
+    ranked = sorted(segs, key=lambda s: _rank(seed, "segment", f"{adsh}:{s.index}"))
+    for i, seg in enumerate(ranked):
+        _phase(f"accept {i + 1}/{len(ranked)}")
         ok, bad = sec_pages.accept(seg, cands)
         reasons.update(b.reason for b in bad)
         dom_ok.update(c.field_id for c in ok)
@@ -189,6 +245,7 @@ def pick_page(
             reasons["too_few_fields"] += len(fields)
     rows["dom_accepted_rows"] += len(dom_ok)
     for seg, fields in eligible:
+        _phase(f"render segment {seg.index}")
         excerpt = sec_pages.excerpt_html(html, seg)
         src, pdf = work / f"{adsh}-{seg.index}.html", work / f"{adsh}-{seg.index}.pdf"
         src.write_bytes(excerpt)
@@ -235,6 +292,235 @@ def _truth(page: Page, sub: dict[str, str], quarter: str, lpc_sha: str) -> dict[
     }
 
 
+# ---------------------------------------------------------------- one filing, in any process
+
+Task = tuple[str, dict[str, str], list[dict[str, str]], list[dict[str, str]]]
+
+
+@dataclass
+class Attempt:
+    """What judging one filing produced. Nothing here is shared: the parent commits it, in serial
+    order, or discards it (a filing the serial run would not have tried)."""
+
+    adsh: str
+    consumed: list[dict[str, Any]]  # the verified read, recorded in the run's ledger on commit
+    reasons: Counter[str] = field(default_factory=Counter)
+    rows: Counter[str] = field(default_factory=Counter)
+    errors: list[str] = field(default_factory=list)
+    page: Page | None = None
+    seconds: float = 0.0
+
+
+_ctx: dict[str, Any] = {}  # a worker's loader, gold_value, render, seed and work dir
+
+
+def _init_worker(ctx: dict[str, Any]) -> None:
+    _ctx.update(ctx)
+    _heartbeat()
+
+
+def _attempt_in_worker(task: Task) -> Attempt:
+    return _attempt(_ctx, task)
+
+
+def _attempt(ctx: dict[str, Any], task: Task) -> Attempt:
+    adsh, sub, num, pre = task
+    t0 = time.monotonic()
+    _busy.update(adsh=adsh, phase="read", t0=t0)
+    try:
+        loader = copy.copy(ctx["loader"])  # own ledger: the parent records the read on commit
+        loader.ledger = sources.InputLedger(ctx["loader"].ledger.manifest_sha256)
+        with loader.open_verified(f"sec_filing/{adsh}") as f, gzip.open(f) as g:
+            html, tagged = sec_pages.strip_delivery_tag(g.read())
+        att = Attempt(adsh, loader.ledger.consumed)
+        att.rows["filings_read"] += 1
+        att.rows["delivery_tag_stripped"] += tagged
+        att.page = pick_page(
+            sub,
+            num,
+            pre,
+            html,
+            gold_value=ctx["gold_value"],
+            render=ctx["render"],
+            seed=ctx["seed"],
+            work=ctx["work"],
+            reasons=att.reasons,
+            rows=att.rows,
+            errors=att.errors,
+        )
+        att.seconds = time.monotonic() - t0
+        return att
+    finally:
+        _busy.clear()
+
+
+def _attempts(
+    seq: list[tuple[str, str]],
+    done: set[str],
+    replay: deque[dict[str, Any]],
+    run: Callable[[str], Task],
+    ctx: dict[str, Any],
+    pool: ProcessPoolExecutor | None,
+    window: int,
+) -> Iterator[tuple[str, str, Attempt | None, dict[str, Any] | None]]:
+    """(cik, adsh, fresh attempt, journal entry) in the serial order, skipping every filing of a
+    CIK in `done` (checked when it is reached, so the consumer decides). Journal entries come first
+    and must follow the same order. With a pool, up to `window` filings are being judged at any
+    time, ahead of the serial order: every CIK's first filing before any CIK's second (a later
+    filing is needed only when the earlier ones fail). A result is used only when the serial order
+    reaches it; one the serial run would not have tried is never used."""
+    i = 0
+    while replay:
+        if i == len(seq):
+            raise ScreenError("journal holds filings beyond this run's plan; refusing to resume")
+        cik, adsh = seq[i]
+        i += 1
+        if cik in done:
+            continue
+        e = replay.popleft()
+        if (e["cik"], e["adsh"]) != (cik, adsh):
+            raise ScreenError(f"journal entry {e['adsh']} is out of this run's order (want {adsh})")
+        yield cik, adsh, None, e
+    futs: dict[int, Future[Attempt]] = {}
+    sent: set[int] = set()
+    tryno = [0] * len(seq)
+    for k in range(1, len(seq)):
+        tryno[k] = tryno[k - 1] + 1 if seq[k][0] == seq[k - 1][0] else 0
+    ahead = sorted(range(i, len(seq)), key=lambda k: (tryno[k], k))
+    at = 0
+
+    def send(k: int) -> bool:
+        if pool is None or k in sent or seq[k][0] in done:
+            return False
+        sent.add(k)
+        futs[k] = pool.submit(_attempt_in_worker, run(seq[k][1]))
+        return True
+
+    def refill() -> None:
+        nonlocal at
+        busy = sum(not f.done() for f in futs.values())
+        while busy < window and at < len(ahead):
+            busy += send(ahead[at])
+            at += 1
+
+    try:
+        for j in range(i, len(seq)):
+            cik, adsh = seq[j]
+            if cik in done:
+                skipped = futs.pop(j, None)
+                if skipped is not None:
+                    skipped.cancel()
+                continue
+            if pool is None:
+                yield cik, adsh, _attempt(ctx, run(adsh)), None
+                continue
+            send(j)
+            refill()
+            while True:  # wait for filing j, keeping the workers busy meanwhile
+                try:
+                    att = futs[j].result(timeout=0.5)  # a worker's exception is raised here
+                    break
+                except TimeoutError:
+                    if futs[j].done():
+                        raise
+                    refill()
+            del futs[j]
+            yield cik, adsh, att, None
+    finally:
+        for f in futs.values():
+            f.cancel()
+
+
+def _code_sha256(gold_value: Callable[..., Any]) -> str:
+    """The code that decides the selection: these modules and the injected reader's module."""
+    h = hashlib.sha256()
+    here = sys.modules[__name__]
+    for m in (here, sec_align, sec_pages, sec_print, sec_time, sources, pit_rows, pit_tasks):
+        h.update(Path(str(m.__file__)).read_bytes())
+    gv = sys.modules.get(getattr(gold_value, "__module__", "") or "")
+    gv_file = getattr(gv, "__file__", None)
+    h.update(Path(gv_file).read_bytes() if gv_file else repr(gold_value).encode())
+    return h.hexdigest()
+
+
+def _chain(prev: str, body: dict[str, Any]) -> str:
+    return _sha((prev + json.dumps(body, sort_keys=True, ensure_ascii=False)).encode())
+
+
+def _append(path: Path, prev: str, body: dict[str, Any]) -> str:
+    """One journal line, written and fsync'ed before the caller goes on; returns its chain hash."""
+    h = _chain(prev, body)
+    line = json.dumps({"body": body, "chain": h}, sort_keys=True, ensure_ascii=False) + "\n"
+    with path.open("ab") as f:
+        f.write(line.encode())
+        f.flush()
+        os.fsync(f.fileno())
+    return h
+
+
+def _read_journal(path: Path, header: dict[str, Any]) -> tuple[list[dict[str, Any]], str]:
+    """Verified entries after the header, and the last chain hash ("" when not even the header
+    survived). Any complete line that does not verify refuses. A last line without its newline is
+    a write the crash cut short: it is dropped (truncated) and that filing is judged again."""
+    raw = path.read_bytes()
+    *lines, tail = raw.split(b"\n")
+    if tail:
+        print(f"journal: dropping a torn last line ({len(tail)} bytes)", file=sys.stderr)
+        with path.open("r+b") as f:
+            f.truncate(len(raw) - len(tail))
+            os.fsync(f.fileno())
+    prev, bodies = "", []
+    for n, line in enumerate(lines, 1):
+        try:
+            rec = json.loads(line)
+            ok = set(rec) == {"body", "chain"} and rec["chain"] == _chain(prev, rec["body"])
+        except (ValueError, TypeError, KeyError):
+            ok = False
+        if not ok:
+            raise ScreenError(f"{path}: line {n} does not verify; refusing to resume")
+        prev = rec["chain"]
+        bodies.append(rec["body"])
+    if bodies:
+        got = bodies[0]
+        if got.get("schema") != JOURNAL_SCHEMA:
+            raise ScreenError(f"{path}: not a {JOURNAL_SCHEMA} journal")
+        if got.get("code_sha256") != header["code_sha256"]:
+            raise ScreenError(f"{path}: written by different code; refusing to resume")
+        diff = sorted(
+            k for k in {*got.get("args", {}), *header["args"]}
+            if got.get("args", {}).get(k) != header["args"].get(k)
+        )  # fmt: skip
+        if diff:
+            raise ScreenError(f"{path}: written with different arguments {diff}; refusing")
+    return bodies[1:], prev
+
+
+def _durable(path: Path, data: bytes) -> None:
+    with path.open("wb") as f:
+        f.write(data)
+        f.flush()
+        os.fsync(f.fileno())
+
+
+_DECISIVE = (
+    "source_hash_excluded_or_duplicate",
+    "script_refused",
+    "no_filer_page_breaks",
+    "render_failed",
+    "segment_multi_page",
+)
+
+
+def _verify_page(path: Path, record: dict[str, Any]) -> None:
+    if not path.is_file() or "sha256:" + _sha(path.read_bytes()) != record["source_sha256"]:
+        raise ScreenError(f"{path}: a journalled page is missing or changed; refusing to resume")
+
+
+def _why(reasons: dict[str, int]) -> str:
+    hit = [f"{r}={reasons[r]}" for r in _DECISIVE if reasons.get(r)]
+    return ", ".join(hit) or f"no page with {sec_pages.MIN_FIELDS} accepted fields"
+
+
 # ---------------------------------------------------------------- build
 
 
@@ -272,7 +558,10 @@ def build(
     families: dict[str, dict[str, Any]] | None = None,
     pool: int = POOL,
     private_audit_dir: Path | None = None,
+    workers: int = 1,
 ) -> dict[str, Any]:
+    """`workers` > 1 judges filings in that many processes (`render` and `gold_value` must then be
+    picklable, module-level functions); the outputs are the same for any worker count."""
     fam = _check_rights(load_families() if families is None else families)
     if not recorded_by.strip():
         raise ScreenError("recorded_by is required")
@@ -281,17 +570,34 @@ def build(
     want = {"screen": screen_pages, "eg04": eg04_pages}
     if min(want.values()) < 0 or sum(want.values()) == 0:
         raise ScreenError("--screen-pages/--eg04-pages must be >= 0 and not both 0")
+    if workers < 1:
+        raise ScreenError("--workers must be >= 1")
     ex_ciks, ex_hashes = frozen_exclusions(exclude_from) if exclude_from else (set(), set())
     lpc_sha = loader.manifest["manifest_sha256"]
     snapshot = loader.resolve(SNAPSHOT_ENTRY)["sha256"]
     renderer_sha = loader.resolve(RENDERER_ENTRY)["sha256"]
+    # what the selection depends on; the worker count is deliberately not in it
+    header = {
+        "schema": JOURNAL_SCHEMA,
+        "code_sha256": _code_sha256(gold_value),
+        "args": {
+            "seed": seed,
+            "screen_pages": screen_pages,
+            "eg04_pages": eg04_pages,
+            "recorded_by": recorded_by,
+            "pool": pool,
+            "lpc_manifest_sha256": lpc_sha,
+            "exclude_from_sha256": _sha(exclude_from.read_bytes()) if exclude_from else None,
+            "family_sha256": _sha(json.dumps(fam, sort_keys=True, default=str).encode()),
+        },
+    }
+    journal = out / JOURNAL
+    resume = journal.exists()
+    if resume and (out / "receipt.json").exists():
+        raise ScreenError(f"{out} holds a finished run (receipt.json); refusing to resume")
+    replay, chain = _read_journal(journal, header) if resume else ([], "")
     if render is None:
-        exe = loader.verified_path(RENDERER_ENTRY)
-
-        def real_render(html: Path, pdf: Path) -> int:
-            return sec_print.print_pdf(exe, html, pdf)
-
-        render = real_render
+        render = functools.partial(sec_print.print_pdf, loader.verified_path(RENDERER_ENTRY))
 
     subs = _subs(loader)
     with zipfile.ZipFile(loader.verified_path("sec_submissions_bulk")) as bz:
@@ -328,8 +634,15 @@ def build(
             nums.update(_group(zf, "num.txt", adshes))
             pres.update(_group(zf, "pre.txt", adshes))
 
-    out.mkdir(parents=True)
+    finals = [out / p / n for p in want for n in ("records.jsonl", "gold.sealed.jsonl")]
+    if not resume:
+        out.mkdir(parents=True)
+    for f in [*finals, out / "selected_ciks.json"]:  # a crash while writing them: rewritten below
+        f.unlink(missing_ok=True)
+    if not chain:  # a new run, or a journal whose header itself was torn
+        chain = _append(journal, "", header)
     work = out / "tmp"
+    shutil.rmtree(work, ignore_errors=True)
     work.mkdir()
     rows: Counter[str] = Counter()
     errors: list[str] = []
@@ -337,65 +650,112 @@ def build(
     golds: dict[str, list[dict[str, Any]]] = {p: [] for p in want}
     chosen: dict[str, list[str]] = {p: [] for p in want}
     seen_hash: set[str] = set()
-    cursor = iter(order)
+    for p in want:
+        (out / p / "corpus").mkdir(parents=True, exist_ok=True)
+    # the serial order: CIKs in rank order, each CIK's filings in rank order; a profile takes
+    # CIKs until its quota is met, the next profile goes on with the next CIK (a 0 quota takes none)
+    profiles = [p for p in want if want[p]]
+    seq = [(c, a) for c in order for a in plan[c]]
+    done: set[str] = set()
+    t0 = time.monotonic()
+    ctx = {"loader": loader, "gold_value": gold_value, "render": render, "seed": seed, "work": work}
+
+    def task(a: str) -> Task:
+        return a, subs[a][1], nums.get(a, []), pres.get(a, [])
+
+    def decide(att: Attempt, cik: str, profile: str) -> dict[str, Any]:
+        """The journal entry of a fresh attempt; an accepted page is made durable first."""
+        quarter, sub = subs[att.adsh]
+        record = gold = None
+        if att.page is not None:
+            pdf = att.page.pdf.read_bytes()
+            if "sha256:" + _sha(pdf) in ex_hashes or _sha(pdf) in seen_hash:
+                att.reasons["source_hash_excluded_or_duplicate"] += 1
+            else:
+                doc_id = f"sec-{att.adsh}.pdf"
+                _durable(out / profile / "corpus" / doc_id, pdf)
+                record = _record(
+                    doc_id, pdf, sub, c2[att.adsh]["url"], quarter, loader, att.page, fam,
+                    snapshot, renderer_sha, lpc_sha, STRATUM[profile], recorded_by,
+                )  # fmt: skip
+                gold = {"page_id": f"{doc_id}#0", "truth": _truth(att.page, sub, quarter, lpc_sha)}
+        body = {
+            "cik": cik,
+            "adsh": att.adsh,
+            "profile": profile,
+            "consumed": att.consumed,
+            "reasons": dict(att.reasons),
+            "rows": dict(att.rows),
+            "errors": att.errors,
+            "record": record,
+            "gold": gold,
+        }
+        # what a resumed run reads back, exactly: a fresh and a replayed decision are one value
+        entry: dict[str, Any] = json.loads(json.dumps(body, sort_keys=True, ensure_ascii=False))
+        return entry
+
+    pending = deque(replay)
+    executor = None
+    if workers > 1:
+        executor = ProcessPoolExecutor(workers, initializer=_init_worker, initargs=(ctx,))
+    else:
+        _heartbeat()
+    print(
+        f"lpc screen: {len(seq)} filings planned over {len(order)} CIKs, workers={workers}, "
+        f"{len(replay)} decisions in the journal",
+        file=sys.stderr,
+        flush=True,
+    )
     try:
-        for profile, n in want.items():
-            (out / profile / "corpus").mkdir(parents=True)
-            for cik in cursor if n else ():
-                for adsh in plan[cik]:
-                    quarter, sub = subs[adsh]
-                    with gzip.open(loader.open_verified(f"sec_filing/{adsh}")) as g:
-                        html, tagged = sec_pages.strip_delivery_tag(g.read())
-                    rows["filings_read"] += 1
-                    rows["delivery_tag_stripped"] += tagged
-                    page = pick_page(
-                        sub,
-                        nums.get(adsh, []),
-                        pres.get(adsh, []),
-                        html,
-                        gold_value=gold_value,
-                        render=render,
-                        seed=seed,
-                        work=work,
-                        reasons=reasons,
-                        rows=rows,
-                        errors=errors,
-                    )
-                    if page is None:
-                        continue
-                    pdf = page.pdf.read_bytes()
-                    if "sha256:" + _sha(pdf) in ex_hashes or _sha(pdf) in seen_hash:
-                        reasons["source_hash_excluded_or_duplicate"] += 1
-                        continue
-                    seen_hash.add(_sha(pdf))
-                    doc_id = f"sec-{adsh}.pdf"
-                    shutil.copyfile(page.pdf, out / profile / "corpus" / doc_id)
-                    records[profile].append(
-                        _record(
-                            doc_id,
-                            pdf,
-                            sub,
-                            c2[adsh]["url"],
-                            quarter,
-                            loader,
-                            page,
-                            fam,
-                            snapshot,
-                            renderer_sha,
-                            lpc_sha,
-                            STRATUM[profile],
-                            recorded_by,
-                        )
-                    )
-                    golds[profile].append(
-                        {"page_id": f"{doc_id}#0", "truth": _truth(page, sub, quarter, lpc_sha)}
-                    )
-                    chosen[profile].append(cik)
+        stream = _attempts(seq, done, pending, task, ctx, executor, 2 * workers)
+        for cik, adsh, att, e in stream:
+            profile = profiles[0]
+            if e is None:  # fresh: decide, make the page durable, then journal the decision
+                assert att is not None
+                e = decide(att, cik, profile)
+                chain = _append(journal, chain, e)
+            elif e["profile"] != profile:
+                raise ScreenError(f"journal entry {adsh} is for {e['profile']}, not {profile}")
+            elif e["record"] is not None:
+                _verify_page(out / profile / "corpus" / e["record"]["doc_id"], e["record"])
+            reasons.update(e["reasons"])
+            rows.update(e["rows"])
+            errors += e["errors"]
+            for c in e["consumed"]:
+                if loader.resolve(c["name"])["sha256"] != c["sha256"]:
+                    raise ScreenError(f"journal: {c['name']} is not the pinned file")
+                loader.ledger.record(c["name"], c["sha256"], c["bytes"])
+            took = "journal" if att is None else f"{att.seconds:.0f}s"
+            if e["record"] is None:
+                what = "rejected: " + _why(e["reasons"])
+            else:
+                records[profile].append(e["record"])
+                golds[profile].append(e["gold"])
+                chosen[profile].append(cik)
+                seen_hash.add(e["record"]["source_sha256"].removeprefix("sha256:"))
+                done.add(cik)
+                what = "SELECTED"
+            print(
+                f"[{time.monotonic() - t0:7.0f}s] {profile} {len(records[profile])}/"
+                f"{want[profile]} cik={cik} {adsh} {what} ({took})",
+                file=sys.stderr,
+                flush=True,
+            )
+            if len(records[profile]) >= want[profile]:
+                profiles.pop(0)
+                if not profiles:
                     break
-                if len(records[profile]) >= n:
-                    break
+        if pending:
+            raise ScreenError("journal holds decisions this run never reached; refusing")
     finally:
+        if executor is not None:
+            executor.shutdown(wait=True, cancel_futures=True)
         shutil.rmtree(work, ignore_errors=True)
+    for p in want:  # a page made durable whose decision the crash cut short: not part of the run
+        keep = {r["doc_id"] for r in records[p]}
+        for f in (out / p / "corpus").iterdir():
+            if f.name not in keep:
+                f.unlink()
 
     outputs: list[Path] = []
     for p in want:
@@ -437,6 +797,7 @@ def build(
         "pool": pool,
     }
     sources.write_receipt(rec, out, private_audit_dir)
+    journal.unlink()  # it holds the gold; after the run, gold lives only in gold.sealed.jsonl
     census: dict[str, Any] = rec["census"]
     return census
 
@@ -548,6 +909,7 @@ def main(argv: list[str] | None = None) -> int:
     b.add_argument("--exclude-from", type=Path)
     b.add_argument("--recorded-by", required=True)
     b.add_argument("--pool", type=int, default=POOL)
+    b.add_argument("--workers", type=int, default=WORKERS)
     b.add_argument("--manifest", type=Path, default=sources.DEFAULT_MANIFEST)
     b.add_argument("--private-audit-dir", type=Path)
     g = sub.add_parser("split-gold")
@@ -571,6 +933,7 @@ def main(argv: list[str] | None = None) -> int:
             exclude_from=a.exclude_from,
             pool=a.pool,
             private_audit_dir=a.private_audit_dir,
+            workers=a.workers,
         )
         print(json.dumps(census["documents"]), json.dumps(census["shortfall"]))
         return 1 if any(census["shortfall"].values()) else 0

@@ -43,6 +43,7 @@ class Segment:
     root: Any
     seg_of: dict[Any, int]
     tail_seg: dict[Any, int]
+    paths: dict[str, Any]  # ix:nonFraction by path, filled by `accept`; shared by all segments
 
 
 def _marker(el: Any) -> tuple[bool, bool]:
@@ -119,8 +120,9 @@ def segments(html_bytes: bytes) -> list[Segment]:
     if not markers:
         raise SegmentRefused("no_filer_page_breaks")
     sha = hashlib.sha256(html_bytes).hexdigest()
+    paths: dict[str, Any] = {}
     return [
-        Segment(i, i in nested, sha, root, seg_of, tail_seg)
+        Segment(i, i in nested, sha, root, seg_of, tail_seg, paths)
         for i in range(max(seg_of.values()) + 1)
     ]
 
@@ -242,11 +244,17 @@ def accept(seg: Segment, candidates: list[Candidate]) -> tuple[list[Candidate], 
     A candidate is accepted when no earlier occurrence of its anchor (NFKC, case-insensitive
     substring) exists in the segment's DOM text. Fewer than 3 accepted: all `too_few_fields`.
     """
+    # getpath scans siblings (a flat body makes it O(document)), so only facts named like a
+    # candidate get a path, once per document: the dict is shared by every segment of `seg.root`
+    tags = {c.tag for c in candidates if c.dom_path not in seg.paths}
+    if tags:
+        tree = seg.root.getroottree()
+        for e in seg.root.iter(f"{{{IX}}}nonFraction"):
+            if (e.get("name") or "").split(":")[-1] in tags:
+                seg.paths[tree.getpath(e)] = e
     mine = []
-    tree = seg.root.getroottree()
-    by_path = {tree.getpath(e): e for e in seg.root.iter(f"{{{IX}}}nonFraction")}
     for c in candidates:
-        el = by_path[c.dom_path]
+        el = seg.paths[c.dom_path]
         if seg.seg_of.get(el) == seg.index:
             tr = next((a for a in el.iterancestors() if _local(a) == "tr"), None)
             if tr is None or not _cells(tr):
@@ -256,6 +264,8 @@ def accept(seg: Segment, candidates: list[Candidate]) -> tuple[list[Candidate], 
     def no(c: Candidate, reason: str) -> Excluded:
         return Excluded(reason, c.adsh, c.tag, c.fsds["ddate"], c.fsds["qtrs"])
 
+    if not mine:  # nothing to judge: the copy below would only find nothing (O(document) each)
+        return [], []
     if seg.nested:
         return [], [no(c, "nested_page_break") for c, _ in mine]
     clone, pairs, _ = _clone(seg)
