@@ -81,6 +81,12 @@ STATEMENTS = (
 )
 
 
+DERIVED_NOTE = (
+    "Derived pages are synthetically degraded prints of source pages, not real scans; "
+    "each carries its source page's gold rows."
+)
+
+
 class ScreenError(Exception):
     pass
 
@@ -852,34 +858,96 @@ def _record(
 # ---------------------------------------------------------------- split-gold
 
 
+def _moved(line: str, doc_id: str) -> str:
+    """The same gold row under a derived page's doc id; values are carried, never read out."""
+    row = json.loads(line)
+    row["page_id"] = f"{doc_id}#{row['page_id'].rsplit('#', 1)[1]}"
+    return json.dumps(row, sort_keys=True, ensure_ascii=False)
+
+
+def _gold_row(line: str) -> tuple[str, int]:
+    """(doc id, critical field count) of one sealed gold row; a malformed row refuses. The
+    message names the error type only, never a value."""
+    try:
+        row = json.loads(line)
+        doc_id, page = row["page_id"].rsplit("#", 1)
+        fields = row["truth"]["critical_fields"]
+    except (ValueError, TypeError, KeyError, AttributeError) as exc:
+        raise ScreenError(f"sealed gold row is malformed ({type(exc).__name__})") from None
+    if not (page.isascii() and page.isdigit()) or not isinstance(fields, list):
+        raise ScreenError("sealed gold row is malformed (page number or critical_fields)")
+    return doc_id, len(fields)
+
+
+def split_documents(docs: Any) -> tuple[dict[str, dict[str, Any]], dict[str, str], dict[str, str]]:
+    """(SEC documents by doc id, level of each, source doc id of each derived page) of a frozen
+    manifest's ``documents``. Every SEC document is checked as freeze checks it; a level comes
+    from ``screen_manifest.page_levels`` (ContractError on a missing or unknown level, never a
+    default); a derived page's source is in the manifest, in the same split."""
+    if not isinstance(docs, list) or not all(isinstance(d, dict) for d in docs):
+        raise ScreenError("manifest documents must be a list of objects")
+    sec = [d for d in docs if isinstance(p := d.get("provenance"), dict) and "adsh" in p]
+    for d in sec:
+        screen_manifest._check_doc(d)
+        screen_manifest._company(d)
+    screen_manifest._check_unique(sec)
+    mine = {d["doc_id"]: d for d in sec}
+    if not mine or any(d.get("split") not in screen_manifest.SPLITS for d in mine.values()):
+        raise ScreenError("every SEC document in the manifest needs a split")
+    level_of = screen_manifest.page_levels(mine.values())
+    by_sha = {d["source_sha256"]: d for d in mine.values() if "derived_from" not in d}
+    source_of: dict[str, str] = {}
+    for doc_id, d in mine.items():
+        if "derived_from" in d:
+            src = by_sha.get(d["derived_from"])
+            if src is None or src["split"] != d["split"]:
+                raise ScreenError(f"{doc_id}: its source page is not in the manifest's same split")
+            source_of[doc_id] = src["doc_id"]
+    return mine, level_of, source_of
+
+
 def split_gold(manifest_path: Path, sealed: Path) -> dict[str, Any]:
-    """Per-split gold from a frozen manifest; refuses on any doc-set mismatch; removes `sealed`."""
+    """Per-split gold from a frozen manifest; refuses on any doc-set mismatch; removes `sealed`.
+
+    A derived page (WO-D02-3C, synthetically degraded print) gets its source page's gold rows
+    under its own doc id (``split_documents``); per-level counts are of validated levels only."""
     m = json.loads(manifest_path.read_text("utf-8"))
+    if not isinstance(m, dict):
+        raise ScreenError("manifest is not a JSON object")
     body = {k: v for k, v in m.items() if k != "manifest_sha256"}
     if canonical_sha256(body) != m.get("manifest_sha256"):
         raise ScreenError("manifest_sha256 does not match manifest content")
-    mine = {d["doc_id"]: d for d in m["documents"] if "adsh" in (d.get("provenance") or {})}
-    if not mine or any(d.get("split") not in screen_manifest.SPLITS for d in mine.values()):
-        raise ScreenError("every SEC document in the manifest needs a split")
-    lines: dict[str, list[str]] = {}
+    mine, level_of, source_of = split_documents(m.get("documents"))
+    clean = set(mine) - set(source_of)
+    lines: dict[str, list[tuple[str, int]]] = {}
     for line in sealed.read_text("utf-8").splitlines():
         if line.strip():
-            lines.setdefault(json.loads(line)["page_id"].rsplit("#", 1)[0], []).append(line)
-    if set(lines) != set(mine):
+            doc_id, n_fields = _gold_row(line)
+            lines.setdefault(doc_id, []).append((line, n_fields))
+    if set(lines) != clean:
         raise ScreenError(
             "gold and manifest document sets differ: "
-            f"only in gold {sorted(set(lines) - set(mine))}, "
-            f"only in manifest {sorted(set(mine) - set(lines))}"
+            f"only in gold {sorted(set(lines) - clean)}, "
+            f"only in manifest {sorted(clean - set(lines))}"
         )
     dests = {s: sealed.parent / f"gold.{s}.jsonl" for s in screen_manifest.SPLITS}
     if any(d.exists() for d in dests.values()):
         raise ScreenError("per-split gold already exists; refusing to overwrite")
+    by_level: dict[str, Counter[str]] = {s: Counter() for s in dests}
     for s, dest in dests.items():
         with dest.open("x", encoding="utf-8", newline="\n") as f:
             for doc_id in sorted(d for d in mine if mine[d]["split"] == s):
-                f.writelines(x + "\n" for x in lines[doc_id])
+                level = level_of[doc_id]
+                rows = lines[source_of.get(doc_id, doc_id)]
+                f.writelines(
+                    (_moved(x, doc_id) if doc_id in source_of else x) + "\n" for x, _ in rows
+                )
+                by_level[s][f"{level}.pages"] += len(rows)
+                by_level[s][f"{level}.critical_fields"] += sum(n for _, n in rows)
     receipt = {
         "manifest_sha256": m["manifest_sha256"],
+        "gold_rows_by_level": {s: dict(sorted(c.items())) for s, c in by_level.items()},
+        "derived_pages": DERIVED_NOTE if source_of else None,
         "documents": {s: sum(d["split"] == s for d in mine.values()) for s in dests},
         "filer_agent_prefix_by_split": {
             s: dict(Counter(d["provenance"]["adsh"][:10] for d in mine.values() if d["split"] == s))
@@ -937,7 +1005,7 @@ def main(argv: list[str] | None = None) -> int:
         )
         print(json.dumps(census["documents"]), json.dumps(census["shortfall"]))
         return 1 if any(census["shortfall"].values()) else 0
-    except (ScreenError, sources.SourceError) as exc:
+    except (ScreenError, sources.SourceError, ValueError) as exc:  # ContractError is a ValueError
         print(f"REFUSED: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 1
 

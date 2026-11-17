@@ -1,15 +1,21 @@
 """Screen corpus manifest: deterministic 300/100 split, freeze, verify, holdout guard.
 
+Command line (``python -m benchmark.screen.manifest``): ``freeze`` (write-once) and ``verify``.
+Profile ``lpc_sec`` (5H-1) freezes a SEC selection into one split; see ``_check_lpc_sec``.
+
 Whole documents only; pages are addressed as ``doc_id#p``. The rights fields record
 what a person decided; this module never infers them.
 """
 
 from __future__ import annotations
 
+import argparse
 import hashlib
 import io
 import json
+import sys
 from collections.abc import Callable, Iterable
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -18,25 +24,46 @@ from benchmark.v6.contracts import ContractError, canonical_sha256, require_sha2
 RIGHTS_CLASSES = ("owned", "public_domain", "public_record", "permissive_licence", "synthetic")
 SPLITS = ("dev", "holdout")
 PURPOSES = ("tune", "calibrate", "evaluate_frozen")
-PROFILES = ("screen", "eg04")
+PROFILES = ("screen", "eg04", "lpc_sec")
+# == benchmark.local_public.sec_screen.LICENCE (that module imports this one; a test pins it)
+SEC_LICENCE = "SEC-WEBSITE-POLICY"
+# == tuple(benchmark.screen.degrade.LEVELS) (that module imports this one; a test pins it)
+DERIVED_LEVELS = ("scan_fair", "scan_poor")
+SCHEMA_PATH = Path(__file__).resolve().parents[1] / "schemas" / "screen-manifest.schema.json"
 _DOC_FIELDS = (
-    "doc_id", "source_sha256", "byte_size", "page_count", "stratum", "language",
-    "document_class", "rights",
+    "doc_id",
+    "source_sha256",
+    "byte_size",
+    "page_count",
+    "stratum",
+    "language",
+    "document_class",
+    "rights",
 )
 _RIGHTS_FIELDS = (
-    "source_url", "licence_id", "licence_snapshot_sha256", "rights_class",
-    "redistribution", "recorded_by", "recorded_at",
+    "source_url",
+    "licence_id",
+    "licence_snapshot_sha256",
+    "rights_class",
+    "redistribution",
+    "recorded_by",
+    "recorded_at",
 )
 HOLDOUT_MAX_OVERSHOOT = 10
 EG04_MIN_PAGES, EG04_MIN_DOCS, EG04_MIN_CLASSES = 1500, 150, 10
 # ADR-009: (stratum id, language or "open", page floor, minimum documents). Floors sum to
 # 1,500 pages / 150 documents; a surplus in one stratum never covers another's shortfall.
 EG04_STRATA: tuple[tuple[str, str, int, int], ...] = (
-    ("en_native", "en", 225, 20), ("en_tables", "en", 225, 20),
-    ("ko_native", "ko", 250, 20), ("ko_scan", "ko", 150, 15),
-    ("ko_tables", "ko", 150, 15), ("ko_hwp", "ko", 75, 10),
-    ("slides", "open", 100, 10), ("formulas", "en", 75, 10),
-    ("handwriting", "open", 75, 10), ("distorted", "open", 100, 10),
+    ("en_native", "en", 225, 20),
+    ("en_tables", "en", 225, 20),
+    ("ko_native", "ko", 250, 20),
+    ("ko_scan", "ko", 150, 15),
+    ("ko_tables", "ko", 150, 15),
+    ("ko_hwp", "ko", 75, 10),
+    ("slides", "open", 100, 10),
+    ("formulas", "en", 75, 10),
+    ("handwriting", "open", 75, 10),
+    ("distorted", "open", 100, 10),
     ("adversarial", "en", 75, 10),
 )
 EG04_SCAN_STRATA = ("ko_scan", "handwriting", "distorted")
@@ -46,7 +73,16 @@ class HoldoutSealedError(RuntimeError):
     """Holdout already evaluated under another frozen recipe, or asked for tuning."""
 
 
+def _sha256(value: Any, field: str) -> str:
+    """require_sha256 for untrusted input: a non-string is a ContractError, not a TypeError."""
+    if not isinstance(value, str):
+        raise ContractError(f"{field} must be an exact sha256:<64 lowercase hex> digest")
+    return require_sha256(value, field)
+
+
 def _check_doc(doc: dict[str, Any]) -> None:
+    if not isinstance(doc, dict):
+        raise ContractError(f"a document must be a JSON object, got {type(doc).__name__}")
     for f in _DOC_FIELDS:
         if f not in doc:
             raise ContractError(f"document missing field {f!r}")
@@ -54,11 +90,14 @@ def _check_doc(doc: dict[str, Any]) -> None:
     if not isinstance(name, str) or not name:
         raise ContractError("doc_id must be a non-empty string")
     if (
-        "/" in name or "\\" in name or ":" in name
-        or name in (".", "..") or Path(name).is_absolute()
+        "/" in name
+        or "\\" in name
+        or ":" in name
+        or name in (".", "..")
+        or Path(name).is_absolute()
     ):
         raise ContractError(f"doc_id {name!r} must be a plain file name inside the corpus root")
-    require_sha256(doc["source_sha256"], "source_sha256")
+    _sha256(doc["source_sha256"], "source_sha256")
     for f in ("byte_size", "page_count"):
         if not isinstance(doc[f], int) or isinstance(doc[f], bool) or doc[f] < 1:
             raise ContractError(f"{name}: {f} must be a positive integer")
@@ -80,7 +119,7 @@ def _check_doc(doc: dict[str, Any]) -> None:
         if rights["rights_class"] not in ("owned", "synthetic"):
             raise ContractError(f"{name}: licence snapshot required for {rights['rights_class']}")
     else:
-        require_sha256(snap, "licence_snapshot_sha256")
+        _sha256(snap, "licence_snapshot_sha256")
     for f in ("source_url", "licence_id", "recorded_by", "recorded_at"):
         if not isinstance(rights[f], str) or not rights[f]:
             raise ContractError(f"{name}: rights.{f} must be a non-empty string")
@@ -170,25 +209,158 @@ def _counts(docs: list[dict[str, Any]]) -> dict[str, int]:
     dev = [d for d in docs if d.get("split") == "dev"]
     hold = [d for d in docs if d.get("split") == "holdout"]
     return {
-        "documents": len(docs), "pages": _pages(docs),
-        "dev_documents": len(dev), "dev_pages": _pages(dev),
-        "holdout_documents": len(hold), "holdout_pages": _pages(hold),
+        "documents": len(docs),
+        "pages": _pages(docs),
+        "dev_documents": len(dev),
+        "dev_pages": _pages(dev),
+        "holdout_documents": len(hold),
+        "holdout_pages": _pages(hold),
         "korean_pages": _pages(d for d in docs if d["language"] == "ko"),
         "document_classes": len({d["document_class"] for d in docs}),
     }
 
 
+def _company(d: dict[str, Any]) -> str:
+    """Normalised CIK of a SEC document; refuses one without provenance.cik and .adsh."""
+    prov = d.get("provenance")
+    if not isinstance(prov, dict):
+        raise ContractError(f"{d.get('doc_id')}: provenance object required")
+    cik, adsh = prov.get("cik"), prov.get("adsh")
+    number = 0
+    if isinstance(cik, str) and cik.isascii() and cik.isdigit():
+        number = int(cik)
+    elif isinstance(cik, int) and not isinstance(cik, bool):
+        number = cik
+    if number < 1:
+        raise ContractError(
+            f"{d.get('doc_id')}: provenance.cik (company id) must be a positive integer "
+            "or a digit-only string"
+        )
+    if not isinstance(adsh, str) or not adsh.strip():
+        raise ContractError(f"{d.get('doc_id')}: provenance.adsh required")
+    return str(number)  # leading zeros are not a new company
+
+
+def page_levels(docs: Iterable[dict[str, Any]]) -> dict[str, str]:
+    """doc_id -> ``"source"`` or the derived page's degradation level, never a default.
+
+    A page with ``derived_from`` carries ``degradation.level`` in DERIVED_LEVELS; a page without
+    it carries no ``degradation``. One page per (source, level), and every derived page comes
+    from one degrade run (same seed, same renderer versions). Anything else is a ContractError.
+    """
+    levels: dict[str, str] = {}
+    pairs: set[tuple[str, str]] = set()
+    runs: set[str] = set()
+    for d in docs:
+        name = d["doc_id"]
+        deg = d.get("degradation")
+        if "derived_from" not in d:
+            if "degradation" in d:
+                raise ContractError(f"{name}: a source page carries degradation")
+            levels[name] = "source"
+            continue
+        src = _sha256(d["derived_from"], "derived_from")
+        if not isinstance(deg, dict) or deg.get("level") not in DERIVED_LEVELS:
+            raise ContractError(
+                f"{name}: a derived page needs degradation.level in {DERIVED_LEVELS}"
+            )
+        level = deg["level"]
+        if (src, level) in pairs:
+            raise ContractError(f"{name}: a second {level} page of the same source")
+        pairs.add((src, level))
+        seed, rend = deg.get("seed"), deg.get("renderer")
+        if not isinstance(seed, str) or not seed.strip():
+            raise ContractError(f"{name}: degradation.seed must be a non-empty string")
+        if (
+            not isinstance(rend, dict)
+            or not rend
+            or not all(isinstance(v, str) and v for v in rend.values())
+        ):
+            raise ContractError(f"{name}: degradation.renderer must name each version")
+        runs.add(json.dumps([seed, rend], sort_keys=True))
+        levels[name] = level
+    if len(runs) > 1:
+        raise ContractError("derived pages come from more than one degrade run (seed or renderer)")
+    return levels
+
+
+def _source_hashes(docs: Iterable[dict[str, Any]]) -> set[str]:
+    return {h for d in docs for h in (d["source_sha256"], d.get("derived_from")) if h}
+
+
+def _check_lpc_sec(
+    docs: list[dict[str, Any]], split: str | None, disjoint_from: dict[str, Any] | None
+) -> None:
+    """One split for the whole manifest; one source page per company; derived pages follow
+    their source (same company, same split, named by sha256); holdout proven disjoint."""
+    if split not in SPLITS:
+        raise ContractError(f"lpc_sec needs split in {SPLITS}, got {split!r}")
+    page_levels(docs)
+    sources = {d["source_sha256"]: d for d in docs if "derived_from" not in d}
+    owner: dict[str, str] = {}
+    for d in docs:
+        name = d["doc_id"]  # page_origin and notes are typed by the schema check in freeze
+        if d["rights"]["licence_id"] != SEC_LICENCE:
+            raise ContractError(f"{name}: licence_id must be {SEC_LICENCE!r}")
+        company = _company(d)
+        if d.setdefault("split", split) != split:
+            raise ContractError(f"{name}: split {d['split']!r} is not the manifest's {split!r}")
+        if "derived_from" in d:
+            src = sources.get(d["derived_from"])
+            if src is None:
+                raise ContractError(f"{name}: derived_from names no source page in this manifest")
+            if (_company(src), src["provenance"]["adsh"]) != (company, d["provenance"]["adsh"]):
+                raise ContractError(f"{name}: company or filing differs from its source page's")
+        elif company in owner:
+            raise ContractError(
+                f"company {company} has more than one source page: {owner[company]}, {name}"
+            )
+        else:
+            owner[company] = name
+    if disjoint_from is None:
+        if split == "holdout":
+            raise ContractError("lpc_sec holdout needs disjoint_from (the frozen dev manifest)")
+        return
+    body = {k: v for k, v in disjoint_from.items() if k != "manifest_sha256"}
+    if canonical_sha256(body) != disjoint_from.get("manifest_sha256"):
+        raise ContractError("disjoint_from is not an intact frozen manifest")
+    other = disjoint_from.get("documents")
+    if disjoint_from.get("profile") != "lpc_sec" or not isinstance(other, list) or not other:
+        raise ContractError("disjoint_from must be an lpc_sec manifest with at least one document")
+    for d in other:
+        _check_doc(d)
+        if d.get("split") != "dev":
+            raise ContractError(f"disjoint_from: {d['doc_id']} is not dev; it must be all dev")
+    shared = _source_hashes(docs) & _source_hashes(other)
+    if shared:
+        raise ContractError(f"shares {len(shared)} source sha256 with disjoint_from")
+    common = {_company(d) for d in docs} & {_company(d) for d in other}
+    if common:
+        raise ContractError(f"shares {len(common)} company(ies) with disjoint_from")
+
+
 def freeze(
-    records: list[dict[str, Any]], salt: str, profile: str = "screen",
+    records: list[dict[str, Any]],
+    salt: str,
+    profile: str = "screen",
     screen_manifest: dict[str, Any] | None = None,
+    *,
+    split: str | None = None,
+    disjoint_from: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Validate and freeze; refuses a short or overlapping corpus (ContractError)."""
+    """Validate and freeze; refuses a short or overlapping corpus (ContractError).
+
+    ``split``/``disjoint_from`` belong to profile ``lpc_sec`` only."""
     if profile not in PROFILES:
         raise ContractError(f"profile {profile!r} not in {PROFILES}")
+    if profile != "lpc_sec" and (split is not None or disjoint_from is not None):
+        raise ContractError(f"split/disjoint_from apply to profile 'lpc_sec', not {profile!r}")
+    for d in records:
+        _check_doc(d)  # before the sort, which reads doc_id
     docs = sorted((dict(d) for d in records), key=lambda d: d["doc_id"])
-    for d in docs:
-        _check_doc(d)
     _check_unique(docs)
+    if profile == "lpc_sec":
+        _check_lpc_sec(docs, split, disjoint_from)
     c = _counts(docs)
     if profile == "screen":
         if any("split" not in d for d in docs):
@@ -208,7 +380,7 @@ def freeze(
                 raise ContractError(
                     f"{want['doc_id']}: split {got['split']!r} is not what salt {salt!r} assigns"
                 )
-    else:
+    elif profile == "eg04":
         if screen_manifest is None:
             raise ContractError("eg04 profile needs the screen manifest to prove no overlap")
         if (
@@ -228,7 +400,27 @@ def freeze(
         if shared:
             raise ContractError(f"eg04 shares {len(shared)} source(s) with the screen manifest")
     body = {"profile": profile, "salt": salt, "counts": c, "documents": docs}
-    return {**body, "manifest_sha256": canonical_sha256(body)}
+    if disjoint_from is not None:
+        body["disjoint_from_sha256"] = disjoint_from["manifest_sha256"]
+    frozen = {**body, "manifest_sha256": canonical_sha256(body)}
+    check_schema(frozen)
+    return frozen
+
+
+@cache
+def _schema() -> dict[str, Any]:
+    return _read_json(SCHEMA_PATH)
+
+
+def check_schema(manifest: dict[str, Any]) -> None:
+    """The manifest against ``screen-manifest.schema.json``; a violation is a ContractError."""
+    import jsonschema
+
+    try:
+        jsonschema.validate(manifest, _schema())
+    except jsonschema.ValidationError as exc:
+        where = "/".join(str(p) for p in exc.absolute_path)
+        raise ContractError(f"manifest fails its schema at {where or '/'}: {exc.message}") from exc
 
 
 def check_eg04_strata(docs: list[dict[str, Any]]) -> None:
@@ -279,6 +471,7 @@ def verify(
     body = {k: v for k, v in manifest.items() if k != "manifest_sha256"}
     if canonical_sha256(body) != manifest.get("manifest_sha256"):
         raise ContractError("manifest_sha256 does not match manifest content")
+    check_schema(manifest)  # types and doc_id shape before any path is built
     for d in manifest["documents"]:
         path = Path(corpus_root) / d["doc_id"]
         if not path.is_file():
@@ -334,3 +527,65 @@ class HoldoutGuard:
         elif first != frozen_recipe_sha256:
             raise HoldoutSealedError("holdout already evaluated under a different frozen recipe")
         return docs
+
+
+def _read_json(path: Path) -> dict[str, Any]:
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise ContractError(f"{path}: not a JSON object")
+    return data
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(prog="python -m benchmark.screen.manifest")
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    f = sub.add_parser("freeze", help="validate records.jsonl and write a frozen manifest once")
+    f.add_argument("--records", type=Path, required=True)
+    f.add_argument("--profile", choices=PROFILES, required=True)
+    f.add_argument("--split", choices=SPLITS)
+    f.add_argument("--salt", required=True)
+    f.add_argument("--out", type=Path, required=True)
+    f.add_argument(
+        "--disjoint-from",
+        type=Path,
+        help="lpc_sec: frozen manifest to be disjoint from; eg04: the screen manifest",
+    )
+    v = sub.add_parser("verify", help="recompute digest, byte hashes, sizes and page counts")
+    v.add_argument("--manifest", type=Path, required=True)
+    v.add_argument("--corpus-root", type=Path, required=True)
+    a = ap.parse_args(argv)
+    try:
+        if a.cmd == "verify":
+            m = _read_json(a.manifest)
+            verify(m, a.corpus_root)
+            print(
+                json.dumps(
+                    {"verified": len(m["documents"]), "manifest_sha256": m["manifest_sha256"]}
+                )
+            )
+            return 0
+        if a.out.exists():
+            raise ContractError(f"{a.out} exists; freeze is write-once")
+        text = a.records.read_text(encoding="utf-8")
+        records = [json.loads(line) for line in text.splitlines() if line.strip()]
+        other = _read_json(a.disjoint_from) if a.disjoint_from else None
+        eg04 = a.profile == "eg04"
+        m = freeze(
+            records,
+            a.salt,
+            a.profile,
+            screen_manifest=other if eg04 else None,
+            split=a.split,
+            disjoint_from=None if eg04 else other,
+        )
+        with a.out.open("x", encoding="utf-8", newline="\n") as fh:
+            fh.write(json.dumps(m, indent=1, sort_keys=True, ensure_ascii=False) + "\n")
+        print(json.dumps({"frozen": m["counts"], "manifest_sha256": m["manifest_sha256"]}))
+        return 0
+    except (ValueError, KeyError, OSError) as exc:  # ContractError is a ValueError
+        print(f"REFUSED: {type(exc).__name__}: {exc}", file=sys.stderr)
+        return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
