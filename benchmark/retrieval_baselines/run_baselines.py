@@ -7,6 +7,10 @@ available_at; ISO-8601 with offset). Logical ids are globally unique. Every row 
 JSONL: see metrics.Task. Exit 1 when any cut-applied retriever returns a future-leaking hit, any
 retriever returns an other-tenant hit, the independent cut oracle (violates_cut) flags a row
 the harness admitted, or an answerable task's gold cannot be reached.
+
+WO-D17-4: ``--prereg`` (with ``--prereg-sha256`` and ``--rows-index``) adds the ranked arena
+section (benchmark.retrieval_baselines.arena); ``--holdout`` is the single blind run, refused
+when its receipt already exists.
 """
 
 from __future__ import annotations
@@ -25,6 +29,7 @@ from collections import Counter, defaultdict
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
@@ -41,6 +46,8 @@ from akc_product_core.semantics import (
     semantic_tokens,
 )
 
+from . import arena
+from .arena import A0, LABEL_BLIND, latency_percentiles
 from .metrics import (
     CUT_KEYS,
     KINDS,
@@ -104,10 +111,13 @@ class Corpus:
             self.evidence_of[source.logical_id] = frozenset({source.evidence_id})
             self.rows_of_evidence[source.evidence_id].append(source.logical_id)
         self.candidates: dict[str, Candidates] = {}
+        # A0: the product's own claim candidates, as product-core compiles them today.
+        self.claim_candidates: dict[str, Candidates] = {}
         self.rows_with_claim = 0
         for tenant, sources in by_tenant.items():
             compilation = compile_semantics(tuple(sources))  # once per tenant
-            claimed = {c.logical_id: c for c in retrieval_candidates(compilation)}
+            self.claim_candidates[tenant] = retrieval_candidates(compilation)
+            claimed = {c.logical_id: c for c in self.claim_candidates[tenant]}
             self.rows_with_claim += len(claimed)
             self.candidates[tenant] = tuple(
                 _row_candidate(s, claimed.get(s.logical_id))
@@ -157,21 +167,21 @@ class NotRun(Exception):
     """A retriever cannot honestly score this task; counted in the report, never truncated."""
 
 
-def bm25_only(query: str, candidates: Candidates, k: int) -> tuple[str, ...]:
-    if len(candidates) > RANK_CAP:
-        # BM25 IDF and max-normalisation depend on the whole set; slicing would change them.
-        raise NotRun(
-            f"candidate set exceeds the rank_semantic_candidates cap of {RANK_CAP}; "
-            "no public full-set BM25 scorer"
-        )
-    if not candidates:
-        return ()
-    hits = rank_semantic_candidates(query, candidates, top_k=len(candidates))
-    ordered = sorted(hits, key=lambda h: (-h.lexical_score, h.logical_id))
-    return tuple(h.logical_id for h in ordered[:k])
+RETIRED = {
+    "bm25_only": (
+        "retired by WO-D17-4 (D17 design section 2, defect 3): it ranked through "
+        "rank_semantic_candidates, whose public top_k <= 100 limit left every candidate set above "
+        "100 rows not run; bm25_rows (full-set Okapi BM25 through an inverted index) and "
+        "hybrid_current cover it"
+    )
+}
 
 
 def bm25_rows(query: str, candidates: Candidates, k: int) -> tuple[str, ...]:
+    return tuple(lid for _, lid in bm25_rows_scored(query, candidates, k))
+
+
+def bm25_rows_scored(query: str, candidates: Candidates, k: int) -> list[tuple[float, str]]:
     """Okapi BM25 over every candidate row through an inverted index; any corpus size."""
     # ponytail: index rebuilt per call (O(tokens of the candidate set)); cache per tenant
     # and cut if a run is too slow.
@@ -183,7 +193,7 @@ def bm25_rows(query: str, candidates: Candidates, k: int) -> tuple[str, ...]:
         for term in query_terms.intersection(candidate.terms):
             postings[term].append((i, candidate.terms.count(term)))
     if not candidates:
-        return ()
+        return []
     n = len(candidates)
     average = sum(lengths) / n
     scores: dict[int, float] = defaultdict(float)
@@ -197,7 +207,7 @@ def bm25_rows(query: str, candidates: Candidates, k: int) -> tuple[str, ...]:
     top = heapq.nsmallest(
         k, range(n), key=lambda i: (-scores.get(i, 0.0), candidates[i].logical_id)
     )
-    return tuple(candidates[i].logical_id for i in top)
+    return [(scores.get(i, 0.0), candidates[i].logical_id) for i in top]
 
 
 def hybrid_current(query: str, candidates: Candidates, k: int) -> tuple[str, ...]:
@@ -237,7 +247,6 @@ def graph_entity(query: str, candidates: Candidates, k: int) -> tuple[str, ...]:
 
 BASELINES: dict[str, Retriever] = {
     "exact_token": exact_token,
-    "bm25_only": bm25_only,
     "bm25_rows": bm25_rows,
     "no_cut_bm25_rows": bm25_rows,
     "hybrid_current": hybrid_current,
@@ -248,10 +257,19 @@ BASELINES: dict[str, Retriever] = {
 NO_CUT = frozenset({"no_cut_bm25_rows"})
 # Floor arm: bm25_rows on the task's own ``label_blind_query`` (the query without the concept
 # label). Added by run() only when blind queries are supplied; it is not a BASELINES entry.
-LABEL_BLIND = "label_blind"
 NO_BLIND_QUERY = "task carries no label_blind_query"
+NO_BLIND_ROWS = "no task row carries a label_blind_query"
+# A0 ranks the product's claim candidates (retrieval_candidates) with rank_semantic_candidates,
+# under the same cut. main() adds it; it stays outside the decision rule (D17-D2).
+A0_RETRIEVER = hybrid_current
+A0_LABEL = (
+    "claims only, as product-core compiles today: its gold is reachable only where the gold row "
+    "carries a claim, so its recall is bounded by reachable_answerable_tasks by construction; "
+    "reported, outside the decision rule"
+)
 # Retrievers with no score threshold: they return min(k, candidates).
-THRESHOLD_FREE = frozenset(BASELINES) | {LABEL_BLIND}
+THRESHOLD_FREE = frozenset(BASELINES) | {LABEL_BLIND, A0}
+NO_TIE_SCORE = "not measured: this arm's ranker exposes no score for the rank after k"
 BY_CONSTRUCTION_ABSTENTION = (
     "this retriever returns min(k, candidates); abstention equals an empty candidate set"
 )
@@ -419,6 +437,12 @@ class _Arm:
     cut_tasks: int = 0
     leaking_tasks: int = 0
     seconds: float = 0.0
+    cpu_seconds: float = 0.0
+    latencies: list[float] = field(default_factory=list)  # retrieval only, one per task run
+    per_task: dict[str, float] = field(default_factory=dict)  # answerable task -> recall@k
+    reachable: int = 0  # answerable tasks whose gold is in this arm's candidate pool
+    tie_tasks: int = 0
+    tie_denominator: int = 0
 
 
 def run(
@@ -431,10 +455,18 @@ def run(
     not_run: Mapping[str, str] | None = None,
     blind_queries: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
+    seen_ids: set[str] = set()
+    for task in tasks:
+        if task.task_id in seen_ids:
+            raise TaskError(f"duplicate task_id {task.task_id!r}")
+        seen_ids.add(task.task_id)
     admit = admit if admit is not None else _admit
     arms_in: dict[str, Retriever] = dict(retrievers)
-    if blind_queries is not None:
+    not_run = dict(not_run or {})
+    if blind_queries:
         arms_in[LABEL_BLIND] = bm25_rows
+    elif blind_queries is not None:
+        not_run[LABEL_BLIND] = NO_BLIND_ROWS
     report: dict[str, Any] = {
         "top_k": top_k,
         "rows_total": corpus.rows_total,
@@ -442,10 +474,18 @@ def run(
         "rows_without_claim": corpus.rows_total - corpus.rows_with_claim,
         **reachability(corpus, tasks, admit),
         "bm25_rows": BM25_ROWS_PARAMS,
-        "candidate_caps": {"bm25_only": RANK_CAP, "hybrid_current": HYBRID_CAP},
+        "candidate_caps": {"hybrid_current": HYBRID_CAP},
+        "retired": RETIRED,
         "retrievers": {},
+        "exactness": arena.EXACTNESS_NOT_MEASURED,
+        "abstention": arena.ABSTENTION_NOT_MEASURED,
+        "by_construction": {
+            "source_precision_at_k": (
+                "at most |gold| / k per task: with one gold row, precision@k is at most 1/k"
+            )
+        },
     }
-    for name, reason in (not_run or {}).items():
+    for name, reason in not_run.items():
         report["retrievers"][name] = {"status": "not_run", "reason": reason}
     arms = {name: _Arm() for name in arms_in}
     oracle_rows = oracle_tasks = oracle_bad = 0
@@ -484,12 +524,32 @@ def run(
                     arm.reasons["akc_retrieval.temporal unavailable"] += 1
                     continue
                 candidates = admitted
+            if name == A0:
+                allowed = {c.logical_id for c in candidates}
+                candidates = tuple(
+                    c
+                    for c in corpus.claim_candidates.get(task.tenant, ())
+                    if c.logical_id in allowed
+                )
+                arm.reachable += task.answerable and any(
+                    corpus.evidence_of[c.logical_id] & task.gold_evidence_ids for c in candidates
+                )
+            ticks, cpu = time.perf_counter(), time.process_time()
             try:
-                hits = tuple(retriever(query, candidates, top_k))[:top_k]
+                if retriever is bm25_rows:  # the harness owns this score: measure the tie at k
+                    scored = bm25_rows_scored(query, candidates, top_k + 1)
+                    hits = tuple(lid for _, lid in scored[:top_k])
+                    if len(scored) > top_k:
+                        arm.tie_denominator += 1
+                        arm.tie_tasks += scored[top_k - 1][0] == scored[top_k][0]
+                else:
+                    hits = tuple(retriever(query, candidates, top_k))[:top_k]
             except NotRun as exc:
                 arm.skipped += 1
                 arm.reasons[str(exc)] += 1
                 continue
+            arm.latencies.append(time.perf_counter() - ticks)
+            arm.cpu_seconds += time.process_time() - cpu
             arm.ran += 1
             task_leaks = 0
             for hit in hits:
@@ -503,6 +563,8 @@ def run(
             arm.cut_tasks += task.cut is not None
             arm.leaking_tasks += task_leaks > 0
             scores = score_task(hits, task.gold_evidence_ids, corpus.evidence_of)
+            if scores["recall"] is not None:
+                arm.per_task[task.task_id] = scores["recall"]
             for tally in (arm.pooled, arm.by_kind[task.kind]):
                 tally.add(task, hits, scores)
             if task.stratum is not None:
@@ -529,7 +591,23 @@ def run(
             },
             **_labelled(name, arm.pooled.abstention()),
             "denied_content": arm.denied,
+            "cpu_seconds": arm.cpu_seconds,
+            "latency_seconds": latency_percentiles(arm.latencies),
+            "per_task_recall_at_k": dict(sorted(arm.per_task.items())),
+            "tie_at_k": (
+                {
+                    "tasks_with_more_than_k_candidates": arm.tie_denominator,
+                    "tasks_whose_rank_k_and_k_plus_1_scores_are_equal": arm.tie_tasks,
+                    "tie_rate": ratio(arm.tie_tasks, arm.tie_denominator),
+                    "note": "a tie at k is broken by logical_id ascending, not by the score",
+                }
+                if arms_in[name] is bm25_rows
+                else NO_TIE_SCORE
+            ),
         }
+        if name == A0:
+            entry["reachable_answerable_tasks"] = arm.reachable
+            entry["outside_decision_rule"] = A0_LABEL
         if not cut_applied:
             entry["future_leaks"] = arm.leaks
             entry["cut_tasks"] = arm.cut_tasks
@@ -591,29 +669,81 @@ def _blind_queries(lines: Sequence[str]) -> dict[str, str]:
     return out
 
 
+def gold_rows(corpus: Corpus, tasks: Sequence[Task]) -> dict[str, list[str]]:
+    """Answerable task -> the logical ids of its gold rows in its own tenant."""
+    return {
+        t.task_id: sorted(
+            lid
+            for gold in t.gold_evidence_ids
+            for lid in corpus.rows_of_evidence.get(gold, ())
+            if corpus.tenant_of[lid] == t.tenant
+        )
+        for t in tasks
+        if t.answerable
+    }
+
+
+def _sha256(path: str) -> str:
+    return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--corpus", required=True)
     parser.add_argument("--tasks", required=True)
     parser.add_argument("--out", required=True)
     parser.add_argument("--embeddings")
+    parser.add_argument("--prereg", help="pre-registration JSON; required for a ranked report")
+    parser.add_argument("--prereg-sha256", help="the hash recorded in the ledger; must match")
+    parser.add_argument("--rows-index", help="rows_index.jsonl: gold row -> (cik, adsh)")
+    parser.add_argument(
+        "--holdout",
+        action="store_true",
+        help="the single blind run; refused when <prereg>.holdout-receipt.json exists",
+    )
     args = parser.parse_args(argv)
+    if args.holdout and not args.prereg:
+        parser.error("--holdout requires --prereg")
+    if args.prereg and not (args.prereg_sha256 and args.rows_index):
+        parser.error("--prereg requires --prereg-sha256 and --rows-index")
+    prereg: dict[str, Any] | None = None
+    receipt: Path | None = None
+    try:  # every refusal before any corpus is read; nothing is written on refusal
+        if args.prereg:
+            prereg = arena.load_prereg(Path(args.prereg).read_bytes(), args.prereg_sha256)
+        if args.holdout:
+            receipt = Path(args.prereg + arena.HOLDOUT_RECEIPT_SUFFIX)
+            if receipt.exists():
+                raise arena.ArenaError(
+                    f"holdout refused: a holdout receipt already exists ({receipt.name}); the "
+                    "holdout runs once, a void run needs a new pre-registration"
+                )
+    except (arena.ArenaError, OSError) as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 1
     with open(args.corpus, encoding="utf-8") as handle:
         corpus = Corpus([json.loads(line) for line in handle if line.strip()])
     with open(args.tasks, encoding="utf-8") as handle:
         lines = handle.readlines()
     tasks = load_tasks(lines)
+    clusters: dict[str, tuple[str, str]] = {}
+    if prereg is not None:
+        try:
+            with open(args.rows_index, encoding="utf-8") as handle:
+                filing_of = arena.load_rows_index(handle.readlines())
+            clusters = arena.task_clusters(gold_rows(corpus, tasks), filing_of)
+        except arena.ArenaError as exc:
+            print(f"refused: {exc}", file=sys.stderr)
+            return 1
     blind = _blind_queries(lines)
-    retrievers: dict[str, Retriever] = dict(BASELINES)
+    retrievers: dict[str, Retriever] = {**BASELINES, A0: A0_RETRIEVER}
     not_run: dict[str, str] = {}
     pin: dict[str, str] | None = None
     if args.embeddings:
         retrievers["dense"], pin = load_dense(args.embeddings)
     else:
         not_run["dense"] = "no pinned embedding provider"
-    if not blind:
-        not_run[LABEL_BLIND] = "no task row carries a label_blind_query"
-    report = run(corpus, tasks, retrievers, not_run=not_run, blind_queries=blind or None)
+    report = run(corpus, tasks, retrievers, not_run=not_run, blind_queries=blind)
     report["host"] = {
         "cpu": platform.processor() or platform.machine(),
         "python": platform.python_version(),
@@ -621,8 +751,39 @@ def main(argv: Sequence[str] | None = None) -> int:
     }
     report["dense_pin"] = pin
     report["task_provenance"] = sorted({t.provenance for t in tasks})
-    with open(args.out, "w", encoding="utf-8") as handle:
-        json.dump(report, handle, indent=2, sort_keys=True)
+    if prereg is None:
+        report["arena"] = {"ranked": False, "outcome": None, "not_ranked_reason": arena.NO_PREREG}
+    else:
+        strata = {t.task_id: t.stratum for t in tasks if t.answerable}
+        try:
+            report["arena"] = arena.decide(report, prereg, clusters, strata)
+        except arena.ArenaError as exc:  # an integrity failure: nothing is written
+            print(f"refused: {exc}", file=sys.stderr)
+            return 1
+        report["arena"]["prereg_sha256"] = args.prereg_sha256.lower()
+        report["arena"]["run"] = "holdout" if args.holdout else "dev"
+        report["arena"]["binding"] = (
+            arena.HOLDOUT_BINDING if args.holdout else arena.DEV_NOT_BINDING
+        )
+    payload = json.dumps(report, indent=2, sort_keys=True)
+    if receipt is not None:
+        record = {
+            "prereg_sha256": args.prereg_sha256.lower(),
+            "report_sha256": hashlib.sha256(payload.encode("utf-8")).hexdigest(),
+            "corpus_sha256": _sha256(args.corpus),
+            "tasks_sha256": _sha256(args.tasks),
+            "rows_index_sha256": _sha256(args.rows_index),
+            "report_file": Path(args.out).name,
+            "outcome": report["arena"]["outcome"],
+            "blocking": report["blocking"],
+        }
+        try:  # exclusive create: a concurrent second holdout loses here and writes nothing
+            with open(receipt, "x", encoding="utf-8") as handle:
+                json.dump(record, handle, indent=2, sort_keys=True)
+        except FileExistsError:
+            print("refused: a holdout receipt appeared during the run", file=sys.stderr)
+            return 1
+    Path(args.out).write_bytes(payload.encode("utf-8"))  # bytes: report_sha256 is of the file
     return 1 if report["blocking"] else 0
 
 
