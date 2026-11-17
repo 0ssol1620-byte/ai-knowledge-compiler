@@ -3,10 +3,11 @@
 The model id is required and an alias is refused; no default exists. A hosted id names no
 weights revision, so the runner takes none and every receipt says ``revision_attested:
 false``; the served ``modelVersion`` must still equal the pinned id. The key travels in the
-``x-goog-api-key`` header only: an endpoint with a query string, a percent sign, or the key
-itself anywhere in it is refused, because the endpoint is written into the receipt; and the
-shared exit guard (``base.seal``) turns any result that still carries the key into a failure
-row. ``thinking_config`` (bounded) and ``media_resolution`` are required and recorded.
+``x-goog-api-key`` header only. ``run`` opens with the shared door (``base.guarded``): the key
+is read and the endpoint checked (allow-listed shape, no spelling of a credential) before any
+other argument is looked at, and everything after it runs inside the exit guard
+(``base.seal``), so no refusal or result can carry the key. Refusal messages are fixed strings.
+``thinking_config`` (bounded) and ``media_resolution`` are required and recorded.
 Parts marked ``thought`` are not transcription; a ``thought`` field that is not a bool is a
 malformed response.
 
@@ -23,7 +24,7 @@ import re
 from collections.abc import Callable
 from typing import Any
 
-from .base import RunnerConfig, RunnerUnavailable, read_credential, require_clean_endpoint
+from .base import RunnerConfig, RunnerUnavailable, guarded, require_clean_endpoint
 from .vlm import GENERIC_PROMPT, ResponseRefused, exchange, render_settings
 
 PROVIDER = "gemini_api"
@@ -46,7 +47,7 @@ def check_model(model: str | None, endpoint: str | None) -> str:
     if not model:
         raise RunnerUnavailable("gemini runner requires an explicit model id")
     if "latest" in model or _PINNED.fullmatch(model) is None:
-        raise RunnerUnavailable(f"gemini model id {model!r} is an alias or not a pinned id")
+        raise RunnerUnavailable("gemini model id is an alias or not a pinned id")
     if endpoint is not None and not path.endswith(f"/models/{model}:generateContent"):
         raise RunnerUnavailable("gemini endpoint does not name the requested model id")
     return model
@@ -151,6 +152,38 @@ def run(
     thinking_config: Any = None,
     media_resolution: Any = None,
 ) -> dict[str, Any]:
+    return guarded(
+        "GEMINI_API_KEY",
+        endpoint,
+        PROVIDER,
+        case,
+        lambda key: _run(
+            key,
+            case,
+            endpoint=endpoint,
+            revision=revision,
+            allow_network=allow_network,
+            model=model,
+            thinking_config=thinking_config,
+            media_resolution=media_resolution,
+        ),
+    )
+
+
+def _run(
+    key: str | None,
+    case: dict[str, Any],
+    *,
+    endpoint: str | None,
+    revision: str | None,
+    allow_network: bool,
+    model: str | None,
+    thinking_config: Any,
+    media_resolution: Any,
+) -> dict[str, Any]:
+    """Everything after the door; ``guarded`` runs it inside the exit guard."""
+    if not key:
+        raise RunnerUnavailable("GEMINI_API_KEY is not set")
     pinned = config(
         revision=revision,
         model=model,
@@ -158,9 +191,6 @@ def run(
         media_resolution=media_resolution,
         endpoint=endpoint,
     )
-    key = read_credential("GEMINI_API_KEY", endpoint)
-    if not key:
-        raise RunnerUnavailable("GEMINI_API_KEY is not set")
     run_config = RunnerConfig(PROVIDER, pinned["model"], endpoint, allow_network)
 
     def build(mime: str, image: bytes) -> tuple[dict[str, Any], dict[str, str]]:

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import contextlib
 import hashlib
 import io
 import json
@@ -1048,14 +1049,16 @@ def test_screen_call_passes_model_and_runner_options(tmp_path: Path, monkeypatch
 _PLAIN_EXTERNAL = sorted(set(EXTERNAL_RUNNERS) - set(VLLM) - {"gemini_api", "mistral_ocr_4"})
 
 
-def _runner_kwargs(provider: str, endpoint: str | None) -> dict[str, Any]:
+def _runner_kwargs(provider: str, endpoint: str | None, *, pinned: bool = True) -> dict[str, Any]:
+    """``pinned=False`` leaves the model id / revision to the runner (None): the path where a
+    Gemini model id is read from the endpoint."""
     kwargs: dict[str, Any] = {"endpoint": endpoint, "allow_network": True}
     if provider == "gemini_api":
-        kwargs.update(model=GEMINI, **GEMINI_OPTIONS)
+        kwargs.update(model=GEMINI if pinned else None, **GEMINI_OPTIONS)
     elif provider == "mistral_ocr_4":
-        kwargs["model"] = "mistral-ocr-4-1"
+        kwargs["model"] = "mistral-ocr-4-1" if pinned else None
     else:
-        kwargs["revision"] = REVISION
+        kwargs["revision"] = REVISION if pinned else None
     return kwargs
 
 
@@ -1064,10 +1067,24 @@ def _credential_of(provider: str) -> str:
 
 
 def _chain_text(exc: BaseException | None) -> str:
+    """Everything a caller could print: each exception of the chain, its notes, and the members
+    of an exception group, with the traceback rendering on top."""
+    import traceback
+
     texts = []
-    while exc is not None:
-        texts.append(f"{exc!s} {exc.args!r}")
-        exc = exc.__cause__ or exc.__context__
+    pending = [exc]
+    seen: set[int] = set()
+    while pending:
+        current = pending.pop()
+        if current is None or id(current) in seen:
+            continue
+        seen.add(id(current))
+        texts.append(f"{current!s} {current.args!r} {getattr(current, '__notes__', '')!r}")
+        pending += [current.__cause__, current.__context__]
+        if isinstance(current, BaseExceptionGroup):
+            pending += list(current.exceptions)
+    if exc is not None:
+        texts.append("".join(traceback.format_exception(exc)))
     return "\n".join(texts)
 
 
@@ -1084,20 +1101,28 @@ def _strings(value: Any) -> list[str]:
 def _assert_absent(
     marker: str, out: dict[str, Any] | None, exc: BaseException | None, logs: str
 ) -> None:
-    """The marker in no spelling a reader could recover: plain (any case), inside any base64
-    string of the result, in any exception text of the chain, or in the log capture."""
-    folded = marker.casefold()
-    assert folded not in logs.casefold()
-    assert folded not in _chain_text(exc).casefold()
+    """The marker in no spelling a reader could recover: plain (any case, NFKC-folded), hex,
+    inside any base64 string of the result (raw and re-serialised after ``json.loads``), in
+    any exception text of the chain (notes and group members included), or in the log."""
+    import unicodedata
+
+    def recoverable(text: str) -> bool:
+        folded = unicodedata.normalize("NFKC", text).casefold()
+        return marker.casefold() in folded or marker.encode().hex() in folded
+
+    assert not recoverable(logs)
+    assert not recoverable(_chain_text(exc))
     if out is None:
         return
-    assert folded not in json.dumps(out, ensure_ascii=False).casefold()
+    assert not recoverable(json.dumps(out, ensure_ascii=False))
     for text in _strings(out):
         try:
-            decoded = base64.b64decode(text, validate=True)
+            decoded = base64.b64decode(text, validate=True).decode("utf-8", "replace")
         except ValueError:
             continue
-        assert marker.encode() not in decoded
+        assert not recoverable(decoded)
+        with contextlib.suppress(ValueError, RecursionError):
+            assert not recoverable(json.dumps(json.loads(decoded), ensure_ascii=False))
 
 
 def test_runners_read_credentials_only_through_the_door() -> None:
@@ -1121,13 +1146,59 @@ def test_runners_read_credentials_only_through_the_door() -> None:
     assert hits <= allowed, sorted(hits - allowed)
 
 
-_SPELLINGS = ["as_is", "upper", "lower", "pct1", "pct2", "pct3", "pct_first_char"]
-_PLACES = ["host", "subdomain", "path", "segment_param", "query", "fragment", "userinfo"]
+_SPELLINGS = [
+    "as_is",
+    "upper",
+    "lower",
+    "pct1",
+    "pct2",
+    "pct3",
+    "pct_first_char",
+    "hex",
+    "HEX",
+    "b64",
+    "b64url",
+    "fullwidth",
+    "tab_split",
+    "newline_split",
+    "space_split",
+]
+# Every position of the endpoint, each path segment of the tail included; "model" is the
+# Gemini ``/models/<segment>:generateContent`` position the model id is read from.
+_PLACES = [
+    "host",
+    "subdomain",
+    "port",
+    "path",
+    "seg0",
+    "seg1",
+    "seg2",
+    "in_seg0",
+    "in_seg2",
+    "model",
+    "segment_param",
+    "query",
+    "fragment",
+    "userinfo",
+]
 
 
 def _spell(value: str, spelling: str) -> str:
     from urllib.parse import quote
 
+    if spelling == "hex":
+        return value.encode().hex()
+    if spelling == "HEX":
+        return value.encode().hex().upper()
+    if spelling == "b64":
+        return base64.b64encode(value.encode()).decode()
+    if spelling == "b64url":
+        return base64.urlsafe_b64encode(value.encode()).decode().rstrip("=")
+    if spelling == "fullwidth":
+        return "".join(chr(ord(c) + 0xFEE0) if 0x21 <= ord(c) <= 0x7E else c for c in value)
+    if spelling.endswith("_split"):
+        sep = {"tab": "\t", "newline": "\n", "space": " "}[spelling.split("_")[0]]
+        return value[: len(value) // 2] + sep + value[len(value) // 2 :]
     if spelling == "upper":
         return value.upper()
     if spelling == "lower":
@@ -1143,14 +1214,22 @@ def _spell(value: str, spelling: str) -> str:
 
 
 def _endpoint_with(provider: str, spelled: str, place: str) -> str:
-    tail = (
-        f"/v1beta/models/{GEMINI}:generateContent"
+    segments = (
+        ["v1beta", "models", f"{GEMINI}:generateContent"]
         if provider == "gemini_api"
-        else "/v1/chat/completions"
+        else ["v1", "chat", "completions"]
     )
+    tail = "/" + "/".join(segments)
+    if place[:-1] in {"seg", "in_seg"}:
+        index = int(place[-1])
+        segments[index] = segments[index] + spelled if place.startswith("in") else spelled
+        return "https://p.example/" + "/".join(segments)
+    if place == "model":
+        return f"https://p.example/v1beta/models/{spelled}:generateContent"
     return {
         "host": f"https://{spelled}{tail}",
         "subdomain": f"https://{spelled}.p.example{tail}",
+        "port": f"https://p.example:{spelled}{tail}",
         "path": f"https://p.example/{spelled}{tail}",
         "segment_param": f"https://p.example/v1;k={spelled}{tail}",
         "query": f"https://p.example{tail}?k={spelled}",
@@ -1159,15 +1238,23 @@ def _endpoint_with(provider: str, spelled: str, place: str) -> str:
     }[place]
 
 
-@settings(max_examples=400, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(
+    max_examples=600,
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.function_scoped_fixture],
+)
 @given(
     provider=st.sampled_from(sorted(EXTERNAL_RUNNERS)),
     spelling=st.sampled_from(_SPELLINGS),
     place=st.sampled_from(_PLACES),
+    pinned=st.booleans(),
 )
 def test_door_any_endpoint_that_contains_the_credential_is_refused_before_any_call(
-    provider: str, spelling: str, place: str
+    provider: str, spelling: str, place: str, pinned: bool, caplog: pytest.LogCaptureFixture
 ) -> None:
+    """Property: whatever the model argument (pinned id or None) and wherever and however the
+    credential sits in the endpoint, zero calls, and the marker is absent from the exception
+    chain (notes included) and the log capture."""
     marker = _marker()
     endpoint = _endpoint_with(provider, _spell(marker, spelling), place)
     calls: list[Any] = []
@@ -1176,14 +1263,195 @@ def test_door_any_endpoint_that_contains_the_credential_is_refused_before_any_ca
         calls.append(a)
         raise AssertionError("no call may happen")
 
-    with pytest.MonkeyPatch.context() as mp:
+    caplog.clear()
+    with pytest.MonkeyPatch.context() as mp, caplog.at_level(logging.DEBUG):
         mp.setenv(_credential_of(provider), marker)
         mp.setattr(vlm, "post_bytes", transport)
         mp.setattr(base, "post_bytes", transport)
         with pytest.raises(RunnerUnavailable) as caught:
-            EXTERNAL_RUNNERS[provider](_payload(), **_runner_kwargs(provider, endpoint))
+            EXTERNAL_RUNNERS[provider](
+                _payload(), **_runner_kwargs(provider, endpoint, pinned=pinned)
+            )
     assert calls == []
+    _assert_absent(marker, None, caught.value, caplog.text)
+
+
+@pytest.mark.parametrize("model_case", ["exact", "lower", "inside"])
+def test_door_gemini_with_no_model_and_the_key_as_the_model_segment(
+    model_case: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The review's case: model=None, so the id would be read from ``/models/<segment>``."""
+    marker = _marker()
+    segment = {"exact": marker, "lower": marker.lower(), "inside": f"gemini-4-{marker}"}
+    endpoint = f"https://g.example/v1beta/models/{segment[model_case]}:generateContent"
+    transport = FakeTransport(200, _gemini())
+    monkeypatch.setattr(vlm, "post_bytes", transport)
+    monkeypatch.setenv("GEMINI_API_KEY", marker)
+    with pytest.raises(RunnerUnavailable) as caught:
+        EXTERNAL_RUNNERS["gemini_api"](
+            _payload(), endpoint=endpoint, allow_network=True, model=None, **GEMINI_OPTIONS
+        )
+    assert transport.calls == []
     _assert_absent(marker, None, caught.value, "")
+
+
+_ENDPOINT_ALPHABET = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._:-/")
+_OUTSIDE = [
+    *sorted(set(map(chr, range(0x20, 0x7F))) - _ENDPOINT_ALPHABET),
+    chr(0x09),  # tab
+    chr(0x0A),  # newline
+    chr(0x0D),  # carriage return
+    chr(0x00),
+    chr(0x7F),
+    chr(0x00E9),  # non-ASCII letter
+    chr(0xFF4B),  # fullwidth k
+    chr(0x200B),  # zero-width space
+    chr(0x0130),  # dotted capital I (casefolds to two characters)
+]
+
+
+@pytest.mark.parametrize("char", _OUTSIDE)
+def test_door_endpoint_shape_is_an_allow_list(char: str) -> None:
+    """Host and path come from letters, digits, '.', '-', '_', ':', '/' (ASCII) and nothing else."""
+    for endpoint in (f"https://h.example/a{char}b", f"https://h{char}x.example/a"):
+        with pytest.raises(RunnerUnavailable):
+            base.require_clean_endpoint(endpoint)
+
+
+@pytest.mark.parametrize(
+    "endpoint",
+    [
+        "http://h.example/v1",  # no plain HTTP, loopback or not (no test needs it)
+        "http://127.0.0.1/v1",
+        "HTTPS://h.example/v1",
+        "ftp://h.example/v1",
+        "https:/h.example/v1",
+        "https://",
+        "//h.example/v1",
+        b"https://h.example/v1",
+        123,
+    ],
+)
+def test_door_endpoint_must_be_an_https_string(endpoint: Any) -> None:
+    with pytest.raises(RunnerUnavailable):
+        base.require_clean_endpoint(endpoint)
+
+
+@pytest.mark.parametrize(
+    "endpoint",
+    [
+        None,
+        "https://h.example",
+        "https://h.example/",
+        "https://h.example:8443/v1/chat/completions",
+        f"https://g.example/v1beta/models/{GEMINI}:generateContent",
+        "https://my_host-1.example/a_b/c-d/e.f",
+    ],
+)
+def test_door_a_clean_endpoint_is_accepted(endpoint: str | None) -> None:
+    base.require_clean_endpoint(endpoint)
+
+
+_ENTRY_STEP = {  # the first validation step after the door, per public entry point
+    "gemini_api": ("benchmark.runners.gemini_api", "config"),
+    "mistral_ocr_4": ("benchmark.runners.mistral_ocr", "config"),
+    "ovis_ocr3": ("benchmark.runners.openai_chat", "config"),
+    "mineru": ("benchmark.runners.base", "external_exchange"),
+}
+
+
+@pytest.mark.parametrize("provider", sorted(_ENTRY_STEP))
+def test_door_comes_first_and_every_later_refusal_runs_inside_seal(
+    provider: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """By construction, not by input: the credential is read and the endpoint checked before
+    any argument is validated, and whatever the validation raises passes the exit guard."""
+    import importlib
+
+    marker = _marker()
+    monkeypatch.setenv(_credential_of(provider), marker)
+    order: list[str] = []
+    door = base.read_credential
+
+    def spy_door(name: str, endpoint: Any) -> Any:
+        order.append("door")
+        return door(name, endpoint)
+
+    def poisoned(*_a: Any, **_k: Any) -> Any:
+        order.append("validate")
+        error = RunnerUnavailable("refused: " + marker)
+        error.add_note("note " + marker)
+        raise error
+
+    monkeypatch.setattr(base, "read_credential", spy_door)
+    module, name = _ENTRY_STEP[provider]
+    monkeypatch.setattr(importlib.import_module(module), name, poisoned)
+    with pytest.raises(RunnerUnavailable) as caught:
+        EXTERNAL_RUNNERS[provider](_payload(), **_runner_kwargs(provider, "https://p.example/v"))
+    assert order == ["door", "validate"]
+    _assert_absent(marker, None, caught.value, "")
+
+
+def test_runner_refusal_messages_are_fixed_strings() -> None:
+    """No exception raised under benchmark/runners, and no runner refusal type constructed
+    there, takes a message built from a value (f-string, %, .format, +, a variable). The one
+    allowed interpolation is a compile-time constant of its own module, listed here."""
+    import ast
+
+    allowed = {("gemini_api.py", "MAX_THINKING_BUDGET")}  # int literal at module level
+    refusal_types = {"RunnerUnavailable", "ResponseRefused", "PageRefused"}
+
+    def constants(tree: ast.Module) -> set[str]:
+        return {
+            target.id
+            for node in tree.body
+            if isinstance(node, ast.Assign) and isinstance(node.value, ast.Constant)
+            for target in node.targets
+            if isinstance(target, ast.Name)
+        }
+
+    def fixed(node: ast.expr, module: str, consts: set[str]) -> bool:
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            return True
+        if isinstance(node, ast.JoinedStr):
+            return all(
+                isinstance(part, ast.Constant)
+                or (
+                    isinstance(part, ast.FormattedValue)
+                    and isinstance(part.value, ast.Name)
+                    and (module, part.value.id) in allowed
+                    and part.value.id in consts
+                    and part.format_spec is None
+                )
+                for part in node.values
+            )
+        return False
+
+    bad = []
+    checked = 0
+    for path in sorted((ROOT / "benchmark" / "runners").glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        consts = constants(tree)
+        for node in ast.walk(tree):
+            call = None
+            if isinstance(node, ast.Raise) and node.exc is not None:
+                if not isinstance(node.exc, ast.Call):
+                    bad.append((path.name, node.lineno, "raise of a non-constructed value"))
+                    continue
+                call = node.exc
+            elif isinstance(node, ast.Call):
+                func = node.func
+                called = func.attr if isinstance(func, ast.Attribute) else getattr(func, "id", "")
+                if called in refusal_types:
+                    call = node
+            if call is None:
+                continue
+            checked += 1
+            for arg in [*call.args, *(keyword.value for keyword in call.keywords)]:
+                if not fixed(arg, path.name, consts):
+                    bad.append((path.name, call.lineno, ast.unparse(arg)))
+    assert checked > 50  # the walk saw the runners' refusals
+    assert bad == []
 
 
 @pytest.mark.parametrize("provider", sorted(EXTERNAL_RUNNERS))
@@ -1210,7 +1478,12 @@ _LEAKS = [
     "status",
     "garbage",
     "raise",
+    "hex_text",
+    "fullwidth_text",
+    "unrelated_escaped",
+    "note",
 ]
+_LEAKS_THAT_REACH_A_RESULT = {"echo_text", "hex_text", "fullwidth_text"}
 
 
 class _Echo:
@@ -1226,6 +1499,10 @@ class _Echo:
                 raise OSError(f"connection reset by {m}")
             except OSError as exc:
                 raise RunnerUnavailable(f"provider down: {m}") from exc
+        if self.leak == "note":
+            error = RunnerUnavailable("provider down")
+            error.add_note(f"while sending {m}")
+            raise error
         if self.leak == "status":
             return 403, "application/json", json.dumps({"error": f"bad key {m}"}).encode()
         if self.leak == "garbage":
@@ -1234,6 +1511,8 @@ class _Echo:
             "echo_text": f"page {m}",
             "escaped_text": f"page {m}",
             "upper_text": f"page {m.upper()}",
+            "hex_text": f"page {m.encode().hex()}",
+            "fullwidth_text": "page " + _spell(m, "fullwidth"),
         }.get(self.leak, "page text")
         if config.provider == "gemini_api":
             doc: dict[str, Any] = {
@@ -1260,6 +1539,9 @@ class _Echo:
         raw = json.dumps(doc).encode()
         if self.leak == "escaped_text":  # the JSON spells the first character as \uXXXX
             raw = raw.replace(m.encode(), f"\\u{ord(m[0]):04x}".encode() + m[1:].encode())
+        if self.leak == "unrelated_escaped":  # every character escaped, in a field nobody reads
+            escaped = "".join(f"\\u{ord(c):04x}" for c in m).encode()
+            raw = b'{"unrelated": "' + escaped + b'", ' + raw[1:]
         return 200, "application/json", raw
 
 
@@ -1292,7 +1574,7 @@ def test_exit_no_runner_result_or_error_carries_a_credential_a_provider_echoed(
             exc = raised
     for value in markers.values():
         _assert_absent(value, out, exc, caplog.text)
-    if leak == "echo_text":  # the leak reached a result, so the result is the fixed failure row
+    if leak in _LEAKS_THAT_REACH_A_RESULT:  # so the result is the fixed failure row
         assert out is not None and out["failure"] == {"reason": base.CREDENTIAL_IN_RESULT}
 
 
@@ -1327,6 +1609,65 @@ def test_exit_finds_the_key_inside_base64_at_every_alignment(
     blob = base64.b64encode(b"x" * shift + marker.encode() + b"tail").decode()
     assert base.carries_credential(json.dumps({"raw": blob}))
     assert not base.carries_credential(json.dumps({"raw": base64.b64encode(b"x" * 99).decode()}))
+
+
+@pytest.mark.parametrize("spelling", ["as_is", "upper", "hex", "HEX", "b64url", "fullwidth"])
+def test_exit_sees_every_listed_spelling_of_a_credential(
+    spelling: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # '~', '>' and '?' are what make base64 differ from URL-safe base64 for an ASCII value: a
+    # key of letters, digits, '-' and '_' alone encodes identically under both alphabets.
+    marker = _marker() + "~>?"
+    monkeypatch.setenv("AKC_BENCHMARK_PROVIDER_TOKEN", marker)
+    spelled = _spell(marker, spelling)
+    if spelling == "b64url":
+        assert spelled != base64.b64encode(marker.encode()).decode().rstrip("=")
+    assert base.carries_credential("x " + spelled + " y")
+    assert not base.carries_credential("x " + _spell(_marker() + "~>?", spelling) + " y")
+
+
+def test_exit_reads_a_stored_raw_response_after_json_decoding(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A provider that writes the key as \\uXXXX escapes in a field nobody extracts: only the
+    raw bytes carry it, base64-encoded; decoded and re-serialised, it is the plain value."""
+    marker = KEY  # the value _call puts in GEMINI_API_KEY
+    escaped = "".join(f"\\u{ord(c):04x}" for c in marker)
+    raw = _gemini().replace(
+        b'{"modelVersion"', b'{"x": "' + escaped.encode() + b'", "modelVersion"'
+    )
+    assert marker.encode() not in raw
+    out = _call("gemini_api", FakeTransport(200, raw), monkeypatch)
+    assert out["failure"] == {"reason": base.CREDENTIAL_IN_RESULT}
+    _assert_absent(marker, out, None, "")
+
+
+@pytest.mark.parametrize("shape", ["note", "group_member_note", "group_member", "deep_note"])
+def test_exit_an_exception_note_or_group_member_carrying_a_credential_is_withheld(
+    shape: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    marker = _marker()
+    monkeypatch.setenv("AKC_BENCHMARK_PROVIDER_TOKEN", marker)
+
+    def produce() -> dict[str, Any]:
+        inner = RuntimeError("plain")
+        if shape in {"note", "group_member_note", "deep_note"}:
+            inner.add_note("key " + marker)
+        if shape == "group_member":
+            inner = ValueError(marker)
+        if shape == "deep_note":
+            try:
+                raise inner
+            except RuntimeError as exc:
+                raise RunnerUnavailable("plain outer") from exc
+        if shape.startswith("group"):
+            raise ExceptionGroup("g", [inner])
+        raise inner
+
+    with pytest.raises(RunnerUnavailable) as caught:
+        base.seal(base.RunnerConfig("p", REVISION), _payload(), produce)
+    assert str(caught.value) == "runner error withheld: its text carried a credential"
+    _assert_absent(marker, None, caught.value, "")
 
 
 def test_exit_an_unserialisable_result_or_a_credential_in_the_inputs_fails_closed(

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .base import RunnerConfig, RunnerUnavailable, run_external
+from .base import PROVIDER_CREDENTIAL, RunnerConfig, RunnerUnavailable, external_exchange, guarded
 
 PROVIDER = "mistral_ocr_4"
 # Exact GA ids (docs.mistral.ai/getting-started/models snapshot 6155ede1..., intake register).
@@ -21,7 +21,7 @@ def config(*, revision: str | None = None, model: str | None = None) -> dict[str
     if not isinstance(model, str) or not model:
         raise RunnerUnavailable("mistral runner requires an explicit model id")
     if model not in GA_MODEL_IDS:
-        raise RunnerUnavailable(f"mistral model id {model!r} is an alias or not a pinned GA id")
+        raise RunnerUnavailable("mistral model id is an alias or not a pinned GA id")
     return {"provider": PROVIDER, "model": model, "protocol": "akc_external_runner_v1"}
 
 
@@ -33,5 +33,9 @@ def run(
     allow_network: bool = False,
     model: str | None = None,
 ) -> dict[str, Any]:
-    pinned = config(revision=revision, model=model)
-    return run_external(RunnerConfig(PROVIDER, pinned["model"], endpoint, allow_network), case)
+    def body(token: str | None) -> dict[str, Any]:  # after the door, inside the exit guard
+        pinned = config(revision=revision, model=model)
+        run_config = RunnerConfig(PROVIDER, pinned["model"], endpoint, allow_network)
+        return external_exchange(run_config, case, token)
+
+    return guarded(PROVIDER_CREDENTIAL, endpoint, PROVIDER, case, body)

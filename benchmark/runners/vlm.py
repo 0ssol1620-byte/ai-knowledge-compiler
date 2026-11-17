@@ -55,7 +55,7 @@ class ResponseRefused(ValueError):
 
     def __init__(self, reason: str) -> None:
         if reason not in REFUSAL_REASONS:
-            raise ValueError(f"unknown refusal reason {reason!r}")
+            raise ValueError("unknown refusal reason")
         super().__init__(reason)
 
 
