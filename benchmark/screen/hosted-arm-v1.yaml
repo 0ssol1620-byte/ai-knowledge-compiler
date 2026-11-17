@@ -1,0 +1,95 @@
+# D10 hosted arm (core-runtime-arena.md sections 5A, 5D, 5E, 5F; WO-D10-0D).
+# Read twice: benchmark.screen.campaign.load_spec reads the campaign part (stages, caps,
+# alerts, retries); benchmark.screen.hosted reads the ``hosted`` block and ``renderer_version``.
+# Money is a decimal string. Every price is copied by hand from the snapshot named next to it
+# (files kept outside the repository, under the snapshot directory given to the CLI); dry
+# refuses when a snapshot is missing, its sha256 differs, or "$" + value does not occur in it.
+schema: tavonel.screen-campaign.v1
+campaign_id: d10-hosted-arm-v1
+run_tag: v6-d10-hosted-arm-v1
+hard_cap_usd: "25"
+alert_percents: [50, 80, 100]
+provider_retry_count: 0
+# One page renderer for the whole arena: the pypdfium2 the pyproject range declares.
+renderer_version: "4.30.0"
+stages:
+  - id: prepaid
+    work: the prepaid Gemini credit, settled at the USD value the lead records (no network)
+    page_runs: 0
+    gpu: none
+    # A ceiling, not the credit: the lead's figure (at most this) is what is reserved and settled.
+    cap_usd: "20"
+    requires: []
+  - id: dry
+    work: full admitted dev list, no key, fake transport, estimate and chunk plan
+    page_runs: 0
+    gpu: none
+    cap_usd: "0"
+    requires: [prepaid]
+  - id: rehearsal
+    work: first admitted page of three strata; one Gemini batch and three Mistral calls
+    page_runs: 6
+    gpu: hosted-api
+    cap_usd: "0.10"
+    requires: [dry]
+  - id: full
+    work: admitted dev list minus pages already collected
+    page_runs: 600
+    gpu: hosted-api
+    cap_usd: "4.90"
+    requires: [rehearsal]
+hosted:
+  gemini_api:
+    candidate_id: h2
+    model: gemini-4-hydrogen
+    api_base: https://generativelanguage.googleapis.com
+    api_version: v1beta
+    submission: batch
+    prompt_source: "generic: benchmark.runners.gemini_api.PROMPT (no vendor document-parsing prompt)"
+    options:
+      # The model page lists thinking levels only (low, medium, high, xhigh) and no numeric
+      # budget; the REST enum spells them in capitals. A level has no numeric bound, so the
+      # worst case is costed at gemini_api.MAX_THINKING_BUDGET and the full list does not fit
+      # the credit: dry refuses until the lead decides (5F lead decision 2).
+      thinking_config: {thinkingLevel: LOW}
+      media_resolution: MEDIA_RESOLUTION_HIGH
+    limits:
+      inline_request_bytes_documented: 20000000  # "keep the total request size under 20MB"
+      inline_max_bytes: 16000000  # 80 % of the documented limit
+      max_requests_per_batch_documented: null  # not stated in the batch guide or reference
+      max_requests_per_batch: 50  # conservative while the documentation is silent
+      concurrent_batches_documented: 100  # rate-limits page, Batch API
+      max_concurrent_batches: 80  # 80 % of the documented limit
+    input_tokens_bound: 2500  # per page; the rehearsal checks promptTokenCount against it
+    expected_tokens_per_page: {input: 2500, output: 4000}  # shortlist assumption, UNVERIFIED
+    prices:
+      input_usd_per_1m_tokens:
+        value: "0.75"  # Batch tab, gemini-4-hydrogen, paid tier
+        source_url: https://ai.google.dev/gemini-api/docs/pricing
+        snapshot_file: 5459a343857c47e3aae73b304ad1058c1013ff3e1471f409bbbc814a5468c8f4.html
+        snapshot_sha256: 5459a343857c47e3aae73b304ad1058c1013ff3e1471f409bbbc814a5468c8f4
+        retrieved_at: "2026-11-17T09:56:16Z"
+      output_usd_per_1m_tokens:
+        value: "3.75"  # Batch tab, "Output price (including thinking tokens)"
+        source_url: https://ai.google.dev/gemini-api/docs/pricing
+        snapshot_file: 5459a343857c47e3aae73b304ad1058c1013ff3e1471f409bbbc814a5468c8f4.html
+        snapshot_sha256: 5459a343857c47e3aae73b304ad1058c1013ff3e1471f409bbbc814a5468c8f4
+        retrieved_at: "2026-11-17T09:56:16Z"
+  mistral_ocr_4:
+    candidate_id: h1
+    model: mistral-ocr-4-1
+    api_base: https://api.mistral.ai
+    api_version: v1
+    submission: sync
+    prompt_source: "none: the OCR endpoint takes no prompt"
+    options: {}
+    limits:
+      image_bytes_documented: 20000000  # known-limitations, Vision: 20 MB per image
+      max_image_bytes: 16000000  # 80 % of the documented limit
+    prices:
+      usd_per_1000_pages:
+        value: "4"  # OCR 4.1, "Input $4 /1000 Pages"
+        source_url: https://docs.mistral.ai/inference/pricing.md
+        snapshot_file: 928ce23d99ade5f8395a5cd3d07d390b1d1af84a6c75397760024f367198b4b1.md
+        snapshot_sha256: 928ce23d99ade5f8395a5cd3d07d390b1d1af84a6c75397760024f367198b4b1
+        retrieved_at: "2026-11-17T10:00:58Z"

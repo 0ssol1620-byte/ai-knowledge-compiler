@@ -760,8 +760,8 @@ def test_gemini_requires_bounded_thinking_and_an_explicit_media_resolution(
 
 def test_gemini_thinking_level_is_an_accepted_bound(monkeypatch) -> None:
     transport = FakeTransport(200, _gemini())
-    out = _call("gemini_api", transport, monkeypatch, thinking_config={"thinkingLevel": "low"})
-    assert out["metrics"]["receipt"]["generation"]["thinkingConfig"] == {"thinkingLevel": "low"}
+    out = _call("gemini_api", transport, monkeypatch, thinking_config={"thinkingLevel": "LOW"})
+    assert out["metrics"]["receipt"]["generation"]["thinkingConfig"] == {"thinkingLevel": "LOW"}
 
 
 def test_gemini_thought_parts_are_not_transcription(monkeypatch) -> None:
@@ -1854,6 +1854,24 @@ def test_d0d_05_an_exception_whose_text_cannot_be_read_is_withheld(
         base.seal(base.RunnerConfig("p", REVISION), _payload(), produce)
 
 
+def test_d0d_05_an_exception_carrying_the_key_only_in_its_args_is_withheld(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    marker = _marker()
+    monkeypatch.setenv("AKC_BENCHMARK_PROVIDER_TOKEN", marker)
+
+    class Quiet(RuntimeError):  # str() hides the args; nothing in vars()
+        def __str__(self) -> str:
+            return "provider said no"
+
+    def produce() -> dict[str, Any]:
+        raise Quiet("provider said no", marker)
+
+    with pytest.raises(RunnerUnavailable, match="withheld") as caught:
+        base.seal(base.RunnerConfig("p", REVISION), _payload(), produce)
+    assert marker not in repr(caught.value.args)
+
+
 def test_d0d_06_a_dict_key_holding_the_key_is_seen(monkeypatch: pytest.MonkeyPatch) -> None:
     marker = _marker()
     monkeypatch.setenv("AKC_BENCHMARK_PROVIDER_TOKEN", marker)
@@ -2003,3 +2021,82 @@ def test_d0d_09_the_query_reaches_the_target_only(monkeypatch: pytest.MonkeyPatc
         ("GET", "/v1beta/batches?pageSize=50&pageToken=t-1"),
         ("DELETE", "/v1beta/batches"),
     ]
+
+
+# --- WO-D10-0D item 4: one request body for sync and batch; the batch REST helpers ---
+
+
+@pytest.mark.parametrize("level", ["low", "THINKING_LEVEL_UNSPECIFIED", "ULTRA", 1])
+def test_d0d_gemini_thinking_level_is_a_rest_enum_name(level: Any, monkeypatch) -> None:
+    transport = FakeTransport(200, _gemini())
+    with pytest.raises(RunnerUnavailable, match="thinkingLevel"):
+        _call("gemini_api", transport, monkeypatch, thinking_config={"thinkingLevel": level})
+    assert transport.calls == []
+
+
+def test_d0d_the_sync_body_is_the_batch_request_byte_for_byte(monkeypatch) -> None:
+    from benchmark.runners import gemini_api
+
+    transport = FakeTransport(200, _gemini())
+    _call("gemini_api", transport, monkeypatch)
+    _, sent, _ = transport.calls[0]
+    pinned = gemini_api.config(model=GEMINI, **GEMINI_OPTIONS)
+    mime, image, _ = vlm.page_image(_payload())
+    entry = {"request": gemini_api.request_body(pinned, mime, image), "metadata": {"key": "k"}}
+    batch = json.loads(gemini_api.batch_create_body("akc-d10h-x", [entry]))
+    assert batch["batch"]["inputConfig"]["requests"]["requests"][0]["request"] == sent
+
+
+@pytest.mark.parametrize(
+    "name",
+    ["batches/", "batches/a/../b", "batches/a?x=1", "operations/a", "batches/a b", None, 5],
+)
+def test_d0d_a_job_name_outside_the_documented_shape_is_refused_before_any_call(
+    name: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from benchmark.runners import gemini_api
+
+    calls: list[Any] = []
+    monkeypatch.setattr(gemini_api, "request_bytes", lambda *a, **k: calls.append(a))
+    monkeypatch.setenv("GEMINI_API_KEY", KEY)
+    for helper in (gemini_api.batch_get, gemini_api.batch_delete):
+        with pytest.raises(RunnerUnavailable, match="batch job name"):
+            helper(name, allow_network=True)
+    assert calls == []
+
+
+def test_d0d_batch_helpers_go_through_the_door_and_the_exit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from benchmark.runners import gemini_api
+
+    seen: list[tuple[str, str, Any, dict[str, str]]] = []
+
+    def transport(config: Any, method: str, body: Any, headers: dict[str, str], **kw: Any) -> Any:
+        seen.append((method, config.endpoint, kw.get("query"), headers))
+        echo = (
+            b'{"name": "batches/b1", "x": "' + KEY.encode() + b'"}' if method == "DELETE" else b"{}"
+        )
+        return 200, "application/json", echo
+
+    monkeypatch.setattr(gemini_api, "request_bytes", transport)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    with pytest.raises(RunnerUnavailable, match="GEMINI_API_KEY"):
+        gemini_api.batch_get("batches/b1", allow_network=True)
+    monkeypatch.setenv("GEMINI_API_KEY", KEY)
+    out = gemini_api.batch_create(GEMINI, b"{}", allow_network=True)
+    assert out["http_status"] == 200 and base64.b64decode(out["raw_b64"]) == b"{}"
+    gemini_api.batch_list("tok-1", allow_network=True)
+    gemini_api.batch_get("batches/b1", allow_network=True)
+    leaked = gemini_api.batch_delete("batches/b1", allow_network=True)
+    assert leaked["failure"] == {"reason": base.CREDENTIAL_IN_RESULT}
+    base_url = "https://generativelanguage.googleapis.com/v1beta"
+    assert [(m, e, q) for m, e, q, _ in seen] == [
+        ("POST", f"{base_url}/models/{GEMINI}:batchGenerateContent", None),
+        ("GET", f"{base_url}/batches", {"pageToken": "tok-1"}),
+        ("GET", f"{base_url}/batches/b1", None),
+        ("DELETE", f"{base_url}/batches/b1", None),
+    ]
+    assert all(h["x-goog-api-key"] == KEY for *_, h in seen)
+    with pytest.raises(RunnerUnavailable):
+        gemini_api.batch_create("gemini-latest", b"{}", allow_network=True)
