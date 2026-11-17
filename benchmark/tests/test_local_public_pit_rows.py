@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import gzip
+import hashlib
 import io
 import json
 import zipfile
@@ -210,6 +211,10 @@ def test_build_records_manifest_digest_and_reason_counts(
         z.writestr("sub.txt", tsv([sub]))
         z.writestr("num.txt", tsv(nums))
         z.writestr("pre.txt", tsv([{**pre()[0], "adsh": adsh}]))
+        z.writestr(  # required since WO-D17-3: the rows carry the standard label
+            "tag.txt",
+            tsv([{"tag": "Revenues", "version": "us-gaap/2024", "custom": "0", "tlabel": "Revs"}]),
+        )
     gz = gzip.compress(html)
     c2 = tmp_path / "c2.jsonl"
     c2.write_text(json.dumps({"cik": "885639", "adsh": adsh}) + "\n", "utf-8")
@@ -239,10 +244,16 @@ def test_build_records_manifest_digest_and_reason_counts(
     ex = tmp_path / "ex.json"
     ex.write_text("[999]", "utf-8")
     out = tmp_path / "o"
-    assert pr.build(out, ex, gold_value=gold_value)["rows"] == 2
+    manifest = tmp_path / "named-manifest.json"  # read by the patched configure, never opened
+    assert pr.build(out, ex, manifest=manifest, gold_value=gold_value)["rows"] == 2
     meta = json.loads((out / "pit_rows_meta.json").read_text("utf-8"))
     assert meta["lpc_manifest_sha256"] == "f" * 64
     assert meta["ixbrl_rows_without_screen_candidate_by_align_reason"] == {"not_first_column": 1}
+    # corpus.jsonl bytes measured at 87d214a, before WO-D17-3, on this fixture
+    corpus_sha = hashlib.sha256((out / "corpus.jsonl").read_bytes()).hexdigest()
+    assert corpus_sha == "22a3f6979f31d9a81518eed798eff80e71d30dfa8b617f596a209074ab2f1562"
+    index = [json.loads(x) for x in (out / "rows_index.jsonl").read_text("utf-8").splitlines()]
+    assert [i["version"] for i in index] == ["us-gaap/2024", "us-gaap/2024"]
 
 
 def _zip_or_empty(real: Any) -> Any:

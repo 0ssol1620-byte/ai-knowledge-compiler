@@ -4,6 +4,8 @@ Validity is the inline-XBRL context of the SAME accession (UTC midnight, end exc
 `recorded_at = available_at = accepted_at(adsh)`; an unresolved acceptance writes no row.
 First reporting is joined on the FSDS identifier (cik, tag, ddate, qtrs, uom) and written to
 `rows_index.jsonl`, never into a corpus row. `ddate` is month-rounded: it is an identifier there.
+The index also carries the num row's taxonomy `version` and the filer `name` (WO-D17-3), and
+`tag_labels.jsonl` the FSDS `tag.txt` (custom, tlabel) of every (tag, version) the rows use.
 """
 
 from __future__ import annotations
@@ -138,6 +140,7 @@ def filing_rows(
                 "available_at": stamp,
             },
             "_key": (cik, r["tag"], r["ddate"], r["qtrs"], r["uom"]),
+            "_index": {"version": r["version"], "name": name},
         }
 
     rows: list[dict[str, Any]] = []
@@ -207,11 +210,12 @@ def assemble(
                 ddate_precision="month_rounded",
             ),
             "first_reported_by": None if r["_key"] in blind else first[r["_key"]][1],
+            **r["_index"],
         }
         for r in corpus
     ]
     for r in corpus:
-        del r["_key"]
+        del r["_key"], r["_index"]
     return corpus, index
 
 
@@ -220,7 +224,10 @@ def assemble(
 
 def _load_ciks(path: Path) -> set[str]:
     data = json.loads(path.read_text("utf-8"))
-    raw = data["ciks"] if isinstance(data, dict) and set(data) == {"ciks"} else data
+    return _ciks(data["ciks"] if isinstance(data, dict) and set(data) == {"ciks"} else data)
+
+
+def _ciks(raw: Any) -> set[str]:
     if (
         not isinstance(raw, list)
         or not raw
@@ -253,26 +260,107 @@ def _group(zf: zipfile.ZipFile, name: str, adshes: set[str]) -> dict[str, list[d
     return out
 
 
+_TAG_LABELS = "tag_labels.jsonl"
+
+
+def _tag_labels(
+    zf: zipfile.ZipFile,
+    member: str,
+    wanted: set[tuple[str, str]],
+    labels: dict[tuple[str, str], tuple[str, str, str]],
+) -> None:
+    """Add tag.txt (custom, tlabel) of `wanted` (tag, version) pairs to `labels`, mutated.
+
+    A missing tag.txt, a custom flag other than 0/1 and two different labels for one
+    (tag, version) are refused by name; a pair absent from tag.txt is left out (counted later)."""
+    if "tag.txt" not in zf.namelist():
+        raise PitError(f"tag.txt missing from {member}; refusing rows without standard labels")
+    with zf.open("tag.txt") as f:
+        reader = csv.DictReader(
+            io.TextIOWrapper(f, "utf-8", errors="replace"), delimiter="\t", quoting=csv.QUOTE_NONE
+        )
+        if not {"tag", "version", "custom", "tlabel"} <= set(reader.fieldnames or ()):
+            raise PitError(f"tag.txt in {member} lacks tag/version/custom/tlabel columns")
+        for r in reader:
+            k = (r["tag"], r["version"])
+            if k not in wanted:
+                continue
+            if r["custom"] not in ("0", "1"):
+                raise PitError(f"{member} tag.txt: custom flag {r['custom']!r} for {k}")
+            v = (r["custom"], r["tlabel"] or "", member)
+            if k in labels and labels[k][:2] != v[:2]:
+                raise PitError(f"tag.txt rows for {k} differ between {labels[k][2]} and {member}")
+            labels.setdefault(k, v)
+
+
+def _rows_meta(rows_dir: Path, lo: sources.Loader) -> tuple[dict[str, Any], str]:
+    """(meta, its sha256) of a rows dir built from the SAME manifest as `lo`; else refused."""
+    path = rows_dir / "pit_rows_meta.json"
+    try:
+        raw = path.read_bytes()
+        meta = json.loads(raw)
+    except (OSError, ValueError) as exc:
+        raise PitError(f"cannot read {path}: {exc}") from exc
+    recorded = meta.get("lpc_manifest_sha256") if isinstance(meta, dict) else None
+    if recorded != lo.manifest["manifest_sha256"]:
+        raise PitError(
+            f"manifest {lo.manifest['manifest_sha256']} is not the one the rows in {rows_dir} "
+            f"were built from ({recorded}); name that manifest with --manifest"
+        )
+    return meta, hashlib.sha256(raw).hexdigest()
+
+
+def _jsonl(items: list[dict[str, Any]]) -> bytes:
+    return "".join(json.dumps(i, sort_keys=True) + "\n" for i in items).encode("utf-8")
+
+
 def build(
     out: Path,
     exclude_ciks: Path | None,
     ciks: int = 12,
     seed: int = 0,
-    manifest: Path = sources.DEFAULT_MANIFEST,
+    manifest: Path | None = None,
     gold_value: Callable[[dict[str, Any]], Any] | None = None,
+    rebuild_of: Path | None = None,
+    holdout_of: Path | None = None,
 ) -> dict[str, int]:
+    """`rebuild_of`: an earlier rows dir; refused unless its manifest and its corpus.jsonl bytes
+    are reproduced. `holdout_of`: the dev rows dir; refused unless the manifest is the same and
+    no dev CIK is drawn."""
     if exclude_ciks is None:
         raise PitError("--exclude-ciks is required")
     if gold_value is None:
         raise PitError("the scorer's gold_value is not available; refusing to guess")
+    if manifest is None:
+        raise PitError(
+            "--manifest is required: name the manifest version the rows are built from "
+            f"(the module default {sources.DEFAULT_MANIFEST.name} is not assumed)"
+        )
     excluded = _load_ciks(exclude_ciks)
     lo = sources.configure(manifest)
+    ref: dict[str, str] = {}
+    old_corpus: bytes | None = None
+    if rebuild_of is not None:
+        _, ref["rebuild_of_meta_sha256"] = _rows_meta(rebuild_of, lo)
+        try:
+            old_corpus = (rebuild_of / "corpus.jsonl").read_bytes()
+        except OSError as exc:
+            raise PitError(f"cannot read the corpus being rebuilt: {exc}") from exc
+    dev: set[str] = set()
+    if holdout_of is not None:
+        dev_meta, ref["holdout_of_meta_sha256"] = _rows_meta(holdout_of, lo)
+        try:
+            dev = _ciks(dev_meta["ciks"])
+        except (KeyError, PitError) as exc:
+            raise PitError(f"{holdout_of}/pit_rows_meta.json has no usable ciks list") from exc
     c2 = [
         json.loads(x)
         for x in sources.verified_path("c2_manifest").read_text("utf-8").splitlines()
         if x
     ]
     chosen = pick_ciks({str(r["cik"]).lstrip("0") for r in c2}, excluded, ciks, seed)
+    if leaked := sorted(chosen & dev, key=int):
+        raise PitError(f"holdout draw contains dev CIKs {leaked}; exclude them (exclude-union)")
     wanted = {r["adsh"] for r in c2 if str(r["cik"]).lstrip("0") in chosen}
     with zipfile.ZipFile(sources.open_verified("sec_submissions_bulk")) as bz:
         bulk = sec_time.bulk_index(bz)
@@ -285,6 +373,7 @@ def build(
     per_filing: list[tuple[list[dict[str, Any]], list[dict[str, Any]]]] = []
     unresolved: list[tuple[str, str, str, str, str]] = []
     reasons: dict[str, int] = {}
+    labels: dict[tuple[str, str], tuple[str, str, str]] = {}
     stats = {"filings": 0, "acceptance_unresolved": 0, "filing_missing": 0}
     for q in quarters:
         with zipfile.ZipFile(sources.open_verified(f"sec_fsds/{q}")) as zf:
@@ -292,6 +381,12 @@ def build(
             if not subs:
                 continue
             nums, pres = _group(zf, "num.txt", set(subs)), _group(zf, "pre.txt", set(subs))
+            _tag_labels(
+                zf,
+                f"sec_fsds/{q}",
+                {(n["tag"], n["version"]) for a in subs for n in nums.get(a, [])},
+                labels,
+            )
         for adsh, (sub,) in subs.items():
             if sub["cik"].lstrip("0") not in chosen:
                 continue
@@ -317,10 +412,27 @@ def build(
             stats["filings"] += 1
             per_filing.append((rows, keys))
     corpus, index = assemble(per_filing, unresolved)
+    corpus_raw = _jsonl(corpus)
+    if old_corpus is not None and corpus_raw != old_corpus:
+        raise PitError(
+            f"rebuild does not reproduce {rebuild_of}/corpus.jsonl: "
+            f"{hashlib.sha256(old_corpus).hexdigest()} != {hashlib.sha256(corpus_raw).hexdigest()}"
+        )
+    used = {(i["fsds_key"]["tag"], i["version"]) for i in index}
+    tag_rows = [
+        {"tag": k[0], "version": k[1], "custom": v[0], "tlabel": v[1]}
+        for k, v in sorted(labels.items())
+        if k in used
+    ]
+    without_rows = sorted(chosen - {i["fsds_key"]["cik"] for i in index}, key=int)
     out.mkdir(parents=True, exist_ok=True)
-    for name, items in (("corpus.jsonl", corpus), ("rows_index.jsonl", index)):
-        with (out / name).open("x", encoding="utf-8", newline="\n") as f:
-            f.writelines(json.dumps(i, sort_keys=True) + "\n" for i in items)
+    for name, data in (
+        ("corpus.jsonl", corpus_raw),
+        ("rows_index.jsonl", _jsonl(index)),
+        (_TAG_LABELS, _jsonl(tag_rows)),
+    ):
+        with (out / name).open("xb") as f:
+            f.write(data)
     (out / "pit_rows_meta.json").write_text(
         json.dumps(
             {
@@ -329,7 +441,12 @@ def build(
                 "ixbrl_rows_without_screen_candidate_by_align_reason": reasons,
                 "rows": len(corpus),
                 "ciks": sorted(chosen),
+                "ciks_requested": ciks,
+                "ciks_without_rows": without_rows,
+                "seed": seed,
+                "tag_labels": len(tag_rows),
                 "excluded_ciks_sha256": hashlib.sha256(exclude_ciks.read_bytes()).hexdigest(),
+                **ref,
                 **stats,
             },
             sort_keys=True,
@@ -337,24 +454,70 @@ def build(
         ),
         encoding="utf-8",
     )
-    return {"rows": len(corpus), **stats}
+    return {
+        "rows": len(corpus),
+        "tag_labels": len(tag_rows),
+        "ciks_without_rows": len(without_rows),
+        **stats,
+    }
+
+
+def exclude_union(out: Path, exclude_ciks: Path | None, rows_dir: Path | None) -> dict[str, Any]:
+    """One exclude-file = the screen CIKs and the dev rows' CIKs, written once, with its sha256."""
+    if exclude_ciks is None or rows_dir is None:
+        raise PitError("exclude-union needs --exclude-ciks (screen) and --rows-dir (dev rows)")
+    screen = _load_ciks(exclude_ciks)
+    try:
+        dev = _ciks(json.loads((rows_dir / "pit_rows_meta.json").read_text("utf-8"))["ciks"])
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise PitError(f"cannot read the dev CIKs of {rows_dir}: {exc}") from exc
+    raw = json.dumps({"ciks": sorted(screen | dev, key=int)}, indent=1).encode() + b"\n"
+    with out.open("xb") as f:
+        f.write(raw)
+    return {
+        "ciks": len(screen | dev),
+        "screen": len(screen),
+        "dev": len(dev),
+        "sha256": hashlib.sha256(raw).hexdigest(),
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="pit_rows")
-    ap.add_argument("cmd", choices=["build"])
+    ap.add_argument("cmd", choices=["build", "exclude-union"])
     ap.add_argument("--ciks", type=int, default=12)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--exclude-ciks", type=Path)
-    ap.add_argument("--manifest", type=Path, default=sources.DEFAULT_MANIFEST)
+    ap.add_argument("--manifest", type=Path, help="required for build: the rows' manifest")
+    ap.add_argument("--rebuild-of", type=Path, help="earlier rows dir this build must reproduce")
+    ap.add_argument("--holdout-of", type=Path, help="dev rows dir; a drawn dev CIK is refused")
+    ap.add_argument("--rows-dir", type=Path, help="exclude-union: the dev rows dir")
     ap.add_argument("--out", type=Path, required=True)
     a = ap.parse_args(argv)
+    if a.cmd == "exclude-union":
+        try:
+            print(json.dumps(exclude_union(a.out, a.exclude_ciks, a.rows_dir)))
+        except (PitError, OSError) as exc:
+            print(f"REFUSED: {type(exc).__name__}: {exc}", file=sys.stderr)
+            return 1
+        return 0
     try:
         gold_value = importlib.import_module("benchmark.screen.critical_fields").gold_value
     except (ImportError, AttributeError):
         gold_value = None
     try:
-        print(build(a.out, a.exclude_ciks, a.ciks, a.seed, a.manifest, gold_value))
+        print(
+            build(
+                a.out,
+                a.exclude_ciks,
+                a.ciks,
+                a.seed,
+                a.manifest,
+                gold_value,
+                rebuild_of=a.rebuild_of,
+                holdout_of=a.holdout_of,
+            )
+        )
     except (PitError, sources.SourceError) as exc:
         print(f"REFUSED: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 1

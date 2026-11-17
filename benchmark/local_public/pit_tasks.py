@@ -7,6 +7,12 @@ comparative row is never the target. There is no SEC `late_recorded` stratum: SE
 counted against precision. Queries are verbatim row-text tokens without the value. ALFRED rows
 and tasks (WO-LPC-7) enter through the `alfred` argument of `generate`, and are counted as
 skipped when absent. Fewer than FLOOR tasks -> exit 1 with the shortfall; never padded.
+
+Family `concept_crossover` (WO-D17-3, family A) keeps the same targets and cuts but queries by the
+FSDS `tag.txt` standard label (tlabel) of the row's (tag, version): `{name}: {tlabel}: {period}`.
+A task is admitted only when the full row text minus the value shares no `semantic_tokens` token
+with the tlabel; custom tags yield no task; a (tag, version) without a label is a counted skip.
+Each row carries `label_blind_query` (`{name}: {period}`) and `inflection_overlap`.
 """
 
 from __future__ import annotations
@@ -17,16 +23,28 @@ import json
 import re
 import sys
 from collections import Counter, defaultdict
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
+
+from akc_product_core.semantics import semantic_tokens
 
 from benchmark.retrieval_baselines.metrics import TaskError, parse_moment, parse_task
 
 GENERATOR = "benchmark.local_public.pit_tasks/1"
 FLOOR = 200
 STRATA = ("backdated", "added_later", "modified")
+CONCEPT = "concept_crossover"
+FAMILIES = (CONCEPT,)
+CONCEPT_STATEMENT = (
+    "Family concept_crossover: the query names the FSDS tag.txt standard label of the target "
+    "row's (tag, version) instead of the filer's label; a task is admitted only when the full row "
+    "text minus the value shares no semantic_tokens token with that label. The scope is "
+    "taxonomy-label queries over the admitted concept set, not natural questions; "
+    "inflection_overlap marks tasks that overlap after lower-casing, trailing punctuation and a "
+    "plural s/es are stripped."
+)
 # row text: "{name}: {label}: {value} {uom}, {period text}" (pit_rows.filing_rows)
 _TEXT = re.compile(r"^(.*): (-?[0-9][0-9.eE+-]*) (\S+), (.+)$", re.S)
 # spec section 0.1, verbatim (markdown emphasis dropped; "Not covered" sub-bullets joined)
@@ -71,6 +89,70 @@ def _recorded(r: dict[str, Any]) -> datetime:
     return parse_moment(r["metadata"]["recorded_at"], field="recorded_at")
 
 
+def _forms(token: str) -> set[str]:
+    t = token.rstrip("._+-")
+    return {t} | {t[: -len(s)] for s in ("es", "s") if t.endswith(s) and len(t) - len(s) >= 2}
+
+
+def inflection_overlap(a: Iterable[str], b: Iterable[str]) -> bool:
+    """True when two token sets meet after trailing punctuation and a plural s/es are stripped."""
+    fa = {f for t in a for f in _forms(t)}
+    return any(_forms(t) & fa for t in b)
+
+
+def load_tag_labels(raw: bytes) -> dict[tuple[str, str], tuple[str, str]]:
+    """`tag_labels.jsonl` (pit_rows) -> {(tag, version): (custom, tlabel)}; a bad row is refused."""
+    out: dict[tuple[str, str], tuple[str, str]] = {}
+    for n, line in enumerate(raw.decode("utf-8").splitlines(), 1):
+        if not line:
+            continue
+        r = json.loads(line)
+        if (
+            not isinstance(r, dict)
+            or set(r) != {"tag", "version", "custom", "tlabel"}
+            or not all(isinstance(v, str) for v in r.values())
+            or r["custom"] not in ("0", "1")
+        ):
+            raise PitTaskError(f"tag_labels.jsonl line {n} is not a (tag, version, custom, tlabel)")
+        k = (r["tag"], r["version"])
+        if k in out:
+            raise PitTaskError(f"tag_labels.jsonl line {n} repeats {k}")
+        out[k] = (r["custom"], r["tlabel"])
+    return out
+
+
+def _concept(
+    r: dict[str, Any], entry: dict[str, Any], labels: Mapping[tuple[str, str], tuple[str, str]]
+) -> tuple[str | None, str, dict[str, Any]]:
+    """(skip reason or None, query, extra task fields) of one family-A task."""
+    label = labels.get((entry["fsds_key"]["tag"], entry["version"]))
+    if label is None:
+        return "concept_tag_version_absent", "", {}
+    custom, tlabel = label
+    if custom != "0":
+        return "concept_custom_tag", "", {}
+    tl = set(semantic_tokens(tlabel))
+    if not tl:
+        return "concept_tlabel_no_tokens", "", {}
+    m = _TEXT.match(r["text"])
+    name = entry["name"]
+    if m is None or not m[1].startswith(name + ": "):
+        raise PitTaskError(f"row text of {r['logical_id']} does not start with its index name")
+    row_tokens = semantic_tokens(f"{m[1]}: {m[3]}, {m[4]}")  # the whole row minus the value
+    if tl & set(row_tokens):
+        return "concept_label_overlap", "", {}
+    blind = f"{name}: {m[4]}"
+    if tl & set(semantic_tokens(blind)):
+        raise PitTaskError(f"label_blind_query of {r['logical_id']} shares a label token")
+    extra = {
+        "family": CONCEPT,
+        "label_blind_query": blind,
+        "concept_overlap": 0,
+        "inflection_overlap": inflection_overlap(row_tokens, tl),
+    }
+    return None, f"{name}: {tlabel}: {m[4]}", extra
+
+
 def generate(
     corpus: list[dict[str, Any]],
     index: list[dict[str, Any]],
@@ -79,14 +161,30 @@ def generate(
     seed: int = 0,
     max_per_stratum: int | None = None,
     alfred: tuple[list[dict[str, Any]], list[dict[str, Any]]] | None = None,
+    family: str | None = None,
+    tag_labels: Mapping[tuple[str, str], tuple[str, str]] | None = None,
 ) -> dict[str, Any]:
     strata = tuple(strata)
     bad = set(strata) - set(STRATA)
     if bad:
         raise PitTaskError(f"SEC strata {sorted(bad)} are not generated (no SEC late_recorded)")
+    if family is not None and family not in FAMILIES:
+        raise PitTaskError(f"unknown task family {family!r}")
+    if family is not None and tag_labels is None:
+        raise PitTaskError(f"family {family} needs tag_labels.jsonl")
     idx = {i["logical_id"]: i for i in index}
     if len(idx) != len(index) or {r["logical_id"] for r in corpus} != set(idx):
         raise PitTaskError("corpus.jsonl and rows_index.jsonl do not describe the same rows")
+    if family is not None and not all(
+        isinstance(i.get("version"), str) and isinstance(i.get("name"), str) for i in index
+    ):
+        raise PitTaskError(
+            "rows_index.jsonl carries no version/name: rebuild the rows (pit_rows build "
+            "--manifest <the rows' manifest> --rebuild-of <rows dir>)"
+        )
+    labels = tag_labels or {}  # family A refused above when it is None
+    admission: dict[str, Counter[str]] = defaultdict(Counter)
+    by_tag: dict[str, Counter[str]] = defaultdict(Counter)
     groups: dict[tuple[str, ...], list[dict[str, Any]]] = defaultdict(list)
     filings: dict[str, dict[str, datetime]] = defaultdict(dict)  # cik -> adsh -> recorded_at
     for r in corpus:
@@ -97,6 +195,21 @@ def generate(
     cands: dict[str, list[dict[str, Any]]] = {s: [] for s in strata}
 
     def task(stratum: str, variant: str, r: dict[str, Any], q: str, cut: dict[str, str]) -> None:
+        extra: dict[str, Any] = {}
+        if family is not None:
+            entry = idx[r["logical_id"]]
+            why, fq, extra = _concept(r, entry, labels)
+            sv, tag = admission[f"{stratum}-{variant}"], by_tag[entry["fsds_key"]["tag"]]
+            if why in (None, "concept_label_overlap"):  # a standard tag with a usable label
+                sv["standard"] += 1
+                tag["standard"] += 1
+            if why is not None:
+                skipped[why] += 1
+                return
+            q = fq
+            sv["admitted"] += 1
+            sv["inflection_overlap"] += extra["inflection_overlap"]
+            tag["admitted"] += 1
         gold = [r["evidence_id"]] if stratum == "modified" or variant == "B" else []
         tid = (
             f"{stratum}-{variant}-"
@@ -107,7 +220,7 @@ def generate(
                 "task_id": tid, "kind": "temporal", "stratum": stratum, "variant": variant,
                 "tenant": r["tenant"], "query": q, "cut": cut, "gold_evidence_ids": gold,
                 "answerable": bool(gold), "provenance": "generated", "generator": GENERATOR,
-                "seed": seed,
+                "seed": seed, **extra,
             }
         )  # fmt: skip
 
@@ -177,7 +290,15 @@ def generate(
     except TaskError as exc:
         raise PitTaskError(f"task violates the shared contract: {exc}") from exc
     tasks.sort(key=lambda t: t["task_id"])
-    return {"tasks": tasks, "corpus": out_corpus, "skipped": dict(skipped)}
+    out: dict[str, Any] = {"tasks": tasks, "corpus": out_corpus, "skipped": dict(skipped)}
+    if family is not None:
+        out["family"] = family
+        out["admission"] = {
+            "counted_before_max_per_stratum": True,
+            "by_stratum_variant": {k: dict(v) for k, v in sorted(admission.items())},
+            "by_tag": {k: dict(v) for k, v in sorted(by_tag.items()) if v["standard"]},
+        }
+    return out
 
 
 def _jsonl(rows: list[dict[str, Any]]) -> bytes:
@@ -185,7 +306,12 @@ def _jsonl(rows: list[dict[str, Any]]) -> bytes:
 
 
 def write(
-    result: dict[str, Any], out: Path, basis: str, corpus_sha256: str, index_sha256: str
+    result: dict[str, Any],
+    out: Path,
+    basis: str,
+    corpus_sha256: str,
+    index_sha256: str,
+    tag_labels_sha256: str | None = None,
 ) -> dict[str, Any]:
     out.mkdir(parents=True, exist_ok=True)
     raw = _jsonl(result["tasks"])
@@ -206,6 +332,11 @@ def write(
         "shortfall": max(0, FLOOR - len(result["tasks"])),
         "skipped": result["skipped"],
     }
+    if "family" in result:
+        summary["family"] = result["family"]
+        summary["statements"].append(CONCEPT_STATEMENT)
+        summary["tag_labels_sha256"] = tag_labels_sha256
+        summary["admission"] = result["admission"]
     (out / "tasks_manifest.json").write_text(
         json.dumps(summary, indent=1, sort_keys=True) + "\n", encoding="utf-8"
     )
@@ -224,17 +355,21 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--max-per-stratum", type=int)
     ap.add_argument("--strata", nargs="+", default=list(STRATA))
+    ap.add_argument("--family", choices=FAMILIES)
     a = ap.parse_args(argv)
     try:
         c_raw = (a.rows_dir / "corpus.jsonl").read_bytes()
         i_raw = (a.rows_dir / "rows_index.jsonl").read_bytes()
         meta = json.loads((a.rows_dir / "pit_rows_meta.json").read_text("utf-8"))
+        t_raw = (a.rows_dir / "tag_labels.jsonl").read_bytes() if a.family else None
         result = generate(
             _lines(c_raw),
             _lines(i_raw),
             strata=a.strata,
             seed=a.seed,
             max_per_stratum=a.max_per_stratum,
+            family=a.family,
+            tag_labels=load_tag_labels(t_raw) if t_raw is not None else None,
         )
         summary = write(
             result,
@@ -242,6 +377,7 @@ def main(argv: list[str] | None = None) -> int:
             meta["valid_time_basis"],
             hashlib.sha256(c_raw).hexdigest(),
             hashlib.sha256(i_raw).hexdigest(),
+            hashlib.sha256(t_raw).hexdigest() if t_raw is not None else None,
         )
     except (PitTaskError, OSError, KeyError, ValueError) as exc:
         print(f"REFUSED: {type(exc).__name__}: {exc}", file=sys.stderr)
