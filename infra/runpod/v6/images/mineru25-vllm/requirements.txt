@@ -1,4 +1,0 @@
-# The one package the C3 image adds to the pinned vLLM 0.22.1 image (intake row
-# tool_mineru_vl_utils). Wheel sha256 from the PyPI JSON API for 2.0.9, read 2026-11-17.
-# Installed with --no-deps --require-hashes --only-binary=:all:.
-mineru-vl-utils==2.0.9 --hash=sha256:d09c612d28d0d2a1fa561aae3764639e6c704baf7a30d8c4f07f78bc9d2b4060

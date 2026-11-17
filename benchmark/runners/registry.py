@@ -7,7 +7,6 @@ from typing import Any
 
 from . import (
     gemini_api,
-    mineru_vlm,
     minicpm_ocr,
     mistral_ocr,
     nemotron_parse,
@@ -35,7 +34,6 @@ EXTERNAL_RUNNERS: Mapping[str, ExternalRunner] = {
     "infinity_parser2_flash": run_infinity_parser2_flash,
     "infinity_parser2_pro": run_infinity_parser2_pro,
     "mineru": run_mineru,
-    "mineru_vlm": mineru_vlm.run,
     "minicpm_ocr_1": minicpm_ocr.run,
     "mistral_ocr_4": mistral_ocr.run,
     "nemotron_parse_3_5": nemotron_parse.run,
@@ -54,7 +52,6 @@ EXTERNAL_RUNNERS: Mapping[str, ExternalRunner] = {
 # what a screen candidate's config_sha256 must digest to. API providers take ``model``.
 RUNNER_CONFIGS: Mapping[str, Callable[..., dict[str, Any]]] = {
     "gemini_api": gemini_api.config,
-    "mineru_vlm": mineru_vlm.config,
     "minicpm_ocr_1": minicpm_ocr.config,
     "mistral_ocr_4": mistral_ocr.config,
     "nemotron_parse_3_5": nemotron_parse.config,

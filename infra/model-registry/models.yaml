@@ -62,6 +62,7 @@ releases:
       # runs the repository's Python at the pin inside the server.
       serving:
         runner: paddleocr_vl_1_6_vllm
+        variant: "whole-page element prompt; not the card's page pipeline"
         image: "vllm/vllm-openai@sha256:e1668bce9790a4b86682f8fcc99678153a13e12dc70e05348d8e239ffa474b05"
         served_model_name: "PaddlePaddle/PaddleOCR-VL-1.6@c5630abae1d940eafe0697512a0325494b02ab42"
         serve_args: [--trust-remote-code, --max-num-batched-tokens, "16384", --no-enable-prefix-caching, --mm-processor-cache-gb, "0"]
@@ -284,16 +285,6 @@ releases:
       engine: vllm
       version: "mineru-vl-utils[vllm], vllm >= 0.10.1 for MinerULogitsProcessor"
       image_digest: null
-      # WO-D10-0E: the card's vLLM example loads MinerULogitsProcessor from
-      # mineru-vl-utils, so C3 needs its own image (not built yet; intake row
-      # tool_mineru_vl_utils). vLLM 0.22.1 lists Qwen2VLForConditionalGeneration,
-      # the architecture config.json names; serving this pin is UNVERIFIED until A0.
-      serving:
-        runner: mineru_vlm
-        image: "infra/runpod/v6/images/mineru25-vllm (FROM vllm/vllm-openai@sha256:e1668bce9790a4b86682f8fcc99678153a13e12dc70e05348d8e239ffa474b05)"
-        served_model_name: "opendatalab/MinerU2.5-Pro-2605-1.2B@bff20d4ae2bf202df9f45284b4d43681555a97ed"
-        serve_args: [--logits-processors, "mineru_vl_utils:MinerULogitsProcessor"]
-        serve_args_source: "PyPI mineru-vl-utils 2.0.9 description, 'Serving the Model' (snapshot sha256 3abe0cc17683bd1e78f9608de6d41a0dd7cc889240c55988caad21de367fb9e2)"
     claimed_languages: [multilingual]
     internal_validation:
       corpus: akc-golden-2026q3-v1

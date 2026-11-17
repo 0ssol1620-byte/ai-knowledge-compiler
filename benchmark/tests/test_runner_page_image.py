@@ -26,18 +26,7 @@ from benchmark.runners.registry import EXTERNAL_RUNNERS, RUNNER_CONFIGS
 
 ROOT = Path(__file__).resolve().parents[2]
 REVISION = "a" * 40
-
-
-def _page_png() -> bytes:
-    """A real (blank) PNG: the two-step MinerU runner decodes the page to crop it."""
-    from PIL import Image
-
-    buffer = io.BytesIO()
-    Image.new("RGB", (64, 48), "white").save(buffer, format="PNG")
-    return buffer.getvalue()
-
-
-IMAGE = _page_png()
+IMAGE = b"\x89PNG fake page bytes"
 VLLM = {
     "ovis_ocr2": "ATH-MaaS/OvisOCR2",
     "ovis_ocr3": "ATH-MaaS/OvisOCR3",
