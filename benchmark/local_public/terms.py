@@ -14,7 +14,6 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlsplit
 
 import httpx
 
@@ -31,13 +30,21 @@ SOURCES: list[tuple[str, str]] = [
     ("data_sec_fsds", _SEC),
     ("data_sec_edgar_filings", _SEC),
 ]
-DENIED_HOST = "stlouisfed.org"
+# Closed set of hosts the module may ask, derived from the sources it declares. Anything else,
+# the St. Louis Fed hosts included, is refused by construction (D21-L1).
+ALLOWED_HOSTS = frozenset(httpx.URL(u).host for _, u in SOURCES)
 
 
-def _denied_host(url: str) -> bool:
-    """True for stlouisfed.org and any subdomain, whatever the case, trailing dot or port."""
-    host = (urlsplit(url).hostname or "").rstrip(".")
-    return host == DENIED_HOST or host.endswith("." + DENIED_HOST)
+def _request_url(url: str, allowed: frozenset[str]) -> str:
+    """The URL string to send, decided on the host httpx itself will use; SourceError otherwise."""
+    try:  # .host decodes IDNA lazily, so it belongs inside the try
+        u = httpx.URL(url)
+        ok = u.scheme == "https" and not u.userinfo and u.port is None and u.host in allowed
+    except (httpx.InvalidURL, UnicodeError) as exc:  # idna errors are UnicodeError
+        raise SourceError(f"host not allowed, no request made: {url!r}: {exc}") from exc
+    if not ok:
+        raise SourceError(f"host not allowed, no request made: {url!r}")
+    return str(u)
 
 
 def snapshot(
@@ -46,14 +53,13 @@ def snapshot(
     sources: list[tuple[str, str]] = SOURCES,
     user_agent: str | None = None,
     transport: httpx.BaseTransport | None = None,
+    allowed_hosts: frozenset[str] = ALLOWED_HOSTS,
 ) -> list[dict[str, Any]]:
     """Fetch each distinct URL once. Raises SourceError, writing no terms.json, on any failure."""
     denied = [i for i, _ in sources if i.startswith(DENIED_SOURCE_PREFIXES)]
     if denied:
         raise SourceError(f"rights denied for every action, no request made: {denied}")
-    hosts = [i for i, u in sources if _denied_host(u)]
-    if hosts:
-        raise SourceError(f"host denied (D21-L1), no request made: {hosts}")
+    sends = {u: _request_url(u, allowed_hosts) for _, u in sources}
     ua = os.environ.get("SEC_USER_AGENT", "") if user_agent is None else user_agent
     if not ua.strip():
         raise SourceError("SEC_USER_AGENT is not set; refusing to fetch")
@@ -68,7 +74,7 @@ def snapshot(
     out.mkdir(parents=True, exist_ok=True)
     for url in dict.fromkeys(u for _, u in sources):
         try:
-            body = client.get(url)
+            body = client.get(sends[url])
         except (AcquireError, httpx.HTTPError) as exc:
             failed.append(f"{url}: {exc}")
             continue

@@ -271,9 +271,15 @@ class Loader:
         self._by_name: dict[str, dict[str, Any]] = {e["name"]: e for e in m["entries"]}
 
     def resolve(self, name: str) -> dict[str, Any]:
-        for ex in self.manifest["excluded"]:
+        # The module's EXCLUDED decides, not the manifest's copy (an old one may lack rows).
+        for ex in EXCLUDED:
             if fnmatch.fnmatchcase(name, ex["pattern"]):
                 raise ExcludedSource(f"{name}: {ex['reason']}")
+        stale = sorted(
+            n for n in self._by_name if any(fnmatch.fnmatchcase(n, x["pattern"]) for x in EXCLUDED)
+        )
+        if stale:
+            raise ExcludedSource(f"manifest lists excluded sources {stale}: rebuild the manifest")
         if name not in self._by_name:
             raise SourceMissing(f"{name} is not in the manifest")
         return self._by_name[name]

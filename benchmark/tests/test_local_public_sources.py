@@ -4,6 +4,7 @@ import gzip
 import hashlib
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -71,7 +72,7 @@ def tree(tmp_path: Path) -> dict[str, Path]:
     }
 
 
-def _build(t: dict[str, Path], **kw: object) -> dict:
+def _build(t: dict[str, Path], **kw: object) -> dict[str, Any]:
     return S.build(t["src"], t["out"], t["terms"], **kw)  # type: ignore[arg-type]
 
 
@@ -236,3 +237,28 @@ def test_denied_alfred_contributes_no_file_digest_or_row(
     assert by["sec_filing/0000000001-24-000001"]["content_sha256"] == _h(b"<html>filing</html>")
     with pytest.raises(S.ExcludedSource):
         S.Loader(tree["out"]).verified_path("alfred_vintages")
+
+
+def test_stale_manifest_with_alfred_entries_refused_nothing_opened(
+    tree: dict[str, Path], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _build(tree)
+    m = json.loads(tree["out"].read_text())
+    alf = tree["root"] / "alfred.csv"
+    alf.write_bytes(b"alfred")
+    m["entries"].append(
+        {"name": "alfred_vintages", "path": alf.as_posix(), "sha256": _h(b"alfred")}
+    )
+    m["excluded"] = [x for x in m["excluded"] if "alfred" not in x["pattern"]]
+    m["manifest_sha256"] = S._digest({k: v for k, v in m.items() if k != "manifest_sha256"})
+    tree["out"].write_text(json.dumps(m))
+
+    def boom(*a: object, **k: object) -> object:
+        raise AssertionError("opened or hashed")
+
+    monkeypatch.setattr(S, "_sha256_file", boom)
+    lo = S.Loader(tree["out"])
+    with pytest.raises(S.ExcludedSource):
+        lo.verified_path("alfred_vintages")
+    with pytest.raises(S.ExcludedSource, match="rebuild"):
+        lo.verified_path("sec_fsds/2024q1")
