@@ -1053,6 +1053,13 @@ def _best_seconds(kind: str, text: str) -> float:
         "5 (in % ",
         "(5 %",
         "usd",
+        "[5 ",
+        "{5 %",
+        "(x 5 ",
+        "(: 5 $",
+        "(- 5 %",
+        "5 " + "[5 " * 15 + "%" + "]" * 15 + " ",
+        "5 [5 {5 (x 5 (: 5 (- 5 %)))}] ",
     ],
     ids=[
         "space",
@@ -1080,6 +1087,13 @@ def _best_seconds(kind: str, text: str) -> float:
         "marked-group",
         "own-mark-group",
         "code-letters",
+        "nested-square",
+        "nested-brace-mark",
+        "nested-paren-word",
+        "nested-paren-colon",
+        "nested-paren-sign",
+        "nested-closed-deep",
+        "nested-closed-mixed",
     ],
 )
 def test_scan_time_grows_linearly_to_one_megabyte(fill, kind):
@@ -3244,4 +3258,161 @@ def test_a_group_after_a_number_is_one_other_number_or_refuses():
                 text = f"A 5{ws}{o}{content}{c}"
                 if value_after_anchor(_field("x", "A"), text) is not None:
                     wrong.append((text, "read"))
+    assert not wrong, (len(wrong), wrong[:20])
+
+
+# --- A group body is read once, never again at every nesting level (round 3, J1). ----------
+# Hostile input: groups nested inside one group of at most _GROUP_TOKEN_MAX characters. At
+# 218fc03 each level re-read the group inside it, so time doubled per level (71 characters
+# took 97 s). The cost of every shape is now one bounded read per token.
+_NEST_OPENERS = ["[", "{", "(x ", "(: ", "(- ", "("]
+_NEST_CLOSER = {"[": "]", "{": "}", "(": ")"}
+_NEST_BOUND_S = 1.0  # generous for 100 characters: the bounded reader takes milliseconds
+
+
+def _nested(openers: list[str], tail: str, closed: bool, inner: str = "5 ") -> str:
+    text = "A 5 " + "".join(o + inner for o in openers) + tail
+    if closed:
+        text += "".join(_NEST_CLOSER[o[0]] for o in reversed(openers))
+    return text
+
+
+def _nest_seconds(text: str, repeat: int = 1) -> float:
+    started = time.perf_counter()
+    for _ in range(repeat):
+        value_after_anchor(_field("x", "A"), text)
+        canonical_values("number", text)
+        score_critical_fields([_field("5", "A")], text)
+    return time.perf_counter() - started
+
+
+def _nest_shapes() -> dict[str, str]:
+    """Every opener alone and all of them mixed, unclosed and closed, with a percent, a
+    currency or a scale word at the bottom, at about 60 and at most 100 characters."""
+    out = {}
+    for name, cycle in [*((o.strip(), [o]) for o in _NEST_OPENERS), ("mixed", _NEST_OPENERS)]:
+        for tail in ("%", "$", "million"):
+            for closed in (False, True):
+                for budget in (60, 100):
+                    openers: list[str] = []
+                    while True:
+                        more = [*openers, cycle[len(openers) % len(cycle)]]
+                        if len(_nested(more, tail, closed)) > budget:
+                            break
+                        openers = more
+                        text = _nested(openers, tail, closed)
+                    key = f"{name}-{tail}-{'closed' if closed else 'open'}-{budget}"
+                    out[key] = text
+    return out
+
+
+_NEST_SHAPES = _nest_shapes()
+
+
+@pytest.mark.parametrize("key", sorted(_NEST_SHAPES))
+def test_nested_groups_scan_in_bounded_time(key):
+    text = _NEST_SHAPES[key]
+    assert 50 <= len(text) <= 100, (key, len(text))
+    assert _nest_seconds(text) < _NEST_BOUND_S, (key, text)
+    # A group of groups is never one other number: the 5 before it is refused.
+    assert value_after_anchor(_field("x", "A"), text) is None, text
+
+
+@pytest.mark.parametrize("closed", [False, True])
+@pytest.mark.parametrize("opener", [*_NEST_OPENERS, "mixed"])
+def test_nested_group_time_grows_at_most_linearly_with_depth(opener, closed):
+    """Depth 8 against depth 32: four times the depth, at most a linear multiple of the time
+    (the ratio rule of the page-scale timing tests). At 218fc03 depth 32 never finished."""
+
+    def seconds(depth: int) -> float:
+        cycle = _NEST_OPENERS if opener == "mixed" else [opener]
+        text = _nested([cycle[i % len(cycle)] for i in range(depth)], "%", closed)
+        return min(_nest_seconds(text, 20) for _ in range(3))
+
+    small, large = seconds(8), seconds(32)
+    assert large <= 2 * 4 * small + 0.05, (opener, closed, small, large)
+
+
+@seed(20261117)
+@settings(max_examples=80, deadline=None)
+@given(
+    st.lists(
+        st.tuples(
+            st.sampled_from([o for o in _NEST_OPENERS if o != "("]),
+            st.sampled_from(["5 ", "$5 ", "5% ", "(5) ", "-5 ", "5원 "]),
+        ),
+        min_size=14,
+        max_size=33,
+    ),
+    st.sampled_from(["%", "$", "million", "원", "억", "\u20b9", "-"]),
+    st.booleans(),
+)
+def test_property_nested_groups_scan_in_bounded_time(levels, tail, closed):
+    """Any nesting of the openers with a token read at every level, the hostile shape: each
+    level hands the next group to the reader. One bounded read per token, whatever the mix."""
+    text = "A 5 " + "".join(o + body for o, body in levels) + tail
+    if closed:
+        text += "".join(_NEST_CLOSER[o[0]] for o, _ in reversed(levels))
+    assert _nest_seconds(text) < _NEST_BOUND_S, text
+
+
+# --- H5 (b) as written (round 3, J2): a number's own scale excuses a group of scales only. --
+_KO12 = ("1200000000", "num", None)
+
+
+@pytest.mark.parametrize(
+    ("candidate", "want"),
+    [
+        # Read at 218fc03, where any scale of the number's own excused the group.
+        ("A 12억 (전년 $10)", None),
+        ("A 12억 (전년 10억원)", None),
+        ("A 5억 (전년 10억원)", None),
+        ("A 12억 (전년 대비 3%)", None),
+        ("A 5 million (prior 3%)", None),
+        ("A 5 million (prior $3 million)", None),
+        ("A 5 million (전년 3 million USD)", None),
+        # Kept.
+        ("A 12억 (전년 10억)", _KO12),
+        ("A 12억원 (전년 10억원)", ("1200000000", "num", "KRW")),
+        ("A $5 (전년 $3)", ("5", "num", "USD")),
+        ("A 5% (전년 3%)", ("5", "pct", None)),
+    ],
+)
+def test_an_own_scale_excuses_a_group_of_scales_only(candidate, want):
+    assert value_after_anchor(_field("x", "A"), candidate) == want
+
+
+def test_a_scaled_number_is_refused_next_to_a_group_with_a_mark():
+    """J2, closed by enumeration over the currency table: a number with its own scale and no
+    currency or percent, across any ASCII whitespace, then a bracket group of words and
+    another number that carries any currency spelling (prefix or suffix) or a percent: None.
+    The same group holding only scaled numbers reads the number, scaled (a "[" or "{" past an
+    ASCII space after a scale is refused as a possible further part, as at 218fc03)."""
+    numbers = {
+        "12억": "1200000000",
+        "3천만": "30000000",
+        "1조 2억": "1000200000000",
+        "5 million": "5000000",
+        "5 bn": "5000000000",
+        "5k": "5000",
+    }
+    marks = [f"{k}10" for k in _CURRENCY] + [f"10{k}" for k in _CURRENCY]
+    marks += ["3%", "-3%", "10억원", "3 million USD", "$3 million", "\u20b910"]
+    scales_only = ["10억", "3 million", "5천만"]
+    wrong = []
+    for number, value in numbers.items():
+        for ws in (" ", "\t", "\n"):
+            for o, c in (("(", ")"), ("[", "]"), ("{", "}")):
+                for word in ("전년 ", "prior ", "전년 대비 "):
+                    for mark in marks:
+                        text = f"A {number}{ws}{o}{word}{mark}{c}"
+                        got = value_after_anchor(_field("x", "A"), text)
+                        if got is not None:
+                            wrong.append((text, got))
+                    for scale in scales_only:
+                        text = f"A {number}{ws}{o}{word}{scale}{c}"
+                        got = value_after_anchor(_field("x", "A"), text)
+                        want = None if ws == " " and o != "(" else (value, "num", None)
+                        if got != want:
+                            wrong.append((text, got))
     assert not wrong, (len(wrong), wrong[:20])

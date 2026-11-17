@@ -35,18 +35,24 @@ currency, percent or accounting paren a lone "k" "m" "b" ("5 mn", "5\\nmillion",
 millions)", "5 M/yr", "$ (700) million", "(700) k"; "width 5 m" reads; a lone letter past
 punctuation is a label, "A=100; B=200"). A bracket group after a number that holds a percent,
 currency or scale refuses it unless its whole content is one other non-zero number ("5
-(12%)", "5 ($3)"; "5 (000 USD)", "5 (2024 USD)" a year, "5 (단위: 1,000원)" refuse) or the
-number has its own currency, percent or scale and every mark and scale in the group is another
-number's own ("12억원 (전년 10억원)", "12억 (전년 10억)"). A sign glued to the word before it
-refuses the number after it ("매출- 5"). A token with both a currency and a percent is refused
-("$700%"). A currency or percent sign the tables do not spell (Unicode Sc, "\\ufe6a", "\\u2030")
-refuses the number next to it, and a symbol currency glued after anything but a listed spelling
-("R$", "\\u00c9$", "가$", "x€") refuses too. A bracket that ends in a currency or a percent is a
-unit label (text) only if it holds nothing but ASCII letters, Hangul syllables, spaces, ":"
-and "," ("(단위: 원)", "[%]"); any other ("[-원]", "(단위:-%)", "(단위 [x] 원)") refuses the
-number after it. A currency before accounting parentheses reads negative ("$ (700)").
+(12%)", "5 ($3)"; "5 (000 USD)", "5 (2024 USD)" a year, "5 ($ (700))", "5 (단위: 1,000원)"
+refuse), or every mark and scale in the group is another number's own and the number has its
+own currency or percent ("12억원 (전년 10억원)") or its own scale with only scales in the
+group ("12억 (전년 10억)"; "12억 (전년 $10)", "5 million (prior 3%)" refuse). A sign glued
+to the word before it refuses the number after it ("매출- 5"). A token with both a currency
+and a percent is refused ("$700%"). A currency or percent sign the tables do not spell
+(Unicode Sc, "\\ufe6a", "\\u2030") refuses the number next to it, and a symbol currency glued
+after anything but a listed spelling ("R$", "\\u00c9$", "가$", "x€") refuses too. A bracket
+that ends in a currency or a percent is a unit label (text) only if it holds nothing but
+ASCII letters, Hangul syllables, spaces, ":" and "," ("(단위: 원)", "[%]"); any other ("[-원]",
+"(단위:-%)", "(단위 [x] 원)") refuses the number after it. A currency before accounting
+parentheses reads negative ("$ (700)").
 Over-refusals by design: "5 (원가)", "5 (audited)", "$5 (USD)", "5 Audi", "5 cadets", "5
-AUDUSD", "5, 원가 3", "5%. 원화 강세", "5억, 원가 3억", "5\\n원가".
+AUDUSD", "5, 원가 3", "5%. 원화 강세", "5억, 원가 3억", "5\\n원가", "5 (1000 USD)", "5 ($
+(700))". ASCII whitespace is space, tab, LF and CR only ("\\x0b", "\\x0c" are not).
+Read as before, left for reader version 2 (annotation guide): "5 (M)", "5 (b)", "5, M" (a
+lone letter past punctuation is a label), "$ (700) t", "5 (000s)", "5 (2024 dollars)", "$
+(700))", "$5 USD", and a sign inside a group after a word ("5 (in -)").
 Every digit run is a
 number or date token, read or refused, never skipped. So the first token after an anchor is
 read whole or refused, never short, and a refused token is listed, never dropped, so a later
@@ -453,35 +459,38 @@ def _scale_at(text: str, k: int, letters: frozenset[str]) -> bool:
     return word in _SCALE_TABLE or (word[-1:] == "s" and word[:-1] in _SCALE_TABLE)
 
 
-def _marked_groups(text: str) -> dict[int, tuple[int, bool]]:
+def _marked_groups(text: str) -> dict[int, tuple[int, bool, bool]]:
     """The bracket groups that hold a percent, a currency, a mark of ``_FOREIGN`` or a scale
-    expression anywhere inside, nested groups included, as ``{opener: (closer, free)}``; an
-    unclosed group runs to the end of the text. ``free`` when one of them is no number's own:
-    a percent or currency that is neither a number's suffix (``_suffix_of_a_number``) nor a
-    prefix with a digit after it, any mark of ``_FOREIGN``, or a scale expression no digit
-    stands before ("(in millions)", "(단위: 백만)", "(USD thousands)"). One pass: a closed
-    group hands what it holds to the group around it."""
+    expression anywhere inside, nested groups included, as ``{opener: (closer, free,
+    marks)}``; an unclosed group runs to the end of the text. ``free`` when one of them is no
+    number's own: a percent or currency that is neither a number's suffix
+    (``_suffix_of_a_number``) nor a prefix with a digit after it, any mark of ``_FOREIGN``, or
+    a scale expression no digit stands before ("(in millions)", "(단위: 백만)", "(USD
+    thousands)"). ``marks`` when it holds a percent, a currency or a mark of ``_FOREIGN``, not
+    only scales ("(전년 $10)", not "(전년 10억)"). One pass: a closed group hands what it holds
+    to the group around it."""
     n = len(text)
-    out: dict[int, tuple[int, bool]] = {}
-    stack: list[tuple[int, bool, bool]] = []  # (opener, holds, free)
+    out: dict[int, tuple[int, bool, bool]] = {}
+    stack: list[tuple[int, bool, bool, bool]] = []  # (opener, holds, free, marks)
     for k, c in enumerate(text):
         if c in _PAIR.values():
-            stack.append((k, False, False))
+            stack.append((k, False, False, False))
             continue
         if not stack:
             continue
-        p, holds, free = stack[-1]
+        p, holds, free, marks = stack[-1]
         if c in _PAIR and text[p] == _PAIR[c]:
             stack.pop()
             if holds:
-                out[p] = (k, free)
+                out[p] = (k, free, marks)
                 if stack:
-                    stack[-1] = (stack[-1][0], True, stack[-1][2] or free)
+                    q, _, q_free, q_marks = stack[-1]
+                    stack[-1] = (q, True, q_free or free, q_marks or marks)
             continue
         if free:
             continue
         if c == "%" or c in _FOREIGN or _currency_at(text, k) is not None:
-            holds = True
+            holds = marks = True
             free = c in _FOREIGN or _glued_symbol(text, k)
             free = free or (_mark_at(text, k) and not _suffix_of_a_number(text, k))
         elif (c in _ASCII_LETTER and text[k - 1] not in _ASCII_LETTER) or (
@@ -490,23 +499,32 @@ def _marked_groups(text: str) -> dict[int, tuple[int, bool]]:
             if _scale_at(text, k, frozenset()):
                 holds = True
                 free = text[_skip_back(text, k, _SPACE) - 1] not in _DIGIT
-        stack[-1] = (p, holds, free)
-    carry_holds = carry_free = False
-    for p, holds, free in reversed(stack):
+        stack[-1] = (p, holds, free, marks)
+    carry_holds = carry_free = carry_marks = False
+    for p, holds, free, marks in reversed(stack):
         carry_holds, carry_free = carry_holds or holds, carry_free or free
+        carry_marks = carry_marks or marks
         if carry_holds:
-            out[p] = (n, carry_free)
+            out[p] = (n, carry_free, carry_marks)
     return out
 
 
 def _one_number(text: str, a: int, b: int) -> bool:
     """Is ``text[a:b]``, trimmed of ASCII whitespace, one whole number token with a value: not
     zero ("(000 USD)") and not a bare four-digit run with a spaced suffix, which is a year
-    ("(2024 USD)": in 2024 dollars, a unit, not another number)."""
+    ("(2024 USD)": in 2024 dollars, a unit, not another number).
+
+    One number token holds no bracket opener but a leading accounting paren ("(3%)"), so a
+    body with an opener after its first character is refused unread ("[5 [5 %", "$ (700)":
+    an over-refusal). That bounds the re-entry: this is the only scan of a group body that
+    calls back into ``_numbers``, and inside such a body no group opens after a token's end,
+    so ``_unapplied_follows`` never reaches ``_one_number`` again; ``_signs_a_number`` calls
+    ``_number_at`` with no groups at all. One level, at most ``_GROUP_TOKEN_MAX`` characters,
+    once per token: linear in the text, never a re-read per nesting level."""
     if b - a > _GROUP_TOKEN_MAX:
         return False
     body = text[a:b].strip(" \t\n\r")
-    if not body:
+    if not body or any(c in _PAIR.values() for c in body[1:]):
         return False
     tokens = _numbers(body)
     if len(tokens) != 1 or tokens[0][:2] != (0, len(body)) or tokens[0][2] is None:
@@ -517,7 +535,12 @@ def _one_number(text: str, a: int, b: int) -> bool:
 
 
 def _unapplied_follows(
-    text: str, end: int, groups: dict[int, tuple[int, bool]], own: bool, plain: bool
+    text: str,
+    end: int,
+    groups: dict[int, tuple[int, bool, bool]],
+    carries: bool,
+    scaled: bool,
+    plain: bool,
 ) -> bool:
     """Does a sign, percent, currency or scale expression the token ending at ``end`` did not
     apply stand next to it: past ASCII whitespace of any kind and any run of what is not an
@@ -528,10 +551,11 @@ def _unapplied_follows(
     currency with a digit after it is the next number's prefix ("5\\n$3"). A bracket group
     opened in that run that holds a mark or a scale (``groups``) refuses the token too ("5 (in
     millions)", "5 (단위: %)", "5 (천원)"), unless its whole content is one other number
-    (``_one_number``: "5 (12%)", "5 ($3)"), or the token has its ``own`` currency, percent or
-    scale and every mark and scale in the group is another number's own ("12억원 (전년
-    10억원)", "12억 (전년 10억)"). A listed currency spelling with a digit after it begins the
-    next number. A single letter is a scale only across ASCII whitespace alone; past
+    (``_one_number``: "5 (12%)", "5 ($3)"), or every mark and scale in the group is another
+    number's own and the token ``carries`` its own currency or percent ("12억원 (전년
+    10억원)"), or is ``scaled`` and the group holds scales only ("12억 (전년 10억)"; not
+    "12억 (전년 $10)", "5 million (prior 3%)"). A listed currency spelling with a digit after
+    it begins the next number. A single letter is a scale only across ASCII whitespace alone; past
     punctuation it is a label or a list marker ("A=100; B=200", "5 (b)"). Then "M" "K" "B" "T"
     are, and so are "k" "m" "b" unless the token is ``plain`` and only ASCII spaces stand
     between ("width 5 m")."""
@@ -541,7 +565,8 @@ def _unapplied_follows(
         c = text[k]
         group = groups.get(k)
         if group is not None:
-            close, free = group
+            close, free, marks = group
+            own = carries or (scaled and not marks)
             return free or not (own or _one_number(text, k + 1, close))
         if _mark_at(text, k):
             return True
@@ -614,7 +639,7 @@ def _number_at(
     text: str,
     i: int,
     open_bracket: str | None = None,
-    marked: dict[int, tuple[int, bool]] | None = None,
+    marked: dict[int, tuple[int, bool, bool]] | None = None,
 ) -> tuple[int, Any] | None:
     """The token starting at ``i`` as ``(end, canonical value or None when refused)``.
 
@@ -719,7 +744,7 @@ def _number_at(
     # "5 mn", "5\nmillion", "$ (700) million", "5 -").
     carries = bool(prefix or suffix or pct)
     plain = not (opened or carries) and text[end - 1] in _DIGIT
-    if _unapplied_follows(text, end, marked or {}, carries or bool(unit), plain):
+    if _unapplied_follows(text, end, marked or {}, carries, bool(unit), plain):
         return end, None
     value = _amount(groups, negative)
     if value is None:
