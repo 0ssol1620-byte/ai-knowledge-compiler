@@ -1,0 +1,53 @@
+# syntax=docker/dockerfile:1.7
+# Arena C1 (WO-D10-0I): PaddleOCR-VL 1.6, the vendor's page pipeline, behind the AKC
+# external-runner protocol. The `production` stage of workers/gpu-parser/Dockerfile wrapped as it
+# is: the same base digest, apt packages, uv lock, paddlepaddle-gpu and paddleocr versions and
+# install commands. In place of the production handler: the one AKC page server
+# (mineru-pipeline-akc/mineru_akc_server.py, copied, not duplicated in the tree) running the
+# recipe c1-paddleocr-vl.json. Evaluation only; never the production endpoint.
+#
+# Build context: the repository root.
+#   docker build -f infra/runpod/v6/images/paddleocr-vl-akc/Dockerfile .
+# NOT hash-locked, exactly as production is not (README.md of mineru-pipeline-akc, C1).
+FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04@sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PATH=/app/.venv/bin:$PATH \
+    UV_LINK_MODE=copy \
+    UV_NO_CACHE=1 \
+    UV_NO_PROGRESS=1 \
+    UV_PYTHON_DOWNLOADS=never
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      python3 python3-pip ca-certificates libglib2.0-0 libgl1 \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY workers/gpu-common/pyproject.toml workers/gpu-common/uv.lock ./
+RUN python3 -m pip install --break-system-packages "uv==0.13.4" \
+    && uv sync --locked --no-dev \
+    && uv pip install --python /app/.venv/bin/python \
+      --index-url https://www.paddlepaddle.org.cn/packages/stable/cu126/ \
+      "paddlepaddle-gpu==3.2.1" \
+    && uv pip install --python /app/.venv/bin/python \
+      "paddleocr[doc-parser]==3.7.0" \
+    && uv pip check --python /app/.venv/bin/python
+
+COPY infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_server.py \
+     infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_weights.py /opt/akc/
+COPY infra/runpod/v6/images/mineru-pipeline-akc/recipes/c1-paddleocr-vl.json \
+     infra/runpod/v6/images/mineru-pipeline-akc/recipes/c1-weights-manifest.json /opt/akc/recipes/
+RUN useradd --system --uid 10001 --home /nonexistent --shell /usr/sbin/nologin akc \
+    && install -d -o 10001 -g 10001 /opt/akc/models/PaddleOCR-VL-1.6 /opt/akc/models/layout
+
+# Serving is offline: the weights are downloaded at launch, then every hub is told not to fetch.
+ENV HOME=/tmp \
+    XDG_CACHE_HOME=/tmp/.cache \
+    HF_HUB_OFFLINE=1 \
+    TRANSFORMERS_OFFLINE=1 \
+    HF_HUB_DISABLE_TELEMETRY=1
+USER 10001
+EXPOSE 8080
+# Download at the revision (the only step with network), check every file, then serve offline.
+# The server refuses to start until the recipe's layout model is pinned (README.md, C1).
+CMD ["sh", "-c", "HF_HUB_OFFLINE=0 python /opt/akc/mineru_akc_weights.py /opt/akc/recipes/c1-weights-manifest.json /opt/akc/models/PaddleOCR-VL-1.6 && exec python /opt/akc/mineru_akc_server.py --recipe /opt/akc/recipes/c1-paddleocr-vl.json"]

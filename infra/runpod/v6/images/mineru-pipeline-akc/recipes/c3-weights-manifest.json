@@ -1,0 +1,78 @@
+{
+ "file_count": 13,
+ "files": [
+  {
+   "git_blob_sha1": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+   "path": ".gitattributes",
+   "size": 1570
+  },
+  {
+   "git_blob_sha1": "b4600696ae5bcd5e37d51fbb70a631c739c87c87",
+   "path": "README.md",
+   "size": 15571
+  },
+  {
+   "git_blob_sha1": "d9604a3ba04db43dc4aa59d1429d2bc7744a7ffb",
+   "path": "added_tokens.json",
+   "size": 800
+  },
+  {
+   "git_blob_sha1": "6c226632394ae7474b0d4b13e15793eac2e21ee9",
+   "path": "chat_template.jinja",
+   "size": 1017
+  },
+  {
+   "git_blob_sha1": "c6bf7cfa93d56adb832bef501f1e32aae541f20a",
+   "path": "config.json",
+   "size": 2840
+  },
+  {
+   "git_blob_sha1": "0fd0c936289431166eb3794fe46578222c55f120",
+   "path": "generation_config.json",
+   "size": 215
+  },
+  {
+   "git_blob_sha1": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7",
+   "path": "merges.txt",
+   "size": 1671853
+  },
+  {
+   "path": "model.safetensors",
+   "sha256": "abf8681ca63b8dec7b67de257af47b821f179442f72998d0696ae2ed9232a5f0",
+   "size": 2312126640
+  },
+  {
+   "git_blob_sha1": "3973ad8ffb828cdd565625b5c0edd8b53d3779bd",
+   "path": "preprocessor_config.json",
+   "size": 316
+  },
+  {
+   "git_blob_sha1": "3446fd17813474e7b8350844f7bf422b51b28f40",
+   "path": "special_tokens_map.json",
+   "size": 919
+  },
+  {
+   "path": "tokenizer.json",
+   "sha256": "dceac5fc54a795ee7570d17902b47bd05412dc2afa62bdf325c3f97fcb5b87fe",
+   "size": 11423550
+  },
+  {
+   "git_blob_sha1": "0bedcd9f2b28e6e57d783dd088c69289753e17f5",
+   "path": "tokenizer_config.json",
+   "size": 6596
+  },
+  {
+   "git_blob_sha1": "4783fe10ac3adce15ac8f358ef5462739852c569",
+   "path": "vocab.json",
+   "size": 2776833
+  }
+ ],
+ "repo_id": "opendatalab/MinerU2.5-Pro-2605-1.2B",
+ "revision": "bff20d4ae2bf202df9f45284b4d43681555a97ed",
+ "source": {
+  "file_list_and_digests": "receipts/WO-D10-0A/manifests.json (C3.pin)",
+  "file_list_and_digests_sha256": "9aa9f5c482b906a125bd314628911818b09de332417ec0bedaa5ddc8f34aa685",
+  "subtree": "every file of the repository at the revision"
+ },
+ "total_bytes": 2328028720
+}

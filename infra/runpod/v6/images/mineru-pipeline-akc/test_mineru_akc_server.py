@@ -1,29 +1,35 @@
-"""The C0 server against the real client, in process: no GPU, no MinerU, no network.
+"""The page server against the real client, in process: no GPU, no vendor tool, no network.
 
-The registered ``mineru`` runner (``benchmark.runners.base.run_external``) talks to the server
-over a loopback socket; only its TLS leg (``post_bytes``: DNS, address check, pinned HTTPS) is
+The registered runners (``benchmark.runners.base.run_external``) talk to the server over a
+loopback socket; only their TLS leg (``post_bytes``: DNS, address check, pinned HTTPS) is
 replaced by a plain HTTP connection to 127.0.0.1. Everything the client builds and checks is
-its own code.
+its own code. Each recipe in ``recipes/`` is run once with its vendor command replaced by a
+fake script that records the arguments it was given.
 """
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import http.client
 import importlib.util
 import json
+import os
+import socket
 import sys
 import threading
+import time
 from collections.abc import Iterator
 from pathlib import Path
 from types import ModuleType
 from typing import Any
 
 import pytest
+import yaml
 
 from benchmark.run_benchmark import parser_output_validator
 from benchmark.runners import base
-from benchmark.runners.base import RunnerUnavailable, build_provider_payload
+from benchmark.runners.base import RunnerConfig, RunnerUnavailable, build_provider_payload
 from benchmark.runners.registry import EXTERNAL_RUNNERS
 
 _HERE = Path(__file__).resolve().parent
@@ -33,6 +39,8 @@ OTHER_REVISION = "1" * 40
 ENDPOINT = "https://c0.example/parse"
 _BEARER = "c0-test-bearer-7f3a"
 SOURCE = b"%PDF-1.4 not a real pdf; the pipeline is a fake"
+RECIPES = sorted((_HERE / "recipes").glob("c*-*.json"))
+RECIPES = [p for p in RECIPES if not p.name.endswith("-weights-manifest.json")]
 
 
 def _load(name: str) -> ModuleType:
@@ -46,6 +54,11 @@ def _load(name: str) -> ModuleType:
 
 srv = _load("mineru_akc_server")
 weights = _load("mineru_akc_weights")
+
+
+def _recipe(name: str = "c0-mineru-pipeline", **overrides: Any) -> dict[str, Any]:
+    recipe = srv.load_recipe(_HERE / "recipes" / f"{name}.json")
+    return {**recipe, **overrides}
 
 
 class FakePipeline:
@@ -91,8 +104,8 @@ class Loopback:
         return status, content_type, raw
 
 
-def _serve(settings: Any, pipeline: FakePipeline) -> Iterator[Any]:
-    server = srv.make_server(settings, pipeline, ("127.0.0.1", 0))
+def _serve(settings: Any, pipeline: Any, ready: Any = lambda: True) -> Iterator[Any]:
+    server = srv.make_server(settings, pipeline, ("127.0.0.1", 0), ready)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     try:
@@ -103,21 +116,13 @@ def _serve(settings: Any, pipeline: FakePipeline) -> Iterator[Any]:
         thread.join(5)
 
 
-def _settings(**overrides: Any) -> Any:
-    receipt = {"recipe": srv.RECIPE, "recipe_sha256": srv.canonical_sha256(srv.RECIPE)}
-    return srv.Settings(
-        **{"model_revision": REVISION, "token": None, "receipt": receipt, **overrides}
-    )
+def _settings(recipe: dict[str, Any] | None = None, **overrides: Any) -> Any:
+    recipe = recipe or _recipe()
+    receipt = srv.recipe_receipt(recipe, {"mineru": "3.4.4"}, "a" * 64)
+    return srv.Settings(**{"recipe": recipe, "token": None, "receipt": receipt, **overrides})
 
 
-@pytest.fixture
-def harness(
-    request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
-) -> Iterator[tuple[FakePipeline, Loopback, dict[str, Any]]]:
-    """(pipeline, transport, payload) with the server running; ``param`` overrides settings."""
-    options = dict(getattr(request, "param", {}))
-    pipeline = options.pop("pipeline", None) or FakePipeline()
-    monkeypatch.delenv(base.PROVIDER_CREDENTIAL, raising=False)
+def _case(tmp_path: Path, **overrides: Any) -> dict[str, Any]:
     (tmp_path / "doc.pdf").write_bytes(SOURCE)
     case = {
         "benchmark_case_id": "page-0001",
@@ -131,8 +136,20 @@ def harness(
             "content_type": "application/pdf",
             "sha256": hashlib.sha256(SOURCE).hexdigest(),
         },
+        **overrides,
     }
-    payload = build_provider_payload(case, corpus_root=tmp_path)
+    return build_provider_payload(case, corpus_root=tmp_path)
+
+
+@pytest.fixture
+def harness(
+    request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> Iterator[tuple[FakePipeline, Loopback, dict[str, Any]]]:
+    """(pipeline, transport, payload) with the server running; ``param`` overrides settings."""
+    options = dict(getattr(request, "param", {}))
+    pipeline = options.pop("pipeline", None) or FakePipeline()
+    monkeypatch.delenv(base.PROVIDER_CREDENTIAL, raising=False)
+    payload = _case(tmp_path)
     for server in _serve(_settings(**options), pipeline):
         transport = Loopback(server.server_address[1])
         monkeypatch.setattr(base, "post_bytes", transport)
@@ -140,9 +157,47 @@ def harness(
 
 
 def _client(payload: dict[str, Any], revision: str = REVISION, provider: str = "mineru") -> Any:
+    if provider not in EXTERNAL_RUNNERS:  # mineru_vlm: no registry key yet (README, C3)
+        config = RunnerConfig(provider, revision, ENDPOINT, True)
+        return base.run_external(config, payload)
     return EXTERNAL_RUNNERS[provider](
         payload, endpoint=ENDPOINT, revision=revision, allow_network=True
     )
+
+
+def _raw(port: int, body: bytes, headers: dict[str, Any], path: str = "/parse") -> Any:
+    """One POST with headers sent as given (latin-1 bytes allowed); (status, body)."""
+    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
+    try:
+        connection.putrequest("POST", path, skip_accept_encoding=True)
+        for key, value in headers.items():
+            connection.putheader(key, value)
+        connection.endheaders()
+        connection.send(body)
+        response = connection.getresponse()
+        return response.status, response.read()
+    finally:
+        connection.close()
+
+
+def _headers(
+    body: bytes, provider: str = "mineru", extra: dict[str, Any] | None = None
+) -> dict[str, Any]:
+    return {
+        "Content-Type": "application/json",
+        "Content-Length": str(len(body)),
+        "X-AKC-Benchmark-Provider": provider,
+        "X-AKC-Model-Revision": REVISION,
+        "X-AKC-Input-SHA256": hashlib.sha256(body).hexdigest(),
+        **(extra or {}),
+    }
+
+
+def _port(harness: Any) -> int:
+    return int(harness[1].port)
+
+
+# --- the protocol ----------------------------------------------------------------------------
 
 
 def test_a_page_round_trips_with_echo_fields_and_a_valid_output(harness: Any) -> None:
@@ -152,7 +207,7 @@ def test_a_page_round_trips_with_echo_fields_and_a_valid_output(harness: Any) ->
     assert result["model_revision"] == REVISION
     assert result["benchmark_case_id"] == "page-0001"
     assert result["text"] == pipeline.text
-    assert pipeline.calls == [(SOURCE, ".pdf", 2, "korean")]
+    assert pipeline.calls == [(SOURCE, ".pdf", 2, None)]  # C0 passes no -l (decision A0-8)
     errors = list(
         parser_output_validator(_REPO / "benchmark" / "manifest.yaml").iter_errors(result)
     )
@@ -161,17 +216,27 @@ def test_a_page_round_trips_with_echo_fields_and_a_valid_output(harness: Any) ->
     _, _, headers = transport.seen[0]
     assert receipt["input_sha256"] == headers["X-AKC-Input-SHA256"]
     assert receipt["source_sha256"] == hashlib.sha256(SOURCE).hexdigest()
-    assert receipt["recipe"] == srv.RECIPE
-    assert receipt["recipe_sha256"] == srv.canonical_sha256(srv.RECIPE)
+    recipe = _recipe()
+    assert receipt["recipe"] == {
+        "name": "c0-mineru-pipeline",
+        "sha256": srv.canonical_sha256(recipe),
+        "options": recipe["options"],
+    }
+    assert receipt["weights"]["revision"] == REVISION
+    assert receipt["versions"] == {"mineru": "3.4.4"}
     assert receipt["revision_attested"] is True
     assert receipt["markdown_sha256"] == hashlib.sha256(pipeline.text.encode()).hexdigest()
-    assert receipt["page_index"] == 2 and receipt["lang"] == "korean"
+    assert receipt["page_index"] == 2 and receipt["lang"] is None
 
 
-def test_a_page_in_another_language_takes_mineru_default_model(harness: Any) -> None:
+@pytest.mark.parametrize(
+    "harness", [dict(recipe=_recipe("c0-mineru-pipeline-lang-ko"))], indirect=True
+)
+def test_the_named_korean_recipe_maps_ko_and_only_ko(harness: Any) -> None:
     pipeline, _, payload = harness
+    _client(payload)
     _client({**payload, "language": "en"})
-    assert pipeline.calls[0][3] is None
+    assert [call[3] for call in pipeline.calls] == ["korean", None]
 
 
 def test_the_revision_is_attested_by_the_server_not_echoed(harness: Any) -> None:
@@ -184,7 +249,11 @@ def test_the_revision_is_attested_by_the_server_not_echoed(harness: Any) -> None
     assert json.loads(transport.seen[0][1]) == {"error": "model_revision_mismatch"}
 
 
-@pytest.mark.parametrize("harness", [dict(model_revision=OTHER_REVISION)], indirect=True)
+@pytest.mark.parametrize(
+    "harness",
+    [dict(recipe=_recipe(model={**_recipe()["model"], "revision": OTHER_REVISION}))],
+    indirect=True,
+)
 def test_a_server_with_other_weights_refuses_the_pinned_revision(harness: Any) -> None:
     pipeline, transport, payload = harness
     with pytest.raises(RunnerUnavailable):
@@ -312,11 +381,19 @@ def test_an_empty_transcription_is_a_failure_row(harness: Any) -> None:
 
 
 @pytest.mark.parametrize(
-    "harness", [dict(pipeline=FakePipeline(text="x" * 64), max_text_bytes=32)], indirect=True
+    "harness",
+    [dict(pipeline=FakePipeline(text="\\" * 4000), max_response_bytes=6000)],
+    indirect=True,
 )
-def test_an_oversize_transcription_is_a_failure_row(harness: Any) -> None:
-    _, _, payload = harness
-    assert _client(payload)["failure"] == {"reason": "output_too_large"}
+def test_the_size_bound_is_on_the_serialized_response(harness: Any) -> None:
+    """4,000 text bytes fit 6,000, but JSON doubles every backslash: the wire size is refused.
+    Mutant: bounding the text bytes lets this through."""
+    pipeline, transport, payload = harness
+    result = _client(payload)
+    assert result["failure"] == {"reason": "output_too_large"}
+    assert len(transport.seen[0][1]) <= 6000
+    pipeline.text = "a" * 1000
+    assert _client(payload)["text"] == "a" * 1000
 
 
 @pytest.mark.parametrize(
@@ -330,62 +407,424 @@ def test_a_dead_pipeline_service_is_unavailable_not_a_page_result(harness: Any) 
     assert transport.seen[0][0] == 503
 
 
-# --- the real pipeline adapter, with the click command faked ----------------------------
+# --- malformed requests get a fixed answer, never a dropped connection (review r20) -------
 
 
-class FakeCommand:
-    def __init__(self, exit_code: int | None = None, outputs: int = 1) -> None:
-        self.exit_code = exit_code
-        self.outputs = outputs
-        self.args: list[str] = []
-
-    def main(self, *, args: list[str], standalone_mode: bool) -> None:
-        assert standalone_mode is False
-        self.args = args
-        source = Path(args[args.index("-p") + 1])
-        assert source.read_bytes() == SOURCE
-        out = Path(args[args.index("-o") + 1]) / source.stem / "ocr"
-        out.mkdir(parents=True)
-        for n in range(self.outputs):
-            (out / f"{source.stem}{n}.md").write_text("# page\n", encoding="utf-8")
-        if self.exit_code is not None:
-            raise SystemExit(self.exit_code)
+def test_a_non_ascii_body_digest_header_is_a_400(harness: Any) -> None:
+    pipeline, _, payload = harness
+    body = json.dumps(payload).encode()
+    status, raw = _raw(
+        _port(harness), body, _headers(body, extra={"X-AKC-Input-SHA256": b"\xe9" * 64})
+    )
+    assert (status, json.loads(raw)) == (400, {"error": "input_digest_mismatch"})
+    assert pipeline.calls == []
 
 
-def test_the_adapter_runs_the_documented_cli_against_loopback() -> None:
-    command = FakeCommand()
-    text = srv.mineru_pipeline(command, lambda: True)(SOURCE, ".pdf", 3, "korean")
-    assert text == "# page\n"
-    args = command.args
-    assert args[args.index("--api-url") + 1] == "http://127.0.0.1:8000"
-    pairs = {args[i]: args[i + 1] for i in range(len(args) - 1) if args[i].startswith("-")}
-    assert pairs["-b"] == "pipeline" and pairs["-m"] == "ocr"
-    assert pairs["-f"] == "true" and pairs["-t"] == "true"
-    assert pairs["-s"] == "3" and pairs["-e"] == "3" and pairs["-l"] == "korean"
-    image = FakeCommand()
-    srv.mineru_pipeline(image, lambda: True)(SOURCE, ".png", None, None)
-    assert "-s" not in image.args and "-l" not in image.args
+@pytest.mark.parametrize("length", [b"\xb2", b"1" * 13, b"-1", b"1e3"])
+def test_a_content_length_that_is_not_ascii_digits_is_a_411(harness: Any, length: bytes) -> None:
+    pipeline, _, payload = harness
+    body = json.dumps(payload).encode()
+    status, raw = _raw(_port(harness), body, _headers(body, extra={"Content-Length": length}))
+    assert (status, json.loads(raw)) == (411, {"error": "length_required"})
+    assert pipeline.calls == []
 
 
 @pytest.mark.parametrize(
-    ("command", "reason"),
+    ("change", "code"),
     [
-        (FakeCommand(exit_code=2), "pipeline_exit_nonzero"),
-        (FakeCommand(outputs=0), "pipeline_output_missing"),
-        (FakeCommand(outputs=2), "pipeline_output_missing"),
+        ({"language": ["ko"]}, "language_invalid"),
+        ({"language": {"ko": 1}}, "language_invalid"),
+        ({"page_index": True}, "page_index_invalid"),
+        ({"page_index": 0.0}, "page_index_invalid"),
     ],
 )
-def test_the_adapter_turns_a_failed_run_into_a_page_failure(command: Any, reason: str) -> None:
+def test_a_malformed_payload_field_is_a_400(harness: Any, change: Any, code: str) -> None:
+    pipeline, transport, payload = harness
+    with pytest.raises(RunnerUnavailable):
+        _client({**payload, **change})
+    assert (transport.seen[0][0], json.loads(transport.seen[0][1])) == (400, {"error": code})
+    assert pipeline.calls == []
+
+
+def test_a_non_ascii_source_digest_is_a_400(harness: Any) -> None:
+    pipeline, transport, payload = harness
+    with pytest.raises(RunnerUnavailable):
+        _client({**payload, "source": {**payload["source"], "sha256": "é" * 64}})
+    assert json.loads(transport.seen[0][1]) == {"error": "source_digest_mismatch"}
+    assert pipeline.calls == []
+
+
+def _image_payload(payload: dict[str, Any], content_type: str, page: Any) -> dict[str, Any]:
+    return {
+        **payload,
+        "page_index": page,
+        "source": {**payload["source"], "content_type": content_type},
+    }
+
+
+def test_an_image_is_one_page(harness: Any) -> None:
+    pipeline, transport, payload = harness
+    for page in (5, True):
+        with pytest.raises(RunnerUnavailable):
+            _client(_image_payload(payload, "image/png", page))
+    assert [json.loads(raw) for _, raw, _ in transport.seen] == [
+        {"error": "page_index_invalid"}
+    ] * 2
+    assert _client(_image_payload(payload, "image/png", None))["text"] == pipeline.text
+    assert pipeline.calls == [(SOURCE, ".png", None, None)]
+
+
+def test_an_unsupported_content_type_is_a_failure_row_and_never_runs(harness: Any) -> None:
+    pipeline, _, payload = harness
+    result = _client(_image_payload(payload, "image/tiff", 0))
+    assert result["failure"] == {"reason": "page_content_type_unsupported"}
+    assert pipeline.calls == []
+
+
+def test_a_refusal_after_the_length_is_admitted_reaches_the_client(harness: Any) -> None:
+    """The body is read off the socket before the answer, so a large body is not reset."""
+    pipeline, _, _ = harness
+    body = b"x" * (8 * 1024 * 1024)
+    status, raw = _raw(_port(harness), body, _headers(body, provider="olmocr_2"))
+    assert (status, json.loads(raw)) == (409, {"error": "provider_mismatch"})
+    assert pipeline.calls == []
+
+
+def test_health_names_the_recipe_and_the_attested_revision(harness: Any) -> None:
+    connection = http.client.HTTPConnection("127.0.0.1", _port(harness), timeout=10)
+    connection.request("GET", "/health")
+    value = json.loads(connection.getresponse().read())
+    connection.close()
+    assert value == {
+        "provider": "mineru",
+        "model_revision": REVISION,
+        "recipe": "c0-mineru-pipeline",
+        "receipt_sha256": srv.canonical_sha256(_settings().receipt),
+        "busy": False,
+        "ready": True,
+    }
+
+
+@pytest.mark.parametrize("harness", [dict(socket_timeout_s=0.5)], indirect=True)
+def test_a_stalled_upload_holds_no_slot_and_is_dropped(harness: Any) -> None:
+    """The slot is taken only after the body is in; the socket timeout drops the staller.
+    Mutants: slot taken before the read (the second page gets 429); no socket timeout (the
+    stalled connection stays open)."""
+    pipeline, _, payload = harness
+    stalled = socket.create_connection(("127.0.0.1", _port(harness)), timeout=5)
+    head = "".join(f"{k}: {v}\r\n" for k, v in _headers(b"x" * 1000).items())
+    stalled.sendall(f"POST /parse HTTP/1.1\r\nHost: x\r\n{head}\r\n".encode() + b"x" * 10)
+    time.sleep(0.2)
+    assert _client(payload)["text"] == pipeline.text
+    started = time.monotonic()
+    assert stalled.recv(1) == b""  # closed by the server, not by our 5 s timeout
+    assert time.monotonic() - started < 3
+    stalled.close()
+
+
+# --- the vendor command: each recipe, with a fake tool ----------------------------------------
+
+FAKE_TOOL = r"""
+import json, os, sys, time
+args = sys.argv[1:]
+def after(*flags):
+    for flag in flags:
+        if flag in args:
+            return args[args.index(flag) + 1]
+source, out = after("-p", "-i"), after("-o", "--save_path")
+with open(os.environ["FAKE_LOG"], "a", encoding="utf-8") as log:
+    log.write(json.dumps({"argv": args, "source": open(source, "rb").read().hex()}) + "\n")
+mode = os.environ.get("FAKE_MODE", "ok")
+if mode == "sleep":
+    time.sleep(3)
+    open(os.environ["FAKE_LATE"], "w").close()
+    sys.exit(0)
+target = os.path.join(out, "page", "ocr")
+os.makedirs(target, exist_ok=True)
+for n in range({"none": 0, "two": 2}.get(mode, 1)):
+    with open(os.path.join(target, f"page{n}.md"), "w", encoding="utf-8") as f:
+        f.write("# page from the fake tool\n")
+if mode == "exit3":
+    sys.exit(3)
+"""
+
+
+class FakeService:
+    def __init__(self) -> None:
+        self.up = True
+        self.recovered = 0
+
+    def ready(self) -> bool:
+        return self.up
+
+    def recover(self) -> None:
+        self.recovered += 1
+        self.up = False
+
+
+def _faked(recipe: dict[str, Any], tmp_path: Path) -> dict[str, Any]:
+    tool = tmp_path / "fake_tool.py"
+    tool.write_text(FAKE_TOOL, encoding="utf-8")
+    faked = copy.deepcopy(recipe)
+    faked["argv"] = [sys.executable, str(tool), *recipe["argv"]]
+    return faked
+
+
+def _env(tmp_path: Path, mode: str = "ok") -> dict[str, str]:
+    return {
+        **os.environ,
+        "FAKE_LOG": str(tmp_path / "argv.jsonl"),
+        "FAKE_MODE": mode,
+        "FAKE_LATE": str(tmp_path / "late"),
+    }
+
+
+def _calls(tmp_path: Path) -> list[dict[str, Any]]:
+    log = tmp_path / "argv.jsonl"
+    if not log.exists():
+        return []
+    return [json.loads(line) for line in log.read_text(encoding="utf-8").splitlines()]
+
+
+def _expected_argv(recipe: dict[str, Any], page: int | None, lang: str | None) -> list[str]:
+    argv = list(recipe["argv"])
+    if page is not None and recipe["page_argv"] is not None:
+        argv += [a.format(page=page) for a in recipe["page_argv"]]
+    if lang is not None:
+        argv += [a.format(lang=lang) for a in recipe["lang_argv"]]
+    return argv
+
+
+@pytest.mark.parametrize("path", RECIPES, ids=[p.stem for p in RECIPES])
+def test_each_recipe_round_trips_through_the_real_client(
+    path: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    recipe = srv.load_recipe(path)
+    monkeypatch.delenv(base.PROVIDER_CREDENTIAL, raising=False)
+    page = 0 if recipe["page_argv"] is None else 2
+    payload = _case(tmp_path, page_index=page)
+    service = FakeService()
+    pipeline = srv.command_pipeline(_faked(recipe, tmp_path), service, _env(tmp_path))
+    revision = recipe["model"]["revision"]
+    for server in _serve(_settings(recipe), pipeline, service.ready):
+        monkeypatch.setattr(base, "post_bytes", Loopback(server.server_address[1]))
+        result = _client(payload, revision=revision, provider=recipe["provider"])
+    assert result["provider"] == recipe["provider"] and result["model_revision"] == revision
+    assert result["text"] == "# page from the fake tool\n"
+    assert result["metrics"]["receipt"]["recipe"]["name"] == recipe["name"]
+    assert result["metrics"]["receipt"]["recipe"]["sha256"] == srv.canonical_sha256(recipe)
+    (call,) = _calls(tmp_path)
+    assert bytes.fromhex(call["source"]) == SOURCE
+    lang = recipe["lang_by_language"].get("ko")
+    expected = _expected_argv(recipe, page, lang)
+    work = Path(call["argv"][expected.index("{source}")]).parent
+    assert call["argv"] == [a.format(source=work / "page.pdf", out=work / "out") for a in expected]
+    assert service.recovered == 0
+
+
+def test_the_recipes_say_what_each_slot_runs() -> None:
+    by_name = {p.stem: srv.load_recipe(p) for p in RECIPES}
+    assert set(by_name) == {
+        "c0-mineru-pipeline",
+        "c0-mineru-pipeline-lang-ko",
+        "c1-paddleocr-vl",
+        "c3-mineru-vlm",
+    }
+    c0, c3, c1 = by_name["c0-mineru-pipeline"], by_name["c3-mineru-vlm"], by_name["c1-paddleocr-vl"]
+    pairs = {c0["argv"][i]: c0["argv"][i + 1] for i in range(len(c0["argv"]) - 1)}
+    assert pairs["-b"] == "pipeline" and pairs["-m"] == "ocr" and c0["lang_by_language"] == {}
+    pairs = {c3["argv"][i]: c3["argv"][i + 1] for i in range(len(c3["argv"]) - 1)}
+    assert pairs["-b"] == "vlm-engine" and c3["packages"]["mineru"] == c0["packages"]["mineru"]
+    assert c3["model"]["revision"] == "bff20d4ae2bf202df9f45284b4d43681555a97ed"
+    assert c1["model"]["revision"] == "c5630abae1d940eafe0697512a0325494b02ab42"
+    pairs = {c1["argv"][i]: c1["argv"][i + 1] for i in range(len(c1["argv"]) - 1)}
+    assert pairs["--pipeline_version"] == "v1.6" and pairs["--temperature"] == "0.0"
+    assert pairs["--use_doc_orientation_classify"] == "False" and pairs["--engine"] == "paddle"
+    for recipe in by_name.values():
+        for key in ("model", *(f"aux{i}" for i in range(len(recipe["aux_models"])))):
+            model = recipe["model"] if key == "model" else recipe["aux_models"][int(key[3:])]
+            if model["manifest"] and model["manifest"].startswith("/opt/akc/recipes/"):
+                local = _HERE / "recipes" / Path(model["manifest"]).name
+                manifest = json.loads(local.read_text(encoding="utf-8"))
+                assert (manifest["repo_id"], manifest["revision"]) == (
+                    model["repo_id"],
+                    model["revision"],
+                )
+                assert manifest["file_count"] == len(manifest["files"])
+                assert manifest["total_bytes"] == sum(f["size"] for f in manifest["files"])
+
+
+def test_the_recipes_match_the_registry_rows() -> None:
+    rows = yaml.safe_load((_REPO / "infra" / "model-registry" / "models.yaml").read_text("utf-8"))
+    by_key = {row["provider_key"]: row for row in rows["releases"]}
+    for path in RECIPES:
+        recipe = srv.load_recipe(path)
+        row = by_key[recipe["provider"]]
+        assert (row["upstream_id"], row["upstream_revision"]) == (
+            recipe["model"]["repo_id"],
+            recipe["model"]["revision"],
+        )
+        assert row["serving"]["enabled"] is False
+        assert recipe["name"] in row["serving"]["recipes"]
+
+
+@pytest.mark.parametrize(
+    ("mode", "reason"), [("none", "pipeline_output_missing"), ("two", "pipeline_output_missing")]
+)
+def test_a_run_without_exactly_one_output_is_a_page_failure(
+    tmp_path: Path, mode: str, reason: str
+) -> None:
+    service = FakeService()
+    run = srv.command_pipeline(_faked(_recipe(), tmp_path), service, _env(tmp_path, mode))
     with pytest.raises(srv.PageFailure) as caught:
-        srv.mineru_pipeline(command, lambda: True)(SOURCE, ".pdf", 0, None)
+        run(SOURCE, ".pdf", 0, None)
     assert caught.value.reason == reason
+    assert service.recovered == 0  # the command finished: nothing is left running
 
 
-def test_the_adapter_refuses_when_the_api_child_is_gone() -> None:
-    command = FakeCommand()
+def test_a_non_zero_exit_is_a_failure_even_with_an_output_file(tmp_path: Path) -> None:
+    """Mutant: ignoring the return code would return the file the failed run left behind."""
+    service = FakeService()
+    run = srv.command_pipeline(_faked(_recipe(), tmp_path), service, _env(tmp_path, "exit3"))
+    with pytest.raises(srv.PageFailure) as caught:
+        run(SOURCE, ".pdf", 0, None)
+    assert caught.value.reason == "pipeline_exit_nonzero"
+    assert service.recovered == 1  # the service may still be working on what the client left
+
+
+def test_a_timed_out_page_is_killed_and_the_server_answers_503_until_idle(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Mutants: the command left running (the late file appears); no recovery (the next page
+    would run while the service still works on the abandoned one)."""
+    recipe = _faked(_recipe(timeout_s=0.5), tmp_path)
+    service = FakeService()
+    pipeline = srv.command_pipeline(recipe, service, _env(tmp_path, "sleep"))
+    monkeypatch.delenv(base.PROVIDER_CREDENTIAL, raising=False)
+    payload = _case(tmp_path)
+    for server in _serve(_settings(), pipeline, service.ready):
+        transport = Loopback(server.server_address[1])
+        monkeypatch.setattr(base, "post_bytes", transport)
+        assert _client(payload)["failure"] == {"reason": "pipeline_timeout"}
+        assert service.recovered == 1
+        with pytest.raises(RunnerUnavailable):
+            _client(payload)
+        assert (transport.seen[-1][0], json.loads(transport.seen[-1][1])) == (
+            503,
+            {"error": "pipeline_unavailable"},
+        )
+        assert len(_calls(tmp_path)) <= 1  # nothing ran while recovering
+    time.sleep(3.5)
+    assert not (tmp_path / "late").exists()
+
+
+def test_the_command_is_not_started_while_the_service_is_down(tmp_path: Path) -> None:
+    service = FakeService()
+    service.up = False
+    run = srv.command_pipeline(_faked(_recipe(), tmp_path), service, _env(tmp_path))
     with pytest.raises(srv.ServiceDown):
-        srv.mineru_pipeline(command, lambda: False)(SOURCE, ".pdf", 0, None)
-    assert command.args == []
+        run(SOURCE, ".pdf", 0, None)
+    assert _calls(tmp_path) == []
+
+
+@pytest.mark.parametrize("harness", [dict(recipe=_recipe("c1-paddleocr-vl"))], indirect=True)
+def test_a_recipe_without_page_selection_refuses_a_later_page(harness: Any) -> None:
+    pipeline, transport, payload = harness
+    with pytest.raises(RunnerUnavailable):
+        _client(
+            payload,
+            revision=_recipe("c1-paddleocr-vl")["model"]["revision"],
+            provider="paddleocr_vl_1_6",
+        )
+    assert json.loads(transport.seen[0][1]) == {"error": "page_index_unsupported"}
+    assert pipeline.calls == []
+
+
+# --- recipes, versions and weights at start ---------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("change", "message"),
+    [
+        ({"extra": 1}, "recipe keys"),
+        (
+            {"model": {"repo_id": "r", "revision": "main", "dir": "d", "manifest": "m"}},
+            "40-character",
+        ),
+        ({"argv": ["tool", "{source}", "{secret}"]}, "names a field"),
+        ({"lang_argv": None}, "needs lang_argv"),
+        (
+            {"service": {"argv": ["x"], "health_url": "http://10.0.0.1/h", "startup_timeout_s": 1}},
+            "loopback",
+        ),
+        ({"timeout_s": 0}, "timeout_s"),
+    ],
+)
+def test_a_malformed_recipe_is_refused(
+    tmp_path: Path, change: dict[str, Any], message: str
+) -> None:
+    recipe = {**_recipe("c0-mineru-pipeline-lang-ko"), **change}
+    path = tmp_path / "r.json"
+    path.write_text(json.dumps(recipe), encoding="utf-8")
+    with pytest.raises(ValueError, match=message):
+        srv.load_recipe(path)
+
+
+def test_a_pinned_package_must_be_installed_at_its_version() -> None:
+    assert srv.installed_versions({"pytest": None})["pytest"] == pytest.__version__
+    with pytest.raises(SystemExit, match="recipe pins"):
+        srv.installed_versions({"pytest": "0.0.1"})
+    with pytest.raises(SystemExit, match="not installed"):
+        srv.installed_versions({"akc-no-such-package": None})
+
+
+def _tree(tmp_path: Path, name: str, revision: str) -> dict[str, Any]:
+    root = tmp_path / name
+    root.mkdir()
+    data = b"weights of " + name.encode()
+    (root / "w.bin").write_bytes(data)
+    manifest = {
+        "repo_id": f"org/{name}",
+        "revision": revision,
+        "file_count": 1,
+        "files": [{"path": "w.bin", "size": len(data), "sha256": hashlib.sha256(data).hexdigest()}],
+    }
+    path = tmp_path / f"{name}.json"
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    return {"repo_id": f"org/{name}", "revision": revision, "dir": str(root), "manifest": str(path)}
+
+
+def test_the_weights_are_verified_before_serving(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    model = _tree(tmp_path, "main", REVISION)
+    aux = {"role": "layout", **_tree(tmp_path, "layout", OTHER_REVISION)}
+    manifest_sha = hashlib.sha256(Path(model["manifest"]).read_bytes()).hexdigest()
+    assert srv.verified_weights(_recipe(model=model, aux_models=[aux])) == manifest_sha
+    assert f"org/main@{REVISION} manifest {manifest_sha}" in capsys.readouterr().out
+    (Path(aux["dir"]) / "w.bin").write_bytes(b"changed")
+    with pytest.raises(SystemExit, match="layout: weights differ"):
+        srv.verified_weights(_recipe(model=model, aux_models=[aux]))
+    with pytest.raises(SystemExit, match="another repository or revision"):
+        srv.verified_weights(_recipe(model={**model, "revision": OTHER_REVISION}))
+
+
+def test_an_unpinned_model_refuses_to_serve(tmp_path: Path) -> None:
+    """C1's layout model has no pinned repository yet: the server does not start."""
+    c1 = _recipe("c1-paddleocr-vl")
+    unpinned = c1["aux_models"]
+    assert [a["role"] for a in unpinned if a["revision"] is None] == ["layout_detection"]
+    model = _tree(tmp_path, "main", c1["model"]["revision"])
+    with pytest.raises(SystemExit, match="layout_detection: not pinned"):
+        srv.verified_weights({**c1, "model": model})
+
+
+def test_the_debian_packages_are_pinned_by_version() -> None:
+    text = (_HERE / "Dockerfile").read_text(encoding="utf-8")
+    install = text.split("apt-get install --yes --no-install-recommends", 1)[1].split("&&", 1)[0]
+    packages = install.replace("\\", " ").split()
+    assert packages == ["libgl1=1.6.0-1", "libglib2.0-0=2.74.6-2+deb12u9"]
+    assert "snapshot.debian.org/archive/debian/20261116T000000Z" in text
 
 
 # --- baked weights -------------------------------------------------------------------------

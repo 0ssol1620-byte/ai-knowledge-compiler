@@ -493,7 +493,29 @@ arena_intake:
       hosted:
         verdict: not_applicable
         basis: "Self-hosted."
-    not_cleared: "Production use; the paddlepaddle-gpu runtime licence; Korean capability (card language tags: en, zh, multilingual -- Korean not named, UNVERIFIED)."
+    # What the arena C1 image installs (WO-D10-0I): the production stage of
+    # workers/gpu-parser/Dockerfile, wrapped as it is. PyPI metadata read 2026-11-17,
+    # kept outside the repository in receipts/WO-D10-0I/doc-snapshots/ (paddleocr 3.7.0
+    # 4c639433fe1162458c51df797e0190b5fa7141b276dc4c3e3da86fce22f25be5, paddlex 3.7.0
+    # 9ce4d641fe3b5b773de2521bd6f5935c639260a5665807833e67277f08c6c116); no licence file
+    # inside a wheel was read.
+    image:
+      recipe: infra/runpod/v6/images/paddleocr-vl-akc
+      provenance: "the production stage's base, apt packages, uv lock and package versions; not hash-locked, as production is not"
+      use: evaluation_only
+      base: "nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04@sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802; Ubuntu python3, python3-pip, ca-certificates, libglib2.0-0, libgl1 unpinned; the NVIDIA container licence and the Ubuntu package licences not read"
+      python_packages: >-
+        workers/gpu-common/uv.lock (uv sync --locked); paddlepaddle-gpu 3.2.1 from
+        the PaddlePaddle cu126 index; paddleocr[doc-parser] 3.7.0 and whatever it
+        resolves to at build time (not locked; the set is unknown until a build)
+      licences: >-
+        paddleocr 3.7.0: "Apache License 2.0" (PyPI licence field). paddlex
+        3.7.0: Apache-2.0 (licence expression); the 3.7.x version paddleocr
+        resolves to at build is not fixed. paddlepaddle-gpu 3.2.1 is not on PyPI
+        (latest there 2.6.2, "Apache Software License"); the index it comes from
+        was not read, so its licence for this version is UNVERIFIED. Every
+        transitive package: UNVERIFIED until the image is locked.
+    not_cleared: "Production use; the paddlepaddle-gpu runtime licence; Korean capability (card language tags: en, zh, multilingual -- Korean not named, UNVERIFIED); the C1 image's transitive packages and the layout model v1.6 loads (repository, revision and licence unread); redistribution of the C1 image."
 
   - id: model_ovisocr2
     kind: model
@@ -570,7 +592,24 @@ arena_intake:
       hosted:
         verdict: not_applicable
         basis: "Self-hosted."
-    not_cleared: "Production use (weights licence is metadata only); redistribution of the weights."
+    # What the arena C3 image installs (WO-D10-0I): the C0 image of model_mineru_pipeline
+    # (target c3 of the same Dockerfile, so the code axis is MinerU's own licence, as the
+    # basis above says) plus MinerU 3.4.4's [vlm] extra, which adds two packages. PyPI
+    # metadata read 2026-11-17, outside the repository in receipts/WO-D10-0I/doc-snapshots/pypi/
+    # (accelerate fa2e4204b2ac4c95770d9d016c76a55f591f3e030adff66aaa0863db9366c0d6, psutil
+    # 84f9d2597c3c15fe19d1ce069bfdbf25951dc423dc51d67c3979468c029b6415). The weights are
+    # downloaded at launch, not baked.
+    image:
+      recipe: infra/runpod/v6/images/mineru-pipeline-akc
+      provenance: "Dockerfile target c3: the rebuilt C0 image plus requirements-c3.lock"
+      use: evaluation_only
+      base: "the C0 image (model_mineru_pipeline.image)"
+      python_packages: "the C0 image's 98, plus accelerate 1.14.0 and psutil 7.2.2 by version and sha256 in requirements-c3.lock"
+      licences: >-
+        accelerate 1.14.0: Apache (licence field; classifier Apache Software
+        License). psutil 7.2.2: BSD-3-Clause (licence field). The rest as
+        model_mineru_pipeline.image.
+    not_cleared: "Production use (weights licence is metadata only); redistribution of the weights; redistribution of the C3 image (as the C0 image)."
 
   - id: model_minicpm_ocr_1_0
     kind: model

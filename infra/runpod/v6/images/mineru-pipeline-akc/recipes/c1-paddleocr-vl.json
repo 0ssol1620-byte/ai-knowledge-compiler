@@ -1,0 +1,55 @@
+{
+ "name": "c1-paddleocr-vl",
+ "provider": "paddleocr_vl_1_6",
+ "model": {
+  "repo_id": "PaddlePaddle/PaddleOCR-VL-1.6",
+  "revision": "c5630abae1d940eafe0697512a0325494b02ab42",
+  "dir": "/opt/akc/models/PaddleOCR-VL-1.6",
+  "manifest": "/opt/akc/recipes/c1-weights-manifest.json"
+ },
+ "aux_models": [
+  {
+   "role": "layout_detection",
+   "repo_id": null,
+   "revision": null,
+   "dir": "/opt/akc/models/layout",
+   "manifest": null
+  }
+ ],
+ "packages": {
+  "paddleocr": "3.7.0",
+  "paddlepaddle-gpu": "3.2.1",
+  "paddlex": null
+ },
+ "service": null,
+ "argv": [
+  "/app/.venv/bin/paddleocr", "doc_parser", "-i", "{source}", "--save_path", "{out}",
+  "--pipeline_version", "v1.6",
+  "--layout_detection_model_dir", "/opt/akc/models/layout",
+  "--vl_rec_model_dir", "/opt/akc/models/PaddleOCR-VL-1.6",
+  "--use_layout_detection", "True",
+  "--use_doc_orientation_classify", "False",
+  "--use_doc_unwarping", "False",
+  "--use_chart_recognition", "False",
+  "--use_seal_recognition", "False",
+  "--use_ocr_for_image_block", "False",
+  "--format_block_content", "True",
+  "--use_queues", "True",
+  "--temperature", "0.0",
+  "--engine", "paddle",
+  "--device", "gpu:0"
+ ],
+ "page_argv": null,
+ "lang_argv": null,
+ "lang_by_language": {},
+ "env": {},
+ "output_glob": "**/*.md",
+ "timeout_s": 175,
+ "options": {
+  "tool": "paddleocr 3.7.0 doc_parser",
+  "pipeline_version": "v1.6",
+  "arguments": "the production adapter's PaddleOCRVL(...) and predict(...) values, as CLI flags",
+  "max_new_tokens": "vendor default: the CLI has no flag (production passes 4096)",
+  "page_selection": "none: one-page sources only"
+ }
+}
