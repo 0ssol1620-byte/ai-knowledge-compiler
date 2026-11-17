@@ -30,17 +30,27 @@ releases:
       traffic_percent: 0
       fallback_recipe: native_v1
   - provider_key: paddleocr_vl_1_6
+    # Arena C1 (WO-D10-0A). Pinned to the Arena revision, not HEAD 132c45f5:
+    # HEAD changes modeling_paddleocr_vl.py (remote code, 103,889 -> 110,957 B);
+    # the weight file is byte-identical. Intake row: model_paddleocr_vl_1_6.
     upstream_id: PaddlePaddle/PaddleOCR-VL-1.6
-    upstream_revision: null
+    upstream_revision: "c5630abae1d940eafe0697512a0325494b02ab42"
+    revision_source:
+      registry: research/model_arena_20260903/model_registry.json
+      registry_sha256: "sha256:292fd6f6176b017b0288dd6634d77f2be58c9c118d9a01bd3c91799a1570aa48"
+      method: official_huggingface_and_github_api_read_only
+      resolved_at: "2026-09-05T03:01:01Z"
+      weights_largest_file_sha256: "sha256:85a479d506a11e724e7285d395c551be69f41dbc16b6342d3cacfb189aed71db"
+      weights_file_count: 20
     model_size: "0.9B"
     weight_dtype: bf16
     quantization: null
     licenses:
-      weight_license: review_required
+      weight_license: Apache-2.0
       code_license: Apache-2.0
       dataset_license: review_required
       runtime_license: review_required
-      license_snapshot_sha256: null
+      license_snapshot_sha256: "sha256:b8c4d7deccd236af023af1c88c4d4e8f0fc2f41914e0fb23a3ec9678fb5a8456"
     runtime:
       engine: paddle_or_vllm
       version: null
@@ -210,12 +220,15 @@ releases:
     model_size: null
     weight_dtype: null
     quantization: null
+    # Arena C2 (WO-D10-0A). HEAD cbdede82 differs only in README.md, so every
+    # file the runtime loads is byte-identical; the pin stays here because the
+    # revision_source above binds it. Intake row: model_ovisocr2.
     licenses:
-      weight_license: review_required
-      code_license: review_required
+      weight_license: Apache-2.0
+      code_license: none_published
       dataset_license: review_required
-      runtime_license: review_required
-      license_snapshot_sha256: null
+      runtime_license: Apache-2.0
+      license_snapshot_sha256: "sha256:bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a"
     runtime:
       engine: vllm
       version: "vllm==0.22.1"
@@ -246,12 +259,16 @@ releases:
     model_size: "1.2B"
     weight_dtype: null
     quantization: null
+    # Arena C3 (WO-D10-0A). The weights repository has no LICENSE file; the
+    # snapshot is the model card at the pin, whose metadata says apache-2.0.
+    # HEAD 08aaea84 adds "tie_word_embeddings": true to config.json, so the pin
+    # is kept. Intake row: model_mineru_vlm.
     licenses:
-      weight_license: review_required
+      weight_license: Apache-2.0-card-metadata-only
       code_license: MinerU-Open-Source-License
       dataset_license: review_required
-      runtime_license: review_required
-      license_snapshot_sha256: null
+      runtime_license: Apache-2.0
+      license_snapshot_sha256: "sha256:8f829b69be518375b02023f795b3898adec98f5ac37208239884ad88e9a21cb7"
     runtime:
       engine: vllm
       version: "mineru-vl-utils[vllm], vllm >= 0.10.1 for MinerULogitsProcessor"
@@ -280,12 +297,15 @@ releases:
     model_size: suite
     weight_dtype: mixed
     quantization: null
+    # Arena C0 (WO-D10-0A). No LICENSE file in the weights repository; the
+    # snapshot is the model card at the pin, whose metadata says agpl-3.0.
+    # HEAD equals the pin. Intake row: model_mineru_pipeline.
     licenses:
-      weight_license: review_required
+      weight_license: AGPL-3.0-card-metadata-only
       code_license: MinerU-Open-Source-License
       dataset_license: review_required
       runtime_license: review_required
-      license_snapshot_sha256: null
+      license_snapshot_sha256: "sha256:96da5ddde73c3f578b9eab235ac59cbb5f512755090779a14461863767b70f34"
     runtime:
       engine: mineru_pipeline
       version: null
@@ -297,6 +317,105 @@ releases:
     rollout:
       traffic_percent: 0
       fallback_recipe: parse_balanced_v1
+  # Arena C4-C6 (WO-D10-0A). Identity read from the public Hugging Face API on
+  # 2026-11-17, nothing downloaded. Every value below is evaluation-only and
+  # carries zero traffic; languages are the card's own claim, not a capability.
+  # model_size and weight_dtype come from the API's safetensors metadata.
+  - provider_key: minicpm_ocr_1_0
+    # Intake row: model_minicpm_ocr_1_0. Same model family as the MiniCPM-OCR-Jev
+    # verifier; A3 gives its crops a second reader of another family.
+    upstream_id: openbmb/MiniCPM-OCR-1.0
+    upstream_revision: "883ca368d17335b9ce5aa6fef4d000ef0684fcaa"
+    public_discovery:
+      checked_at: "2026-11-17T04:51:00Z"
+      revision_api_url: https://huggingface.co/api/models/openbmb/MiniCPM-OCR-1.0/revision/883ca368d17335b9ce5aa6fef4d000ef0684fcaa
+      weights_largest_file_sha256: "sha256:83f4e433b044fd23f9ea7eb3acbc7d59e4fe11a1fdf3c3129b7021d0ab4f8fd4"
+      weights_file_count: 14
+      repository_bytes: 2621020670
+      checkpoint_downloaded: false
+    model_size: "1.30B"
+    weight_dtype: bf16
+    quantization: null
+    licenses:
+      weight_license: Apache-2.0-card-text-only
+      code_license: Apache-2.0
+      dataset_license: not_disclosed_review_required
+      runtime_license: review_required
+      license_snapshot_sha256: "sha256:41397755907ff633bc4aa689c3660a1ef8e1e62b642e0944c0abccc97004ad27"
+    runtime:
+      engine: vllm_or_transformers
+      version: null
+      image_digest: null
+    claimed_languages: [zh, en]
+    internal_validation:
+      corpus: d10-screen-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: native_v1
+  - provider_key: nemotron_3_5_parse
+    # Intake row: model_nemotron_3_5_parse. Screened single pass only.
+    upstream_id: nvidia/Nemotron-3.5-Parse
+    upstream_revision: "ea2e1fe486bea3e7d0d505df9bafa4ad562407a0"
+    public_discovery:
+      checked_at: "2026-11-17T04:51:00Z"
+      revision_api_url: https://huggingface.co/api/models/nvidia/Nemotron-3.5-Parse/revision/ea2e1fe486bea3e7d0d505df9bafa4ad562407a0
+      weights_largest_file_sha256: "sha256:81dd7609c589f3694ce75520c25af5010953231358de6aec4d03e8c6aac787e9"
+      weights_file_count: 217
+      repository_bytes: 2735296999
+      checkpoint_downloaded: false
+    model_size: "0.63B"
+    weight_dtype: fp32
+    quantization: null
+    licenses:
+      weight_license: OpenMDW-1.1
+      code_license: OpenMDW-1.1
+      dataset_license: not_disclosed_review_required
+      runtime_license: review_required
+      license_snapshot_sha256: "sha256:3375384ee1050a54d69c98c74d6499841166cd7db823ed90358f430df8c39856"
+    runtime:
+      engine: vllm_or_transformers
+      version: null
+      image_digest: null
+    claimed_languages: [multilingual]
+    internal_validation:
+      corpus: d10-screen-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: native_v1
+  - provider_key: teleocr
+    # Intake row: model_teleocr. Served through vLLM only; nothing from the
+    # unlicensed code repository caipeng328/NaviDC-OCR is used.
+    upstream_id: XingChen-AGI/TeleOCR
+    upstream_revision: "a32e21d4f766317a6f42f341be57d374362bf843"
+    public_discovery:
+      checked_at: "2026-11-17T04:51:00Z"
+      revision_api_url: https://huggingface.co/api/models/XingChen-AGI/TeleOCR/revision/a32e21d4f766317a6f42f341be57d374362bf843
+      weights_largest_file_sha256: "sha256:9817b18041bd96403f75e38a33b28ed0cd5fb2641f67eead673afabd3c408109"
+      weights_file_count: 26
+      repository_bytes: 2848898235
+      checkpoint_downloaded: false
+    model_size: "1.42B"
+    weight_dtype: bf16
+    quantization: null
+    licenses:
+      weight_license: Apache-2.0
+      code_license: unlicensed_not_used
+      dataset_license: not_disclosed_review_required
+      runtime_license: Apache-2.0
+      license_snapshot_sha256: "sha256:b57e12ce9b9129b792539c7b1c259ea1d5c058a63866f16296787a1aaf80e2a6"
+    runtime:
+      engine: vllm
+      version: null
+      image_digest: null
+    claimed_languages: [zh, en]
+    internal_validation:
+      corpus: d10-screen-v1
+      status: candidate_unverified
+    rollout:
+      traffic_percent: 0
+      fallback_recipe: native_v1
   - provider_key: qwen3_5_4b
     upstream_id: Qwen/Qwen3.5-4B
     upstream_revision: null
@@ -444,8 +563,14 @@ releases:
       traffic_percent: 0
       fallback_recipe: null
   - provider_key: mistral_ocr_4
+    # Hosted arm (WO-D10-0A). A hosted model has no repository revision, so
+    # upstream_revision stays null and the exact GA model id is pinned instead:
+    # never the `mistral-ocr-latest` / `mistral-ocr-4` aliases, never a `labs-`
+    # model, and not `mistral-ocr-4-0`, which Mistral retired on 2026-09-30.
+    # The snapshot is the Commercial Terms of Service. Intake row: hosted_mistral_ocr.
     upstream_id: mistral/ocr-api
     upstream_revision: null
+    provider_model_id: mistral-ocr-4-1
     model_size: provider_managed
     weight_dtype: provider_managed
     quantization: provider_managed
@@ -454,7 +579,7 @@ releases:
       code_license: not_distributed
       dataset_license: provider_terms
       runtime_license: commercial_api
-      license_snapshot_sha256: null
+      license_snapshot_sha256: "sha256:d4cf7cd0bd3b81cbfa43a2b0e41d3c774f46b17ea1593d1f27934aaa2e8506dc"
     runtime:
       engine: external_api
       version: null
