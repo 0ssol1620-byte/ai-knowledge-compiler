@@ -240,6 +240,8 @@ REFUSED = {
     "two exact tags": FILED + TAG + TAG + b"</body></html>",
     "tag with a body": FILED + tag(b"/a/b").replace(b"></", b">x</") + b"</body></html>",
     "network path": FILED + tag(b"//evil.example/a") + b"</body></html>",
+    # no dot: refused for the leading "//" alone (a forged tag is inert only if host-relative)
+    "network path, no dot": FILED + tag(b"//evil/a") + b"</body></html>",
     "scheme": FILED + tag(b"http://evil.example/a") + b"</body></html>",
     "dot": FILED + tag(b"/a/b.js") + b"</body></html>",
     "query": FILED + tag(b"/a?b") + b"</body></html>",
