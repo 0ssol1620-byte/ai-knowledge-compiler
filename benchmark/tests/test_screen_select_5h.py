@@ -155,16 +155,26 @@ def test_planted_clear_loser_dropped_near_tie_kept_baseline_kept(tmp_path: Path)
     assert m["mcnemar_p"] < 0.01
 
 
-def test_more_than_five_keeps_top_five_with_baseline_and_best_on_r(tmp_path: Path) -> None:
+def test_more_than_five_keeps_top_five_by_rank_key(tmp_path: Path) -> None:
     plans = {f"c{i}": wrong(HF[:i]) | wrong(RF[:1]) for i in range(5)}
-    plans["C0"] = wrong(HF[:6]) | wrong(RF[:1])  # last on H, near enough not to lose
-    plans["rbest"] = wrong(HF[:5])  # sixth on H, only one perfect on R
+    plans["C0"] = wrong(HF[:6]) | wrong(RF[:1])  # a non-loser, sixth by rank: not kept
+    plans["rbest"] = wrong(HF[:5])  # fifth on H, only one perfect on R
     recs, _ = world(plans)
     s1 = s5.select_s1(recs, guard=guard(tmp_path), baseline="C0")
     assert s1["clear_losers"] == []
     assert s1["best_on_R"] == "rbest"
-    assert s1["kept"] == ["c0", "c1", "c2", "rbest", "C0"]
-    assert s1["dropped"] == ["c3", "c4"]
+    assert s1["kept"] == ["c0", "c1", "c2", "c3", "c4"]
+    assert s1["dropped"] == ["rbest", "C0"]
+
+
+def test_clear_loser_baseline_is_kept_in_addition_to_five_non_losers(tmp_path: Path) -> None:
+    plans = {f"c{i}": wrong(HF[:i]) for i in range(7)}
+    plans["C0"] = wrong(HF[:20]) | wrong(RF[:10])  # a clear loser
+    recs, _ = world(plans)
+    s1 = s5.select_s1(recs, guard=guard(tmp_path), baseline="C0")
+    assert s1["clear_losers"] == ["C0"]
+    assert s1["kept"] == ["c0", "c1", "c2", "c3", "c4", "C0"]  # six: never displaces a non-loser
+    assert s1["dropped"] == ["c5", "c6"]
 
 
 def test_fewer_than_four_tops_up_from_h_order(tmp_path: Path) -> None:
@@ -281,17 +291,20 @@ def test_failed_page_is_all_wrong_and_text_must_match_record(tmp_path: Path) -> 
     )
     bl = next(r for r in s2["matrix"]["H"] if (r["baseline"], r["peer"]) == ("B", "L"))
     assert (bl["baseline_wrong_pages"], bl["rescued_fields"]) == (2, 2)
-    s1 = s5.select_s1(recs, guard=g, baseline="C0")
     forged = copy.deepcopy(recs)
     next(r for r in forged if r["candidate_id"] == "L")["critical"]["exact"] = 1
     with pytest.raises(ValueError, match="record says"):
-        s5.complementarity_s2(forged, texts, GOLD, guard=g, s1=s1)
+        s5.complementarity_s2(
+            forged, texts, GOLD, guard=g, s1=s5.select_s1(forged, guard=g, baseline="C0")
+        )
     # A contract failure keeps its raw text, and its fields are still all wrong and unread.
     failed = copy.deepcopy(recs)
     c_h0 = next(r for r in failed if (r["candidate_id"], r["page_id"]) == ("C", H_PAGES[0]))
     c_h0["hard_failures"] = ["contract_failed"]
     c_h0["critical"] = {"n": 2, "exact": 0, "accepted_errors": 0}
-    s2 = s5.complementarity_s2(failed, texts, GOLD, guard=g, s1=s1)
+    s2 = s5.complementarity_s2(
+        failed, texts, GOLD, guard=g, s1=s5.select_s1(failed, guard=g, baseline="C0")
+    )
     lc = next(r for r in s2["matrix"]["H"] if (r["baseline"], r["peer"]) == ("C", "L"))
     assert (lc["baseline_wrong_pages"], lc["rescued_fields"]) == (2, 2)
     s3 = s5.signals_s3(failed, texts, GOLD, guard=g, members=["C", "L"], escalate_on=["no_value"])
@@ -307,6 +320,61 @@ def test_load_texts_reads_raw_files_and_refuses_a_changed_byte(tmp_path: Path) -
     victim.write_bytes(victim.read_bytes().replace(b"Revenue", b"Revenuf"))
     with pytest.raises(ContractError, match="differs"):
         s5.load_texts(recs, raw)
+
+
+def test_s2_stop_rule_skips_a_cheap_candidate_that_rescues_almost_nothing(
+    tmp_path: Path,
+) -> None:
+    plans = {
+        "L": wrong(HF[:8]),
+        "cheap": wrong(HF[2:8], 2) | wrong(HF[20:30], 3),  # rescues HF 0-1 only: 2 < 3
+        "dear": wrong(HF[:3], 2) | wrong(HF[20:30], 3),  # rescues HF 3-7: 5 fields
+        "C0": wrong(HF) | wrong(RF),
+    }
+    s2 = _s2(tmp_path, plans, {"L": 0.01, "cheap": 0.001, "dear": 0.5, "C0": 0.01})
+    first = {o["candidate"]: o for o in s2["pick_steps"][0]["options"]}
+    assert first["cheap"]["excluded"] == "marginal_below_minimum"
+    assert s2["members"][:2] == ["L", "dear"]
+    assert s2["pick_steps"][-1]["chosen"] is None  # searched until none was left
+
+
+def test_cost_is_the_mean_of_known_pages_and_unknown_only_above_a_fifth(tmp_path: Path) -> None:
+    plans = {
+        "L": wrong(HF[:8]),
+        "B": wrong(HF[6:15], 2) | {(H_PAGES[0], "f1"): "F"},
+        "D": wrong(HF[4:14], 2),  # rescues HF 0-3
+        "C0": wrong(HF) | wrong(RF),
+    }
+    recs, texts = world(plans, cost={"L": 0.01, "B": 0.02, "D": 0.02, "C0": 0.01})
+    for r in recs:
+        if r["candidate_id"] == "B" and r["page_id"] in H_PAGES[:2]:
+            r["provider_cost_usd"] = None  # 2 of 20 H pages: under a fifth
+        if r["candidate_id"] == "D" and r["page_id"] in H_PAGES[:5]:
+            r["provider_cost_usd"] = None  # 5 of 20 H pages: above a fifth
+    g = guard(tmp_path)
+    s2 = s5.complementarity_s2(
+        recs, texts, GOLD, guard=g, s1=s5.select_s1(recs, guard=g, baseline="C0")
+    )
+    opts = {o["candidate"]: o for o in s2["pick_steps"][0]["options"]}
+    assert opts["B"]["excluded"] is None
+    assert opts["B"]["cost_per_page_usd"] == pytest.approx(0.02)
+    assert (opts["B"]["cost_pages_known"], opts["B"]["cost_pages_total"]) == (18, 20)
+    assert opts["D"]["excluded"] == "cost_unknown"
+    assert (opts["D"]["cost_pages_known"], opts["D"]["cost_pages_total"]) == (15, 20)
+    assert s2["members"][:2] == ["L", "B"]
+
+
+def test_s2_refuses_an_s1_computed_from_other_records(tmp_path: Path) -> None:
+    recs, texts = world({"L": {}, "B": wrong(HF[:4]), "C0": wrong(HF[:2])})
+    g = guard(tmp_path)
+    s1 = s5.select_s1(recs, guard=g, baseline="C0")
+    other = copy.deepcopy(recs)
+    next(r for r in other if r["candidate_id"] == "B")["latency_ms"] = 7
+    with pytest.raises(ContractError, match="S1"):
+        s5.complementarity_s2(other, texts, GOLD, guard=g, s1=s1)
+    other_manifest = {**s1, "inputs": {**s1["inputs"], "manifest_sha256": "sha256:" + "0" * 64}}
+    with pytest.raises(ContractError, match="S1"):
+        s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=other_manifest)
 
 
 # ---------------------------------------------------------------- S3
@@ -352,6 +420,19 @@ def test_signals_are_raised_without_gold_and_scored_with_it(tmp_path: Path) -> N
     assert moved["scores"]["H"]["escalate"]["false_accepts"] == 33
 
 
+def test_s3_refuses_duplicate_members(tmp_path: Path) -> None:
+    recs, texts = world(_s3_plans())
+    with pytest.raises(ValueError, match="duplicate"):
+        s5.signals_s3(
+            recs,
+            texts,
+            GOLD,
+            guard=guard(tmp_path),
+            members=["P", "Q", "P"],
+            escalate_on=["no_value"],
+        )
+
+
 def test_reread_signal_optional_and_holdout_needs_the_recipe(tmp_path: Path) -> None:
     recs, texts = world(_s3_plans())
     g = guard(tmp_path)
@@ -382,7 +463,8 @@ def test_reread_signal_optional_and_holdout_needs_the_recipe(tmp_path: Path) -> 
             split="holdout",
         )
     assert not (tmp_path / "holdout-access.jsonl").exists()
-    recipe = "sha256:" + "f" * 64
+    recipe = _recipe(tmp_path, ["P", "Q"], ["disagreement"])
+    digest = recipe["recipe_sha256"]
     out = s5.signals_s3(
         hold,
         htexts,
@@ -391,10 +473,56 @@ def test_reread_signal_optional_and_holdout_needs_the_recipe(tmp_path: Path) -> 
         members=["P", "Q"],
         escalate_on=["disagreement"],
         split="holdout",
-        frozen_recipe_sha256=recipe,
+        frozen_recipe_sha256=digest,
+        recipe=recipe,
     )
-    assert out["split"] == "holdout"
-    assert recipe in (tmp_path / "holdout-access.jsonl").read_text(encoding="utf-8")
+    assert out["split"] == "holdout" and out["frozen_recipe_sha256"] == digest
+    assert digest in (tmp_path / "holdout-access.jsonl").read_text(encoding="utf-8")
+
+
+def _recipe(tmp_path: Path, members: list[str], escalate_on: list[str]) -> dict[str, Any]:
+    plans = {m: wrong(HF[: 3 * i]) for i, m in enumerate(members)} | {"C0": wrong(HF)}
+    recs, texts = world(plans)
+    g = guard(tmp_path / "recipe")
+    (tmp_path / "recipe").mkdir(exist_ok=True)
+    s1 = s5.select_s1(recs, guard=g, baseline="C0")
+    s2 = s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1)
+    s2 = {**s2, "members": members}
+    return s5.build_recipe(
+        records=recs,
+        s1=s1,
+        s2=s2,
+        escalate_on=escalate_on,
+        degradation={"seed": 1, "parameters": {}},
+        scoring_commit="1" * 40,
+        section_sha256="sha256:" + "2" * 64,
+    )
+
+
+def test_holdout_output_is_compared_with_the_frozen_recipe_body(tmp_path: Path) -> None:
+    recipe = _recipe(tmp_path, ["P", "Q"], ["disagreement"])
+    digest = recipe["recipe_sha256"]
+    hold, htexts = world(_s3_plans(), pages=X_PAGES, split="holdout")
+    g = guard(tmp_path)
+    base: dict[str, Any] = {
+        "guard": g,
+        "members": ["P", "Q"],
+        "escalate_on": ["disagreement"],
+        "split": "holdout",
+        "frozen_recipe_sha256": digest,
+        "recipe": recipe,
+    }
+    bad: dict[str, dict[str, Any]] = {
+        "members": {"members": ["Q", "P"]},
+        "signals": {"escalate_on": ["no_value"]},
+        "digest": {"frozen_recipe_sha256": "sha256:" + "0" * 64},
+        "no body": {"recipe": None},
+        "tampered": {"recipe": {**recipe, "member_order": ["P", "Q", "S"]}},
+    }
+    for name, change in bad.items():
+        with pytest.raises(ContractError):
+            s5.signals_s3(hold, htexts, GOLD, **{**base, **change})
+        assert not (tmp_path / "holdout-access.jsonl").exists(), name
 
 
 # ---------------------------------------------------------------- recipe
@@ -422,9 +550,14 @@ def test_recipe_digest_moves_with_every_listed_input(tmp_path: Path, monkeypatch
     for r in repinned:
         if r["candidate_id"] == s2["members"][1]:
             r["image_digest"] = "sha256:" + "9" * 64
+    for lineage in ({"records": repinned}, {"s1": {**s1, "leader": "x"}}):
+        with pytest.raises(ContractError, match="lineage"):
+            s5.build_recipe(**{**args, **lineage})
+    s1b = s5.select_s1(repinned, guard=g, baseline="C0")
+    s2b = s5.complementarity_s2(repinned, texts, GOLD, guard=g, s1=s1b)
     changes = {
         "records": repinned,
-        "s1": {**s1, "leader": "x"},
+        "s1": s1b,
         "s2": {**s2, "members": list(reversed(s2["members"]))},
         "escalate_on": ["disagreement"],
         "degradation": {"seed": 12, "parameters": {"scan_poor": {"dpi": 100}}},
@@ -432,17 +565,24 @@ def test_recipe_digest_moves_with_every_listed_input(tmp_path: Path, monkeypatch
         "section_sha256": "sha256:" + "4" * 64,
     }
     for name, value in changes.items():
-        assert s5.build_recipe(**{**args, name: value})["recipe_sha256"] != base["recipe_sha256"], (
-            name
-        )
+        moved = {**args, name: value}
+        if name in ("records", "s1"):
+            moved = {**moved, "records": repinned, "s1": s1b, "s2": s2b}
+        assert s5.build_recipe(**moved)["recipe_sha256"] != base["recipe_sha256"], name
+    with pytest.raises(ContractError, match="duplicate"):
+        s5.build_recipe(**{**args, "s2": {**s2, "members": [s2["members"][0]] * 2}})
+    with pytest.raises(ContractError, match="not in S1"):
+        s5.build_recipe(**{**args, "s2": {**s2, "members": [*s2["members"], "zz"]}})
     params = {"seed": 11, "parameters": {"scan_poor": {"dpi": 101}}}
     assert (
         s5.build_recipe(**{**args, "degradation": params})["recipe_sha256"] != base["recipe_sha256"]
     )
     split_pins = copy.deepcopy(recs)
     split_pins[0]["revision"] = "f" * 40
+    s1c = s5.select_s1(split_pins, guard=g, baseline="C0")
+    s2c = s5.complementarity_s2(split_pins, texts, GOLD, guard=g, s1=s1c)
     with pytest.raises(ContractError, match="pins"):
-        s5.build_recipe(**{**args, "records": split_pins})
+        s5.build_recipe(**{**args, "records": split_pins, "s1": s1c, "s2": s2c})
     monkeypatch.setattr(s5, "READER_V1_SHA256", "sha256:" + "0" * 64)
     with pytest.raises(ContractError, match="reader v1"):
         s5.build_recipe(**args)

@@ -80,6 +80,8 @@ def test_census_rows_have_labels_and_no_text(tmp_path: Path) -> None:
         "native_word_count",
         "native_text_chars",
         "image_coverage",
+        "width_pt",
+        "height_pt",
     }
     assert all(set(r) == keys for r in rows)
     by = {(r["doc_id"], r["page"]): r for r in rows}
@@ -104,3 +106,90 @@ def test_missing_file_refuses(tmp_path: Path) -> None:
     (root / "raster.pdf").unlink()
     with pytest.raises(ContractError, match="file missing"):
         run_census(rec, root, tmp_path / "o.jsonl")
+
+
+def _records(tmp_path: Path, *rows: dict[str, str]) -> Path:
+    rec = tmp_path / "recs.jsonl"
+    rec.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
+    return rec
+
+
+def test_output_is_write_once_and_receipt_names_image_coverage(tmp_path: Path) -> None:
+    rec, root = _setup(tmp_path)
+    out = tmp_path / "census.jsonl"
+    run_census(rec, root, out)
+    before = out.read_bytes()
+    with pytest.raises(ContractError, match="already exists"):
+        run_census(rec, root, out)
+    assert out.read_bytes() == before
+    receipt = json.loads(out.with_name("census.jsonl.receipt.json").read_text(encoding="utf-8"))
+    assert "presence" in receipt["image_coverage"] and "not an area" in receipt["image_coverage"]
+    assert receipt["pages"] == 4 and receipt["out_sha256"] == (
+        "sha256:" + hashlib.sha256(before).hexdigest()
+    )
+    (tmp_path / "other").mkdir()
+    rec2, root2 = _setup(tmp_path / "other")
+    stale = tmp_path / "stale.jsonl"
+    stale.with_name("stale.jsonl.receipt.json").write_text("{}", encoding="utf-8")
+    with pytest.raises(ContractError, match="already exists"):
+        run_census(rec2, root2, stale)
+    assert not stale.exists()
+
+
+def test_duplicate_doc_id_and_escaping_doc_id_refused(tmp_path: Path) -> None:
+    rec, root = _setup(tmp_path)
+    lines = rec.read_text(encoding="utf-8").splitlines()
+    dup = _records(tmp_path, json.loads(lines[0]), json.loads(lines[0]))
+    with pytest.raises(ContractError, match="duplicate doc_id"):
+        run_census(dup, root, tmp_path / "d.jsonl")
+    corpus = tmp_path / "corpus"
+    corpus.mkdir()
+    outside = _pdf(_BODY)
+    (tmp_path / "outside.pdf").write_bytes(outside)
+    digest = "sha256:" + hashlib.sha256(outside).hexdigest()
+    esc = _records(tmp_path, {"doc_id": "../outside.pdf", "source_sha256": digest})
+    with pytest.raises(ContractError, match="outside the corpus root"):
+        run_census(esc, corpus, tmp_path / "e.jsonl")
+    absolute = _records(
+        tmp_path, {"doc_id": str(tmp_path / "outside.pdf"), "source_sha256": digest}
+    )
+    with pytest.raises(ContractError, match="outside the corpus root"):
+        run_census(absolute, corpus, tmp_path / "a.jsonl")
+    assert not (tmp_path / "e.jsonl").exists() and not (tmp_path / "a.jsonl").exists()
+
+
+@pytest.mark.parametrize("row", [{"source_sha256": "sha256:" + "0" * 64}, {"doc_id": "a.pdf"}])
+def test_record_without_doc_id_or_hash_is_a_contract_error(
+    tmp_path: Path, row: dict[str, str]
+) -> None:
+    with pytest.raises(ContractError):
+        run_census(_records(tmp_path, row), tmp_path, tmp_path / "o.jsonl")
+
+
+def _text_and_image_pdf() -> bytes:
+    from pypdf.generic import RectangleObject
+
+    writer = PdfWriter()
+    page = writer.add_page(PdfReader(io.BytesIO(_pdf(_BODY))).pages[0])
+    buf = io.BytesIO()
+    Image.new("RGB", (200, 200), "red").save(buf, format="PDF", resolution=72)
+    page.merge_page(PdfReader(io.BytesIO(buf.getvalue())).pages[0])
+    page.mediabox = RectangleObject((0, 0, 595, 842))
+    out = io.BytesIO()
+    writer.write(out)
+    return out.getvalue()
+
+
+def test_text_and_image_page_class_and_metadata_page_size(tmp_path: Path) -> None:
+    data = _text_and_image_pdf()
+    (tmp_path / "both.pdf").write_bytes(data)
+    rec = _records(
+        tmp_path,
+        {"doc_id": "both.pdf", "source_sha256": "sha256:" + hashlib.sha256(data).hexdigest()},
+    )
+    out = tmp_path / "both.jsonl"
+    run_census(rec, tmp_path, out)
+    (row,) = [json.loads(x) for x in out.read_text(encoding="utf-8").splitlines()]
+    assert (row["width_pt"], row["height_pt"]) == (595.0, 842.0)
+    assert row["image_coverage"] == 1 and row["native_word_count"] > 0
+    assert row["technical_class"] == "NATIVE_COMPLEX"

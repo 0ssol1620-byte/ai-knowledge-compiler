@@ -55,21 +55,26 @@ def census_pages(doc_id: str, data: bytes, max_pages: int = 10_000) -> list[dict
     rows = []
     for page_no in range(1, len(document.metadata["pages"]) + 1):
         blocks = [b for b in document.blocks if b.source_refs[0].page_number1 == page_no]
+        # Presence of an embedded image (0 or 1), not an area.
         image = 1.0 if any("embedded_image_native" in b.quality_flags for b in blocks) else 0.0
+        geometry = document.metadata["pages"][page_no - 1]
+        width_pt, height_pt = geometry.get("widthPt"), geometry.get("heightPt")
+        if not all(isinstance(v, int | float) and v > 0 for v in (width_pt, height_pt)):
+            raise ContractError(f"{doc_id} page {page_no}: the document carries no page size")
         text = "\n".join(
             b.raw_text or "" for b in blocks if "embedded_image_native" not in b.quality_flags
         )
         m = AnalysisWorker._page_preflight(
             text,
             image_coverage=image,
-            width_pt=612.0,
-            height_pt=792.0,
+            width_pt=float(width_pt),
+            height_pt=float(height_pt),
             canonical_blocks=blocks,
         )
         pm = PageMetrics(
             page_index0=page_no - 1,
-            width=612,
-            height=792,
+            width=max(1, round(width_pt)),
+            height=max(1, round(height_pt)),
             native_text_chars=int(m["native_text_chars"]),
             native_word_count=int(m["native_words"]),
             native_block_count=max(1, len(blocks)),
@@ -101,27 +106,48 @@ def census_pages(doc_id: str, data: bytes, max_pages: int = 10_000) -> list[dict
                 "estimated_columns": pm.estimated_columns,
                 "native_word_count": pm.native_word_count,
                 "native_text_chars": pm.native_text_chars,
-                "image_coverage": image,
+                "image_coverage": int(image),
+                "width_pt": float(width_pt),
+                "height_pt": float(height_pt),
             }
         )
     return rows
 
 
+IMAGE_COVERAGE_NOTE = (
+    "image_coverage is the presence of an embedded image on the page (0 or 1), not an area"
+)
+
+
 def run_census(records_path: Path, corpus_root: Path, out_path: Path) -> int:
+    receipt_path = out_path.with_name(out_path.name + ".receipt.json")
+    for target in (out_path, receipt_path):
+        if target.exists():
+            raise ContractError(f"{target} already exists; the census output is write-once")
     records = [
         json.loads(line)
         for line in records_path.read_text(encoding="utf-8").splitlines()
         if line.strip()
     ]
-    loaded = []
+    root = Path(corpus_root).resolve()
+    loaded, seen = [], set()
     for rec in records:  # integrity first: nothing is written if any document is off
-        doc_id = rec["doc_id"]
-        require_sha256(rec["source_sha256"], "source_sha256")
-        path = Path(corpus_root) / doc_id
+        doc_id, digest = rec.get("doc_id"), rec.get("source_sha256")
+        if not isinstance(doc_id, str) or not doc_id:
+            raise ContractError("a record has no doc_id")
+        if not isinstance(digest, str):
+            raise ContractError(f"{doc_id}: a record has no source_sha256")
+        require_sha256(digest, "source_sha256")
+        if doc_id in seen:
+            raise ContractError(f"{doc_id}: duplicate doc_id")
+        seen.add(doc_id)
+        path = (root / doc_id).resolve()
+        if not path.is_relative_to(root):
+            raise ContractError(f"{doc_id}: resolves outside the corpus root")
         if not path.is_file():
             raise ContractError(f"{doc_id}: file missing under corpus root")
         data = path.read_bytes()
-        if "sha256:" + hashlib.sha256(data).hexdigest() != rec["source_sha256"]:
+        if "sha256:" + hashlib.sha256(data).hexdigest() != digest:
             raise ContractError(f"{doc_id}: byte hash mismatch")
         loaded.append((rec, data))
     lines = []
@@ -133,8 +159,22 @@ def run_census(records_path: Path, corpus_root: Path, out_path: Path) -> int:
                     sort_keys=True,
                 )
             )
+    body = "".join(x + "\n" for x in lines).encode("utf-8")
+    receipt = {
+        "documents": len(loaded),
+        "pages": len(lines),
+        "records_sha256": "sha256:" + hashlib.sha256(records_path.read_bytes()).hexdigest(),
+        "out_sha256": "sha256:" + hashlib.sha256(body).hexdigest(),
+        "image_coverage": IMAGE_COVERAGE_NOTE,
+        "page_size": "width_pt / height_pt come from the document's own page geometry",
+        "text": "rows carry labels and counts only, never page text",
+    }
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text("".join(x + "\n" for x in lines), encoding="utf-8", newline="\n")
+    # "x" mode: a file that appeared since the check above still refuses.
+    with out_path.open("xb") as f:
+        f.write(body)
+    with receipt_path.open("x", encoding="utf-8", newline="\n") as f:
+        f.write(json.dumps(receipt, sort_keys=True, indent=2) + "\n")
     return len(lines)
 
 

@@ -8,7 +8,8 @@ at, the dev gold and the frozen manifest behind a ``HoldoutGuard``.
 * S1 reuses ``paired_report.build_report`` cells, never its routes. Leader L = best on H by
   the report's rank key (baseline first on a tie, then id). A clear loser has its Wilson upper
   bound below L's Wilson lower bound on H and on R. McNemar (page all-exact against L) is
-  reported, not a gate. Keep rules as 5H; the baseline is always kept.
+  reported, not a gate. The top five non-losers by rank are kept, plus the baseline
+  when it is itself a clear loser (at most six); fewer than four are topped up.
 * S2 reads every kept candidate's value per critical field with reader v1 (a failed page is
   all wrong) and gives the rescue matrix on H, R and pooled with its denominators, then picks
   the second and third member by rescued fields on H per measured USD per page. A candidate
@@ -148,10 +149,10 @@ def select_s1(
     }
     survivors = [c for c in order[H] if c not in losers]
     best_r = next(c for c in order[R] if c not in losers)
-    keep = set(survivors) | {baseline}
-    if len(keep) > KEEP_MAX:
-        must = {baseline, best_r}
-        keep = must | set([c for c in survivors if c not in must][: KEEP_MAX - len(must)])
+    # Up to five non-losers by rank; the reference is added when it is itself a clear loser.
+    keep = set(survivors[:KEEP_MAX])
+    if baseline in losers:
+        keep.add(baseline)
     if len(keep) < KEEP_MIN:
         keep |= set([c for c in order[H] if c not in keep][: KEEP_MIN - len(keep)])
     return {
@@ -249,9 +250,19 @@ def _rescue(
     }
 
 
-def _cost_per_page(pages: Iterable[dict[str, Any]]) -> float | None:
+MAX_UNKNOWN_COST_SHARE = 0.2  # the share S0 tolerates for provider failures (5H-7)
+
+
+def _cost_per_page(pages: Iterable[dict[str, Any]]) -> dict[str, Any]:
+    """Mean of the known page costs, with both counts; unknown only above a fifth of pages."""
     costs = [r["provider_cost_usd"] for r in pages]
-    return None if not costs or None in costs else sum(costs) / len(costs)
+    known = [c for c in costs if c is not None]
+    unknown = not known or (len(costs) - len(known)) / len(costs) > MAX_UNKNOWN_COST_SHARE
+    return {
+        "usd": None if unknown else sum(known) / len(known),
+        "known": len(known),
+        "total": len(costs),
+    }
 
 
 def _gold_sha(gold: Mapping[str, Any], pages: Iterable[str]) -> str:
@@ -274,6 +285,11 @@ def complementarity_s2(
     """S2: field rescue matrix on H / R / pooled; second and third member per rescued USD."""
     scope = _scope(guard, "dev", "calibrate")
     by = _check(records, scope)
+    if (
+        s1["inputs"]["records_sha256"] != _records_sha(records)
+        or s1["inputs"]["manifest_sha256"] != guard._manifest["manifest_sha256"]
+    ):
+        raise ContractError("S1 was computed from other records or another manifest than S2's")
     kept, leader = list(s1["kept"]), s1["leader"]
     _, right = _reads(by, texts, gold, kept)
     matrix = {
@@ -295,7 +311,7 @@ def complementarity_s2(
             if c in members:
                 continue
             marginal = sum(right[c][k] for k in missed)
-            usd = cost[c]
+            usd = cost[c]["usd"]
             reason = (
                 "marginal_below_minimum"
                 if marginal < MIN_MARGINAL_FIELDS
@@ -308,6 +324,8 @@ def complementarity_s2(
                     "candidate": c,
                     "marginal_fields": marginal,
                     "cost_per_page_usd": usd,
+                    "cost_pages_known": cost[c]["known"],
+                    "cost_pages_total": cost[c]["total"],
                     "rescued_per_usd": marginal / usd if usd else None,
                     "excluded": reason,
                 }
@@ -380,6 +398,26 @@ def _score(rows: list[tuple[dict[str, Any], bool]], name: str) -> dict[str, Any]
     }
 
 
+def _check_recipe(
+    recipe: Mapping[str, Any] | None,
+    digest: str,
+    members: Sequence[str],
+    escalate_on: Sequence[str],
+) -> None:
+    """The run must be the frozen recipe: same digest, same body, same members and signals."""
+    if recipe is None:
+        raise ContractError("a frozen recipe digest needs the recipe body it names")
+    body = {k: v for k, v in recipe.items() if k != "recipe_sha256"}
+    if not (canonical_sha256(body) == recipe.get("recipe_sha256") == digest):
+        raise ContractError("the recipe body does not hash to the frozen recipe digest")
+    if list(members) != recipe["member_order"] or [
+        m["candidate_id"] for m in recipe["members"]
+    ] != list(members):
+        raise ContractError("members differ from the frozen recipe")
+    if sorted(escalate_on) != recipe["escalate_on"]:
+        raise ContractError("escalation signals differ from the frozen recipe")
+
+
 def signals_s3(
     records: Sequence[dict[str, Any]],
     texts: Mapping[str, str],
@@ -391,16 +429,22 @@ def signals_s3(
     reread_texts: Mapping[str, str | None] | None = None,
     split: str = "dev",
     frozen_recipe_sha256: str | None = None,
+    recipe: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """S3: the signals per field, scored per subset. ``reread_texts`` maps page_id to P's
     second output (None = failed); without it ``reread_differs`` is not measured. A holdout
-    split opens only through the guard with the frozen recipe digest."""
+    split opens only through the guard with the frozen recipe digest, and ``recipe`` (its body)
+    must carry that digest, these members in this order and these escalation signals."""
     if len(members) < 2:
         raise ValueError("signals need P and at least one peer")
+    if len(set(members)) != len(members):
+        raise ContractError(f"duplicate member in {list(members)}")
     unknown = set(escalate_on) - set(SIGNALS)
     if unknown or not escalate_on or (reread_texts is None and "reread_differs" in escalate_on):
         raise ValueError(f"escalate_on must name measured signals of {sorted(SIGNALS)}")
     purpose = "calibrate" if split == "dev" else "evaluate_frozen"
+    if frozen_recipe_sha256 is not None:
+        _check_recipe(recipe, frozen_recipe_sha256, members, escalate_on)
     scope = _scope(guard, split, purpose, frozen_recipe_sha256)
     mine = [r for r in records if r["candidate_id"] in members]
     by = _check(mine, scope)
@@ -442,6 +486,7 @@ def signals_s3(
     return {
         "stage": "S3",
         "split": split,
+        "frozen_recipe_sha256": frozen_recipe_sha256,
         "inputs": {
             "records_sha256": _records_sha(mine),
             "texts_sha256": _texts_sha(texts, mine),
@@ -473,8 +518,17 @@ def build_recipe(
         raise ValueError(f"escalate_on must name signals of {sorted(SIGNALS)}")
     if not {"seed", "parameters"} <= set(degradation):
         raise ContractError("degradation must record its seed and parameters")
+    names = list(s2["members"])
+    if len(set(names)) != len(names):
+        raise ContractError(f"duplicate member in {names}")
+    if set(names) - set(s1["kept"]):
+        raise ContractError(f"members {sorted(set(names) - set(s1['kept']))} are not in S1's kept")
+    if s2["inputs"]["records_sha256"] != _records_sha(records) or s2["inputs"][
+        "s1_sha256"
+    ] != canonical_sha256(s1):
+        raise ContractError("lineage: S2 was not computed from these records and this S1")
     members = []
-    for c in s2["members"]:
+    for c in names:
         pins = {
             (r["revision"], r["image_digest"], r["config_sha256"])
             for r in records
