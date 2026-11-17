@@ -1,62 +1,87 @@
-"""vLLM OpenAI-compatible chat endpoint, one page image per request (no vendor code)."""
+"""vLLM OpenAI-compatible chat endpoint, one page image per request (no vendor code).
+
+Each candidate pins its own prompt, generation settings and input order in a ``ChatProfile``;
+``config`` turns that into the document whose digest is the candidate's ``config_sha256``.
+The server is launched with ``--served-model-name <repo>@<revision>``: the request names it
+and the response must echo it, so a receipt with ``revision_attested: true`` was answered by
+a server that was launched for that revision. Anything else is a failure row.
+"""
 
 from __future__ import annotations
 
 import base64
 import os
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
+from dataclasses import dataclass
 from typing import Any
 
 from .base import RunnerConfig
-from .vlm import ResponseRefused, exchange, require_revision
-
-# ponytail: one generic prompt for every model; per-model card prompts are unverified (A0).
-PROMPT = "Transcribe this page to Markdown. Keep reading order. Do not add commentary."
-GENERATION = {"temperature": 0.0, "max_tokens": 8192}
+from .vlm import ResponseRefused, exchange, render_settings, require_revision
 
 
-def _extract(model: str) -> Callable[[dict[str, Any]], tuple[str, dict[str, Any]]]:
-    def extract(response: dict[str, Any]) -> tuple[str, dict[str, Any]]:
-        if response.get("model") != model:
-            raise ResponseRefused("served model differs from the pinned model id")
+@dataclass(frozen=True)
+class ChatProfile:
+    provider: str
+    model: str  # Hugging Face repository id
+    prompt: str
+    prompt_source: str  # the card quoted, or "generic: ..." when the card publishes none
+    generation: Mapping[str, Any]  # request-body fields sent as-is (vLLM extra params included)
+    text_first: bool = False
+
+
+def config(profile: ChatProfile, revision: str) -> dict[str, Any]:
+    require_revision(revision)
+    return {
+        "provider": profile.provider,
+        "model": profile.model,
+        "served_model_name": f"{profile.model}@{revision}",
+        "prompt": profile.prompt,
+        "prompt_source": profile.prompt_source,
+        "generation": dict(profile.generation),
+        "content_order": "text_first" if profile.text_first else "image_first",
+        "input_mode": "page_image_data_url",
+        **render_settings(),
+    }
+
+
+def _extract(served: str) -> Callable[[dict[str, Any]], tuple[str, Any, bool]]:
+    def extract(response: dict[str, Any]) -> tuple[str, Any, bool]:
+        if response.get("model") != served:
+            raise ResponseRefused("served_model_differs")
         choice = response["choices"][0]
         if choice.get("finish_reason") != "stop":
-            raise ResponseRefused(f"finish_reason {choice.get('finish_reason')!r} is not stop")
+            raise ResponseRefused("finish_reason_not_stop")
         content = choice["message"]["content"]
-        if not isinstance(content, str) or not content.strip():
-            raise ResponseRefused("empty completion")
-        usage = response.get("usage")
-        return content, usage if isinstance(usage, dict) else {}
+        if not isinstance(content, str):
+            raise ResponseRefused("empty_completion")
+        return content, response.get("usage"), True
 
     return extract
 
 
 def run_chat(
-    provider: str,
-    model: str,
+    profile: ChatProfile,
     payload: dict[str, Any],
     *,
     endpoint: str | None,
     revision: str,
     allow_network: bool,
 ) -> dict[str, Any]:
-    require_revision(revision)
-    config = RunnerConfig(provider, revision, endpoint, allow_network)
+    pinned = config(profile, revision)
+    run_config = RunnerConfig(profile.provider, revision, endpoint, allow_network)
 
     def build(mime: str, image: bytes) -> tuple[dict[str, Any], dict[str, str]]:
         url = f"data:{mime};base64,{base64.b64encode(image).decode('ascii')}"
+        parts: list[dict[str, Any]] = [
+            {"type": "image_url", "image_url": {"url": url}},
+            {"type": "text", "text": profile.prompt},
+        ]
+        if profile.text_first:
+            parts.reverse()
         request = {
-            "model": model,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "image_url", "image_url": {"url": url}},
-                        {"type": "text", "text": PROMPT},
-                    ],
-                }
-            ],
-            **GENERATION,
+            "model": pinned["served_model_name"],
+            "messages": [{"role": "user", "content": parts}],
+            **pinned["generation"],
         }
         headers: dict[str, str] = {}
         token = os.getenv("AKC_BENCHMARK_PROVIDER_TOKEN")
@@ -64,13 +89,28 @@ def run_chat(
             headers["Authorization"] = f"Bearer {token}"
         return request, headers
 
-    receipt_base = {
-        "provider": provider,
-        "model": model,
-        "prompt": PROMPT,
-        "generation": GENERATION,
-        "input_mode": "page_image_data_url",
-    }
     return exchange(
-        config, payload, build=build, extract=_extract(model), receipt_base=receipt_base
+        run_config,
+        payload,
+        build=build,
+        extract=_extract(pinned["served_model_name"]),
+        receipt_base=pinned,
     )
+
+
+def runner(
+    profile: ChatProfile,
+) -> tuple[Callable[..., dict[str, Any]], Callable[..., dict[str, Any]]]:
+    """(run, config) for one profile, in the registry's calling convention."""
+
+    def run(
+        case: dict[str, Any], *, endpoint: str | None, revision: str, allow_network: bool = False
+    ) -> dict[str, Any]:
+        return run_chat(
+            profile, case, endpoint=endpoint, revision=revision, allow_network=allow_network
+        )
+
+    def pinned_config(*, revision: str) -> dict[str, Any]:
+        return config(profile, revision)
+
+    return run, pinned_config

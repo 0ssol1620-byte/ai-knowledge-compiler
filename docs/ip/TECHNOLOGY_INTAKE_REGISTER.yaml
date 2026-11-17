@@ -371,9 +371,12 @@ datasets_evaluation_only:
 # result of ours.
 #
 # Axis verdicts: cleared_evaluation_only | review_required | not_applicable | blocked.
-# deciding_axis names the licence the row's use rests on; a row is
-# EVALUATION_ONLY only when that axis is cleared_evaluation_only, and any other
-# status says why in held_reason.
+# deciding_axis names the licence the row's use rests on and follows from the
+# row's kind (model: weights, hosted: hosted, dataset: dataset, tool: code); a
+# row is EVALUATION_ONLY only when that axis is cleared_evaluation_only and the
+# row is not RED, and any other status says why in held_reason. Every cleared
+# axis rests on a captured snapshot of that axis (the main snapshot for the
+# deciding axis); every blocked axis names the repository it blocks.
 # ---------------------------------------------------------------------------
 arena_intake:
   - id: model_mineru_pipeline
@@ -407,7 +410,10 @@ arena_intake:
         verdict: cleared_evaluation_only
         basis: >-
           The weights repository has no LICENSE file. Its model card (835 B) has
-          front-matter `license: agpl-3.0` and no licence text. Sub-model cards
+          no front matter: a `license: agpl-3.0` block appears as card body text
+          after the download instructions, so it is not parsed as metadata (the
+          API revision JSON at the pin has cardData null and no license tag),
+          and the card carries no licence text. Sub-model cards
           for UniMERNet variants and StructEqTable say apache-2.0. The
           subdirectories MinerU 3.4.4 loads (mineru/utils/enum_class.py ModelPath
           at the tag) are PP-DocLayoutV2, unimernet_hf_small_2503,
@@ -424,7 +430,7 @@ arena_intake:
         basis: "Self-hosted."
     not_cleared: >-
       Production use (code thresholds and the attribution duty need a recorded
-      decision; AGPL metadata on the weights needs counsel); redistribution of
+      decision; the AGPL statement in the weights card body needs counsel); redistribution of
       the weights; any licence claim for sub-models whose cards were not read.
 
   - id: model_paddleocr_vl_1_6
@@ -640,6 +646,7 @@ arena_intake:
     axes:
       code:
         verdict: blocked
+        repository: "github.com/caipeng328/NaviDC-OCR (formerly caipeng328/TeleOCR)"
         basis: >-
           The pipeline repository the card links (github.com/caipeng328/TeleOCR,
           now caipeng328/NaviDC-OCR) has no licence: GitHub API
@@ -665,25 +672,26 @@ arena_intake:
 
   - id: model_ovisocr3
     kind: model
-    arena_slot: opened_not_in_smoke
+    arena_slot: C7
     reference: "ATH-MaaS/OvisOCR3 (blueprint 'Ovis3'; OvisOCR2 HEAD card front matter: new_version ATH-MaaS/OvisOCR3)"
     publisher: "ATH-MaaS"
     upstream_id: ATH-MaaS/OvisOCR3
     upstream_revision: "5b252386ba615bd464a5a26597560eaba87dae5c"
+    registry_provider_key: ovisocr3
     classification: GREEN
-    status: OPENED_NOT_ADMITTED
-    held_reason: "WO-D10-0A opens it once and reports; adding it to the smoke is the lead's decision."
+    status: EVALUATION_ONLY
     deciding_axis: weights
-    use: "None yet."
+    use: "A2a 30-page smoke (admitted by the lead, §5E); A2b if a finalist. Does not replace C2. Download 1.73 GB on the GPU pod, stated to the founder before it starts."
     snapshot_url: "https://huggingface.co/ATH-MaaS/OvisOCR3/raw/5b252386ba615bd464a5a26597560eaba87dae5c/LICENSE"
     snapshot_sha256: "bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a"
     fetched_at: "2026-11-17T04:53:18.444362+00:00"
     other_snapshots:
       - { axis: weights, url: "https://huggingface.co/ATH-MaaS/OvisOCR3/raw/5b252386ba615bd464a5a26597560eaba87dae5c/README.md", sha256: "43dd8104e1c78fe851f3b2954378dd8e3b6448bd2e8b02b0754611aca9a7e6b8", note: "model card" }
+      - { axis: code, url: "https://raw.githubusercontent.com/vllm-project/vllm/v0.22.1/LICENSE", sha256: "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4", note: "vLLM runtime (the card pins vllm==0.22.1)" }
     axes:
       code:
         verdict: cleared_evaluation_only
-        basis: "No separate code repository; the card's examples use vLLM (Apache-2.0, snapshot under model_ovisocr2)."
+        basis: "No separate code repository; the card's examples use vLLM 0.22.1, whose LICENSE at that tag is Apache License 2.0 text."
       weights:
         verdict: cleared_evaluation_only
         basis: "LICENSE at the pin is byte-identical to OvisOCR2's (Apache License 2.0 text); card License section says Apache-2.0. Base Qwen/Qwen3.5-0.8B per card."
@@ -693,20 +701,25 @@ arena_intake:
       hosted:
         verdict: not_applicable
         basis: "Self-hosted."
-    not_cleared: "Smoke admission (lead decision); production use; Korean (no mention on the card, UNVERIFIED)."
+    not_cleared: "Production use; Korean (no mention on the card, UNVERIFIED)."
 
   - id: model_xiaomi_ocr_0
     kind: model
-    arena_slot: opened_not_in_smoke
+    arena_slot: C8
     reference: "xiaomi-research/Xiaomi-OCR-0 (blueprint 'Xiaomi OCR0'; SeerRay-Lab/Xiaomi-OCR-0 resolves to it on Hugging Face and GitHub)"
     publisher: "Hugging Face organisation 'Xiaomi Research' (isVerified: false)"
     upstream_id: xiaomi-research/Xiaomi-OCR-0
     upstream_revision: "bbd8cf8d21f256b3644b44cb860f3a7cecb93c30"
+    registry_provider_key: xiaomi_ocr_0
     classification: ORANGE
-    status: OPENED_NOT_ADMITTED
-    held_reason: "Opened once and reported; the weights licence exists only as card metadata, and the publisher organisation is not verified by Hugging Face."
+    status: EVALUATION_ONLY
     deciding_axis: weights
-    use: "None yet."
+    use: >-
+      A2a 30-page smoke only (admitted by the lead, §5E, on the same footing as
+      C3 and C4). If it reaches the finalists, its weights licence and its
+      publisher are resolved before A2b; otherwise it is dropped there and the
+      next candidate moves up. Download 1.77 GB on the GPU pod, stated to the
+      founder before it starts.
     snapshot_url: "https://huggingface.co/xiaomi-research/Xiaomi-OCR-0/raw/bbd8cf8d21f256b3644b44cb860f3a7cecb93c30/README.md"
     snapshot_sha256: "54f2dbecfe9aa354da5a568ec555f2ca5c2d9b06ec2c8cd54b882af516625d46"
     fetched_at: "2026-11-17T04:53:17.787235+00:00"
@@ -717,15 +730,21 @@ arena_intake:
         verdict: cleared_evaluation_only
         basis: "GitHub xiaomi-research/Xiaomi-OCR-0 LICENSE at commit 4abc2402: Apache License 2.0 (GitHub API licence key apache-2.0)."
       weights:
-        verdict: review_required
-        basis: "No LICENSE file in the weights repository (28 files at the pin). Card front matter `license: apache-2.0`, no licence text in the card. Base Qwen/Qwen3.5-0.8B-Base per card."
+        verdict: cleared_evaluation_only
+        basis: >-
+          Smoke evaluation only. No LICENSE file in the weights repository (28
+          files at the pin, Hugging Face API revision JSON). Card front matter
+          `license: apache-2.0` (parsed as metadata: API cardData.license
+          apache-2.0), no licence text in the card. Base Qwen/Qwen3.5-0.8B-Base
+          per card. The clearance rests on that metadata and the lead's §5E
+          admission decision, not on a licence file, and does not reach A2b.
       dataset:
         verdict: review_required
         basis: "Card front matter `datasets: custom-ocr-centric-corpus`; terms not published."
       hosted:
         verdict: not_applicable
         basis: "Self-hosted."
-    not_cleared: "Smoke admission; any use beyond reading; Korean (no mention on the card, UNVERIFIED)."
+    not_cleared: "Any use beyond the A2a smoke (A2b needs the weights licence and the publisher resolved); production use; Korean (no mention on the card, UNVERIFIED)."
 
   - id: tool_kordoc
     kind: tool
@@ -840,6 +859,7 @@ arena_intake:
     axes:
       code:
         verdict: blocked
+        repository: "huggingface.co/datasets/schift-io/koocr-bench-v2 (scorer scripts)"
         basis: "The scorer scripts carry no licence of their own (repository `license: other`); readable, not reusable. The vendored table_transformer grits.py has an MIT LICENSE file."
       weights:
         verdict: not_applicable
@@ -895,9 +915,9 @@ arena_intake:
   - id: hosted_google_gemini
     kind: hosted
     arena_slot: hosted_arm_H2
-    reference: "Gemini API, paid tier: gemini-3.8-flash and gemini-4-hydrogen (both listed 'Stable')"
+    reference: "Gemini API, paid tier: gemini-4-hydrogen (listed 'Stable'); gemini-3.8-flash is not run (founder, §5D)"
     publisher: "Google"
-    provider_model_ids: [gemini-3.8-flash, gemini-4-hydrogen]
+    provider_model_id: gemini-4-hydrogen
     classification: ORANGE
     status: EVALUATION_ONLY
     deciding_axis: hosted

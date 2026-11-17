@@ -1,14 +1,15 @@
-from typing import Any
+"""C6 TeleOCR on vLLM only; nothing from its unlicensed code repository is used."""
 
-from .openai_chat import run_chat
+from .openai_chat import ChatProfile, runner
+from .vlm import GENERIC_PROMPT
 
 PROVIDER = "teleocr"
 MODEL = "XingChen-AGI/TeleOCR"
-
-
-def run(
-    case: dict[str, Any], *, endpoint: str | None, revision: str, allow_network: bool = False
-) -> dict[str, Any]:
-    return run_chat(
-        PROVIDER, MODEL, case, endpoint=endpoint, revision=revision, allow_network=allow_network
-    )
+PROFILE = ChatProfile(
+    provider=PROVIDER,
+    model=MODEL,
+    prompt=GENERIC_PROMPT,
+    prompt_source="generic: the card at a32e21d4 publishes no prompt or generation settings",
+    generation={"temperature": 0.0, "max_tokens": 8192},
+)
+run, config = runner(PROFILE)

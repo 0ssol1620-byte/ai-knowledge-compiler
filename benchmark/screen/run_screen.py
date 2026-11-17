@@ -2,7 +2,8 @@
 
 Every page of the requested split yields exactly one record per candidate. A provider
 failure or a schema failure is a record (``accepted=false``), never a skipped page:
-``provider_unavailable`` (RunnerUnavailable), ``provider_error`` (any other exception the
+the page's own reason (``PageRefused``, e.g. ``page_over_pixel_cap``, decided before any
+call), ``provider_unavailable`` (RunnerUnavailable), ``provider_error`` (any other exception the
 candidate raised on the page) or ``contract_failed``. A provider exception also records its
 type as ``provider_error_type`` (``module.QualName``, never the message, which may quote the
 document); it is null when the call returned. A missing or changed source file is an
@@ -19,7 +20,7 @@ import mimetypes
 import re
 import time
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -27,7 +28,8 @@ from benchmark.evaluators.metrics import score_case
 from benchmark.run_benchmark import parser_output_validator
 from benchmark.runners.base import RunnerUnavailable, build_provider_payload
 from benchmark.runners.native import run as run_native
-from benchmark.runners.registry import EXTERNAL_RUNNERS
+from benchmark.runners.registry import API_PROVIDERS, EXTERNAL_RUNNERS, RUNNER_CONFIGS
+from benchmark.runners.vlm import PageRefused, config_sha256
 from benchmark.screen.critical_fields import gold_value, score_critical_fields
 from benchmark.screen.manifest import HoldoutGuard
 from benchmark.v6.contracts import ContractError, canonical_sha256, require_sha256
@@ -43,6 +45,11 @@ class ImmutableOutputError(RuntimeError):
 
 @dataclass(frozen=True)
 class Candidate:
+    """``model`` is for an API provider, which is pinned by model id and has no revision
+    (``revision`` is then empty). ``runner_options`` are further pinned runner parameters
+    (Gemini: ``thinking_config``, ``media_resolution``). Where the runner pins its own
+    config, ``config_sha256`` must be that config's digest."""
+
     candidate_id: str
     provider: str
     revision: str
@@ -50,16 +57,35 @@ class Candidate:
     config_sha256: str
     endpoint: str | None = None
     allow_network: bool = False
+    model: str | None = None
+    runner_options: Mapping[str, Any] = field(default_factory=dict)
+
+    def _runner_kwargs(self) -> dict[str, Any]:
+        extra: dict[str, Any] = {} if self.model is None else {"model": self.model}
+        return {**extra, **self.runner_options}
 
     def validate(self) -> None:
         if not self.candidate_id:
             raise ContractError("candidate_id is empty")
         if self.provider != NATIVE and self.provider not in EXTERNAL_RUNNERS:
             raise ContractError(f"unknown provider {self.provider!r}")
-        if not _REVISION.fullmatch(self.revision):
+        if (self.model is not None) != (self.provider in API_PROVIDERS):
+            raise ContractError("model is required for an API provider and only for one")
+        if self.model is None and not _REVISION.fullmatch(self.revision):
             raise ContractError("candidate needs an exact 40-64 hex revision")
         require_sha256(self.image_digest, "image_digest")
         require_sha256(self.config_sha256, "config_sha256")
+        pinned = RUNNER_CONFIGS.get(self.provider)
+        if pinned is None:
+            if self.runner_options:
+                raise ContractError(f"{self.provider} takes no runner options")
+            return
+        try:
+            document = pinned(revision=self.revision, **self._runner_kwargs())
+        except (RunnerUnavailable, TypeError) as exc:
+            raise ContractError(f"candidate config refused: {exc}") from exc
+        if config_sha256(document) != self.config_sha256:
+            raise ContractError("config_sha256 does not digest the runner's pinned config")
 
 
 def _case(doc: dict[str, Any], page: int) -> dict[str, Any]:
@@ -88,6 +114,7 @@ def _call(candidate: Candidate, case: dict[str, Any], corpus_root: Path) -> dict
         endpoint=candidate.endpoint,
         revision=candidate.revision,
         allow_network=candidate.allow_network,
+        **candidate._runner_kwargs(),
     )
 
 
@@ -182,6 +209,9 @@ def run_screen(
         else:
             try:
                 result = call(candidate, case, corpus_root)
+            except PageRefused as exc:
+                failures = [exc.reason]  # page-level: this page cannot become an image
+                error_type = f"{type(exc).__module__}.{type(exc).__qualname__}"
             except RunnerUnavailable as exc:
                 failures = ["provider_unavailable"]  # operational: nothing came back
                 error_type = f"{type(exc).__module__}.{type(exc).__qualname__}"
