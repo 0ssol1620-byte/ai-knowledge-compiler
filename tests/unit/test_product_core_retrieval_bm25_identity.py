@@ -109,3 +109,31 @@ def test_document_frequency_is_counted_once_per_call(monkeypatch) -> None:
     retrieval._bm25_scores(query_terms, candidates)
     # one idf per query term that occurs anywhere; the old code did one per (document, term)
     assert _CountingMath.log_calls == len(present)
+
+
+class _WatchedTerms(tuple):  # type: ignore[type-arg]
+    contains_calls = 0
+    iter_calls = 0
+
+    def __contains__(self, item: object) -> bool:
+        _WatchedTerms.contains_calls += 1
+        return super().__contains__(item)
+
+    def __iter__(self):  # type: ignore[no-untyped-def]
+        _WatchedTerms.iter_calls += 1
+        return super().__iter__()
+
+
+@pytest.mark.parametrize("query_size", (1, 6))
+def test_document_frequency_scans_each_document_once_not_per_term(query_size) -> None:
+    rng = random.Random(11)
+    candidates = tuple(
+        _candidate(f"d{i}", _WatchedTerms(rng.choice(_VOCAB[:30]) for _ in range(10)), rng)
+        for i in range(40)
+    )
+    query_terms = frozenset(f"t{i}" for i in range(query_size))
+    _WatchedTerms.contains_calls = _WatchedTerms.iter_calls = 0
+    retrieval._bm25_scores(query_terms, candidates)
+    # a per-term df scan is `term in terms` per document and term, or one iteration per term
+    assert _WatchedTerms.contains_calls == 0
+    assert _WatchedTerms.iter_calls == len(candidates)
