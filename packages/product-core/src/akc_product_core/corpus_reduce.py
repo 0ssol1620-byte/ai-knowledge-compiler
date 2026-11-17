@@ -461,8 +461,10 @@ def corpus_reduce(parts: Sequence[ReducePart]) -> tuple[dict[str, Any], dict[str
         document_object = take(_stable_id("ko_document", item))
         for block_id in document_object["links"]:
             take(block_id)
-    for unit in ordered_units:
-        take(_stable_id("ko_evidence", unit["evidenceId"]))
+    # Regions of one version that repeat a text share an evidence id and one evidence object
+    # (the compiler merges their references); it is placed once.
+    for evidence_id in dict.fromkeys(unit["evidenceId"] for unit in ordered_units):
+        take(_stable_id("ko_evidence", evidence_id))
     documents_and_evidence = list(placed)
     placed.extend(claims)
     relations = [
@@ -477,8 +479,21 @@ def corpus_reduce(parts: Sequence[ReducePart]) -> tuple[dict[str, Any], dict[str
             f"{len(unplaced)} part objects have no place, e.g. {unplaced[:3]}",
         )
 
-    def refs(evidence: str) -> tuple[SourceRef, ...]:
-        found = objects[_stable_id("ko_evidence", evidence)]["sourceRefs"]
+    # By region (version, anchor), as the compiler does: a shared evidence object names every
+    # region that repeats its text, and a claim cites only its own.
+    block_refs = {
+        (document["documentVersionId"], block["sourceRefs"][0]["nativeObjectId"]): block[
+            "sourceRefs"
+        ]
+        for document in ordered_documents
+        for block in document["blocks"]
+    }
+
+    def refs(claim: SemanticClaim) -> tuple[SourceRef, ...]:
+        unit = units.get(claim.logical_id)
+        found = None if unit is None else block_refs.get((unit["sourceVersionId"], unit["anchor"]))
+        if found is None:
+            raise CorpusReduceError("REDUCE_GRAPH_INVALID", f"{claim.claim_id} has no region")
         return tuple(SourceRef.model_validate(ref) for ref in found)
 
     # The activity names this reduce: the corpus and the exact part Worlds it read.
@@ -596,7 +611,7 @@ def corpus_reduce(parts: Sequence[ReducePart]) -> tuple[dict[str, Any], dict[str
         build(
             stable_id=entity.entity_id,
             kind=KnowledgeObjectKind.ENTITY,
-            source_refs=refs(claim_by_id[entity.claim_ids[0]].evidence_id),
+            source_refs=refs(claim_by_id[entity.claim_ids[0]]),
             origin=KnowledgeOrigin.RULE_DERIVED,
             verification_state=KnowledgeVerificationState.VERIFIED_WITH_WARNING,
             payload=entity.as_record(),
@@ -608,8 +623,8 @@ def corpus_reduce(parts: Sequence[ReducePart]) -> tuple[dict[str, Any], dict[str
             stable_id=item.contradiction_id,
             kind=KnowledgeObjectKind.VALIDATION_RECORD,
             source_refs=(
-                *refs(claim_by_id[item.claim_ids[0]].evidence_id),
-                *refs(claim_by_id[item.claim_ids[1]].evidence_id),
+                *refs(claim_by_id[item.claim_ids[0]]),
+                *refs(claim_by_id[item.claim_ids[1]]),
             ),
             origin=KnowledgeOrigin.RULE_DERIVED,
             verification_state=KnowledgeVerificationState.UNRESOLVED,
