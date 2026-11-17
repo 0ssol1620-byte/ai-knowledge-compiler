@@ -40,6 +40,8 @@ SNAPSHOT = (
     b"| [OCR 4.1](/models/ocr-4-1) | `mistral-ocr-4-1` | Input $4 /1000 Pages |\n"
     b"| [OCR 3](/models/ocr-3) | `mistral-ocr-2512` | Input $2 /1000 Pages |\n</html>"
 )
+# the hosts the transport may reach (the fakes replace the transport itself)
+ALLOWLIST = "generativelanguage.googleapis.com,api.mistral.ai"
 GOOD_USAGE = {"promptTokenCount": 1200, "candidatesTokenCount": 300, "thoughtsTokenCount": 100}
 
 
@@ -393,7 +395,7 @@ def test_20_the_door_refuses_before_any_request_is_built(
     with pytest.raises(hosted.HostedPageRefused):
         hosted.submit_chunk(arm, "dry", chunk, {page.page_id: page}, tmp_path)
     with pytest.raises(hosted.HostedPageRefused):
-        hosted.call_mistral(arm, "dry", page, tmp_path)
+        hosted.call_mistral(arm, "dry", page, tmp_path, image_sha256=info["image_sha256"])
     assert fake.calls == [] and mistral_calls == [] and built == []
     pages, refused = hosted.page_list([doc])
     assert pages == [] and refused[0]["doc_id"] == doc["doc_id"]
@@ -601,6 +603,7 @@ def _through_dry(tmp_path: Path, spec: hosted.HostedSpec, monkeypatch: pytest.Mo
     hosted.run_dry(spec, out, manifest, corpus, tmp_path / "snap", environment=lambda: ENV)
     monkeypatch.setenv("GEMINI_API_KEY", _marker())
     monkeypatch.setenv("MISTRAL_API_KEY", _marker("mk"))
+    monkeypatch.setenv("AKC_BENCHMARK_ENDPOINT_ALLOWLIST", ALLOWLIST)
     return out
 
 
@@ -653,7 +656,7 @@ def test_29_each_stage_needs_its_predecessor_receipt_under_this_spec(
     narrowed = json.loads(original)
     narrowed["pages"] = narrowed["pages"][:1]
     narrowed["mistral_pages"] = narrowed["mistral_pages"][:1]
-    receipt.write_text(json.dumps(narrowed))
+    _rebind_dry(spec, out, narrowed)
     with pytest.raises(ContractError, match="subset"):
         _paid(spec, out, second, "rehearsal")
 
@@ -832,6 +835,31 @@ def _manifest_page(tmp_path: Path, doc_id: str) -> hosted.Page:
 
 def _receipt_of(out: Path, stage: str) -> dict[str, Any]:
     return dict(json.loads((out / stage / "receipt.json").read_bytes()))
+
+
+def _rebuild_ledger(spec: hosted.HostedSpec, out: Path, edit: Any) -> None:
+    """A fresh ledger with the same events in order; ``edit(type, payload)`` returns the payload
+    to keep, or None to leave the event out."""
+    ledger = hosted.Arm(spec, out).ledger
+    events = ledger.replay()
+    ledger.path.unlink()
+    for event in events:
+        payload = edit(event.event_type, dict(event.payload))
+        if payload is not None:
+            ledger.append(event.event_type, payload)
+
+
+def _rebind_dry(spec: hosted.HostedSpec, out: Path, dry: dict[str, Any]) -> None:
+    """Another dry plan, as if the dry stage had written it: the receipt rewritten and a fresh
+    ledger whose one ``hosted.dry_receipt.v1`` holds its sha256 (never a second event)."""
+    path = out / "dry" / "receipt.json"
+    path.write_text(json.dumps(dry), encoding="utf-8")
+    digest = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+    _rebuild_ledger(
+        spec,
+        out,
+        lambda kind, payload: {"sha256": digest} if kind == "hosted.dry_receipt.v1" else payload,
+    )
 
 
 def _main(tmp_path: Path, out: Path, stage: str) -> int:
@@ -1058,7 +1086,7 @@ def test_r2_the_paid_stage_takes_the_dry_plans_pages_and_records_its_refusals(
     dry["page_refusals"].append(
         {"page_id": "d1.png#0", "provider": "mistral_ocr_4", "reason": "page_over_image_limit"}
     )
-    path.write_text(json.dumps(dry), encoding="utf-8")
+    _rebind_dry(spec, out, dry)
     script = MistralScript([])
     monkeypatch.setattr(gemini_api, "request_bytes", FakeGemini())
     monkeypatch.setattr(vlm, "post_bytes", script)
@@ -1081,14 +1109,14 @@ def test_r2_a_paid_stage_whose_pages_differ_from_the_dry_plan_is_refused(
     dry = json.loads(path.read_bytes())
     if damage == "image":
         dry["pages"][0]["image_sha256"] = "sha256:" + "0" * 64
-        path.write_text(json.dumps(dry), encoding="utf-8")
+        _rebind_dry(spec, out, dry)
         with pytest.raises(ContractError, match="dry plan"):
             _paid(spec, out, tmp_path, "rehearsal")
         assert fake.calls == []
         return
     assert _paid(spec, out, tmp_path, "rehearsal") == 0
     dry["admitted"]["page_ids"] = dry["admitted"]["page_ids"][:-1]
-    path.write_text(json.dumps(dry), encoding="utf-8")
+    _rebind_dry(spec, out, dry)
     calls = len(fake.calls)
     with pytest.raises(ContractError, match="differs from the dry receipt"):
         _paid(spec, out, tmp_path, "full")
@@ -1329,6 +1357,7 @@ def test_r2_fuzz_every_paid_run_ends_complete_pending_or_refused_and_terminal_ru
         out = root / "out"
         mp.setenv("GEMINI_API_KEY", _marker())
         mp.setenv("MISTRAL_API_KEY", _marker("mk"))
+        mp.setenv("AKC_BENCHMARK_ENDPOINT_ALLOWLIST", ALLOWLIST)
         case = _GEMINI_CASES[gemini]
         fake = FakeGemini(state=case) if isinstance(case, str) else FakeGemini(tweak=case)
         mp.setattr(gemini_api, "request_bytes", fake)
@@ -1369,3 +1398,652 @@ def test_r2_fuzz_every_paid_run_ends_complete_pending_or_refused_and_terminal_ru
             assert _ledger_size(spec, out) == size
             if code == 2:
                 break
+
+
+# --- WO-D10-0J: the reviewer's eight notes ---------------------------------------------------
+
+
+def test_0j_1_a_job_whose_get_answers_404_is_closed_once_and_the_stopped_stage_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    fake = FakeGemini(state="BATCH_STATE_RUNNING")
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", _mistral_ok)
+    monkeypatch.setattr(hosted, "check_environment", lambda *a, **k: ENV)
+    assert _paid(spec, out, tmp_path, "rehearsal") == 3
+    fake.batches["batches/b1"]["deleted"] = True  # gone outside the arm
+    with pytest.raises(ContractError, match="lead decides"):
+        _paid(spec, out, tmp_path, "rehearsal")
+    arm = hosted.Arm(spec, out)
+    (closed,) = arm.events("hosted.job.terminal.v1")
+    (intent,) = [p for p in arm.events("job.dispatch.intent.v1") if p["provider"] == "gemini_api"]
+    assert (closed["state"], closed["reason"]) == ("NOT_FOUND", "job_not_found")
+    assert closed["actual_usd"] == intent["reserved_usd"]  # the worst case is kept
+    assert [s["reason"] for s in arm.events("campaign.stopped.v1")] == ["batch_not_found"]
+    size = _ledger_size(spec, out)
+    for _ in range(2):
+        with pytest.raises(ContractError, match="lead decides"):
+            _paid(spec, out, tmp_path, "rehearsal")
+    assert _main(tmp_path, out, "collect") == 2
+    assert _ledger_size(spec, out) == size
+
+
+@pytest.mark.parametrize("status", [429, 500, 503])
+def test_0j_2_only_a_200_counts_as_the_cancel_and_a_refused_one_is_tried_again(
+    status: int, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    fake = FakeGemini(state="BATCH_STATE_RUNNING")
+    first = [True]
+
+    def flaky(config: Any, method: str, body: Any, headers: Any, **kw: Any) -> Any:
+        if method == "POST" and config.endpoint.endswith(":cancel") and first[0]:
+            first[0] = False
+            return status, "application/json", b"{}"
+        return fake(config, method, body, headers, **kw)
+
+    monkeypatch.setattr(gemini_api, "request_bytes", flaky)
+    monkeypatch.setattr(vlm, "post_bytes", _mistral_ok)
+    assert _paid(spec, out, tmp_path, "rehearsal") == 3
+    hosted.Arm(spec, out).stop("some_other_stop")
+    assert _paid(spec, out, tmp_path, "rehearsal") == 3  # the cancel was refused: running
+    assert _paid(spec, out, tmp_path, "rehearsal") == 3  # tried again: 200
+    assert fake.cancels() == ["/batches/b1:cancel"]
+    with pytest.raises(ContractError, match="lead decides"):
+        _paid(spec, out, tmp_path, "rehearsal")  # cancelled: closed and torn down
+    arm = hosted.Arm(spec, out)
+    assert [p["http_status"] for p in arm.events("hosted.job.cancel_requested.v1")] == [
+        status,
+        200,
+    ]
+    assert fake.cancels() == ["/batches/b1:cancel"]
+
+
+_LOCAL = {  # the operator's environment: refused, recorded once, the arm NOT stopped
+    "no_mistral_key": [("mistral_ocr_4", "no_key")],
+    "no_gemini_key": [("gemini_api", "no_key")],
+    "no_key_at_all": [("gemini_api", "no_key"), ("mistral_ocr_4", "no_key")],
+    "allowlist_unset": [
+        ("gemini_api", "host_not_allowlisted"),
+        ("mistral_ocr_4", "host_not_allowlisted"),
+    ],
+    "mistral_host_not_listed": [("mistral_ocr_4", "host_not_allowlisted")],
+}
+
+
+def _break_environment(cause: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    if cause in ("no_mistral_key", "no_key_at_all"):
+        monkeypatch.delenv("MISTRAL_API_KEY")
+    if cause in ("no_gemini_key", "no_key_at_all"):
+        monkeypatch.delenv("GEMINI_API_KEY")
+    if cause == "allowlist_unset":
+        monkeypatch.delenv("AKC_BENCHMARK_ENDPOINT_ALLOWLIST")
+    if cause == "mistral_host_not_listed":
+        monkeypatch.setenv("AKC_BENCHMARK_ENDPOINT_ALLOWLIST", "generativelanguage.googleapis.com")
+
+
+@pytest.mark.parametrize("cause", sorted(_LOCAL))
+def test_0j_3_an_operator_refusal_reserves_nothing_stops_nothing_and_the_fixed_rerun_continues(
+    cause: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    fake, script = FakeGemini(), MistralScript([])
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    with monkeypatch.context() as broken:
+        _break_environment(cause, broken)
+        for _ in range(2):  # one event per distinct reason, not one per run
+            with pytest.raises(ContractError, match="local refusal"):
+                _paid(spec, out, tmp_path, "rehearsal")
+    arm = hosted.Arm(spec, out)
+    found = [(r["provider"], r["reason"]) for r in arm.events("hosted.local_refusal.v1")]
+    assert found == _LOCAL[cause]
+    assert not arm.campaign.stopped
+    assert fake.calls == [] and script.calls == 0
+    assert not arm.events("job.dispatch.intent.v1") and not arm.events("hosted.page.settled.v1")
+    assert not [p for p in arm.events("campaign.stage_reserved.v1") if p["stage"] == "rehearsal"]
+    assert _paid(spec, out, tmp_path, "rehearsal") == 0  # the environment fixed: it continues
+
+
+def test_0j_3_a_credential_in_a_case_id_is_an_integrity_stop(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    fake, script = FakeGemini(), MistralScript([])
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    case_id = _manifest_page(tmp_path, "d3.png").case_id  # a declared credential equal to it
+    monkeypatch.setenv("AKC_BENCHMARK_PROVIDER_TOKEN", case_id)
+    with pytest.raises(ContractError, match="lead decides"):
+        _paid(spec, out, tmp_path, "rehearsal")
+    arm = hosted.Arm(spec, out)
+    (refusal,) = arm.events("hosted.local_refusal.v1")
+    assert (refusal["provider"], refusal["reason"]) == ("gemini_api", "credential_in_inputs")
+    assert [s["reason"] for s in arm.events("campaign.stopped.v1")] == ["local_refusal"]
+    assert fake.calls == [] and script.calls == 0
+    assert not arm.events("job.dispatch.intent.v1") and not arm.events("hosted.page.settled.v1")
+    assert not [p for p in arm.events("campaign.stage_reserved.v1") if p["stage"] == "rehearsal"]
+    with pytest.raises(ContractError, match="stopped"):
+        _paid(spec, out, tmp_path, "rehearsal")
+
+
+def test_0j_3_a_rehearsal_page_that_exhausts_its_attempts_stops_the_arm(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    script = MistralScript([429, 429])
+    monkeypatch.setattr(gemini_api, "request_bytes", FakeGemini())
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    assert _paid(spec, out, tmp_path, "rehearsal") == 3
+    with pytest.raises(ContractError, match="lead decides"):
+        _paid(spec, out, tmp_path, "rehearsal")
+    (stop,) = hosted.Arm(spec, out).events("campaign.stopped.v1")
+    assert stop == {"reason": "rehearsal_page_exhausted", "page_id": "d1.png#0"}
+    assert script.calls == hosted.MISTRAL_ATTEMPTS_RESERVED
+    with pytest.raises(ContractError, match="rehearsal"):
+        _paid(spec, out, tmp_path, "full")
+
+
+def test_0j_4_an_anchor_whose_end_is_not_found_confirms_nothing(tmp_path: Path) -> None:
+    step = [{"start": "| `m` |", "end": "\n"}]
+    assert hosted.anchored("a | `m` | $4 /1000\nb $40", step) == " $4 /1000"
+    assert hosted.anchored("a | `m` | $4 /1000 b $40", step) is None
+    # the OCR 4.1 row is the snapshot's last text and no line end follows it
+    head = SNAPSHOT.split(b"| `mistral-ocr-4-1` |")[0]
+    spec = _spec_with_snapshot(tmp_path, head + b"| `mistral-ocr-4-1` | Input $4 /1000 Pages |")
+    with pytest.raises(ContractError, match="row for that model and mode"):
+        hosted.check_snapshots(spec, tmp_path / "snap")
+
+
+def test_0j_5_the_dry_receipt_is_bound_by_the_sha256_the_ledger_recorded(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    path = out / "dry" / "receipt.json"
+    (recorded,) = hosted.Arm(spec, out).events("hosted.dry_receipt.v1")
+    assert recorded["sha256"] == "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+    fake = FakeGemini()
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", _mistral_ok)
+    dry = json.loads(path.read_bytes())
+    dry["estimate"]["gemini_api"]["worst_usd"] = "0"  # no page-list check would see this
+    path.write_text(json.dumps(dry, indent=1, sort_keys=True), encoding="utf-8")
+    with pytest.raises(ContractError, match="the ledger recorded"):
+        _paid(spec, out, tmp_path, "rehearsal")
+    assert fake.calls == []
+
+
+@pytest.mark.parametrize("dropped_from", ["both_lists", "mistral_pages"])
+def test_0j_5_a_page_the_dry_plan_neither_rendered_nor_refused_refuses_the_stage(
+    dropped_from: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    dry = json.loads((out / "dry" / "receipt.json").read_bytes())
+    if dropped_from == "both_lists":
+        dry["pages"] = [r for r in dry["pages"] if r["page_id"] != "d4.png#0"]
+    dry["mistral_pages"].remove("d4.png#0")
+    _rebind_dry(spec, out, dry)
+    fake, script = FakeGemini(), MistralScript([])
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    assert _paid(spec, out, tmp_path, "rehearsal") == 0  # d4 is not a rehearsal page
+    calls = (len(fake.calls), script.calls)
+    with pytest.raises(ContractError, match="neither rendered nor refused"):
+        _paid(spec, out, tmp_path, "full")
+    assert (len(fake.calls), script.calls) == calls
+
+
+def test_0j_6_a_mistral_page_image_is_compared_with_the_dry_plans(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    dry = json.loads((out / "dry" / "receipt.json").read_bytes())
+    # d1's Gemini half refused by the plan: in the paid stage only Mistral renders d1
+    dry["page_refusals"].append(
+        {"page_id": "d1.png#0", "provider": "gemini_api", "reason": "page_over_inline_limit"}
+    )
+    row = next(r for r in dry["pages"] if r["page_id"] == "d1.png#0")
+    row["image_sha256"] = "sha256:" + "0" * 64
+    _rebind_dry(spec, out, dry)
+    script = MistralScript([])
+    monkeypatch.setattr(gemini_api, "request_bytes", FakeGemini())
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    with pytest.raises(ContractError, match="differs from the dry plan"):
+        _paid(spec, out, tmp_path, "rehearsal")
+    assert script.calls == 0
+    arm = hosted.Arm(spec, out)
+    assert [s["reason"] for s in arm.events("campaign.stopped.v1")] == [
+        "mistral_image_differs_from_dry_plan"
+    ]
+    (settled,) = arm.events("hosted.page.settled.v1")
+    assert (settled["page_id"], settled["actual_usd"]) == ("d1.png#0", "0")
+
+
+def test_0j_7_resubmit_after_absent_is_recorded_once_per_intent(
+    tmp_path: Path, keys: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    fake = FakeGemini()
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    arm, chunks, pages, corpus = _arm_with_chunk(tmp_path, spec, [_doc(1)])
+    fake.fail_create = "before"
+    for _ in range(3):  # the first create and two re-creates never reach the provider
+        fresh = hosted.Arm(spec, arm.out, hosted.GeminiBatches())
+        with pytest.raises(RunnerUnavailable):
+            hosted.submit_chunk(fresh, "dry", chunks[0], pages, corpus)
+    fake.fail_create = None
+    fresh = hosted.Arm(spec, arm.out, hosted.GeminiBatches())
+    hosted.submit_chunk(fresh, "dry", chunks[0], pages, corpus)
+    assert len(fresh.events("hosted.resubmit_after_absent.v1")) == 1
+    assert len(fresh.events("job.dispatched.v1")) == 1 and len(fake.batches) == 1
+
+
+@pytest.mark.parametrize(
+    "extra",
+    [
+        "mistral-ocr-4-0",
+        "mistral-ocr-4",
+        "mistral-ocr-latest",
+        "mistral-ocr-4-1-latest",
+        "Mistral-OCR-Latest",
+        "mistral-ocr-4-0-2505",  # a dated form of the retired id
+        "mistral-ocr-4-1-2611",  # a dated form not on the reviewed list
+        "mistral-ocr-4-2",  # unknown
+        "MISTRAL-OCR-4-1",  # no normalisation
+    ],
+)
+def test_0j_8_served_ids_refuse_the_retired_id_and_every_alias(extra: str, tmp_path: Path) -> None:
+    spec = _spec(tmp_path)
+    raw = yaml.safe_load(spec.path.read_text(encoding="utf-8"))
+    raw["hosted"]["mistral_ocr_4"]["served_ids"] = {"mistral-ocr-4-1": ["mistral-ocr-4-1", extra]}
+    spec.path.write_text(yaml.safe_dump(raw, sort_keys=False), encoding="utf-8")
+    with pytest.raises(ContractError, match="served_ids"):
+        hosted.load_hosted_spec(spec.path)
+
+
+# --- WO-D10-0J round 2: evidence written once; local refusals; cancel; served ids; shapes ----
+
+
+def _snapshot(out: Path) -> dict[str, bytes]:
+    """Every file under the arm's output directory, by relative path."""
+    return {str(p.relative_to(out)): p.read_bytes() for p in sorted(out.rglob("*")) if p.is_file()}
+
+
+def _dry_again(tmp_path: Path, spec: hosted.HostedSpec, out: Path) -> None:
+    hosted.run_dry(
+        spec,
+        out,
+        tmp_path / "manifest.json",
+        tmp_path / "corpus",
+        tmp_path / "snap",
+        environment=lambda: ENV,
+    )
+
+
+@pytest.mark.parametrize("after", ["dry", "rehearsal"])
+def test_0j_r2_a_second_dry_is_refused_before_any_write(
+    after: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Probe Q1/Q9: the dry command run again (also after a paid stage) never rewrites the dry
+    receipt nor binds a second one; ``full`` still runs against the first."""
+    if after == "dry":
+        spec = _spec(tmp_path)
+        out = _through_dry(tmp_path, spec, monkeypatch)
+    else:
+        spec, out, _ = _rehearse(tmp_path, monkeypatch)
+    files = _snapshot(out)
+    with monkeypatch.context() as keyless:
+        keyless.delenv("GEMINI_API_KEY")
+        keyless.delenv("MISTRAL_API_KEY")
+        with pytest.raises(ContractError, match="already recorded"):
+            _dry_again(tmp_path, spec, out)
+        assert _main(tmp_path, out, "dry") == 2  # the CLI, through the real check
+    assert _snapshot(out) == files
+    assert len(hosted.Arm(spec, out).events("hosted.dry_receipt.v1")) == 1
+
+
+def test_0j_r2_two_dry_receipt_events_bind_nothing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    (recorded,) = hosted.Arm(spec, out).events("hosted.dry_receipt.v1")
+    hosted.Arm(spec, out).ledger.append("hosted.dry_receipt.v1", dict(recorded))  # even equal
+    fake = FakeGemini()
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", _mistral_ok)
+    monkeypatch.setattr(hosted, "check_environment", lambda *a, **k: ENV)
+    with pytest.raises(ContractError, match="dry_incomplete"):
+        _paid(spec, out, tmp_path, "rehearsal")
+    with pytest.raises(ContractError, match="exactly one"):
+        hosted.dry_receipt(hosted.Arm(spec, out))
+    capsys.readouterr()
+    for stage in ("collect", "score"):  # every stage, also those that never read the receipt
+        assert _main(tmp_path, out, stage) == 2
+    assert capsys.readouterr().err.count("dry_incomplete") == 2
+    assert fake.calls == []
+
+
+@pytest.mark.parametrize("missing", ["pages", "mistral_pages", "page_refusals", "admitted"])
+def test_0j_r2_a_missing_dry_list_is_a_refusal_not_an_empty_default(missing: str) -> None:
+    """A dry plan that refused every page for both providers reads as an empty stage; the same
+    plan with one of its lists missing is refused, never read as an empty list."""
+    docs = [_doc(1), _doc(2)]
+    admitted = _pages(docs)
+    ids = [p.page_id for p in admitted]
+    dry: dict[str, Any] = {
+        "pages": [],
+        "mistral_pages": [],
+        "page_refusals": [{"page_id": i, "provider": "both", "reason": "x"} for i in ids],
+        "admitted": {"page_ids": ids},
+    }
+    empty = hosted.stage_pages("full", admitted, dry)
+    assert empty.gemini == () and empty.mistral == () and len(empty.refusals) == 2
+    del dry[missing]
+    with pytest.raises(ContractError):
+        hosted.stage_pages("full", admitted, dry)
+
+
+@pytest.mark.parametrize("stage", ["rehearsal", "full"])
+def test_0j_r2_a_paid_stage_never_replaces_a_receipt_file(
+    stage: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A file already at the receipt's path (or its temporary) is left as it is, and the stage
+    refuses before anything is reserved or sent."""
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    fake = FakeGemini()
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", _mistral_ok)
+    if stage == "full":
+        assert _paid(spec, out, tmp_path, "rehearsal") == 0
+    calls, files = len(fake.calls), _snapshot(out)
+    for name in ("receipt.json", "receipt.json.tmp"):
+        planted = out / stage / name
+        planted.parent.mkdir(parents=True, exist_ok=True)
+        planted.write_bytes(b'{"planted": true}')
+        with pytest.raises(ContractError, match="written once"):
+            _paid(spec, out, tmp_path, stage)
+        assert planted.read_bytes() == b'{"planted": true}'
+        planted.unlink()
+    assert len(fake.calls) == calls and _snapshot(out) == files
+
+
+def test_0j_r2_every_stage_run_again_changes_no_receipt_and_no_ledger_byte(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec, out, _ = _rehearse(tmp_path, monkeypatch)
+    assert _paid(spec, out, tmp_path, "full") == 0
+    files = _snapshot(out)
+    with pytest.raises(ContractError, match="already recorded"):
+        hosted.record_prepaid(spec, out, "13.50", "12.15", "again")
+    with monkeypatch.context() as keyless:
+        keyless.delenv("GEMINI_API_KEY")
+        keyless.delenv("MISTRAL_API_KEY")
+        with pytest.raises(ContractError, match="already recorded"):
+            _dry_again(tmp_path, spec, out)
+    for stage in ("rehearsal", "full"):
+        with pytest.raises(ContractError, match="already complete"):
+            _paid(spec, out, tmp_path, stage)
+    arm = hosted.Arm(spec, out, hosted.NoNetwork())
+    for stage in ("prepaid", "dry", "rehearsal", "full"):  # the writer itself refuses
+        with pytest.raises(ContractError, match="written once"):
+            hosted._write_receipt(arm, stage, {"stage": stage, "forged": True})
+    assert _snapshot(out) == files
+    stray = out / "score" / "receipt.json.tmp"  # a temporary left by a crash is not replaced
+    stray.parent.mkdir()
+    stray.write_bytes(b"stray")
+    with pytest.raises(ContractError, match="written once"):
+        hosted._write_receipt(arm, "score", {"n": 0})
+    assert stray.read_bytes() == b"stray" and not (out / "score" / "receipt.json").exists()
+    stray.unlink()
+    hosted._write_receipt(arm, "score", {"n": 1})
+    score = (out / "score" / "receipt.json").read_bytes()
+    with pytest.raises(ContractError, match="written once"):
+        hosted._write_receipt(arm, "score", {"n": 2})
+    assert (out / "score" / "receipt.json").read_bytes() == score
+
+
+_PARTIAL = ["crash_before_event", "temporary", "event_without_receipt", "receipt_without_event"]
+
+
+@pytest.mark.parametrize("state", _PARTIAL)
+def test_0j_r2_a_partial_dry_stage_refuses_every_stage_with_dry_incomplete(
+    state: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    spec = _spec(tmp_path)
+    if state == "crash_before_event":  # the real dry stage dies at the ledger write
+        real = hosted.EvidenceLedger.append
+
+        def append(self: Any, event_type: str, payload: Any, **kw: Any) -> Any:
+            if event_type == "hosted.dry_receipt.v1":
+                raise OSError("disk full")
+            return real(self, event_type, payload, **kw)
+
+        monkeypatch.setattr(hosted.EvidenceLedger, "append", append)
+        with pytest.raises(OSError):
+            _through_dry(tmp_path, spec, monkeypatch)
+        monkeypatch.setattr(hosted.EvidenceLedger, "append", real)
+        out = tmp_path / "out"
+        assert (out / "dry" / "receipt.json.tmp").exists()
+        assert not (out / "dry" / "receipt.json").exists()
+        monkeypatch.setenv("GEMINI_API_KEY", _marker())
+        monkeypatch.setenv("MISTRAL_API_KEY", _marker("mk"))
+        monkeypatch.setenv("AKC_BENCHMARK_ENDPOINT_ALLOWLIST", ALLOWLIST)
+    else:
+        out = _through_dry(tmp_path, spec, monkeypatch)
+        receipt = out / "dry" / "receipt.json"
+        if state == "temporary":
+            (out / "dry" / "receipt.json.tmp").write_bytes(receipt.read_bytes())
+        elif state == "event_without_receipt":
+            receipt.unlink()
+        else:
+            _rebuild_ledger(
+                spec, out, lambda kind, p: None if kind == "hosted.dry_receipt.v1" else p
+            )
+    fake = FakeGemini()
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", _mistral_ok)
+    monkeypatch.setattr(hosted, "check_environment", lambda *a, **k: ENV)
+    files = _snapshot(out)
+    for stage in ("rehearsal", "full"):
+        with pytest.raises(ContractError, match="dry_incomplete"):
+            _paid(spec, out, tmp_path, stage)
+    with monkeypatch.context() as keyless:
+        keyless.delenv("GEMINI_API_KEY")
+        keyless.delenv("MISTRAL_API_KEY")
+        with pytest.raises(ContractError, match="dry_incomplete"):
+            _dry_again(tmp_path, spec, out)
+        capsys.readouterr()
+        assert _main(tmp_path, out, "dry") == 2
+    for stage in ("rehearsal", "full", "collect", "score"):
+        assert _main(tmp_path, out, stage) == 2
+    err = capsys.readouterr().err
+    assert err.count("dry_incomplete") == 5 and "start a new arm output directory" in err
+    assert fake.calls == [] and _snapshot(out) == files
+
+
+@pytest.mark.parametrize("status", [400, 403, 404, 409])
+def test_0j_r2_a_cancel_answering_another_status_is_recorded_once_and_never_posted_again(
+    status: int, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Probe Q2: only 429 and 5xx are retried; the job stays open at its worst case."""
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    fake = FakeGemini(state="BATCH_STATE_RUNNING")
+    posts: list[int] = []
+
+    def refusing(config: Any, method: str, body: Any, headers: Any, **kw: Any) -> Any:
+        if method == "POST" and config.endpoint.endswith(":cancel"):
+            posts.append(status)
+            return status, "application/json", b"{}"
+        return fake(config, method, body, headers, **kw)
+
+    monkeypatch.setattr(gemini_api, "request_bytes", refusing)
+    monkeypatch.setattr(vlm, "post_bytes", _mistral_ok)
+    assert _paid(spec, out, tmp_path, "rehearsal") == 3
+    hosted.Arm(spec, out).stop("some_other_stop")
+    for _ in range(4):
+        assert _paid(spec, out, tmp_path, "rehearsal") == 3  # still running: pending
+    arm = hosted.Arm(spec, out)
+    assert posts == [status]
+    assert arm.events("hosted.cancel_refused.v1") == [{"job": "batches/b1", "http_status": status}]
+    assert arm.events("hosted.job.cancel_requested.v1") == []
+    (intent,) = [p for p in arm.events("job.dispatch.intent.v1") if p["provider"] == "gemini_api"]
+    assert intent["idempotency_key"] not in hosted._closed(arm)  # its worst case stays reserved
+    assert arm.credit is not None
+    report: Any = arm.credit.report()
+    assert intent["idempotency_key"] in report["reservations"]
+    assert intent["idempotency_key"] not in report["settlements"]
+
+
+def test_0j_r2_a_resume_without_a_key_while_a_batch_runs_cancels_nothing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Probe Q3: Gemini batch running, Mistral page 2 still to do, the Mistral key removed."""
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    fake = FakeGemini(state="BATCH_STATE_RUNNING")
+    script = MistralScript([200, 429])
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    assert _paid(spec, out, tmp_path, "rehearsal") == 3
+    calls = (len(fake.calls), script.calls)
+    with monkeypatch.context() as broken:
+        broken.delenv("MISTRAL_API_KEY")
+        for _ in range(2):
+            with pytest.raises(ContractError, match="local refusal"):
+                _paid(spec, out, tmp_path, "rehearsal")
+    arm = hosted.Arm(spec, out)
+    assert (len(fake.calls), script.calls) == calls and fake.cancels() == []
+    assert not arm.campaign.stopped
+    assert arm.events("hosted.local_refusal.v1") == [
+        {"provider": "mistral_ocr_4", "stage": "rehearsal", "reason": "no_key"}
+    ]
+    fake.state = "BATCH_STATE_SUCCEEDED"
+    assert _paid(spec, out, tmp_path, "rehearsal") == 0  # the same command, the key back
+
+
+def test_0j_r2_collect_of_a_stopped_arm_without_its_key_is_refused_not_pending(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    fake = FakeGemini(state="BATCH_STATE_RUNNING")
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", _mistral_ok)
+    monkeypatch.setattr(hosted, "check_environment", lambda *a, **k: ENV)
+    assert _paid(spec, out, tmp_path, "rehearsal") == 3
+    hosted.Arm(spec, out).stop("some_other_stop")
+    calls = len(fake.calls)
+    monkeypatch.delenv("GEMINI_API_KEY")
+    assert _main(tmp_path, out, "collect") == 2
+    arm = hosted.Arm(spec, out)
+    assert arm.events("hosted.local_refusal.v1") == [
+        {"provider": "gemini_api", "stage": "rehearsal", "reason": "no_key"}
+    ]
+    assert len(fake.calls) == calls and fake.cancels() == []
+
+
+def test_0j_r2_a_dry_mistral_list_naming_an_unrendered_page_is_refused_before_any_reservation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    dry = json.loads((out / "dry" / "receipt.json").read_bytes())
+    dry["pages"] = [r for r in dry["pages"] if r["page_id"] != "d1.png#0"]  # d1 kept for Mistral
+    dry["page_refusals"].append({"page_id": "d1.png#0", "provider": "both", "reason": "x"})
+    _rebind_dry(spec, out, dry)
+    fake, script = FakeGemini(), MistralScript([])
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    with pytest.raises(ContractError, match="did not render"):
+        _paid(spec, out, tmp_path, "rehearsal")
+    arm = hosted.Arm(spec, out)
+    assert fake.calls == [] and script.calls == 0
+    assert not [p for p in arm.events("campaign.stage_reserved.v1") if p["stage"] == "rehearsal"]
+
+
+_JSON = st.recursive(
+    st.none() | st.booleans() | st.integers() | st.floats() | st.text(max_size=8),
+    lambda inner: st.lists(inner, max_size=3) | st.dictionaries(st.text(max_size=8), inner),
+    max_leaves=6,
+)
+
+
+@settings(max_examples=150, deadline=None, derandomize=True)
+@given(
+    stage=st.sampled_from(["rehearsal", "full"]),
+    key=st.sampled_from(["pages", "page_refusals", "mistral_pages", "admitted"]),
+    how=st.sampled_from(["replace", "delete", "append", "extra_mistral_page"]),
+    value=_JSON,
+)
+def test_0j_r2_fuzz_stage_pages_reads_a_malformed_dry_receipt_only_as_a_refusal(
+    dried: Path, stage: str, key: str, how: str, value: Any
+) -> None:
+    """Any shape of the four lists the paid stage reads: a ContractError, or pages that the dry
+    plan rendered (each with its image sha256); never a KeyError, TypeError or a default."""
+    dry = json.loads((dried / "out" / "dry" / "receipt.json").read_bytes())
+    admitted, _ = hosted.page_list(json.loads((dried / "manifest.json").read_bytes())["documents"])
+    if how == "replace":
+        dry[key] = value
+    elif how == "delete":
+        del dry[key]
+    elif how == "append" and isinstance(dry[key], list):
+        dry[key].append(value)
+    elif how == "extra_mistral_page":
+        dry["mistral_pages"].append(value if isinstance(value, str) else "d9.png#0")
+    try:
+        pages = hosted.stage_pages(stage, admitted, dry)
+    except ContractError:
+        return
+    for page in (*pages.gemini, *pages.mistral):
+        assert isinstance(pages.image_sha256[page.page_id], str)
+
+
+@pytest.mark.parametrize(
+    ("damage", "message"), [(b"[1]", "receipt object"), (b"{not json", "readable receipt")]
+)
+def test_0j_r2_a_predecessor_receipt_that_is_not_an_object_is_a_refusal(
+    damage: bytes, message: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    _corpus(tmp_path, _docs3())
+    out = tmp_path / "out"
+    _prepaid(spec, out)
+    (out / "prepaid" / "receipt.json").write_bytes(damage)
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
+    with pytest.raises(ContractError, match=message):
+        _dry_again(tmp_path, spec, out)
+
+
+def test_0j_r2_quarantine_never_overwrites_an_earlier_hit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    arm = hosted.Arm(spec, out)
+    secret = os.environ["MISTRAL_API_KEY"]
+    planted = out / "rehearsal" / "planted.json"
+    planted.parent.mkdir(parents=True, exist_ok=True)
+    kept = []
+    for n in (1, 2):
+        data = json.dumps({"n": n, "raw": base64.b64encode(secret.encode()).decode()}).encode()
+        planted.write_bytes(data)
+        kept.append(data)
+        assert hosted.scan_credentials(arm, [out / "rehearsal"])["hits"]
+    quarantined = sorted(p.read_bytes() for p in (out / "quarantine" / "rehearsal").iterdir())
+    assert quarantined == sorted(kept) and not planted.exists()
