@@ -217,7 +217,7 @@ class ProductCoreReceipt(ContractModel):
     input_sha256: Sha256
     output_sha256: Sha256
     core_release_digest: Sha256
-    matching_policy: Literal["legacy"] = "legacy"
+    matching_policy: Literal["legacy", "fact_key_v1"] = "legacy"
     candidate_promotion: Literal[False] = False
     equivalence: Literal["passed", "failed", "not_run"]
     total_artifacts: Annotated[int, Field(ge=0)]
