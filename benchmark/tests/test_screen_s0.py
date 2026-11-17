@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
+import shutil
 from collections.abc import Callable
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -16,10 +18,11 @@ from typing import Any
 import pytest
 
 from benchmark.runners.base import RunnerUnavailable
+from benchmark.runners.registry import EXTERNAL_RUNNERS, RUNNER_CONFIGS
 from benchmark.runners.vlm import PageRefused
 from benchmark.screen import s0, select_5h
-from benchmark.screen.manifest import HoldoutGuard
-from benchmark.v6.contracts import canonical_sha256
+from benchmark.screen.manifest import SEC_LICENCE, HoldoutGuard, freeze
+from benchmark.v6.contracts import ContractError
 
 MARKER = "fake-token-for-tests-Qx7Zp9"  # not a credential: set only in this test environment
 POD = "podabc123"
@@ -162,10 +165,13 @@ def world(
     origins: list[str] | None = None,
     truth: Callable[[str], dict[str, Any]] | None = None,
 ) -> Path:
-    """Manifest, corpus and gold under ``tmp``; returns ``tmp``."""
+    """Manifest, corpus and gold under ``tmp``; returns ``tmp``. The manifest comes from the
+    real ``freeze`` (profile lpc_sec, all dev), so ``verify``'s schema check sees what a frozen
+    manifest holds; a degraded page is derived from a source page of the same company."""
     corpus = tmp / "corpus"
     corpus.mkdir()
-    docs, gold = [], []
+    docs: list[dict[str, Any]] = []
+    gold = []
     for i, origin in enumerate(origins or ["born_digital_html_print"] * pages):
         doc_id = f"p{i}.pdf"
         data = f"synthetic page {i}".encode()
@@ -179,14 +185,35 @@ def world(
                 "stratum": "en_native",
                 "language": "en",
                 "document_class": "sec_statement",
-                "split": "dev",
                 "page_origin": origin,
+                "rights": {
+                    "source_url": f"https://example.invalid/{i}",
+                    "licence_id": SEC_LICENCE,
+                    "licence_snapshot_sha256": "sha256:" + "a" * 64,
+                    "rights_class": "public_record",
+                    "redistribution": False,
+                    "recorded_by": "tester",
+                    "recorded_at": "2026-11-16T00:00:00Z",
+                },
+                "provenance": {"adsh": f"0000000{i:03d}-25-000001", "cik": 1000 + i},
             }
         )
         t = (truth or _truth)(doc_id)
         gold.append(json.dumps({"page_id": f"{doc_id}#0", "truth": t}))
-    body = {"profile": "lpc_sec", "documents": docs}
-    manifest = {**body, "manifest_sha256": canonical_sha256(body)}
+    sources = [d for d in docs if d["page_origin"] != select_5h.DEGRADED]
+    derived = [d for d in docs if d["page_origin"] == select_5h.DEGRADED]
+    for k, d in enumerate(derived):  # two levels per source page
+        src = sources[k // 2]
+        d.update(
+            derived_from=src["source_sha256"],
+            provenance=dict(src["provenance"]),
+            degradation={
+                "level": ("scan_fair", "scan_poor")[k % 2],
+                "seed": "5h-2",
+                "renderer": {"pypdfium2": s0.PYPDFIUM2_VERSION},
+            },
+        )
+    manifest = freeze(docs, "s", "lpc_sec", split="dev")
     (tmp / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
     (tmp / "gold.jsonl").write_text("\n".join(gold) + "\n", encoding="utf-8")
     monkeypatch.setenv("AKC_BENCHMARK_PROVIDER_TOKEN", MARKER)
@@ -438,14 +465,31 @@ def test_proxy_cut_with_a_busy_server_stops_with_exit_3(tmp_path, monkeypatch):
     assert not (w / "out" / "final-records.jsonl").exists()
 
 
-def test_a_400_is_a_stored_model_failure(tmp_path, monkeypatch):
+def test_a_token_outside_the_table_is_refused_by_the_summary_as_by_the_selection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """5H-18/5H-19: an http_200 failure row is stored (one call, no retry), but 1xx/2xx are not
+    failure tokens and in no class of the one table (5H-19 classes 400 by rule, so it is no
+    longer the example): the driver's summary refuses it (exit 4, no final records, no summary,
+    nothing printed that names the page) and S1 refuses the same records."""
     w = world(tmp_path, monkeypatch)
-    model = Model({"p0.pdf": row("http_400")}, ok())
+    model = Model({"p0.pdf": row("http_200")}, ok())
     rc, _, _ = run(w, monkeypatch, model)
-    assert rc == 0 and model.calls.count("p0.pdf") == 1
-    assert final(w)[0]["raw_sha256"] is not None
-    summary = json.loads((w / "out" / "s0-summary.json").read_text(encoding="utf-8"))
-    assert summary["failure_classes"]["model"] == 1
+    assert rc == 4 and model.calls.count("p0.pdf") == 1
+    assert not (w / "out" / "final-records.jsonl").exists()
+    assert not (w / "out" / "s0-summary.json").exists()
+    assert "p0.pdf" not in capsys.readouterr().out
+    lines = (w / "out" / "records.jsonl").read_text(encoding="utf-8").splitlines()
+    records = [json.loads(x) for x in lines]
+    assert records[0]["raw_sha256"] is not None
+    manifest = json.loads((w / "manifest.json").read_text(encoding="utf-8"))
+    with pytest.raises(ContractError, match="http_200"):
+        select_5h.select_s1(
+            records,
+            guard=HoldoutGuard(manifest, w / "access.jsonl"),
+            baseline="C2",
+            raw_dir=w / "out" / "raw",
+        )
 
 
 def test_page_server_reporting_not_ready_stops_the_run(tmp_path, monkeypatch):
@@ -476,9 +520,28 @@ def test_served_model_differs_is_integrity(tmp_path, monkeypatch):
     assert rc == 4 and model.calls == ["p0.pdf"]
 
 
+@pytest.mark.parametrize("kind", ["chat", "page"])
+@pytest.mark.parametrize("token", sorted(select_5h.INTEGRITY))
+def test_every_integrity_token_halts_with_exit_4_and_is_never_stored(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, token: str, kind: str
+) -> None:
+    """5H-19: each member of the named integrity set stops the run on the page that carries
+    it (exit 4); no final record, no raw output and no working record holds the token."""
+    w = world(tmp_path, monkeypatch)
+    model = Model({"p0.pdf": row(token, kind)}, ok(kind))
+    rc, _, _ = run(w, monkeypatch, model, kind=kind, pod=Pod(kind))
+    assert rc == 4 and model.calls == ["p0.pdf"]
+    out = w / "out"
+    assert not (out / "final-records.jsonl").exists()
+    assert not (out / "s0-summary.json").exists()
+    assert not (out / "raw").exists() or not any((out / "raw").iterdir())
+    working = out / "records.jsonl"
+    assert not working.exists() or token not in working.read_text(encoding="utf-8")
+
+
 def test_cost_is_price_times_latency_and_none_on_failure_rows(tmp_path, monkeypatch):
     w = world(tmp_path, monkeypatch)
-    model = Model({"p2.pdf": row("finish_reason_not_stop")}, ok(latency=1800.0))
+    model = Model({"p2.pdf": row("http_524")}, ok(latency=1800.0))
     rc, _, _ = run(w, monkeypatch, model)
     assert rc == 0
     recs = {r["doc_id"]: r for r in final(w)}
@@ -580,11 +643,12 @@ def test_a_runner_exception_is_its_own_class_and_counts_toward_rejection(tmp_pat
         "operational": 1,
         "time_limit": 1,
         "runner_error": 1,
-        "exit_unclassified": 0,
+        "contract": 0,
         "page_refused": 0,
-        "model": 0,
+        "pipeline_failure": 0,
+        "model_answer": 0,
     }
-    assert summary["operational_plus_time_limit_plus_runner_error"] == 3
+    assert summary["mechanical"] == {"classes_counted": list(select_5h.MECHANICAL), "pages": 3}
 
 
 @pytest.mark.parametrize("value", ["1e", "e", "+-", ".", "1e5e5", "1.2.3"])
@@ -682,7 +746,7 @@ def test_the_token_is_in_no_file_and_no_stream_and_doc_ids_and_text_are_on_no_st
     stdout nor stderr; document ids, page text and gold text are on neither stream.
     records.jsonl and final-records.jsonl carry doc_id by design (the record schema)."""
     w = world(tmp_path, monkeypatch)
-    model = Model({"p1.pdf": row("http_400"), "p2.pdf": [down, ok()]}, ok())
+    model = Model({"p1.pdf": row("http_524"), "p2.pdf": [down, ok()]}, ok())
     rc, pod, _ = run(w, monkeypatch, model)
     assert rc == 0
     assert ("GET", "/v1/models", True) in pod.calls  # the bearer was sent, as a header
@@ -735,7 +799,8 @@ def test_an_answer_over_the_size_bound_is_a_stored_failure_never_normalised(tmp_
     recs = {r["doc_id"]: r for r in final(w)}
     big = raw(w, recs["p0.pdf"])
     assert big["failure"] == {"reason": "output_too_large"}
-    assert big["metrics"] == {"text_chars": s0.MAX_TEXT_CHARS + 1} and "text" not in big
+    assert big["metrics"] == {"text_chars": s0.MAX_TEXT_CHARS + 1, "latency_ms": 1800.0}
+    assert "text" not in big  # the pod's time is kept for cost attribution, the text is not
     assert not recs["p0.pdf"]["accepted"] and recs["p0.pdf"]["provider_cost_usd"] is None
     assert recs["p1.pdf"]["accepted"]
     summary = summary_of(w)
@@ -826,7 +891,7 @@ def test_a_runner_result_that_is_not_an_object_is_a_runner_error_row(
     assert stored["metrics"] == {"result_type": type(value).__name__}
     summary = summary_of(w)
     assert summary["failure_classes"]["runner_error"] == 1
-    assert summary["operational_plus_time_limit_plus_runner_error"] == 1
+    assert summary["mechanical"]["pages"] == 1
     assert summary["accepted"] == 2
 
 
@@ -843,16 +908,48 @@ def test_the_summary_counts_pages_with_a_dash_cell_before_a_number(tmp_path, mon
     assert "- | 1,234" in raw(w, recs["p0.pdf"])["text"]  # never joined into -1,234
 
 
-def test_failure_classes() -> None:
-    assert s0.failure_class("output_too_large") == "page_refused"
-    assert s0.failure_class("runner_result_unshaped") == "runner_error"
-    assert s0.failure_class("provider_unavailable") == "operational"
-    assert s0.failure_class("page_timeout") == "time_limit"
-    assert s0.failure_class("http_524") == "time_limit"
-    assert s0.failure_class("pipeline_exit_nonzero") == "exit_unclassified"
-    assert s0.failure_class("page_over_pixel_cap") == "page_refused"
-    assert s0.failure_class("finish_reason_not_stop") == "model"
-    assert s0.failure_class("provider_error") == "runner_error"
+@pytest.mark.parametrize("latency", [None, "1800", True, -1.0, math.nan, math.inf, -math.inf])
+def test_an_oversized_answer_keeps_only_a_latency_that_is_a_measurement(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, latency: Any
+) -> None:
+    """The output_too_large row keeps metrics.latency_ms only when the runner measured one (a
+    non-negative number); anything else is left out, never stored as fact."""
+    w = world(tmp_path, monkeypatch, pages=1)
+    model = Model({}, ok(text="x" * (s0.MAX_TEXT_CHARS + 1), latency=latency))
+    rc, _, _ = run(w, monkeypatch, model)
+    assert rc == 0
+    assert raw(w, final(w)[0])["metrics"] == {"text_chars": s0.MAX_TEXT_CHARS + 1}
+
+
+@pytest.mark.parametrize("latency", [math.inf, math.nan])
+def test_a_latency_that_is_not_finite_is_never_priced(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, latency: float
+) -> None:
+    """The same predicate decides the price of an answered page: a non-finite latency gives no
+    cost (None), never an infinite or NaN one."""
+    w = world(tmp_path, monkeypatch, pages=1)
+    rc, _, _ = run(w, monkeypatch, Model({}, ok(latency=latency)))
+    assert rc == 0
+    rec = final(w)[0]
+    assert rec["provider_cost_usd"] is None
+    assert "estimated_cost_usd" not in raw(w, rec)["metrics"]
+    assert summary_of(w)["cost"]["pages_with_cost"] == 0
+
+
+def test_the_driver_has_no_failure_table_of_its_own() -> None:
+    """5H-18: the table has one home, select_5h; the driver imports it."""
+    for name in ("failure_class", "TIME_LIMIT", "UNAVAILABLE", "FAILURE_CLASSES", "MECHANICAL"):
+        own = getattr(s0, name, None)  # absent, or the selection's own object
+        assert own is None or own is getattr(select_5h, name), name
+    assert not hasattr(s0, "UNAVAILABLE")
+    shared = {
+        "failure_class": select_5h.failure_class,
+        "OPERATIONAL": select_5h.OPERATIONAL,
+        "INTEGRITY": select_5h.INTEGRITY,
+        "selection_reason": select_5h._reason,
+    }
+    for name, theirs in shared.items():
+        assert getattr(s0, name) is theirs, name
 
 
 # ---------------------------------------------------------------- select_5h compatibility
@@ -872,12 +969,6 @@ def _sec_truth(doc_id: str) -> dict[str, Any]:
     }
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=AssertionError,
-    reason="needs lead decision 5H-10 (L1): select_5h counts score flags "
-    "(high_risk_numeric_below_threshold) as failed pages; fixed in the selection lane, WO-D08-9",
-)
 def test_select_s1_on_s0_records_yields_a_non_degenerate_leader(tmp_path, monkeypatch):
     origins = [select_5h.DEGRADED] * 3 + ["born_digital_html_print"] * 3
     w = world(tmp_path, monkeypatch, origins=origins, truth=_sec_truth)
@@ -895,3 +986,87 @@ def test_select_s1_on_s0_records_yields_a_non_degenerate_leader(tmp_path, monkey
     )
     assert s1["leader"] == "C2"
     assert s1["cells"]["H"]["C2"]["critical_exact_rate"] > 0
+
+
+# ---------------------------------------------------------------- 5H-18 end to end
+
+
+def test_mineru_vlm_is_a_registered_page_server_runner() -> None:
+    assert "mineru_vlm" in EXTERNAL_RUNNERS and "mineru_vlm" not in RUNNER_CONFIGS
+
+
+def _contract(case: dict[str, Any]) -> dict[str, Any]:
+    """A page answer that is an object but not the parser-output schema: contract_failed."""
+    out: dict[str, Any] = ok("page")(case)
+    del out["warnings"]
+    return out
+
+
+def test_driver_summary_and_s1_count_the_same_failures_from_the_real_driver(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """5H-18 end to end: the real s0.main (fake model) writes one page of every failure class
+    the driver can write; the real select_s1 reads those records and raw files, and the
+    driver's per-class and per-reason counts are S1's."""
+    plan: list[Any] = [
+        down,  # operational: provider_unavailable after its retry
+        row("http_502", "page"),  # operational: a page row with a down status is stored
+        row("http_524", "page"),  # time_limit
+        row("page_timeout", "page"),  # time_limit
+        boom,  # runner_error: provider_error after its retry
+        lambda case: ["not", "an", "object"],  # runner_error: runner_result_unshaped
+        _contract,  # contract
+        refused,  # page_refused: page_over_pixel_cap
+        ok("page", text="x" * (s0.MAX_TEXT_CHARS + 1)),  # page_refused: output_too_large
+        row("page_count_unsupported", "page"),  # page_refused
+        row("pipeline_exit_nonzero", "page"),  # pipeline_failure
+        row("pipeline_raised", "page"),  # pipeline_failure
+        row("pipeline_output_missing", "page"),  # pipeline_failure
+        row("empty_output", "page"),  # model_answer (5H-19): failed, never mechanical
+        ok("page"),
+        ok("page"),
+        ok("page"),
+    ]
+    origins = [select_5h.DEGRADED if i % 2 else "born_digital_html_print" for i in range(17)]
+    w = world(tmp_path, monkeypatch, origins=origins)
+    pod = Pod("page")
+    pod.health = {**pod.health, "provider": "mineru_vlm"}
+    model = Model({f"p{i}.pdf": b for i, b in enumerate(plan)}, ok("page"))
+    monkeypatch.setenv("AKC_BENCHMARK_ENDPOINT_ALLOWLIST", host("page"))
+    clock = Clock()
+    args = argv(w, "page", "c3", **{"--provider": "mineru_vlm"})
+    rc = s0.main(args, request=pod, call=model, now=clock.now, sleep=clock.sleep)
+    assert rc == 0
+    rc, _, _ = run(w, monkeypatch, Model({}, ok()), out="c2")
+    assert rc == 0
+    merged = w / "raw-all"
+    for out in ("c3", "c2"):
+        shutil.copytree(w / out / "raw", merged, dirs_exist_ok=True)
+    manifest = json.loads((w / "manifest.json").read_text(encoding="utf-8"))
+    s1 = select_5h.select_s1(
+        final(w, "c3") + final(w, "c2"),
+        guard=HoldoutGuard(manifest, w / "access.jsonl"),
+        baseline="C0",
+        raw_dir=merged,
+    )
+    summary = summary_of(w, "c3")
+    assert summary["failure_classes"] == {
+        "operational": 2,
+        "time_limit": 2,
+        "runner_error": 2,
+        "contract": 1,
+        "page_refused": 3,
+        "pipeline_failure": 3,
+        "model_answer": 1,
+    }
+    assert summary["failure_classes"] == s1["failures"]["C0"]["classes"]
+    assert summary["failure_reasons"]["empty_output"] == 1
+    # every class is a failed page in S1's cells (all fields wrong), model_answer included
+    failed = sum(s1["cells"][s]["C0"]["failures"] for s in (select_5h.H, select_5h.R))
+    assert failed == sum(summary["failure_classes"].values()) == 14
+    assert summary["failure_reasons"] == s1["failures"]["C0"]["reasons"]
+    assert summary["score_flags_not_failures"] == s1["failures"]["C0"]["score_flags"]
+    assert summary["mechanical"]["pages"] == s1["mechanical_rejection"]["counts"]["C0"] == 9
+    mech = s1["mechanical_rejection"]["classes_counted"]
+    assert summary["mechanical"]["classes_counted"] == mech
+    assert summary_of(w, "c2")["failure_classes"] == s1["failures"]["C2"]["classes"]

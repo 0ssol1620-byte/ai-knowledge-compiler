@@ -5,16 +5,19 @@ at, the dev gold and the frozen manifest behind a ``HoldoutGuard``.
 
 * H (hard) = pages whose manifest ``page_origin`` is ``synthetic_degradation``
   (synthetically degraded prints, never real scans); R (representative) = every other page.
-* A page is failed only when it carries a 5H-17 failure class (by ``hard_failures``, or by
-  the ``failure.reason`` a page server answered with); scorer flags are tallied per candidate
-  and never fail a page or zero its critical fields (5H-10). Any other token is refused.
+* A page is failed only when it carries a 5H-17/5H-18/5H-19 failure class (by
+  ``hard_failures``, or by the ``failure.reason`` a page server answered with); scorer flags
+  are tallied per candidate and never fail a page or zero its critical fields (5H-10). Any
+  other token is refused, an integrity token (5H-19) included.
 * S1 reuses ``paired_report.build_report`` cells, never its routes. A candidate other than the
-  baseline with more operational + time_limit + runner_error pages than ceil(0.2 x dev pages)
-  is out first (5H-12). Leader L = best on H by the report's rank key (baseline first on a
-  tie, then id). A clear loser has its Wilson upper bound below L's Wilson lower bound on H and
-  on R. McNemar (page all-exact against L) is reported, not a gate. The top five non-baseline
-  non-losers by rank are kept, topped up to four non-baseline candidates by H rank, and the
-  baseline is always carried in addition (5H-16). S1 carries a digest of its own body.
+  baseline with more operational + time_limit + runner_error + pipeline_failure pages than
+  ceil(0.2 x dev pages) is out first (5H-12, 5H-18); model_answer pages are failed but not
+  counted there (5H-19). Leader L = best on H by the report's
+  rank key (baseline first on a tie, then id). A clear loser has its Wilson upper bound below
+  L's Wilson lower bound on H and on R. McNemar (page all-exact against L) is reported, not a
+  gate. The top five non-baseline non-losers by rank are kept, topped up to four non-baseline
+  candidates by H rank, and the baseline is always carried in addition (5H-16). S1 carries a
+  digest of its own body.
 * S2 reads every kept candidate's value per critical field with reader v1 (a failed page is
   all wrong) and gives the rescue matrix on H, R and pooled with its denominators, then picks
   the second and third member by rescued fields on H per measured USD per page. A candidate
@@ -67,16 +70,55 @@ SIGNALS = {
 }
 _Key = tuple[str, str]  # (page_id, field_id)
 
-# 5H-17: the classes of a failed page, by hard_failures / failure.reason.
+# 5H-17 / 5H-18 / 5H-19: the classes of a failed page, by hard_failures / failure.reason. The one
+# table: the S0 driver's summary imports it and has none of its own.
 OPERATIONAL = frozenset(
     {"provider_unavailable", *(f"http_{s}" for s in (401, 403, 404, 429, 500, 502, 503))}
 )
+# 5H-19: operational too, kept out of OPERATIONAL because the driver's retry rule reads that set
+# and 5H-19 does not change retry rules.
+OPERATIONAL_ALSO = frozenset({"credential_in_result"})
 TIME_LIMIT = frozenset({"http_524", "page_timeout"})
-RUNNER_ERROR = frozenset({"provider_error"})
+RUNNER_ERROR = frozenset(
+    {
+        "provider_error",
+        "runner_result_unshaped",
+        "malformed_response",
+        "response_not_object",
+        "result_not_serialisable",
+    }
+)
 CONTRACT = frozenset({"contract_failed"})
 PAGE_REFUSED = re.compile(r"page_[a-z0-9_]+")  # page_* other than page_timeout
-FAILURE_CLASSES = ("operational", "time_limit", "runner_error", "contract", "page_refused")
-MECHANICAL = ("operational", "time_limit", "runner_error")  # 5H-12 counts these
+PAGE_REFUSED_ALSO = frozenset({"output_too_large"})
+PIPELINE_FAILURE = frozenset(
+    {"pipeline_exit_nonzero", "pipeline_raised", "pipeline_output_missing", "pipeline_error"}
+)
+# 5H-19: the candidate answered and the answer is unusable. A failed page, not mechanical.
+MODEL_ANSWER = frozenset(
+    {
+        "finish_reason_not_stop",
+        "output_token_cutoff",
+        "output_tokens_over_bound",
+        "prompt_blocked",
+        "empty_completion",
+        "empty_output",
+    }
+)
+# 5H-19: written only on the way to an integrity stop. Outside the table: the driver halts on
+# them and stores no row; a stored one is refused here.
+INTEGRITY = frozenset({"served_model_differs"})
+HTTP_STATUS = re.compile(r"http_([1-5][0-9]{2})")
+FAILURE_CLASSES = (
+    "operational",
+    "time_limit",
+    "runner_error",
+    "contract",
+    "page_refused",
+    "pipeline_failure",
+    "model_answer",
+)
+MECHANICAL = ("operational", "time_limit", "runner_error", "pipeline_failure")  # 5H-12, 5H-18
 MECHANICAL_SHARE = 0.2
 # Every flag benchmark.evaluators.metrics.score_case raises: reported, never a failure (5H-10).
 SCORER_FLAGS = frozenset(
@@ -92,11 +134,29 @@ SCORER_FLAGS = frozenset(
 )
 
 
+def http_class(token: str) -> str | None:
+    """5H-19: ``http_<status>`` classed by rule. 408, 504, 524 are time_limit; every other 5xx
+    and 401/403/404/429 operational; every other 3xx/4xx runner_error (the request the runner
+    built was refused). None for anything else: 1xx/2xx are not failure tokens."""
+    m = HTTP_STATUS.fullmatch(token)
+    status = int(m[1]) if m else 0
+    if status in (408, 504, 524):
+        return "time_limit"
+    if 500 <= status <= 599 or status in (401, 403, 404, 429):
+        return "operational"
+    if 300 <= status <= 499:
+        return "runner_error"
+    return None
+
+
 def failure_class(token: Any) -> str | None:
-    """The 5H-17 class of one hard_failures / failure.reason token; None for a scorer flag.
-    Anything else is refused, never passed through as either."""
+    """The 5H-17/5H-18/5H-19 class of one hard_failures / failure.reason token; None for a
+    scorer flag. Anything else, an integrity token included, is refused, never passed through
+    as either."""
     if isinstance(token, str):
-        if token in OPERATIONAL:
+        if token in INTEGRITY:
+            raise ContractError(f"{token!r} is an integrity stop, never a stored failure (5H-19)")
+        if token in OPERATIONAL or token in OPERATIONAL_ALSO:
             return "operational"
         if token in TIME_LIMIT:
             return "time_limit"
@@ -104,8 +164,14 @@ def failure_class(token: Any) -> str | None:
             return "runner_error"
         if token in CONTRACT:
             return "contract"
-        if PAGE_REFUSED.fullmatch(token):
+        if token in PAGE_REFUSED_ALSO or PAGE_REFUSED.fullmatch(token):
             return "page_refused"
+        if token in PIPELINE_FAILURE:
+            return "pipeline_failure"
+        if token in MODEL_ANSWER:
+            return "model_answer"
+        if (cls := http_class(token)) is not None:
+            return cls
         if token in SCORER_FLAGS:
             return None
     raise ContractError(f"{str(token)[:60]!r} is neither a 5H-17 failure class nor a scorer flag")
@@ -321,8 +387,9 @@ def select_s1(
             "baseline": baseline,
         },
         "mechanical_rejection": {
-            "rule": "out when operational + time_limit + runner_error pages exceed the bound; "
-            "never the baseline (5H-12)",
+            "rule": "out when operational + time_limit + runner_error + pipeline_failure pages "
+            "exceed the bound; never the baseline (5H-12, 5H-18); model_answer pages are "
+            "failed pages but not counted here (5H-19)",
             "classes_counted": list(MECHANICAL),
             "pages": n_pages,
             "bound": bound,

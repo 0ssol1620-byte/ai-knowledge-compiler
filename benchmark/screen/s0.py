@@ -18,8 +18,10 @@ kept for the resume. The driver enforces its own deadlines (two hours after crea
 before each call and again when it returns; 180 s for the server to go idle after a proxy cut)
 and stops after three operational failures in a row (exit 3; resume with the same ``--out`` on
 a new pod). A wrong served model, provider, revision or recipe, in a page answer or in a health
-answer, is an integrity stop (exit 4). Nothing printed carries page text, a doc id, gold or a
-credential: progress lines name the page by its ordinal only.
+answer, is an integrity stop (exit 4). A failure is classed by the selection's one table
+(``select_5h``, decision 5H-18), read the way S1 reads it; a token outside that table refuses
+the summary (exit 4), never a class of its own. Nothing printed carries page text, a doc id,
+gold or a credential: progress lines name the page by its ordinal only.
 """
 
 from __future__ import annotations
@@ -63,7 +65,16 @@ from benchmark.screen.run_screen import (
     _case,
     run_screen,
 )
-from benchmark.screen.select_5h import READER_V1_SHA256
+from benchmark.screen.select_5h import (
+    FAILURE_CLASSES,
+    INTEGRITY,
+    MECHANICAL,
+    OPERATIONAL,
+    READER_V1_SHA256,
+    failure_class,
+)
+from benchmark.screen.select_5h import _reason as selection_reason
+from benchmark.v6.contracts import ContractError
 
 PYPDFIUM2_VERSION = "4.30.0"
 READY_DEADLINE = timedelta(minutes=45)
@@ -74,9 +85,6 @@ IDLE_POLL_S = 10.0
 MAX_ATTEMPTS = 2  # one retry per page (section 5)
 MAX_OPERATIONAL_IN_A_ROW = 3
 CHAT_PORT, PAGE_PORT = 8000, 8080
-# A chat failure row with one of these statuses is a pod that is down, not a model answer.
-UNAVAILABLE = frozenset(f"http_{s}" for s in (401, 403, 404, 429, 500, 502, 503))
-TIME_LIMIT = frozenset({"http_524", "page_timeout"})
 # Failure rows the driver writes itself. A page answer longer than this is not normalised: a
 # one-page statement is a few thousand characters, and one answer must not hold the run.
 MAX_TEXT_CHARS = 2_000_000
@@ -150,20 +158,6 @@ def _zero(value: str) -> bool:
         return float(value) == 0
     except ValueError:
         return False
-
-
-def failure_class(reason: str) -> str:
-    if reason == "provider_unavailable":
-        return "operational"
-    if reason in TIME_LIMIT:
-        return "time_limit"
-    if reason in ("provider_error", UNSHAPED):
-        return "runner_error"  # the runner raised or broke its contract: not the model's answer
-    if reason == "pipeline_exit_nonzero":
-        return "exit_unclassified"  # cause from the pod log, not a model failure until then
-    if reason == OUTPUT_TOO_LARGE or reason.startswith("page_"):
-        return "page_refused"
-    return "model"
 
 
 def parse_args(argv: list[str] | None) -> argparse.Namespace:
@@ -538,11 +532,11 @@ class Driver:
             return self._row(case_id, UNSHAPED, {"result_type": type(result).__name__})
         failure = result.get("failure")
         reason = _reason(failure.get("reason")) if isinstance(failure, dict) else None
-        if reason == "served_model_differs":
+        if reason in INTEGRITY:  # 5H-19: halted on, never stored
             self._attempt(case_id, reason)
             self._halt("integrity", "the server answered with another served model")
             raise RunnerUnavailable("served model differs; not stored")
-        if self.kind == "chat" and reason in UNAVAILABLE:
+        if self.kind == "chat" and reason in OPERATIONAL:  # a pod that is down, not an answer
             self._unavailable(n, case_id)
             raise RunnerUnavailable("pod answered with an unavailable status; not stored")
         if self.kind == "page":
@@ -573,10 +567,21 @@ class Driver:
             self._attempt(case_id, "unshaped")
             self._log(n, "failure:unshaped")
             return result  # run_screen records contract_failed
+        latency = metrics.get("latency_ms")
+        if not (
+            isinstance(latency, int | float)
+            and not isinstance(latency, bool)
+            and math.isfinite(latency)
+            and latency >= 0
+        ):
+            latency = None  # a measurement or nothing: nan and inf fail it
         if len(text) > MAX_TEXT_CHARS:  # not normalised; a failed page, stored, never retried
             self._attempt(case_id, OUTPUT_TOO_LARGE)
             self._log(n, f"failure:{OUTPUT_TOO_LARGE}")
-            return self._row(case_id, OUTPUT_TOO_LARGE, {"text_chars": len(text)})
+            kept: dict[str, float] = {"text_chars": len(text)}
+            if latency is not None:  # the pod's time was spent: cost attribution needs it
+                kept["latency_ms"] = latency
+            return self._row(case_id, OUTPUT_TOO_LARGE, kept)
         normalised, residual = normalise(self.provider, text)
         metrics = {
             **metrics,
@@ -587,9 +592,8 @@ class Driver:
                 "residual": residual,
             },
         }
-        latency = metrics.get("latency_ms")
         cost = None
-        if isinstance(latency, int | float) and not isinstance(latency, bool) and latency >= 0:
+        if latency is not None:
             cost = self.args.usd_per_hour * latency / 3.6e6
             metrics["estimated_cost_usd"] = cost
             metrics["cost_basis"] = {
@@ -653,40 +657,27 @@ class Driver:
         return self.out / "raw" / (str(record["record_key"]).removeprefix("sha256:") + ".json")
 
     def summary(self, records: list[dict[str, Any]]) -> dict[str, Any]:
-        classes = dict.fromkeys(
-            (
-                "operational",
-                "time_limit",
-                "runner_error",
-                "exit_unclassified",
-                "page_refused",
-                "model",
-            ),
-            0,
-        )
+        classes = dict.fromkeys(FAILURE_CLASSES, 0)
         reasons: Counter[str] = Counter()
         flags: Counter[str] = Counter()
         residual = dash_pages = 0
         for r in records:
-            raw = json.loads(self._raw(r).read_bytes()) if r["raw_sha256"] is not None else None
-            reason: str | None = None
-            if raw is None:
-                if not r["hard_failures"]:
-                    raise Exit(EXIT_INTEGRITY, "a record without output names no failure")
-                reason = _reason(r["hard_failures"][0])
-            elif isinstance(raw.get("failure"), dict):
-                reason = _reason(raw["failure"].get("reason"))
-            elif "contract_failed" in r["hard_failures"]:
-                reason = "contract_failed"
-            else:
-                flags.update(r["hard_failures"])  # score flags: reported, never a failure
-                norm = (raw.get("metrics") or {}).get("normaliser")
-                if isinstance(norm, dict) and isinstance(norm.get("residual"), int):
-                    residual += norm["residual"]
-                dash_pages += dash_cell_before_number(raw["text"])  # validated output: a str
+            try:  # S1's own reading of the page (5H-18): the same table, refused alike
+                reason = selection_reason(r, self.out / "raw")
+            except ContractError:  # its message may name a document: fixed text only
+                raise Exit(
+                    EXIT_INTEGRITY, "a record's failure is not one the 5H-18 table classes"
+                ) from None
             if reason is not None:
                 reasons[reason] += 1
-                classes[failure_class(reason)] += 1
+                classes[str(failure_class(reason))] += 1
+                continue
+            flags.update(r["hard_failures"])  # score flags: reported, never a failure
+            raw = json.loads(self._raw(r).read_bytes())
+            norm = (raw.get("metrics") or {}).get("normaliser")
+            if isinstance(norm, dict) and isinstance(norm.get("residual"), int):
+                residual += norm["residual"]
+            dash_pages += dash_cell_before_number(raw["text"])  # validated output: a str
         tried: Counter[str] = Counter()
         if self.transport.is_file():
             for line in self.transport.read_text(encoding="utf-8").splitlines():
@@ -700,10 +691,11 @@ class Driver:
             "accepted": sum(1 for r in records if r["accepted"]),
             "failure_classes": classes,
             "failure_reasons": dict(sorted(reasons.items())),
-            # 5H-12's mechanical rejection count: a candidate is out above 20 of the 99 pages
-            "operational_plus_time_limit_plus_runner_error": (
-                classes["operational"] + classes["time_limit"] + classes["runner_error"]
-            ),
+            # 5H-12/5H-18's mechanical rejection count: a candidate is out above 20 of 99 pages
+            "mechanical": {
+                "classes_counted": list(MECHANICAL),
+                "pages": sum(classes[k] for k in MECHANICAL),
+            },
             "score_flags_not_failures": dict(sorted(flags.items())),
             "attempts": sum(tried.values()),
             "retries": sum(c - 1 for c in tried.values() if c > 1),

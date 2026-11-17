@@ -6,6 +6,7 @@ No real corpus, no real gold.
 
 from __future__ import annotations
 
+import ast
 import copy
 import dataclasses
 import hashlib
@@ -756,14 +757,80 @@ def test_failure_classes_are_the_5h17_tokens_and_unknown_tokens_refuse() -> None
         "contract_failed": "contract",
         "page_too_large": "page_refused",
         "page_unreadable": "page_refused",
+        # 5H-18
+        "output_too_large": "page_refused",
+        "runner_result_unshaped": "runner_error",
+        "pipeline_exit_nonzero": "pipeline_failure",
+        "pipeline_raised": "pipeline_failure",
+        "pipeline_output_missing": "pipeline_failure",
+        "page_count_unsupported": "page_refused",
+        "page_index_unsupported": "page_refused",
+        # 5H-19
+        "finish_reason_not_stop": "model_answer",
+        "output_token_cutoff": "model_answer",
+        "output_tokens_over_bound": "model_answer",
+        "prompt_blocked": "model_answer",
+        "empty_completion": "model_answer",
+        "empty_output": "model_answer",
+        "malformed_response": "runner_error",
+        "response_not_object": "runner_error",
+        "result_not_serialisable": "runner_error",
+        "pipeline_error": "pipeline_failure",
+        "credential_in_result": "operational",
+        "http_408": "time_limit",
+        "http_504": "time_limit",
+        "http_501": "operational",
+        "http_400": "runner_error",
+        "http_418": "runner_error",
+        "http_301": "runner_error",
     }
     for token, cls in expect.items():
         assert s5.failure_class(token) == cls, token
+    assert set(s5.FAILURE_CLASSES) == set(expect.values())
+    assert set(s5.MECHANICAL) == {"operational", "time_limit", "runner_error", "pipeline_failure"}
     for flag in s5.SCORER_FLAGS:
         assert s5.failure_class(flag) is None, flag
-    for bad in ("http_418", "pipeline_exit_nonzero", "other", "page_", "", "HTTP_503", None, 5):
+    near = ("http_200", "pipeline_", "pipeline_error_x", "output_too_large_x", "runner_result")
+    http_near = ("http_", "http_5", "http_50", "http_0503", "http_5030", "http_600", "http_+503")
+    other = ("http_\u0665\u0660\u0663", "http_503\n", " http_503", "model_answer", "other")
+    for bad in (*near, *http_near, *other, "page_", "", "HTTP_503", None, 5, 503):
         with pytest.raises(ContractError):
             s5.failure_class(bad)
+    for token in s5.INTEGRITY:  # 5H-19: outside the table, refused by name
+        with pytest.raises(ContractError, match="integrity"):
+            s5.failure_class(token)
+    # the driver's retry rule reads OPERATIONAL: 5H-19 adds to the class, not to that set
+    assert "credential_in_result" not in s5.OPERATIONAL
+
+
+def _http_rule(status: int) -> str | None:
+    """5H-19 written out status by status, independently of the module."""
+    if status in (408, 504, 524):
+        return "time_limit"
+    if status in (401, 403, 404, 429) or 500 <= status <= 599:
+        return "operational"
+    if 300 <= status <= 499:
+        return "runner_error"
+    return None
+
+
+def test_http_status_is_classed_by_rule_over_100_to_599() -> None:
+    """5H-19: one rule over every status; 1xx and 2xx are not failure tokens and refuse."""
+    for status in range(100, 600):
+        token, want = f"http_{status}", _http_rule(status)
+        assert s5.http_class(token) == want, status
+        if want is None:
+            with pytest.raises(ContractError):
+                s5.failure_class(token)
+        else:
+            assert s5.failure_class(token) == want, status
+    for status in (*range(0, 100), *range(600, 1000)):
+        assert s5.http_class(f"http_{status}") is None, status
+    # the constants keep their members, and each agrees with the rule
+    for cls, members in (("operational", s5.OPERATIONAL), ("time_limit", s5.TIME_LIMIT)):
+        for token in members:
+            if token.startswith("http_"):
+                assert s5.http_class(token) == cls, token
 
 
 def test_scorer_flag_set_is_every_flag_the_scorer_raises() -> None:
@@ -771,23 +838,231 @@ def test_scorer_flag_set_is_every_flag_the_scorer_raises() -> None:
     assert set(re.findall(r'hard_failures\.append\("([a-z_]+)"\)', source)) == s5.SCORER_FLAGS
 
 
-def test_mechanical_rejection_counts_operational_time_limit_and_runner_error(
+# 5H-18: every producer's failure tokens, read from the source the way the scorer flags are.
+REPO = Path(__file__).resolve().parents[2]
+IMAGES = REPO / "infra" / "runpod" / "v6" / "images"
+PRODUCERS = (
+    *sorted((REPO / "benchmark" / "runners").glob("*.py")),  # chat runners, page-server client
+    REPO / "benchmark" / "screen" / "run_screen.py",
+    REPO / "benchmark" / "screen" / "s0.py",
+    IMAGES / "mineru-pipeline-akc" / "mineru_akc_server.py",
+    IMAGES / "paddleocr-vl-akc" / "paddleocr_vl_service.py",  # the C1 service
+)
+RECIPES = sorted((IMAGES / "mineru-pipeline-akc" / "recipes").glob("*.json"))
+REASON_CALLS = {"PageRefused", "ResponseRefused", "PageFailure", "failure", "_row"}
+REASON_NAMES = {"reason", "failures"}  # a variable that is written as a reason / hard_failures
+REASON_SETS = {"REFUSAL_REASONS"}  # every member is a reason (ResponseRefused admits only these)
+REASON_KEYS = {"FAILURE_EXITS"}  # the C1 service: reason -> exit code
+HTTP = re.compile(r"http_\{[a-z_]+\}")  # f"http_{status}": any status a server can answer
+HTTP_FAILURE_STATUSES = range(300, 600)  # the statuses 5H-19's rule classes; 1xx/2xx refuse
+
+
+def _literals(node: Any, consts: dict[str, str]) -> list[Any]:
+    """The reason strings an expression can be: a literal, a module constant, either branch of a
+    conditional, the members of a list; an f-string is kept as its template."""
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return [node.value]
+    if isinstance(node, ast.Name) and node.id in consts:
+        return [consts[node.id]]
+    if isinstance(node, ast.IfExp):
+        return _literals(node.body, consts) + _literals(node.orelse, consts)
+    if isinstance(node, ast.List | ast.Tuple | ast.Set):
+        return [x for e in node.elts for x in _literals(e, consts)]
+    if isinstance(node, ast.JoinedStr):
+        return [ast.unparse(node)[2:-1]]
+    return []
+
+
+def producer_tokens() -> list[tuple[str, str]]:
+    """(file:line, token) for every string a producer passes as a failure reason or a
+    hard_failures entry. A template ``http_{status}`` stands for every status 5H-19's rule
+    classes (300-599); that 1xx and 2xx refuse is asserted on its own."""
+    found: list[tuple[str, str]] = []
+    for path in PRODUCERS:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        consts = {
+            t.id: n.value.value
+            for n in tree.body
+            if isinstance(n, ast.Assign)
+            and isinstance(n.value, ast.Constant)
+            and isinstance(n.value.value, str)
+            for t in n.targets
+            if isinstance(t, ast.Name)
+        }
+        rel = path.relative_to(REPO).as_posix()
+        for node in ast.walk(tree):
+            got: list[Any] = []
+            if isinstance(node, ast.Call):
+                f = node.func
+                name = f.id if isinstance(f, ast.Name) else getattr(f, "attr", None)
+                if name in REASON_CALLS:
+                    got = [x for a in node.args for x in _literals(a, consts)]
+            elif isinstance(node, ast.Assign | ast.AnnAssign):
+                targets = node.targets if isinstance(node, ast.Assign) else [node.target]
+                names = {t.id for t in targets if isinstance(t, ast.Name)}
+                value = node.value
+                if names & REASON_NAMES and value is not None:
+                    got = _literals(value, consts)
+                if names & REASON_SETS and isinstance(value, ast.Call) and value.args:
+                    got = _literals(value.args[0], consts)
+                if names & REASON_KEYS and isinstance(value, ast.Dict):
+                    got = [x for k in value.keys if k is not None for x in _literals(k, consts)]
+            elif isinstance(node, ast.Dict):
+                for k, v in zip(node.keys, node.values, strict=True):
+                    if isinstance(k, ast.Constant) and k.value == "reason":
+                        got += _literals(v, consts)
+            for token in got:
+                if HTTP.fullmatch(token):
+                    found += [
+                        (f"{rel}:{getattr(node, 'lineno', 0)}", f"http_{s}")
+                        for s in HTTP_FAILURE_STATUSES
+                    ]
+                else:
+                    found.append((f"{rel}:{getattr(node, 'lineno', 0)}", token))
+    for path in RECIPES:
+        service = json.loads(path.read_text(encoding="utf-8")).get("service") or {}
+        rel = path.relative_to(REPO).as_posix()
+        found += [(rel, reason) for reason in (service.get("page_failure_exits") or {}).values()]
+    return found
+
+
+def test_the_producer_scan_finds_what_the_producers_write() -> None:
+    """The scanner itself: a token known to be written by each producer is found there."""
+    where: dict[str, set[str]] = {}
+    for at, token in producer_tokens():
+        where.setdefault(token, set()).add(at.split(":")[0])
+    known = {
+        "provider_unavailable": "benchmark/screen/run_screen.py",
+        "provider_error": "benchmark/screen/run_screen.py",
+        "contract_failed": "benchmark/screen/run_screen.py",
+        "output_too_large": "benchmark/screen/s0.py",
+        "runner_result_unshaped": "benchmark/screen/s0.py",
+        "page_over_pixel_cap": "benchmark/runners/vlm.py",
+        "finish_reason_not_stop": "benchmark/runners/vlm.py",
+        "http_503": "benchmark/runners/vlm.py",
+        "credential_in_result": "benchmark/runners/base.py",
+        "page_timeout": "infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_server.py",
+        "pipeline_exit_nonzero": "infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_server.py",
+        "pipeline_raised": "infra/runpod/v6/images/paddleocr-vl-akc/paddleocr_vl_service.py",
+        "page_count_unsupported": "infra/runpod/v6/images/mineru-pipeline-akc/recipes/"
+        "c1-paddleocr-vl.json",
+    }
+    for token, path in known.items():
+        assert path in where.get(token, set()), token
+
+
+def test_every_failure_token_a_producer_writes_is_in_one_class() -> None:
+    """5H-18/5H-19: a token any producer can write that the table does not class fails here, by
+    name and place, until the lead classes it; a scorer flag written as a failure fails too.
+    Exempt is exactly the named integrity set, and each member of it is written somewhere."""
+    unclassed: dict[str, list[str]] = {}
+    found = producer_tokens()
+    assert {token for _, token in found} >= s5.INTEGRITY
+    for at, token in found:
+        if token in s5.INTEGRITY:
+            continue
+        try:
+            ok = s5.failure_class(token) is not None
+        except ContractError:
+            ok = False
+        if not ok:
+            unclassed.setdefault(token, []).append(at)
+    http = sorted(t for t in unclassed if t.startswith("http_"))
+    shown = {t: sorted(set(a))[:3] for t, a in sorted(unclassed.items()) if t not in http}
+    assert not unclassed, {"unclassed": shown, "http_statuses": [t[5:] for t in http]}
+    for status in range(100, 300):  # not failure tokens: a stored one is refused as unknown
+        with pytest.raises(ContractError):
+            s5.failure_class(f"http_{status}")
+
+
+def test_model_answer_fails_pages_but_never_rejects_and_pipeline_error_does(
+    tmp_path: Path,
+) -> None:
+    """5H-19 through the real run_screen and select_s1: model_answer pages are failed (every
+    critical field wrong) and counted per class, never in the mechanical count; a candidate
+    with model_answer on more than a fifth of its pages stays, one with pipeline_error is out.
+    The http rule is read the same way from a stored failure.reason."""
+    plans = {
+        "C0": {},
+        "answer": {  # 4 > 2, yet kept
+            0: "finish_reason_not_stop",
+            1: "empty_output",
+            2: "prompt_blocked",
+            3: "empty_completion",
+        },
+        "pipe": {0: "pipeline_error", 1: "pipeline_error", 2: "pipeline_error"},  # 3 > 2: out
+        "http": {0: "http_504", 1: "http_408", 2: "http_400", 3: "http_501"},  # 4 > 2: out
+        "ok": {},
+    }
+    g, recs, _, raw = _screen(tmp_path, plans)
+    s1 = s5.select_s1(recs, guard=g, baseline="C0", raw_dir=raw)
+    mech = s1["mechanical_rejection"]
+    assert mech["bound"] == 2
+    assert mech["counts"] == {"C0": 0, "answer": 0, "http": 4, "ok": 0, "pipe": 3}
+    assert mech["rejected"] == ["http", "pipe"]
+    assert "model_answer" not in mech["classes_counted"] and "5H-19" in mech["rule"]
+    got = s1["failures"]["answer"]
+    assert got["classes"] == {**dict.fromkeys(s5.FAILURE_CLASSES, 0), "model_answer": 4}
+    assert got["reasons"] == {
+        "empty_completion": 1,
+        "empty_output": 1,
+        "finish_reason_not_stop": 1,
+        "prompt_blocked": 1,
+    }
+    assert s1["cells"]["H"]["answer"]["failures"] == 4  # failed pages, every field wrong
+    assert s1["cells"]["H"]["answer"]["critical_exact"] == 2 * (6 - 4)
+    assert "answer" in s1["kept"]
+    assert s1["failures"]["pipe"]["classes"]["pipeline_failure"] == 3
+    assert s1["failures"]["http"]["classes"] == {
+        **dict.fromkeys(s5.FAILURE_CLASSES, 0),
+        "time_limit": 2,
+        "runner_error": 1,
+        "operational": 1,
+    }
+
+
+@pytest.mark.parametrize("token", sorted(s5.INTEGRITY))
+def test_a_stored_integrity_token_refuses_selection(tmp_path: Path, token: str) -> None:
+    g, recs, _, raw = _screen(tmp_path, {"C0": {}, "x": {0: token}})
+    with pytest.raises(ContractError, match="integrity"):
+        s5.select_s1(recs, guard=g, baseline="C0", raw_dir=raw)
+
+
+def test_mechanical_rejection_counts_operational_time_limit_runner_error_and_pipeline(
     tmp_path: Path,
 ) -> None:
     # 10 pages: the bound is ceil(0.2 * 10) = 2; more than 2 such pages is out.
+    pipeline = {0: "pipeline_exit_nonzero", 1: "pipeline_raised", 2: "pipeline_output_missing"}
     plans = {
         "C0": dict.fromkeys(range(5), "unavailable"),  # baseline: never rejected this way
         "out": {0: "http_524", 1: "raise", 2: "http_503"},  # 3 > 2, read from failure.reason
         "edge": {0: "page_timeout", 1: "unavailable"},  # 2: kept
         "contract": {0: "contract_failed", 1: "page_too_large", 2: "contract_failed"},
+        "pipe": pipeline,  # 3 > 2 (5H-18: a pipeline that fails is rejected like a timeout)
+        "big": {0: "output_too_large", 1: "page_count_unsupported", 2: "runner_result_unshaped"},
         "ok": {},
     }
     g, recs, _, raw = _screen(tmp_path, plans)
     s1 = s5.select_s1(recs, guard=g, baseline="C0", raw_dir=raw)
     mech = s1["mechanical_rejection"]
     assert (mech["pages"], mech["bound"]) == (10, math.ceil(0.2 * 10))
-    assert mech["counts"] == {"C0": 5, "contract": 0, "edge": 2, "ok": 0, "out": 3}
-    assert mech["rejected"] == ["out"]
+    assert mech["counts"] == {
+        "C0": 5,
+        "big": 1,
+        "contract": 0,
+        "edge": 2,
+        "ok": 0,
+        "out": 3,
+        "pipe": 3,
+    }
+    assert mech["rejected"] == ["out", "pipe"]
+    assert mech["classes_counted"] == list(s5.MECHANICAL)
+    assert s1["failures"]["pipe"]["classes"]["pipeline_failure"] == 3
+    assert s1["failures"]["big"]["classes"] == {
+        **dict.fromkeys(s5.FAILURE_CLASSES, 0),
+        "page_refused": 2,
+        "runner_error": 1,
+    }
     assert "out" not in s1["kept"] + s1["dropped"]
     assert s1["failures"]["out"]["classes"]["time_limit"] == 1
     assert s1["failures"]["out"]["reasons"] == {"http_503": 1, "http_524": 1, "provider_error": 1}
@@ -797,8 +1072,8 @@ def test_mechanical_rejection_counts_operational_time_limit_and_runner_error(
 
 
 def test_unknown_failure_reason_or_token_refuses_selection(tmp_path: Path) -> None:
-    g, recs, _, raw = _screen(tmp_path, {"C0": {}, "x": {0: "pipeline_exit_nonzero"}})
-    with pytest.raises(ContractError, match="pipeline_exit_nonzero"):
+    g, recs, _, raw = _screen(tmp_path, {"C0": {}, "x": {0: "reason_nobody_writes"}})
+    with pytest.raises(ContractError, match="reason_nobody_writes"):
         s5.select_s1(recs, guard=g, baseline="C0", raw_dir=raw)
     recs2, _ = world({"L": {}, "C0": {}})
     recs2[0]["hard_failures"] = ["made_up_flag"]
