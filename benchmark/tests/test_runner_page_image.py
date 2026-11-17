@@ -2171,3 +2171,31 @@ def test_d0d_r2_batch_cancel_posts_cancel_through_the_door(
     with pytest.raises(RunnerUnavailable, match="batch job name"):
         gemini_api.batch_cancel("batches/b1:cancel", allow_network=True)
     assert len(seen) == 1
+
+
+# --- WO-D10-0J: the planned image and the served ids ---
+
+
+def test_0j_6_mistral_refuses_an_image_other_than_the_planned_one_before_sending(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from benchmark.runners import mistral_ocr
+
+    transport = FakeTransport(200, _mistral_result(MISTRAL))
+    with pytest.raises(mistral_ocr.ImageDiffers):
+        _mistral(transport, monkeypatch, image_sha256="0" * 64)
+    assert transport.calls == []
+    ok = _mistral(transport, monkeypatch, image_sha256=hashlib.sha256(IMAGE).hexdigest())
+    assert ok["text"] == "x" and len(transport.calls) == 1
+
+
+@pytest.mark.parametrize(
+    "alias", ["mistral-ocr-4-0", "mistral-ocr-4", "mistral-ocr-latest", "Mistral-OCR-Latest"]
+)
+def test_0j_8_mistral_served_ids_refuse_the_retired_id_and_aliases_before_any_call(
+    alias: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    transport = FakeTransport(200, _mistral_result(alias))
+    with pytest.raises(RunnerUnavailable, match="alias"):
+        _mistral(transport, monkeypatch, served_ids=[MISTRAL, alias])
+    assert transport.calls == []

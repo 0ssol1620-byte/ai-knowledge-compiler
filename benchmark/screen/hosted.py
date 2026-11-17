@@ -1,20 +1,29 @@
 """Hosted arm ``d10-hosted-arm-v1``: the door, the spend stop, submission, collection, resume.
 
 CLI: ``python -m benchmark.screen.hosted {prepaid,dry,rehearsal,full,collect,score} ...``.
-Exit codes: 0 done, 2 refused (a ``ContractError`` or an immutable-output conflict; nothing
-further was sent; this includes a stopped arm whose stage cannot finish: the lead decides),
-3 pending (a batch is not terminal yet, a page has no outcome yet, or a provider did not
-answer: rerun ``collect``), 1 an unexpected error (its type only; no traceback is printed,
+Exit codes: 0 done (a stopped arm whose stage has no gaps also writes its receipt and returns
+0; the next stage then refuses), 2 refused (a ``ContractError`` or an immutable-output
+conflict; nothing further was sent; this includes a stopped arm whose stage has gaps: the lead
+decides), 3 pending (a batch is not terminal yet, a page has no outcome yet, or a provider did
+not answer: rerun ``collect``), 1 an unexpected error (its type only; no traceback is printed,
 since one could carry a URL).
+
+* **Local refusals.** A paid stage that cannot send from this process (no key, the provider
+  host not on the allow-list, a declared credential in an endpoint or a case id) records
+  ``hosted.local_refusal.v1``, reserves nothing and stops the arm: no request left, so nothing
+  is charged and nothing is retried as if the provider had not answered.
 
 * **Completion.** One function (``stage_gaps``) decides whether a paid stage is complete: every
   page of the stage's dry plan has a terminal outcome (a collected result, a failure row, or a
   ``page_refused:*`` settlement; a Mistral half stopped by a 401/403 marks its remaining pages
   not run) and every job of the stage is closed (``job.accepted.v1`` or
   ``hosted.job.terminal.v1``). ``_finish_stage`` refuses otherwise.
-* **The dry plan binds.** A paid stage sends the dry receipt's Gemini and Mistral page lists
+* **The dry plan binds.** The dry receipt's sha256 is recorded in the ledger and checked when a
+  paid stage reads it. A paid stage sends the dry receipt's Gemini and Mistral page lists
   (restricted to the stage's pages) minus the collected pages, each page with the image sha256
-  the dry plan rendered; ``full``'s page list must equal the dry receipt's admitted list.
+  the dry plan rendered (Gemini and Mistral alike); every page of the stage must be rendered
+  or refused by the dry plan for each provider; ``full``'s page list must equal the dry
+  receipt's admitted list.
 
 * **Door.** ``admit`` lets through only a dev document whose rights class is on
   ``HOSTED_RIGHTS`` (a code constant). The page-list builder calls it, and the Gemini submit
@@ -27,7 +36,9 @@ since one could carry a URL).
 * **Resume.** Write-ahead: ``job.dispatch.intent.v1`` -> create -> ``job.dispatched.v1`` (before
   any poll) -> ``job.accepted.v1`` or ``hosted.job.terminal.v1``. A dispatched job is polled,
   never created again; an intent without a dispatch is looked up in the complete batch listing
-  and adopted by its display name, or created once (``hosted.resubmit_after_absent.v1``).
+  and adopted by its display name, or created again (``hosted.resubmit_after_absent.v1``,
+  recorded once per intent). A dispatched job whose GET answers 404 is closed once at its worst
+  case (``NOT_FOUND``) and stops the arm. Only a 200 answer counts as a job's one cancel.
 * Hosted outputs are never gold and never training data; nothing here is publishable.
 """
 
@@ -51,6 +62,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import yaml
 
@@ -220,6 +232,10 @@ def load_hosted_spec(path: Path = SPEC_PATH) -> HostedSpec:
         or not all(isinstance(i, str) and _SAFE_ID.fullmatch(i) for i in ids)
     ):
         raise ContractError("served_ids must map the pinned Mistral id to exact ids, itself among")
+    try:  # the runner's own lists: the retired id and every alias are refused
+        mistral_ocr.accepted_ids(mistral["model"], ids)
+    except RunnerUnavailable as exc:
+        raise ContractError(f"served_ids refused: {exc}") from exc
     _limit(gemini, "inline_max_bytes", "inline_request_bytes_documented")
     _limit(gemini, "max_requests_per_batch", "max_requests_per_batch_documented")
     _limit(gemini, "max_concurrent_batches", "concurrent_batches_documented")
@@ -259,13 +275,16 @@ def load_hosted_spec(path: Path = SPEC_PATH) -> HostedSpec:
 
 def anchored(text: str, anchor: Sequence[Mapping[str, str]]) -> str | None:
     """The text inside the anchor: each step keeps what lies from its ``start`` (exactly once in
-    the text so far) to the first ``end`` after it; None when a step does not hold."""
+    the text so far) to the first ``end`` after it; None when a step does not hold (its start
+    is not there exactly once, or no end follows it: never a wider scope)."""
     for step in anchor:
         if text.count(step["start"]) != 1:
             return None
         text = text[text.index(step["start"]) + len(step["start"]) :]
         end = text.find(step["end"])
-        text = text if end < 0 else text[:end]
+        if end < 0:
+            return None
+        text = text[:end]
     return text
 
 
@@ -788,10 +807,12 @@ def submit_chunk(
         body, request_sha = _build_create(arm, chunk, pages, corpus_root)
         if request_sha != intent["input_sha256"]:
             raise ContractError("the recreated request differs from its intent")
-        arm.ledger.append(
-            "hosted.resubmit_after_absent.v1",
-            {"idempotency_key": chunk.key, "display_name": chunk.display_name},
-        )
+        resubmits = arm.events("hosted.resubmit_after_absent.v1")
+        if not any(p["idempotency_key"] == chunk.key for p in resubmits):  # once per intent
+            arm.ledger.append(
+                "hosted.resubmit_after_absent.v1",
+                {"idempotency_key": chunk.key, "display_name": chunk.display_name},
+            )
         created = _create(arm, chunk, body)
         if created is not None:
             _dispatch(arm, chunk, created, request_sha, resubmitted=True)
@@ -990,9 +1011,11 @@ def _collect_job(arm: Arm, stage: str, intent: Mapping[str, Any], name: str, raw
 
 
 def _cancel_once(arm: Arm, name: str) -> None:
-    """``POST :cancel`` once per job (the reference: DELETE does not cancel); recorded with the
-    status it answered. The job is still polled until it is terminal."""
-    if any(p["job"] == name for p in arm.events("hosted.job.cancel_requested.v1")):
+    """``POST :cancel`` until one answers 200 (the reference: DELETE does not cancel); each
+    attempt is recorded with the status it answered, and a 429 or 5xx is tried again on the
+    next poll. The job is still polled until it is terminal."""
+    requested = arm.events("hosted.job.cancel_requested.v1")
+    if any(p["job"] == name and p["http_status"] == 200 for p in requested):
         return
     status, _ = _rest(gemini_api.batch_cancel(name, allow_network=True))
     arm.ledger.append("hosted.job.cancel_requested.v1", {"job": name, "http_status": status})
@@ -1023,6 +1046,10 @@ def poll(
                 _raw_dir(arm, stage) / name.removeprefix("batches/") / (_sha(raw)[7:23] + ".json")
             )
             _write_once(snap, raw)
+            if status == 404:  # gone outside the arm: closed once, at its worst case
+                _close(arm, intent, state="NOT_FOUND", reason="job_not_found", name=name)
+                arm.stop("batch_not_found", job=name)
+                continue
             if status != 200:
                 arm.stop("batch_get_failed", job=name, http_status=status)
                 return len(open_jobs)
@@ -1096,9 +1123,11 @@ def mistral_refused(arm: Arm, page: Page) -> bool:
     )
 
 
-def _exhaust(arm: Arm, page: Page, keys: Sequence[str]) -> None:
+def _exhaust(arm: Arm, stage: str, page: Page, keys: Sequence[str]) -> None:
     """Every reserved attempt ended without an outcome: a terminal failure row, never a model
-    error (the score step reports it apart)."""
+    error (the score step reports it apart). In the rehearsal it also stops the arm."""
+    if stage == "rehearsal":
+        arm.stop("rehearsal_page_exhausted", page_id=page.page_id)
     model = arm.spec.mistral["model"]
     config = RunnerConfig(MISTRAL, model, arm.spec.endpoint(MISTRAL))
     receipt = {
@@ -1126,17 +1155,19 @@ def call_mistral(
     page: Page,
     corpus_root: Path,
     *,
+    image_sha256: str,
     call: Callable[..., dict[str, Any]] = mistral_ocr.run,
 ) -> str:
     """One attempt at one page; returns its outcome. A page whose reserved attempts are used
-    up without an outcome gets the terminal failure row ``provider_unavailable_exhausted``."""
+    up without an outcome gets the terminal failure row ``provider_unavailable_exhausted``.
+    ``image_sha256`` is the dry plan's: the runner refuses to send any other image."""
     if arm.campaign.stopped:
         raise ContractError("the arm is stopped; nothing is submitted")
     admit(page.doc)  # the door, before the request is built
     spec = arm.spec
     done = _mistral_attempts(arm, page.page_id)
     if len(done) >= MISTRAL_ATTEMPTS_RESERVED:
-        _exhaust(arm, page, done)
+        _exhaust(arm, stage, page, done)
         return EXHAUSTED
     attempt = 1 + len(done)
     key = canonical_sha256(
@@ -1173,7 +1204,23 @@ def call_mistral(
             model=spec.mistral["model"],
             served_ids=spec.mistral["served_ids"][spec.mistral["model"]],
             allow_network=True,
+            image_sha256=image_sha256.removeprefix("sha256:"),
         )
+    except mistral_ocr.ImageDiffers:  # raised before the request: nothing was sent
+        arm.ledger.append(
+            "hosted.page.settled.v1",
+            {
+                "idempotency_key": key,
+                "provider": MISTRAL,
+                "stage": stage,
+                "page_id": page.page_id,
+                "actual_usd": "0",
+                "outcome": "image_differs_from_dry_plan",
+                "flagged": False,
+            },
+        )
+        arm.stop("mistral_image_differs_from_dry_plan", page_id=page.page_id)
+        raise ContractError(f"{page.page_id}: the page image differs from the dry plan's") from None
     except vlm.PageRefused as exc:
         outcome, actual, flagged = f"page_refused:{exc.reason}", Decimal(0), False
         result = None
@@ -1202,7 +1249,7 @@ def call_mistral(
         },
     )
     if outcome == "unavailable" and attempt >= MISTRAL_ATTEMPTS_RESERVED:
-        _exhaust(arm, page, [*done, key])
+        _exhaust(arm, stage, page, [*done, key])
         return EXHAUSTED
     reason = ((result or {}).get("failure") or {}).get("reason")
     if reason in ("http_401", "http_403"):  # the key cannot call: the Mistral half is not run
@@ -1221,6 +1268,26 @@ def call_mistral(
     ):
         arm.stop(f"mistral_{reason}", page_id=page.page_id)
     return outcome
+
+
+def local_refusal(spec: HostedSpec, provider: str, case_ids: Iterable[str]) -> str | None:
+    """Why this process cannot send to ``provider`` at all, before anything is reserved: the
+    key is not set, the provider host is not on the allow-list the transport reads, or a
+    declared credential is in the endpoint or a case id (a case id travels as the batch
+    metadata key). None when nothing local stands in the way."""
+    if not os.getenv("GEMINI_API_KEY" if provider == GEMINI else mistral_ocr.CREDENTIAL):
+        return "no_key"
+    endpoint = spec.endpoint(provider)
+    allowed = {
+        host.strip().lower()
+        for host in os.getenv("AKC_BENCHMARK_ENDPOINT_ALLOWLIST", "").split(",")
+        if host.strip()
+    }
+    if str(urlparse(endpoint).hostname).lower() not in allowed:
+        return "host_not_allowlisted"
+    if base.carries_credential(base._result_text([endpoint, *case_ids])):
+        return "credential_in_inputs"
+    return None
 
 
 # --- stages ---------------------------------------------------------------------------------
@@ -1533,7 +1600,19 @@ def run_dry(
         teardown="no_network_stage",
         fake_records=fake,
     )
-    return _write_receipt(arm, "dry", receipt)
+    path = _write_receipt(arm, "dry", receipt)
+    arm.ledger.append("hosted.dry_receipt.v1", {"sha256": _sha(path.read_bytes())})
+    return path
+
+
+def dry_receipt(arm: Arm) -> dict[str, Any]:
+    """The dry receipt a paid stage binds to: its bytes must have the sha256 the ledger
+    recorded when dry wrote it."""
+    data = (arm.out / "dry" / "receipt.json").read_bytes()
+    recorded = arm.events("hosted.dry_receipt.v1")
+    if not recorded or recorded[-1]["sha256"] != _sha(data):
+        raise ContractError("the dry receipt is not the one the ledger recorded")
+    return dict(json.loads(data))
 
 
 def _admitted_summary(pages: Sequence[Page]) -> dict[str, Any]:
@@ -1616,6 +1695,16 @@ def stage_pages(stage: str, admitted: Sequence[Page], dry: Mapping[str, Any]) ->
         dry_admitted = set((dry.get("admitted") or {}).get("page_ids") or [])
         if {p.page_id for p in chosen} != dry_admitted:
             raise ContractError("the stage's page list differs from the dry receipt's")
+    refused = {(str(r.get("page_id")), str(r.get("provider"))) for r in refusals}
+    for page in chosen:  # each provider: on its dry list with a rendered image, or refused
+        for provider, plan in ((GEMINI, gemini_plan), (MISTRAL, mistral_plan & set(rendered))):
+            if page.page_id not in plan and not refused & {
+                (page.page_id, provider),
+                (page.page_id, "both"),
+            }:
+                raise ContractError(
+                    f"{page.page_id}: the dry plan neither rendered nor refused it for {provider}"
+                )
     ids = {p.page_id for p in chosen}
     return StagePages(
         gemini=tuple(p for p in chosen if p.page_id in gemini_plan),
@@ -1689,7 +1778,7 @@ def _run_paid(
     sleep: Callable[[float], None],
     mistral_call: Callable[..., dict[str, Any]],
 ) -> int:
-    spec, out = arm.spec, arm.out
+    spec = arm.spec
     if arm.campaign.has_receipt(stage):
         raise ContractError(f"the {stage} stage is already complete")
     arm.require(stage)
@@ -1697,7 +1786,7 @@ def _run_paid(
     snapshots = check_snapshots(spec, snapshot_dir)
     manifest = _load_manifest(manifest_path, corpus_root)
     admitted, refused = page_list(manifest["documents"])
-    pages = stage_pages(stage, admitted, json.loads((out / "dry" / "receipt.json").read_bytes()))
+    pages = stage_pages(stage, admitted, dry_receipt(arm))
     settle_open_mistral(arm, stage)
     reserved = any(p["stage"] == stage for p in arm.events("campaign.stage_reserved.v1"))
     if arm.campaign.stopped and not reserved:
@@ -1717,6 +1806,13 @@ def _run_paid(
     before = _budgets(arm)
     plan = build_plan(spec, todo_g, corpus_root)  # renders only; nothing is sent
     _bind(plan, pages)
+    for provider, todo in ((GEMINI, todo_g), (MISTRAL, todo_m)):
+        reason = local_refusal(spec, provider, [p.case_id for p in todo]) if todo else None
+        if reason is not None and not arm.campaign.stopped:
+            arm.ledger.append(
+                "hosted.local_refusal.v1", {"provider": provider, "stage": stage, "reason": reason}
+            )
+            arm.stop("local_refusal", provider=provider, refusal=reason)
     if not arm.campaign.stopped:
         if arm.credit is None:
             raise ContractError("no prepaid credit is recorded; nothing paid runs")
@@ -1737,7 +1833,14 @@ def _run_paid(
     for page in todo_m:
         if arm.campaign.stopped or arm.provider_stopped(MISTRAL):
             break
-        outcome = call_mistral(arm, stage, page, corpus_root, call=mistral_call)
+        outcome = call_mistral(
+            arm,
+            stage,
+            page,
+            corpus_root,
+            image_sha256=pages.image_sha256[page.page_id],
+            call=mistral_call,
+        )
         if outcome in MISTRAL_RETRY_OUTCOMES or outcome == EXHAUSTED:
             break  # the provider did not answer: back off; collect resumes from this page
     if poll(arm, stage, max_wait=max_wait, interval=interval, sleep=sleep):
