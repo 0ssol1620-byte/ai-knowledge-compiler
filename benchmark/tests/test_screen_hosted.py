@@ -4,7 +4,9 @@ no key, no provider call, no network."""
 from __future__ import annotations
 
 import base64
+import functools
 import hashlib
+import io
 import json
 import os
 import secrets
@@ -19,10 +21,12 @@ import pytest
 import yaml
 from hypothesis import given, settings
 from hypothesis import strategies as st
+from pypdf import PdfWriter
 
 from benchmark.runners import gemini_api, vlm
 from benchmark.runners.base import RunnerUnavailable
 from benchmark.screen import hosted
+from benchmark.screen.manifest import assign_split, freeze
 from benchmark.v6.contracts import ContractError, canonical_sha256
 
 MODEL = "gemini-4-hydrogen"
@@ -42,6 +46,8 @@ SNAPSHOT = (
 )
 # the hosts the transport may reach (the fakes replace the transport itself)
 ALLOWLIST = "generativelanguage.googleapis.com,api.mistral.ai"
+LICENCE_SNAPSHOT = "sha256:" + hashlib.sha256(b"test licence snapshot").hexdigest()
+FILLER = "zz-filler"  # the stratum of the two filler PDFs that meet the screen floors
 GOOD_USAGE = {"promptTokenCount": 1200, "candidatesTokenCount": 300, "thoughtsTokenCount": 100}
 
 
@@ -86,10 +92,11 @@ def _doc(
         "rights": {
             "source_url": "https://example.org",
             "licence_id": "x",
-            "licence_snapshot_sha256": None,
+            "licence_snapshot_sha256": LICENCE_SNAPSHOT,
             "rights_class": rights,
             "redistribution": False,
-            "retrieved_at": "2026-11-17",
+            "recorded_by": "test fixture",
+            "recorded_at": "2026-11-17",
         },
     }
     if split is None:
@@ -99,17 +106,53 @@ def _doc(
     return doc
 
 
+@functools.cache
+def _blank_pdf(pages: int) -> bytes:
+    writer = PdfWriter()
+    for _ in range(pages):
+        writer.add_blank_page(72, 72)
+    data = io.BytesIO()
+    writer.write(data)
+    return data.getvalue()
+
+
 def _corpus(tmp_path: Path, docs: list[dict[str, Any]]) -> tuple[Path, Path]:
+    """The documents' files and their manifest, frozen by the real ``freeze`` (profile screen).
+
+    Each document's ``split`` is the split the test wants; the salt is searched until
+    ``assign_split`` gives exactly that, so ``freeze`` itself accepts it. The 300/100 floors
+    are met by filler that the door refuses (rights ``owned``): per test stratum one page in
+    the split the stratum needs besides the test's, and two PDFs (300 dev pages, 100 holdout
+    pages) in a stratum of their own. Nothing is admitted that the test did not name."""
     root = tmp_path / "corpus"
     root.mkdir(exist_ok=True)
-    for doc in docs:
-        data = b"\x89PNG fake " + doc["doc_id"].encode()
+    want = {d["doc_id"]: d["split"] for d in docs}
+    records = [{k: v for k, v in d.items() if k != "split"} for d in docs]
+    for stratum in sorted({d["stratum"] for d in docs}):
+        held = any(d["stratum"] == stratum and d["split"] == "holdout" for d in docs)
+        records.append({**_doc(0, stratum=stratum, rights="owned"), "doc_id": f"zz-{stratum}.png"})
+        want[f"zz-{stratum}.png"] = "dev" if held else "holdout"
+    for split, pages in (("dev", 300), ("holdout", 100)):
+        filler = _doc(0, stratum=FILLER, rights="owned")
+        records.append({**filler, "doc_id": f"zz-{split}.pdf", "page_count": pages})
+        want[f"zz-{split}.pdf"] = split
+    for doc in records:
+        doc.pop("split", None)
+        if doc["doc_id"].endswith(".pdf"):
+            data = _blank_pdf(doc["page_count"])
+        else:
+            data = b"\x89PNG fake " + doc["doc_id"].encode()
         (root / doc["doc_id"]).write_bytes(data)
         doc.update(source_sha256="sha256:" + hashlib.sha256(data).hexdigest(), byte_size=len(data))
-    body = {"documents": docs}
-    manifest = {**body, "manifest_sha256": canonical_sha256(body)}
+    for n in range(1000):
+        salt = f"hosted-{n}"
+        assigned = assign_split(records, salt)
+        if all(d["split"] == want[d["doc_id"]] for d in assigned):
+            break
+    else:
+        raise AssertionError(f"no salt gives the splits {want}")
     path = tmp_path / "manifest.json"
-    path.write_text(json.dumps(manifest), encoding="utf-8")
+    path.write_text(json.dumps(freeze(assigned, salt, "screen")), encoding="utf-8")
     return path, root
 
 
@@ -237,12 +280,13 @@ def _prepaid(spec: hosted.HostedSpec, out: Path, draw: str = "12.15") -> None:
 def _arm_with_chunk(
     tmp_path: Path, spec: hosted.HostedSpec, docs: list[dict[str, Any]], *, draw: str = "12.15"
 ) -> tuple[hosted.Arm, list[hosted.Chunk], dict[str, hosted.Page], Path]:
-    _, corpus = _corpus(tmp_path, docs)
+    path, corpus = _corpus(tmp_path, docs)
+    frozen = {d["doc_id"]: d for d in json.loads(path.read_bytes())["documents"]}
     out = tmp_path / "out"
     _prepaid(spec, out, draw)
     arm = hosted.Arm(spec, out, hosted.GeminiBatches())
     arm.campaign.reserve_stage("dry", 0)
-    pages = _pages(docs)
+    pages = _pages([frozen[d["doc_id"]] for d in docs])
     plan = hosted.build_plan(spec, pages, corpus)
     return arm, plan.chunks, {p.page_id: p for p in pages}, corpus
 
@@ -2047,3 +2091,80 @@ def test_0j_r2_quarantine_never_overwrites_an_earlier_hit(
         assert hosted.scan_credentials(arm, [out / "rehearsal"])["hits"]
     quarantined = sorted(p.read_bytes() for p in (out / "quarantine" / "rehearsal").iterdir())
     assert quarantined == sorted(kept) and not planted.exists()
+
+
+# --- WO-D10-0N: a manifest that fails its schema is refused by every stage ------------------
+
+
+def _stale_rights(m: dict[str, Any]) -> None:
+    rights = m["documents"][0]["rights"]
+    rights["retrieved_at"] = rights.pop("recorded_at")
+
+
+_SCHEMA_BREAKS: dict[str, Any] = {
+    "no_profile": lambda m: m.pop("profile"),  # the shape of the stale fixtures
+    "stale_rights": _stale_rights,  # their rights record, too
+    "unknown_field": lambda m: m.update(note="x"),
+    "page_count_text": lambda m: m["documents"][0].update(page_count="1"),
+}
+
+
+@pytest.mark.parametrize("damage", sorted(_SCHEMA_BREAKS))
+def test_0n_a_manifest_failing_its_schema_is_refused_by_every_stage_before_any_write(
+    damage: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """A frozen manifest broken one way, its digest recomputed so that only the schema refuses:
+    dry, rehearsal, collect, full and score exit 2, write nothing (no reservation, no ledger
+    byte) and send nothing; the intact manifest then runs each stage."""
+    spec = _spec(tmp_path)
+    good, corpus = _corpus(tmp_path, _docs3())
+    broken_manifest = json.loads(good.read_bytes())
+    _SCHEMA_BREAKS[damage](broken_manifest)
+    body = {k: v for k, v in broken_manifest.items() if k != "manifest_sha256"}
+    broken_manifest["manifest_sha256"] = canonical_sha256(body)
+    broken = tmp_path / "broken.json"
+    broken.write_text(json.dumps(broken_manifest), encoding="utf-8")
+    gold = tmp_path / "gold.json"
+    gold.write_text("{}", encoding="utf-8")
+    fake, script = FakeGemini(state="BATCH_STATE_RUNNING"), MistralScript([])
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    monkeypatch.setattr(hosted, "check_environment", lambda *a, **k: ENV)
+    out = tmp_path / "out"
+
+    def refused(stage: str) -> None:
+        files, calls = _snapshot(out), (len(fake.calls), script.calls)
+        capsys.readouterr()
+        argv = [stage, "--out", str(out), "--spec", str(spec.path), "--manifest", str(broken)]
+        argv += ["--corpus-root", str(corpus), "--snapshot-dir", str(tmp_path / "snap")]
+        argv += ["--gold", str(gold), "--max-wait", "0", "--interval", "0"]
+        assert hosted.main(argv) == 2
+        assert "manifest fails its schema" in capsys.readouterr().err
+        assert _snapshot(out) == files and (len(fake.calls), script.calls) == calls
+
+    for name in ("GEMINI_API_KEY", "MISTRAL_API_KEY"):
+        monkeypatch.delenv(name, raising=False)
+    _prepaid(spec, out)
+    refused("dry")
+    hosted.run_dry(spec, out, good, corpus, tmp_path / "snap", environment=lambda: ENV)
+    monkeypatch.setenv("GEMINI_API_KEY", _marker())
+    monkeypatch.setenv("MISTRAL_API_KEY", _marker("mk"))
+    monkeypatch.setenv("AKC_BENCHMARK_ENDPOINT_ALLOWLIST", ALLOWLIST)
+    refused("rehearsal")
+    assert not hosted.Arm(spec, out).events("job.dispatch.intent.v1")
+    assert _paid(spec, out, tmp_path, "rehearsal") == 3  # the batch runs: a stage in progress
+    refused("collect")
+    fake.state = "BATCH_STATE_SUCCEEDED"
+    assert _paid(spec, out, tmp_path, "rehearsal") == 0
+    refused("full")
+    assert not [
+        p
+        for p in hosted.Arm(spec, out).events("campaign.stage_reserved.v1")
+        if p["stage"] == "full"
+    ]
+    assert _paid(spec, out, tmp_path, "full") == 0
+    refused("score")
+    assert not (out / "score").exists()
