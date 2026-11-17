@@ -5,13 +5,16 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
+from collections import Counter
 from datetime import UTC, date, datetime
 from pathlib import Path
+from typing import Any
 
 import httpx
 import pytest
 from akc_source_adapters.public_data.rights import RightsDenied, RightsRecord
 from akc_source_adapters.public_data.sources import DEFAULT_RIGHTS, REVIEWED_RIGHTS
+from akc_source_adapters.public_data.vintage import VintageObservation
 
 from benchmark.local_public import alfred_local as al
 from benchmark.local_public import pit_tasks as pt
@@ -38,7 +41,7 @@ def allow(series: str) -> RightsRecord:
     )
 
 
-REGISTER = [allow(s) for s in al.ALLOWED_ALFRED_SERIES]
+REGISTER = [allow(s) for s in S.DENIED_ALFRED_SERIES]
 LINES = [
     "CPIAUCSL,2024-01-01,2024-02-01,2024-02-01,2024-02-01,300.1,alfred_vintage",
     "CPIAUCSL,2024-01-01,2024-03-01,2024-03-01,2024-03-01,300.5,alfred_vintage",
@@ -57,8 +60,14 @@ def write(tmp: Path, lines: list[str] = LINES) -> Path:
     return p
 
 
-def built(tmp: Path, chain: dict[str, list[str]] | None = None):
-    obs, counts = al.read_local_vintages(write(tmp), al.ALLOWED_ALFRED_SERIES, REGISTER, TODAY)
+def built(
+    tmp: Path, chain: dict[str, list[str]] | None = None
+) -> tuple[
+    list[VintageObservation],
+    Counter[str],
+    tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, int]],
+]:
+    obs, counts = al.read_local_vintages(write(tmp), S.DENIED_ALFRED_SERIES, REGISTER, TODAY)
     return obs, counts, al.generate(obs, chain_verified=chain)
 
 
@@ -85,7 +94,10 @@ def manifest_for(tmp: Path, csv_path: Path) -> Path:
     return p
 
 
-def test_changed_csv_is_hash_mismatch_and_writes_nothing(tmp_path: Path) -> None:
+def test_changed_csv_is_hash_mismatch_and_writes_nothing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(al, "DEFAULT_RIGHTS", REGISTER)  # rights pass, so the hash check is reached
     csv_path = write(tmp_path)
     m = manifest_for(tmp_path, csv_path)
     write(
@@ -98,7 +110,9 @@ def test_changed_csv_is_hash_mismatch_and_writes_nothing(tmp_path: Path) -> None
     assert not out.exists()
 
 
-def test_receipt_carries_manifest_sha_and_output_hashes(tmp_path: Path, monkeypatch) -> None:
+def test_receipt_carries_manifest_sha_and_output_hashes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     m = manifest_for(tmp_path, write(tmp_path))
     monkeypatch.setattr(al, "DEFAULT_RIGHTS", REGISTER)
     out = tmp_path / "o"
@@ -133,7 +147,7 @@ def test_mapping_and_lagged_rows(tmp_path: Path) -> None:
 def test_tasks_and_leaks(tmp_path: Path) -> None:
     _, _, (rows, tasks, skipped) = built(tmp_path)
     ev = {r["logical_id"]: r for r in rows}
-    by = {t["stratum"]: [] for t in tasks}
+    by: dict[str, list[dict[str, Any]]] = {t["stratum"]: [] for t in tasks}
     for t in tasks:
         parse_task(t)
         by[t["stratum"]].append(t)
@@ -195,7 +209,7 @@ def test_merges_into_pit_tasks_and_duplicates_refused(tmp_path: Path) -> None:
 def test_reviewed_rights_deny_alfred_before_the_file_is_opened(tmp_path: Path) -> None:
     missing = tmp_path / "never_opened.csv"  # opening it would raise FileNotFoundError instead
     with pytest.raises(RightsDenied):
-        al.read_local_vintages(missing, S.ALLOWED_ALFRED_SERIES, REVIEWED_RIGHTS, TODAY)
+        al.read_local_vintages(missing, S.DENIED_ALFRED_SERIES, REVIEWED_RIGHTS, TODAY)
     assert not missing.exists()
 
 
@@ -215,3 +229,20 @@ def test_terms_snapshot_refuses_alfred_sources_without_a_request(tmp_path: Path)
         )
     assert calls == []
     assert all(s.startswith("data_sec") for s, _ in terms.SOURCES)
+
+
+def test_main_refuses_on_rights_before_any_file_is_resolved_hashed_or_opened(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def boom(*_a: object, **_k: object) -> None:
+        raise AssertionError("the other project's file was touched")
+
+    m = manifest_for(tmp_path, write(tmp_path))  # a real, correctly pinned file that must stay shut
+    monkeypatch.setattr(S.Loader, "verified_path", boom)
+    monkeypatch.setattr(S.Loader, "resolve", boom)
+    monkeypatch.setattr(S, "_sha256_file", boom)
+    monkeypatch.setattr(Path, "read_bytes", boom)
+    out = tmp_path / "o"
+    assert al.main(["--manifest", str(m), "--out", str(out)]) == 2
+    assert "refused" in capsys.readouterr().err and not out.exists()
+    assert al.main(["--manifest", str(m), "--out", str(out), "--series", "VIXCLS"]) == 2

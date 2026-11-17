@@ -14,6 +14,7 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import httpx
 
@@ -30,6 +31,13 @@ SOURCES: list[tuple[str, str]] = [
     ("data_sec_fsds", _SEC),
     ("data_sec_edgar_filings", _SEC),
 ]
+DENIED_HOST = "stlouisfed.org"
+
+
+def _denied_host(url: str) -> bool:
+    """True for stlouisfed.org and any subdomain, whatever the case, trailing dot or port."""
+    host = (urlsplit(url).hostname or "").rstrip(".")
+    return host == DENIED_HOST or host.endswith("." + DENIED_HOST)
 
 
 def snapshot(
@@ -43,6 +51,9 @@ def snapshot(
     denied = [i for i, _ in sources if i.startswith(DENIED_SOURCE_PREFIXES)]
     if denied:
         raise SourceError(f"rights denied for every action, no request made: {denied}")
+    hosts = [i for i, u in sources if _denied_host(u)]
+    if hosts:
+        raise SourceError(f"host denied (D21-L1), no request made: {hosts}")
     ua = os.environ.get("SEC_USER_AGENT", "") if user_agent is None else user_agent
     if not ua.strip():
         raise SourceError("SEC_USER_AGENT is not set; refusing to fetch")

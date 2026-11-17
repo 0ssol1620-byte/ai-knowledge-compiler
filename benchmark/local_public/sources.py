@@ -23,7 +23,12 @@ from benchmark.v6.contracts import canonical_sha256
 
 SCHEMA = "tavonel.lpc-sources.v1"
 DEFAULT_MANIFEST = Path("D:/CodexProjects/v34-lanes/corpus/lpc-sources.v1.json")
-ALLOWED_ALFRED_SERIES = ["CPIAUCSL", "UNRATE", "INDPRO", "DFF", "DGS10", "DGS2"]
+# FRED/ALFRED content is denied for every action (D21-L1): no file, digest or entry of it is pinned.
+DENIED_ALFRED_SERIES = ["CPIAUCSL", "UNRATE", "INDPRO", "DFF", "DGS10", "DGS2"]
+ALFRED_DENIED_STATEMENT = (
+    "denied: FRED/ALFRED content is not used (D21-L1, register row data_alfred_vintages); "
+    "no file, digest or entry of it is pinned"
+)
 
 _C2 = "raw/v401_text/C2_edgar_docs"
 EXCLUDED = [
@@ -53,6 +58,7 @@ EXCLUDED = [
     {"pattern": "historical_news*", "reason": "not official / not read"},
     {"pattern": "external/*", "reason": "not official / not read"},
     {"pattern": "free/*", "reason": "not official / not read"},
+    {"pattern": "alfred_vintages*", "reason": "denied for every action (D21-L1)"},
     {"pattern": "alfred_series/BAMLH0A0HYM2", "reason": "third-party owned (ICE)"},
     {"pattern": "alfred_series/VIXCLS", "reason": "third-party owned (Cboe)"},
     {"pattern": "alfred_series/DTWEXBGS", "reason": "terms not read"},
@@ -196,12 +202,6 @@ def build(
 
     pin("sec_submissions_bulk", "acceptance_witness", root / "raw/sec_submissions_20260816.zip")
 
-    meta = root / "raw/alfred_vintages.metadata.json"
-    a = pin("alfred_vintages", "vintages", root / "raw/alfred_vintages.csv.gz")
-    pin("alfred_vintages_metadata", "vintages", meta)
-    if json.loads(meta.read_text("utf-8")).get("sha256") != a["sha256"]:
-        raise HashMismatch("alfred_vintages: file differs from its metadata sha256")
-
     if renderer is not None:
         if not (renderer_version and renderer_licence_sha256):
             raise SourceError("renderer needs --renderer-version and --renderer-licence-sha256")
@@ -233,7 +233,7 @@ def build(
         "built_by": f"benchmark.local_public.sources@{_git_sha(Path(__file__).parent)}",
         "entries": entries,
         "excluded": EXCLUDED,
-        "allowed_alfred_series": ALLOWED_ALFRED_SERIES,
+        "alfred": ALFRED_DENIED_STATEMENT,
     }
     manifest["manifest_sha256"] = _digest(manifest)
     out.parent.mkdir(parents=True, exist_ok=True)

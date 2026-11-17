@@ -77,3 +77,47 @@ def test_duplicate_source_id_refused(tmp_path, monkeypatch) -> None:
     monkeypatch.setattr(terms, "_inside_git_tree", lambda p: False)
     with pytest.raises(SourceError, match="duplicate"):
         terms.snapshot(tmp_path, sources=[("a", "u1"), ("a", "u2")], user_agent="ua")
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://fred.stlouisfed.org/legal/",
+        "https://stlouisfed.org/",
+        "https://FRED.StLouisFed.ORG/legal/",
+        "https://fred.stlouisfed.org./legal/",
+        "https://fred.stlouisfed.org:443/legal/",
+        "https://api.stlouisfed.org/fred/series?x=1",
+        "https://user@fred.stlouisfed.org/",
+    ],
+)
+def test_stlouisfed_host_refused_under_any_id_before_a_request(tmp_path: Path, url: str) -> None:
+    calls: list[int] = []
+
+    def h(req: httpx.Request) -> httpx.Response:
+        calls.append(1)
+        return httpx.Response(200)
+
+    with pytest.raises(SourceError, match="host denied"):
+        terms.snapshot(
+            tmp_path / "lic",
+            sources=[("data_sec_fsds", "https://x.test/ok"), ("innocent_id", url)],
+            user_agent="ua",
+            transport=httpx.MockTransport(h),
+        )
+    assert not calls and not (tmp_path / "lic").exists()
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://fred.stlouisfed.org.example.com/a",
+        "https://notstlouisfed.org/a",
+        "https://stlouisfed.org.evil.test/a",
+        "https://evil.test/stlouisfed.org",
+        "https://fred.stlouisfed.org@evil.test/a",
+        "https://evil.test/a?u=fred.stlouisfed.org",
+    ],
+)
+def test_look_alike_hosts_are_not_refused_by_accident(url: str) -> None:
+    assert not terms._denied_host(url)

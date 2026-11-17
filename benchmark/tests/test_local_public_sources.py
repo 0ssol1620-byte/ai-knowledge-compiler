@@ -44,9 +44,6 @@ def tree(tmp_path: Path) -> dict[str, Path]:
     )
     (c2 / "index.jsonl").write_text("{}\n")
     (src / "raw/sec_submissions_20260816.zip").write_bytes(b"bulk")
-    alfred = b"alfred-csv"
-    (src / "raw/alfred_vintages.csv.gz").write_bytes(alfred)
-    (src / "raw/alfred_vintages.metadata.json").write_text(json.dumps({"sha256": _h(alfred)}))
     lic = tmp_path / "licences"
     lic.mkdir()
     terms = b"<html>terms</html>"
@@ -132,6 +129,8 @@ def test_missing_terms_refused(tree: dict[str, Path]) -> None:
         "raw/v401_text/C2_edgar_docs/hdr/x.sgml",
         "raw/sec_facts.csv.gz",
         "alfred_series/VIXCLS",
+        "alfred_vintages",
+        "alfred_vintages_metadata",
     ],
 )
 def test_excluded_names(tree: dict[str, Path], name: str) -> None:
@@ -213,3 +212,27 @@ def test_receipt_never_overwritten(tree: dict[str, Path]) -> None:
         S.write_receipt(S.receipt(lo.ledger, [], ["third"]), tree["root"] / "run2", audit)
     assert (first.read_bytes(), (audit / "receipt.json").read_bytes()) == before
     assert not (tree["root"] / "run2" / "receipt.json").exists()
+
+
+def test_denied_alfred_contributes_no_file_digest_or_row(
+    tree: dict[str, Path], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tree["src"] / "raw/alfred_vintages.csv.gz").write_bytes(b"alfred-csv")
+    (tree["src"] / "raw/alfred_vintages.metadata.json").write_text("{}")
+    real = S._sha256_file
+
+    def guarded(path: Path) -> tuple[str, int]:
+        if path.name.lower().startswith("alfred"):
+            raise AssertionError(f"ALFRED path touched: {path}")
+        return real(path)
+
+    monkeypatch.setattr(S, "_sha256_file", guarded)
+    m = _build(tree)
+    assert not [e for e in m["entries"] if "alfred" in e["name"]]
+    assert m["alfred"] == S.ALFRED_DENIED_STATEMENT and "denied" in m["alfred"]
+    by = {e["name"]: e for e in m["entries"]}
+    assert by["sec_fsds/2024q1"]["sha256"] == _h(b"PK-fake-zip")
+    assert by["sec_submissions_bulk"]["sha256"] == _h(b"bulk")
+    assert by["sec_filing/0000000001-24-000001"]["content_sha256"] == _h(b"<html>filing</html>")
+    with pytest.raises(S.ExcludedSource):
+        S.Loader(tree["out"]).verified_path("alfred_vintages")
