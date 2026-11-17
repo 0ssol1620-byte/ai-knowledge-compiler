@@ -7,8 +7,10 @@ and rank nothing. The other fixtures are constructed strings.
 
 from __future__ import annotations
 
+import gc
 import hashlib
 import re
+import time
 from pathlib import Path
 from typing import Any
 
@@ -281,6 +283,107 @@ def test_cells_stay_apart() -> None:
 
 def test_a_line_without_a_pipe_is_not_joined() -> None:
     assert n1.normalise("ovis_ocr2", "$ 5 ( 3 ) %")[0] == "$ 5 ( 3 ) %"
+
+
+# ------------------------------------------------- linear in the input (round 3, decision A)
+# The class: every step of normalise costs time proportional to the input length, for any input
+# a pod can send (the page runner accepts up to 10 MiB). Each shape is one unit repeated; the
+# ones that grew a cell on every join (round 2) and every pattern's worst case are among them.
+
+BS = "\\"
+UNITS = {
+    "td_close": "<td>)</td>",
+    "td_empty_close": "<td></td><td>%</td>",
+    "pipe_empty_close": "| | ) ",
+    "pipe_close": "| ) ",
+    "td_open": "<td>$</td>",
+    "pipe_open": "| ( ",
+    "fcel": "<fcel>",
+    "ecel_fcel_close": "<ecel><fcel>)",
+    "textbf_unclosed": BS + "textbf{",
+    "textbf_closed": BS + "textbf{x}",
+    "amp_in_tabular": "&",
+    "backslash_in_tabular": BS,
+    "amp_outside": "& ",
+    "begin_unclosed": BS + "begin{tabular}",
+    "one_line": "Revenue 1,234 ",
+    "newlines": "\n",
+    "unclosed_tag": "<td ",
+}
+SIZES = (250_000, 500_000, 1_000_000, 2_000_000)
+RATIO, FLOOR_S, ONE_MB_S = 3.0, 0.1, 5.0
+
+
+def _shape(name: str, size: int) -> str:
+    body = UNITS[name] * (size // len(UNITS[name]))
+    if name.endswith("_in_tabular"):
+        return BS + "begin{tabular}{c}" + body + BS + "end{tabular}"
+    return body
+
+
+def _cpu_seconds(provider: str, text: str) -> float:
+    gc.collect()
+    start = time.process_time()
+    n1.normalise(provider, text)
+    return time.process_time() - start
+
+
+@pytest.mark.parametrize("provider", ["mineru", "xiaomi_ocr_0", "nemotron_parse_3_5"])
+@pytest.mark.parametrize("shape", list(UNITS))
+def test_normalise_is_linear_in_its_input(provider: str, shape: str) -> None:
+    """Doubling the input at most roughly doubles the time (ratio 3; below FLOOR_S a timer
+    tick is noise), and 1 MB finishes inside 5 s. CPU time of this process, so other load on
+    the machine does not count; a size over the ratio is measured once more (a spike is not a
+    trend, a quadratic step fails both times)."""
+    took: list[float] = []
+    for size in SIZES:
+        text = _shape(shape, size)
+        took.append(_cpu_seconds(provider, text))
+        if len(took) > 1 and took[-1] > RATIO * max(took[-2], FLOOR_S):
+            took[-1] = min(took[-1], _cpu_seconds(provider, text))
+        if len(took) > 1:
+            assert took[-1] <= RATIO * max(took[-2], FLOOR_S), (size, took)
+        if size == 1_000_000:
+            assert took[-1] < ONE_MB_S, took
+
+
+JOINED = [  # what the round-2 join (7c9514f) wrote; the linear join writes the same bytes
+    ("a |  | ) \t", "a ) \t"),
+    (" \t| ) | x", " ) | x"),
+    ("$ | \u00a0 | \u2003 | 1 \t", "$ 1 \t"),
+    ("( |  | ( | 1 | ) | %", "( ( 1 ) %"),
+    ("x | ) | ) | ) | 5", "x ) ) ) | 5"),
+    ("$$$ | 1", "$$$ 1"),
+    ("$$$$ | 1", "$$$$ | 1"),
+    ("a |\t) b | 2", "a |\t) b | 2"),
+    ("| | | ) |", " ) |"),
+    ("| Total | $ |", "| Total | $ "),  # an open cell that absorbs a last empty cell
+]
+
+
+@pytest.mark.parametrize(("line", "joined"), JOINED)
+def test_the_join_keeps_round_2_bytes_at_the_whitespace_edges(line: str, joined: str) -> None:
+    assert n1.normalise("ovis_ocr2", line)[0] == joined
+
+
+@pytest.mark.parametrize(
+    ("text", "found"),
+    [
+        ("| Net loss | - | 1,234 |", True),
+        ("<tr><td>Net loss</td><td>\u2212</td><td>(1,234)</td></tr>", True),
+        ("| Net loss | - | $ | 1,234 |", True),  # $ joins 1,234 first: one number cell
+        ("| Net loss | - | | 1,234 |", False),  # not directly followed
+        ("| Net loss | - | n/a |", False),
+        ("| Net loss | -1,234 |", False),
+        ("Net loss - 1,234", False),
+    ],
+)
+def test_a_dash_cell_before_a_number_is_found_not_joined(text: str, found: bool) -> None:
+    provider = "ovis_ocr2"
+    out = n1.normalise(provider, text)[0]
+    assert n1.dash_cell_before_number(out) is found, repr(out)
+    if found:  # decision D: the sign stays in its own cell, never invented into the number
+        assert re.search(r"[-\u2212] \|", out), repr(out)
 
 
 def test_unknown_provider_raises() -> None:

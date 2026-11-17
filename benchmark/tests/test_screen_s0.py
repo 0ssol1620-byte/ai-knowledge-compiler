@@ -640,7 +640,12 @@ def test_a_hostile_pod_answer_is_a_refusal_or_a_wait_never_a_crash(tmp_path, mon
     rc, _, _ = run(w, monkeypatch, model, kind="page", pod=pod, out="health-mid")
     lines = (w / "health-mid" / "records.jsonl").read_text(encoding="utf-8").splitlines()
     p0 = [r for r in map(json.loads, lines) if r["doc_id"] == "p0.pdf"]
-    assert rc in (0, 3) and p0[0]["hard_failures"] == ["provider_unavailable"]
+    # an object that does not name the pinned provider and revision is an integrity stop
+    if body.startswith(b"{"):
+        assert rc == 4 and model.calls == ["p0.pdf"]
+    else:  # no answer: not healthy before the retry pass, the page keeps its retry
+        assert rc == 3 and model.calls == ["p0.pdf", "p1.pdf", "p2.pdf"]
+    assert p0[0]["hard_failures"] == ["provider_unavailable"]
 
 
 def test_two_hours_after_creation_the_driver_stops_before_the_next_page(tmp_path, monkeypatch):
@@ -702,7 +707,145 @@ def test_a_crash_is_exit_1_with_the_type_only(tmp_path, monkeypatch, capsys):
     assert rc == 1 and "crash ContractError" in out and "p0.pdf" not in out
 
 
+def summary_of(w: Path, out: str = "out") -> dict[str, Any]:
+    return json.loads((w / out / "s0-summary.json").read_text(encoding="utf-8"))
+
+
+# ---------------------------------------------------------------- round 3
+
+
+def test_an_answer_over_the_size_bound_is_a_stored_failure_never_normalised(tmp_path, monkeypatch):
+    """B: one pod answer must not hold the run. A text of MAX_TEXT_CHARS is normalised; one
+    character more is the failure output_too_large (page_refused), its length kept, no retry."""
+    assert s0.MAX_TEXT_CHARS == 2_000_000
+    w = world(tmp_path, monkeypatch)
+    at_bound = "Revenue 1,234 " + "x" * (s0.MAX_TEXT_CHARS - 14)
+    model = Model({"p0.pdf": ok(text=at_bound + "y"), "p1.pdf": ok(text=at_bound)}, ok())
+    seen: list[int] = []
+    real = s0.normalise
+
+    def spy(provider: str, text: str) -> tuple[str, int]:
+        seen.append(len(text))
+        return real(provider, text)
+
+    monkeypatch.setattr(s0, "normalise", spy)
+    rc, _, _ = run(w, monkeypatch, model)
+    assert rc == 0
+    assert seen == [s0.MAX_TEXT_CHARS, len(TEXT)]  # p1 and p2 only: p0 never reached it
+    recs = {r["doc_id"]: r for r in final(w)}
+    big = raw(w, recs["p0.pdf"])
+    assert big["failure"] == {"reason": "output_too_large"}
+    assert big["metrics"] == {"text_chars": s0.MAX_TEXT_CHARS + 1} and "text" not in big
+    assert not recs["p0.pdf"]["accepted"] and recs["p0.pdf"]["provider_cost_usd"] is None
+    assert recs["p1.pdf"]["accepted"]
+    summary = summary_of(w)
+    assert summary["failure_classes"]["page_refused"] == 1
+    assert summary["failure_reasons"] == {"output_too_large": 1}
+    rc, _, _ = run(w, monkeypatch, model)  # resume: a stored failure is never retried
+    assert rc == 0 and model.calls.count("p0.pdf") == 1
+
+
+def test_a_page_that_returns_past_the_deadline_stops_the_run(tmp_path, monkeypatch):
+    """B: the run deadline is checked when a page returns, not only before the call: the last
+    page coming back past two hours stops the run (exit 3) with its answer stored."""
+    w = world(tmp_path, monkeypatch, pages=1)
+    clock = Clock()
+    model = Model({}, ok())
+    model.on_call = lambda: clock.sleep(2 * 60 * 60)
+    rc, _, _ = run(w, monkeypatch, model, clock=clock)
+    assert rc == 3 and model.calls == ["p0.pdf"]
+    assert not (w / "out" / "final-records.jsonl").exists()
+    lines = (w / "out" / "records.jsonl").read_text(encoding="utf-8").splitlines()
+    assert [json.loads(x)["accepted"] for x in lines] == [True]
+    model.on_call = None
+    rc, _, _ = run(w, monkeypatch, model)  # a resume on a new pod: nothing left to call
+    assert rc == 0 and model.calls == ["p0.pdf"]
+
+
+def _other_model(pod: Pod) -> None:
+    pod.body["/v1/models"] = json.dumps(
+        {"data": [{"id": f"ATH-MaaS/OvisOCR2@{'f' * 40}"}]}
+    ).encode()
+
+
+def _other_revision(pod: Pod) -> None:
+    pod.health = {**pod.health, "model_revision": "f" * 40}
+
+
+def _other_provider(pod: Pod) -> None:
+    pod.health = {**pod.health, "provider": "ovis_ocr3"}
+
+
+def _no_provider(pod: Pod) -> None:
+    pod.health = {"ready": True, "model_revision": REV_PAGE}
+
+
+@pytest.mark.parametrize(
+    ("kind", "change"),
+    [
+        ("chat", _other_model),
+        ("page", _other_revision),
+        ("page", _other_provider),
+        ("page", _no_provider),
+    ],
+)
+def test_a_health_answer_naming_other_pins_before_the_retry_is_integrity(
+    tmp_path, monkeypatch, kind, change
+):
+    """C(i): the pod answers the health check before the retry pass, but names another served
+    model, provider or revision (or none): integrity (exit 4), not operational; no retry."""
+    w = world(tmp_path, monkeypatch)
+    pod = Pod(kind)
+    fail = row("http_502") if kind == "chat" else down
+    model = Model({"p1.pdf": fail}, ok(kind))
+
+    def after_last() -> None:
+        if len(model.calls) == 3:
+            change(pod)
+
+    model.on_call = after_last
+    rc, _, _ = run(w, monkeypatch, model, kind=kind, pod=pod)
+    assert rc == 4
+    assert model.calls == ["p0.pdf", "p1.pdf", "p2.pdf"]  # the retry was not spent
+
+
+@pytest.mark.parametrize("kind", ["chat", "page"])
+@pytest.mark.parametrize("value", [[], ["text"], "text", None, 7, 1.5, True])
+def test_a_runner_result_that_is_not_an_object_is_a_runner_error_row(
+    tmp_path, monkeypatch, kind, value
+):
+    """C(ii): inside the driver, a non-object result becomes the failure row
+    runner_result_unshaped (class runner_error); run_screen and the summary never see it."""
+    w = world(tmp_path, monkeypatch)
+    model = Model({"p0.pdf": lambda case: value}, ok(kind))
+    rc, _, _ = run(w, monkeypatch, model, kind=kind, pod=Pod(kind))
+    assert rc == 0 and model.calls.count("p0.pdf") == 1
+    recs = {r["doc_id"]: r for r in final(w)}
+    stored = raw(w, recs["p0.pdf"])
+    assert stored["failure"] == {"reason": "runner_result_unshaped"}
+    assert stored["metrics"] == {"result_type": type(value).__name__}
+    summary = summary_of(w)
+    assert summary["failure_classes"]["runner_error"] == 1
+    assert summary["operational_plus_time_limit_plus_runner_error"] == 1
+    assert summary["accepted"] == 2
+
+
+def test_the_summary_counts_pages_with_a_dash_cell_before_a_number(tmp_path, monkeypatch):
+    """D: a dash-only cell is not joined to its number; the summary shows how often it
+    happens, read from the normalised text only."""
+    w = world(tmp_path, monkeypatch)
+    dash = "<table><tr><td>Revenue</td><td>-</td><td>1,234</td></tr></table>"
+    model = Model({"p0.pdf": ok(text=dash), "p2.pdf": ok(text=dash)}, ok())
+    rc, _, _ = run(w, monkeypatch, model)
+    assert rc == 0
+    assert summary_of(w)["normaliser"]["dash_cell_before_number_pages"] == 2
+    recs = {r["doc_id"]: r for r in final(w)}
+    assert "- | 1,234" in raw(w, recs["p0.pdf"])["text"]  # never joined into -1,234
+
+
 def test_failure_classes() -> None:
+    assert s0.failure_class("output_too_large") == "page_refused"
+    assert s0.failure_class("runner_result_unshaped") == "runner_error"
     assert s0.failure_class("provider_unavailable") == "operational"
     assert s0.failure_class("page_timeout") == "time_limit"
     assert s0.failure_class("http_524") == "time_limit"

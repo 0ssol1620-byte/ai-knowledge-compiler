@@ -6,6 +6,8 @@ anchor and refuses a token glued to markup, so ``<td>1,234</td>``, ``<fcel>1,234
 into a delimiter, a newline or a space; digits, signs, currency symbols and words are never
 added, removed or reordered. Only the patterns below are touched, each bounded and linear;
 anything else is left as it is and counted in ``residual``. An unknown provider raises.
+``normalise`` as a whole is linear in its input: the symbol join copies each character a
+bounded number of times and never re-scans a cell it is growing (measured by a test).
 
 Profiles: ``html`` (table cells and lines, numeric and named character references ending in
 ``;``), ``otsl`` (cell and line tags), ``nemotron`` (position and class tokens, LaTeX wrappers
@@ -16,6 +18,13 @@ belongs to the nearest non-empty cell after it and a cell holding only ``)`` or 
 nearest non-empty cell before it, mirroring how the gold builder joins symbol-only cells to
 their number across empty cells (``benchmark/local_public/sec_align.py``). Only boundaries and
 whitespace are removed for that; two cells that hold values stay apart.
+
+A cell holding only ``-`` or U+2212 is not joined to the number after it (lead decision D): in
+a model's table that cell is far more often an empty-value placeholder in another column than a
+detached sign, and joining would invent a negative number. Known consequence: where the source
+prints a detached minus sign in its own cell, gold is negative and a faithful transcription
+reads positive, for every candidate alike. ``dash_cell_before_number`` finds such pages in the
+normalised text (no gold) so that S0 can count them.
 
 Layout is not structure: in ``html`` a cell end and the next cell start, with only whitespace
 between them, are one boundary; inside a tabular span a line break is a space (rows end at
@@ -29,6 +38,7 @@ from __future__ import annotations
 import hashlib
 import html
 import re
+from itertools import pairwise
 from pathlib import Path
 
 MODULE_SHA256 = "sha256:" + hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -68,6 +78,9 @@ TEX_PASSES = 8
 
 _OPEN_CELL = re.compile(r"[$€£¥(]{1,3}")
 _CLOSE_CELL = re.compile(r"[)%]{1,2}")
+_HEAD = 4  # one more than the longest symbol cell: a cell's first 4 non-blank chars decide
+_DASH_CELL = ("-", "\u2212")
+_NUMBER_CELL = re.compile(r"[$€£¥(]{0,3}\d[\d,.]{0,40}[)%]{0,2}")
 _RESIDUAL = re.compile(r"<[A-Za-z/][^<>]{0,40}>|\\[A-Za-z]+")
 
 
@@ -118,19 +131,61 @@ def _compact(cell: str) -> str:
     return "".join(cell.split())
 
 
+class _Cell:
+    """An output cell of the symbol join, built so that no input character is copied twice.
+
+    Its text is ``"".join(body) + tail``: ``body`` never ends in whitespace and ``tail`` is
+    whitespace only. ``head`` holds the first ``_HEAD`` non-blank characters ("" = empty), all
+    the open/close decision needs; the accumulated text is never scanned again.
+    """
+
+    __slots__ = ("body", "head", "tail")
+
+    def __init__(self, cell: str, head: str) -> None:
+        core = cell.rstrip()
+        self.body, self.tail, self.head = [core], cell[len(core) :], head
+
+    def join(self, cell: str, head: str) -> None:
+        """``text = text.rstrip() + " " + cell.lstrip()``, without copying ``text``."""
+        rest = cell.lstrip()
+        core = rest.rstrip()
+        if core:
+            self.body.append(" " + core)
+            self.tail = rest[len(core) :]
+        else:
+            self.tail = " "
+        if len(self.head) < _HEAD:
+            self.head = (self.head + head)[:_HEAD]
+
+    def text(self) -> str:
+        return "".join(self.body) + self.tail
+
+
 def _join_symbol_cells(line: str) -> str:
     cells = line.split("|")
-    out = [cells[0]]
+    out = [_Cell(cells[0], _compact(cells[0])[:_HEAD])]
     for cell in cells[1:]:
-        if _CLOSE_CELL.fullmatch(_compact(cell)):
-            while len(out) > 1 and not _compact(out[-1]):  # to the nearest non-empty cell
+        head = _compact(cell)[:_HEAD]
+        if _CLOSE_CELL.fullmatch(head):
+            while len(out) > 1 and not out[-1].head:  # to the nearest non-empty cell
                 out.pop()
-            out[-1] = out[-1].rstrip() + " " + cell.lstrip()
-        elif _OPEN_CELL.fullmatch(_compact(out[-1])):  # absorbs the empty cells after it too
-            out[-1] = out[-1].rstrip() + " " + cell.lstrip()
+            out[-1].join(cell, head)
+        elif _OPEN_CELL.fullmatch(out[-1].head):  # absorbs the empty cells after it too
+            out[-1].join(cell, head)
         else:
-            out.append(cell)
-    return "|".join(out)
+            out.append(_Cell(cell, head))
+    return "|".join(c.text() for c in out)
+
+
+def dash_cell_before_number(text: str) -> bool:
+    """A cell holding only ``-`` or U+2212 is directly followed by a number cell (decision D:
+    such a sign is never joined; S0 counts the pages so its effect is visible)."""
+    for line in text.split("\n"):
+        heads = [_compact(c)[:48] for c in line.split("|")] if "|" in line else []
+        for cell, after in pairwise(heads):
+            if cell in _DASH_CELL and _NUMBER_CELL.fullmatch(after):
+                return True
+    return False
 
 
 def profile_of(provider: str) -> str:

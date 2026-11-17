@@ -8,13 +8,17 @@ without the key ends it (exit 2); a chat server that refuses the key is KEY-MISM
 no server 45 minutes after the pod was created ends it (exit 3). Then ``run_screen`` runs with
 ``wrap`` as its call: each page result's text goes through ``normalise_v1`` (the text before
 is kept in ``metrics.normaliser``), and its cost is derived from the price stated when the pod
-was created and the runner's measured request latency (labelled "not billed"). A pod that is
+was created and the runner's measured request latency (labelled "not billed"). A text longer
+than ``MAX_TEXT_CHARS`` is not normalised: the page is stored as the failure
+``output_too_large`` with its length. A runner result that is not an object is stored as the
+failure ``runner_result_unshaped`` (a runner error), never handed to ``run_screen``. A pod that is
 down (a status that means "no answer from the model") is a retried page, never a stored model
 failure; one retry per page, spent in the same run only on a pod that answers healthy, else
-kept for the resume. The driver enforces its own deadlines (two hours after creation;
-180 s for the server to go idle after a proxy cut) and stops after three operational failures
-in a row (exit 3; resume with the same ``--out`` on a new pod). A wrong served model or recipe
-is an integrity stop (exit 4). Nothing printed carries page text, a doc id, gold or a
+kept for the resume. The driver enforces its own deadlines (two hours after creation, checked
+before each call and again when it returns; 180 s for the server to go idle after a proxy cut)
+and stops after three operational failures in a row (exit 3; resume with the same ``--out`` on
+a new pod). A wrong served model, provider, revision or recipe, in a page answer or in a health
+answer, is an integrity stop (exit 4). Nothing printed carries page text, a doc id, gold or a
 credential: progress lines name the page by its ordinal only.
 """
 
@@ -46,7 +50,12 @@ from benchmark.runners.registry import RUNNER_CONFIGS
 from benchmark.runners.vlm import PageRefused, config_sha256
 from benchmark.screen import critical_fields
 from benchmark.screen.manifest import HoldoutGuard, verify
-from benchmark.screen.normalise_v1 import MODULE_SHA256, normalise, profile_of
+from benchmark.screen.normalise_v1 import (
+    MODULE_SHA256,
+    dash_cell_before_number,
+    normalise,
+    profile_of,
+)
 from benchmark.screen.run_screen import (
     Candidate,
     ImmutableOutputError,
@@ -68,6 +77,11 @@ CHAT_PORT, PAGE_PORT = 8000, 8080
 # A chat failure row with one of these statuses is a pod that is down, not a model answer.
 UNAVAILABLE = frozenset(f"http_{s}" for s in (401, 403, 404, 429, 500, 502, 503))
 TIME_LIMIT = frozenset({"http_524", "page_timeout"})
+# Failure rows the driver writes itself. A page answer longer than this is not normalised: a
+# one-page statement is a few thousand characters, and one answer must not hold the run.
+MAX_TEXT_CHARS = 2_000_000
+OUTPUT_TOO_LARGE = "output_too_large"
+UNSHAPED = "runner_result_unshaped"  # the runner returned something that is not an object
 COST_KIND = "derived: stated price \N{MULTIPLICATION SIGN} measured request latency; not billed"
 EXIT_OK, EXIT_CRASH, EXIT_REFUSED, EXIT_OPERATIONAL, EXIT_INTEGRITY = 0, 1, 2, 3, 4
 
@@ -143,11 +157,11 @@ def failure_class(reason: str) -> str:
         return "operational"
     if reason in TIME_LIMIT:
         return "time_limit"
-    if reason == "provider_error":
-        return "runner_error"  # the runner raised: neither the pod's answer nor the model's
+    if reason in ("provider_error", UNSHAPED):
+        return "runner_error"  # the runner raised or broke its contract: not the model's answer
     if reason == "pipeline_exit_nonzero":
         return "exit_unclassified"  # cause from the pod log, not a model failure until then
-    if reason.startswith("page_"):
+    if reason == OUTPUT_TOO_LARGE or reason.startswith("page_"):
         return "page_refused"
     return "model"
 
@@ -329,27 +343,45 @@ class Driver:
         except (ValueError, RecursionError):
             return None
 
-    def _served(self, body: bytes) -> bool:
-        """A /v1/models listing names the pinned served model."""
+    def _models(self, body: bytes) -> list[Any] | None:
+        """The model ids a /v1/models answer lists, or None when it is not a listing."""
         listing = self._json(body)
         data = listing.get("data") if isinstance(listing, dict) else None
-        return isinstance(data, list) and any(
-            isinstance(m, dict) and m.get("id") == self.served for m in data
-        )
+        if not isinstance(data, list):
+            return None
+        return [m["id"] if isinstance(m, dict) and "id" in m else None for m in data]
 
-    def _healthy(self) -> bool:
-        """The pod still serves the pinned model: checked before a page spends its retry."""
-        if self.kind == "chat":
-            status, _, body = self._get("/v1/models", auth=True)
-            return status == 200 and self._served(body)
+    def _served(self, body: bytes) -> bool:
+        """A /v1/models listing names the pinned served model."""
+        return self.served in (self._models(body) or [])
+
+    def _health(self) -> dict[str, Any] | None:
+        """The page server's /health, or None when no answer parses as one. An answer that
+        names another provider or revision (or none) is an integrity stop, and None."""
         status, _, body = self._get("/health", auth=False)
         health = self._json(body) if status == 200 else None
-        return (
-            isinstance(health, dict)
-            and health.get("ready") is True
-            and health.get("provider") == self.provider
-            and health.get("model_revision") == self.args.revision
-        )
+        if not isinstance(health, dict):
+            return None
+        if (health.get("provider"), health.get("model_revision")) != (
+            self.provider,
+            self.args.revision,
+        ):
+            self._halt("integrity", "the page server names another provider or revision")
+            return None
+        return health
+
+    def _healthy(self) -> bool:
+        """The pod still serves the pinned model: checked before a page spends its retry. No
+        answer is operational; an answer that names another served model, provider or revision
+        is an integrity stop (exit 4)."""
+        if self.kind == "chat":
+            status, _, body = self._get("/v1/models", auth=True)
+            models = self._models(body) if status == 200 else None
+            if models is not None and self.served not in models:
+                self._halt("integrity", "the server lists another served model")
+            return models is not None and self.served in models
+        health = self._health()
+        return health is not None and health.get("ready") is True
 
     def wait_ready(self) -> None:
         while True:
@@ -448,28 +480,50 @@ class Driver:
         if self.in_a_row >= MAX_OPERATIONAL_IN_A_ROW:
             self._halt("operational", "three operational failures in a row")
 
+    def _row(self, case_id: str, reason: str, metrics: dict[str, Any]) -> dict[str, Any]:
+        """A failure row the driver writes itself, shaped like the runners' own rows."""
+        return {
+            "schema_version": "1.0",
+            "benchmark_case_id": case_id,
+            "provider": self.provider,
+            "model_revision": self.args.revision,
+            "failure": {"reason": reason},
+            "metrics": metrics,
+            "receipt": {"revision_attested": False},
+        }
+
+    def _deadline(self) -> None:
+        if self.stop is None and self.now() >= self.created + RUN_DEADLINE:
+            self._halt("operational", "two hours after pod creation")
+
     def __call__(
+        self, candidate: Candidate, case: dict[str, Any], corpus_root: Path
+    ) -> dict[str, Any]:
+        try:
+            return self._page(candidate, case, corpus_root)
+        finally:  # checked again when the page returns: a slow page stops the run at once
+            self._deadline()
+
+    def _page(
         self, candidate: Candidate, case: dict[str, Any], corpus_root: Path
     ) -> dict[str, Any]:
         case_id = case["benchmark_case_id"]
         n = self.ordinal.get(case_id, 0)
-        if self.stop is None and self.now() >= self.created + RUN_DEADLINE:
-            self._halt("operational", "two hours after pod creation")
+        self._deadline()
         if self.stop is not None:
             raise RunnerUnavailable("S0 stopped; page not sent")
         if self.attempts[case_id] >= MAX_ATTEMPTS:
             raise RunnerUnavailable("page already had its retry")
         try:
-            result = self.inner(candidate, case, corpus_root)
+            result: object = self.inner(candidate, case, corpus_root)  # typed, not trusted
         except PageRefused as refused:  # decided before any call; a record of its own
             self._log(n, f"failure:{_reason(refused.reason)}")
             raise
         except RunnerUnavailable:
             self._unavailable(n, case_id)
             if self.kind == "page":
-                status, _, body = self._get("/health", auth=False)
-                health = self._json(body) if status == 200 else None
-                if isinstance(health, dict) and health.get("ready") is False:
+                health = self._health()
+                if health is not None and health.get("ready") is False:
                     self._halt("operational", "page server reports ready false")
             raise
         except Exception:
@@ -477,7 +531,12 @@ class Driver:
             self._log(n, "failure:provider_error")
             self.in_a_row = 0
             raise
-        failure = result.get("failure") if isinstance(result, dict) else None
+        if not isinstance(result, dict):  # never handed on: everything after reads an object
+            self.in_a_row = 0
+            self._attempt(case_id, UNSHAPED)
+            self._log(n, f"failure:{UNSHAPED}")
+            return self._row(case_id, UNSHAPED, {"result_type": type(result).__name__})
+        failure = result.get("failure")
         reason = _reason(failure.get("reason")) if isinstance(failure, dict) else None
         if reason == "served_model_differs":
             self._attempt(case_id, reason)
@@ -487,10 +546,9 @@ class Driver:
             self._unavailable(n, case_id)
             raise RunnerUnavailable("pod answered with an unavailable status; not stored")
         if self.kind == "page":
-            shaped = result if isinstance(result, dict) else {}
-            runtime = shaped.get("metrics")
+            runtime = result.get("metrics")
             if reason:
-                receipt = shaped.get("receipt")
+                receipt = result.get("receipt")
             else:
                 receipt = runtime.get("receipt") if isinstance(runtime, dict) else None
             recipe = receipt.get("recipe") if isinstance(receipt, dict) else None
@@ -510,12 +568,15 @@ class Driver:
         return self._finish(n, case_id, result)
 
     def _finish(self, n: int, case_id: str, result: dict[str, Any]) -> dict[str, Any]:
-        shaped = result if isinstance(result, dict) else {}
-        text, metrics = shaped.get("text"), shaped.get("metrics")
+        text, metrics = result.get("text"), result.get("metrics")
         if not isinstance(text, str) or not isinstance(metrics, dict):
             self._attempt(case_id, "unshaped")
             self._log(n, "failure:unshaped")
             return result  # run_screen records contract_failed
+        if len(text) > MAX_TEXT_CHARS:  # not normalised; a failed page, stored, never retried
+            self._attempt(case_id, OUTPUT_TOO_LARGE)
+            self._log(n, f"failure:{OUTPUT_TOO_LARGE}")
+            return self._row(case_id, OUTPUT_TOO_LARGE, {"text_chars": len(text)})
         normalised, residual = normalise(self.provider, text)
         metrics = {
             **metrics,
@@ -605,7 +666,7 @@ class Driver:
         )
         reasons: Counter[str] = Counter()
         flags: Counter[str] = Counter()
-        residual = 0
+        residual = dash_pages = 0
         for r in records:
             raw = json.loads(self._raw(r).read_bytes()) if r["raw_sha256"] is not None else None
             reason: str | None = None
@@ -622,6 +683,7 @@ class Driver:
                 norm = (raw.get("metrics") or {}).get("normaliser")
                 if isinstance(norm, dict) and isinstance(norm.get("residual"), int):
                     residual += norm["residual"]
+                dash_pages += dash_cell_before_number(raw["text"])  # validated output: a str
             if reason is not None:
                 reasons[reason] += 1
                 classes[failure_class(reason)] += 1
@@ -654,6 +716,9 @@ class Driver:
                 "profile": profile_of(self.provider),
                 "module_sha256": MODULE_SHA256,
                 "residual_sum": residual,
+                # decision D: a dash-only cell is never joined to the number after it; pages
+                # where one is, read from the normalised text only (no gold)
+                "dash_cell_before_number_pages": dash_pages,
             },
         }
 
