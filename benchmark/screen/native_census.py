@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -132,18 +133,22 @@ def run_census(records_path: Path, corpus_root: Path, out_path: Path) -> int:
     root = Path(corpus_root).resolve()
     loaded, seen = [], set()
     for rec in records:  # integrity first: nothing is written if any document is off
+        if not isinstance(rec, dict):
+            raise ContractError("a record is not an object")
         doc_id, digest = rec.get("doc_id"), rec.get("source_sha256")
         if not isinstance(doc_id, str) or not doc_id:
             raise ContractError("a record has no doc_id")
         if not isinstance(digest, str):
             raise ContractError(f"{doc_id}: a record has no source_sha256")
         require_sha256(digest, "source_sha256")
-        if doc_id in seen:
-            raise ContractError(f"{doc_id}: duplicate doc_id")
-        seen.add(doc_id)
         path = (root / doc_id).resolve()
         if not path.is_relative_to(root):
             raise ContractError(f"{doc_id}: resolves outside the corpus root")
+        # One file, however it is spelled: ./a, a/../a, a//b, and A on a case-folding system.
+        key = os.path.normcase(path)
+        if key in seen:
+            raise ContractError(f"{doc_id}: duplicate doc_id (names a file already listed)")
+        seen.add(key)
         if not path.is_file():
             raise ContractError(f"{doc_id}: file missing under corpus root")
         data = path.read_bytes()
@@ -170,11 +175,21 @@ def run_census(records_path: Path, corpus_root: Path, out_path: Path) -> int:
         "text": "rows carry labels and counts only, never page text",
     }
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    # "x" mode: a file that appeared since the check above still refuses.
-    with out_path.open("xb") as f:
-        f.write(body)
+    # Receipt first, both in "x" mode: a file that appeared since the check above still
+    # refuses, and an output is never left without its receipt. If the output cannot be
+    # written, the receipt (ours) and any partial output (ours) are removed.
     with receipt_path.open("x", encoding="utf-8", newline="\n") as f:
         f.write(json.dumps(receipt, sort_keys=True, indent=2) + "\n")
+    created = False
+    try:
+        with out_path.open("xb") as f:
+            created = True
+            f.write(body)
+    except BaseException:
+        if created:
+            out_path.unlink(missing_ok=True)
+        receipt_path.unlink(missing_ok=True)
+        raise
     return len(lines)
 
 

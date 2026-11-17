@@ -10,15 +10,20 @@ import copy
 import dataclasses
 import hashlib
 import json
+import math
+import re
 from pathlib import Path
 from typing import Any
 
 import pytest
 from akc_router.complementarity import RescueMeasurement
 
+from benchmark.evaluators import metrics as scorer
+from benchmark.runners.base import RunnerUnavailable
 from benchmark.screen import select_5h as s5
 from benchmark.screen.critical_fields import score_critical_fields
 from benchmark.screen.manifest import HoldoutGuard, HoldoutSealedError
+from benchmark.screen.run_screen import Candidate, run_screen
 from benchmark.v6.contracts import ContractError
 
 H_PAGES = [f"h{i:02d}.pdf#0" for i in range(20)]
@@ -157,14 +162,14 @@ def test_planted_clear_loser_dropped_near_tie_kept_baseline_kept(tmp_path: Path)
 
 def test_more_than_five_keeps_top_five_by_rank_key(tmp_path: Path) -> None:
     plans = {f"c{i}": wrong(HF[:i]) | wrong(RF[:1]) for i in range(5)}
-    plans["C0"] = wrong(HF[:6]) | wrong(RF[:1])  # a non-loser, sixth by rank: not kept
-    plans["rbest"] = wrong(HF[:5])  # fifth on H, only one perfect on R
+    plans["C0"] = wrong(HF[:6]) | wrong(RF[:1])  # a non-loser, seventh by rank: carried (5H-16)
+    plans["rbest"] = wrong(HF[:5])  # sixth on H, only one perfect on R
     recs, _ = world(plans)
     s1 = s5.select_s1(recs, guard=guard(tmp_path), baseline="C0")
     assert s1["clear_losers"] == []
     assert s1["best_on_R"] == "rbest"
-    assert s1["kept"] == ["c0", "c1", "c2", "c3", "c4"]
-    assert s1["dropped"] == ["rbest", "C0"]
+    assert s1["kept"] == ["c0", "c1", "c2", "c3", "c4", "C0"]
+    assert s1["dropped"] == ["rbest"]
 
 
 def test_clear_loser_baseline_is_kept_in_addition_to_five_non_losers(tmp_path: Path) -> None:
@@ -186,12 +191,14 @@ def test_fewer_than_four_tops_up_from_h_order(tmp_path: Path) -> None:
             "x1": wrong(HF[:24]) | wrong(RF[:10]),
             "x2": wrong(HF[:22]) | wrong(RF[:10]),
             "x3": wrong(HF[:26]) | wrong(RF[:10]),
+            "x4": wrong(HF[:28]) | wrong(RF[:10]),
         }
     )
     s1 = s5.select_s1(recs, guard=guard(tmp_path), baseline="C0")
-    assert s1["clear_losers"] == ["C0", "x1", "x2", "x3"]
-    assert s1["kept"] == ["L", "C0", "x2", "x1"]  # L + baseline, topped up by H rank
-    assert s1["dropped"] == ["x3"]
+    assert s1["clear_losers"] == ["C0", "x1", "x2", "x3", "x4"]
+    # L topped up to four non-baseline candidates by H rank; C0 carried beside them (5H-16).
+    assert s1["kept"] == ["L", "C0", "x2", "x1", "x3"]
+    assert s1["dropped"] == ["x4"]
 
 
 def test_ties_are_deterministic_and_bytes_repeat(tmp_path: Path) -> None:
@@ -284,7 +291,9 @@ def test_third_member_given_the_pair_and_unknown_cost(tmp_path: Path) -> None:
 
 def test_failed_page_is_all_wrong_and_text_must_match_record(tmp_path: Path) -> None:
     plans = {"L": {}, "B": {(H_PAGES[0], "f1"): "F"}, "C": {}, "C0": wrong(HF)}
-    recs, texts = world(plans)
+    raw = tmp_path / "raw"
+    raw.mkdir()
+    recs, texts = world(plans, raw_dir=raw)
     g = guard(tmp_path)
     s2 = s5.complementarity_s2(
         recs, texts, GOLD, guard=g, s1=s5.select_s1(recs, guard=g, baseline="C0")
@@ -303,7 +312,7 @@ def test_failed_page_is_all_wrong_and_text_must_match_record(tmp_path: Path) -> 
     c_h0["hard_failures"] = ["contract_failed"]
     c_h0["critical"] = {"n": 2, "exact": 0, "accepted_errors": 0}
     s2 = s5.complementarity_s2(
-        failed, texts, GOLD, guard=g, s1=s5.select_s1(failed, guard=g, baseline="C0")
+        failed, texts, GOLD, guard=g, s1=s5.select_s1(failed, guard=g, baseline="C0", raw_dir=raw)
     )
     lc = next(r for r in s2["matrix"]["H"] if (r["baseline"], r["peer"]) == ("C", "L"))
     assert (lc["baseline_wrong_pages"], lc["rescued_fields"]) == (2, 2)
@@ -320,6 +329,15 @@ def test_load_texts_reads_raw_files_and_refuses_a_changed_byte(tmp_path: Path) -
     victim.write_bytes(victim.read_bytes().replace(b"Revenue", b"Revenuf"))
     with pytest.raises(ContractError, match="differs"):
         s5.load_texts(recs, raw)
+    escape = {**recs[1], "record_key": "sha256:../" + "a" * 61}
+    with pytest.raises(ContractError, match="record_key"):
+        s5.load_texts([escape], raw)
+    # A raw output that is not an object (a contract failure) has no text, and no crash.
+    data = b"[1, 2]"
+    (raw / ("f" * 64 + ".json")).write_bytes(data)
+    listed = {**recs[1], "record_key": "sha256:" + "f" * 64}
+    listed["raw_sha256"] = "sha256:" + hashlib.sha256(data).hexdigest()
+    assert s5.load_texts([listed], raw) == {listed["raw_sha256"]: ""}
 
 
 def test_s2_stop_rule_skips_a_cheap_candidate_that_rescues_almost_nothing(
@@ -481,13 +499,14 @@ def test_reread_signal_optional_and_holdout_needs_the_recipe(tmp_path: Path) -> 
 
 
 def _recipe(tmp_path: Path, members: list[str], escalate_on: list[str]) -> dict[str, Any]:
-    plans = {m: wrong(HF[: 3 * i]) for i, m in enumerate(members)} | {"C0": wrong(HF)}
+    # P and Q tie (P first by id); Q rescues the six fields P misses: S2 picks exactly P, Q.
+    plans = {"P": wrong(HF[:6]), "Q": wrong(HF[6:12], 2), "C0": wrong(HF)}
     recs, texts = world(plans)
     g = guard(tmp_path / "recipe")
     (tmp_path / "recipe").mkdir(exist_ok=True)
     s1 = s5.select_s1(recs, guard=g, baseline="C0")
     s2 = s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1)
-    s2 = {**s2, "members": members}
+    assert s2["members"] == members
     return s5.build_recipe(
         records=recs,
         s1=s1,
@@ -565,10 +584,12 @@ def test_recipe_digest_moves_with_every_listed_input(tmp_path: Path, monkeypatch
             s5.build_recipe(**{**args, **lineage})
     s1b = s5.select_s1(repinned, guard=g, baseline="C0")
     s2b = s5.complementarity_s2(repinned, texts, GOLD, guard=g, s1=s1b)
+    # WO-D08-9: a reordered member list is no longer a different recipe; it is refused.
+    with pytest.raises(ContractError, match="chain"):
+        s5.build_recipe(**{**args, "s2": {**s2, "members": list(reversed(s2["members"]))}})
     changes = {
         "records": repinned,
         "s1": s1b,
-        "s2": {**s2, "members": list(reversed(s2["members"]))},
         "escalate_on": ["disagreement"],
         "degradation": {"seed": 12, "parameters": {"scan_poor": {"dpi": 100}}},
         "scoring_commit": "3" * 40,
@@ -596,3 +617,297 @@ def test_recipe_digest_moves_with_every_listed_input(tmp_path: Path, monkeypatch
     monkeypatch.setattr(s5, "READER_V1_SHA256", "sha256:" + "0" * 64)
     with pytest.raises(ContractError, match="reader v1"):
         s5.build_recipe(**args)
+
+
+# ---------------------------------------------------------------- WO-D08-9
+
+
+def _truth(i: int) -> dict[str, Any]:
+    """Shaped like benchmark.local_public.sec_screen._truth: high_risk and the whole page text."""
+    return {
+        "critical_fields": [
+            {
+                "field_id": f"us-gaap:{name}",
+                "kind": "number",
+                "value": str(base + i),
+                "anchor": anchor,
+                "ixbrl": {
+                    "context_id": "c-1",
+                    "start": None,
+                    "end": "2026-09-30",
+                    "scale": "0",
+                    "sign": "",
+                    "sign_basis": "fsds",
+                },
+                "fsds": {"quarter": "2026q3", "adsh": "0000000000-26-000001", "tag": name},
+            }
+            for name, anchor, base in (
+                ("NetIncomeLoss", "Net income", 2000),
+                ("Revenues", "Revenue", 1000),
+            )
+        ],
+        "high_risk": True,
+        "text": f"Page {i + 7}\nRevenue {1000 + i}\nNet income {2000 + i}\nSee note {i + 3}.",
+        "text_source": "html_dom_text",
+        "gold_source": "sec_fsds_inline_xbrl",
+        "selection_condition": "dom_rule_v2",
+        "lpc_manifest_sha256": "sha256:" + "c" * 64,
+    }
+
+
+def _screen(
+    tmp_path: Path, plans: dict[str, dict[int, str]], n_h: int = 6, n_r: int = 4
+) -> tuple[HoldoutGuard, list[dict[str, Any]], dict[str, dict[str, Any]], Path]:
+    """Records written by the real run_screen with a fake runner. Plan values per page index:
+    'both' (default), 'one' (Net income misread, CER lower), or a failure: 'unavailable',
+    'raise', or a failure.reason the page server answers with (stored raw, recorded
+    contract_failed)."""
+    corpus, raw = tmp_path / "corpus", tmp_path / "raw"
+    corpus.mkdir()
+    docs, gold, index = [], {}, {}
+    for i in range(n_h + n_r):
+        name = f"{'h' if i < n_h else 'r'}{i:02d}.pdf"
+        body = f"synthetic page {i}".encode()
+        (corpus / name).write_bytes(body)
+        docs.append(
+            {
+                "doc_id": name,
+                "source_sha256": "sha256:" + hashlib.sha256(body).hexdigest(),
+                "page_count": 1,
+                "stratum": "en_native",
+                "language": "en",
+                "document_class": "sec_statement",
+                "split": "dev",
+                "page_origin": s5.DEGRADED if i < n_h else "born_digital_html_print",
+            }
+        )
+        gold[f"{name}#0"] = _truth(i)
+        index[name] = i
+    g = HoldoutGuard({"manifest_sha256": "sha256:" + "e" * 64, "documents": docs}, tmp_path / "log")
+    records: list[dict[str, Any]] = []
+    for cand, plan in plans.items():
+
+        def call(c: Candidate, case: dict[str, Any], root: Path, plan: Any = plan) -> Any:
+            i = index[case["source"]["path"]]
+            how = plan.get(i, "both")
+            if how == "unavailable":
+                raise RunnerUnavailable("pod down")
+            if how == "raise":
+                raise RuntimeError("runner crashed")
+            if how not in ("both", "one"):
+                return {"benchmark_case_id": case["benchmark_case_id"], "failure": {"reason": how}}
+            # 'one' keeps the page number and the note (lower CER) but misreads Net income.
+            text = (
+                f"Revenue {1000 + i}\nNet income {2000 + i}"
+                if how == "both"
+                else f"Page {i + 7}\nRevenue {1000 + i}\nNet income 9999\nSee note {i + 3}."
+            )
+            return {
+                "schema_version": "1.0",
+                "benchmark_case_id": case["benchmark_case_id"],
+                "provider": "mineru",
+                "model_revision": "a" * 40,
+                "text": text,
+                "reading_order": [],
+                "blocks": [],
+                "generated_claims": [],
+                "metrics": {"latency_ms": 5.0, "estimated_cost_usd": 0.01},
+                "warnings": [],
+            }
+
+        records += run_screen(
+            guard=g,
+            split="dev",
+            purpose="tune",
+            candidate=Candidate(
+                cand, "mineru", "a" * 40, "sha256:" + "1" * 64, "sha256:" + "2" * 64
+            ),
+            corpus_root=corpus,
+            gold=gold,
+            raw_dir=raw,
+            records_path=tmp_path / f"{cand}.jsonl",
+            call=call,
+        )
+    return g, records, gold, raw
+
+
+def test_scorer_flags_never_fail_a_page_records_from_the_real_runner(tmp_path: Path) -> None:
+    g, recs, gold, raw = _screen(tmp_path, {"C0": dict.fromkeys(range(10), "one"), "good": {}})
+    assert all(r["hard_failures"] == ["high_risk_numeric_below_threshold"] for r in recs)
+    s1 = s5.select_s1(recs, guard=g, baseline="C0", raw_dir=raw)
+    assert s1["leader"] == "good"
+    assert s1["cells"]["H"]["good"]["critical_exact"] == 12
+    assert s1["cells"]["H"]["C0"]["critical_exact"] == 6
+    assert s1["cells"]["H"]["good"]["failures"] == 0
+    assert s1["failures"]["good"]["score_flags"] == {"high_risk_numeric_below_threshold": 10}
+    assert s1["failures"]["good"]["classes"] == dict.fromkeys(s5.FAILURE_CLASSES, 0)
+    s2 = s5.complementarity_s2(recs, s5.load_texts(recs, raw), gold, guard=g, s1=s1)
+    row = next(r for r in s2["matrix"]["H"] if (r["baseline"], r["peer"]) == ("C0", "good"))
+    assert (row["baseline_wrong_pages"], row["rescued_fields"]) == (6, 6)
+
+
+def test_failure_classes_are_the_5h17_tokens_and_unknown_tokens_refuse() -> None:
+    expect = {
+        "provider_unavailable": "operational",
+        **{f"http_{s}": "operational" for s in (401, 403, 404, 429, 500, 502, 503)},
+        "http_524": "time_limit",
+        "page_timeout": "time_limit",
+        "provider_error": "runner_error",
+        "contract_failed": "contract",
+        "page_too_large": "page_refused",
+        "page_unreadable": "page_refused",
+    }
+    for token, cls in expect.items():
+        assert s5.failure_class(token) == cls, token
+    for flag in s5.SCORER_FLAGS:
+        assert s5.failure_class(flag) is None, flag
+    for bad in ("http_418", "pipeline_exit_nonzero", "other", "page_", "", "HTTP_503", None, 5):
+        with pytest.raises(ContractError):
+            s5.failure_class(bad)
+
+
+def test_scorer_flag_set_is_every_flag_the_scorer_raises() -> None:
+    source = Path(scorer.__file__).read_text(encoding="utf-8")
+    assert set(re.findall(r'hard_failures\.append\("([a-z_]+)"\)', source)) == s5.SCORER_FLAGS
+
+
+def test_mechanical_rejection_counts_operational_time_limit_and_runner_error(
+    tmp_path: Path,
+) -> None:
+    # 10 pages: the bound is ceil(0.2 * 10) = 2; more than 2 such pages is out.
+    plans = {
+        "C0": dict.fromkeys(range(5), "unavailable"),  # baseline: never rejected this way
+        "out": {0: "http_524", 1: "raise", 2: "http_503"},  # 3 > 2, read from failure.reason
+        "edge": {0: "page_timeout", 1: "unavailable"},  # 2: kept
+        "contract": {0: "contract_failed", 1: "page_too_large", 2: "contract_failed"},
+        "ok": {},
+    }
+    g, recs, _, raw = _screen(tmp_path, plans)
+    s1 = s5.select_s1(recs, guard=g, baseline="C0", raw_dir=raw)
+    mech = s1["mechanical_rejection"]
+    assert (mech["pages"], mech["bound"]) == (10, math.ceil(0.2 * 10))
+    assert mech["counts"] == {"C0": 5, "contract": 0, "edge": 2, "ok": 0, "out": 3}
+    assert mech["rejected"] == ["out"]
+    assert "out" not in s1["kept"] + s1["dropped"]
+    assert s1["failures"]["out"]["classes"]["time_limit"] == 1
+    assert s1["failures"]["out"]["reasons"] == {"http_503": 1, "http_524": 1, "provider_error": 1}
+    assert s1["failures"]["contract"]["classes"]["page_refused"] == 1
+    with pytest.raises(ContractError, match="raw_dir"):
+        s5.select_s1(recs, guard=g, baseline="C0")
+
+
+def test_unknown_failure_reason_or_token_refuses_selection(tmp_path: Path) -> None:
+    g, recs, _, raw = _screen(tmp_path, {"C0": {}, "x": {0: "pipeline_exit_nonzero"}})
+    with pytest.raises(ContractError, match="pipeline_exit_nonzero"):
+        s5.select_s1(recs, guard=g, baseline="C0", raw_dir=raw)
+    recs2, _ = world({"L": {}, "C0": {}})
+    recs2[0]["hard_failures"] = ["made_up_flag"]
+    with pytest.raises(ContractError, match="made_up_flag"):
+        s5.select_s1(recs2, guard=guard(tmp_path), baseline="C0")
+
+
+@pytest.mark.parametrize("cost", [math.nan, math.inf, -0.01, "0.01", True])
+def test_provider_cost_must_be_none_or_finite_non_negative(tmp_path: Path, cost: Any) -> None:
+    recs, texts = world({"L": {}, "C0": wrong(HF[:2])})
+    g = guard(tmp_path)
+    s1 = s5.select_s1(recs, guard=g, baseline="C0")
+    recs[3]["provider_cost_usd"] = cost
+    with pytest.raises(ContractError, match="provider_cost_usd"):
+        s5.select_s1(recs, guard=g, baseline="C0")
+    with pytest.raises(ContractError, match="provider_cost_usd"):
+        s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1)
+
+
+def test_probe_g_baseline_ranked_seventh_is_carried(tmp_path: Path) -> None:
+    plans = {f"c{i}": wrong(HF[:i]) for i in range(6)}
+    plans["C0"] = wrong(HF[:7])  # a non-loser that ranks seventh
+    recs, _ = world(plans)
+    s1 = s5.select_s1(recs, guard=guard(tmp_path), baseline="C0")
+    assert s1["clear_losers"] == []
+    assert s1["kept"] == ["c0", "c1", "c2", "c3", "c4", "C0"]
+    assert s1["dropped"] == ["c5"]
+    assert s1["baseline"] == {"candidate_id": "C0", "baseline": True, "baseline_loser": False}
+
+
+def test_probe_d_top_up_counts_non_baseline_candidates_only(tmp_path: Path) -> None:
+    lost = wrong(HF[:20]) | wrong(RF[:10])
+    plans = {
+        "c0": {},
+        "c1": wrong(HF[:1]),
+        "C0": lost,
+        "x": lost,
+        "y": wrong(HF[:20]) | wrong(RF[:11]),
+    }
+    recs, _ = world(plans)
+    s1 = s5.select_s1(recs, guard=guard(tmp_path), baseline="C0")
+    assert s1["clear_losers"] == ["C0", "x", "y"]
+    assert s1["kept"] == ["c0", "c1", "C0", "x", "y"]  # four non-baseline, plus C0
+    assert s1["dropped"] == []
+    assert s1["baseline"] == {"candidate_id": "C0", "baseline": True, "baseline_loser": True}
+
+
+def test_probe_m_s2_refuses_an_s1_edited_by_hand(tmp_path: Path) -> None:
+    plans = {"L": wrong(HF[:8]), "B": wrong(HF[6:15], 2), "C": wrong(HF[20:30], 3), "C0": wrong(HF)}
+    recs, texts = world(plans)
+    g = guard(tmp_path)
+    s1 = s5.select_s1(recs, guard=g, baseline="C0")
+    assert s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1)["members"]
+    for edit in (
+        {"kept": [c for c in s1["kept"] if c != "C"]},
+        {"leader": "B"},
+        {"s1_sha256": "sha256:" + "0" * 64},
+    ):
+        with pytest.raises(ContractError, match="S1"):
+            s5.complementarity_s2(recs, texts, GOLD, guard=g, s1={**s1, **edit})
+    body = {k: v for k, v in s1.items() if k != "s1_sha256"}
+    with pytest.raises(ContractError, match="S1"):
+        s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=body)
+
+
+def test_recipe_refuses_members_that_are_not_the_pick_chain(tmp_path: Path) -> None:
+    plans = {"L": wrong(HF[:8]), "B": wrong(HF[4:15], 2), "C": wrong(HF[20:30], 3), "C0": wrong(HF)}
+    recs, texts = world(plans, cost={"L": 0.01, "B": 0.02, "C": 0.10, "C0": 0.01})
+    g = guard(tmp_path)
+    s1 = s5.select_s1(recs, guard=g, baseline="C0")
+    s2 = s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1)
+    assert s2["members"] == ["L", "B", "C"]
+    args: dict[str, Any] = {
+        "records": recs,
+        "s1": s1,
+        "escalate_on": ["disagreement"],
+        "degradation": {"seed": 1, "parameters": {}},
+        "scoring_commit": "1" * 40,
+        "section_sha256": "sha256:" + "2" * 64,
+    }
+    assert s5.build_recipe(**args, s2=s2)["member_order"] == ["L", "B", "C"]
+    steps = copy.deepcopy(s2["pick_steps"])
+    steps[1]["chosen"] = "C0"
+    for edited in (
+        {"members": ["L", "C", "B"]},
+        {"members": ["L", "B"]},
+        {"members": ["B", "L", "C"], "primary": "B"},
+        {"pick_steps": steps},
+    ):
+        with pytest.raises(ContractError, match="chain"):
+            s5.build_recipe(**args, s2={**s2, **edited})
+
+
+def test_s3_refuses_a_member_without_records_before_the_guard_is_touched(
+    tmp_path: Path,
+) -> None:
+    recipe = _recipe(tmp_path, ["P", "Q"], ["disagreement"])
+    hold, htexts = world(_s3_plans(), pages=X_PAGES, split="holdout")
+    only_p = [r for r in hold if r["candidate_id"] == "P"]
+    with pytest.raises(ValueError, match="without records"):
+        s5.signals_s3(
+            only_p,
+            htexts,
+            GOLD,
+            guard=guard(tmp_path),
+            members=["P", "Q"],
+            escalate_on=["disagreement"],
+            split="holdout",
+            frozen_recipe_sha256=recipe["recipe_sha256"],
+            recipe=recipe,
+        )
+    assert not (tmp_path / "holdout-access.jsonl").exists()

@@ -166,6 +166,66 @@ def test_record_without_doc_id_or_hash_is_a_contract_error(
         run_census(_records(tmp_path, row), tmp_path, tmp_path / "o.jsonl")
 
 
+@pytest.mark.parametrize("row", [[1, 2], "good.pdf", 5, None])
+def test_record_that_is_not_an_object_is_a_contract_error(tmp_path: Path, row: object) -> None:
+    rec = tmp_path / "recs.jsonl"
+    rec.write_text(json.dumps(row) + "\n", encoding="utf-8")
+    with pytest.raises(ContractError, match="not an object"):
+        run_census(rec, tmp_path, tmp_path / "o.jsonl")
+
+
+def test_doc_ids_naming_the_same_file_are_duplicates(tmp_path: Path) -> None:
+    data = _pdf(_BODY)
+    (tmp_path / "sub").mkdir()
+    (tmp_path / "sub" / "good.pdf").write_bytes(data)
+    digest = "sha256:" + hashlib.sha256(data).hexdigest()
+    spellings = ["./sub/good.pdf", "sub/../sub/good.pdf", "sub//good.pdf"]
+    if Path(str(tmp_path / "SUB" / "GOOD.pdf")).is_file():  # case-insensitive file system
+        spellings.append("SUB/GOOD.pdf")
+    for i, other in enumerate(spellings):
+        rec = _records(
+            tmp_path,
+            {"doc_id": "sub/good.pdf", "source_sha256": digest},
+            {"doc_id": other, "source_sha256": digest},
+        )
+        out = tmp_path / f"dup{i}.jsonl"
+        with pytest.raises(ContractError, match="duplicate"):
+            run_census(rec, tmp_path, out)
+        assert not out.exists(), other
+
+
+def test_receipt_is_written_first_so_no_output_is_left_without_one(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from benchmark.screen import native_census
+
+    rec, root = _setup(tmp_path)
+    real = native_census.census_pages
+    out = tmp_path / "census.jsonl"
+    receipt = out.with_name("census.jsonl.receipt.json")
+
+    def receipt_appears(doc_id: str, data: bytes) -> list[dict[str, object]]:
+        if not receipt.exists():  # another writer takes the receipt name after the check
+            receipt.write_text("{}", encoding="utf-8")
+        return real(doc_id, data)
+
+    monkeypatch.setattr(native_census, "census_pages", receipt_appears)
+    with pytest.raises(FileExistsError):
+        run_census(rec, root, out)
+    assert not out.exists()
+    receipt.unlink()
+
+    def output_appears(doc_id: str, data: bytes) -> list[dict[str, object]]:
+        if not out.exists():  # another writer takes the output name after the check
+            out.write_bytes(b"theirs")
+        return real(doc_id, data)
+
+    monkeypatch.setattr(native_census, "census_pages", output_appears)
+    with pytest.raises(FileExistsError):
+        run_census(rec, root, out)
+    assert out.read_bytes() == b"theirs" and not receipt.exists()
+
+
 def _text_and_image_pdf() -> bytes:
     from pypdf.generic import RectangleObject
 
