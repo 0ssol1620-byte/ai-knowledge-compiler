@@ -525,7 +525,7 @@ arena_intake:
         Approved :: Apache Software License" and names License-File LICENSE and
         AUTHORS.md, which were not read. Every transitive package: UNVERIFIED
         until the build log's freeze is read.
-    not_cleared: "Production use; the paddlepaddle-gpu runtime licence; Korean capability (card language tags: en, zh, multilingual -- Korean not named, UNVERIFIED); the C1 image's transitive packages; redistribution of the C1 image. The layout model is its own row (model_pp_doclayoutv3)."
+    not_cleared: "Production use; the text of paddlepaddle-gpu 3.2.1's licence files (LICENSE and AUTHORS.md, which its METADATA names and which were not read; the METADATA licence field is recorded under licences); Korean capability (card language tags: en, zh, multilingual -- Korean not named, UNVERIFIED); the C1 image's transitive packages; redistribution of the C1 image. The layout model is its own row (model_pp_doclayoutv3)."
 
   # The layout model C1's page pipeline loads (WO-D10-0I round 2). PaddleX 3.7.0, 3.7.1
   # and 3.7.2 name it in paddlex/configs/pipelines/PaddleOCR-VL-1.6.yaml (byte-identical,

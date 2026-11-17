@@ -13,7 +13,7 @@ Nothing here has been built, pushed or run on a pod.
 | C0 | `recipes/c0-mineru-pipeline.json` (default) | `mineru -b pipeline -m ocr` against a loopback `mineru-api` | `opendatalab/PDF-Extract-Kit-1.0@ed6b654c`, baked | `Dockerfile --target c0` |
 | C0, named deviation | `recipes/c0-mineru-pipeline-lang-ko.json` | the same plus `-l korean` when the payload language is `ko` | as C0 | as C0 |
 | C3 | `recipes/c3-mineru-vlm.json` | `mineru -b vlm-engine` against a loopback `mineru-api --enable-vlm-preload true` | `opendatalab/MinerU2.5-Pro-2605-1.2B@bff20d4a`, downloaded at launch | `Dockerfile --target c3` |
-| C1 | `recipes/c1-paddleocr-vl.json` | `paddleocr doc_parser --pipeline_version v1.6 …` | `PaddlePaddle/PaddleOCR-VL-1.6@c5630aba` and the layout model `PaddlePaddle/PP-DocLayoutV3@241f8bdf`, both downloaded at launch | `../paddleocr-vl-akc/Dockerfile` |
+| C1 | `recipes/c1-paddleocr-vl.json` | PaddleOCR's documented `PaddleOCRVL(...)` object, pipeline v1.6, kept loaded by a loopback service (`../paddleocr-vl-akc/paddleocr_vl_service.py`); one client call per page | `PaddlePaddle/PaddleOCR-VL-1.6@c5630aba` and the layout model `PaddlePaddle/PP-DocLayoutV3@241f8bdf`, both downloaded at launch | `../paddleocr-vl-akc/Dockerfile` |
 
 **Rebuilt, not a production digest.** The repository records no image digest for the MinerU or
 the PaddleOCR production workers (`infra/runpod/v6/pool-registry.yaml`:
@@ -34,7 +34,9 @@ the PaddleOCR production workers (`infra/runpod/v6/pool-registry.yaml`:
 | `requirements-c3.lock` | C3 layer: the two packages MinerU's `[vlm]` extra adds (accelerate 1.14.0, psutil 7.2.2), hashed |
 | `mineru.json` / `mineru-vlm.json` | MinerU config for C0 / C3: local models only, LLM-aided titles off |
 | `test_mineru_akc_server.py` | The real client against the server, in process, for every recipe |
-| `../paddleocr-vl-akc/Dockerfile` | C1: the production worker's image stage with this server and the C1 recipe |
+| `../paddleocr-vl-akc/Dockerfile` | C1: the production worker's image stage with this server, the C1 service and the C1 recipe |
+| `../paddleocr-vl-akc/paddleocr_vl_service.py` | C1's service (`serve`: the `PaddleOCRVL` object built once with the production adapter's arguments, `127.0.0.1` only) and its one-page client (`page`); standard library, no subprocess |
+| `../paddleocr-vl-akc/test_paddleocr_vl_service.py` | The service with a fake `PaddleOCRVL` (no paddle, no GPU), through this server's own command pipeline |
 
 ## Recipes
 
@@ -43,7 +45,10 @@ A recipe is a JSON object with exactly these keys (`load_recipe` refuses anythin
 `revision`, `dir`, `manifest`: the model it attests), `aux_models` (other models it loads, each
 pinned the same way or the server will not start), `packages` (name → pinned version or `null`;
 the installed versions go into every receipt, and a pinned one that differs stops the server),
-`service` (a long-lived loopback child with its health URL, or `null`), `argv` (the vendor
+`service` (a long-lived loopback child: `argv`, `health_url` on `127.0.0.1` with a port, a finite
+`startup_timeout_s` below 3600, and optionally `page_failure_exits`, the command's exit codes 2-99
+that mean "the service answered that this page failed and is idle", each with a fixed reason;
+or `null`), `argv` (the vendor
 command; `{source}` and `{out}` are the page file and the output directory), `page_argv`
 (appended for a PDF page, `{page}`; `null` = the command reads whole files, so a page index
 above 0 is refused), `lang_argv` / `lang_by_language` (appended when the payload language maps),
@@ -76,19 +81,23 @@ command never sees it.
 - **C1**: the same shape, twice: `recipes/c1-weights-manifest.json` into
   `/opt/akc/models/PaddleOCR-VL-1.6`, then `recipes/c1-layout-weights-manifest.json` into
   `/opt/akc/models/PP-DocLayoutV3` (`5 files, 132018611 bytes, verified`); the server logs a
-  `weights` line for each (`model` and `layout_detection`) and serves with `recipes/c1-paddleocr-vl.json`.
+  `weights` line for each (`model` and `layout_detection`), starts the recipe's service
+  (`paddleocr_vl_service.py serve`), which builds `PaddleOCRVL(...)` once and prints
+  `PaddleOCRVL loaded; serving on 127.0.0.1`, waits for its `GET http://127.0.0.1:8081/health`
+  (200 only once the object is loaded; up to 600 s), then serves. Each page runs the client
+  (`paddleocr_vl_service.py page --url http://127.0.0.1:8081/page --source <page file>`).
   The image's `CMD` does exactly this.
 
 ## What a failure looks like in the log
 
 | Kind | Log | Answer |
 |---|---|---|
-| Operational, at start | `recipe refused: …`, `<pkg> … installed, the recipe pins …`, `<role>: weights differ from the manifest`, `<role>: not pinned in the recipe`, `the recipe's service did not become healthy` | the process exits; the pod is not serving |
+| Operational, at start | `recipe refused: …`, `<pkg> … installed, the recipe pins …`, `<role>: weights differ from the manifest`, `<role>: not pinned in the recipe`, `the recipe's service did not become healthy` (for C1 preceded by `AKC_SERVICE_LOAD_FAILED <exception type>` and its trace when `PaddleOCRVL(...)` cannot be built) | the process exits; the pod is not serving |
 | Operational, serving | the vendor service's own crash output | `503 pipeline_unavailable`, nothing recorded for the page |
 | Recovery | after a timed-out page or a non-zero exit of a recipe with a service, the service is killed and restarted | `503 pipeline_unavailable` until it is healthy again, so no abandoned work runs into the next page |
 | Service died between pages | `service exited on its own (<code>); restarting`: the next page starts **one** restart | that page and every page until the new child is healthy: `503 pipeline_unavailable` |
 | Restart failed | `service did not come back; answering 503`; no further restart | `503` for every page and `/health` `ready: false` for good. **A launcher treats this as a dead pod** (operational): it tears the pod down and records it, it does not retry pages into it |
-| Model / page | the vendor command's own stdout and stderr; for `pipeline_error` the Python trace | `200` with a failure row: `pipeline_exit_nonzero`, `page_timeout`, `pipeline_output_missing`, `empty_output`, `output_too_large`, `page_content_type_unsupported`, `pipeline_error`; never a trace in the body |
+| Model / page | the vendor command's own stdout and stderr; for `pipeline_error` the Python trace; for C1 the service's trace of the object's exception and `page failure: '<reason>'` | `200` with a failure row: `pipeline_exit_nonzero`, `page_timeout`, `pipeline_output_missing`, `empty_output`, `output_too_large`, `page_content_type_unsupported`, `pipeline_error`, and for C1 `pipeline_raised` (the object raised on the page) and `page_count_unsupported` (the object read the source as more than one page). The two C1 reasons come from the recipe's `page_failure_exits`: the service is idle and stays loaded, so there is no restart; any other non-zero exit of C1's client (service unreachable, refused, not loaded) restarts the service like C0's; never a trace in the body |
 | Request | — | `400/401/404/409/411/413/429` with `{"error": "<fixed code>"}`; never a page failure, never a restart |
 | Server bug | `refused to send <n> bytes` or the trace | `500 response_too_large` / `500 internal_error` |
 
@@ -188,13 +197,13 @@ selects transformers by installing neither and the server enforces it at start
 | | Production | `c1-paddleocr-vl` |
 |---|---|---|
 | Image | CUDA 12.9.1 cuDNN Ubuntu 24.04 by digest, apt unpinned, gpu-common `uv.lock`, `paddlepaddle-gpu==3.2.1` (cu126 index), `paddleocr[doc-parser]==3.7.0`, transitive packages resolved at build | the same, the same commands (`../paddleocr-vl-akc/Dockerfile`), plus `paddlex==3.7.2` (the release whose v1.6 pipeline config names the pinned layout model; production lets it resolve). **Not hash-locked.** For this evaluation-only image the pin is the built image digest plus the `uv pip freeze` and `pip inspect` output the build prints to its log, which the lead saves as a receipt. **A hash-locked requirements file is required before any production use** and is not part of this work order |
-| Entry | the generic runtime handler → `PaddleOcrVlAdapter` (Python API) | the vendor CLI `paddleocr doc_parser` |
-| Arguments | `PaddleOCRVL(pipeline_version="v1.6", use_layout_detection=True, use_doc_orientation_classify=False, use_doc_unwarping=False, use_queues=True, engine=$PADDLEOCR_ENGINE (default paddle), device=$PADDLEOCR_DEVICE (default gpu:0))`; `predict(…, chart/seal/ocr_image_blocks False by default, format_block_content=True, temperature=0.0, max_new_tokens=4096)` | the same values as CLI flags; **`max_new_tokens` has no CLI flag** in the 3.7.0 documentation, so the vendor default applies (value not read) |
+| Entry | the generic runtime handler → `PaddleOcrVlAdapter` (Python API) | the same Python API: `paddleocr_vl_service.py` keeps one `PaddleOCRVL` object and calls `predict(input=<page file>, …)` then `save_to_markdown(save_path=<out>)` on the result (PaddleOCR 3.7.0 `PaddleOCR-VL.en.md`, snapshot sha256 `4d383354…`) |
+| Arguments | `PaddleOCRVL(pipeline_version="v1.6", layout_detection_model_dir=<manifest's layout dir>, vl_rec_model_dir=<manifest's VLM dir>, use_layout_detection=True, use_doc_orientation_classify=False, use_doc_unwarping=False, use_queues=True, engine=$PADDLEOCR_ENGINE (default paddle), device=$PADDLEOCR_DEVICE (default gpu:0))`; `predict(input=str(input_path), use_doc_orientation_classify/use_doc_unwarping/use_chart_recognition/use_seal_recognition/use_ocr_for_image_block = the request's option, default False, use_layout_detection=True, format_block_content=True, temperature=0.0, max_new_tokens=the request's max_output_tokens, default 4096)` | **the same keywords and the same values**, with production's defaults where production reads an option: `construct_kwargs` and `PREDICT_KWARGS`. Where each comes from: the two directories are the recipe's verified model directories (`--layout-dir`, `--vl-rec-dir`, checked against the manifests before the service starts); `engine` `paddle` and `device` `gpu:0` are production's defaults, checked against production's sets; the option flags are production's defaults (False); `max_new_tokens` is production's default 4096 (the CLI of round 2 could not pass it). A test reads the adapter as text and fails when the keywords or values drift |
 | Output | blocks with bbox and confidences; the adapter **requires** `token_confidences`/`token_scores`/`rec_scores` on every block | the vendor's Markdown (`save_to_markdown`). The documented `parsing_res_list` fields are `block_bbox`, `block_label`, `block_content`, `block_id`, `block_order` — no confidences — so, per the documentation, the production adapter would refuse every page with `paddleocr_token_confidence_required` (not run; recorded for the production lane) |
-| Models | `PADDLEOCR_MODEL_MANIFEST` (+ sha256): a layout directory and the VLM directory with file digests; contents not in the repository | the VLM repository at `c5630aba`, every file; the layout model **`PaddlePaddle/PP-DocLayoutV3` @ `241f8bdfc77a7c7bee915a5057aaee58c235a8d3`**, every file (`recipes/c1-layout-weights-manifest.json`), passed as `--layout_detection_model_name PP-DocLayoutV3 --layout_detection_model_dir …`. The name is PaddleX's: `paddlex/configs/pipelines/PaddleOCR-VL-1.6.yaml` at v3.7.0, v3.7.1 and v3.7.2 (byte-identical, sha256 `af89f00e…`) sets `LayoutDetection.model_name: PP-DocLayoutV3`; the repository's `inference.yml` at the pin says `model_name: PP-DocLayoutV3`. Weights licence: the card's `license: apache-2.0` (no LICENSE file in the repository), its own intake row `model_pp_doclayoutv3` |
+| Models | `PADDLEOCR_MODEL_MANIFEST` (+ sha256): a layout directory and the VLM directory with file digests; contents not in the repository | **pinned where production is not**: the VLM repository at `c5630aba`, every file; the layout model **`PaddlePaddle/PP-DocLayoutV3` @ `241f8bdfc77a7c7bee915a5057aaee58c235a8d3`**, every file (`recipes/c1-layout-weights-manifest.json`), passed as `layout_detection_model_dir`. Like production, the model *name* is not passed: it is the pipeline config's, `paddlex/configs/pipelines/PaddleOCR-VL-1.6.yaml` at v3.7.0, v3.7.1 and v3.7.2 (byte-identical, sha256 `af89f00e…`) sets `LayoutDetection.model_name: PP-DocLayoutV3`, and the repository's `inference.yml` at the pin says `model_name: PP-DocLayoutV3`. Weights licence: the card's `license: apache-2.0` (no LICENSE file in the repository), its own intake row `model_pp_doclayoutv3` |
 | Auxiliary models | orientation and unwarping off (`use_doc_orientation_classify=False`, `use_doc_unwarping=False`) | the same, so neither PP-LCNet_x1_0_doc_ori nor UVDoc (the config's doc-preprocessor models) is loaded: switched off by the documented options `--use_doc_orientation_classify False --use_doc_unwarping False`, not pinned |
-| Model load | the Python object stays loaded across pages | **per page**: the CLI loads both models on every call, and the receipt says `includes_model_load: true`. **C1's latency and cost per page are therefore not comparable** with C0's and C3's (models kept loaded). The vendor documents a long-lived server (`paddlex --serve --pipeline …` after `paddlex --install serving`, `POST /layout-parsing`), but the documents read give it no health route for the server to wait on, it needs a plugin installed at build and a pipeline config file naming the model directories; it is proposed to the lead, not built |
-| Pages | one page per request | one-page sources only (the CLI has no page range; `page_index` above 0 → 400 `page_index_unsupported`) |
+| Model load | the Python object stays loaded across pages | **the same**: the service builds the object once when the pod starts (inside the service's 600 s start-up limit, not a page's 90 s), and the receipt says `includes_model_load: false`. A page's time is its request: the client call, `predict` and `save_to_markdown`. C1's latency and cost per page are measured on the same terms as C0's and C3's |
+| Pages | one page per request (`paddleocr_single_page_result_required`) | one page per request: the server refuses `page_index` above 0 (400 `page_index_unsupported`, no page range in the object's documented `predict`), and the service reads every result of the object and refuses a source the object reads as more than one page (failure row `page_count_unsupported`, nothing written), production's rule. The server does not count PDF pages itself: the standard library cannot do it reliably (object streams compress the page tree, incremental updates leave superseded page objects), so the count is the vendor parser's own |
 
 ## Review notes closed (review of WO-D10-0F, r20)
 
@@ -223,6 +232,21 @@ bookworm-security `5625320b…`; the security index carries `libglib2.0-0` only 
 than main's). Their dependencies are fixed by the snapshot date alone: a snapshot archive does not
 change, so the date fixes every version apt resolves.
 
+**Round 3 (review of WO-D10-0I r2).** Each with a test: C1 keeps its models loaded behind
+`paddleocr_vl_service.py` (above), with a fake `PaddleOCRVL` injected in the tests (loaded once
+across pages; health 503 before and 200 after the load; a raising page is a failure row and the
+next page works; a construction failure is an operational exit the server reports; the
+arguments equal the production adapter's, read from its text; the service binds `127.0.0.1`
+only and accepts only a page file of the server's own work directory, by a property test over
+hostile values). `load_recipe` is checked as a class, not by the probe's inputs: every field of
+every shipped recipe replaced by each of 26 hostile values or removed raises only `ValueError`,
+and whatever it accepts the server uses without a type error; NaN and infinities are refused
+(JSON constants and `1e999` alike), both time limits are finite numbers in range, `aux_models`
+is a list of fully pinned models with unique roles other than `model`, argv fields are bare
+names, the health URL has a valid loopback port, the output pattern is relative and stays in
+the output directory. The registry contract test requires `image_build` to be a file named
+`Dockerfile` whose resolved path is inside the repository.
+
 ## Open before real pages (not checked here)
 
 - No image is built: the locks, the Debian versions and the weights are verified only by a build
@@ -231,4 +255,9 @@ change, so the date fixes every version apt resolves.
 - "No outbound request at inference" is configured (`HF_HUB_OFFLINE`, `TRANSFORMERS_OFFLINE`,
   `MINERU_MODEL_SOURCE=local`), not proven. PaddleX may check its model hosters at import; A0 runs
   each image with egress observed.
-- Whether 90 s is enough per page is measured at A0; C1 loads its models within those 90 s.
+- Whether 90 s is enough per page is measured at A0. C1's models now load once at start, within
+  the service's 600 s start-up limit, which A0 also measures.
+- The arena manifest addresses pages of whole documents (`doc_id#p`). C1 runs only `page_index`
+  0 of a one-page source; a later page is 400 `page_index_unsupported` and a multi-page source
+  at page 0 is the failure row `page_count_unsupported`. C1 needs one-page sources from the
+  driver, or a page selection the vendor documents, before it can screen multi-page documents.

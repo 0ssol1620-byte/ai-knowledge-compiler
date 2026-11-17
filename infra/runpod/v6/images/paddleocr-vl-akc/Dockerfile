@@ -4,7 +4,9 @@
 # is: the same base digest, apt packages, uv lock, paddlepaddle-gpu and paddleocr versions and
 # install commands. In place of the production handler: the one AKC page server
 # (mineru-pipeline-akc/mineru_akc_server.py, copied, not duplicated in the tree) running the
-# recipe c1-paddleocr-vl.json. Evaluation only; never the production endpoint.
+# recipe c1-paddleocr-vl.json, whose service (paddleocr_vl_service.py) keeps the vendor's
+# PaddleOCRVL object loaded with the production adapter's arguments, as production does.
+# Evaluation only; never the production endpoint.
 #
 # Build context: the repository root.
 #   docker build -f infra/runpod/v6/images/paddleocr-vl-akc/Dockerfile .
@@ -41,7 +43,8 @@ RUN python3 -m pip install --break-system-packages "uv==0.13.4" \
     && python3 -m pip inspect --path /app/.venv/lib/python3.12/site-packages
 
 COPY infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_server.py \
-     infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_weights.py /opt/akc/
+     infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_weights.py \
+     infra/runpod/v6/images/paddleocr-vl-akc/paddleocr_vl_service.py /opt/akc/
 COPY infra/runpod/v6/images/mineru-pipeline-akc/recipes/c1-paddleocr-vl.json \
      infra/runpod/v6/images/mineru-pipeline-akc/recipes/c1-weights-manifest.json \
      infra/runpod/v6/images/mineru-pipeline-akc/recipes/c1-layout-weights-manifest.json \

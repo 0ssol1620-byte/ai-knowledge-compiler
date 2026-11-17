@@ -31,9 +31,11 @@ import hmac
 import http.client
 import importlib
 import json
+import math
 import os
 import re
 import signal
+import string
 import subprocess
 import sys
 import tempfile
@@ -116,38 +118,77 @@ def canonical_sha256(value: Any) -> str:
 
 
 def _strings(value: Any) -> bool:
-    return isinstance(value, list) and all(isinstance(item, str) and item for item in value)
+    return isinstance(value, list) and all(
+        isinstance(item, str) and item and "\x00" not in item for item in value
+    )
 
 
 def _template(argv: list[str], allowed: set[str]) -> None:
+    """Every ``{field}`` is a bare allowed name: no attribute, index, conversion or format spec,
+    which would fail or reach into the object when the real value is substituted."""
     for item in argv:
         try:
-            item.format_map({name: "x" for name in allowed})
-        except (KeyError, ValueError, IndexError):
-            raise ValueError(
-                f"argument {item!r} names a field other than {sorted(allowed)}"
-            ) from None
+            fields = [part for part in string.Formatter().parse(item) if part[1] is not None]
+        except ValueError:
+            fields = [("", "", "", None)]
+        if any(name not in allowed or spec or conv for _, name, spec, conv in fields):
+            raise ValueError(f"argument {item!r} names a field other than {sorted(allowed)}")
+
+
+def _seconds(value: Any, name: str, below: float) -> float:
+    """A finite number of seconds in (0, below): never NaN, an infinity, a bool or a string
+    (a NaN limit would never time out)."""
+    if (
+        not isinstance(value, (int, float))
+        or isinstance(value, bool)
+        or not math.isfinite(value)
+        or not 0 < value < below
+    ):
+        raise ValueError(f"{name} must be a finite number of seconds above 0 and below {below}")
+    return float(value)
+
+
+def _pinned_model(entry: Any, keys: set[str], what: str) -> None:
+    if not isinstance(entry, dict) or set(entry) != keys:
+        raise ValueError(f"{what} names exactly {sorted(keys)}")
+    if not isinstance(entry["revision"], str) or not _REVISION.fullmatch(entry["revision"]):
+        raise ValueError(f"{what} revision must be a full 40-character commit")
+    for key in ("repo_id", "dir", "manifest"):
+        if not isinstance(entry[key], str) or not entry[key]:
+            raise ValueError(f"{what} {key} must be a non-empty string")
+
+
+def _no_constant(name: str) -> Any:
+    raise ValueError(f"{name} is not a JSON number")  # json.loads takes NaN and Infinity
 
 
 def load_recipe(path: Path) -> dict[str, Any]:
-    """A recipe file, checked for shape; ValueError names what is wrong."""
-    recipe = json.loads(path.read_text(encoding="utf-8"))
+    """A recipe file, checked for shape (``parse_recipe``)."""
+    return parse_recipe(path.read_text(encoding="utf-8"))
+
+
+def parse_recipe(text: str) -> dict[str, Any]:
+    """A recipe's text, checked for shape; ValueError names what is wrong. Whatever the text
+    holds, the only exception this raises is ValueError, and a recipe it returns can be used by
+    every function below without a type error (a test fuzzes every field)."""
+    try:
+        recipe = json.loads(text, parse_constant=_no_constant)
+    except RecursionError:
+        raise ValueError("recipe nests too deeply") from None
     if not isinstance(recipe, dict) or set(recipe) != _RECIPE_KEYS:
         raise ValueError(f"recipe keys must be exactly {sorted(_RECIPE_KEYS)}")
-    model = recipe["model"]
-    if not isinstance(model, dict) or set(model) != {"repo_id", "revision", "dir", "manifest"}:
-        raise ValueError("model must name repo_id, revision, dir and manifest")
-    if not isinstance(model["revision"], str) or not _REVISION.fullmatch(model["revision"]):
-        raise ValueError("model revision must be a full 40-character commit")
+    if not isinstance(recipe["name"], str) or not recipe["name"]:
+        raise ValueError("name must be a non-empty string")
+    _pinned_model(recipe["model"], {"repo_id", "revision", "dir", "manifest"}, "model")
+    if not isinstance(recipe["aux_models"], list):
+        raise ValueError("aux_models must be a list")
+    roles: set[str] = set()
     for aux in recipe["aux_models"]:
-        if not isinstance(aux, dict) or set(aux) != {
-            "role",
-            "repo_id",
-            "revision",
-            "dir",
-            "manifest",
-        }:
-            raise ValueError("an aux model names role, repo_id, revision, dir and manifest")
+        _pinned_model(aux, {"role", "repo_id", "revision", "dir", "manifest"}, "an aux model")
+        role = aux["role"]
+        if not isinstance(role, str) or not role or role == "model" or role in roles:
+            raise ValueError("an aux model's role is a unique name other than 'model'")
+        roles.add(role)
     if not isinstance(recipe["provider"], str) or not recipe["provider"]:
         raise ValueError("provider must be a key name")
     if not _strings(recipe["argv"]):
@@ -160,21 +201,40 @@ def load_recipe(path: Path) -> dict[str, Any]:
             _template(recipe[key], {field_name})
     service = recipe["service"]
     if service is not None:
-        if not isinstance(service, dict) or set(service) != {
-            "argv",
-            "health_url",
-            "startup_timeout_s",
+        required = {"argv", "health_url", "startup_timeout_s"}
+        if not isinstance(service, dict) or not required <= set(service) <= {
+            *required,
+            "page_failure_exits",
         }:
-            raise ValueError("service names argv, health_url and startup_timeout_s")
-        if not _strings(service["argv"]) or urlsplit(service["health_url"]).hostname != "127.0.0.1":
-            raise ValueError("service argv must be strings and its health URL on loopback")
+            raise ValueError("service names argv, health_url, startup_timeout_s (and exits)")
+        health = service["health_url"]
+        if not _strings(service["argv"]) or not isinstance(health, str):
+            raise ValueError("service argv must be strings and its health URL a string")
+        try:
+            parts = urlsplit(health)
+            on_loopback = parts.hostname == "127.0.0.1" and parts.port is not None
+        except ValueError:  # an out-of-range port, for one
+            on_loopback = False
+        if not on_loopback:
+            raise ValueError("the service's health URL must be on loopback")
+        _seconds(service["startup_timeout_s"], "startup_timeout_s", 3600)
+        exits = service.get("page_failure_exits", {})
+        if not isinstance(exits, dict) or not all(
+            isinstance(reason, str)
+            and re.fullmatch(r"[2-9]|[1-9][0-9]", code)
+            and re.fullmatch(r"[a-z][a-z_]{0,63}", reason)
+            for code, reason in exits.items()
+        ):
+            raise ValueError("page_failure_exits maps an exit code 2-99 to a fixed reason")
     lang = recipe["lang_by_language"]
     if not isinstance(lang, dict) or not all(isinstance(v, str) for v in lang.values()):
         raise ValueError("lang_by_language maps a payload language to a string")
     if lang and recipe["lang_argv"] is None:
         raise ValueError("a language mapping needs lang_argv")
     env = recipe["env"]
-    if not isinstance(env, dict) or not all(isinstance(v, str) for v in env.values()):
+    if not isinstance(env, dict) or not all(
+        _strings([value]) and _strings([name]) and "=" not in name for name, value in env.items()
+    ):
         raise ValueError("env maps names to strings")
     packages = recipe["packages"]
     if not isinstance(packages, dict) or not all(
@@ -183,13 +243,19 @@ def load_recipe(path: Path) -> dict[str, Any]:
         raise ValueError("packages maps names to a pinned version or null")
     if not _strings(recipe["absent_packages"]) and recipe["absent_packages"] != []:
         raise ValueError("absent_packages must be a list of package names")
-    timeout = recipe["timeout_s"]
-    if not isinstance(timeout, (int, float)) or isinstance(timeout, bool) or timeout <= 0:
-        raise ValueError("timeout_s must be a positive number")
-    if timeout >= PROXY_CUT_S:
+    if isinstance(recipe["timeout_s"], (int, float)) and recipe["timeout_s"] >= PROXY_CUT_S:
         raise ValueError(f"timeout_s must be below the proxy's {PROXY_CUT_S} s cut")
+    _seconds(recipe["timeout_s"], "timeout_s", PROXY_CUT_S)
     if not isinstance(recipe["output_glob"], str) or not recipe["output_glob"]:
         raise ValueError("output_glob must be a pattern")
+    try:  # the pattern the output is found by, tried on a directory that does not exist
+        list((Path(__file__).parent / "akc-no-such-dir").glob(recipe["output_glob"]))
+    except (ValueError, NotImplementedError):
+        raise ValueError("output_glob must be a relative pattern") from None
+    if ".." in Path(recipe["output_glob"]).parts:
+        raise ValueError("output_glob must be a relative pattern inside the output directory")
+    if not isinstance(recipe["options"], dict):
+        raise ValueError("options must be an object")
     return recipe
 
 
@@ -564,7 +630,11 @@ def command_pipeline(
     env: dict[str, str],
     max_output_bytes: int = MAX_RESPONSE_BYTES,
 ) -> Pipeline:
-    """The recipe's vendor command for one page, in a fresh temporary directory."""
+    """The recipe's vendor command for one page, in a fresh temporary directory. An exit code the
+    recipe's service maps to a reason (``page_failure_exits``) means the service answered that
+    the page failed and is idle again: a failure row with that reason, no restart. Any other
+    non-zero exit may leave the service working, so it is restarted."""
+    page_failures: dict[str, str] = (recipe["service"] or {}).get("page_failure_exits", {})
 
     def run(data: bytes, suffix: str, page: int | None, lang: str | None) -> str:
         if not service.available():
@@ -585,6 +655,8 @@ def command_pipeline(
                 service.recover()
                 raise PageFailure("page_timeout") from None
             _kill_group(process)  # whatever the command left running dies with it
+            if str(code) in page_failures:
+                raise PageFailure(page_failures[str(code)])
             if code != 0:
                 service.recover()  # a client that gave up may leave the service working
                 raise PageFailure("pipeline_exit_nonzero")

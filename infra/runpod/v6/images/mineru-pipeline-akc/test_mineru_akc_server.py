@@ -16,6 +16,7 @@ import http.client
 import importlib.util
 import itertools
 import json
+import math
 import os
 import re
 import socket
@@ -26,6 +27,7 @@ from collections.abc import Iterator
 from pathlib import Path
 from types import ModuleType
 from typing import Any
+from urllib.parse import urlsplit
 
 import pytest
 import yaml
@@ -535,7 +537,8 @@ def after(*flags):
     for flag in flags:
         if flag in args:
             return args[args.index(flag) + 1]
-source, out = after("-p", "-i"), after("-o", "--save_path")
+source = after("-p", "-i", "--source")  # C1's client names only the page file
+out = after("-o", "--save_path") or os.path.join(os.path.dirname(source), "out")
 with open(os.environ["FAKE_LOG"], "a", encoding="utf-8") as log:
     log.write(json.dumps({"argv": args, "source": open(source, "rb").read().hex()}) + "\n")
 mode = os.environ.get("FAKE_MODE", "ok")
@@ -653,9 +656,13 @@ def test_the_recipes_say_what_each_slot_runs() -> None:
     assert pairs["-b"] == "vlm-engine" and c3["packages"]["mineru"] == c0["packages"]["mineru"]
     assert c3["model"]["revision"] == "bff20d4ae2bf202df9f45284b4d43681555a97ed"
     assert c1["model"]["revision"] == "c5630abae1d940eafe0697512a0325494b02ab42"
-    pairs = {c1["argv"][i]: c1["argv"][i + 1] for i in range(len(c1["argv"]) - 1)}
-    assert pairs["--pipeline_version"] == "v1.6" and pairs["--temperature"] == "0.0"
-    assert pairs["--use_doc_orientation_classify"] == "False" and pairs["--engine"] == "paddle"
+    # C1's vendor arguments live in its service (paddleocr-vl-akc/test_paddleocr_vl_service.py
+    # holds them equal to the production adapter's); the per-page command is its client
+    service = c1["service"]["argv"]
+    pairs = {service[i]: service[i + 1] for i in range(len(service) - 1)}
+    assert service[1:3] == ["/opt/akc/paddleocr_vl_service.py", "serve"]
+    assert (pairs["--engine"], pairs["--device"]) == ("paddle", "gpu:0")
+    assert c1["argv"][1:3] == ["/opt/akc/paddleocr_vl_service.py", "page"]
     for recipe in by_name.values():
         for key in ("model", *(f"aux{i}" for i in range(len(recipe["aux_models"])))):
             model = recipe["model"] if key == "model" else recipe["aux_models"][int(key[3:])]
@@ -1163,6 +1170,7 @@ def test_main_gives_the_vendor_command_no_bearer_token(
     recipe = {
         **_faked(_recipe("c1-paddleocr-vl"), tmp_path),
         "env": {"AKC_RECIPE_ENV": "1"},
+        "service": None,  # the subject is the command's environment, not a service start
     }
     path = tmp_path / "recipe.json"
     path.write_text(json.dumps(recipe), encoding="utf-8")
@@ -1298,7 +1306,8 @@ def test_c3_is_served_through_its_registry_key(
 def test_the_receipt_says_which_recipes_load_models_per_page_and_every_manifest() -> None:
     c1 = _recipe("c1-paddleocr-vl")
     receipt = srv.recipe_receipt(c1, {}, {"model": "a" * 64, "layout_detection": "b" * 64})
-    assert receipt["includes_model_load"] is True
+    assert receipt["includes_model_load"] is False  # round 3: C1's service keeps them loaded
+    assert srv.recipe_receipt({**c1, "service": None}, {}, _manifests(c1))["includes_model_load"]
     assert receipt["weights"]["aux"] == [
         {
             "role": "layout_detection",
@@ -1330,10 +1339,12 @@ def test_c1_pins_its_layout_model_and_switches_the_preprocessors_off() -> None:
         "PaddlePaddle/PP-DocLayoutV3",
         "241f8bdfc77a7c7bee915a5057aaee58c235a8d3",
     )
-    pairs = {c1["argv"][i]: c1["argv"][i + 1] for i in range(len(c1["argv"]) - 1)}
-    assert pairs["--layout_detection_model_name"] == "PP-DocLayoutV3"
-    assert pairs["--layout_detection_model_dir"] == layout["dir"]
-    assert pairs["--use_doc_orientation_classify"] == pairs["--use_doc_unwarping"] == "False"
+    service = c1["service"]["argv"]
+    pairs = {service[i]: service[i + 1] for i in range(len(service) - 1)}
+    assert pairs["--layout-dir"] == layout["dir"] and pairs["--vl-rec-dir"] == c1["model"]["dir"]
+    assert "PP-DocLayoutV3" in c1["options"]["layout_model"]
+    assert "use_doc_orientation_classify=False" in c1["options"]["doc_preprocessor"]
+    assert "use_doc_unwarping=False" in c1["options"]["doc_preprocessor"]
     assert c1["packages"]["paddlex"] == "3.7.2"
     docker = (_HERE.parent / "paddleocr-vl-akc" / "Dockerfile").read_text(encoding="utf-8")
     assert '"paddlex==3.7.2"' in docker and "c1-layout-weights-manifest.json" in docker
@@ -1355,3 +1366,206 @@ def test_a_recipe_the_proxy_would_cut_or_with_bad_package_lists_is_refused(
     path.write_text(json.dumps({**_recipe(), **change}), encoding="utf-8")
     with pytest.raises(ValueError, match=message):
         srv.load_recipe(path)
+
+
+# --- round 3: the recipe loader, by property; C1's page failures --------------------------------
+
+_HOSTILE: list[Any] = [
+    None,
+    True,
+    0,
+    -1,
+    1.5,
+    1e308,
+    "",
+    "x",
+    "main",
+    "model",
+    "\x00",
+    "{source.x}",
+    "{out[0]}",
+    "{page!r}",
+    "{}",
+    "/abs/*.md",
+    "../*.md",
+    "http://127.0.0.1:99999/h",
+    [],
+    [1],
+    ["x", None],
+    {},
+    {"a": 1},
+    {"3": 4},
+    {"1": "pipeline_raised"},
+]
+_RAW_CONSTANTS = ["NaN", "Infinity", "-Infinity", "1e999", '"90"', "true"]
+
+
+def _paths(value: Any, prefix: tuple[Any, ...] = ()) -> Iterator[tuple[Any, ...]]:
+    """Every key and list index in a recipe, depth first (the root itself excluded)."""
+    items = value.items() if isinstance(value, dict) else enumerate(value)
+    for key, child in items:
+        yield (*prefix, key)
+        if isinstance(child, (dict, list)) and child:
+            yield from _paths(child, (*prefix, key))
+
+
+def _set(recipe: dict[str, Any], path: tuple[Any, ...], new: Any) -> dict[str, Any]:
+    value = copy.deepcopy(recipe)
+    target = value
+    for key in path[:-1]:
+        target = target[key]
+    target[path[-1]] = new
+    return value
+
+
+def _usable(recipe: dict[str, Any]) -> None:
+    """What the server does with a recipe it accepted, short of running anything."""
+    srv.recipe_receipt(recipe, {}, _manifests(recipe))
+    srv.canonical_sha256(recipe)
+    srv.child_env(recipe, {"PATH": "x"})
+    for page in (None, 0, 3):
+        for lang in (None, *recipe["lang_by_language"].values()):
+            srv.vendor_argv(recipe, Path("s.pdf"), Path("o"), page, lang)
+    if recipe["service"] is not None:
+        url = urlsplit(recipe["service"]["health_url"])
+        assert url.hostname == "127.0.0.1" and url.port is not None
+        float(recipe["service"]["startup_timeout_s"])
+    assert math.isfinite(recipe["timeout_s"]) and 0 < recipe["timeout_s"] < srv.PROXY_CUT_S
+    roles = [aux["role"] for aux in recipe["aux_models"]]
+    assert len(set(roles)) == len(roles) and "model" not in roles
+
+
+@pytest.mark.parametrize("path", RECIPES, ids=[p.stem for p in RECIPES])
+def test_a_fuzzed_recipe_is_a_value_error_or_usable(path: Path) -> None:
+    """Property, over every field of every shipped recipe replaced by each hostile value (and
+    every field removed): ``load_recipe`` raises only ValueError, and whatever it accepts the
+    server can use without a type error. The reviewer's probes (a NaN limit, an aux model
+    revision ``main``, a role ``model``, a string start-up limit, ``aux_models`` null) are
+    single points of this class."""
+    recipe = srv.load_recipe(path)
+    accepted = refused = 0
+    cases: list[str] = []
+    for where in _paths(recipe):
+        for new in _HOSTILE:
+            cases.append(json.dumps(_set(recipe, where, new)))
+        if isinstance(where[-1], str):
+            trimmed = _set(recipe, where, None)
+            parent = trimmed
+            for key in where[:-1]:
+                parent = parent[key]
+            del parent[where[-1]]
+            cases.append(json.dumps(trimmed))
+    for field in ("timeout_s",) + (("startup_timeout_s",) if recipe["service"] else ()):
+        for constant in _RAW_CONSTANTS:
+            text = json.dumps(recipe)
+            key = f'"{field}": '
+            start = text.index(key) + len(key)
+            number = re.match(r"[0-9.]+", text[start:])
+            assert number is not None
+            cases.append(text[:start] + constant + text[start + len(number.group(0)) :])
+    for text in cases:
+        try:
+            loaded = srv.parse_recipe(text)  # load_recipe's check, without a file per case
+        except ValueError:
+            refused += 1
+            continue
+        _usable(loaded)
+        accepted += 1
+    assert refused > 0 and accepted > 0  # both sides of the property were exercised
+
+
+@pytest.mark.parametrize(
+    ("where", "value", "message"),
+    [
+        (("timeout_s",), "NaN", "not a JSON number"),
+        (("timeout_s",), "Infinity", "not a JSON number"),
+        (("timeout_s",), "1e999", "proxy"),
+        (("timeout_s",), '"90"', "timeout_s"),
+        (("service", "startup_timeout_s"), "NaN", "not a JSON number"),
+        (("service", "startup_timeout_s"), "1e999", "finite"),
+        (("service", "startup_timeout_s"), '"600"', "startup_timeout_s"),
+        (("service", "startup_timeout_s"), "true", "startup_timeout_s"),
+        (("service", "startup_timeout_s"), "0", "startup_timeout_s"),
+        (("service", "startup_timeout_s"), "3600", "startup_timeout_s"),
+        (("aux_models",), "null", "aux_models must be a list"),
+        (("aux_models",), "{}", "aux_models must be a list"),
+        (("aux_models", 0, "revision"), '"main"', "40-character"),
+        (("aux_models", 0, "role"), '"model"', "unique name other than 'model'"),
+        (("aux_models", 0, "manifest"), "3", "manifest must be a non-empty string"),
+        (("service", "page_failure_exits"), '{"1": "pipeline_raised"}', "exit code 2-99"),
+        (("service", "page_failure_exits"), '{"3": "Pipeline Raised"}', "exit code 2-99"),
+        (("service", "health_url"), '"http://127.0.0.1:99999/health"', "loopback"),
+        (("argv", 0), '"{source.__class__}"', "names a field"),
+        (("argv", 0), '"{source!r}"', "names a field"),
+        (("argv", 0), '"{source:>99}"', "names a field"),
+        (("output_glob",), '"/abs/*.md"', "relative pattern"),
+        (("output_glob",), '"../*.md"', "inside the output directory"),
+        (("name",), "7", "name"),
+    ],
+)
+def test_the_reviewers_recipe_inputs_are_refused(
+    tmp_path: Path, where: tuple[Any, ...], value: str, message: str
+) -> None:
+    recipe = _set(_recipe("c1-paddleocr-vl"), where, "@@VALUE@@")
+    path = tmp_path / "r.json"
+    path.write_text(json.dumps(recipe).replace('"@@VALUE@@"', value), encoding="utf-8")
+    with pytest.raises(ValueError, match=message):
+        srv.load_recipe(path)
+
+
+def test_two_aux_models_with_one_role_are_refused(tmp_path: Path) -> None:
+    c1 = _recipe("c1-paddleocr-vl")
+    path = tmp_path / "r.json"
+    path.write_text(json.dumps({**c1, "aux_models": c1["aux_models"] * 2}), encoding="utf-8")
+    with pytest.raises(ValueError, match="unique"):
+        srv.load_recipe(path)
+
+
+@pytest.mark.parametrize("value", [math.nan, math.inf, -math.inf, "90", True, 0, -1, 100])
+def test_a_time_limit_is_a_finite_number_in_range(value: Any) -> None:
+    """Whatever reaches the check, not only what JSON text can spell (``parse_recipe`` already
+    refuses the NaN and Infinity constants)."""
+    with pytest.raises(ValueError, match="finite number of seconds"):
+        srv._seconds(value, "timeout_s", srv.PROXY_CUT_S)
+    assert srv._seconds(90, "timeout_s", srv.PROXY_CUT_S) == 90.0
+
+
+@pytest.mark.parametrize(
+    ("code", "accepted"),
+    [
+        ("0", False),
+        ("1", False),
+        ("01", False),
+        ("2", True),
+        ("12", True),
+        ("99", True),
+        ("100", False),
+        ("-9", False),
+    ],
+)
+def test_page_failure_exit_codes_are_2_to_99(code: str, accepted: bool) -> None:
+    """0 is success and 1 the client's operational failure; neither is a page failure."""
+    c1 = _recipe("c1-paddleocr-vl")
+    text = json.dumps(_set(c1, ("service", "page_failure_exits"), {code: "pipeline_raised"}))
+    if accepted:
+        assert srv.parse_recipe(text)["service"]["page_failure_exits"] == {code: "pipeline_raised"}
+    else:
+        with pytest.raises(ValueError, match="exit code 2-99"):
+            srv.parse_recipe(text)
+
+
+def test_a_mapped_exit_is_a_page_failure_with_its_reason_and_no_restart(tmp_path: Path) -> None:
+    """The C1 service answered that the page failed and is idle: the recipe's reason, no
+    restart. An unmapped non-zero exit still restarts (``pipeline_exit_nonzero``)."""
+    recipe = _faked(_recipe(), tmp_path)
+    recipe["service"] = {**recipe["service"], "page_failure_exits": {"3": "pipeline_raised"}}
+    service = FakeService()
+    run = srv.command_pipeline(recipe, service, _env(tmp_path, "exit3"))
+    with pytest.raises(srv.PageFailure) as caught:
+        run(SOURCE, ".pdf", 0, None)
+    assert (caught.value.reason, service.recovered) == ("pipeline_raised", 0)
+    recipe["service"]["page_failure_exits"] = {"4": "page_count_unsupported"}
+    run = srv.command_pipeline(recipe, service, _env(tmp_path, "exit3"))
+    with pytest.raises(srv.PageFailure) as caught:
+        run(SOURCE, ".pdf", 0, None)
+    assert (caught.value.reason, service.recovered) == ("pipeline_exit_nonzero", 1)

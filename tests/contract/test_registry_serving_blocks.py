@@ -35,6 +35,15 @@ def _blocks(row: dict[str, Any]) -> list[dict[str, Any]]:
     return [runtime["serving"], *(runtime.get("serving_variants") or [])]
 
 
+def _dockerfile_here(build: Any) -> bool:
+    """A file named ``Dockerfile`` whose resolved path (links and ``..`` followed) is inside
+    the repository."""
+    if not isinstance(build, str) or not build:
+        return False
+    path = (_ROOT / build).resolve()
+    return path.name == "Dockerfile" and path.is_relative_to(_ROOT) and path.is_file()
+
+
 def _block_problems(row: dict[str, Any], serving: dict[str, Any]) -> list[str]:
     out = []
     unbuilt = serving.get("built") is False
@@ -42,8 +51,7 @@ def _block_problems(row: dict[str, Any], serving: dict[str, Any]) -> list[str]:
         if unbuilt:
             if serving.get("image") is not None:
                 out.append("image named while built is false")
-            build = serving.get("image_build")
-            if not isinstance(build, str) or not (_ROOT / build).is_file():
+            if not _dockerfile_here(serving.get("image_build")):
                 out.append("image_build is not a Dockerfile in this repository")
         elif not serving.get("image"):
             out.append("recipe without image")
@@ -119,6 +127,31 @@ def test_an_image_built_here_needs_its_digest_once_built() -> None:
     assert "image carries no @sha256 digest" in _problems(built)
     built["runtime"]["serving"]["image"] = "registry.example/akc@sha256:" + "0" * 64
     assert _problems(built) == []
+
+
+def test_image_build_names_a_dockerfile_inside_the_repository(tmp_path: Path) -> None:
+    """Not any file, and not a Dockerfile reached outside the repository by ``..`` or an
+    absolute path."""
+    row = next(r for r in _rows() if r["runtime"]["serving"].get("built") is False)
+    real = row["runtime"]["serving"]["image_build"]
+    outside = tmp_path / "Dockerfile"
+    outside.write_text("FROM scratch\n", encoding="utf-8")
+    climb = Path(*[".."] * len(_ROOT.parts)) / outside.relative_to(outside.anchor)
+    for build in (
+        "infra/model-registry/models.yaml",  # an existing file, not a Dockerfile
+        "pyproject.toml",
+        str(Path(real).parent),  # its directory
+        str(outside),  # an absolute path out of the repository
+        str(climb),  # ``..`` out of the repository
+        "infra/no/such/Dockerfile",
+        "",
+        None,
+        7,
+    ):
+        bad = copy.deepcopy(row)
+        bad["runtime"]["serving"]["image_build"] = build
+        assert "image_build is not a Dockerfile in this repository" in _problems(bad), build
+    assert _problems(row) == []
 
 
 def test_a_drifted_variant_is_caught() -> None:

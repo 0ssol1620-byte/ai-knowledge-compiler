@@ -55,14 +55,15 @@ releases:
       engine: paddle_or_vllm
       version: null
       image_digest: null
-      # Arena C1 serving (WO-D10-0I, decision A0-7): PaddleOCR's own page pipeline
-      # (`paddleocr doc_parser`, pipeline v1.6, paddle engine) with the production adapter's
-      # arguments, in the production stage of workers/gpu-parser/Dockerfile wrapped as it
-      # is, plus paddlex pinned to 3.7.2. Layout model PP-DocLayoutV3 @ 241f8bdf, pinned and
-      # checked per file like the VLM; orientation and unwarping switched off by option.
-      # The CLI loads its models on every page (no documented health route for the
-      # vendor's long-lived server), so C1's latency and cost per page are not comparable
-      # (receipt includes_model_load: true). Not built: no digest until the lead builds it.
+      # Arena C1 serving (WO-D10-0I, decision A0-7): PaddleOCR's own page pipeline, the
+      # documented PaddleOCRVL Python object (pipeline v1.6, paddle engine) with the
+      # production adapter's arguments, in the production stage of
+      # workers/gpu-parser/Dockerfile wrapped as it is, plus paddlex pinned to 3.7.2. Layout
+      # model PP-DocLayoutV3 @ 241f8bdf, pinned and checked per file like the VLM;
+      # orientation and unwarping switched off by option. Round 3: a loopback service
+      # (paddleocr_vl_service.py) keeps the object loaded, as production does, so the models
+      # load once at start and a page's time is its request (receipt includes_model_load:
+      # false). Not built: no digest until the lead builds it.
       serving:
         enabled: false
         image: null
@@ -79,7 +80,7 @@ releases:
         weights_manifest_sha256: "sha256:5e66eef6314fb4cdf5272717d72ff7774319288cb21f5403a9fd98063b3f5868"
         layout_model: PaddlePaddle/PP-DocLayoutV3@241f8bdfc77a7c7bee915a5057aaee58c235a8d3
         layout_weights_manifest_sha256: "sha256:44603209f1a6f357df1e4b0881791c437b27497e3f27f80f5d03b2ce25f6436e"
-        includes_model_load: true
+        includes_model_load: false
         requirements_lock_sha256: null
       # WO-D10-0E: the labelled chat variant. vLLM 0.22.1's supported-models page lists
       # PaddleOCRVLForConditionalGeneration (config.json at the pin names that
