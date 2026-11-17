@@ -298,6 +298,7 @@ UNITS = {
     "pipe_close": "| ) ",
     "td_open": "<td>$</td>",
     "pipe_open": "| ( ",
+    "pipes_only": "|",
     "fcel": "<fcel>",
     "ecel_fcel_close": "<ecel><fcel>)",
     "textbf_unclosed": BS + "textbf{",
