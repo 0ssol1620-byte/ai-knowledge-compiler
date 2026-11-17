@@ -21,10 +21,17 @@ from benchmark.screen.critical_fields import (
     _CLOSE,
     _CUR_FIRST,
     _CURRENCY,
+    _EN_SCALE,
+    _EN_WORDS,
     _FOLD,
+    _FOREIGN,
+    _GLUED_LETTERS,
     _KO_CHARS,
+    _LABEL_TEXT,
     _OPEN,
     _PAIR,
+    _SCALE_LETTERS,
+    _SCALE_WORDS,
     _SIGN,
     canonical_values,
     gold_value,
@@ -1036,6 +1043,23 @@ def _best_seconds(kind: str, text: str) -> float:
         "|5",
         "2024. 3. 5 ",
         "1 0",
+        "5 :(",
+        "(\uc6d0 5 ",
+        "x\uc6d0) 5 ",
+        "[x-\uc6d0",
+        "aR$",
+        "5 M ",
+        "$ (",
+        "5 (in % ",
+        "(5 %",
+        "usd",
+        "[5 ",
+        "{5 %",
+        "(x 5 ",
+        "(: 5 $",
+        "(- 5 %",
+        "5 " + "[5 " * 15 + "%" + "]" * 15 + " ",
+        "5 [5 {5 (x 5 (: 5 (- 5 %)))}] ",
     ],
     ids=[
         "space",
@@ -1053,6 +1077,23 @@ def _best_seconds(kind: str, text: str) -> float:
         "label-digit",
         "spaced-date",
         "digit-space-digit",
+        "gap-run",
+        "open-label",
+        "stray-label",
+        "dirty-label",
+        "dollar-spelling",
+        "scale-letter",
+        "currency-paren",
+        "marked-group",
+        "own-mark-group",
+        "code-letters",
+        "nested-square",
+        "nested-brace-mark",
+        "nested-paren-word",
+        "nested-paren-colon",
+        "nested-paren-sign",
+        "nested-closed-deep",
+        "nested-closed-mixed",
     ],
 )
 def test_scan_time_grows_linearly_to_one_megabyte(fill, kind):
@@ -1132,8 +1173,10 @@ def test_refused_number_does_not_restart_inside_its_korean_groups():
 def test_only_ascii_spaces_join_the_parts_of_a_number():
     # A newline or a tab is a cell or line boundary: a lone "-" cell does not sign the next row.
     assert canonical_values("number", "-\n5") == {("5", "num", None)}
-    assert canonical_values("number", "5\nmillion") == {("5", "num", None)}
-    assert canonical_values("number", "5\t%") == {("5", "num", None)}
+    # WO-D08-1G H2 and H4 changed these two pins: a scale word or a percent across a tab or a
+    # line break is next to the number and was not applied, so the number is refused (was 5).
+    assert canonical_values("number", "5\nmillion") == set()
+    assert canonical_values("number", "5\t%") == set()
     assert canonical_values("number", "$\n5") == {("5", "num", None)}
     assert _same("- 5", "-5") and _same("5 %", "5%") and _same("3 million", "3000000")
 
@@ -1896,31 +1939,35 @@ def test_every_standalone_prefix_is_read_with_the_number_across_spaces(p):
 def test_a_currency_closing_a_bracket_is_a_unit_label_only_when_it_closes_its_opener():
     """Lead note, round 11, closed by enumeration over the reader's tables: ``A`` + opener + a
     currency glued to a closing bracket + `` 5``. Only a bracket that closes the innermost one
-    still open before it ("(원)", "(단위: 원)", "[원]", "{단위: USD}") makes a unit label, after
-    which the bare 5 is read; any other shape consumed the currency and is refused, never the
-    currency-less 5. A currency glued after a word ("(단위:원]") starts no token: it is text,
-    and the 5 is read. A "(" glued to a further bracket ("([원]") is an accounting paren
-    consumed with no digit after it, refused like "([5])"."""
+    still open before it ("(원)", "(단위: 원)", "[원]", "{단위: USD}"), with nothing but
+    label text between that opener and the currency (WO-D08-1G item 1), makes a unit label,
+    after which the bare 5 is read; any other shape is refused, never the currency-less 5,
+    wherever the currency stands: glued after a word too ("(단위:원]" is refused since
+    WO-D08-1G, "(단위 [x] 원)" too: "[" and "]" are not label text). A "(" glued to a further
+    bracket ("([원]") is an accounting paren consumed with no digit after it, refused like
+    "([5])"."""
     openers = ["", "x ", ": ", "가 ", "(단위: ", "(단위 : ", "(단위:", "(a) ", "( x) "]
     openers += [o + "(" for o in ("", "x ")] + [v for o in _PAIR.values() for v in _variants(o)]
     openers += ["[단위: ", "{단위: ", "([", "[(", "{[", "(단위 [x] ", "[단위 (x) "]
     wrong = []
     for opener in openers:
         folded = opener.translate(_FOLD)
-        # The brackets the opener leaves open, innermost last.
-        stack: list[str] = []
+        # The brackets the opener leaves open, innermost last, each with what follows it.
+        stack: list[tuple[str, int]] = []
         lead = folded.split(" ")[-1]
-        in_word = lead.strip("".join(_PAIR.values())) != ""
-        paren_consumed = "(" in lead[:-1]
-        for c in folded:
+        paren_consumed = lead[:1] == "(" and len(lead) > 1 and not lead[1].isalpha()
+        for at, c in enumerate(folded):
             if c in _PAIR.values():
-                stack.append(c)
-            elif c in _PAIR and stack[-1:] == [_PAIR[c]]:
+                stack.append((c, at))
+            elif c in _PAIR and stack[-1:] and stack[-1][0] == _PAIR[c]:
                 stack.pop()
+        inner, at = stack[-1] if stack else ("", len(folded))
+        between = folded[at + 1 :]
+        label_text = all(c in " :," or (c.isascii() and c.isalpha()) or _hangul(c) for c in between)
         for cur in _CURRENCY_PREFIXES:
             for close in sorted(set(_CLOSE) & set(_PAIR)):
                 text = f"A {opener}{cur}{close} 5"
-                label = in_word or (not paren_consumed and stack[-1:] == [_PAIR[close]])
+                label = not paren_consumed and inner == _PAIR[close] and label_text
                 want = ("5", "num", None) if label else None
                 got = value_after_anchor(_field("x", "A"), text)
                 if got != want:
@@ -1943,17 +1990,130 @@ _LOWER = {"조": [("억", 10**8), ("만", 10**4)], "억": [("만", 10**4), ("천
 _KO_SCALE = "조억만천백십"
 
 
-def _says_unit(field: str) -> bool:
-    """Test-side oracle for WO-D08-1F item 4, from the definition: past label separators and
-    opening punctuation, ``field`` starts with a percent, or with a currency spelling of the
-    reader's table (codes in any case) that no ASCII digit follows across spaces."""
-    rest = field.lstrip(_LABEL_SEPARATORS + "([{\"'").translate(_FOLD)
-    if rest.startswith("%"):
+def _hangul(c: str) -> bool:
+    return "\uac00" <= c <= "\ud7a3"
+
+
+def _mark(text: str, k: int) -> bool:
+    """Test side, from the definition: ``text[k]`` starts a percent or a currency spelling of
+    the reader's table (codes in any case) that no ASCII digit follows across spaces."""
+    if text[k] == "%":
         return True
-    for k in sorted(_CURRENCY, key=len, reverse=True):
-        head = rest[: len(k)]
-        if (head.upper() == k and head.isascii()) if k.isascii() and k.isalpha() else head == k:
-            return rest[len(k) :].lstrip(" ")[:1] not in tuple(string.digits)
+    for key in sorted(_CURRENCY, key=len, reverse=True):
+        head = text[k : k + len(key)]
+        code = key.isascii() and key.isalpha()
+        if (head.isascii() and head.upper() == key) if code else head == key:
+            return text[k + len(key) :].lstrip(" ")[:1] not in tuple(string.digits)
+    return False
+
+
+_OWN = re.compile(
+    r"[0-9] *[조억만천백십]* *(?:(?i:thousand|million|billion|trillion|bn|k|m|b) *)?\Z"
+)
+
+
+_SCALE_WORD = re.compile(
+    r"(?i:thousand|million|billion|trillion|bn|mn|mm|tn|lakh|lac|crore|hundred)s?\Z"
+)
+_KO_RUN = re.compile(r"[천백십]?[만억조]?")
+
+
+def _scale_word_at(text: str, k: int) -> bool:
+    """Test side, from WO-D08-1G H1/H2: does a scale expression of more than one letter begin
+    at ``k``: a word of the scale tables (any case, plural "s"), or a Korean unit run that
+    ends its word or takes a currency ("억", "백만원"; not "조사")."""
+    if text[k] in _KO_SCALE:
+        u = k + len(_KO_RUN.match(text, k).group())
+        rest = text[u:]
+        return not rest[:1] or not _hangul(rest[0]) or rest.startswith(("원", "달러", "엔"))
+    word = re.match(r"[A-Za-z]*", text[k:]).group()
+    return bool(_SCALE_WORD.match(word))
+
+
+def _spelling_at(text: str, k: int) -> int:
+    """Test side: the length of the currency spelling of the reader's table at ``k`` (codes in
+    any case, other spellings as written), or 0."""
+    for key in sorted(_CURRENCY, key=len, reverse=True):
+        head = text[k : k + len(key)]
+        code = key.isascii() and key.isalpha()
+        if (head.isascii() and head.upper() == key) if code else head == key:
+            return len(key)
+    return 0
+
+
+def _next_number_takes_the_sign(rest: str) -> bool:
+    """Test side: across ASCII spaces, an optional currency and an optional "(", a digit."""
+    j = len(rest) - len(rest.lstrip(" "))
+    if _spelling_at(rest, j):
+        j += _spelling_at(rest, j)
+        j += len(rest[j:]) - len(rest[j:].lstrip(" "))
+    if rest[j : j + 1] == "(":
+        j += 1 + len(rest[j + 1 :]) - len(rest[j + 1 :].lstrip(" "))
+    return rest[j : j + 1] in tuple(string.digits)
+
+
+def _word_start(text: str, k: int) -> bool:
+    c, before = text[k], text[k - 1 : k]
+    if c in string.ascii_letters:
+        return not before or before not in string.ascii_letters
+    return c in _KO_SCALE and not (before and _hangul(before))
+
+
+def _group_is_free(text: str, p: int) -> bool | None:
+    """The group opened at ``text[p]`` (to its matching closer, or the end): True when it holds
+    a percent or currency that is no number's own, or a scale expression no digit stands
+    before; False when it holds only marks and scales of numbers; None when it holds neither."""
+    depth: list[str] = []
+    holds = False
+    for k in range(p, len(text)):
+        c = text[k]
+        if c in "([{":
+            depth.append(c)
+        elif c in _PAIR and depth and depth[-1] == _PAIR[c]:
+            depth.pop()
+            if not depth:
+                break
+        elif _mark(text, k):
+            if not _OWN.search(text[:k]):
+                return True
+            holds = True
+        elif _spelling_at(text, k):
+            holds = True  # a currency with a digit after it: another number's prefix
+        elif _word_start(text, k) and _scale_word_at(text, k):
+            if text[:k].rstrip(" ")[-1:] not in tuple(string.digits):
+                return True
+            holds = True
+    return False if holds else None
+
+
+def _says_unit(after: str) -> bool:
+    """Test-side oracle for the Korean-group property, from WO-D08-1G item 2 and H1-H7: does
+    what follows a read number with its own scale (``after``, which begins with " (") hold a
+    percent, currency or scale that the number did not apply. A bracket group there that holds
+    one that is no number's own refuses; one that holds only numbers' own leaves the number
+    (it has its own scale). Past a group that holds neither, the first mark refuses, a currency
+    with a digit after it or a digit ends the search, the first sign refuses unless a number
+    follows it, and the first word refuses when it is a scale word or its field holds a symbol
+    currency. After the "(" a single letter is never a scale."""
+    after = after.translate(_FOLD)
+    assert after.startswith(" (")
+    for k, c in enumerate(after):
+        free = _group_is_free(after, k) if c in "([{" else None
+        if free is not None:
+            return free
+        if _mark(after, k):
+            return True
+        if _spelling_at(after, k):
+            return False
+        if c in string.digits:
+            return False
+        if c in _SIGN and not _next_number_takes_the_sign(after[k + 1 :]):
+            return True  # a sign that no number takes; the next number's is punctuation
+        if c in string.ascii_letters or _hangul(c):
+            if _scale_word_at(after, k):
+                return True
+            field = re.match(r"[^ \t\n\r]*", after[k:]).group()
+            return any(s in field for s in "$₩€£¥")
     return False
 
 
@@ -1983,10 +2143,11 @@ def test_property_a_field_after_a_korean_group_continues_it_wholly_or_refuses(n,
     # A field with neither, of words and closing punctuation, leaves the value standing.
     word = data.draw(_NOT_A_PART)
     assert read(word) == (str(value), "num", None), word
-    # A parenthesised field is never joined, whatever it holds. WO-D08-1F item 4: one that
-    # holds a percent or currency (not the start of a further number) refuses the value.
+    # A parenthesised field is never joined, whatever it holds. WO-D08-1G item 2: one that
+    # holds a percent or currency (not the start or the suffix of a further number) refuses
+    # the value.
     inside = data.draw(st.text(_PROPERTY_JUNK, max_size=4))
-    want = None if _says_unit(inside) else (str(value), "num", None)
+    want = None if _says_unit(f" ({inside}") else (str(value), "num", None)
     assert read(f"({inside}") == want, inside
     # Any other field with no ASCII digit may still refuse, and never gives another value (kept,
     # A.1.3: an OCR "l" or "O", a hidden character or a spaced "~ 15억" can stand for a part).
@@ -2122,10 +2283,10 @@ def test_a_percent_or_currency_set_apart_by_a_separator_refuses(candidate):
     ("candidate", "want"),
     [
         # Kept as today (item 4): a percent or currency after ASCII spaces is the grammar's own
-        # spaced suffix; after other whitespace alone it is not joined (pinned above, "5\t%").
+        # spaced suffix. After other whitespace alone it is not joined, and since WO-D08-1G H4
+        # it refuses the number ("A 5\t%" was plain 5, now None: pinned with the H4 inputs).
         ("A 5 %", ("5", "pct", None)),
         ("A 5 원", ("5", "num", "KRW")),
-        ("A 5\t%", ("5", "num", None)),
         # A currency that begins a further number is that number's prefix, not a mark.
         ("A 5 ($3)", ("5", "num", None)),
         ("A 5\n($3)", ("5", "num", None)),
@@ -2235,3 +2396,1023 @@ def test_gold_reads_the_new_currencies(value, want):
 )
 def test_bracket_shapes_pinned_after_round_fifteen(candidate, want):
     assert value_after_anchor(_field("x", "A"), candidate) == want
+
+
+# --- WO-D08-1G (lead decisions after the review of WO-D08-1F): the rules name what is allowed.
+# Item 1: a bracket group that ends in a currency glued to its matching closer is a unit label
+# (text) only if everything between its opener and the currency is label text: ASCII letters,
+# Hangul syllables, an ASCII space, ":" and ",". Otherwise the number after it is refused,
+# wherever the currency stands (at the start of a token or glued after a word).
+@pytest.mark.parametrize(
+    "candidate",
+    [
+        "A (단위:-원) 5",
+        "A [금액-원] 5",
+        "A [\u2013원] 5",
+        "A [±원] 5",
+        "A [~원] 5",
+        "A [▼원] 5",
+        # WO-D08-1F item 3's inputs stay refused under the allow-list that replaces its rule.
+        "A [-원] 5",
+        "A {-USD} 5",
+        "A [△원] 5",
+        "A (단위: -원) 5",
+        "A [단위: -원] 5",
+        # Decided by the rule: "[" and "]" inside the label are not label text, so the inner
+        # "[x]" makes "(단위 [x] 원)" not a label (it was one under amendment A.6's stack).
+        "A (단위 [x] 원) 5",
+        "A [단위 (x) 원] 5",
+        # The same class: other dashes and symbols, a digit, other punctuation, whitespace that
+        # is not an ASCII space, a closer that does not match, a currency glued after a word.
+        "A [\u2014원] 5",
+        "A [\u2010원] 5",
+        "A [\ufe63원] 5",
+        "A [▽원] 5",
+        "A [단위:△원] 5",
+        "A (x-원) 5",
+        "A [금액-USD] 5",
+        "A [단위.원] 5",
+        "A [단위\t원] 5",
+        "A (x\u00a0원) 5",
+        "A (단위1원) 5",
+        "A (단위:원] 5",
+        "A x원) 5",
+        # Two rules meet on these: a "(" followed by a character that is not a letter is a
+        # consumed accounting paren (amendments A.4, A.5) although " ", ":" and "," are label
+        # text; the stricter reading wins.
+        "A ( 원) 5",
+        "A (:원) 5",
+        "A (,원) 5",
+    ],
+)
+def test_a_unit_label_holds_only_label_text(candidate):
+    assert value_after_anchor(_field("x", "A"), candidate) is None
+    assert score_critical_fields([_field("5", "A")], candidate).exact == 0
+
+
+@pytest.mark.parametrize(
+    "candidate",
+    [
+        "A (원) 5",
+        "A (단위: 원) 5",
+        "A [단위: 원] 5",
+        "A {USD} 5",
+        "A [단위, 원] 5",
+        "A [금액 USD] 5",
+        "A (단위:원) 5",
+        "A 매출(억원) 5",
+        "A [ 원] 5",
+        "A [단위: HK$] 5",
+    ],
+)
+def test_a_unit_label_of_label_text_is_text(candidate):
+    assert value_after_anchor(_field("x", "A"), candidate) == ("5", "num", None)
+    assert score_critical_fields([_field("5", "A")], candidate).exact == 1
+
+
+_LABEL_ALLOWED = ["x", "X", "가", " ", ":", ","]
+_LABEL_REFUSED = sorted(
+    set("-+△▲\u2212\uff0d\uff0b\u2013\u2014\u2010\ufe63±~▼▽")  # signs, dashes
+    | (set(string.punctuation) - set(":,"))  # every other ASCII punctuation
+    | set("1\t\n\u00a0\u200b\u3131\u4e2d\u00b7")  # digit, whitespace, jamo, CJK, Latin-1
+)
+
+
+def _label_oracle(o: str, x: str, cur: str, close: str) -> bool:
+    """Test side, from item 1: is ``o + x + cur + close`` (``x`` placed between the opener
+    and the currency) a unit label, so the 5 after it is read plain."""
+    label = (o + x).translate(_FOLD)
+    stack: list[tuple[str, int]] = []
+    for at, c in enumerate(label):
+        if c in "([{":
+            stack.append((c, at))
+        elif c in _PAIR and stack and stack[-1][0] == _PAIR[c]:
+            stack.pop()
+    if not stack or stack[-1][0] != _PAIR[close]:
+        return False
+    between = label[stack[-1][1] + 1 :]
+    if not all(c in " :," or (c.isascii() and c.isalpha()) or _hangul(c) for c in between):
+        return False
+    # A "(" right before a character that is not a letter is consumed as an accounting paren.
+    if label[:1] == "(" and label[1:2] and not label[1].isalpha():
+        return False
+    if cur.translate(_FOLD) == "%":  # WO-D08-1G H8: a percent label, by the same allow-list
+        return True
+    # Item 4: letters glued before a "$" must spell a currency of the table. WO-D08-1G H7: a
+    # symbol currency (with the letters of its spelling) must start its field, after an ASCII
+    # space or an opener ("(가$)", "(단위,$)", "(가A$)" are refused).
+    folded_cur = cur.translate(_FOLD)
+    symbol = next((i for i, c in enumerate(folded_cur) if not c.isalpha()), None)
+    if symbol is not None:
+        head = label + folded_cur[:symbol]
+        letters = len(head) - len(head.rstrip(string.ascii_letters))
+        if letters and head[-letters:] + folded_cur[symbol] not in _CURRENCY:
+            return False
+        if head[: len(head) - letters][-1:] not in (" ", *_OPEN):
+            return False
+    return True
+
+
+def test_every_label_character_class_in_every_bracket_pair():
+    """Item 1, closed by enumeration over the module's tables: every bracket pair (openers with
+    their folds), every currency spelling, one representative of every character class between
+    the opener and the currency, glued to the currency or after a word. Label text: the plain 5
+    is read. Anything else: None, never the plain 5."""
+    # The allowed classes are exactly the module's, and no refused representative is one.
+    assert frozenset(string.ascii_letters + " :,") == _LABEL_TEXT
+    assert not set(_LABEL_REFUSED) & _LABEL_TEXT and not any(map(_hangul, _LABEL_REFUSED))
+    close_of = {o: c for c, o in _PAIR.items()}
+    wrong = []
+    checked = 0
+    for o in [v for b in _PAIR.values() for v in _variants(b)]:
+        close = close_of[o.translate(_FOLD)]
+        for cur in [*_CURRENCY_PREFIXES, *_variants("%")]:
+            for x in [*_LABEL_ALLOWED, *_LABEL_REFUSED]:
+                for between in (f"단위{x}", x):
+                    if between in string.digits:
+                        continue  # "[1원]" is the number 1원 itself, read as such
+                    want = ("5", "num", None) if _label_oracle(o, between, cur, close) else None
+                    text = f"A {o}{between}{cur}{close} 5"
+                    got = value_after_anchor(_field("x", "A"), text)
+                    checked += 1
+                    if got != want:
+                        wrong.append((text, got, want))
+    assert checked > 10_000
+    assert not wrong, (len(wrong), wrong[:20])
+
+
+# Item 2: after a number, a percent or currency it did not take refuses it: past ASCII
+# whitespace and any run of punctuation or symbols, or past spaces alone; and a bracket group
+# opened right after it that holds one anywhere.
+@pytest.mark.parametrize(
+    "candidate",
+    [
+        "A 5 ;%",
+        "A 5 /%",
+        "A 5 -%",
+        "A 5 <%",
+        "A 5 :- %",
+        "A 5 :-원",
+        "A 5,원",
+        "A 5.원",
+        "A 5 (단위: %)",
+        "A 5 (in %)",
+        "A 5 (USD thousands)",
+        # The same class: a run of several separators, a group behind another separator, other
+        # symbols, a character outside ASCII, a scale label that holds no digit.
+        "A 5 :(in %)",
+        "A 5 - (단위: %)",
+        "A 5 *%",
+        "A 5 ~ %",
+        "A 5 \u00b7원",
+        "A 5 \u200b%",
+        "A 5 (단위: 백만원)",
+        "A 5\n(단위: %)",
+        # Past spaces alone or nothing, a mark the grammar did not take is not the number's
+        # own: after an accounting paren, after a currency the number already took.
+        "A (5) %",
+        "A (5)원",
+        "A 5원 %",
+        "A 5 USD 원",
+    ],
+)
+def test_a_percent_or_currency_the_number_did_not_take_refuses_it(candidate):
+    assert value_after_anchor(_field("x", "A"), candidate) is None
+    assert score_critical_fields([_field("5", "A")], candidate).exact == 0
+
+
+@pytest.mark.parametrize(
+    ("candidate", "want"),
+    [
+        # Kept: a currency followed by a digit is the next number's prefix; the grammar's own
+        # spaced and glued percent and currency.
+        ("A 5 ($3)", ("5", "num", None)),
+        ("A 5 %", ("5", "pct", None)),
+        ("A 5 원", ("5", "num", "KRW")),
+        ("A 5%", ("5", "pct", None)),
+        ("A 5원", ("5", "num", "KRW")),
+        # "A 5\t%" was kept here (plain 5); WO-D08-1G H4 refuses it (pinned with H4).
+        # Kept (an earlier named regression meets item 2): a mark inside the group that is the
+        # suffix of a number there is that number's own, like a prefix with a digit after it.
+        ("A 12억원 (전년 10억원)", ("1200000000", "num", "KRW")),
+        ("A 12억원 (전년 10 억 원)", ("1200000000", "num", "KRW")),
+        ("A 5 (12%)", ("5", "num", None)),
+        ("A 5 (10 USD)", ("5", "num", None)),
+        ("A 5 (3 million USD)", ("5", "num", None)),
+    ],
+)
+def test_a_percent_or_currency_that_belongs_to_a_number_is_kept(candidate, want):
+    assert value_after_anchor(_field("x", "A"), candidate) == want
+
+
+def _punctuation_and_symbols() -> dict[str, list[str]]:
+    """Every ASCII and Latin-1 character in a punctuation or symbol category, by category."""
+    by_cat: dict[str, list[str]] = {}
+    for cp in range(0x21, 0x100):
+        c = chr(cp)
+        if unicodedata.category(c)[0] in "PS":
+            by_cat.setdefault(unicodedata.category(c), []).append(c)
+    return by_cat
+
+
+def test_every_punctuation_or_symbol_before_a_percent_or_currency_refuses_the_number():
+    """Item 2, closed by enumeration: every ASCII and Latin-1 punctuation or symbol character
+    (every general category P* and S* present there), with and without ASCII spaces around it,
+    between a number and a percent or any currency spelling of the table: None. With a digit
+    after the currency it begins the next number, and the number before it stands."""
+    by_cat = _punctuation_and_symbols()
+    assert set(by_cat) == {"Pc", "Pd", "Ps", "Pe", "Pi", "Pf", "Po", "Sm", "Sc", "Sk", "So"}
+    tokens = {
+        "5": ("5", "num", None),
+        "(5)": ("-5", "num", None),
+        "12억": ("1200000000", "num", None),
+    }
+    wrong = []
+    for chars in by_cat.values():
+        # A percent is not a separator: the grammar takes it, and a currency after it ("5%$").
+        for c in (c for c in chars if c != "%"):
+            for number, value in tokens.items():
+                for a, b in [("", ""), (" ", ""), (" ", " "), ("", " ")]:
+                    for mark in ["%", *_CURRENCY_PREFIXES]:
+                        text = f"A {number}{a}{c}{b}{mark}"
+                        got = value_after_anchor(_field("x", "A"), text)
+                        if got is not None:
+                            wrong.append((text, got))
+                if c.isascii() and c not in "%$" and number != "12억":
+                    for mark in _CURRENCY_PREFIXES:
+                        text = f"A {number} {c}{mark}3"
+                        got = value_after_anchor(_field("x", "A"), text)
+                        if got != value:
+                            wrong.append((text, got, value))
+    assert not wrong, (len(wrong), wrong[:20])
+
+
+# Item 3: a scale word the grammar does not read refuses the number before it.
+@pytest.mark.parametrize(
+    "candidate",
+    [
+        "A 5 mn",
+        "A 5 M",
+        "A 5 K",
+        "A 12 lakh",
+        "A INR 12 lakh",
+        "A 3 hundred",
+        # The same class: every word of the table, plural and other cases, after a currency,
+        # an accounting paren or a percent, past a tab, before sentence punctuation.
+        "A 5 MM",
+        "A 5 tn",
+        "A 5 lac",
+        "A 5 crore",
+        "A 5 B",
+        "A 5 T",
+        "A 5 lakhs",
+        "A 5 Crores",
+        "A $5 M",
+        "A (5) bn",
+        "A 5% Mn",
+        "A 5\tM",
+        "A 5\tbn",
+        "A 5 M.",
+    ],
+)
+def test_a_scale_word_the_grammar_does_not_read_refuses_the_number(candidate):
+    assert value_after_anchor(_field("x", "A"), candidate) is None
+    assert score_critical_fields([_field("5", "A")], candidate).exact == 0
+
+
+@pytest.mark.parametrize(
+    ("candidate", "want"),
+    [
+        # Lower-case "m" is not in the table: a unit, read plain.
+        ("A width 5 m", ("5", "num", None)),
+        ("A 5 k", ("5", "num", None)),
+        # Words the grammar reads are unchanged ("bn" is in the table for where it does not).
+        ("A 5 bn", ("5000000000", "num", None)),
+        ("A 5 BN", ("5000000000", "num", None)),
+        ("A 5M", ("5000000", "num", None)),
+        ("A 5 million", ("5000000", "num", None)),
+        ("A 5 thousand", ("5000", "num", None)),
+        # A single letter that is a label, not a word standing alone, and a longer word.
+        ("A 200  B: 100", ("200", "num", None)),
+        ("A 5 Mio", ("5", "num", None)),
+    ],
+)
+def test_a_scale_word_the_grammar_reads_or_that_is_no_scale_word_is_kept(candidate, want):
+    assert value_after_anchor(_field("x", "A"), candidate) == want
+
+
+def test_every_scale_word_of_the_table_refuses_the_number_unless_the_grammar_reads_it():
+    """Item 3, closed by enumeration over the module's tables: every scale word (in three
+    cases and plural) and every single letter, after numbers with and without a currency,
+    paren or percent, glued or past any ASCII whitespace, with what ends a word after it. The
+    grammar's own scales (spaced "bn", glued "M" "K" "B") read the scaled value; else None."""
+    # The table is pinned as a literal, so a change to it is a visible edit here.
+    assert {"mn", "mm", "bn", "tn", "lakh", "lac", "crore", "hundred"} == _SCALE_WORDS
+    assert set("MKBT") == _SCALE_LETTERS
+    words = {v for w in _SCALE_WORDS for v in (w, w.upper(), w.title(), w + "s")}
+    numbers = {
+        "5": None,
+        "$5": "USD",
+        "INR 5": "INR",
+        "(5)": None,
+        "5%": None,
+    }
+    wrong = []
+    for number, cur in numbers.items():
+        for ws in ["", " ", "  ", "\t", "\n"]:
+            for word in sorted(words | _SCALE_LETTERS):
+                for end in ["", " x", ".", ","]:
+                    text = f"A {number}{ws}{word}{end}"
+                    plain = number not in ("(5)", "5%")
+                    spaced = plain and ws.strip(" ") == "" and word.lower() == "bn"
+                    glued = plain and ws == "" and word in ("M", "K", "B")
+                    want = None
+                    if spaced or glued:
+                        scaled = 5 * _EN_SCALE[word.lower()]
+                        want = (str(scaled), "num", cur)
+                    got = value_after_anchor(_field("x", "A"), text)
+                    if got != want:
+                        wrong.append((text, got, want))
+    assert not wrong, (len(wrong), wrong[:20])
+
+
+# Item 4: letters glued before a "$" that do not spell a currency of the table refuse.
+@pytest.mark.parametrize(
+    "candidate",
+    [
+        "A R$ 5",
+        "A NZ$ 5",
+        "A CA$ 5",
+        "A AU$ 5",
+        "A MX$ 5",
+        "A Z$ 5",
+        "A R$5",
+        "A us$ 5",
+        "A xUS$ 5",
+        "A [NZ$] 5",
+        "A NZ$ (5)",
+    ],
+)
+def test_an_unlisted_dollar_spelling_refuses_the_number(candidate):
+    assert value_after_anchor(_field("x", "A"), candidate) is None
+    assert score_critical_fields([_field("5", "A")], candidate).exact == 0
+
+
+def test_every_one_to_three_letter_dollar_spelling_reads_only_from_the_table():
+    """Item 4, closed by enumeration: every spelling of one or two ASCII letters (both cases)
+    and of three upper-case letters, glued before "$", then the number spaced or glued: the
+    currency of the table when the spelling is in it, else None, never a currency-less 5."""
+    upper, letters = string.ascii_uppercase, string.ascii_letters
+    spellings = [*letters, *(a + b for a in letters for b in letters)]
+    spellings += [a + b + c for a in upper for b in upper for c in upper]
+    wrong = []
+    for sp in spellings:
+        for gap in (" ", ""):
+            text = f"A {sp}${gap}5"
+            code = _CURRENCY.get(sp + "$")
+            want = ("5", "num", code) if code else None
+            got = value_after_anchor(_field("x", "A"), text)
+            if got != want:
+                wrong.append((text, got, want))
+    assert not wrong, (len(wrong), wrong[:20])
+
+
+# Item 5: a currency before accounting parentheses is the negative amount in that currency.
+@pytest.mark.parametrize(
+    ("candidate", "want"),
+    [
+        ("A $ (700)", ("-700", "num", "USD")),
+        ("A $(700)", ("-700", "num", "USD")),
+        ("A ₩ (700)", ("-700", "num", "KRW")),
+        ("A USD (700)", ("-700", "num", "USD")),
+        # Decided by the existing accounting-paren rule: spaces inside the parens are read
+        # ("( 5 )" is -5), an open paren with no close is refused.
+        ("A $ ( 700 )", ("-700", "num", "USD")),
+        ("A $ (700", None),
+        # Unchanged: the paren first, and whitespace other than spaces, a sign before the
+        # currency or inside the paren, a second paren, a different currency after it.
+        ("A ($ 700)", ("-700", "num", "USD")),
+        ("A $\t(700)", None),
+        ("A - $ (700)", None),
+        ("A $ (-700)", None),
+        ("A $ ((700))", None),
+        ("A $ (700원)", None),
+    ],
+)
+def test_a_currency_before_accounting_parentheses_reads_negative(candidate, want):
+    assert value_after_anchor(_field("x", "A"), candidate) == want
+
+
+@pytest.mark.parametrize(
+    ("value", "want"),
+    [
+        ("$ (700)", ("-700", "num", "USD")),
+        ("$(700)", ("-700", "num", "USD")),
+        ("₩ (700)", ("-700", "num", "KRW")),
+        ("USD (700)", ("-700", "num", "USD")),
+        ("$ ( 700 )", ("-700", "num", "USD")),
+    ],
+)
+def test_gold_reads_a_currency_before_accounting_parentheses(value, want):
+    assert gold_value(_field(value)) == want
+    assert score_critical_fields([_field(value, "A")], f"A {value}").exact == 1
+    assert score_critical_fields([_field(value, "A")], "A 700").exact == 0
+
+
+def test_gold_refuses_an_unclosed_accounting_paren_after_a_currency():
+    assert _gold_refused("$ (700")
+
+
+def test_every_currency_before_accounting_parentheses_reads_negative():
+    """Item 5, closed by enumeration over the currency table: every spelling, glued or spaced
+    before the paren, with and without spaces inside it: the negative amount in that currency.
+    Without the closing paren: None."""
+    wrong = []
+    for p in _CURRENCY_PREFIXES:
+        for gap in ("", " ", "  "):
+            for paren in ("(700)", "( 700 )", "(1,234.5)"):
+                text = f"A {p}{gap}{paren}"
+                digits = paren.strip("() ").replace(",", "")
+                want = ("-" + digits, "num", _currency_code(p))
+                got = value_after_anchor(_field("x", "A"), text)
+                if got != want:
+                    wrong.append((text, got, want))
+            text = f"A {p}{gap}(700"
+            if value_after_anchor(_field("x", "A"), text) is not None:
+                wrong.append((text, "unclosed read"))
+    assert not wrong, (len(wrong), wrong[:20])
+
+
+# Item 6: correct values that the rules above refuse, by design. Each would score a right
+# answer as wrong; each is kept refused because what follows the number, or the label before
+# it, says something the reader does not interpret ("원가" begins with the currency 원).
+@pytest.mark.parametrize(
+    "candidate",
+    [
+        "A 5 (원가)",
+        "A 5 (audited)",
+        "A $5 (USD)",
+        "A 5 Audi",
+        "A 5 cadets",
+        "A 5 AUDUSD",
+        # Found while implementing item 2, the same design: sentence punctuation, then a word
+        # that begins with a currency ("원가" cost, "원화" the won).
+        "A 5, 원가 3",
+        "A 5%. 원화 강세",
+        "A 5억, 원가 3억",
+        # WO-D08-1G H4: a currency word on the next line ("원가" cost) is a mark next to the
+        # number across a line break.
+        "A 5\n원가",
+        # WO-D08-1G H2: a single capital letter in a bracket group is not a scale, but a
+        # Korean word that begins with a unit and takes a currency is ("(만원대)").
+        "A 5 (만원대)",
+    ],
+)
+def test_correct_values_refused_by_design(candidate):
+    """Over-refusals by design (WO-D08-1G item 6), not defects: pinned so a change is seen."""
+    assert value_after_anchor(_field("x", "A"), candidate) is None
+
+
+# --- WO-D08-1G lead amendment (H1-H9). The reader never returns a number that stands next to
+# a scale, sign, percent or currency expression it did not apply: glued, across ASCII
+# whitespace of any kind, or across a punctuation run or a bracket group opened right after it.
+_USD700 = ("-700", "num", "USD")
+_PLAIN5 = ("5", "num", None)
+
+
+@pytest.mark.parametrize(
+    ("candidate", "want"),
+    [
+        # H1: a scale after a token closed by an accounting paren, with or without a currency.
+        ("A $ (700) million", None),
+        ("A net loss of $(700) million", None),
+        ("A $(700) billion", None),
+        ("A USD (700) thousand", None),
+        ("A $ (1.2) billion", None),
+        ("A $ (700) Million", None),
+        ("A $ (700) millions", None),
+        ("A $ (700)\nmillion", None),
+        ("A (700) million", None),
+        ("A ($ 700) million", None),
+        ("A $ (700) k", None),
+        ("A (700)k", None),
+        ("A (700)억", None),
+        ("A (700) 억원", None),
+        ("A $ (700)", _USD700),
+        ("A $ (700) 3", _USD700),
+        ("A $ (700) and", _USD700),
+        # H2: the same rule for every token.
+        ("A 5\tmillion", None),
+        ("A 5\nmillion", None),
+        ("A 5 (mn)", None),
+        ("A 5 (in mn)", None),
+        ("A 5 (in millions)", None),
+        ("A 5, mn", None),
+        ("A 5 - mn", None),
+        ("A 5 (천원)", None),
+        ("A 5 (단위: 백만)", None),
+        ("A 5 million", ("5000000", "num", None)),
+        ("A 5 bn", ("5000000000", "num", None)),
+        ("A 5 and millions of others", _PLAIN5),
+        # H3: a single capital letter refuses unless a letter, digit, "&" or ":" follows it.
+        ("A 5 M/yr", None),
+        ("A 5 M-", None),
+        ("A 5 M\u2026", None),
+        ("A 5 M+", None),
+        ("A 5 M원", None),
+        ("A 5 M x", None),
+        ("A 5 M=", None),
+        ("A 5 M", None),
+        ("A 200  B: 100", ("200", "num", None)),
+        ("A 5 M&A", _PLAIN5),
+        ("A 5 M3", _PLAIN5),
+        # H4: a percent or currency across a tab or a line break.
+        ("A 5\t%", None),
+        ("A 5\n%", None),
+        ("A 5\t원", None),
+        ("A 5\n원", None),
+        ("A 5\n$3", _PLAIN5),
+        ("A 5 %", ("5", "pct", None)),
+        ("A 5 원", ("5", "num", "KRW")),
+        # H5: a bracket group after the number that holds a mark or a scale.
+        ("A 5 (단위: 1,000원)", None),
+        ("A 5 ('000 USD)", None),
+        ("A 5 (000 USD)", None),
+        ("A 5 (2024 USD)", None),
+        ("A 5 (x1원)", None),
+        ("A 5 (12%)", _PLAIN5),
+        ("A 5 ($3)", _PLAIN5),
+        ("A 5\n(1%)", _PLAIN5),
+        ("A 5 (10 USD)", _PLAIN5),
+        ("A 12억원 (전년 10억원)", ("1200000000", "num", "KRW")),
+        # H6: a sign glued to the word before it.
+        ("A 다- 839 billion", None),
+        ("A 매출- 5", None),
+        ("A net- 5", None),
+        ("A - 5", ("-5", "num", None)),
+        ("A -5", ("-5", "num", None)),
+        # H7: currency and percent signs the table does not know.
+        ("A \u20b9 5", None),
+        ("A \u20b95", None),
+        ("A 5 \u20b9", None),
+        ("A 5 (\u20b9)", None),
+        ("A 5 (\ufe6a)", None),
+        ("A 5\u2030", None),
+        ("A \u0e3f5", None),
+        ("A \uff32$ 5", None),
+        ("A \uff2e\uff34\uff04 5", None),
+        ("A \u00c9$ 5", None),
+        ("A 가$ 5", None),
+        ("A _$ 5", None),
+        ("A R-$ 5", None),
+        ("A x\u20ac 5", None),
+        ("A 5 R$", None),
+        ("A 5 NZ$", None),
+        # H8: percent unit labels, by the allow-list of item 1.
+        ("A [%] 5", _PLAIN5),
+        ("A (단위: %) 5", _PLAIN5),
+        ("A [-%] 5", None),
+        ("A (단위:-%) 5", None),
+        ("A [x1%] 5", None),
+        # H9: one mark per token.
+        ("A $700%", None),
+        ("A ($ 700 %)", None),
+        ("A $ (700 %)", None),
+    ],
+)
+def test_nothing_next_to_a_number_is_left_unapplied(candidate, want):
+    assert value_after_anchor(_field("x", "A"), candidate) == want
+    if want is None:
+        assert score_critical_fields([_field("5", "A")], candidate).exact == 0
+
+
+def test_width_in_metres_is_read_plain():
+    """H2 kept: a lower-case "m" spaced after a plain number is a unit, not a scale."""
+    assert value_after_anchor(_field("x", "width"), "width 5 m") == _PLAIN5
+
+
+@pytest.mark.parametrize(
+    ("candidate", "want"),
+    [
+        # The acceptance rule's sign, after the number: one that no number after it takes is
+        # next to this number and not applied (read plain 5 before the amendment).
+        ("A 5 -", None),
+        ("A 5\t+", None),
+        ("A 5\n△", None),
+        ("A 5 - note", None),
+        ("A 5, -", None),
+        ("A (5) -", None),
+        ("A 5 (-)", None),
+        # The next number's own sign: the number before it stands.
+        ("A 5 - 3", _PLAIN5),
+        ("A 5 -3", _PLAIN5),
+        ("A 5 -$3", _PLAIN5),
+        ("A 5 - (3)", _PLAIN5),
+        ("A 5\n-5", _PLAIN5),
+    ],
+)
+def test_a_sign_no_number_takes_refuses_the_number_before_it(candidate, want):
+    assert value_after_anchor(_field("x", "A"), candidate) == want
+
+
+@pytest.mark.parametrize(
+    ("candidate", "want"),
+    [
+        # H6: pinned as read before the amendment, unchanged. "3-" is a token with a trailing
+        # sign (refused); "A- 5": the sign is glued to the anchor, which is not in the text the
+        # reader scans, so it is a standalone sign.
+        ("A 3- 5", None),
+        ("A- 5", ("-5", "num", None)),
+        # H5 met an earlier named regression ("A 12억 (전년 10억)" reads 12억): a number with its
+        # own scale is like one with its own currency, so a group of other numbers' own marks
+        # and scales after it does not refuse it.
+        ("A 12억 (전년 10억)", ("1200000000", "num", None)),
+        # Stricter than H5 (b), as before the amendment: a group that holds a mark that is no
+        # number's own refuses even a number with its own currency.
+        ("A $5 (in %)", None),
+        ("A 12억원 (단위: 원)", None),
+        # Stricter than H8, as before the amendment: "(" right before a non-letter is an
+        # accounting paren, so "(%)" is not a label (as "( 원)" is not).
+        ("A (%) 5", None),
+        # A single letter past punctuation is a label or a list marker, not a scale.
+        ("A=100; B=200", ("100", "num", None)),
+        ("A 5 (b)", _PLAIN5),
+        ("A 5 (M)", _PLAIN5),
+    ],
+)
+def test_decisions_of_the_amendment_where_rules_met(candidate, want):
+    anchor = "A=" if candidate.startswith("A=") else "A"
+    assert value_after_anchor(_field("x", anchor), candidate) == want
+
+
+def _scale_expressions() -> dict[str, str]:
+    """Every scale expression the module's tables define, by kind: the grammar's English words
+    and ``_SCALE_WORDS`` in three cases and plural, every Korean unit run (one small unit, one
+    big unit, or both), the single capitals and the grammar's glued letters."""
+    out: dict[str, str] = {}
+    for w in (*_EN_WORDS, *_SCALE_WORDS):
+        for v in (w, w.upper(), w.title()):
+            out[v] = "en" if w in _EN_WORDS else "word"
+            out[v + "s"] = "plural"
+    small = [c for c in _KO_CHARS if c in "천백십"]
+    big = [c for c in _KO_CHARS if c in "만억조"]
+    for unit in [*small, *big, *(a + b for a in small for b in big)]:
+        out[unit] = "ko"
+    for c in _SCALE_LETTERS:
+        out[c] = "capital"
+    for c in _GLUED_LETTERS - _SCALE_LETTERS:
+        out[c] = "lower"
+    return out
+
+
+# How each "next to" form joins a scale expression to the number: glued, across ASCII spaces,
+# across other whitespace, across a punctuation run, inside a bracket group opened after it.
+_NEXT_TO = {
+    "": "glued",
+    " ": "spaces",
+    "  ": "spaces",
+    "\t": "whitespace",
+    "\n": "whitespace",
+    " \t": "whitespace",
+    ", ": "punct",
+    " - ": "punct",
+    "; ": "punct",
+    " (": "group",
+    "\n(": "group",
+    " (in ": "group",
+    " [": "group",
+}
+
+
+def _expected_next_to(number: str, form: str, expr: str, kind: str) -> Any:
+    """Test side, from the amendment: the plain number reads only when the grammar applies the
+    expression (glued English words and letters, spaced English words and Korean units, after
+    a plain number), or a single letter stands past punctuation that holds no sign (a label,
+    not a scale; a sign no number takes refuses), or a lower-case letter stands across spaces
+    after a plain number ("width 5 m")."""
+    plain = number in ("5", "$5")
+    cur = "USD" if number == "$5" else None
+    how = _NEXT_TO[form]
+    if "-" in form:
+        return None
+    if plain and kind == "en" and how in ("glued", "spaces"):
+        return (str(5 * _EN_SCALE[expr.lower()]), "num", cur)
+    if plain and kind == "ko" and how in ("glued", "spaces"):
+        value = 5
+        for c in expr:
+            value *= {"천": 1000, "백": 100, "십": 10, "만": 10**4, "억": 10**8, "조": 10**12}[c]
+        return (str(value), "num", cur)
+    if kind in ("capital", "lower") and how in ("punct", "group"):
+        return {"5": _PLAIN5, "$5": ("5", "num", "USD"), "(5)": ("-5", "num", None)}.get(
+            number, ("-5", "num", "USD")
+        )
+    if plain and how == "glued" and expr in _GLUED_LETTERS:
+        return (str(5 * _EN_SCALE[expr.lower()]), "num", cur)
+    if number == "5" and kind == "lower" and how == "spaces":
+        return _PLAIN5
+    return None
+
+
+def test_every_scale_expression_next_to_a_number_refuses_it():
+    """H1 and H2, closed by enumeration over the module's tables: every scale expression, every
+    "next to" form, after a number with and without a currency and with and without accounting
+    parentheses. Only what the grammar applies reads, and then scaled."""
+    exprs = _scale_expressions()
+    assert {"million", "MN", "lakhs", "억", "천만", "M", "k"} <= set(exprs)
+    wrong = []
+    checked = 0
+    for number in ("5", "$5", "(5)", "$ (5)"):
+        for form in _NEXT_TO:
+            for expr, kind in exprs.items():
+                close = ")" if _NEXT_TO[form] == "group" and form.strip().endswith("(") else ""
+                close = "]" if form.strip().startswith("[") else close
+                close = ")" if form.strip().startswith("(in") else close
+                text = f"A {number}{form}{expr}{close}"
+                want = _expected_next_to(number, form, expr, kind)
+                got = value_after_anchor(_field("x", "A"), text)
+                checked += 1
+                if got != want:
+                    wrong.append((text, got, want))
+    assert checked > 1_000
+    assert not wrong, (len(wrong), wrong[:20])
+
+
+def _unlisted_signs() -> list[str]:
+    """Every character of the Basic Multilingual Plane in Unicode category Sc, and the percent,
+    per-mille and per-ten-thousand signs, that the fold table does not turn into a listed
+    currency or "%"."""
+    signs = [chr(cp) for cp in range(0x10000) if unicodedata.category(chr(cp)) == "Sc"]
+    signs += ["\uff05", "\ufe6a", "\u2030", "\u2031", "\u066a", "\u0609", "\u060a"]
+    listed = {k for k in _CURRENCY if len(k) == 1} | {"%"}
+    return [c for c in signs if c.translate(_FOLD) not in listed]
+
+
+def test_every_unlisted_currency_or_percent_sign_refuses_the_number_next_to_it():
+    """H7, closed by enumeration: every unlisted sign, before or after the number, glued or
+    across ASCII whitespace, alone or in a bracket group or a label: None, never the 5."""
+    signs = _unlisted_signs()
+    assert len(signs) > 50 and "\u20b9" in signs and "\u2030" in signs
+    assert set(signs) <= _FOREIGN
+    wrong = []
+    for c in signs:
+        for ws in ("", " ", "\t", "\n"):
+            for text in (f"A {c}{ws}5", f"A 5{ws}{c}", f"A $5{ws}{c}", f"A (5){ws}{c}"):
+                got = value_after_anchor(_field("x", "A"), text)
+                if got is not None:
+                    wrong.append((text, got))
+        for text in (f"A 5 ({c})", f"A [{c}] 5", f"A (단위: {c}) 5", f"A 5 (in {c})"):
+            got = value_after_anchor(_field("x", "A"), text)
+            if got is not None:
+                wrong.append((text, got))
+    assert not wrong, (len(wrong), wrong[:20])
+
+
+def test_every_symbol_currency_glued_after_text_refuses_the_number():
+    """H7, closed by enumeration over the currency table: every symbol currency (with its fold
+    variants) glued after a character that is not ASCII whitespace or an opener and does not
+    complete a listed spelling, before the number or after it: None."""
+    symbols = sorted(
+        {v for k in _CURRENCY if not k.isalpha() and len(k) == 1 for v in _variants(k)}
+    )
+    assert "$" in symbols and "\u20a9" in symbols and "\uff04" in symbols
+    glued_after = ["\uff32", "\u00c9", "가", "_", "R-", "x", "1-", "\u00b7", ")", "Rx", "NZ", "xUS"]
+    wrong = []
+    for sym in symbols:
+        for g in glued_after:
+            texts = [f"A {g}{sym} 5", f"A {g}{sym}5"]
+            if not any(c in string.digits for c in g):  # "5 1-$": "1-" is the next token
+                texts += [f"A 5 {g}{sym}", f"A (5) {g}{sym}"]
+            for text in texts:
+                got = value_after_anchor(_field("x", "A"), text)
+                if got is not None:
+                    wrong.append((text, got))
+    assert not wrong, (len(wrong), wrong[:20])
+
+
+def test_a_sign_glued_to_a_word_refuses_the_number_after_it():
+    """H6, closed by enumeration over the sign table: every sign (with its fold variants) glued
+    to an ASCII letter, a Hangul syllable or closing punctuation, then any ASCII whitespace (and
+    a label separator or opening punctuation), then a number with or without a prefix: None.
+    Standing alone, the sign is the number's."""
+    wrong = []
+    for sign in _SIGN_PREFIXES:
+        for before in ("x", "net", "매출", "다", "x)"):
+            for ws in (" ", "  ", "\t", "\n", " :", " [", "\n= "):
+                for number in ("5", "$5", "(5)", "5억", "839 billion"):
+                    text = f"A {before}{sign}{ws}{number}"
+                    got = value_after_anchor(_field("x", "A"), text)
+                    if got is not None:
+                        wrong.append((text, got))
+        text = f"A {sign} 5"
+        want = ("-5" if _SIGN[sign.translate(_FOLD)] else "5", "num", None)
+        if value_after_anchor(_field("x", "A"), text) != want:
+            wrong.append((text, want))
+    assert not wrong, (len(wrong), wrong[:20])
+
+
+def test_a_token_with_a_currency_and_a_percent_is_refused():
+    """H9, closed by enumeration over the currency table: every currency spelling as a prefix or
+    a suffix, with a percent glued or spaced, plain or in accounting parentheses: None."""
+    wrong = []
+    for cur in _CURRENCY_PREFIXES:
+        for text in (
+            f"A {cur}700%",
+            f"A {cur} 700 %",
+            f"A ({cur} 700 %)",
+            f"A {cur} (700 %)",
+            f"A 700 %{cur}",
+            f"A 700% {cur}",
+        ):
+            got = value_after_anchor(_field("x", "A"), text)
+            if got is not None:
+                wrong.append((text, got))
+    assert not wrong, (len(wrong), wrong[:20])
+
+
+def test_a_group_after_a_number_is_one_other_number_or_refuses():
+    """H5, closed by enumeration: a bracket group right after a plain number, across any ASCII
+    whitespace, that holds a percent, a currency or a scale, reads the number only when its
+    whole content is one other non-zero number that is not a year with a spaced suffix."""
+    one = ["12%", "$3", "1%", "10 USD", "3 million USD", "10억원", "1조 2억", "-3%", "($3)"]
+    not_one = [
+        "단위: 1,000원",
+        "'000 USD",
+        "000 USD",
+        "0%",
+        "2024 USD",
+        "x1원",
+        "전년 10억",
+        "전년 $3",
+        "in %",
+        "12% 3",
+        "3 x%",
+    ]
+    wrong = []
+    for ws in (" ", "\t", "\n", ""):
+        for o, c in (("(", ")"), ("[", "]"), ("{", "}")):
+            for content in one:
+                text = f"A 5{ws}{o}{content}{c}"
+                if value_after_anchor(_field("x", "A"), text) != _PLAIN5 and ws:
+                    wrong.append((text, "not read"))
+            for content in not_one:
+                text = f"A 5{ws}{o}{content}{c}"
+                if value_after_anchor(_field("x", "A"), text) is not None:
+                    wrong.append((text, "read"))
+    assert not wrong, (len(wrong), wrong[:20])
+
+
+# --- A group body is read once, never again at every nesting level (round 3, J1). ----------
+# Hostile input: groups nested inside one group of at most _GROUP_TOKEN_MAX characters. At
+# 218fc03 each level re-read the group inside it, so time doubled per level (71 characters
+# took 97 s). The cost of every shape is now one bounded read per token.
+_NEST_OPENERS = ["[", "{", "(x ", "(: ", "(- ", "("]
+_NEST_CLOSER = {"[": "]", "{": "}", "(": ")"}
+_NEST_BOUND_S = 1.0  # generous for 100 characters: the bounded reader takes milliseconds
+
+
+def _nested(openers: list[str], tail: str, closed: bool, inner: str = "5 ") -> str:
+    text = "A 5 " + "".join(o + inner for o in openers) + tail
+    if closed:
+        text += "".join(_NEST_CLOSER[o[0]] for o in reversed(openers))
+    return text
+
+
+def _nest_seconds(text: str, repeat: int = 1) -> float:
+    started = time.perf_counter()
+    for _ in range(repeat):
+        value_after_anchor(_field("x", "A"), text)
+        canonical_values("number", text)
+        score_critical_fields([_field("5", "A")], text)
+    return time.perf_counter() - started
+
+
+def _nest_shapes() -> dict[str, str]:
+    """Every opener alone and all of them mixed, unclosed and closed, with a percent, a
+    currency or a scale word at the bottom, at about 60 and at most 100 characters."""
+    out = {}
+    for name, cycle in [*((o.strip(), [o]) for o in _NEST_OPENERS), ("mixed", _NEST_OPENERS)]:
+        for tail in ("%", "$", "million"):
+            for closed in (False, True):
+                for budget in (60, 100):
+                    openers: list[str] = []
+                    while True:
+                        more = [*openers, cycle[len(openers) % len(cycle)]]
+                        if len(_nested(more, tail, closed)) > budget:
+                            break
+                        openers = more
+                        text = _nested(openers, tail, closed)
+                    key = f"{name}-{tail}-{'closed' if closed else 'open'}-{budget}"
+                    out[key] = text
+    return out
+
+
+_NEST_SHAPES = _nest_shapes()
+
+
+@pytest.mark.parametrize("key", sorted(_NEST_SHAPES))
+def test_nested_groups_scan_in_bounded_time(key):
+    text = _NEST_SHAPES[key]
+    assert 50 <= len(text) <= 100, (key, len(text))
+    assert _nest_seconds(text) < _NEST_BOUND_S, (key, text)
+    # A group of groups is never one other number: the 5 before it is refused.
+    assert value_after_anchor(_field("x", "A"), text) is None, text
+
+
+@pytest.mark.parametrize("closed", [False, True])
+@pytest.mark.parametrize("opener", [*_NEST_OPENERS, "mixed"])
+def test_nested_group_time_grows_at_most_linearly_with_depth(opener, closed):
+    """Depth 8 against depth 32: four times the depth, at most a linear multiple of the time
+    (the ratio rule of the page-scale timing tests). At 218fc03 depth 32 never finished."""
+
+    def seconds(depth: int) -> float:
+        cycle = _NEST_OPENERS if opener == "mixed" else [opener]
+        text = _nested([cycle[i % len(cycle)] for i in range(depth)], "%", closed)
+        return min(_nest_seconds(text, 20) for _ in range(3))
+
+    small, large = seconds(8), seconds(32)
+    assert large <= 2 * 4 * small + 0.05, (opener, closed, small, large)
+
+
+@seed(20261117)
+@settings(max_examples=80, deadline=None)
+@given(
+    st.lists(
+        st.tuples(
+            st.sampled_from([o for o in _NEST_OPENERS if o != "("]),
+            st.sampled_from(["5 ", "$5 ", "5% ", "(5) ", "-5 ", "5원 "]),
+        ),
+        min_size=14,
+        max_size=33,
+    ),
+    st.sampled_from(["%", "$", "million", "원", "억", "\u20b9", "-"]),
+    st.booleans(),
+)
+def test_property_nested_groups_scan_in_bounded_time(levels, tail, closed):
+    """Any nesting of the openers with a token read at every level, the hostile shape: each
+    level hands the next group to the reader. One bounded read per token, whatever the mix."""
+    text = "A 5 " + "".join(o + body for o, body in levels) + tail
+    if closed:
+        text += "".join(_NEST_CLOSER[o[0]] for o, _ in reversed(levels))
+    assert _nest_seconds(text) < _NEST_BOUND_S, text
+
+
+# --- H5 (b) as written (round 3, J2): a number's own scale excuses a group of scales only. --
+_KO12 = ("1200000000", "num", None)
+
+
+@pytest.mark.parametrize(
+    ("candidate", "want"),
+    [
+        # Read at 218fc03, where any scale of the number's own excused the group.
+        ("A 12억 (전년 $10)", None),
+        ("A 12억 (전년 10억원)", None),
+        ("A 5억 (전년 10억원)", None),
+        ("A 12억 (전년 대비 3%)", None),
+        ("A 5 million (prior 3%)", None),
+        ("A 5 million (prior $3 million)", None),
+        ("A 5 million (전년 3 million USD)", None),
+        # Kept.
+        ("A 12억 (전년 10억)", _KO12),
+        ("A 12억원 (전년 10억원)", ("1200000000", "num", "KRW")),
+        ("A $5 (전년 $3)", ("5", "num", "USD")),
+        ("A 5% (전년 3%)", ("5", "pct", None)),
+    ],
+)
+def test_an_own_scale_excuses_a_group_of_scales_only(candidate, want):
+    assert value_after_anchor(_field("x", "A"), candidate) == want
+
+
+def test_a_scaled_number_is_refused_next_to_a_group_with_a_mark():
+    """J2, closed by enumeration over the currency table: a number with its own scale and no
+    currency or percent, across any ASCII whitespace, then a bracket group of words and
+    another number that carries any currency spelling (prefix or suffix) or a percent: None.
+    The same group holding only scaled numbers reads the number, scaled (a "[" or "{" past an
+    ASCII space after a scale is refused as a possible further part, as at 218fc03)."""
+    numbers = {
+        "12억": "1200000000",
+        "3천만": "30000000",
+        "1조 2억": "1000200000000",
+        "5 million": "5000000",
+        "5 bn": "5000000000",
+        "5k": "5000",
+    }
+    marks = [f"{k}10" for k in _CURRENCY] + [f"10{k}" for k in _CURRENCY]
+    marks += ["3%", "-3%", "10억원", "3 million USD", "$3 million", "\u20b910"]
+    scales_only = ["10억", "3 million", "5천만"]
+    wrong = []
+    for number, value in numbers.items():
+        for ws in (" ", "\t", "\n"):
+            for o, c in (("(", ")"), ("[", "]"), ("{", "}")):
+                for word in ("전년 ", "prior ", "전년 대비 "):
+                    for mark in marks:
+                        text = f"A {number}{ws}{o}{word}{mark}{c}"
+                        got = value_after_anchor(_field("x", "A"), text)
+                        if got is not None:
+                            wrong.append((text, got))
+                    for scale in scales_only:
+                        text = f"A {number}{ws}{o}{word}{scale}{c}"
+                        got = value_after_anchor(_field("x", "A"), text)
+                        want = None if ws == " " and o != "(" else (value, "num", None)
+                        if got != want:
+                            wrong.append((text, got))
+    assert not wrong, (len(wrong), wrong[:20])
