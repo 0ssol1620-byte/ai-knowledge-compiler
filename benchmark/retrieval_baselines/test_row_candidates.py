@@ -108,7 +108,8 @@ def test_every_row_is_a_candidate_and_predicate_less_gold_is_reachable() -> None
     )
     assert (report["answerable_tasks"], report["gold_unreachable_tasks"]) == (10, 0)
     assert report["blocking"] == []
-    for name in ("exact_token", "bm25_rows", "bm25_only", "hybrid_current"):
+    assert "bm25_only" in report["retired"]  # WO-D17-4: retired, reason recorded
+    for name in ("exact_token", "bm25_rows", "hybrid_current"):
         assert report["retrievers"][name]["recall_at_k"]["retrieval"] == 1.0, name
 
 

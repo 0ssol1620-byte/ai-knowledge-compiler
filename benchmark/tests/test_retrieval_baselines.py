@@ -4,6 +4,11 @@ import json
 from types import SimpleNamespace
 
 import pytest
+from akc_product_core.retrieval import (
+    SemanticRetrievalCandidate,
+    rank_semantic_candidates,
+)
+from akc_product_core.semantics import semantic_tokens
 
 from benchmark.retrieval_baselines import metrics, run_baselines
 from benchmark.retrieval_baselines.run_baselines import BASELINES, Corpus, run
@@ -179,13 +184,14 @@ def _big_corpus():
     return rows
 
 
-def test_over_cap_candidate_set_is_scored_in_full_for_graph_and_not_run_for_bm25():
+def test_over_cap_candidate_set_is_scored_in_full_for_graph_and_bm25_only_is_retired():
     corpus = Corpus(_big_corpus())
     task = _task("t1", "a", "zephyr Mercury", ["ev-target"])
-    entry = run(corpus, [task], BASELINES)["retrievers"]
+    report = run(corpus, [task], BASELINES)
+    entry = report["retrievers"]
     assert entry["graph_entity"]["recall_at_k"]["retrieval"] == 1.0
-    assert (entry["bm25_only"]["tasks"], entry["bm25_only"]["not_run_tasks"]) == (0, 1)
-    assert "cap of 100" in entry["bm25_only"]["not_run_reason"]
+    assert "bm25_only" not in entry and "bm25_only" not in BASELINES  # WO-D17-4
+    assert "top_k <= 100" in report["retired"]["bm25_only"]
     assert entry["hybrid_current"]["tasks"] == entry["exact_token"]["tasks"] == 1
 
 
@@ -197,12 +203,6 @@ def test_string_gold_and_non_string_fields_are_rejected():
 
 
 # ---- WO-D17-1: one admitted set per task, graph on entity rows, cut oracle, label_blind ----
-
-from akc_product_core.retrieval import (  # noqa: E402
-    SemanticRetrievalCandidate,
-    rank_semantic_candidates,
-)
-from akc_product_core.semantics import semantic_tokens  # noqa: E402
 
 KNOWN = "2025-01-01T00:00:00+00:00"
 _PAST = {"recorded_at": "2024-06-01T00:00:00+00:00"}
