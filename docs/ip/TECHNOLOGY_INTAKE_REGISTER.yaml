@@ -637,7 +637,7 @@ arena_intake:
     classification: ORANGE
     status: EVALUATION_ONLY
     deciding_axis: weights
-    use: "A2a 30-page smoke; A2b if a finalist. Download (file list and sizes in REPORT.md) is stated to the founder before it starts."
+    use: "Out of the smoke (A0-6): WO-D10-0H found no documented vLLM setting that serves the weights without the repository's own modeling code (registry row teleocr, runtime.serving). The licence verdicts below are unchanged."
     snapshot_url: "https://huggingface.co/XingChen-AGI/TeleOCR/raw/a32e21d4f766317a6f42f341be57d374362bf843/LICENSE"
     snapshot_sha256: "b57e12ce9b9129b792539c7b1c259ea1d5c058a63866f16296787a1aaf80e2a6"
     fetched_at: "2026-11-17T04:51:49.757580+00:00"
@@ -955,3 +955,82 @@ arena_intake:
           2026-11-30, then 4.00 / 20.00. No Gemini 4 lite tier is listed, so
           gemini-4-hydrogen is the cheapest non-lite Gemini 4 tier.
     not_cleared: "Free tier; using outputs as gold or training data; the Google APIs Terms (captured, not read); any capability claim before the hosted smoke measures it."
+
+  - id: tool_vllm_openai_0_33_0
+    kind: tool
+    arena_slot: C5_serving_image
+    reference: "vllm/vllm-openai@sha256:d825baf9ce4b1b6bfc5ecc7b79880c7e6748c65a72d697ce3d47607aafa84c6e (tag v0.33.0, Docker Hub 2026-11-02; amd64 manifest sha256:91ee972ab751fb7180bc71c175865e36b091686600dca783d52b2511399810b3)"
+    publisher: "vLLM project"
+    upstream_id: vllm-project/vllm
+    upstream_tag: v0.33.0
+    classification: GREEN
+    status: EVALUATION_ONLY
+    deciding_axis: code
+    use: "Serves C5 Nemotron-3.5-Parse (registry row nemotron_3_5_parse, runtime.serving) in the A0-6 attempt: the first vLLM release whose supported-models page lists RadioMBartPrefixForCausalLM. Pulled on the pod by digest; not built, not modified."
+    snapshot_url: "https://raw.githubusercontent.com/vllm-project/vllm/v0.33.0/LICENSE"
+    snapshot_sha256: "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    fetched_at: "2026-11-17T12:24:29.648803+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/vllm-project/vllm/v0.33.0/docs/models/supported_models.md", sha256: "66c77abb76a21e3e184c49ef889be91debb43c823c45e7decce531d46d719134", note: "lists RadioMBartPrefixForCausalLM (Nemotron Parse 3.5); the v0.32.0 page (sha256 bd5879be29836d74b2e974d107f1a9fe50706ba5f9a0d854edc497981d98fb94) does not" }
+      - { axis: code, url: "https://hub.docker.com/v2/repositories/vllm/vllm-openai/tags/v0.33.0", sha256: "65ce1a00a72f2a41908aa7a97b07996fadb1324772280cad94db0254d3855e2c", note: "registry metadata: index and per-platform digests" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: >-
+          LICENSE at tag v0.33.0: Apache License 2.0 text, byte-identical to the
+          v0.22.1 LICENSE the arena already runs (sha256 c71d239d...). That covers
+          vLLM's own source. The image also carries PyTorch, CUDA libraries and
+          other packages under their own terms; none of those was read, and no
+          SBOM of the image exists.
+      weights:
+        verdict: not_applicable
+        basis: "No weights in the image; C5's weights are model_nemotron_3_5_parse."
+      dataset:
+        verdict: not_applicable
+        basis: "No dataset."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted server on a pod."
+    not_cleared: "Production use before an SBOM of the image; the bundled CUDA, PyTorch and other third-party components (unread); any claim that it serves C5 before A0 shows it."
+
+  - id: tool_minicpm_ocr_vendor_image
+    kind: tool
+    arena_slot: C4_vendor_image_candidate
+    reference: "openbmbofficial/minicpm-ocr@sha256:3cfeaf0d251ecb4e5615cf5ce97cb8c90583cfb70dc21d6978ca50a4bfc6fdd9 (tags 105-vlm-with-model and latest, Docker Hub 2026-11-16; amd64, 11,207,282,798 B)"
+    publisher: "OpenBMB"
+    upstream_id: openbmbofficial/minicpm-ocr
+    upstream_tag: 105-vlm-with-model
+    classification: ORANGE
+    status: HELD
+    held_reason: >-
+      The README at OpenBMB/MiniCPM-OCR sdk-v1.0.5 names this image as the
+      official deployment and says it bundles the model weights, the SDK and
+      vLLM. Its licence, its start command, the vLLM build inside it and the
+      revision of the bundled weights are not in any document WO-D10-0H was
+      allowed to read, so nothing about running it is settled.
+    deciding_axis: code
+    use: "None until released from HELD. Recorded because it is the C4 card's documented serving path and the only one with a pinnable artifact."
+    snapshot_url: "https://hub.docker.com/v2/repositories/openbmbofficial/minicpm-ocr/tags?page_size=50"
+    snapshot_sha256: "38489be93c57706eea8369552c05e8df96034337fe0fea309186b9b88c9b121b"
+    fetched_at: "2026-11-17T12:24:18.617489+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/OpenBMB/MiniCPM-OCR/sdk-v1.0.5/README.md", sha256: "67a8a3edbb61273d129591c7390086e1b99e69bbdc2df6204df3f43543aa61f4", note: "Docker Deployment section" }
+    axes:
+      code:
+        verdict: review_required
+        basis: >-
+          The image's licence and contents were not read. The README says it
+          bundles weights, the minicpm-ocr SDK (Apache-2.0 per PyPI 1.0.5),
+          vLLM and a document-parsing backend, and needs a driver compatible
+          with CUDA 12.9; the SDK's layout stage depends on PaddleX/PaddleOCR,
+          whose presence in the image is unread.
+      weights:
+        verdict: review_required
+        basis: "Bundled weights of unread revision; the pinned C4 weights (883ca368) would be mounted instead, but that the image's server accepts them is unread."
+      dataset:
+        verdict: not_applicable
+        basis: "No dataset."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    not_cleared: "Any use: licence, start command, bundled vLLM version and bundled weight revision are unread."
