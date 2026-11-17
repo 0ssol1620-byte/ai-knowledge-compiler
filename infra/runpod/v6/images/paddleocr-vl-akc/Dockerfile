@@ -11,11 +11,13 @@
 # Build context: the repository root.
 #   docker build -f infra/runpod/v6/images/paddleocr-vl-akc/Dockerfile .
 # NOT hash-locked, exactly as production is not. For this evaluation-only image the pin is the
-# built image digest plus the `uv pip freeze` and `pip inspect` output this build prints to its
-# log, which the lead saves as a receipt; a hash-locked requirements file comes before any
-# production use (README.md of mineru-pipeline-akc, C1). paddlex is pinned to 3.7.2, a release
-# whose PaddleOCR-VL-1.6 pipeline config names the layout model the recipe pins (production
-# lets it resolve).
+# built image digest plus the `uv pip freeze` and `uv pip list --format json` output this build
+# prints to its log, which the lead saves as a receipt; a hash-locked requirements file comes
+# before any production use (README.md of mineru-pipeline-akc, C1). The environment is made by
+# uv and has no pip, so the listing uses uv only (WO-D10-0K3). `uv pip list --format json` has
+# not run in this image yet, so it is last, behind a line that names it. paddlex is pinned to
+# 3.7.2, a release whose PaddleOCR-VL-1.6 pipeline config names the layout model the recipe
+# pins (production lets it resolve).
 FROM nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04@sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -40,7 +42,8 @@ RUN python3 -m pip install --break-system-packages "uv==0.13.4" \
       "paddleocr[doc-parser]==3.7.0" "paddlex==3.7.2" \
     && uv pip check --python /app/.venv/bin/python \
     && uv pip freeze --python /app/.venv/bin/python \
-    && python3 -m pip inspect --path /app/.venv/lib/python3.12/site-packages
+    && echo "AKC listing, the last command of this step: uv pip list --format json (UNVERIFIED offline)" \
+    && uv pip list --python /app/.venv/bin/python --format json
 
 COPY infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_server.py \
      infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_weights.py \

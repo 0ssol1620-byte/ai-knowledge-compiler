@@ -187,6 +187,89 @@ def test_listing_step_refuses_a_missing_clipped_cached_or_unfinished_listing(
     assert message in result.stderr
 
 
+# WO-D10-0K3: C1's listing step, on a log shaped like step #13 of the failed job of run
+# 44139687530 (its marker lines; the package lines are synthetic).
+
+_C1_DOCKERFILE = ROOT / "infra/runpod/v6/images/paddleocr-vl-akc/Dockerfile"
+_C1_PROGRESS = [
+    "#13 1.368 Successfully installed uv-0.13.4",
+    "#13 1.509 Using CPython 3.12.3 interpreter at: /usr/bin/python3",
+    "#13 1.509 Creating virtual environment at: .venv",
+    "#13 2.458 Installed 100 packages in 440ms",
+    "#13 2.458  + example-a==1.0.0",
+    "#13 227.6 Installed 22 packages in 24.85s",
+    "#13 230.9 Installed 57 packages in 1.14s",
+    "#13 231.6 Checked 178 packages in 48ms",
+    "#13 232.9 All installed packages are compatible",
+    "#13 233.0 example-a==1.0.0",
+]
+
+
+def _c1_listing_run() -> str:
+    """The RUN that holds C1's listing marker, joined the way BuildKit prints its header."""
+    marker = _entry("c1")["listing_marker"]
+    joined = re.sub(r"\\\r?\n", "", _C1_DOCKERFILE.read_text(encoding="utf-8"))
+    (run,) = [line for line in joined.splitlines() if line.startswith("RUN ") and marker in line]
+    return run
+
+
+def _c1_commands() -> list[str]:
+    return [command.strip() for command in _c1_listing_run().removeprefix("RUN ").split("&&")]
+
+
+def test_c1_listing_runs_only_uv_after_the_environment_is_made_by_uv() -> None:
+    # A uv-created environment has no pip, so `python -m pip …` through it fails (the cause of
+    # the failed job). The class: any listing command that needs a module the venv lacks.
+    commands = _c1_commands()
+    after = commands[[command.split()[:2] for command in commands].index(["uv", "sync"]) + 1 :]
+    assert after
+    for command in after:
+        assert command.startswith(("uv pip ", "echo ")), command
+    assert "uv pip freeze --python /app/.venv/bin/python" in after
+
+
+def test_c1_unverified_listing_command_is_last_and_named_by_the_line_before_it() -> None:
+    *_, marker, last = _c1_commands()
+    assert last == "uv pip list --python /app/.venv/bin/python --format json"
+    assert marker.startswith("echo ") and "uv pip list --format json" in marker
+    assert "UNVERIFIED" in marker
+
+
+def test_c1_listing_step_keeps_the_whole_uv_step(tmp_path: Path) -> None:
+    header = f"#13 [5/8] {_c1_listing_run()}"
+    step = [
+        header,
+        *_C1_PROGRESS,
+        f"#13 233.1 {_c1_commands()[-2].removeprefix('echo ').strip(chr(34))}",
+        '#13 233.2 [{"name":"example-a","version":"1.0.0"}]',
+        "#13 DONE 240.0s",
+    ]
+    log = [
+        "#1 [internal] load build definition from Dockerfile",
+        "#12 [4/8] COPY workers/gpu-common/pyproject.toml workers/gpu-common/uv.lock ./",
+        "#12 DONE 0.1s",
+        *step,
+        "#14 [6/8] COPY infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_server.py",
+        "#14 DONE 0.1s",
+    ]
+    result = _run_listing_step(tmp_path, log, marker=_entry("c1")["listing_marker"])
+    assert result.returncode == 0, result.stderr
+    listing = (tmp_path / "package-listing.log").read_text(encoding="utf-8").splitlines()
+    assert listing == step
+
+
+def test_c1_listing_step_refuses_the_failed_jobs_shape(tmp_path: Path) -> None:
+    log = [
+        f"#13 [5/8] {_c1_listing_run()}",
+        *_C1_PROGRESS,
+        "#13 233.1 /app/.venv/bin/python3: No module named pip",
+        '#13 ERROR: process "/bin/sh -c python3 -m pip install" did not complete successfully',
+    ]
+    result = _run_listing_step(tmp_path, log, marker=_entry("c1")["listing_marker"])
+    assert result.returncode != 0
+    assert "step #13 did not finish" in result.stderr
+
+
 # WO-D10-0K2: the jobs check out only what the builds read, and a guard names a missing path.
 
 GUARD_STEP = "Check that every COPY source of the Dockerfile was checked out"

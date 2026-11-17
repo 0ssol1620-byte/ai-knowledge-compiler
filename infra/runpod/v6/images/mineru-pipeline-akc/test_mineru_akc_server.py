@@ -1348,7 +1348,8 @@ def test_c1_pins_its_layout_model_and_switches_the_preprocessors_off() -> None:
     assert c1["packages"]["paddlex"] == "3.7.2"
     docker = (_HERE.parent / "paddleocr-vl-akc" / "Dockerfile").read_text(encoding="utf-8")
     assert '"paddlex==3.7.2"' in docker and "c1-layout-weights-manifest.json" in docker
-    assert "uv pip freeze" in docker and "pip inspect" in docker
+    assert "uv pip freeze" in docker and "uv pip list" in docker
+    assert "pip inspect" not in docker
 
 
 @pytest.mark.parametrize(

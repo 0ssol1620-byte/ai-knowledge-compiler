@@ -55,6 +55,8 @@ jobs:
             listing_marker: "--require-hashes"
           # C1: the Dockerfile copies workers/gpu-common/{pyproject.toml,uv.lock} and the
           # server and recipes from mineru-pipeline-akc/, so the context is the repository root.
+          # Its listing is the uv step: `uv pip freeze`, then `uv pip list --format json` (the
+          # environment is made by uv and has no pip; WO-D10-0K3).
           - slot: c1
             image: arena-paddleocr-vl-akc
             dockerfile: infra/runpod/v6/images/paddleocr-vl-akc/Dockerfile
@@ -175,8 +177,8 @@ jobs:
           printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "${GITHUB_ACTOR}" --password-stdin
 
       - name: Create a builder that keeps every line of the build log
-        # BuildKit clips a step's log at 2 MiB and 200 KiB/s by default; pip inspect prints
-        # more than that. -1 lifts both limits. A clipped listing still fails the job below.
+        # BuildKit clips a step's log at 2 MiB and 200 KiB/s by default; a package listing can
+        # exceed that. -1 lifts both limits. A clipped listing still fails the job below.
         run: |
           set -euo pipefail
           docker buildx create \
