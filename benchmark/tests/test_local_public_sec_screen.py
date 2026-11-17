@@ -8,11 +8,15 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
+import tempfile
 import zipfile
+from collections import Counter
 from pathlib import Path
 from typing import Any, cast
 
 import pytest
+from hypothesis import example, given, settings
+from hypothesis import strategies as st
 
 from benchmark.local_public import pit_rows, sec_screen, sources
 from benchmark.local_public.pit_tasks import SPEC_STATEMENTS
@@ -588,3 +592,44 @@ def test_no_delivery_tag_is_counted_zero_and_still_stated(tmp_path: Path) -> Non
     assert census["rows"]["delivery_tag_stripped"] == 0 and census["documents"]["screen"] == 1
     receipt = json.loads((out / "receipt.json").read_text("utf-8"))
     assert any("0 of the 1 filings" in s for s in receipt["statements"])
+
+
+# ---------------------------------------------------------------- WO-LPC-4C whole chain, fuzzed
+
+_PIECE = st.sampled_from(
+    [
+        "<p>", "</p>", "<div>", "</div>", "<span>x</span>", "Revenue", " ", "<br/>",
+        '<ix:continuation id="k">c</ix:continuation>', "<ix:continuation>", "</ix:continuation>",
+        '<ix:nonNumeric name="dei:X" contextRef="c1">n</ix:nonNumeric>',
+        "<zz:note>u</zz:note>", "<zz:td>", "</zz:td>", "<xbrli:x>q</xbrli:x>",
+        "<!-- c -->tail", "<?pi x?>", "&#160;", "&amp;", "&nbsp;", "<![CDATA[d]]>",
+        '<div style="page-break-after:always"></div>', '<div style="display:none">h</div>',
+        "<table><tr><td>Other</td><td>9</td></tr></table>", "<table>", "</table>", "<tr>",
+        "<td>", "</td>", "<style>td{color:red}</style>", "<TD>T</TD>",
+    ]
+)  # fmt: skip
+
+
+@settings(max_examples=250, deadline=None)
+@example(['<p>Note <ix:continuation id="k">carried</ix:continuation></p>'])  # R2 run 2
+@given(st.lists(_PIECE, max_size=14))
+def test_generated_filings_never_crash_the_selection_chain(parts: list[str]) -> None:
+    """Every node shape after the script gate: segments, accept, excerpt, render, `_truth`.
+
+    A filing is refused with a reason code or selected; it never raises."""
+    html = page_html("G").replace(b"<table>", "".join(parts).encode() + b"<table>", 1)
+    w = World(Path("."))
+    w.filing("0000000001-25-000001", "111", html=html)
+    reasons: Counter[str] = Counter()
+    with tempfile.TemporaryDirectory() as t:
+        page = sec_screen.pick_page(
+            w.subs[0], w.nums, w.pres, html,
+            gold_value=gold_value, render=fake_render(), seed="s", work=Path(t),
+            reasons=reasons, rows=Counter(), errors=[],
+        )  # fmt: skip
+        if page is not None:
+            truth = sec_screen._truth(page, w.subs[0], "2025q3", "sha256:" + "f" * 64)
+            assert isinstance(truth["text"], str) and len(truth["critical_fields"]) >= 3
+            assert b"<script" not in page.excerpt.lower()
+        else:
+            assert sum(reasons.values()) > 0  # a refusal always names its reason
