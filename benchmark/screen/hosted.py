@@ -8,10 +8,17 @@ decides), 3 pending (a batch is not terminal yet, a page has no outcome yet, or 
 not answer: rerun ``collect``), 1 an unexpected error (its type only; no traceback is printed,
 since one could carry a URL).
 
-* **Local refusals.** A paid stage that cannot send from this process (no key, the provider
-  host not on the allow-list, a declared credential in an endpoint or a case id) records
-  ``hosted.local_refusal.v1``, reserves nothing and stops the arm: no request left, so nothing
-  is charged and nothing is retried as if the provider had not answered.
+* **Local refusals.** Before anything is reserved or sent, a paid invocation checks the
+  operator's environment: a key that is not set or a provider host not on the allow-list ends
+  the invocation with exit 2 and one ``hosted.local_refusal.v1`` per distinct reason. The arm
+  is not stopped and nothing in flight is cancelled: the same command with the environment
+  fixed continues. A declared credential in an endpoint or a case id is an integrity stop
+  (recorded, the arm stopped).
+* **Evidence is written once.** Every receipt is created exclusively (``_write_receipt``):
+  temporary file, the dry stage's sha256 into the ledger, then the receipt; no command replaces
+  a receipt. ``dry`` refuses when any trace of a dry stage exists; a partial dry stage (a
+  temporary receipt, an event without its receipt or the reverse) refuses every stage with
+  ``dry_incomplete``: the recovery is a new output directory.
 
 * **Completion.** One function (``stage_gaps``) decides whether a paid stage is complete: every
   page of the stage's dry plan has a terminal outcome (a collected result, a failure row, or a
@@ -38,7 +45,9 @@ since one could carry a URL).
   never created again; an intent without a dispatch is looked up in the complete batch listing
   and adopted by its display name, or created again (``hosted.resubmit_after_absent.v1``,
   recorded once per intent). A dispatched job whose GET answers 404 is closed once at its worst
-  case (``NOT_FOUND``) and stops the arm. Only a 200 answer counts as a job's one cancel.
+  case (``NOT_FOUND``) and stops the arm. Only a 200 answer counts as a job's one cancel; a
+  429 or 5xx is tried again, any other answer is recorded once (``hosted.cancel_refused.v1``)
+  and not posted again.
 * Hosted outputs are never gold and never training data; nothing here is publishable.
 """
 
@@ -144,6 +153,8 @@ RECEIPT_KEYS = (
     "training_eligible",
 )
 _loads = json.loads  # the one parser of provider bytes here (tests make it raise)
+RECEIPT, RECEIPT_TMP = "receipt.json", "receipt.json.tmp"
+DRY_INCOMPLETE = "dry_incomplete"
 
 
 class HostedPageRefused(ContractError):
@@ -669,7 +680,7 @@ class Arm:
             path = self.out / needed / "receipt.json"
             if not self.campaign.has_receipt(needed) or not path.is_file():
                 raise ContractError(f"stage {stage} requires the {needed} stage receipt")
-            if json.loads(path.read_bytes()).get("spec_sha256") != self.spec.sha256:
+            if _read_receipt(path).get("spec_sha256") != self.spec.sha256:
                 raise ContractError(f"the {needed} receipt was written under another spec")
 
 
@@ -1010,15 +1021,24 @@ def _collect_job(arm: Arm, stage: str, intent: Mapping[str, Any], name: str, raw
         arm.stop(reason, job=name)
 
 
+def _cancel_retryable(status: int) -> bool:
+    return status == 429 or 500 <= status <= 599
+
+
 def _cancel_once(arm: Arm, name: str) -> None:
-    """``POST :cancel`` until one answers 200 (the reference: DELETE does not cancel); each
-    attempt is recorded with the status it answered, and a 429 or 5xx is tried again on the
-    next poll. The job is still polled until it is terminal."""
+    """``POST :cancel`` until one answers 200 (the reference: DELETE does not cancel). A 200, 429
+    or 5xx attempt is recorded with its status, and only a 429 or 5xx is tried again on the
+    next poll; any other answer is recorded once as ``hosted.cancel_refused.v1`` and never
+    posted again (the job keeps its worst case reserved). The job is polled until terminal."""
     requested = arm.events("hosted.job.cancel_requested.v1")
-    if any(p["job"] == name and p["http_status"] == 200 for p in requested):
+    if any(p["job"] == name and p["http_status"] == 200 for p in requested) or any(
+        p["job"] == name for p in arm.events("hosted.cancel_refused.v1")
+    ):
         return
     status, _ = _rest(gemini_api.batch_cancel(name, allow_network=True))
-    arm.ledger.append("hosted.job.cancel_requested.v1", {"job": name, "http_status": status})
+    kind = "requested" if status == 200 or _cancel_retryable(status) else "refused"
+    event = "hosted.job.cancel_requested.v1" if kind == "requested" else "hosted.cancel_refused.v1"
+    arm.ledger.append(event, {"job": name, "http_status": status})
 
 
 def poll(
@@ -1270,24 +1290,34 @@ def call_mistral(
     return outcome
 
 
-def local_refusal(spec: HostedSpec, provider: str, case_ids: Iterable[str]) -> str | None:
-    """Why this process cannot send to ``provider`` at all, before anything is reserved: the
-    key is not set, the provider host is not on the allow-list the transport reads, or a
-    declared credential is in the endpoint or a case id (a case id travels as the batch
-    metadata key). None when nothing local stands in the way."""
+def operator_refusal(spec: HostedSpec, provider: str) -> str | None:
+    """Why the operator's environment keeps this process from sending to ``provider``: the key
+    is not set, or the provider host is not on the allow-list the transport reads. None when
+    the environment allows it. Nothing about the arm's evidence: fixing the environment is
+    the whole recovery."""
     if not os.getenv("GEMINI_API_KEY" if provider == GEMINI else mistral_ocr.CREDENTIAL):
         return "no_key"
-    endpoint = spec.endpoint(provider)
     allowed = {
         host.strip().lower()
         for host in os.getenv("AKC_BENCHMARK_ENDPOINT_ALLOWLIST", "").split(",")
         if host.strip()
     }
-    if str(urlparse(endpoint).hostname).lower() not in allowed:
+    if str(urlparse(spec.endpoint(provider)).hostname).lower() not in allowed:
         return "host_not_allowlisted"
-    if base.carries_credential(base._result_text([endpoint, *case_ids])):
-        return "credential_in_inputs"
     return None
+
+
+def credential_in_inputs(spec: HostedSpec, provider: str, case_ids: Iterable[str]) -> bool:
+    """A declared credential in the endpoint or a case id (a case id travels as the batch
+    metadata key): an integrity stop, never sent."""
+    return base.carries_credential(base._result_text([spec.endpoint(provider), *case_ids]))
+
+
+def _record_local_refusal(arm: Arm, provider: str, stage: str, reason: str) -> None:
+    """One ``hosted.local_refusal.v1`` per distinct reason, however often it is met."""
+    payload = {"provider": provider, "stage": stage, "reason": reason}
+    if payload not in arm.events("hosted.local_refusal.v1"):
+        arm.ledger.append("hosted.local_refusal.v1", payload)
 
 
 # --- stages ---------------------------------------------------------------------------------
@@ -1337,8 +1367,14 @@ def scan_credentials(arm: Arm, roots: Iterable[Path]) -> dict[str, Any]:
                 views.append(base._result_text(json.loads(text)))
             if any(base.carries_credential(v) for v in views):
                 target = arm.out / "quarantine" / path.relative_to(arm.out)
+                if target.exists():  # an earlier hit at this path is kept, never overwritten
+                    digest = hashlib.sha256(path.read_bytes()).hexdigest()[:16]
+                    target = target.with_name(f"{target.name}.{digest}")
                 target.parent.mkdir(parents=True, exist_ok=True)
-                shutil.move(str(path), str(target))
+                if target.exists():  # the same bytes are already kept
+                    path.unlink()
+                else:
+                    shutil.move(str(path), str(target))
                 hits.append(str(path.relative_to(arm.out)))
                 print(f"credential found in {path.name}; moved to quarantine")
     if hits:
@@ -1392,11 +1428,72 @@ def _receipt(arm: Arm, stage: str, **values: Any) -> dict[str, Any]:
     return receipt
 
 
-def _write_receipt(arm: Arm, stage: str, receipt: Mapping[str, Any]) -> Path:
-    path = arm.out / stage / "receipt.json"
+def _create_once(path: Path, data: bytes) -> None:
+    """Create ``path`` with ``data``; an existing file is a refusal and is left as it is."""
+    try:
+        with path.open("xb") as handle:
+            handle.write(data)
+    except FileExistsError:
+        raise ContractError(
+            f"{path.parent.name}/{path.name} already exists; a receipt is written once"
+        ) from None
+
+
+def _write_receipt(
+    arm: Arm,
+    stage: str,
+    receipt: Mapping[str, Any],
+    bind: Callable[[str], object] | None = None,
+) -> Path:
+    """Every receipt of the arm, written once: the bytes go to ``receipt.json.tmp`` (created
+    exclusively), ``bind`` records their sha256 (the dry stage's ledger event), then
+    ``receipt.json`` is created exclusively and the temporary removed. No path is overwritten:
+    an existing receipt or temporary refuses the write."""
+    path = arm.out / stage / RECEIPT
+    data = json.dumps(receipt, ensure_ascii=False, indent=1, sort_keys=True).encode("utf-8")
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(receipt, ensure_ascii=False, indent=1, sort_keys=True), "utf-8")
+    if path.exists():
+        raise ContractError(f"{stage}/{RECEIPT} already exists; a receipt is written once")
+    _create_once(path.with_name(RECEIPT_TMP), data)
+    if bind is not None:
+        bind(_sha(data))
+    _create_once(path, data)
+    path.with_name(RECEIPT_TMP).unlink()
     return path
+
+
+def _read_receipt(path: Path) -> dict[str, Any]:
+    """A receipt the arm wrote: a JSON object, or a refusal (never a decode or type error)."""
+    try:
+        loaded = json.loads(path.read_bytes())
+    except (OSError, ValueError, RecursionError) as exc:
+        raise ContractError(f"{path.parent.name}/{path.name} is not a readable receipt") from exc
+    if not isinstance(loaded, dict):
+        raise ContractError(f"{path.parent.name}/{path.name} is not a receipt object")
+    return loaded
+
+
+def dry_state(arm: Arm) -> str:
+    """``absent`` (no trace of a dry stage) or ``complete`` (its stage receipt and reservation in
+    the ledger, exactly one ``hosted.dry_receipt.v1``, ``dry/receipt.json`` and no temporary).
+    Anything in between is refused with ``dry_incomplete``: the dry stage costs nothing, so the
+    recovery is a new output directory, never a re-run in place."""
+    dry = arm.out / "dry"
+    events = len(arm.events("hosted.dry_receipt.v1"))
+    marks = (
+        arm.campaign.has_receipt("dry"),
+        any(p["stage"] == "dry" for p in arm.events("campaign.stage_reserved.v1")),
+        events > 0,
+        (dry / RECEIPT).exists(),
+        dry.exists(),
+    )
+    if not any(marks):
+        return "absent"
+    if all(marks) and events == 1 and not (dry / RECEIPT_TMP).exists():
+        return "complete"
+    raise ContractError(
+        f"{DRY_INCOMPLETE}: the dry stage left a partial record; start a new arm output directory"
+    )
 
 
 def _budgets(arm: Arm) -> dict[str, Any]:
@@ -1542,6 +1639,8 @@ def run_dry(
         if name in os.environ:
             raise ContractError(f"dry runs with no key; {name} is set")
     arm = Arm(spec, out, NoNetwork())
+    if dry_state(arm) != "absent":  # before any write: a stage's evidence is written once
+        raise ContractError("the dry stage is already recorded; its evidence is written once")
     arm.require("dry")
     env = (environment or (lambda: check_environment(WORKTREE, spec.renderer_version)))()
     snapshots = check_snapshots(spec, snapshot_dir)
@@ -1600,19 +1699,27 @@ def run_dry(
         teardown="no_network_stage",
         fake_records=fake,
     )
-    path = _write_receipt(arm, "dry", receipt)
-    arm.ledger.append("hosted.dry_receipt.v1", {"sha256": _sha(path.read_bytes())})
-    return path
+    ledger = arm.ledger
+    return _write_receipt(
+        arm,
+        "dry",
+        receipt,
+        bind=lambda sha: ledger.append("hosted.dry_receipt.v1", {"sha256": sha}),
+    )
 
 
 def dry_receipt(arm: Arm) -> dict[str, Any]:
-    """The dry receipt a paid stage binds to: its bytes must have the sha256 the ledger
-    recorded when dry wrote it."""
-    data = (arm.out / "dry" / "receipt.json").read_bytes()
+    """The dry receipt a paid stage binds to: the ledger records exactly one, and the bytes on
+    disk have its sha256."""
     recorded = arm.events("hosted.dry_receipt.v1")
-    if not recorded or recorded[-1]["sha256"] != _sha(data):
+    if len(recorded) > 1:
+        raise ContractError(f"the ledger records {len(recorded)} dry receipts; exactly one binds")
+    if dry_state(arm) != "complete":
+        raise ContractError("a paid stage requires the dry stage receipt")
+    path = arm.out / "dry" / RECEIPT
+    if recorded[0].get("sha256") != _sha(path.read_bytes()):
         raise ContractError("the dry receipt is not the one the ledger recorded")
-    return dict(json.loads(data))
+    return _read_receipt(path)
 
 
 def _admitted_summary(pages: Sequence[Page]) -> dict[str, Any]:
@@ -1678,26 +1785,58 @@ class StagePages:
     image_sha256: Mapping[str, str]
 
 
+def _is_str(value: object) -> bool:
+    return isinstance(value, str)
+
+
+def _page_ids(value: object, what: str) -> list[str]:
+    if not isinstance(value, list) or not all(isinstance(v, str) for v in value):
+        raise ContractError(f"the dry receipt's {what} is not a list of page ids")
+    return value
+
+
+def _rows(value: object, what: str, fields: Mapping[str, Callable[[object], bool]]) -> list[Any]:
+    if not isinstance(value, list) or not all(
+        isinstance(row, dict) and all(ok(row.get(name)) for name, ok in fields.items())
+        for row in value
+    ):
+        raise ContractError(f"the dry receipt's {what} are not well-formed rows")
+    return value
+
+
 def stage_pages(stage: str, admitted: Sequence[Page], dry: Mapping[str, Any]) -> StagePages:
     """The dry plan binds: ``full`` takes exactly the dry receipt's admitted list, the rehearsal
-    a subset of the dry lists; each provider gets only the pages its dry list kept."""
-    rendered = {str(r["page_id"]): r for r in dry.get("pages") or []}
-    refusals = list(dry.get("page_refusals") or [])
+    a subset of the dry lists; each provider gets only the pages its dry list kept, and only
+    pages the dry plan rendered. Every list is read through a shape check: a missing or
+    malformed one is a ``ContractError``, never a default and never a KeyError later."""
+    rows = _rows(dry.get("pages"), "pages", {"page_id": _is_str, "image_sha256": _is_str})
+    refusals = _rows(
+        dry.get("page_refusals"),
+        "page refusals",
+        {"page_id": _is_str, "provider": lambda v: v in (GEMINI, MISTRAL, "both")},
+    )
+    rendered = {str(r["page_id"]): r for r in rows}
+    if len(rendered) != len(rows):
+        raise ContractError("the dry receipt renders a page twice")
     no_gemini = {str(r["page_id"]) for r in refusals if r.get("provider") in (GEMINI, "both")}
     gemini_plan = set(rendered) - no_gemini
-    mistral_plan = {str(page_id) for page_id in dry.get("mistral_pages") or []}
+    mistral_plan = set(_page_ids(dry.get("mistral_pages"), "Mistral list"))
+    if not mistral_plan <= set(rendered):
+        raise ContractError("the dry receipt's Mistral list names a page it did not render")
+    block = dry.get("admitted")
+    admitted_ids = block.get("page_ids") if isinstance(block, dict) else None
+    dry_admitted = set(_page_ids(admitted_ids, "admitted list"))
     if stage == "rehearsal":
         chosen = rehearsal_pages(admitted)
         if not {p.page_id for p in chosen} <= gemini_plan | mistral_plan:
             raise ContractError("the stage's pages are not a subset of the dry list")
     else:
         chosen = list(admitted)
-        dry_admitted = set((dry.get("admitted") or {}).get("page_ids") or [])
         if {p.page_id for p in chosen} != dry_admitted:
             raise ContractError("the stage's page list differs from the dry receipt's")
     refused = {(str(r.get("page_id")), str(r.get("provider"))) for r in refusals}
     for page in chosen:  # each provider: on its dry list with a rendered image, or refused
-        for provider, plan in ((GEMINI, gemini_plan), (MISTRAL, mistral_plan & set(rendered))):
+        for provider, plan in ((GEMINI, gemini_plan), (MISTRAL, mistral_plan)):
             if page.page_id not in plan and not refused & {
                 (page.page_id, provider),
                 (page.page_id, "both"),
@@ -1779,8 +1918,11 @@ def _run_paid(
     mistral_call: Callable[..., dict[str, Any]],
 ) -> int:
     spec = arm.spec
+    dry_state(arm)  # a partial dry stage refuses every stage
     if arm.campaign.has_receipt(stage):
         raise ContractError(f"the {stage} stage is already complete")
+    if any((arm.out / stage / name).exists() for name in (RECEIPT, RECEIPT_TMP)):
+        raise ContractError(f"{stage}/{RECEIPT} exists without its stage record; written once")
     arm.require(stage)
     env = (environment or (lambda: check_environment(WORKTREE, spec.renderer_version)))()
     snapshots = check_snapshots(spec, snapshot_dir)
@@ -1803,16 +1945,29 @@ def _run_paid(
         if not _collected(arm, GEMINI, p.case_id).exists() and p.page_id not in open_pages
     ]
     todo_m = [p for p in pages.mistral if not mistral_terminal(arm, p)]
+    # The operator's environment, before anything is reserved, sent, polled or cancelled.
+    # Gemini is reached by every paid invocation (polls, cancels, the teardown's listing);
+    # Mistral only when a page will be sent.
+    needed = [GEMINI]
+    if todo_m and not arm.campaign.stopped and not arm.provider_stopped(MISTRAL):
+        needed.append(MISTRAL)
+    refusals = [(p, r) for p in needed if (r := operator_refusal(spec, p)) is not None]
+    for provider, reason in refusals:
+        _record_local_refusal(arm, provider, stage, reason)
+    if refusals:
+        named = ", ".join(f"{p}: {r}" for p, r in refusals)
+        raise ContractError(
+            f"local refusal ({named}); nothing was sent or cancelled: fix the environment "
+            "and run the same command"
+        )
     before = _budgets(arm)
     plan = build_plan(spec, todo_g, corpus_root)  # renders only; nothing is sent
     _bind(plan, pages)
     for provider, todo in ((GEMINI, todo_g), (MISTRAL, todo_m)):
-        reason = local_refusal(spec, provider, [p.case_id for p in todo]) if todo else None
-        if reason is not None and not arm.campaign.stopped:
-            arm.ledger.append(
-                "hosted.local_refusal.v1", {"provider": provider, "stage": stage, "reason": reason}
-            )
-            arm.stop("local_refusal", provider=provider, refusal=reason)
+        ids = [p.case_id for p in todo]
+        if todo and not arm.campaign.stopped and credential_in_inputs(spec, provider, ids):
+            _record_local_refusal(arm, provider, stage, "credential_in_inputs")
+            arm.stop("local_refusal", provider=provider, refusal="credential_in_inputs")
     if not arm.campaign.stopped:
         if arm.credit is None:
             raise ContractError("no prepaid credit is recorded; nothing paid runs")
@@ -1994,6 +2149,8 @@ def score(
 ) -> dict[str, Any]:
     """No network: run_screen over the admitted documents, reading collected results only.
     Records stay in the stage directory; they are never gold or training data."""
+    if (out / "score" / RECEIPT).exists():
+        raise ContractError("the score stage is already recorded; its evidence is written once")
     manifest = _load_manifest(manifest_path, corpus_root)
     docs = []
     for doc in manifest["documents"]:
@@ -2071,6 +2228,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         spec = load_hosted_spec(args.spec)
+        dry_state(Arm(spec, args.out, NoNetwork()))  # a partial dry stage refuses every stage
         if args.stage == "prepaid":
             if args.credit_usd is None or args.draw_usd is None:
                 raise ContractError("prepaid needs --credit-usd and --draw-usd")

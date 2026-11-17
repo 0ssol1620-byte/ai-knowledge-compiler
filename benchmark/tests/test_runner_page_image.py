@@ -2143,11 +2143,14 @@ def test_d0d_r2_the_mistral_served_ids_are_exact_strings_from_the_spec(
     dated = "mistral-ocr-4-1-2611"
     refused = _mistral(FakeTransport(200, _mistral_result(dated)), monkeypatch)
     assert refused["failure"] == {"reason": "served_model_differs"}
-    served = [MISTRAL, dated]
-    ok = _mistral(FakeTransport(200, _mistral_result(dated)), monkeypatch, served_ids=served)
+    transport = FakeTransport(200, _mistral_result(dated))
+    with pytest.raises(RunnerUnavailable, match="reviewed list"):  # 0J r2: not on the list
+        _mistral(transport, monkeypatch, served_ids=[MISTRAL, dated])
+    assert transport.calls == []
+    ok = _mistral(FakeTransport(200, _mistral_result(MISTRAL)), monkeypatch, served_ids=[MISTRAL])
     assert ok["text"] == "x"
-    for near in ("mistral-ocr-4-1-2612", "mistral-ocr-4-1-261", dated.upper()):
-        out = _mistral(FakeTransport(200, _mistral_result(near)), monkeypatch, served_ids=served)
+    for near in ("mistral-ocr-4-1-2612", "mistral-ocr-4-1-261", dated, MISTRAL.upper()):
+        out = _mistral(FakeTransport(200, _mistral_result(near)), monkeypatch, served_ids=[MISTRAL])
         assert out["failure"] == {"reason": "served_model_differs"}
 
 
@@ -2199,3 +2202,63 @@ def test_0j_8_mistral_served_ids_refuse_the_retired_id_and_aliases_before_any_ca
     with pytest.raises(RunnerUnavailable, match="alias"):
         _mistral(transport, monkeypatch, served_ids=[MISTRAL, alias])
     assert transport.calls == []
+
+
+# --- WO-D10-0J round 2: served ids are an allow-list ---
+
+
+@pytest.mark.parametrize(
+    "served",
+    [
+        [MISTRAL, "mistral-ocr-4-0"],  # retired
+        [MISTRAL, "mistral-ocr-4-0-2505"],  # a dated form of the retired id
+        [MISTRAL, "mistral-ocr-4-1-2611"],  # a dated form not on the reviewed list
+        [MISTRAL, "mistral-ocr-4"],  # alias
+        [MISTRAL, "MISTRAL-OCR-4-1"],  # no normalisation
+        [MISTRAL, "mistral-ocr-latest"],
+        [MISTRAL, "mistral-ocr-4-2"],  # unknown
+        [MISTRAL, ""],
+        [MISTRAL, 4],
+        [MISTRAL, ["x"]],  # unhashable: a refusal, not a TypeError
+        [],
+        MISTRAL,
+        {MISTRAL: MISTRAL},
+        7,
+    ],
+)
+def test_0j_r2_accepted_ids_take_only_ids_on_the_reviewed_list(served: Any) -> None:
+    from benchmark.runners import mistral_ocr
+
+    with pytest.raises(RunnerUnavailable):
+        mistral_ocr.accepted_ids(MISTRAL, served)
+    assert mistral_ocr.accepted_ids(MISTRAL, [MISTRAL]) == {MISTRAL}
+    assert mistral_ocr.accepted_ids(MISTRAL, None) == {MISTRAL}
+    models: list[Any] = ["mistral-ocr-4-0", "mistral-ocr-4", "", None, ["x"]]
+    for model in models:
+        with pytest.raises(RunnerUnavailable):
+            mistral_ocr.accepted_ids(model, None)
+
+
+@settings(max_examples=300, deadline=None, derandomize=True)
+@given(
+    served=st.none()
+    | st.lists(
+        st.sampled_from([MISTRAL, "mistral-ocr-4-0", "mistral-ocr-4", "mistral-ocr-4-1-2611"])
+        | st.text(max_size=24)
+        | st.integers()
+        | st.none(),
+        max_size=4,
+    )
+    | st.text(max_size=8)
+)
+def test_0j_r2_fuzz_accepted_ids_returns_a_subset_of_the_reviewed_list_or_refuses(
+    served: Any,
+) -> None:
+    from benchmark.runners import mistral_ocr
+
+    listed = isinstance(served, list) and bool(served) and all(i == MISTRAL for i in served)
+    if served is None or listed:
+        assert mistral_ocr.accepted_ids(MISTRAL, served) == mistral_ocr.SERVED_IDS[MISTRAL]
+    else:
+        with pytest.raises(RunnerUnavailable):
+            mistral_ocr.accepted_ids(MISTRAL, served)

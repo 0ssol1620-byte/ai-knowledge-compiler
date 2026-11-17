@@ -8,8 +8,10 @@ key (``MISTRAL_API_KEY``) travels as ``Authorization: Bearer`` in the header onl
 opens with the shared door and everything after it runs inside the exit guard. The response
 must name the pinned id (``model``), hold exactly one page and report ``pages_processed`` 1;
 a 429 is ``RunnerUnavailable`` before anything is stored, so the page is retried on the next
-run instead of being frozen as a failure row. ``served_ids`` (the ids a response may name)
-refuses the retired id and every alias as ``model`` does. A caller that planned the page
+run instead of being frozen as a failure row. ``served_ids`` (the ids a response may name) is
+an allow-list: each id must be on ``SERVED_IDS`` for the pinned model, by string equality; the
+retired id, a dated form, an alias, a ``latest`` spelling or an unknown id is refused before any
+call. A caller that planned the page
 image passes its sha256; any other image raises ``ImageDiffers`` before the request is sent.
 Mistral Batch is not used.
 """
@@ -30,8 +32,9 @@ CREDENTIAL = "MISTRAL_API_KEY"
 # A new GA id is added here by a reviewed change, never matched by a pattern; mistral-ocr-4-0
 # was retired by Mistral on 2026-09-30 and is therefore absent.
 GA_MODEL_IDS = frozenset({"mistral-ocr-4-1"})
-RETIRED_MODEL_IDS = frozenset({"mistral-ocr-4-0"})
-ALIAS_MODEL_IDS = frozenset({"mistral-ocr-4", "mistral-ocr-latest"})
+# The ids a response may name for each GA id, exact strings, added only by a reviewed change
+# (the model page snapshot 005a5177... names no dated id for mistral-ocr-4-1, only aliases).
+SERVED_IDS: dict[str, frozenset[str]] = {"mistral-ocr-4-1": frozenset({"mistral-ocr-4-1"})}
 OPTIONS = {"include_image_base64": False}  # the page text only; extracted images are not wanted
 
 
@@ -40,18 +43,24 @@ class ImageDiffers(ValueError):
 
 
 def accepted_ids(model: str, served_ids: Collection[str] | None) -> frozenset[str]:
-    """The closed set of ids a response may name for ``model``: exact strings from the hosted
-    spec, never the retired id, an alias or a ``latest`` spelling; by default ``model`` alone."""
-    if isinstance(served_ids, str):
-        raise RunnerUnavailable("served ids are a collection of exact ids")
-    accepted = frozenset(served_ids) if served_ids else frozenset({model})
-    refused = RETIRED_MODEL_IDS | ALIAS_MODEL_IDS
-    for served in accepted:
-        if not isinstance(served, str) or not served:
-            raise RunnerUnavailable("a served id is not a plain id")
-        if served.casefold() in refused or "latest" in served.casefold():
-            raise RunnerUnavailable("a served id is an alias or the retired id")
-    return accepted
+    """The closed set of ids a response may name for ``model``: the hosted spec's exact ids, each
+    on ``SERVED_IDS[model]`` (string equality, no normalisation); ``None`` means ``model`` alone.
+    Anything else (the retired id or a dated form of it, an alias, a ``latest`` spelling, an
+    unknown id, an empty or non-list value) is refused."""
+    allowed = SERVED_IDS.get(model) if isinstance(model, str) else None
+    if allowed is None:
+        raise RunnerUnavailable("mistral model id is not a pinned GA id")
+    if served_ids is None:
+        return frozenset({model})
+    if not isinstance(served_ids, (list, tuple, set, frozenset)) or not served_ids:
+        raise RunnerUnavailable("served ids are a non-empty collection of exact ids")
+    if not all(isinstance(served, str) for served in served_ids):
+        raise RunnerUnavailable("a served id is not a plain id")
+    if not set(served_ids) <= allowed:
+        raise RunnerUnavailable(
+            "a served id is not on the reviewed list: an alias, a retired or dated id, or unknown"
+        )
+    return frozenset(served_ids)
 
 
 def config(*, revision: str | None = None, model: str | None = None) -> dict[str, Any]:
