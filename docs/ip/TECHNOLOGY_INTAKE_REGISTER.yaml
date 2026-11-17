@@ -955,3 +955,42 @@ arena_intake:
           2026-11-30, then 4.00 / 20.00. No Gemini 4 lite tier is listed, so
           gemini-4-hydrogen is the cheapest non-lite Gemini 4 tier.
     not_cleared: "Free tier; using outputs as gold or training data; the Google APIs Terms (captured, not read); any capability claim before the hosted smoke measures it."
+
+  - id: tool_mineru_vl_utils
+    kind: tool
+    arena_slot: C3_server_logits_processor
+    reference: "mineru-vl-utils 2.0.9 (PyPI wheel mineru_vl_utils-2.0.9-py3-none-any.whl, sha256 d09c612d28d0d2a1fa561aae3764639e6c704baf7a30d8c4f07f78bc9d2b4060)"
+    publisher: "OpenDataLab (MinerU Team)"
+    upstream_id: opendatalab/mineru-vl-utils
+    upstream_tag: mineru_vl_utils-2.0.9-released
+    classification: GREEN
+    status: EVALUATION_ONLY
+    deciding_axis: code
+    use: "Installed, without dependencies, into the C3 serving image (infra/runpod/v6/images/mineru25-vllm) only so vLLM can load MinerULogitsProcessor server-side. The runner imports nothing from it and no code from it is copied into the repository."
+    snapshot_url: "https://raw.githubusercontent.com/opendatalab/mineru-vl-utils/mineru_vl_utils-2.0.9-released/LICENSE.md"
+    snapshot_sha256: "0b0c9cbb9e9f032856deef12e761c0661f14fdbaf88753bb1e1c68d1f7e5a3da"
+    fetched_at: "2026-11-17T04:52:00.054166+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://pypi.org/pypi/mineru-vl-utils/2.0.9/json", sha256: "3abe0cc17683bd1e78f9608de6d41a0dd7cc889240c55988caad21de367fb9e2", note: "PyPI metadata: license_expression Apache-2.0, wheel sha256, requires_dist" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: >-
+          LICENSE.md at tag mineru_vl_utils-2.0.9-released: Apache License 2.0
+          text; PyPI 2.0.9 metadata license_expression Apache-2.0. The wheel
+          itself was not downloaded or read, so its bundled licence file is
+          unchecked. PyPI requires_dist: httpx, httpx-retries, aiofiles,
+          pillow>=11.0.0, pydantic>=2.12.5,<3, loguru>=0.7.2, tqdm>=4.67.1
+          (extra vllm: vllm>=0.19.1,<0.31.0); none of them was read and none
+          is installed by the image unless the build's import check proves
+          one missing, in which case it gets its own pin and row first.
+      weights:
+        verdict: not_applicable
+        basis: "No model; the C3 weights are model_mineru_vlm."
+      dataset:
+        verdict: not_applicable
+        basis: "No dataset."
+      hosted:
+        verdict: not_applicable
+        basis: "Library loaded inside a self-hosted server."
+    not_cleared: "Production use before an SBOM entry; its runtime dependencies (unread); the wheel's own licence file (unread)."
