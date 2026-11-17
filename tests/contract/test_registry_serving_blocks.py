@@ -5,8 +5,9 @@ A recipe (a block without ``verdict``) launches ``image`` by digest under the se
 A recipe on the AKC external protocol attests ``upstream_revision`` instead
 (``attested_revision``). An image built from a Dockerfile in this repository has no digest
 until it is built: such a block says ``built: false``, ``image: null`` and ``image_build``
-(the Dockerfile), and needs the digest as soon as ``built`` is true. A verdict block records
-why there is no recipe; any image it names is still a digest. ``serving_variants`` (labelled
+(the Dockerfile); once ``built`` is true it names the image by digest with its build
+provenance, and the image is the one of its own slot (``validate_registry``). A verdict block
+records why there is no recipe; any image it names is still a digest. ``serving_variants`` (labelled
 alternatives to the row's primary block) follow the same rules. Every row with a serving
 block carries zero traffic.
 """
@@ -15,6 +16,7 @@ from __future__ import annotations
 
 import copy
 import re
+import runpy
 from pathlib import Path
 from typing import Any
 
@@ -23,6 +25,9 @@ import yaml
 _ROOT = Path(__file__).resolve().parents[2]
 _REGISTRY = _ROOT / "infra/model-registry/models.yaml"
 _DIGEST = re.compile(r"@sha256:[0-9a-f]{64}\b")
+_build_problems = runpy.run_path(str(_ROOT / "infra/model-registry/validate_registry.py"))[
+    "serving_build_problems"
+]
 
 
 def _rows() -> list[dict[str, Any]]:
@@ -45,7 +50,7 @@ def _dockerfile_here(build: Any) -> bool:
 
 
 def _block_problems(row: dict[str, Any], serving: dict[str, Any]) -> list[str]:
-    out = []
+    out = _build_problems(serving)
     unbuilt = serving.get("built") is False
     if "verdict" not in serving:
         if unbuilt:
@@ -83,7 +88,7 @@ def _problems(row: dict[str, Any]) -> list[str]:
 def test_every_serving_block_matches_its_row() -> None:
     rows = _rows()
     assert any("verdict" not in r["runtime"]["serving"] for r in rows), "no recipe to check"
-    assert any(r["runtime"]["serving"].get("built") is False for r in rows), "no unbuilt image"
+    assert any(r["runtime"]["serving"].get("built") is True for r in rows), "no built image"
     assert any(r["runtime"].get("serving_variants") for r in rows), "no variant to check"
     assert {r["provider_key"]: _problems(r) for r in rows if _problems(r)} == {}
 
@@ -107,10 +112,112 @@ def test_a_drifted_serving_block_is_caught() -> None:
     assert _problems(bad) == ["traffic_percent is not 0"]
 
 
+_PROVENANCE = ("source_commit", "workflow_run_id", "package_listing_sha256", "build_log_sha256")
+
+
+def _unbuilt_row() -> dict[str, Any]:
+    """The registry has no unbuilt block now, so one is made by undoing a built one."""
+    row = copy.deepcopy(next(r for r in _rows() if r["runtime"]["serving"].get("built") is True))
+    serving = row["runtime"]["serving"]
+    serving.update(built=False, image=None)
+    for field in _PROVENANCE:
+        del serving[field]
+    return row
+
+
+def _built_rows() -> dict[str, dict[str, Any]]:
+    return {
+        r["runtime"]["serving"]["runner"]: r
+        for r in _rows()
+        if r["runtime"]["serving"].get("built") is True
+    }
+
+
+def test_the_three_arena_images_are_built_and_pinned_to_their_run() -> None:
+    rows = _built_rows()
+    assert set(rows) == {"paddleocr_vl_1_6", "mineru", "mineru_vlm"}
+    for runner, row in rows.items():
+        serving = row["runtime"]["serving"]
+        assert serving["source_commit"] == "9754168c92969e17a12c3877c3c0ba44de690918", runner
+        assert serving["workflow_run_id"] == "44145574050", runner
+        assert serving["enabled"] is False and row["rollout"]["traffic_percent"] == 0, runner
+    # C1 stays evaluation-only: its paddlepaddle-gpu licence file text is uncleared
+    assert rows["paddleocr_vl_1_6"]["internal_validation"]["status"] == "candidate_unverified"
+
+
+def test_a_built_block_needs_a_slot_image_and_its_provenance() -> None:
+    rows = _built_rows()
+    for runner, row in rows.items():
+        assert _problems(row) == [], runner
+        serving = row["runtime"]["serving"]
+        for field in _PROVENANCE:
+            for bad_value in (None, "", 7, "x", "sha256:" + "G" * 64):
+                bad = copy.deepcopy(row)
+                if bad_value is None:
+                    del bad["runtime"]["serving"][field]
+                else:
+                    bad["runtime"]["serving"][field] = bad_value
+                assert f"{field} missing or malformed" in _problems(bad), (runner, field)
+        for image in (
+            "registry.example/akc:latest",
+            "ghcr.io/o/r/x@sha256:" + "0" * 63,  # short digest
+            serving["image"] + "\n",  # a trailing newline must not pass
+            "docker.io/o/" + serving["image"].split("/", 1)[1],  # not ghcr.io
+            None,
+            7,
+        ):
+            bad = copy.deepcopy(row)
+            bad["runtime"]["serving"]["image"] = image
+            assert "built image is not a digest-pinned ghcr.io reference" in _problems(bad)
+        bad = copy.deepcopy(row)
+        bad["runtime"]["serving"]["built"] = "true"
+        assert "built is not a boolean" in _problems(bad)
+    # the class: a built image that is not the block's own slot, in every direction
+    images = {k: v["runtime"]["serving"]["image"] for k, v in rows.items()}
+    for own in rows:
+        for other in rows:
+            if own == other:
+                continue
+            bad = copy.deepcopy(rows[own])
+            bad["runtime"]["serving"]["image"] = images[other]
+            assert any("image of this block" in p for p in _problems(bad)), (own, other)
+    bad = copy.deepcopy(rows["mineru"])  # a shared Dockerfile with no slot named
+    del bad["runtime"]["serving"]["image_target"]
+    assert any("image of this block" in p for p in _problems(bad))
+
+
+def test_an_unbuilt_block_names_no_image_and_no_provenance() -> None:
+    row = _unbuilt_row()
+    assert _problems(row) == []
+    row["runtime"]["serving"]["build_log_sha256"] = "sha256:" + "0" * 64
+    assert "build_log_sha256 given while built is false" in _problems(row)
+
+
+def test_the_real_validate_refuses_a_built_block_with_a_broken_field() -> None:
+    """Through ``validate`` itself, over the real registry text with one field damaged."""
+    validator = runpy.run_path(str(_ROOT / "infra/model-registry/validate_registry.py"))
+    validate = validator["validate"]
+    assert validate() == []
+    text = _REGISTRY.read_text(encoding="utf-8")
+    bad = text.replace('build_log_sha256: "sha256:03a5', 'build_log_sha256: "x03a5', 1)
+    assert bad != text
+    original = validate.__globals__["load_yaml"]
+
+    def patched(path: Path) -> Any:
+        return yaml.safe_load(bad) if path.name == "models.yaml" else original(path)
+
+    validate.__globals__["load_yaml"] = patched
+    try:
+        errors = validate()
+    finally:
+        validate.__globals__["load_yaml"] = original
+    assert any("build_log_sha256 missing or malformed" in e for e in errors), errors
+
+
 def test_an_image_built_here_needs_its_digest_once_built() -> None:
     """An unbuilt block is allowed exactly as ``image: null`` + ``image_build`` + ``built:
     false``; the public-image rule is unchanged for every other block."""
-    row = next(r for r in _rows() if r["runtime"]["serving"].get("built") is False)
+    row = _unbuilt_row()
     assert _problems(row) == []
     cases: dict[str, tuple[str, Any]] = {
         "recipe without image": ("built", True),
@@ -125,14 +232,12 @@ def test_an_image_built_here_needs_its_digest_once_built() -> None:
     built = copy.deepcopy(row)
     built["runtime"]["serving"].update(built=True, image="registry.example/akc:latest")
     assert "image carries no @sha256 digest" in _problems(built)
-    built["runtime"]["serving"]["image"] = "registry.example/akc@sha256:" + "0" * 64
-    assert _problems(built) == []
 
 
 def test_image_build_names_a_dockerfile_inside_the_repository(tmp_path: Path) -> None:
     """Not any file, and not a Dockerfile reached outside the repository by ``..`` or an
     absolute path."""
-    row = next(r for r in _rows() if r["runtime"]["serving"].get("built") is False)
+    row = _unbuilt_row()
     real = row["runtime"]["serving"]["image_build"]
     outside = tmp_path / "Dockerfile"
     outside.write_text("FROM scratch\n", encoding="utf-8")

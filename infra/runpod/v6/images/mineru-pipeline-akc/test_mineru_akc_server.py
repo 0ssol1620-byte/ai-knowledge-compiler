@@ -688,7 +688,7 @@ def test_the_recipes_match_the_registry_rows() -> None:
             recipe["model"]["revision"],
         )
         serving = row["runtime"]["serving"]
-        assert serving["enabled"] is False and serving["built"] is False
+        assert serving["enabled"] is False and serving["built"] is True
         assert recipe["name"] in serving["recipes"]
         assert serving["runner"] == recipe["provider"] in EXTERNAL_RUNNERS
         assert serving["attested_revision"] == recipe["model"]["revision"]
