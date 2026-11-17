@@ -23,6 +23,9 @@ LICENSE_FIELDS = {
     "license_snapshot_sha256",
 }
 BUILT_IMAGE = re.compile(r"^ghcr\.io/[a-z0-9._/-]+@sha256:[0-9a-f]{64}$")
+# Where .github/workflows/build-arena-page-servers.yml pushes ("ghcr.io/${GITHUB_REPOSITORY,,}/
+# <image>"): this repository's own namespace. A built image anywhere else is not ours.
+ARENA_IMAGE_NAMESPACE = "ghcr.io/0ssol1620-byte/ai-knowledge-compiler"
 COMMIT = re.compile(r"^[0-9a-f]{40}$")
 RUN_ID = re.compile(r"^[0-9]{1,20}$")
 BUILD_PROVENANCE = (
@@ -81,7 +84,8 @@ def verify_revision_source(
         if not isinstance(models, dict):
             return "revision source registry has no model records"
         matches = [
-            model for model in models.values()
+            model
+            for model in models.values()
             if isinstance(model, dict) and model.get("repo") == release.get("upstream_id")
         ]
         if len(matches) != 1:
@@ -103,22 +107,27 @@ def serving_build_problems(serving: dict[str, Any]) -> list[str]:
     if "built" not in serving:
         return []
     built, image = serving["built"], serving.get("image")
+    target = serving.get("image_target")
+    out = []
+    if "image_target" in serving and not (isinstance(target, str) and target):
+        out.append("image_target is not a non-empty string")
     if built is False:
         found = [f for f in BUILD_PROVENANCE if f in serving]
-        out = ["image named while built is false"] if image is not None else []
+        out += ["image named while built is false"] if image is not None else []
         return out + [f"{f} given while built is false" for f in found]
     if built is not True:
-        return ["built is not a boolean"]
-    out = []
+        return [*out, "built is not a boolean"]
     if not (isinstance(image, str) and BUILT_IMAGE.fullmatch(image)):
-        return ["built image is not a digest-pinned ghcr.io reference"]
-    build, target = serving.get("image_build"), serving.get("image_target")
+        return [*out, "built image is not a digest-pinned ghcr.io reference"]
+    build = serving.get("image_build")
     if not isinstance(build, str) or "/" not in build:
         out.append("built image without image_build")
     else:
-        slot = f"arena-{build.rsplit('/', 2)[-2]}" + (f"-{target}" if target else "")
-        if image.split("@")[0].rsplit("/", 1)[-1] != slot:
-            out.append(f"built image is not the {slot} image of this block")
+        slot = f"{ARENA_IMAGE_NAMESPACE}/arena-{build.rsplit('/', 2)[-2]}" + (
+            f"-{target}" if target else ""
+        )
+        if image.split("@")[0] != slot:
+            out.append(f"built image is not {slot}, the image of this block")
     for field in BUILD_PROVENANCE:
         value = serving.get(field)
         pattern = {"source_commit": COMMIT, "workflow_run_id": RUN_ID}.get(field, SHA256_DIGEST)

@@ -186,6 +186,70 @@ def test_a_built_block_needs_a_slot_image_and_its_provenance() -> None:
     assert any("image of this block" in p for p in _problems(bad))
 
 
+def test_a_built_image_is_in_this_repositorys_namespace() -> None:
+    """The whole name is pinned, not its last component: the same slot under another owner,
+    another repository, a deeper or a shallower path is refused, through ``validate`` too."""
+    validator = runpy.run_path(str(_ROOT / "infra/model-registry/validate_registry.py"))
+    namespace = "ghcr.io/0ssol1620-byte/ai-knowledge-compiler"
+    for runner, row in _built_rows().items():
+        image = row["runtime"]["serving"]["image"]
+        assert image.startswith(namespace + "/arena-"), runner
+        name, digest = image.split("@")
+        slot = name.rsplit("/", 1)[-1]
+        for other in (
+            f"ghcr.io/evil/{slot}",
+            f"ghcr.io/0ssol1620-byte/other/{slot}",
+            f"ghcr.io/evil/ai-knowledge-compiler/{slot}",
+            f"{namespace}/extra/{slot}",
+            f"ghcr.io/0ssol1620-byte/{slot}",
+            f"ghcr.io/{slot}",
+        ):
+            bad = copy.deepcopy(row)
+            bad["runtime"]["serving"]["image"] = f"{other}@{digest}"
+            assert any("image of this block" in p for p in _problems(bad)), (runner, other)
+    text = _REGISTRY.read_text(encoding="utf-8")
+    bad_text = text.replace(f'"{namespace}/', '"ghcr.io/evil/', 1)
+    assert bad_text != text
+    validate = validator["validate"]
+    original = validate.__globals__["load_yaml"]
+    validate.__globals__["load_yaml"] = lambda path: (
+        yaml.safe_load(bad_text) if path.name == "models.yaml" else original(path)
+    )
+    try:
+        errors = validate()
+    finally:
+        validate.__globals__["load_yaml"] = original
+    assert len(errors) == 1 and "the image of this block" in errors[0], errors
+    assert validator["ARENA_IMAGE_NAMESPACE"] == namespace
+
+
+def test_the_validator_itself_reports_an_image_named_while_built_is_false() -> None:
+    serving = copy.deepcopy(_unbuilt_row()["runtime"]["serving"])
+    assert _build_problems(serving) == []
+    for image in ("ghcr.io/x@sha256:" + "0" * 64, "", 7):
+        serving["image"] = image
+        assert _build_problems(serving) == ["image named while built is false"], image
+
+
+def test_image_target_when_present_is_a_non_empty_string() -> None:
+    row = _built_rows()["mineru"]
+    assert _problems(row) == []
+    for built in (True, False):
+        for target in ("", None, 0, 7, False, [], ["c3"], {"t": "c3"}):
+            serving = copy.deepcopy(row["runtime"]["serving"])
+            serving["image_target"] = target
+            if not built:
+                serving.update(built=False, image=None)
+                for field in _PROVENANCE:
+                    del serving[field]
+            assert "image_target is not a non-empty string" in _build_problems(serving), (
+                built,
+                target,
+            )
+    paddle = _built_rows()["paddleocr_vl_1_6"]["runtime"]["serving"]
+    assert "image_target" not in paddle and _build_problems(paddle) == []  # absent is allowed
+
+
 def test_an_unbuilt_block_names_no_image_and_no_provenance() -> None:
     row = _unbuilt_row()
     assert _problems(row) == []

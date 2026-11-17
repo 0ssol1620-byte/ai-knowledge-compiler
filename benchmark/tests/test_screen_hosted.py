@@ -4,7 +4,9 @@ no key, no provider call, no network."""
 from __future__ import annotations
 
 import base64
+import functools
 import hashlib
+import io
 import json
 import os
 import secrets
@@ -19,10 +21,12 @@ import pytest
 import yaml
 from hypothesis import given, settings
 from hypothesis import strategies as st
+from pypdf import PdfWriter
 
 from benchmark.runners import gemini_api, vlm
 from benchmark.runners.base import RunnerUnavailable
 from benchmark.screen import hosted
+from benchmark.screen.manifest import assign_split, freeze
 from benchmark.v6.contracts import ContractError, canonical_sha256
 
 MODEL = "gemini-4-hydrogen"
@@ -42,6 +46,8 @@ SNAPSHOT = (
 )
 # the hosts the transport may reach (the fakes replace the transport itself)
 ALLOWLIST = "generativelanguage.googleapis.com,api.mistral.ai"
+LICENCE_SNAPSHOT = "sha256:" + hashlib.sha256(b"test licence snapshot").hexdigest()
+FILLER = "zz-filler"  # the stratum of the two filler PDFs that meet the screen floors
 GOOD_USAGE = {"promptTokenCount": 1200, "candidatesTokenCount": 300, "thoughtsTokenCount": 100}
 
 
@@ -86,10 +92,11 @@ def _doc(
         "rights": {
             "source_url": "https://example.org",
             "licence_id": "x",
-            "licence_snapshot_sha256": None,
+            "licence_snapshot_sha256": LICENCE_SNAPSHOT,
             "rights_class": rights,
             "redistribution": False,
-            "retrieved_at": "2026-11-17",
+            "recorded_by": "test fixture",
+            "recorded_at": "2026-11-17",
         },
     }
     if split is None:
@@ -99,17 +106,53 @@ def _doc(
     return doc
 
 
+@functools.cache
+def _blank_pdf(pages: int) -> bytes:
+    writer = PdfWriter()
+    for _ in range(pages):
+        writer.add_blank_page(72, 72)
+    data = io.BytesIO()
+    writer.write(data)
+    return data.getvalue()
+
+
 def _corpus(tmp_path: Path, docs: list[dict[str, Any]]) -> tuple[Path, Path]:
+    """The documents' files and their manifest, frozen by the real ``freeze`` (profile screen).
+
+    Each document's ``split`` is the split the test wants; the salt is searched until
+    ``assign_split`` gives exactly that, so ``freeze`` itself accepts it. The 300/100 floors
+    are met by filler that the door refuses (rights ``owned``): per test stratum one page in
+    the split the stratum needs besides the test's, and two PDFs (300 dev pages, 100 holdout
+    pages) in a stratum of their own. Nothing is admitted that the test did not name."""
     root = tmp_path / "corpus"
     root.mkdir(exist_ok=True)
-    for doc in docs:
-        data = b"\x89PNG fake " + doc["doc_id"].encode()
+    want = {d["doc_id"]: d["split"] for d in docs}
+    records = [{k: v for k, v in d.items() if k != "split"} for d in docs]
+    for stratum in sorted({d["stratum"] for d in docs}):
+        held = any(d["stratum"] == stratum and d["split"] == "holdout" for d in docs)
+        records.append({**_doc(0, stratum=stratum, rights="owned"), "doc_id": f"zz-{stratum}.png"})
+        want[f"zz-{stratum}.png"] = "dev" if held else "holdout"
+    for split, pages in (("dev", 300), ("holdout", 100)):
+        filler = _doc(0, stratum=FILLER, rights="owned")
+        records.append({**filler, "doc_id": f"zz-{split}.pdf", "page_count": pages})
+        want[f"zz-{split}.pdf"] = split
+    for doc in records:
+        doc.pop("split", None)
+        if doc["doc_id"].endswith(".pdf"):
+            data = _blank_pdf(doc["page_count"])
+        else:
+            data = b"\x89PNG fake " + doc["doc_id"].encode()
         (root / doc["doc_id"]).write_bytes(data)
         doc.update(source_sha256="sha256:" + hashlib.sha256(data).hexdigest(), byte_size=len(data))
-    body = {"documents": docs}
-    manifest = {**body, "manifest_sha256": canonical_sha256(body)}
+    for n in range(1000):
+        salt = f"hosted-{n}"
+        assigned = assign_split(records, salt)
+        if all(d["split"] == want[d["doc_id"]] for d in assigned):
+            break
+    else:
+        raise AssertionError(f"no salt gives the splits {want}")
     path = tmp_path / "manifest.json"
-    path.write_text(json.dumps(manifest), encoding="utf-8")
+    path.write_text(json.dumps(freeze(assigned, salt, "screen")), encoding="utf-8")
     return path, root
 
 
@@ -237,12 +280,13 @@ def _prepaid(spec: hosted.HostedSpec, out: Path, draw: str = "12.15") -> None:
 def _arm_with_chunk(
     tmp_path: Path, spec: hosted.HostedSpec, docs: list[dict[str, Any]], *, draw: str = "12.15"
 ) -> tuple[hosted.Arm, list[hosted.Chunk], dict[str, hosted.Page], Path]:
-    _, corpus = _corpus(tmp_path, docs)
+    path, corpus = _corpus(tmp_path, docs)
+    frozen = {d["doc_id"]: d for d in json.loads(path.read_bytes())["documents"]}
     out = tmp_path / "out"
     _prepaid(spec, out, draw)
     arm = hosted.Arm(spec, out, hosted.GeminiBatches())
     arm.campaign.reserve_stage("dry", 0)
-    pages = _pages(docs)
+    pages = _pages([frozen[d["doc_id"]] for d in docs])
     plan = hosted.build_plan(spec, pages, corpus)
     return arm, plan.chunks, {p.page_id: p for p in pages}, corpus
 
@@ -2047,3 +2091,333 @@ def test_0j_r2_quarantine_never_overwrites_an_earlier_hit(
         assert hosted.scan_credentials(arm, [out / "rehearsal"])["hits"]
     quarantined = sorted(p.read_bytes() for p in (out / "quarantine" / "rehearsal").iterdir())
     assert quarantined == sorted(kept) and not planted.exists()
+
+
+# --- WO-D10-0N: a manifest that fails its schema is refused by every stage ------------------
+
+
+def _stale_rights(m: dict[str, Any]) -> None:
+    rights = m["documents"][0]["rights"]
+    rights["retrieved_at"] = rights.pop("recorded_at")
+
+
+_SCHEMA_BREAKS: dict[str, Any] = {
+    "no_profile": lambda m: m.pop("profile"),  # the shape of the stale fixtures
+    "stale_rights": _stale_rights,  # their rights record, too
+    "unknown_field": lambda m: m.update(note="x"),
+    "page_count_text": lambda m: m["documents"][0].update(page_count="1"),
+}
+
+
+@pytest.mark.parametrize("damage", sorted(_SCHEMA_BREAKS))
+def test_0n_a_manifest_failing_its_schema_is_refused_by_every_stage_before_any_write(
+    damage: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """A frozen manifest broken one way, its digest recomputed so that only the schema refuses:
+    dry, rehearsal, collect, full and score exit 2, write nothing (no reservation, no ledger
+    byte) and send nothing; the intact manifest then runs each stage."""
+    spec = _spec(tmp_path)
+    good, corpus = _corpus(tmp_path, _docs3())
+    broken_manifest = json.loads(good.read_bytes())
+    _SCHEMA_BREAKS[damage](broken_manifest)
+    body = {k: v for k, v in broken_manifest.items() if k != "manifest_sha256"}
+    broken_manifest["manifest_sha256"] = canonical_sha256(body)
+    broken = tmp_path / "broken.json"
+    broken.write_text(json.dumps(broken_manifest), encoding="utf-8")
+    gold = tmp_path / "gold.json"
+    gold.write_text("{}", encoding="utf-8")
+    fake, script = FakeGemini(state="BATCH_STATE_RUNNING"), MistralScript([])
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    monkeypatch.setattr(hosted, "check_environment", lambda *a, **k: ENV)
+    out = tmp_path / "out"
+
+    def refused(stage: str) -> None:
+        files, calls = _snapshot(out), (len(fake.calls), script.calls)
+        capsys.readouterr()
+        argv = [stage, "--out", str(out), "--spec", str(spec.path), "--manifest", str(broken)]
+        argv += ["--corpus-root", str(corpus), "--snapshot-dir", str(tmp_path / "snap")]
+        argv += ["--gold", str(gold), "--max-wait", "0", "--interval", "0"]
+        assert hosted.main(argv) == 2
+        assert "manifest fails its schema" in capsys.readouterr().err
+        assert _snapshot(out) == files and (len(fake.calls), script.calls) == calls
+
+    for name in ("GEMINI_API_KEY", "MISTRAL_API_KEY"):
+        monkeypatch.delenv(name, raising=False)
+    _prepaid(spec, out)
+    refused("dry")
+    hosted.run_dry(spec, out, good, corpus, tmp_path / "snap", environment=lambda: ENV)
+    monkeypatch.setenv("GEMINI_API_KEY", _marker())
+    monkeypatch.setenv("MISTRAL_API_KEY", _marker("mk"))
+    monkeypatch.setenv("AKC_BENCHMARK_ENDPOINT_ALLOWLIST", ALLOWLIST)
+    refused("rehearsal")
+    assert not hosted.Arm(spec, out).events("job.dispatch.intent.v1")
+    assert _paid(spec, out, tmp_path, "rehearsal") == 3  # the batch runs: a stage in progress
+    refused("collect")
+    fake.state = "BATCH_STATE_SUCCEEDED"
+    assert _paid(spec, out, tmp_path, "rehearsal") == 0
+    refused("full")
+    assert not [
+        p
+        for p in hosted.Arm(spec, out).events("campaign.stage_reserved.v1")
+        if p["stage"] == "full"
+    ]
+    assert _paid(spec, out, tmp_path, "full") == 0
+    refused("score")
+    assert not (out / "score").exists()
+
+
+# --- WO-D10-0Q: a paid stage's receipt is bound like the dry one ----------------------------
+
+
+def _fail_event(crash: pytest.MonkeyPatch, event: str) -> None:
+    real = hosted.EvidenceLedger.append
+
+    def append(self: Any, event_type: str, payload: Any, **kw: Any) -> Any:
+        if event_type == event:
+            raise OSError("power cut")
+        return real(self, event_type, payload, **kw)
+
+    crash.setattr(hosted.EvidenceLedger, "append", append)
+
+
+def _fail_tmp_write(crash: pytest.MonkeyPatch, stage: str) -> None:
+    """Half the temporary's bytes reach the disk, then the write fails."""
+    real = Path.open
+
+    def open_(self: Path, mode: str = "r", *a: Any, **k: Any) -> Any:
+        handle = real(self, mode, *a, **k)
+        if mode != "xb" or self.name != hosted.RECEIPT_TMP or self.parent.name != stage:
+            return handle
+
+        class Half:
+            def __enter__(self) -> Any:
+                return self
+
+            def __exit__(self, *exc: Any) -> bool:
+                handle.close()
+                return False
+
+            def write(self, data: bytes) -> int:
+                handle.write(data[: len(data) // 2])
+                handle.flush()
+                raise OSError("disk full")
+
+        return Half()
+
+    crash.setattr(Path, "open", open_)
+
+
+def _fail_tmp_unlink(crash: pytest.MonkeyPatch, stage: str) -> None:
+    real = Path.unlink
+
+    def unlink(self: Path, *a: Any, **k: Any) -> None:
+        if self.name == hosted.RECEIPT_TMP and self.parent.name == stage:
+            raise OSError("power cut")
+        real(self, *a, **k)
+
+    crash.setattr(Path, "unlink", unlink)
+
+
+def _fail_link(*_a: Any, **_k: Any) -> None:
+    raise OSError("power cut")
+
+
+# point -> (temporary on disk, receipt.json on disk, hosted.stage_receipt.v1 events)
+_CRASH_POINTS: dict[str, tuple[bool, bool, int]] = {
+    "temporary": (False, False, 0),  # the write failed; its partial file was removed
+    "sha256": (True, False, 0),  # the temporary is whole; its sha256 is not recorded
+    "receipt": (True, False, 1),  # recorded; receipt.json not linked
+    "unlink": (True, True, 1),  # receipt.json linked; the temporary name not removed
+    "complete_first": (False, True, 1),  # complete_stage died at its first write
+    "complete_last": (False, True, 1),  # ... at its last (settled, torn down, no receipt event)
+}
+
+
+def _crash(point: str, stage: str, crash: pytest.MonkeyPatch) -> None:
+    if point == "temporary":
+        _fail_tmp_write(crash, stage)
+    elif point == "sha256":
+        _fail_event(crash, hosted.STAGE_RECEIPT)
+    elif point == "receipt":
+        crash.setattr(hosted.os, "link", _fail_link)
+    elif point == "unlink":
+        _fail_tmp_unlink(crash, stage)
+    elif point == "complete_first":
+        _fail_event(crash, "campaign.partial.v1")
+    else:
+        _fail_event(crash, "campaign.stage_receipt.v1")
+
+
+def _crashed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, stage: str, point: str
+) -> tuple[hosted.HostedSpec, Path, FakeGemini, MistralScript]:
+    """A paid stage that paid for every page and died at ``point`` of its last steps."""
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    fake, script = FakeGemini(), MistralScript([])
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    monkeypatch.setattr(hosted, "check_environment", lambda *a, **k: ENV)
+    if stage == "full":
+        assert _paid(spec, out, tmp_path, "rehearsal") == 0
+    with monkeypatch.context() as crash:
+        _crash(point, stage, crash)
+        with pytest.raises(OSError):
+            _paid(spec, out, tmp_path, stage)
+    return spec, out, fake, script
+
+
+@pytest.mark.parametrize("stage", ["rehearsal", "full"])
+@pytest.mark.parametrize("point", sorted(_CRASH_POINTS))
+def test_0q_a_crash_at_each_step_of_a_paid_receipt_is_finished_by_the_same_command(
+    point: str, stage: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Order: temporary, its sha256 in the ledger, receipt.json, complete_stage. A crash at
+    each point leaves a stage that is not complete; the next stage refuses with no call; the
+    same command finishes with no second paid request (the fakes count creates and Mistral
+    calls), and the receipt on disk is the one the ledger recorded."""
+    spec, out, fake, script = _crashed(tmp_path, monkeypatch, stage, point)
+    paid = (fake.creates(), script.calls)
+    assert paid == ((1, 3) if stage == "rehearsal" else (2, 4))  # 3 pages, then 1 more
+    stage_dir = out / stage
+    arm = hosted.Arm(spec, out)
+    bound = [p for p in arm.events(hosted.STAGE_RECEIPT) if p["stage"] == stage]
+    state = ((stage_dir / "receipt.json.tmp").exists(), (stage_dir / "receipt.json").exists())
+    assert (*state, len(bound)) == _CRASH_POINTS[point]
+    assert not arm.campaign.has_receipt(stage)  # never complete without its receipt
+    if stage == "rehearsal":
+        calls = len(fake.calls)
+        with pytest.raises(ContractError, match="requires the rehearsal stage receipt"):
+            _paid(spec, out, tmp_path, "full")
+        assert len(fake.calls) == calls
+    assert _main(tmp_path, out, stage) == 0  # the same command
+    assert (fake.creates(), script.calls) == paid
+    assert len([m for m, _, _ in fake.calls if m == "POST"]) == paid[0]
+    arm = hosted.Arm(spec, out)
+    assert arm.campaign.has_receipt(stage) and not (stage_dir / "receipt.json.tmp").exists()
+    (bound_one,) = [p for p in arm.events(hosted.STAGE_RECEIPT) if p["stage"] == stage]
+    data = (stage_dir / "receipt.json").read_bytes()
+    assert bound_one["sha256"] == "sha256:" + hashlib.sha256(data).hexdigest()
+    receipt = json.loads(data)
+    assert receipt["stage"] == stage and receipt["teardown"]["done"] is True
+    settled = [p["stage"] for p in arm.events("campaign.stage_settled.v1")]
+    assert settled.count(stage) == 1
+    size = _ledger_size(spec, out)
+    with pytest.raises(ContractError, match="already complete"):
+        _paid(spec, out, tmp_path, stage)
+    assert _ledger_size(spec, out) == size
+    if stage == "rehearsal":  # the next stage takes the bound receipt
+        assert _paid(spec, out, tmp_path, "full") == 0
+
+
+def _truncate_tmp(spec: hosted.HostedSpec, out: Path, stage: str) -> None:
+    tmp = out / stage / "receipt.json.tmp"
+    tmp.write_bytes(tmp.read_bytes()[:100])  # what a hard kill inside the write leaves
+
+
+def _ledger_moved(spec: hosted.HostedSpec, out: Path, stage: str) -> None:
+    hosted.Arm(spec, out).ledger.append("hosted.note.v1", {"note": "after the temporary"})
+
+
+def _receipt_edited(spec: hosted.HostedSpec, out: Path, stage: str) -> None:
+    path = out / stage / "receipt.json"
+    path.write_text(json.dumps({**json.loads(path.read_bytes()), "git_sha": None}))
+
+
+def _tmp_edited(spec: hosted.HostedSpec, out: Path, stage: str) -> None:
+    tmp = out / stage / "receipt.json.tmp"
+    tmp.write_bytes(tmp.read_bytes().replace(b'"stage"', b'"stage" ', 1))
+
+
+def _two_events(spec: hosted.HostedSpec, out: Path, stage: str) -> None:
+    arm = hosted.Arm(spec, out)
+    (event,) = arm.events(hosted.STAGE_RECEIPT)
+    arm.ledger.append(hosted.STAGE_RECEIPT, dict(event))  # even an equal one
+
+
+_UNFINISHABLE: dict[str, tuple[str, Any]] = {
+    "partial_temporary": ("sha256", _truncate_tmp),
+    "ledger_moved_after_temporary": ("sha256", _ledger_moved),
+    "temporary_not_the_bound_bytes": ("receipt", _tmp_edited),
+    "receipt_not_the_bound_bytes": ("complete_last", _receipt_edited),
+    "two_bound_receipts": ("complete_last", _two_events),
+}
+
+
+@pytest.mark.parametrize("case", sorted(_UNFINISHABLE))
+def test_0q_a_state_that_cannot_be_finished_is_refused_with_its_reason_and_no_call(
+    case: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    point, damage = _UNFINISHABLE[case]
+    spec, out, fake, script = _crashed(tmp_path, monkeypatch, "rehearsal", point)
+    damage(spec, out, "rehearsal")
+    files, calls = _snapshot(out), (len(fake.calls), script.calls)
+    capsys.readouterr()
+    for stage in ("rehearsal", "collect"):
+        assert _main(tmp_path, out, stage) == 2
+    err = capsys.readouterr().err
+    assert err.count("receipt_incomplete") == 2 and "the lead decides" in err
+    assert _snapshot(out) == files and (len(fake.calls), script.calls) == calls
+    assert not hosted.Arm(spec, out).campaign.has_receipt("rehearsal")
+
+
+def test_0q_the_next_stage_checks_the_recorded_sha256_of_the_paid_receipt(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec, out, fake = _rehearse(tmp_path, monkeypatch)
+    receipt = out / "rehearsal" / "receipt.json"
+    original = receipt.read_bytes()
+    receipt.write_text(json.dumps({**json.loads(original), "git_sha": None}), encoding="utf-8")
+    calls = len(fake.calls)
+    with pytest.raises(ContractError, match="not the one the ledger recorded"):
+        _paid(spec, out, tmp_path, "full")
+    receipt.write_bytes(original)
+    # a completed stage whose sha256 was never recorded
+    _rebuild_ledger(spec, out, lambda kind, p: None if kind == hosted.STAGE_RECEIPT else p)
+    with pytest.raises(ContractError, match="not the one the ledger recorded"):
+        _paid(spec, out, tmp_path, "full")
+    assert len(fake.calls) == calls
+
+
+def test_0q_a_receipt_carrying_a_credential_is_never_bound(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The temporary is scanned before its sha256 is recorded: a hit is quarantined, the arm
+    stops, the stage is not complete; the rerun writes a clean receipt and pays nothing."""
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    fake, script = FakeGemini(), MistralScript([])
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    leaky = {**ENV, "note": os.environ["GEMINI_API_KEY"]}
+    with pytest.raises(ContractError, match="carried a credential"):
+        hosted.run_paid(
+            spec,
+            out,
+            "rehearsal",
+            tmp_path / "manifest.json",
+            tmp_path / "corpus",
+            tmp_path / "snap",
+            environment=lambda: leaky,
+            max_wait=0,
+            interval=0,
+            sleep=lambda _: None,
+        )
+    arm = hosted.Arm(spec, out)
+    assert not arm.events(hosted.STAGE_RECEIPT) and not arm.campaign.has_receipt("rehearsal")
+    assert arm.campaign.stopped
+    assert not (out / "rehearsal" / "receipt.json").exists()
+    assert not (out / "rehearsal" / "receipt.json.tmp").exists()
+    assert (out / "quarantine" / "rehearsal" / "receipt.json.tmp").exists()
+    paid = (fake.creates(), script.calls)
+    assert _paid(spec, out, tmp_path, "rehearsal") == 0
+    assert (fake.creates(), script.calls) == paid
+    receipt = _receipt_of(out, "rehearsal")
+    assert "credential_in_stage_file" in [s["reason"] for s in receipt["results"]["stops"]]
