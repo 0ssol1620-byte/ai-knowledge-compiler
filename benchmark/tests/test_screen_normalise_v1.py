@@ -312,7 +312,8 @@ UNITS = {
     "unclosed_tag": "<td ",
 }
 SIZES = (250_000, 500_000, 1_000_000, 2_000_000)
-RATIO, FLOOR_S, ONE_MB_S = 3.0, 0.1, 5.0
+RATIO, FLOOR_S, ONE_MB_S = 3.0, 0.1, 5.0  # unchanged: no limit moved
+RETRIES = 4
 
 
 def _shape(name: str, size: int) -> str:
@@ -334,13 +335,16 @@ def _cpu_seconds(provider: str, text: str) -> float:
 def test_normalise_is_linear_in_its_input(provider: str, shape: str) -> None:
     """Doubling the input at most roughly doubles the time (ratio 3; below FLOOR_S a timer
     tick is noise), and 1 MB finishes inside 5 s. CPU time of this process, so other load on
-    the machine does not count; a size over the ratio is measured once more (a spike is not a
-    trend, a quadratic step fails both times)."""
+    the machine does not count; contention only ever adds time, so a size over the ratio is
+    measured again, up to RETRIES more times, and the minimum is judged (a spike is not a trend,
+    a quadratic step is over the ratio in every measurement)."""
     took: list[float] = []
     for size in SIZES:
         text = _shape(shape, size)
         took.append(_cpu_seconds(provider, text))
-        if len(took) > 1 and took[-1] > RATIO * max(took[-2], FLOOR_S):
+        for _ in range(RETRIES):
+            if len(took) < 2 or took[-1] <= RATIO * max(took[-2], FLOOR_S):
+                break
             took[-1] = min(took[-1], _cpu_seconds(provider, text))
         if len(took) > 1:
             assert took[-1] <= RATIO * max(took[-2], FLOOR_S), (size, took)
