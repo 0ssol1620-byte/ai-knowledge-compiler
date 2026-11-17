@@ -5,7 +5,7 @@
   "additionalProperties": false,
   "required": ["profile", "salt", "counts", "documents", "manifest_sha256"],
   "properties": {
-    "profile": { "enum": ["screen", "eg04"] },
+    "profile": { "enum": ["screen", "eg04", "lpc_sec"] },
     "salt": { "type": "string" },
     "manifest_sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
     "counts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
@@ -25,6 +25,11 @@
           "language": { "type": "string", "minLength": 1 },
           "document_class": { "type": "string", "minLength": 1 },
           "split": { "enum": ["dev", "holdout"] },
+          "provenance": { "type": "object" },
+          "page_origin": { "type": "string", "minLength": 1 },
+          "notes": { "type": "string" },
+          "derived_from": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+          "degradation": { "type": "object" },
           "rights": {
             "type": "object",
             "additionalProperties": false,
