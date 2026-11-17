@@ -12,16 +12,260 @@ import os
 import re
 import socket
 import ssl
+import unicodedata
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
-from urllib.parse import urlparse, urlunsplit
+from urllib.parse import quote, urlencode, urlparse, urlunsplit
 
 from akc_security import UnsafeUrlError, validate_resolved_url
 
 
 class RunnerUnavailable(RuntimeError):
     pass
+
+
+# Every environment value a runner sends as a credential. A runner reads one only through
+# ``read_credential``; ``seal`` keeps all of them out of what any runner returns or raises.
+CREDENTIAL_ENV = ("AKC_BENCHMARK_PROVIDER_TOKEN", "GEMINI_API_KEY", "MISTRAL_API_KEY")
+PROVIDER_CREDENTIAL = CREDENTIAL_ENV[0]  # the bearer token of chat and external runners
+CREDENTIAL_IN_RESULT = "credential_in_result"
+
+# The endpoint is written into receipts, so its shape is an allow-list, not a deny-list: ASCII
+# ``https://host[:port]/path`` with host and path drawn from letters, digits, '.', '-', '_',
+# ':' and '/'. A percent sign, query, fragment, user info, whitespace, a control character, any
+# non-ASCII or fullwidth form is outside it. No plain HTTP, loopback included (nothing needs it).
+_CLEAN_ENDPOINT = re.compile(r"https://[A-Za-z0-9._:-]+(?:/[A-Za-z0-9._:/-]*)?")
+
+
+def require_clean_endpoint(endpoint: object) -> None:
+    """Refuse any endpoint outside the allow-list, with one fixed message."""
+    if endpoint is None:
+        return
+    if not isinstance(endpoint, str) or _CLEAN_ENDPOINT.fullmatch(endpoint) is None:
+        raise RunnerUnavailable(
+            "endpoint must be https://host[:port]/path in ASCII letters, digits and . - _ : / "
+            "only (no percent sign, query, fragment, user info, space or other character); "
+            "credentials travel in a header only"
+        )
+
+
+def read_credential(name: str, endpoint: object) -> str | None:
+    """The door: check the endpoint and read one declared credential.
+
+    The endpoint must be clean and must not carry any declared credential in any spelling the
+    exit guard knows (``carries_credential``). Every message is fixed: none carries a value.
+    """
+    if name not in CREDENTIAL_ENV:
+        raise ValueError("not a declared runner credential")
+    require_clean_endpoint(endpoint)
+    if isinstance(endpoint, str) and carries_credential(endpoint):
+        raise RunnerUnavailable("endpoint contains a declared credential")
+    return os.getenv(name) or None
+
+
+_LABEL = re.compile(r"[A-Za-z0-9][A-Za-z0-9._@/-]{0,127}")
+
+
+def guarded(
+    name: str,
+    endpoint: object,
+    provider: str,
+    payload: object,
+    body: Callable[[str | None], dict[str, Any]],
+    *,
+    model_revision: object = "",
+) -> dict[str, Any]:
+    """The shape of every public runner entry point: the door first (credential read, endpoint
+    checked) before any other argument is looked at, then everything else, every validation
+    and every refusal it raises included, inside ``seal``. ``model_revision`` is the model id
+    or revision the caller asked for: the outer seal's failure row names it when it is a
+    plain label (``_LABEL``) that carries no credential, and ``""`` otherwise."""
+    credential = read_credential(name, endpoint)
+    label = ""
+    if (
+        isinstance(model_revision, str)
+        and _LABEL.fullmatch(model_revision)
+        and not carries_credential(model_revision)
+    ):
+        label = model_revision
+    return seal(RunnerConfig(provider, label), payload, lambda: body(credential))
+
+
+def _needles(value: str) -> list[str]:
+    """The value as it can appear in a serialised result: itself, JSON-escaped,
+    percent-encoded, hex (both cases), inside base64 or URL-safe base64 (raw response bytes
+    are stored base64) at each of the three byte alignments, and inside RFC 4648 base32 (upper
+    and lower case, padding-free core) at each of the five byte alignments. Case-insensitive
+    and NFKC-folded matches of the value itself are made by ``carries_credential``.
+
+    Not modelled, and not claimed: the value reversed, split by separators, interleaved with
+    zero-width characters, or encoded as UTF-16 before base64."""
+    data = value.encode("utf-8")
+    found = {value, json.dumps(value)[1:-1], json.dumps(value, ensure_ascii=False)[1:-1]}
+    found.add(quote(value, safe=""))
+    found.update({data.hex(), data.hex().upper()})
+    for shift in range(3):
+        encoded = base64.b64encode(b"\0" * shift + data).decode("ascii")
+        # drop the characters that mix in the padding bytes or whatever follows the value
+        core = encoded[(0, 2, 3)[shift] : (8 * (shift + len(data))) // 6]
+        if core:
+            found.update({core, core.translate(_URLSAFE)})
+    for shift in range(5):
+        encoded = base64.b32encode(b"\0" * shift + data).decode("ascii")
+        # a base32 character is 5 bits: keep only those made of the value's bits alone
+        core = encoded[-(-8 * shift // 5) : (8 * (shift + len(data))) // 5]
+        if core:
+            found.update({core, core.lower()})
+    return sorted(found)
+
+
+_URLSAFE = str.maketrans("+/", "-_")
+
+
+def carries_credential(text: str) -> bool:
+    """Whether ``text`` contains any declared credential that is set in this environment."""
+    folded = text.casefold()
+    nfkc = unicodedata.normalize("NFKC", text).casefold()
+    for name in CREDENTIAL_ENV:
+        value = os.getenv(name)
+        if not value:
+            continue
+        plain = unicodedata.normalize("NFKC", value).casefold()
+        if value.casefold() in folded or plain in nfkc or any(n in text for n in _needles(value)):
+            return True
+    return False
+
+
+def _exception_text(exc: BaseException) -> str:
+    """Every text a caller could print or read: each exception of the cause/context chain, its
+    notes, its attributes (``vars``: e.g. ``JSONDecodeError.doc``; ``UnicodeError.object``),
+    and the members of an exception group."""
+    texts: list[str] = []
+    seen: set[int] = set()
+    pending: list[BaseException | None] = [exc]
+    while pending:
+        current = pending.pop()
+        if current is None or id(current) in seen:
+            continue
+        seen.add(id(current))
+        texts.append(f"{type(current).__name__}: {current!s} {current.args!r}")
+        attributes = list(getattr(current, "__dict__", {}).values())
+        if isinstance(current, UnicodeError):
+            attributes.append(getattr(current, "object", None))
+        for value in attributes:
+            if isinstance(value, bytes | bytearray):
+                value = bytes(value).decode("utf-8", "replace")
+            texts.append(value if isinstance(value, str) else repr(value))
+        notes = getattr(current, "__notes__", None)
+        texts.append(repr(notes))
+        if isinstance(notes, list | tuple):
+            texts.extend(str(note) for note in notes)
+        pending += [current.__cause__, current.__context__]
+        if isinstance(current, BaseExceptionGroup):
+            pending += list(current.exceptions)
+    return "\n".join(texts)
+
+
+def _strings(value: Any) -> list[str]:
+    """Every string (keys included) of an already-serialisable result, iteratively."""
+    found: list[str] = []
+    pending = [value]
+    while pending:
+        current = pending.pop()
+        if isinstance(current, str):
+            found.append(current)
+        elif isinstance(current, dict):
+            pending += [*current.keys(), *current.values()]
+        elif isinstance(current, list | tuple):
+            pending += list(current)
+    return found
+
+
+_ESCAPE = re.compile(
+    r"\\u(d[89ab][0-9a-f]{2})\\u(d[c-f][0-9a-f]{2})|\\u([0-9a-f]{4})|\\/", re.IGNORECASE
+)
+
+
+def _unescape(text: str) -> str:
+    """JSON string escapes resolved in text that is not valid JSON: ``\\uXXXX`` (a surrogate
+    pair joined; a lone surrogate and a malformed escape left as they are) and ``\\/``."""
+
+    def one(match: re.Match[str]) -> str:
+        high, low, single = match.groups()
+        if high:
+            return chr(0x10000 + ((int(high, 16) - 0xD800) << 10) + (int(low, 16) - 0xDC00))
+        if single:
+            code = int(single, 16)
+            return match.group(0) if 0xD800 <= code <= 0xDFFF else chr(code)
+        return "/"
+
+    return _ESCAPE.sub(one, text)
+
+
+def _result_text(result: Any) -> str:
+    """The serialised result, plus each base64 string in it decoded (a stored raw response)
+    and, where that is JSON, re-serialised after ``json.loads`` so escapes are resolved; where
+    it is not JSON (a broken body), with its JSON escapes resolved by ``_unescape``."""
+    views = [json.dumps(result, ensure_ascii=False, sort_keys=True)]
+    for text in _strings(result):
+        try:
+            decoded = base64.b64decode(text, validate=True).decode("utf-8", "replace")
+        except ValueError:
+            continue
+        views.append(decoded)
+        try:
+            views.append(json.dumps(json.loads(decoded), ensure_ascii=False))
+        except (ValueError, RecursionError):
+            views.append(_unescape(decoded))
+    return "\n".join(views)
+
+
+def seal(
+    config: RunnerConfig, payload: object, produce: Callable[[], dict[str, Any]]
+) -> dict[str, Any]:
+    """The exit: where every runner result is finalised. A result that contains a declared
+    credential (or cannot be serialised to be checked) becomes a failure row with a fixed
+    reason; an exception whose text contains one (or cannot be read) is replaced by a fixed
+    one, raised outside the handler so nothing chains back to the original."""
+    withheld = False
+    try:
+        result = produce()
+    except Exception as exc:
+        try:
+            clean = not carries_credential(_exception_text(exc))
+        except Exception:  # an exception whose text cannot be read is not shown either
+            clean = False
+        if clean:
+            raise
+        withheld = True
+    if withheld:
+        raise RunnerUnavailable("runner error withheld: its text carried a credential")
+    try:
+        text = _result_text(result)
+    except (TypeError, ValueError, RecursionError):
+        reason = "result_not_serialisable"
+    else:
+        if not carries_credential(text):
+            return result
+        reason = CREDENTIAL_IN_RESULT
+    case_id = payload.get("benchmark_case_id") if isinstance(payload, dict) else None
+    failure = {
+        "schema_version": "1.0",
+        "benchmark_case_id": case_id,
+        "provider": config.provider,
+        "model_revision": config.model_revision,
+        "failure": {"reason": reason},
+        "receipt": {"revision_attested": False},
+    }
+    try:  # the same view as the result check: base64 strings decoded, escapes resolved
+        failure_text = _result_text(failure)
+    except (TypeError, ValueError, RecursionError):
+        raise RunnerUnavailable("runner inputs could not be checked; result withheld") from None
+    if carries_credential(failure_text):
+        raise RunnerUnavailable("runner inputs carried a credential; result withheld")
+    return failure
 
 
 @dataclass(frozen=True)
@@ -175,11 +419,56 @@ def deterministic_local_mock(case: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
-def run_external(config: RunnerConfig, payload: dict[str, Any]) -> dict[str, Any]:
+def post_bytes(
+    config: RunnerConfig,
+    body: bytes,
+    headers: dict[str, str],
+    *,
+    max_response_bytes: int = 10 * 1024 * 1024,
+) -> tuple[int, str, bytes]:
+    """POST over the pinned, allowlisted HTTPS path; returns (status, content type, raw bytes)."""
+    return request_bytes(config, "POST", body, headers, max_response_bytes=max_response_bytes)
+
+
+_METHODS = frozenset({"GET", "POST", "DELETE"})
+# A page token is opaque (base64 of a cursor may hold "=", "+" or "/"); it is percent-encoded
+# into the request target by ``urlencode``. A page size is a plain decimal.
+QUERY_VALUES = {
+    "pageSize": re.compile(r"[1-9][0-9]{0,3}"),
+    "pageToken": re.compile(r"[A-Za-z0-9._~=+/-]{1,2048}"),
+}
+
+
+def request_bytes(
+    config: RunnerConfig,
+    method: str,
+    body: bytes | None,
+    headers: dict[str, str],
+    *,
+    query: dict[str, str] | None = None,
+    max_response_bytes: int = 10 * 1024 * 1024,
+) -> tuple[int, str, bytes]:
+    """One request over the pinned, allowlisted HTTPS path; returns (status, content type, raw
+    bytes). Nothing is interpreted here: the caller decides what a status or body means.
+
+    The query is closed: names from ``QUERY_VALUES`` only, each value of its name's shape,
+    refused before any DNS lookup. Values are percent-encoded into the request target and go
+    nowhere else (the endpoint, which receipts record, keeps its allow-listed shape)."""
+    require_clean_endpoint(config.endpoint)
+    if method not in _METHODS:
+        raise RunnerUnavailable("request method must be GET, POST or DELETE")
+    if query is not None and not (
+        isinstance(query, dict)
+        and all(
+            k in QUERY_VALUES and isinstance(v, str) and QUERY_VALUES[k].fullmatch(v)
+            for k, v in query.items()
+        )
+    ):
+        raise RunnerUnavailable("query must be pageSize/pageToken of their documented shape")
     if not config.allow_network:
         raise RunnerUnavailable("network runner requires explicit --allow-network")
     if not config.endpoint:
-        raise RunnerUnavailable(f"endpoint missing for {config.provider}")
+        raise RunnerUnavailable("endpoint missing")
     parsed = urlparse(config.endpoint)
     if parsed.scheme != "https" or not parsed.hostname:
         raise RunnerUnavailable("benchmark endpoint must be an absolute HTTPS URL")
@@ -202,43 +491,71 @@ def run_external(config: RunnerConfig, payload: dict[str, Any]) -> dict[str, Any
         validated_endpoint = validate_resolved_url(config.endpoint, addresses)
     except (OSError, UnsafeUrlError) as exc:
         raise RunnerUnavailable("benchmark endpoint did not resolve to a public address") from exc
-    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-    headers = {
-        "Content-Type": "application/json",
-        "X-AKC-Benchmark-Provider": config.provider,
-        "X-AKC-Input-SHA256": hashlib.sha256(body).hexdigest(),
-        "X-AKC-Model-Revision": config.model_revision,
-    }
-    bearer_token = os.getenv("AKC_BENCHMARK_PROVIDER_TOKEN")
-    if bearer_token:
-        headers["Authorization"] = f"Bearer {bearer_token}"
     connection = _PinnedHTTPSConnection(
         validated_endpoint.hostname_ascii,
         pinned_ip=validated_endpoint.resolved_ips[0],
         timeout=config.timeout_seconds,
     )
-    target = urlunsplit(("", "", parsed.path or "/", parsed.query, ""))
+    query_text = urlencode(sorted(query.items()), quote_via=quote) if query else ""
+    target = urlunsplit(("", "", parsed.path or "/", query_text, ""))
     try:
-        connection.request("POST", target, body=body, headers=headers)
+        connection.request(method, target, body=body, headers=headers)
         response = connection.getresponse()
-        if response.status != 200:
-            raise RunnerUnavailable(f"provider returned HTTP {response.status}")
-        if response.headers.get_content_type() != "application/json":
-            raise RunnerUnavailable("provider response must be application/json")
-        raw = response.read(10 * 1024 * 1024 + 1)
+        status = response.status
+        content_type = response.headers.get_content_type()
+        raw = response.read(max_response_bytes + 1)
     except (OSError, TimeoutError, http.client.HTTPException) as exc:
         raise RunnerUnavailable("benchmark provider is unavailable") from exc
     finally:
         connection.close()
-    if len(raw) > 10 * 1024 * 1024:
+    if len(raw) > max_response_bytes:
         raise RunnerUnavailable("provider response exceeds the configured bound")
-    result = json.loads(raw)
-    if not isinstance(result, dict):
-        raise RunnerUnavailable("provider response must be a JSON object")
-    if result.get("provider") != config.provider:
-        raise RunnerUnavailable("provider response identity does not match the requested provider")
-    if result.get("model_revision") != config.model_revision:
-        raise RunnerUnavailable(
-            "provider model revision does not match the requested exact revision"
-        )
-    return result
+    return status, content_type, raw
+
+
+def run_external(config: RunnerConfig, payload: dict[str, Any]) -> dict[str, Any]:
+    """The AKC external-runner protocol: the door, then the exchange inside ``seal``."""
+    return guarded(
+        PROVIDER_CREDENTIAL,
+        config.endpoint,
+        config.provider,
+        payload,
+        lambda token: external_exchange(config, payload, token),
+        model_revision=config.model_revision,
+    )
+
+
+def external_exchange(
+    config: RunnerConfig, payload: dict[str, Any], bearer_token: str | None
+) -> dict[str, Any]:
+    """One call with a token the door already read; sealed with the pinned config."""
+
+    def produce() -> dict[str, Any]:
+        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        headers = {
+            "Content-Type": "application/json",
+            "X-AKC-Benchmark-Provider": config.provider,
+            "X-AKC-Input-SHA256": hashlib.sha256(body).hexdigest(),
+            "X-AKC-Model-Revision": config.model_revision,
+        }
+        if bearer_token:
+            headers["Authorization"] = f"Bearer {bearer_token}"
+        status, content_type, raw = post_bytes(config, body, headers)
+        if status != 200:
+            raise RunnerUnavailable("provider returned a non-200 HTTP status")
+        if content_type != "application/json":
+            raise RunnerUnavailable("provider response must be application/json")
+        result = json.loads(raw)
+        if not isinstance(result, dict):
+            raise RunnerUnavailable("provider response must be a JSON object")
+        if result.get("provider") != config.provider:
+            raise RunnerUnavailable(
+                "provider response identity does not match the requested provider"
+            )
+        if result.get("model_revision") != config.model_revision:
+            raise RunnerUnavailable(
+                "provider model revision does not match the requested exact revision"
+            )
+        return result
+
+    return seal(config, payload, produce)
