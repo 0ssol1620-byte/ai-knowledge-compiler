@@ -8,10 +8,10 @@ import io
 import json
 import re
 from collections import Counter, defaultdict
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from dataclasses import replace
 from functools import partial
-from typing import Any
+from typing import Any, Literal
 
 from akc_cir.base import canonical_json, sha256_digest
 from akc_cir.dependency import DependencyEdge, DependencyGraph, EdgeType
@@ -66,6 +66,13 @@ from .contracts import (
     ProductCoreCompileResponse,
     ProductCoreDocument,
     ProductCoreReceipt,
+)
+from .fact_keys import (
+    FactKeyDeclaration,
+    keyed_decisions,
+    keyed_document_changes,
+    refusal,
+    relocations,
 )
 from .semantics import (
     SemanticClaim,
@@ -324,9 +331,32 @@ class ProductCoreCompiler:
         *,
         core_release_digest: str,
         output_budget_bytes: int = OUTPUT_BUDGET_BYTES,
+        fact_key_mode: Literal["off", "candidate"] = "off",
+        fact_key_declarations: Sequence[FactKeyDeclaration] = (),
     ) -> None:
         if not core_release_digest.startswith("sha256:") or len(core_release_digest) != 71:
             raise ValueError("core release digest must be sha256:")
+        # ADR-010. "off" runs no keyed code, declarations or not. "candidate" is reachable only by
+        # constructing the compiler directly (benchmarks); the served app never passes either.
+        if fact_key_mode not in ("off", "candidate"):
+            raise ValueError(f"fact key mode must be off or candidate, got {fact_key_mode!r}")
+        declarations = tuple(fact_key_declarations)
+        if not all(isinstance(item, FactKeyDeclaration) for item in declarations):
+            raise ValueError("fact key declarations must be FactKeyDeclaration instances")
+        connectors = [item.connector_type for item in declarations]
+        if len(set(connectors)) != len(connectors):
+            raise ValueError("fact key declarations name one connector type more than once")
+        if fact_key_mode == "candidate" and not declarations:
+            raise ValueError("fact key mode candidate needs at least one declaration")
+        self.fact_key_mode = fact_key_mode
+        self._fact_keys = (
+            {item.connector_type: item for item in declarations}
+            if fact_key_mode == "candidate"
+            else {}
+        )
+        self._matching_policy: Literal["legacy", "fact_key_v1"] = (
+            "fact_key_v1" if fact_key_mode == "candidate" else "legacy"
+        )
         # Lowering the budget is a deployment's call; raising it past the bound the site can
         # store is not, because the site would only refuse the same package later.
         if not 0 < output_budget_bytes <= OUTPUT_BUDGET_BYTES:
@@ -584,7 +614,7 @@ class ProductCoreCompiler:
                 "status": "passed" if lifecycle == "candidate" else lifecycle,
                 **checks,
                 "fullRebuildEquivalence": equivalence,
-                "matchingPolicy": "legacy",
+                "matchingPolicy": self._matching_policy,
             },
             diff={
                 "level": diff.level.value,
@@ -624,6 +654,7 @@ class ProductCoreCompiler:
             input_sha256=input_sha256,
             output_sha256=sha256_digest(candidate_bytes),
             core_release_digest=self.core_release_digest,
+            matching_policy=self._matching_policy,
             equivalence=equivalence,
             total_artifacts=len(full_hashes),
             rebuilt_artifacts=len(rebuilt),
@@ -693,13 +724,48 @@ class ProductCoreCompiler:
                 )
             )
 
+        # ADR-010: a declared connector's changed document takes the keyed path unless a
+        # document-level detector refuses it; refusals and relocated units are recorded by id.
+        keyed = False
+        declaration = self._fact_keys.get(document.connector_type)
+        if (
+            declaration is not None
+            and previous
+            and previous[0].source_content_sha256 != document.content_sha256
+        ):
+            ordered = sorted(document.regions, key=lambda item: item.order)
+            detector = refusal(
+                declaration,
+                [region.native_object_id for region in ordered],
+                [unit.anchor for unit in previous],
+            )
+            if detector is not None:
+                reviews.append(f"IDENTITY_FACT_KEY_REFUSED:{derived_source_id}:{detector}")
+            else:
+                keyed = True
+                reviews.extend(
+                    f"IDENTITY_FACT_KEY_RELOCATED:{derived_source_id}:{before}->{after}"
+                    for before, after in relocations(
+                        # on this path every anchor is the region's declared key
+                        [(seed.anchor, seed.text) for seed in seeds],
+                        [(unit.anchor, unit.text) for unit in previous],
+                    )
+                )
+
         resolved = list(seeds)
         identity_states = ["new"] * len(seeds)
-        if previous_snapshots:
+        partners: list[int | None] = []
+        if keyed:
+            decisions, partners = keyed_decisions(
+                [_fingerprint(item, derived_source_id) for item in seeds],
+                [_fingerprint(item, derived_source_id) for item in previous_snapshots],
+            )
+        elif previous_snapshots:
             decisions = assign_one_to_one(
                 [_fingerprint(item, derived_source_id) for item in seeds],
                 [_fingerprint(item, derived_source_id) for item in previous_snapshots],
             )
+        if previous_snapshots:
             resolved = []
             identity_states = []
             for seed, decision in zip(seeds, decisions, strict=True):
@@ -714,13 +780,18 @@ class ProductCoreCompiler:
         # handed to another unit (F-D12-2: X's id goes to a moved unit while X's old anchor, now
         # holding other text, seeds X's id again), and two anchors that normalise alike seed one
         # id. A NEW unit whose id another unit also claims is held like an ambiguous one.
+        # D-SEED (keyed documents): a NEW keyed seed equal to any previous unit's id is held too;
+        # legacy history can hand one key's seed id to another key's unit.
+        taken_before = {unit.logical_id for unit in previous_snapshots} if keyed else set()
         holders = Counter(
             unit.logical_id
             for unit, state in zip(resolved, identity_states, strict=True)
             if state != "unresolved"
         )
         for index, (unit, state) in enumerate(zip(resolved, identity_states, strict=True)):
-            if state == "unresolved" or (state == "new" and holders[unit.logical_id] > 1):
+            if state == "unresolved" or (
+                state == "new" and (holders[unit.logical_id] > 1 or unit.logical_id in taken_before)
+            ):
                 resolved[index] = replace(
                     unit, logical_id=_stable_id("ku_unresolved", derived_version_id, unit.anchor)
                 )
@@ -728,17 +799,30 @@ class ProductCoreCompiler:
                 reviews.append(f"IDENTITY_AMBIGUOUS:{derived_source_id}:{unit.anchor}")
 
         before_sha = previous[0].source_content_sha256 if previous else content_hash("absent")
-        document_diff = diff_documents(
-            before_sha256=before_sha,
-            after_sha256=document.content_sha256,
-            level=DiffLevel.GRAPH,
-            before_shape=_shape(previous_snapshots),
-            after_shape=_shape(resolved),
-            before_units=previous_snapshots,
-            after_units=resolved,
-            source=derived_source_id,
-        )
-        document_changes = list(document_diff.changes)
+        if keyed:
+            document_changes = keyed_document_changes(
+                before_sha256=before_sha,
+                after_sha256=document.content_sha256,
+                before_shape=_shape(previous_snapshots),
+                after_shape=_shape(resolved),
+                previous=previous_snapshots,
+                resolved=resolved,
+                decisions=decisions,
+                partners=partners,
+                source=derived_source_id,
+            )
+        else:
+            document_diff = diff_documents(
+                before_sha256=before_sha,
+                after_sha256=document.content_sha256,
+                level=DiffLevel.GRAPH,
+                before_shape=_shape(previous_snapshots),
+                after_shape=_shape(resolved),
+                before_units=previous_snapshots,
+                after_units=resolved,
+                source=derived_source_id,
+            )
+            document_changes = list(document_diff.changes)
         for unit, identity_state in zip(resolved, identity_states, strict=True):
             if identity_state == "unresolved":
                 document_changes.append(
@@ -814,7 +898,7 @@ class ProductCoreCompiler:
                 "immutableObjectKey": document.immutable_object_key,
                 "ocrObjectKey": document.ocr_object_key,
                 "pageCount": document.page_count,
-                "matchingPolicy": "legacy",
+                "matchingPolicy": self._matching_policy,
             },
             created_at=request.requested_at,
         )
@@ -1630,7 +1714,7 @@ class ProductCoreCompiler:
             "validation/report.json": canonical_json(
                 {
                     "status": "passed" if lifecycle == "candidate" else lifecycle,
-                    "matchingPolicy": "legacy",
+                    "matchingPolicy": self._matching_policy,
                     "candidatePromotion": False,
                     **({"checks": checks} if checks is not None else {}),
                     "reviewReasons": sorted(set(review_reasons)),

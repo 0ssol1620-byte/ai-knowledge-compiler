@@ -83,6 +83,13 @@ class ProductCoreDocument(ContractModel):
             raise ValueError("region IDs must be unique within a document")
         if len({region.order for region in self.regions}) != len(self.regions):
             raise ValueError("region order values must be unique within a document")
+        # F-D12-5: a region's anchor (its native object id, else its region id) names one region.
+        # Two regions with one anchor would share one block downstream and fail unnamed.
+        anchors = {region.native_object_id or region.region_id for region in self.regions}
+        if len(anchors) != len(self.regions):
+            raise ValueError(
+                "region anchors (nativeObjectId, else regionId) must be unique within a document"
+            )
         if max(region.page_number1 for region in self.regions) > self.page_count:
             raise ValueError("region page exceeds pageCount")
         if self.valid_from and self.valid_to and self.valid_to < self.valid_from:
@@ -210,7 +217,7 @@ class ProductCoreReceipt(ContractModel):
     input_sha256: Sha256
     output_sha256: Sha256
     core_release_digest: Sha256
-    matching_policy: Literal["legacy"] = "legacy"
+    matching_policy: Literal["legacy", "fact_key_v1"] = "legacy"
     candidate_promotion: Literal[False] = False
     equivalence: Literal["passed", "failed", "not_run"]
     total_artifacts: Annotated[int, Field(ge=0)]
