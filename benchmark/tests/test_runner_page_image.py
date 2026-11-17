@@ -6,7 +6,9 @@ import base64
 import hashlib
 import io
 import json
+import logging
 import math
+import secrets
 import sys
 import types
 from pathlib import Path
@@ -39,6 +41,14 @@ GEMINI_OPTIONS: dict[str, Any] = {
     "media_resolution": "MEDIA_RESOLUTION_HIGH",
 }
 VALIDATOR = parser_output_validator(ROOT / "benchmark" / "manifest.yaml")
+
+
+def _marker() -> str:
+    """A key-shaped value made in this process; never a real credential."""
+    return "AIza" + secrets.token_urlsafe(30)
+
+
+KEY = _marker()
 
 
 def _served(model: str) -> str:
@@ -86,7 +96,7 @@ def _gemini(**over: Any) -> bytes:
 
 def _call(provider: str, transport: FakeTransport, monkeypatch, **kw: Any) -> dict[str, Any]:
     monkeypatch.setattr(vlm, "post_bytes", transport)
-    monkeypatch.setenv("GEMINI_API_KEY", "test-key-not-real")
+    monkeypatch.setenv("GEMINI_API_KEY", KEY)
     if provider == "gemini_api":
         kwargs: dict[str, Any] = {"endpoint": GEMINI_URL, "allow_network": True, **GEMINI_OPTIONS}
     else:
@@ -292,7 +302,9 @@ class _Tracked:
         self.log.append(self.name)
 
 
-def _fake_pypdfium2(monkeypatch, size: tuple[float, float], log: list[str]) -> None:
+def _fake_pypdfium2(
+    monkeypatch, size: tuple[float, float], log: list[str], broken: str = ""
+) -> None:
     rendered = (int(size[0] * 2), int(size[1] * 2)) if all(map(math.isfinite, size)) else (0, 0)
 
     class Image(_Tracked):
@@ -311,6 +323,8 @@ def _fake_pypdfium2(monkeypatch, size: tuple[float, float], log: list[str]) -> N
 
         def render(self, **_: Any) -> Bitmap:
             log.append("render")
+            if broken == "render":
+                raise PdfiumError("Failed to render page")
             return Bitmap(log, "bitmap")
 
     class Doc(_Tracked):
@@ -318,6 +332,8 @@ def _fake_pypdfium2(monkeypatch, size: tuple[float, float], log: list[str]) -> N
             return 1
 
         def __getitem__(self, _i: int) -> Page:
+            if broken == "page":
+                raise PdfiumError("Failed to load page")
             return Page(log, "page")
 
     class PdfiumError(Exception):
@@ -376,6 +392,42 @@ def test_unrenderable_pages_are_page_refusals_with_their_own_reason(
     assert "render" not in log
     if data != b"garbage":
         assert log[-1] == "doc"
+
+
+@pytest.mark.parametrize("broken", ["page", "render"])
+def test_a_page_pdfium_cannot_load_or_render_is_a_page_refusal(
+    broken: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    log: list[str] = []
+    _fake_pypdfium2(monkeypatch, (612.0, 792.0), log, broken)
+    with pytest.raises(vlm.PageRefused) as caught:
+        vlm.render_pdf_page(b"%PDF", 0, vlm.RENDER_SCALE)
+    assert caught.value.reason == "page_unrenderable"
+    assert log[-1] == "doc" and ("page" in log) == (broken == "render")
+
+
+def test_a_page_inside_a_lying_count_is_a_page_refusal_on_the_real_renderer() -> None:
+    # /Count says 5, /Kids names a page that exists and one that does not
+    objects = [
+        b"<< /Type /Catalog /Pages 2 0 R >>",
+        b"<< /Type /Pages /Kids [3 0 R 9 0 R] /Count 5 >>",
+        b"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 100 100] >>",
+    ]
+    out, offsets = b"%PDF-1.4\n", []
+    for number, body in enumerate(objects, 1):
+        offsets.append(len(out))
+        out += f"{number} 0 obj\n".encode() + body + b"\nendobj\n"
+    xref = len(out)
+    out += f"xref\n0 {len(objects) + 1}\n0000000000 65535 f \n".encode()
+    out += b"".join(f"{o:010d} 00000 n \n".encode() for o in offsets)
+    out += (
+        f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode()
+    )
+    assert vlm.render_pdf_page(out, 0, vlm.RENDER_SCALE)[1]["rendered_pixels"] == [200, 200]
+    for index in (1, 3):  # inside the declared count, but pdfium cannot load the page
+        with pytest.raises(vlm.PageRefused) as caught:
+            vlm.render_pdf_page(out, index, vlm.RENDER_SCALE)
+        assert caught.value.reason == "page_unrenderable"
 
 
 def test_unsupported_source_type_is_a_page_refusal(monkeypatch) -> None:
@@ -630,11 +682,11 @@ def test_transport_failure_is_unavailable_not_a_fallback(monkeypatch) -> None:
 @pytest.mark.parametrize(
     ("provider", "endpoint"),
     [
-        ("gemini_api", GEMINI_URL + "?key=SECRET"),
-        ("gemini_api", GEMINI_URL + "#SECRET"),
-        ("gemini_api", f"https://u:SECRET@gemini.example/v1beta/models/{GEMINI}:generateContent"),
-        ("ovis_ocr2", "https://vllm.example/v1/chat/completions?token=SECRET"),
-        ("teleocr", "https://SECRET@vllm.example/v1/chat/completions"),
+        ("gemini_api", GEMINI_URL + "?key=" + KEY),
+        ("gemini_api", GEMINI_URL + "#" + KEY),
+        ("gemini_api", f"https://u:{KEY}@gemini.example/v1beta/models/{GEMINI}:generateContent"),
+        ("ovis_ocr2", "https://vllm.example/v1/chat/completions?token=" + KEY),
+        ("teleocr", f"https://{KEY}@vllm.example/v1/chat/completions"),
     ],
 )
 def test_an_endpoint_that_could_carry_a_credential_is_refused_before_any_call(
@@ -645,14 +697,14 @@ def test_an_endpoint_that_could_carry_a_credential_is_refused_before_any_call(
     with pytest.raises(RunnerUnavailable) as caught:
         _call(provider, transport, monkeypatch, endpoint=endpoint)
     assert transport.calls == []
-    assert "SECRET" not in str(caught.value)
+    assert KEY not in str(caught.value)
 
 
 def test_gemini_request_shape_and_key_stays_out_of_the_record(monkeypatch) -> None:
     transport = FakeTransport(200, _gemini(usageMetadata={"totalTokenCount": 9}))
     out = _call("gemini_api", transport, monkeypatch)
     _, request, headers = transport.calls[0]
-    assert headers["x-goog-api-key"] == "test-key-not-real"
+    assert headers["x-goog-api-key"] == KEY
     inline = request["contents"][0]["parts"][0]["inline_data"]
     assert inline["mime_type"] == "image/png" and base64.b64decode(inline["data"]) == IMAGE
     generation = request["generationConfig"]
@@ -667,7 +719,7 @@ def test_gemini_request_shape_and_key_stays_out_of_the_record(monkeypatch) -> No
     assert receipt["config_sha256"] == vlm.config_sha256(
         RUNNER_CONFIGS["gemini_api"](model=GEMINI, **GEMINI_OPTIONS)
     )
-    assert "test-key-not-real" not in json.dumps(out)
+    assert KEY not in json.dumps(out)
     assert not list(VALIDATOR.iter_errors(out))
 
 
@@ -697,7 +749,7 @@ def test_gemini_requires_bounded_thinking_and_an_explicit_media_resolution(
 ) -> None:
     transport = FakeTransport(200, _gemini())
     monkeypatch.setattr(vlm, "post_bytes", transport)
-    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setenv("GEMINI_API_KEY", KEY)
     with pytest.raises(RunnerUnavailable):
         EXTERNAL_RUNNERS["gemini_api"](
             _payload(), endpoint=GEMINI_URL, allow_network=True, **options
@@ -721,6 +773,16 @@ def test_gemini_thought_parts_are_not_transcription(monkeypatch) -> None:
     assert out["failure"]["reason"] == "empty_completion"
 
 
+@pytest.mark.parametrize("thought", ["true", 1, 0, None, [], {}])
+def test_gemini_a_thought_field_that_is_not_a_bool_is_malformed(
+    thought: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    parts = [{"text": "a", "thought": thought}, {"text": "b"}]
+    raw = _gemini(candidates=[{"finishReason": "STOP", "content": {"parts": parts}}])
+    out = _call("gemini_api", FakeTransport(200, raw), monkeypatch)
+    assert out["failure"]["reason"] == "malformed_response"
+
+
 def test_gemini_refuses_a_revision_it_cannot_mean(monkeypatch) -> None:
     transport = FakeTransport(200, _gemini())
     with pytest.raises(RunnerUnavailable, match="revision"):
@@ -741,7 +803,7 @@ def test_gemini_refuses_a_revision_it_cannot_mean(monkeypatch) -> None:
 def test_gemini_refuses_an_alias_or_a_missing_model(endpoint: str | None, monkeypatch) -> None:
     transport = FakeTransport(200, _gemini())
     monkeypatch.setattr(vlm, "post_bytes", transport)
-    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setenv("GEMINI_API_KEY", KEY)
     with pytest.raises(RunnerUnavailable):
         EXTERNAL_RUNNERS["gemini_api"](
             _payload(), endpoint=endpoint, allow_network=True, **GEMINI_OPTIONS
@@ -750,7 +812,7 @@ def test_gemini_refuses_an_alias_or_a_missing_model(endpoint: str | None, monkey
 
 
 def test_gemini_explicit_alias_parameter_refused_and_endpoint_must_agree(monkeypatch) -> None:
-    monkeypatch.setenv("GEMINI_API_KEY", "k")
+    monkeypatch.setenv("GEMINI_API_KEY", KEY)
     run = EXTERNAL_RUNNERS["gemini_api"]
     with pytest.raises(RunnerUnavailable, match="alias"):
         run(
@@ -818,6 +880,13 @@ def _mistral_result(model: str) -> bytes:
         "mistral-ocr-4-1-latest",
         "labs-mistral-ocr-4-1",
         "Mistral-OCR-4-1",
+        "mistral-ocr-04-0",
+        "mistral-ocr-4-00",
+        "mistral-ocr-04-1",
+        "mistral-ocr-4-01",
+        "mistral-ocr-4-2",
+        "mistral-ocr-9-9",
+        "mistral-ocr-4-1 ",
     ],
 )
 def test_mistral_refuses_a_missing_retired_or_alias_model_before_any_call(
@@ -876,6 +945,28 @@ def test_screen_candidate_binds_config_sha256_and_takes_an_api_model() -> None:
         Candidate("c7", "ovis_ocr3", REVISION, img, good, model="ATH-MaaS/OvisOCR3").validate()
     with pytest.raises(ContractError):  # a non-API, non-config provider still needs hex
         Candidate("c0", "mineru", "", img, "sha256:" + "2" * 64).validate()
+
+
+@pytest.mark.parametrize(
+    "endpoint",
+    [
+        "https://v.example/x?token=t",
+        "https://v.example/x#t",
+        "https://u:p@v.example/x",
+        "https://v.example/x%3Ftoken%3Dt",
+        "https://v.example/%41",
+    ],
+)
+def test_screen_candidate_refuses_an_unclean_endpoint_before_the_first_page(
+    endpoint: str, tmp_path: Path
+) -> None:
+    from benchmark.screen.run_screen import Candidate
+    from benchmark.v6.contracts import ContractError
+
+    cfg = vlm.config_sha256(RUNNER_CONFIGS["teleocr"](revision=REVISION))
+    cand = Candidate("c6", "teleocr", REVISION, "sha256:" + "1" * 64, cfg, endpoint, True)
+    with pytest.raises(ContractError, match="endpoint"):
+        cand.validate()
 
 
 def test_screen_records_a_page_refusal_with_its_own_reason(tmp_path: Path) -> None:
@@ -948,3 +1039,305 @@ def test_screen_call_passes_model_and_runner_options(tmp_path: Path, monkeypatch
         "model": GEMINI,
         **GEMINI_OPTIONS,
     }
+
+
+# --- No credential can reach a runner result: the door (endpoint) and the exit (seal) ---
+#
+# Every value below is made in this process (secrets.token_urlsafe); none is a real key.
+
+_PLAIN_EXTERNAL = sorted(set(EXTERNAL_RUNNERS) - set(VLLM) - {"gemini_api", "mistral_ocr_4"})
+
+
+def _runner_kwargs(provider: str, endpoint: str | None) -> dict[str, Any]:
+    kwargs: dict[str, Any] = {"endpoint": endpoint, "allow_network": True}
+    if provider == "gemini_api":
+        kwargs.update(model=GEMINI, **GEMINI_OPTIONS)
+    elif provider == "mistral_ocr_4":
+        kwargs["model"] = "mistral-ocr-4-1"
+    else:
+        kwargs["revision"] = REVISION
+    return kwargs
+
+
+def _credential_of(provider: str) -> str:
+    return "GEMINI_API_KEY" if provider == "gemini_api" else "AKC_BENCHMARK_PROVIDER_TOKEN"
+
+
+def _chain_text(exc: BaseException | None) -> str:
+    texts = []
+    while exc is not None:
+        texts.append(f"{exc!s} {exc.args!r}")
+        exc = exc.__cause__ or exc.__context__
+    return "\n".join(texts)
+
+
+def _strings(value: Any) -> list[str]:
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        return [s for k, v in value.items() for s in (*_strings(k), *_strings(v))]
+    if isinstance(value, list):
+        return [s for v in value for s in _strings(v)]
+    return []
+
+
+def _assert_absent(
+    marker: str, out: dict[str, Any] | None, exc: BaseException | None, logs: str
+) -> None:
+    """The marker in no spelling a reader could recover: plain (any case), inside any base64
+    string of the result, in any exception text of the chain, or in the log capture."""
+    folded = marker.casefold()
+    assert folded not in logs.casefold()
+    assert folded not in _chain_text(exc).casefold()
+    if out is None:
+        return
+    assert folded not in json.dumps(out, ensure_ascii=False).casefold()
+    for text in _strings(out):
+        try:
+            decoded = base64.b64decode(text, validate=True)
+        except ValueError:
+            continue
+        assert marker.encode() not in decoded
+
+
+def test_runners_read_credentials_only_through_the_door() -> None:
+    """Class guard: a runner that reads the environment directly would bypass the door."""
+    import ast
+
+    allowed = {("base.py", "read_credential"), ("base.py", "carries_credential")}
+    allowed.add(("base.py", "post_bytes"))  # the host allowlist, not a credential
+    hits = set()
+    for path in sorted((ROOT / "benchmark" / "runners").glob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        owner: dict[int, str] = {}
+        for func in ast.walk(tree):  # breadth first: an outer function claims its inner ones
+            if isinstance(func, ast.FunctionDef | ast.AsyncFunctionDef):
+                for node in ast.walk(func):
+                    owner.setdefault(id(node), func.name)
+        for node in ast.walk(tree):
+            name = node.attr if isinstance(node, ast.Attribute) else getattr(node, "id", None)
+            if name in {"getenv", "environ", "getenvb", "environb"}:
+                hits.add((path.name, owner.get(id(node), "<module>")))
+    assert hits <= allowed, sorted(hits - allowed)
+
+
+_SPELLINGS = ["as_is", "upper", "lower", "pct1", "pct2", "pct3", "pct_first_char"]
+_PLACES = ["host", "subdomain", "path", "segment_param", "query", "fragment", "userinfo"]
+
+
+def _spell(value: str, spelling: str) -> str:
+    from urllib.parse import quote
+
+    if spelling == "upper":
+        return value.upper()
+    if spelling == "lower":
+        return value.lower()
+    if spelling == "pct_first_char":
+        return f"%{ord(value[0]):02X}" + value[1:]
+    if spelling.startswith("pct"):
+        out = "".join(f"%{ord(c):02X}" for c in value)
+        for _ in range(int(spelling[-1]) - 1):
+            out = quote(out, safe="")
+        return out
+    return value
+
+
+def _endpoint_with(provider: str, spelled: str, place: str) -> str:
+    tail = (
+        f"/v1beta/models/{GEMINI}:generateContent"
+        if provider == "gemini_api"
+        else "/v1/chat/completions"
+    )
+    return {
+        "host": f"https://{spelled}{tail}",
+        "subdomain": f"https://{spelled}.p.example{tail}",
+        "path": f"https://p.example/{spelled}{tail}",
+        "segment_param": f"https://p.example/v1;k={spelled}{tail}",
+        "query": f"https://p.example{tail}?k={spelled}",
+        "fragment": f"https://p.example{tail}#{spelled}",
+        "userinfo": f"https://x:{spelled}@p.example{tail}",
+    }[place]
+
+
+@settings(max_examples=400, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@given(
+    provider=st.sampled_from(sorted(EXTERNAL_RUNNERS)),
+    spelling=st.sampled_from(_SPELLINGS),
+    place=st.sampled_from(_PLACES),
+)
+def test_door_any_endpoint_that_contains_the_credential_is_refused_before_any_call(
+    provider: str, spelling: str, place: str
+) -> None:
+    marker = _marker()
+    endpoint = _endpoint_with(provider, _spell(marker, spelling), place)
+    calls: list[Any] = []
+
+    def transport(*a: Any, **_: Any) -> Any:
+        calls.append(a)
+        raise AssertionError("no call may happen")
+
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setenv(_credential_of(provider), marker)
+        mp.setattr(vlm, "post_bytes", transport)
+        mp.setattr(base, "post_bytes", transport)
+        with pytest.raises(RunnerUnavailable) as caught:
+            EXTERNAL_RUNNERS[provider](_payload(), **_runner_kwargs(provider, endpoint))
+    assert calls == []
+    _assert_absent(marker, None, caught.value, "")
+
+
+@pytest.mark.parametrize("provider", sorted(EXTERNAL_RUNNERS))
+def test_door_an_endpoint_with_a_percent_sign_is_refused(
+    provider: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(_credential_of(provider), _marker())
+    endpoint = _endpoint_with(provider, "a%20b", "path")
+    with pytest.raises(RunnerUnavailable, match="percent"):
+        EXTERNAL_RUNNERS[provider](_payload(), **_runner_kwargs(provider, endpoint))
+
+
+def test_door_refuses_a_name_that_is_not_a_declared_credential() -> None:
+    with pytest.raises(ValueError):
+        base.read_credential("HOME", None)
+
+
+_LEAKS = [
+    "echo_text",
+    "upper_text",
+    "escaped_text",
+    "model_field",
+    "usage_key",
+    "status",
+    "garbage",
+    "raise",
+]
+
+
+class _Echo:
+    """A hostile provider: puts the credential it was sent back into its answer."""
+
+    def __init__(self, leak: str, marker: str) -> None:
+        self.leak, self.marker = leak, marker
+
+    def __call__(self, config: Any, body: bytes, headers: dict[str, str], **_: Any) -> Any:
+        m = self.marker
+        if self.leak == "raise":
+            try:
+                raise OSError(f"connection reset by {m}")
+            except OSError as exc:
+                raise RunnerUnavailable(f"provider down: {m}") from exc
+        if self.leak == "status":
+            return 403, "application/json", json.dumps({"error": f"bad key {m}"}).encode()
+        if self.leak == "garbage":
+            return 200, "application/json", b"\xff\x00" + m.encode() + b"\x00"
+        text = {
+            "echo_text": f"page {m}",
+            "escaped_text": f"page {m}",
+            "upper_text": f"page {m.upper()}",
+        }.get(self.leak, "page text")
+        if config.provider == "gemini_api":
+            doc: dict[str, Any] = {
+                "modelVersion": m if self.leak == "model_field" else GEMINI,
+                "candidates": [{"finishReason": "STOP", "content": {"parts": [{"text": text}]}}],
+                "usageMetadata": {m: 1} if self.leak == "usage_key" else {},
+            }
+        elif config.provider in VLLM:
+            served = _served(VLLM[config.provider])
+            doc = {
+                "model": m if self.leak == "model_field" else served,
+                "choices": [{"finish_reason": "stop", "message": {"content": text}}],
+                "usage": {m: 1} if self.leak == "usage_key" else {},
+            }
+        else:
+            doc = {
+                "schema_version": "1.0",
+                "benchmark_case_id": "page-1",
+                "provider": config.provider,
+                "model_revision": m if self.leak == "model_field" else config.model_revision,
+                "text": text,
+                "metrics": {m: 1} if self.leak == "usage_key" else {},
+            }
+        raw = json.dumps(doc).encode()
+        if self.leak == "escaped_text":  # the JSON spells the first character as \uXXXX
+            raw = raw.replace(m.encode(), f"\\u{ord(m[0]):04x}".encode() + m[1:].encode())
+        return 200, "application/json", raw
+
+
+@settings(
+    max_examples=400,
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.function_scoped_fixture],
+)
+@given(
+    provider=st.sampled_from(sorted(EXTERNAL_RUNNERS)),
+    leak=st.sampled_from(_LEAKS),
+    leaked=st.sampled_from(base.CREDENTIAL_ENV),
+)
+def test_exit_no_runner_result_or_error_carries_a_credential_a_provider_echoed(
+    provider: str, leak: str, leaked: str, caplog: pytest.LogCaptureFixture
+) -> None:
+    markers = {name: _marker() for name in base.CREDENTIAL_ENV}
+    marker = markers[leaked]
+    out: dict[str, Any] | None = None
+    exc: BaseException | None = None
+    caplog.clear()
+    with pytest.MonkeyPatch.context() as mp, caplog.at_level(logging.DEBUG):
+        for name, value in markers.items():
+            mp.setenv(name, value)
+        mp.setattr(vlm, "post_bytes", _Echo(leak, marker))
+        mp.setattr(base, "post_bytes", _Echo(leak, marker))
+        try:
+            out = EXTERNAL_RUNNERS[provider](_payload(), **_runner_kwargs(provider, None))
+        except Exception as raised:  # what a caller would see and might print
+            exc = raised
+    for value in markers.values():
+        _assert_absent(value, out, exc, caplog.text)
+    if leak == "echo_text":  # the leak reached a result, so the result is the fixed failure row
+        assert out is not None and out["failure"] == {"reason": base.CREDENTIAL_IN_RESULT}
+
+
+@pytest.mark.parametrize("provider", sorted(EXTERNAL_RUNNERS))
+def test_exit_a_result_echoing_the_key_becomes_a_fixed_failure_row(
+    provider: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    marker = _marker()
+    monkeypatch.setenv(_credential_of(provider), marker)
+    monkeypatch.setattr(vlm, "post_bytes", _Echo("echo_text", marker))
+    monkeypatch.setattr(base, "post_bytes", _Echo("echo_text", marker))
+    out = EXTERNAL_RUNNERS[provider](_payload(), **_runner_kwargs(provider, None))
+    assert out == {
+        "schema_version": "1.0",
+        "benchmark_case_id": "page-1",
+        "provider": provider,
+        "model_revision": GEMINI
+        if provider == "gemini_api"
+        else ("mistral-ocr-4-1" if provider == "mistral_ocr_4" else REVISION),
+        "failure": {"reason": base.CREDENTIAL_IN_RESULT},
+        "receipt": {"revision_attested": False},
+    }
+    assert list(VALIDATOR.iter_errors(out))  # a failure row is never a valid parser output
+
+
+@pytest.mark.parametrize("shift", [0, 1, 2])
+def test_exit_finds_the_key_inside_base64_at_every_alignment(
+    shift: int, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    marker = _marker()
+    monkeypatch.setenv("AKC_BENCHMARK_PROVIDER_TOKEN", marker)
+    blob = base64.b64encode(b"x" * shift + marker.encode() + b"tail").decode()
+    assert base.carries_credential(json.dumps({"raw": blob}))
+    assert not base.carries_credential(json.dumps({"raw": base64.b64encode(b"x" * 99).decode()}))
+
+
+def test_exit_an_unserialisable_result_or_a_credential_in_the_inputs_fails_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    marker = _marker()
+    monkeypatch.setenv("AKC_BENCHMARK_PROVIDER_TOKEN", marker)
+    config = base.RunnerConfig("p", REVISION)
+    out = base.seal(config, _payload(), lambda: {"x": object()})
+    assert out["failure"] == {"reason": "result_not_serialisable"}
+    tainted = base.RunnerConfig("p", marker)  # the inputs themselves carry the key
+    with pytest.raises(RunnerUnavailable) as caught:
+        base.seal(tainted, _payload(), lambda: {"model_revision": marker})
+    _assert_absent(marker, None, caught.value, "")

@@ -5,17 +5,18 @@ Each candidate pins its own prompt, generation settings and input order in a ``C
 The server is launched with ``--served-model-name <repo>@<revision>``: the request names it
 and the response must echo it, so a receipt with ``revision_attested: true`` was answered by
 a server that was launched for that revision. Anything else is a failure row.
+The optional bearer token is read through ``base.read_credential`` (an endpoint that contains
+it is refused) and travels in the Authorization header only.
 """
 
 from __future__ import annotations
 
 import base64
-import os
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Any
 
-from .base import RunnerConfig
+from .base import RunnerConfig, read_credential
 from .vlm import ResponseRefused, exchange, render_settings, require_revision
 
 
@@ -68,6 +69,7 @@ def run_chat(
     allow_network: bool,
 ) -> dict[str, Any]:
     pinned = config(profile, revision)
+    token = read_credential("AKC_BENCHMARK_PROVIDER_TOKEN", endpoint)
     run_config = RunnerConfig(profile.provider, revision, endpoint, allow_network)
 
     def build(mime: str, image: bytes) -> tuple[dict[str, Any], dict[str, str]]:
@@ -84,7 +86,6 @@ def run_chat(
             **pinned["generation"],
         }
         headers: dict[str, str] = {}
-        token = os.getenv("AKC_BENCHMARK_PROVIDER_TOKEN")
         if token:
             headers["Authorization"] = f"Bearer {token}"
         return request, headers

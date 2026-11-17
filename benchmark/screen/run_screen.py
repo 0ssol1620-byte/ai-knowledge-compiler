@@ -26,7 +26,11 @@ from typing import Any
 
 from benchmark.evaluators.metrics import score_case
 from benchmark.run_benchmark import parser_output_validator
-from benchmark.runners.base import RunnerUnavailable, build_provider_payload
+from benchmark.runners.base import (
+    RunnerUnavailable,
+    build_provider_payload,
+    require_clean_endpoint,
+)
 from benchmark.runners.native import run as run_native
 from benchmark.runners.registry import API_PROVIDERS, EXTERNAL_RUNNERS, RUNNER_CONFIGS
 from benchmark.runners.vlm import PageRefused, config_sha256
@@ -48,7 +52,8 @@ class Candidate:
     """``model`` is for an API provider, which is pinned by model id and has no revision
     (``revision`` is then empty). ``runner_options`` are further pinned runner parameters
     (Gemini: ``thinking_config``, ``media_resolution``). Where the runner pins its own
-    config, ``config_sha256`` must be that config's digest."""
+    config, ``config_sha256`` must be that config's digest. An endpoint that could carry a
+    credential (query, fragment, user info, percent sign) is refused before the first page."""
 
     candidate_id: str
     provider: str
@@ -67,6 +72,10 @@ class Candidate:
     def validate(self) -> None:
         if not self.candidate_id:
             raise ContractError("candidate_id is empty")
+        try:  # before the first page: a query, user info or encoding could hide a credential
+            require_clean_endpoint(self.endpoint)
+        except RunnerUnavailable as exc:
+            raise ContractError(f"candidate endpoint refused: {exc}") from exc
         if self.provider != NATIVE and self.provider not in EXTERNAL_RUNNERS:
             raise ContractError(f"unknown provider {self.provider!r}")
         if (self.model is not None) != (self.provider in API_PROVIDERS):

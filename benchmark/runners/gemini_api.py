@@ -3,9 +3,12 @@
 The model id is required and an alias is refused; no default exists. A hosted id names no
 weights revision, so the runner takes none and every receipt says ``revision_attested:
 false``; the served ``modelVersion`` must still equal the pinned id. The key travels in the
-``x-goog-api-key`` header only: an endpoint with a query string is refused, because the
-endpoint is written into the receipt. ``thinking_config`` (bounded) and ``media_resolution``
-are required and recorded. Parts marked ``thought`` are not transcription.
+``x-goog-api-key`` header only: an endpoint with a query string, a percent sign, or the key
+itself anywhere in it is refused, because the endpoint is written into the receipt; and the
+shared exit guard (``base.seal``) turns any result that still carries the key into a failure
+row. ``thinking_config`` (bounded) and ``media_resolution`` are required and recorded.
+Parts marked ``thought`` are not transcription; a ``thought`` field that is not a bool is a
+malformed response.
 
 Batch API: not in this runner. Submitting through it needs a different call
 (``models/{model}:batchGenerateContent`` with inlined requests or an uploaded JSONL file),
@@ -16,13 +19,12 @@ bytes; that belongs to the hosted-arm run's work order, which also owns the USD 
 from __future__ import annotations
 
 import base64
-import os
 import re
 from collections.abc import Callable
 from typing import Any
 
-from .base import RunnerConfig, RunnerUnavailable
-from .vlm import GENERIC_PROMPT, ResponseRefused, exchange, render_settings, require_clean_endpoint
+from .base import RunnerConfig, RunnerUnavailable, read_credential, require_clean_endpoint
+from .vlm import GENERIC_PROMPT, ResponseRefused, exchange, render_settings
 
 PROVIDER = "gemini_api"
 PROMPT = GENERIC_PROMPT
@@ -126,6 +128,8 @@ def _extract(model: str) -> Callable[[dict[str, Any]], tuple[str, Any, bool]]:
             raise ResponseRefused("empty_completion")
         texts = []
         for part in parts:
+            if type(part.get("thought", False)) is not bool:
+                raise ResponseRefused("malformed_response")
             if part.get("thought") is True:
                 continue  # reasoning, not the page
             text = part.get("text", "")
@@ -154,7 +158,7 @@ def run(
         media_resolution=media_resolution,
         endpoint=endpoint,
     )
-    key = os.getenv("GEMINI_API_KEY")
+    key = read_credential("GEMINI_API_KEY", endpoint)
     if not key:
         raise RunnerUnavailable("GEMINI_API_KEY is not set")
     run_config = RunnerConfig(PROVIDER, pinned["model"], endpoint, allow_network)

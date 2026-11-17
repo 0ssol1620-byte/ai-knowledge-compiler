@@ -12,16 +12,131 @@ import os
 import re
 import socket
 import ssl
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 from typing import Any
-from urllib.parse import urlparse, urlunsplit
+from urllib.parse import quote, urlparse, urlsplit, urlunsplit
 
 from akc_security import UnsafeUrlError, validate_resolved_url
 
 
 class RunnerUnavailable(RuntimeError):
     pass
+
+
+# Every environment value a runner sends as a credential. A runner reads one only through
+# ``read_credential``; ``seal`` keeps all of them out of what any runner returns or raises.
+CREDENTIAL_ENV = ("AKC_BENCHMARK_PROVIDER_TOKEN", "GEMINI_API_KEY")
+CREDENTIAL_IN_RESULT = "credential_in_result"
+
+
+def require_clean_endpoint(endpoint: str | None) -> None:
+    """The endpoint is written into receipts, so it may carry nothing a credential could hide
+    in: no query, fragment, user info, or percent sign (no encoding of anything at all)."""
+    if endpoint is None:
+        return
+    parts = urlsplit(endpoint)
+    if parts.query or parts.fragment or "?" in endpoint or "#" in endpoint:
+        raise RunnerUnavailable(
+            "endpoint must not carry a query string or fragment (a key there would be "
+            "written into the receipt); credentials travel in a header only"
+        )
+    if "@" in parts.netloc:
+        raise RunnerUnavailable("endpoint must not carry user info")
+    if "%" in endpoint:
+        raise RunnerUnavailable("endpoint must not carry percent-encoding")
+
+
+def read_credential(name: str, endpoint: str | None) -> str | None:
+    """The door: read one declared credential and refuse an endpoint that contains it.
+
+    With percent-encoding refused outright, the only remaining spelling is the value itself,
+    compared without case (a host is case-insensitive). The message never carries the value.
+    """
+    if name not in CREDENTIAL_ENV:
+        raise ValueError(f"{name} is not a declared runner credential")
+    require_clean_endpoint(endpoint)
+    value = os.getenv(name) or None
+    if value is not None and endpoint is not None and value.casefold() in endpoint.casefold():
+        raise RunnerUnavailable(f"endpoint contains the value of {name}")
+    return value
+
+
+def _needles(value: str) -> list[str]:
+    """The value as it can appear in a serialised result: itself, JSON-escaped,
+    percent-encoded, and inside base64 (raw response bytes are stored base64) at each of the
+    three byte alignments. Spellings beyond these (a provider that transforms the key) are
+    outside what a substring check can see; the door keeps the endpoint free of all of them."""
+    data = value.encode("utf-8")
+    found = {value, json.dumps(value)[1:-1], json.dumps(value, ensure_ascii=False)[1:-1]}
+    found.add(quote(value, safe=""))
+    for shift in range(3):
+        encoded = base64.b64encode(b"\0" * shift + data).decode("ascii")
+        # drop the characters that mix in the padding bytes or whatever follows the value
+        core = encoded[(0, 2, 3)[shift] : (8 * (shift + len(data))) // 6]
+        if core:
+            found.add(core)
+    return sorted(found)
+
+
+def carries_credential(text: str) -> bool:
+    """Whether ``text`` contains any declared credential that is set in this environment."""
+    folded = text.casefold()
+    for name in CREDENTIAL_ENV:
+        value = os.getenv(name)
+        if not value:
+            continue
+        if value.casefold() in folded or any(n in text for n in _needles(value)):
+            return True
+    return False
+
+
+def _exception_text(exc: BaseException) -> str:
+    texts: list[str] = []
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        texts.append(f"{type(current).__name__}: {current!s} {current.args!r}")
+        current = current.__cause__ or current.__context__
+    return "\n".join(texts)
+
+
+def seal(
+    config: RunnerConfig, payload: dict[str, Any], produce: Callable[[], dict[str, Any]]
+) -> dict[str, Any]:
+    """The exit: where every runner result is finalised. A result that contains a declared
+    credential (or cannot be serialised to be checked) becomes a failure row with a fixed
+    reason; an exception whose text contains one is replaced by a fixed one."""
+    withheld = False
+    try:
+        result = produce()
+    except Exception as exc:
+        if not carries_credential(_exception_text(exc)):
+            raise
+        withheld = True
+    if withheld:  # raised outside the handler, so nothing chains back to the original
+        raise RunnerUnavailable("runner error withheld: its text carried a credential")
+    try:
+        text = json.dumps(result, ensure_ascii=False, sort_keys=True)
+    except (TypeError, ValueError, RecursionError):
+        reason = "result_not_serialisable"
+    else:
+        if not carries_credential(text):
+            return result
+        reason = CREDENTIAL_IN_RESULT
+    failure = {
+        "schema_version": "1.0",
+        "benchmark_case_id": payload.get("benchmark_case_id"),
+        "provider": config.provider,
+        "model_revision": config.model_revision,
+        "failure": {"reason": reason},
+        "receipt": {"revision_attested": False},
+    }
+    if carries_credential(json.dumps(failure, ensure_ascii=False, default=str)):
+        raise RunnerUnavailable("runner inputs carried a credential; result withheld")
+    return failure
 
 
 @dataclass(frozen=True)
@@ -234,28 +349,34 @@ def post_bytes(
 
 
 def run_external(config: RunnerConfig, payload: dict[str, Any]) -> dict[str, Any]:
-    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-    headers = {
-        "Content-Type": "application/json",
-        "X-AKC-Benchmark-Provider": config.provider,
-        "X-AKC-Input-SHA256": hashlib.sha256(body).hexdigest(),
-        "X-AKC-Model-Revision": config.model_revision,
-    }
-    bearer_token = os.getenv("AKC_BENCHMARK_PROVIDER_TOKEN")
-    if bearer_token:
-        headers["Authorization"] = f"Bearer {bearer_token}"
-    status, content_type, raw = post_bytes(config, body, headers)
-    if status != 200:
-        raise RunnerUnavailable(f"provider returned HTTP {status}")
-    if content_type != "application/json":
-        raise RunnerUnavailable("provider response must be application/json")
-    result = json.loads(raw)
-    if not isinstance(result, dict):
-        raise RunnerUnavailable("provider response must be a JSON object")
-    if result.get("provider") != config.provider:
-        raise RunnerUnavailable("provider response identity does not match the requested provider")
-    if result.get("model_revision") != config.model_revision:
-        raise RunnerUnavailable(
-            "provider model revision does not match the requested exact revision"
-        )
-    return result
+    bearer_token = read_credential("AKC_BENCHMARK_PROVIDER_TOKEN", config.endpoint)
+
+    def produce() -> dict[str, Any]:
+        body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+        headers = {
+            "Content-Type": "application/json",
+            "X-AKC-Benchmark-Provider": config.provider,
+            "X-AKC-Input-SHA256": hashlib.sha256(body).hexdigest(),
+            "X-AKC-Model-Revision": config.model_revision,
+        }
+        if bearer_token:
+            headers["Authorization"] = f"Bearer {bearer_token}"
+        status, content_type, raw = post_bytes(config, body, headers)
+        if status != 200:
+            raise RunnerUnavailable(f"provider returned HTTP {status}")
+        if content_type != "application/json":
+            raise RunnerUnavailable("provider response must be application/json")
+        result = json.loads(raw)
+        if not isinstance(result, dict):
+            raise RunnerUnavailable("provider response must be a JSON object")
+        if result.get("provider") != config.provider:
+            raise RunnerUnavailable(
+                "provider response identity does not match the requested provider"
+            )
+        if result.get("model_revision") != config.model_revision:
+            raise RunnerUnavailable(
+                "provider model revision does not match the requested exact revision"
+            )
+        return result
+
+    return seal(config, payload, produce)

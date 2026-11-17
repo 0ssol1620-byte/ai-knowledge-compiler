@@ -6,8 +6,8 @@ and deliberately violates the parser-output schema, so the screen runner stores 
 (immutable raw output) and records ``contract_failed`` instead of dropping the page. No retry.
 Only "nothing came back" (no network authority, transport error) raises ``RunnerUnavailable``.
 A page that cannot become an image (over the pixel cap, outside the document, unreadable
-PDF, unsupported type) raises ``PageRefused``: a page-level result with its own reason,
-decided before any call.
+PDF, a page pdfium cannot load or render, unsupported type) raises ``PageRefused``: a
+page-level result with its own reason, decided before any call.
 
 Every result returned here is plain JSON (strings, finite numbers, a flat usage map), so the
 caller can always serialise and store it. Provider-controlled structures are never copied
@@ -25,9 +25,14 @@ import re
 import time
 from collections.abc import Callable
 from typing import Any
-from urllib.parse import urlsplit
 
-from .base import RunnerConfig, RunnerUnavailable, post_bytes
+from .base import (
+    RunnerConfig,
+    RunnerUnavailable,
+    post_bytes,
+    require_clean_endpoint,
+    seal,
+)
 
 _REVISION = re.compile(r"^[0-9a-f]{40,64}$")
 RENDER_SCALE = 2.0  # 144 dpi; the image digest is recorded in every receipt
@@ -67,20 +72,6 @@ def require_revision(revision: str) -> None:
         raise RunnerUnavailable("runner requires an exact 40-64 hex model revision")
 
 
-def require_clean_endpoint(endpoint: str | None) -> None:
-    """The endpoint is written into every receipt, so it may not carry a credential."""
-    if endpoint is None:
-        return
-    parts = urlsplit(endpoint)
-    if parts.query or parts.fragment or "?" in endpoint or "#" in endpoint:
-        raise RunnerUnavailable(
-            "endpoint must not carry a query string or fragment (a key there would be "
-            "written into the receipt); credentials travel in a header only"
-        )
-    if "@" in parts.netloc:
-        raise RunnerUnavailable("endpoint must not carry user info")
-
-
 def config_sha256(document: dict[str, Any]) -> str:
     """Digest of a runner's pinned config: what ``screen.Candidate.config_sha256`` carries."""
     body = json.dumps(document, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -110,14 +101,20 @@ def render_pdf_page(data: bytes, page_index: int, scale: float) -> tuple[bytes, 
     try:
         if not 0 <= page_index < len(pdf):
             raise PageRefused("page_index_out_of_range")
-        page = pdf[page_index]
+        try:
+            page = pdf[page_index]
+        except pypdfium2.PdfiumError as exc:  # inside /Count, but the page object is broken
+            raise PageRefused("page_unrenderable") from exc
         try:
             width, height = page.get_size()
             if not (math.isfinite(width) and math.isfinite(height) and width > 0 and height > 0):
                 raise PageRefused("page_size_invalid")
             if width * height * scale * scale > MAX_RENDER_PIXELS:
                 raise PageRefused("page_over_pixel_cap")
-            bitmap = page.render(scale=scale)
+            try:
+                bitmap = page.render(scale=scale)
+            except pypdfium2.PdfiumError as exc:
+                raise PageRefused("page_unrenderable") from exc
             try:
                 image = bitmap.to_pil()
                 try:
@@ -200,10 +197,27 @@ def exchange(
     receipt_base: dict[str, Any],
 ) -> dict[str, Any]:
     """``build(mime, image)`` -> (request JSON, headers);
-    ``extract(response)`` -> (text, usage, whether the response attests the pinned revision)."""
+    ``extract(response)`` -> (text, usage, whether the response attests the pinned revision).
+    The exchange runs inside ``seal``: a result or error that would carry a credential is
+    replaced before it leaves the runner."""
     if not config.model_revision:
         raise RunnerUnavailable("runner requires a pinned model revision")
     require_clean_endpoint(config.endpoint)
+    return seal(
+        config,
+        payload,
+        lambda: _exchange(config, payload, build=build, extract=extract, receipt_base=receipt_base),
+    )
+
+
+def _exchange(
+    config: RunnerConfig,
+    payload: dict[str, Any],
+    *,
+    build: Callable[[str, bytes], tuple[dict[str, Any], dict[str, str]]],
+    extract: Callable[[dict[str, Any]], tuple[str, Any, bool]],
+    receipt_base: dict[str, Any],
+) -> dict[str, Any]:
     mime, image, render = page_image(payload)
     request, headers = build(mime, image)
     body = json.dumps(request, ensure_ascii=False, sort_keys=True).encode("utf-8")
