@@ -17,32 +17,35 @@ from typing import Any
 
 import httpx
 
-from benchmark.local_public.sources import SourceError, _inside_git_tree
+# The sources, their host allow-list and the host check live in sources.py, which build() shares.
+from benchmark.local_public.sources import (
+    TERMS_HOSTS,
+    TERMS_SOURCES,
+    SourceError,
+    _excluded,
+    _inside_git_tree,
+    _request_url,
+)
 from benchmark.screen.acquire import AcquireError, PacedClient
 
 DEFAULT_OUT = Path("D:/CodexProjects/v34-lanes/corpus/licences")
-_SEC = "https://www.sec.gov/about/privacy-information#copyright"
-_FRED = "https://fred.stlouisfed.org"
-# (source_id, snapshot_url) from the register rows of WO-LPC-0.
-SOURCES: list[tuple[str, str]] = [
-    ("data_sec_fsds", _SEC),
-    ("data_sec_edgar_filings", _SEC),
-    ("data_alfred_vintages", f"{_FRED}/docs/api/terms_of_use.html"),
-    *[
-        (f"data_alfred_vintages/{s}", f"{_FRED}/series/{s}")
-        for s in ("CPIAUCSL", "UNRATE", "INDPRO", "DFF", "DGS10", "DGS2")
-    ],
-]
 
 
 def snapshot(
     out: Path,
     *,
-    sources: list[tuple[str, str]] = SOURCES,
+    sources: list[tuple[str, str]] = TERMS_SOURCES,
     user_agent: str | None = None,
     transport: httpx.BaseTransport | None = None,
+    allowed_hosts: frozenset[str] = TERMS_HOSTS,
 ) -> list[dict[str, Any]]:
     """Fetch each distinct URL once. Raises SourceError, writing no terms.json, on any failure."""
+    # FRED/ALFRED content is denied for every action (D21-L1, register row data_alfred_vintages;
+    # FRED legal terms API prohibitions (k) and (l)): no request to fred.stlouisfed.org is made.
+    denied = [i for i, _ in sources if _excluded(f"terms/{i}")]
+    if denied:
+        raise SourceError(f"rights denied for every action, no request made: {denied}")
+    sends = {u: _request_url(u, allowed_hosts) for _, u in sources}
     ua = os.environ.get("SEC_USER_AGENT", "") if user_agent is None else user_agent
     if not ua.strip():
         raise SourceError("SEC_USER_AGENT is not set; refusing to fetch")
@@ -57,7 +60,7 @@ def snapshot(
     out.mkdir(parents=True, exist_ok=True)
     for url in dict.fromkeys(u for _, u in sources):
         try:
-            body = client.get(url)
+            body = client.get(sends[url])
         except (AcquireError, httpx.HTTPError) as exc:
             failed.append(f"{url}: {exc}")
             continue

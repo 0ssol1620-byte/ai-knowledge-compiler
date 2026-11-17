@@ -5,16 +5,21 @@ from __future__ import annotations
 import gzip
 import hashlib
 import json
+from collections import Counter
 from datetime import UTC, date, datetime
 from pathlib import Path
+from typing import Any
 
+import httpx
 import pytest
 from akc_source_adapters.public_data.rights import RightsDenied, RightsRecord
-from akc_source_adapters.public_data.sources import DEFAULT_RIGHTS
+from akc_source_adapters.public_data.sources import DEFAULT_RIGHTS, REVIEWED_RIGHTS
+from akc_source_adapters.public_data.vintage import VintageObservation
 
 from benchmark.local_public import alfred_local as al
 from benchmark.local_public import pit_tasks as pt
 from benchmark.local_public import sources as S
+from benchmark.local_public import terms
 from benchmark.retrieval_baselines.metrics import parse_moment, parse_task, violates_cut
 
 TODAY = date(2026, 11, 17)
@@ -36,7 +41,7 @@ def allow(series: str) -> RightsRecord:
     )
 
 
-REGISTER = [allow(s) for s in al.ALLOWED_ALFRED_SERIES]
+REGISTER = [allow(s) for s in S.DENIED_ALFRED_SERIES]
 LINES = [
     "CPIAUCSL,2024-01-01,2024-02-01,2024-02-01,2024-02-01,300.1,alfred_vintage",
     "CPIAUCSL,2024-01-01,2024-03-01,2024-03-01,2024-03-01,300.5,alfred_vintage",
@@ -55,8 +60,14 @@ def write(tmp: Path, lines: list[str] = LINES) -> Path:
     return p
 
 
-def built(tmp: Path, chain: dict[str, list[str]] | None = None):
-    obs, counts = al.read_local_vintages(write(tmp), al.ALLOWED_ALFRED_SERIES, REGISTER, TODAY)
+def built(
+    tmp: Path, chain: dict[str, list[str]] | None = None
+) -> tuple[
+    list[VintageObservation],
+    Counter[str],
+    tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, int]],
+]:
+    obs, counts = al.read_local_vintages(write(tmp), S.DENIED_ALFRED_SERIES, REGISTER, TODAY)
     return obs, counts, al.generate(obs, chain_verified=chain)
 
 
@@ -83,7 +94,30 @@ def manifest_for(tmp: Path, csv_path: Path) -> Path:
     return p
 
 
-def test_changed_csv_is_hash_mismatch_and_writes_nothing(tmp_path: Path) -> None:
+def _shut(monkeypatch: pytest.MonkeyPatch) -> None:
+    def boom(*_a: object, **_k: object) -> None:
+        raise AssertionError("the ALFRED file was opened or hashed")
+
+    monkeypatch.setattr(S, "_sha256_file", boom)
+    monkeypatch.setattr(Path, "read_bytes", boom)
+    monkeypatch.setattr(Path, "is_file", boom)
+
+
+# WO-D21-9: with the rights patched to pass, the loader is the second wall: `alfred_vintages` is in
+# sources.EXCLUDED, so `Loader.resolve` raises ExcludedSource before the hash check. Everything in
+# `alfred_local.main` after `loader.verified_path("alfred_vintages")` (outputs, receipt) is
+# unreachable while ALFRED is excluded. What these two tests used to prove moved to the SEC path,
+# which runs the same code: the hash check and "nothing recorded" to
+# test_local_public_sources.py::test_missing_and_one_byte_change, the receipt's manifest sha,
+# inputs and output hashes to ::test_receipt_verify_and_changed_input, the refusal to overwrite a
+# receipt to ::test_receipt_never_overwritten. Not moved: alfred_local's own `open("x")` on its two
+# output files - no allowed source goes through that code.
+
+
+def test_changed_csv_is_excluded_before_the_hash_check_and_writes_nothing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(al, "DEFAULT_RIGHTS", REGISTER)  # rights pass: the loader must refuse
     csv_path = write(tmp_path)
     m = manifest_for(tmp_path, csv_path)
     write(
@@ -91,26 +125,26 @@ def test_changed_csv_is_hash_mismatch_and_writes_nothing(tmp_path: Path) -> None
         [*LINES, "CPIAUCSL,2024-03-01,2024-04-01,2024-04-01,2024-04-01,9.9,alfred_vintage"],
     )
     out = tmp_path / "o"
-    with pytest.raises(S.HashMismatch):
+    _shut(monkeypatch)
+    with pytest.raises(S.ExcludedSource, match="D21-L1"):
         al.main(["--manifest", str(m), "--out", str(out)])
     assert not out.exists()
 
 
-def test_receipt_carries_manifest_sha_and_output_hashes(tmp_path: Path, monkeypatch) -> None:
+def test_no_receipt_and_nothing_consumed_when_the_loader_refuses(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     m = manifest_for(tmp_path, write(tmp_path))
     monkeypatch.setattr(al, "DEFAULT_RIGHTS", REGISTER)
     out = tmp_path / "o"
     monkeypatch.setattr(S, "_inside_git_tree", lambda _p: False)
-    assert al.main(["--manifest", str(m), "--out", str(out)]) == 0
-    rec = json.loads((out / "receipt.json").read_text())
-    assert rec["lpc_manifest_sha256"] == json.loads(m.read_text())["manifest_sha256"]
-    assert [i["name"] for i in rec["inputs_consumed"]] == ["alfred_vintages"]
-    assert {Path(o["path"]).name for o in rec["outputs"]} == {
-        "corpus_alfred.jsonl",
-        "tasks_alfred.jsonl",
-    }
-    with pytest.raises(FileExistsError):  # never overwritten
+    _shut(monkeypatch)
+    with pytest.raises(S.ExcludedSource, match="D21-L1"):
         al.main(["--manifest", str(m), "--out", str(out)])
+    assert not out.exists() and not (out / "receipt.json").exists()
+    loader = S._loader()
+    assert loader.manifest["manifest_sha256"] == json.loads(m.read_text())["manifest_sha256"]
+    assert loader.ledger.consumed == []
 
 
 def test_mapping_and_lagged_rows(tmp_path: Path) -> None:
@@ -131,7 +165,7 @@ def test_mapping_and_lagged_rows(tmp_path: Path) -> None:
 def test_tasks_and_leaks(tmp_path: Path) -> None:
     _, _, (rows, tasks, skipped) = built(tmp_path)
     ev = {r["logical_id"]: r for r in rows}
-    by = {t["stratum"]: [] for t in tasks}
+    by: dict[str, list[dict[str, Any]]] = {t["stratum"]: [] for t in tasks}
     for t in tasks:
         parse_task(t)
         by[t["stratum"]].append(t)
@@ -188,3 +222,45 @@ def test_merges_into_pit_tasks_and_duplicates_refused(tmp_path: Path) -> None:
     obs, _ = al.read_local_vintages(dup, ["CPIAUCSL"], REGISTER, TODAY)
     with pytest.raises(al.AlfredError):
         al.generate(obs)
+
+
+def test_reviewed_rights_deny_alfred_before_the_file_is_opened(tmp_path: Path) -> None:
+    missing = tmp_path / "never_opened.csv"  # opening it would raise FileNotFoundError instead
+    with pytest.raises(RightsDenied):
+        al.read_local_vintages(missing, S.DENIED_ALFRED_SERIES, REVIEWED_RIGHTS, TODAY)
+    assert not missing.exists()
+
+
+def test_terms_snapshot_refuses_alfred_sources_without_a_request(tmp_path: Path) -> None:
+    calls: list[str] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls.append(str(request.url))
+        return httpx.Response(200, content=b"x")
+
+    with pytest.raises(S.SourceError, match="rights denied"):
+        terms.snapshot(
+            tmp_path / "o",
+            sources=[("data_alfred_vintages", "https://fred.stlouisfed.org/legal/")],
+            user_agent="t t@example.org",
+            transport=httpx.MockTransport(handler),
+        )
+    assert calls == []
+    assert all(s.startswith("data_sec") for s, _ in S.TERMS_SOURCES)
+
+
+def test_main_refuses_on_rights_before_any_file_is_resolved_hashed_or_opened(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    def boom(*_a: object, **_k: object) -> None:
+        raise AssertionError("the other project's file was touched")
+
+    m = manifest_for(tmp_path, write(tmp_path))  # a real, correctly pinned file that must stay shut
+    monkeypatch.setattr(S.Loader, "verified_path", boom)
+    monkeypatch.setattr(S.Loader, "resolve", boom)
+    monkeypatch.setattr(S, "_sha256_file", boom)
+    monkeypatch.setattr(Path, "read_bytes", boom)
+    out = tmp_path / "o"
+    assert al.main(["--manifest", str(m), "--out", str(out)]) == 2
+    assert "refused" in capsys.readouterr().err and not out.exists()
+    assert al.main(["--manifest", str(m), "--out", str(out), "--series", "VIXCLS"]) == 2

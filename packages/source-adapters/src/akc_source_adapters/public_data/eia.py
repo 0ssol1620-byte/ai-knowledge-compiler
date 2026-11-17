@@ -1,7 +1,10 @@
 """EIA open-data v2 response -> VintageObservation. Offline parser only.
 
-Response shape (`response.data[]` rows with `period` and `value`) is
-second-hand and UNVERIFIED until WO-D21-5 records a real response. The
+`response.data[]` rows with `period` are as EIA's API documentation shows
+(snapshot read in WO-D21-5). That page names a row's value column after the
+`data[]` request parameter (e.g. `price`, with `price-units`), so the column is
+an argument; the default `value` is not shown on that page and stays
+unverified. No EIA response was recorded (no key was provided). The
 response itself is the only vintage evidence: `available_on` is never set (the
 source gives no per-row release time), so every observation is held by
 `to_temporal_facts` and answers no `known_at` question.
@@ -36,8 +39,13 @@ def parse_eia_v2(
     frequency: str | None,
     seasonal_adjustment: str | None,
     rights_id: str,
+    value_column: str = "value",
 ) -> tuple[VintageObservation, ...]:
-    """One observation per row; value kept as exact source text; malformed rows raise."""
+    """One observation per row; value kept as exact source text; malformed rows raise.
+
+    A row without `value_column` raises: an absent column is a request/shape
+    mismatch, not a missing value. Only an explicit null is a missing marker.
+    """
     try:
         doc = json.loads(raw, parse_float=str, parse_int=str)
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -52,13 +60,15 @@ def parse_eia_v2(
         if not isinstance(row, dict):
             raise ValueError("EIA row: not an object")
         period: Any = row.get("period")
-        value: Any = row.get("value")
         if not isinstance(period, str) or not period:
             raise ValueError("EIA row: missing or non-text field 'period'")
+        if value_column not in row:
+            raise ValueError(f"EIA row: no field {value_column!r}")
+        value: Any = row[value_column]
         if value is None:
             value = ""  # a null value is a missing marker the timeline holds
         elif not isinstance(value, str):
-            raise ValueError("EIA row: field 'value' must be text, number or null")
+            raise ValueError(f"EIA row: field {value_column!r} must be text, number or null")
         start = _period(period)
         # only an identical row is a duplicate; any other field (period text, facet) contradicts
         if start in seen:

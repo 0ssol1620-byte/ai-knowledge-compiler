@@ -19,11 +19,18 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, BinaryIO
 
+import httpx
+
 from benchmark.v6.contracts import canonical_sha256
 
 SCHEMA = "tavonel.lpc-sources.v1"
 DEFAULT_MANIFEST = Path("D:/CodexProjects/v34-lanes/corpus/lpc-sources.v1.json")
-ALLOWED_ALFRED_SERIES = ["CPIAUCSL", "UNRATE", "INDPRO", "DFF", "DGS10", "DGS2"]
+# FRED/ALFRED content is denied for every action (D21-L1): no file, digest or entry of it is pinned.
+DENIED_ALFRED_SERIES = ["CPIAUCSL", "UNRATE", "INDPRO", "DFF", "DGS10", "DGS2"]
+ALFRED_DENIED_STATEMENT = (
+    "denied: FRED/ALFRED content is not used (D21-L1, register row data_alfred_vintages); "
+    "no file, digest or entry of it is pinned"
+)
 
 _C2 = "raw/v401_text/C2_edgar_docs"
 EXCLUDED = [
@@ -53,10 +60,23 @@ EXCLUDED = [
     {"pattern": "historical_news*", "reason": "not official / not read"},
     {"pattern": "external/*", "reason": "not official / not read"},
     {"pattern": "free/*", "reason": "not official / not read"},
+    {"pattern": "alfred_vintages*", "reason": "denied for every action (D21-L1)"},
+    {"pattern": "terms/data_alfred_vintages*", "reason": "denied for every action (D21-L1)"},
     {"pattern": "alfred_series/BAMLH0A0HYM2", "reason": "third-party owned (ICE)"},
     {"pattern": "alfred_series/VIXCLS", "reason": "third-party owned (Cboe)"},
     {"pattern": "alfred_series/DTWEXBGS", "reason": "terms not read"},
 ]
+
+_SEC_TERMS = "https://www.sec.gov/about/privacy-information#copyright"
+# (source_id, snapshot_url) from the register rows of WO-LPC-0: what terms.py fetches.
+TERMS_SOURCES: list[tuple[str, str]] = [
+    ("data_sec_fsds", _SEC_TERMS),
+    ("data_sec_edgar_filings", _SEC_TERMS),
+]
+# Closed set of hosts a terms URL may name, derived from the sources declared above: terms.py asks
+# only these, build() pins a terms row only if it points at one. Anything else, the St. Louis Fed
+# hosts included, is refused by construction (D21-L1).
+TERMS_HOSTS = frozenset(httpx.URL(u).host for _, u in TERMS_SOURCES)
 
 
 class SourceError(Exception):
@@ -73,6 +93,24 @@ class HashMismatch(SourceError):
 
 class SourceMissing(SourceError):
     pass
+
+
+def _excluded(name: str) -> dict[str, str] | None:
+    """The EXCLUDED row ``name`` falls under; case-insensitive, an upper-case id is the same."""
+    n = name.casefold()
+    return next((x for x in EXCLUDED if fnmatch.fnmatchcase(n, x["pattern"].casefold())), None)
+
+
+def _request_url(url: str, allowed: frozenset[str] = TERMS_HOSTS) -> str:
+    """The URL string to send, decided on the host httpx itself will use; SourceError otherwise."""
+    try:  # .host decodes IDNA lazily, so it belongs inside the try
+        u = httpx.URL(url)
+        ok = u.scheme == "https" and not u.userinfo and u.port is None and u.host in allowed
+    except (httpx.InvalidURL, UnicodeError) as exc:  # idna errors are UnicodeError
+        raise SourceError(f"host not allowed, no request made: {url!r}: {exc}") from exc
+    if not ok:
+        raise SourceError(f"host not allowed, no request made: {url!r}")
+    return str(u)
 
 
 def _sha256_file(path: Path) -> tuple[str, int]:
@@ -196,12 +234,6 @@ def build(
 
     pin("sec_submissions_bulk", "acceptance_witness", root / "raw/sec_submissions_20260816.zip")
 
-    meta = root / "raw/alfred_vintages.metadata.json"
-    a = pin("alfred_vintages", "vintages", root / "raw/alfred_vintages.csv.gz")
-    pin("alfred_vintages_metadata", "vintages", meta)
-    if json.loads(meta.read_text("utf-8")).get("sha256") != a["sha256"]:
-        raise HashMismatch("alfred_vintages: file differs from its metadata sha256")
-
     if renderer is not None:
         if not (renderer_version and renderer_licence_sha256):
             raise SourceError("renderer needs --renderer-version and --renderer-licence-sha256")
@@ -216,6 +248,14 @@ def build(
     # terms snapshots written by WO-LPC-1T
     raw = json.loads(terms_json.read_text("utf-8"))
     for t in raw["snapshots"] if isinstance(raw, dict) else raw:
+        # Denied sources: skipped before the snapshot is opened or hashed (D21-L1).
+        if _excluded(f"terms/{t['source_id']}"):
+            continue
+        # Any other row is admitted by where it points, not by what it is called.
+        try:
+            _request_url(t["url"])
+        except SourceError as exc:
+            raise SourceError(f"terms/{t['source_id']}: {exc}") from exc
         snap = terms_json.parent / f"{t['sha256']}.html"
         e = pin(
             f"terms/{t['source_id']}",
@@ -233,7 +273,7 @@ def build(
         "built_by": f"benchmark.local_public.sources@{_git_sha(Path(__file__).parent)}",
         "entries": entries,
         "excluded": EXCLUDED,
-        "allowed_alfred_series": ALLOWED_ALFRED_SERIES,
+        "alfred": ALFRED_DENIED_STATEMENT,
     }
     manifest["manifest_sha256"] = _digest(manifest)
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -269,11 +309,17 @@ class Loader:
         self.manifest = m
         self.ledger = ledger or InputLedger(m["manifest_sha256"])
         self._by_name: dict[str, dict[str, Any]] = {e["name"]: e for e in m["entries"]}
+        # Decided once here, raised from every resolve (constant work per call).
+        self._stale = sorted(n for n in self._by_name if _excluded(n))
 
     def resolve(self, name: str) -> dict[str, Any]:
-        for ex in self.manifest["excluded"]:
-            if fnmatch.fnmatchcase(name, ex["pattern"]):
-                raise ExcludedSource(f"{name}: {ex['reason']}")
+        # The module's EXCLUDED decides, not the manifest's copy (an old one may lack rows).
+        if ex := _excluded(name):
+            raise ExcludedSource(f"{name}: {ex['reason']}")
+        if self._stale:
+            raise ExcludedSource(
+                f"manifest lists excluded sources {self._stale}: rebuild the manifest"
+            )
         if name not in self._by_name:
             raise SourceMissing(f"{name} is not in the manifest")
         return self._by_name[name]

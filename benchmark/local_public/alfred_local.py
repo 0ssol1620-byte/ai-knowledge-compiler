@@ -1,8 +1,11 @@
 """ALFRED local reader, D14 rows and temporal tasks (LPC design 4, WO-LPC-7).
 
+DENIED (D21-L1): every ALFRED right is `deny`, so `main` refuses before it resolves, hashes or opens
+the file. The reader and its tests stay and prove the refusal.
+
 Reads a local vintage CSV (series_id, observed_at, available_at, vintage_date, realtime_end, value,
-source_method) for the six allowed series only, behind the per-series rights gate: a series that
-is not allowed, or whose `model_processing` or `derive` right is not verified, is refused BEFORE
+source_method) for the six named series only, behind the per-series rights gate: a series that
+is not named, or whose `model_processing` or `derive` right is not verified, is refused BEFORE
 the file is opened. `alfred_vintage` rows map through `VintageObservation`
 (`available_on = vintage_date`, `recorded_at = available_upper_bound(vintage_date)`); the lagged
 rows get `recorded_at = available_at = None` and are never known-at facts. The CSV states no
@@ -32,7 +35,7 @@ from akc_source_adapters.public_data.sources import DEFAULT_RIGHTS, PUBLIC_SOURC
 from akc_source_adapters.public_data.vintage import VintageObservation, available_upper_bound
 
 from benchmark.local_public import sources
-from benchmark.local_public.sources import ALLOWED_ALFRED_SERIES
+from benchmark.local_public.sources import DENIED_ALFRED_SERIES
 from benchmark.retrieval_baselines.metrics import TaskError, parse_task
 
 GENERATOR = "benchmark.local_public.alfred_local/1"
@@ -53,10 +56,21 @@ class AlfredError(Exception):
 
 def _check_series(series: Iterable[str]) -> tuple[str, ...]:
     out = tuple(series)
-    bad = sorted(set(out) - set(ALLOWED_ALFRED_SERIES))
+    bad = sorted(set(out) - set(DENIED_ALFRED_SERIES))
     if bad or not out:
         raise AlfredError(f"series not allowed (rights or terms): {bad or 'none given'}")
     return out
+
+
+def _require_rights(
+    wanted: Iterable[str], register: Iterable[rights.RightsRecord], today: date
+) -> dict[str, rights.RightsRecord]:
+    register = tuple(register)
+    records = {}
+    for s in wanted:
+        for action in ("model_processing", "derive"):
+            records[s] = rights.require(PUBLIC_SOURCES["alfred"], s, action, register, today=today)
+    return records
 
 
 def read_local_vintages(
@@ -69,11 +83,7 @@ def read_local_vintages(
 
     Refuses (AlfredError / RightsDenied) before opening `path`."""
     wanted = _check_series(series)
-    register = tuple(register)
-    records = {}
-    for s in wanted:
-        for action in ("model_processing", "derive"):
-            records[s] = rights.require(PUBLIC_SOURCES["alfred"], s, action, register, today=today)
+    records = _require_rights(wanted, register, today)
     raw = path.read_bytes()
     sha = "sha256:" + hashlib.sha256(raw).hexdigest()
     text = (gzip.decompress(raw) if raw[:2] == b"\x1f\x8b" else raw).decode("utf-8")
@@ -293,11 +303,16 @@ def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--manifest", type=Path, default=sources.DEFAULT_MANIFEST)
     p.add_argument("--out", type=Path, required=True)
-    p.add_argument("--series", nargs="+", default=list(ALLOWED_ALFRED_SERIES))
+    p.add_argument("--series", nargs="+", default=list(DENIED_ALFRED_SERIES))
     p.add_argument("--vintage-chain-verified", type=Path)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--max-per-stratum", type=int)
     a = p.parse_args(argv)
+    try:  # first: nothing below runs, and no file is resolved, hashed or opened, when denied
+        _require_rights(_check_series(a.series), DEFAULT_RIGHTS, datetime.now(UTC).date())
+    except (AlfredError, rights.RightsDenied) as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
     if sources._inside_git_tree(a.out):
         print(f"refused: --out {a.out} is inside a git work tree", file=sys.stderr)
         return 2
@@ -305,7 +320,6 @@ def main(argv: list[str] | None = None) -> int:
     loader = sources.configure(a.manifest)
     csv_path = loader.verified_path("alfred_vintages")
     try:
-        # ponytail: DEFAULT_RIGHTS refuses until WO-D21-5 supplies verified per-series records.
         obs, counts = read_local_vintages(
             csv_path, a.series, DEFAULT_RIGHTS, datetime.now(UTC).date()
         )

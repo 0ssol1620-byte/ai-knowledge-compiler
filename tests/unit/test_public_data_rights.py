@@ -112,7 +112,9 @@ def test_register_matches_repository_notes() -> None:
     assert p["sec_edgar"].api_key == "not_required"
     assert (p["alfred"].api_key, p["alfred"].key_env_var) == ("required", "FRED_API_KEY")
     assert p["alfred"].per_series_rights
-    for sid in ("eia", "fhfa_hpi", "census_bps"):
+    # EIA API documentation: "You must use the API key."
+    assert (p["eia"].api_key, p["eia"].key_env_var) == ("required", "EIA_API_KEY")
+    for sid in ("fhfa_hpi", "census_bps"):
         assert p[sid].api_key == "unverified"
     key_like = re.compile(r"[A-Za-z0-9]{20,}")
     for s in p.values():

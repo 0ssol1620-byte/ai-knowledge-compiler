@@ -1,0 +1,5 @@
+Survey,CSA,CBSA,HHEADER,CBSA,,1-unit,,,2-units,,,3-4 units,,,5+ units,,,1-unit rep,,,2-units rep,,,3-4 units rep,,,5+ units rep
+Date,Code,Code,,Name,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value,Bldgs,Units,Value,      Bldgs,Units,Value,Bldgs,Units,Value
+ 
+202601,999,90001,4,Synthetic Metro A,1,120,300,0,0,0,0,0,0,1,7,900,1,2,300,0,0,0,0,0,0,1,7,900
+202601,999,90002,4,Synthetic Metro B,1,80,300,0,0,0,0,0,0,1,7,900,1,2,300,0,0,0,0,0,0,1,7,900

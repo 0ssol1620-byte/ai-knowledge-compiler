@@ -1,0 +1,55 @@
+{
+  "work_order": "WO-D21-5 (annotated by WO-D21-6)",
+  "note": "Recordings live in the untracked cache benchmark/cache/public_data/ and are not committed: no source has a verified redistribute right for its data and none is committed on a quote right alone. URLs carry no key and no query string. sha256 and bytes are of the bytes as received (gzip transfer for SEC).",
+  "cache_dir": "benchmark/cache/public_data",
+  "recordings": [
+    {
+      "source_id": "census_bps",
+      "file": "census_bps_cbsa2609c.txt",
+      "url": "https://www2.census.gov/econ/bps/CBSA%20(beginning%20Jan%202024)/cbsa2609c.txt",
+      "sha256": "sha256:71459fcf696e5e7854cbf882f9fe77bc93396cce991f96abec818f32c988783d",
+      "bytes": 89396,
+      "retrieved_at": "2026-11-17T09:42:48+00:00",
+      "http_status": null,
+      "parser": "akc_source_adapters.public_data.census.parse_census_bps_cbsa_ascii",
+      "purpose": "shape_check_only"
+    },
+    {
+      "source_id": "fhfa_hpi",
+      "file": "fhfa_hpi_master_first65536.csv",
+      "url": "https://www.fhfa.gov/hpi/download/monthly/hpi_master.csv",
+      "sha256": "sha256:6e78f1e554bb899613c97b53e89b5e7fdeffe53d4ef2c48cfe80c155ce6da719",
+      "bytes": 65536,
+      "retrieved_at": "2026-11-17T09:46:06+00:00",
+      "http_status": 206,
+      "content_encoding": "identity",
+      "byte_range": "0-65535",
+      "parser": "akc_source_adapters.public_data.fhfa.parse_fhfa_hpi_csv (complete lines only; the cut last line is not data)"
+    },
+    {
+      "source_id": "sec_edgar",
+      "file": "sec_edgar_companyfacts_CIK0000320193.json.gz",
+      "url": "https://data.sec.gov/api/xbrl/companyfacts/CIK0000320193.json",
+      "sha256": "sha256:e70d2e6faec769da1ca700d4a56be80da2ecd74c1c198853e7d7ef30c81497a0",
+      "bytes": 277466,
+      "retrieved_at": "2026-11-17T09:46:04+00:00",
+      "http_status": 200,
+      "content_encoding": "gzip",
+      "parser": "akc_source_adapters.public_data.edgar.parse_edgar_companyfacts (on the gunzipped body)",
+      "over_cap_decoded": true,
+      "decoded_bytes": 3859564
+    }
+  ],
+  "not_recorded": [
+    {
+      "source_id": "alfred",
+      "status": "terms read, not fetched",
+      "reason": "The FRED API terms prohibit storing, caching or archiving FRED content and its use in connection with developing AI systems; the FRED key was never loaded."
+    },
+    {
+      "source_id": "eia",
+      "status": "key not provided, not recorded",
+      "reason": "EIA's API documentation requires a registered key; none exists and none was requested. Terms and documentation pages only."
+    }
+  ]
+}
