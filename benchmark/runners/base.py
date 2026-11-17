@@ -431,8 +431,12 @@ def post_bytes(
 
 
 _METHODS = frozenset({"GET", "POST", "DELETE"})
-_QUERY_NAMES = frozenset({"pageSize", "pageToken"})
-_QUERY_VALUE = re.compile(r"[A-Za-z0-9._~-]{1,512}")
+# A page token is opaque (base64 of a cursor may hold "=", "+" or "/"); it is percent-encoded
+# into the request target by ``urlencode``. A page size is a plain decimal.
+QUERY_VALUES = {
+    "pageSize": re.compile(r"[1-9][0-9]{0,3}"),
+    "pageToken": re.compile(r"[A-Za-z0-9._~=+/-]{1,2048}"),
+}
 
 
 def request_bytes(
@@ -447,18 +451,20 @@ def request_bytes(
     """One request over the pinned, allowlisted HTTPS path; returns (status, content type, raw
     bytes). Nothing is interpreted here: the caller decides what a status or body means.
 
-    The query is closed: names from ``_QUERY_NAMES`` only, each value unreserved characters
-    only, refused before any DNS lookup. It is added to the request target and to nothing else
-    (the endpoint, which receipts record, keeps its allow-listed shape)."""
+    The query is closed: names from ``QUERY_VALUES`` only, each value of its name's shape,
+    refused before any DNS lookup. Values are percent-encoded into the request target and go
+    nowhere else (the endpoint, which receipts record, keeps its allow-listed shape)."""
     require_clean_endpoint(config.endpoint)
     if method not in _METHODS:
         raise RunnerUnavailable("request method must be GET, POST or DELETE")
     if query is not None and not (
         isinstance(query, dict)
-        and set(query) <= _QUERY_NAMES
-        and all(isinstance(v, str) and _QUERY_VALUE.fullmatch(v) for v in query.values())
+        and all(
+            k in QUERY_VALUES and isinstance(v, str) and QUERY_VALUES[k].fullmatch(v)
+            for k, v in query.items()
+        )
     ):
-        raise RunnerUnavailable("query must be pageSize/pageToken of unreserved characters only")
+        raise RunnerUnavailable("query must be pageSize/pageToken of their documented shape")
     if not config.allow_network:
         raise RunnerUnavailable("network runner requires explicit --allow-network")
     if not config.endpoint:
@@ -490,7 +496,7 @@ def request_bytes(
         pinned_ip=validated_endpoint.resolved_ips[0],
         timeout=config.timeout_seconds,
     )
-    query_text = urlencode(sorted(query.items())) if query else ""
+    query_text = urlencode(sorted(query.items()), quote_via=quote) if query else ""
     target = urlunsplit(("", "", parsed.path or "/", query_text, ""))
     try:
         connection.request(method, target, body=body, headers=headers)

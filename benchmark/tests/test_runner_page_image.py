@@ -1962,8 +1962,14 @@ def test_d0d_08_every_runner_passes_its_own_model_or_revision_to_the_door(
     [
         ("GET", {"key": "x"}),
         ("GET", {"pageToken": "a%2F"}),
-        ("GET", {"pageToken": "a=b"}),
+        # lead decision C (round 2): "=", "+" and "/" are now accepted in a pageToken (an
+        # opaque base64 token); they stay refused in pageSize, as does anything else
+        ("GET", {"pageSize": "a=b"}),
+        ("GET", {"pageSize": "0"}),
         ("GET", {"pageToken": "a b"}),
+        ("GET", {"pageToken": "a\nb"}),
+        ("GET", {"pageToken": "a&key=b"}),
+        ("GET", {"pageToken": "a" * 2049}),
         ("GET", {"pageToken": ""}),
         ("GET", {"pageSize": 5}),
         ("GET", ["pageToken"]),
@@ -2017,10 +2023,15 @@ def test_d0d_09_the_query_reaches_the_target_only(monkeypatch: pytest.MonkeyPatc
         b"{}",
     )
     base.request_bytes(config, "DELETE", None, {})
+    base.request_bytes(config, "GET", None, {}, query={"pageToken": "Ab+/9~_.-=="})
+    base.request_bytes(config, "GET", None, {}, query={"pageToken": "x" * 2048})
     assert sent == [
         ("GET", "/v1beta/batches?pageSize=50&pageToken=t-1"),
         ("DELETE", "/v1beta/batches"),
+        ("GET", "/v1beta/batches?pageToken=Ab%2B%2F9~_.-%3D%3D"),  # percent-encoded by code
+        ("GET", "/v1beta/batches?pageToken=" + "x" * 2048),
     ]
+    assert config.endpoint == "https://g.example/v1beta/batches"  # the receipt's view is unchanged
 
 
 # --- WO-D10-0D item 4: one request body for sync and batch; the batch REST helpers ---
@@ -2100,3 +2111,63 @@ def test_d0d_batch_helpers_go_through_the_door_and_the_exit(
     assert all(h["x-goog-api-key"] == KEY for *_, h in seen)
     with pytest.raises(RunnerUnavailable):
         gemini_api.batch_create("gemini-latest", b"{}", allow_network=True)
+
+
+# --- WO-D10-0D round 2: the API's own cutoff, the served-id map, batch cancel ---
+
+
+@pytest.mark.parametrize(
+    ("raw", "reason"),
+    [
+        (
+            _gemini(candidates=[{"finishReason": "MAX_TOKENS", "content": {"parts": []}}]),
+            "output_token_cutoff",
+        ),
+        (
+            _gemini(usageMetadata={"candidatesTokenCount": 200, "thoughtsTokenCount": 8000}),
+            "output_tokens_over_bound",
+        ),
+    ],
+)
+def test_d0d_r2_a_page_at_the_output_cutoff_is_a_failure_row_with_that_reason(
+    raw: bytes, reason: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    out = _call("gemini_api", FakeTransport(200, raw), monkeypatch)
+    assert out["failure"] == {"reason": reason}
+    assert base64.b64decode(out["receipt"]["raw_response_b64"]) == raw
+
+
+def test_d0d_r2_the_mistral_served_ids_are_exact_strings_from_the_spec(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    dated = "mistral-ocr-4-1-2611"
+    refused = _mistral(FakeTransport(200, _mistral_result(dated)), monkeypatch)
+    assert refused["failure"] == {"reason": "served_model_differs"}
+    served = [MISTRAL, dated]
+    ok = _mistral(FakeTransport(200, _mistral_result(dated)), monkeypatch, served_ids=served)
+    assert ok["text"] == "x"
+    for near in ("mistral-ocr-4-1-2612", "mistral-ocr-4-1-261", dated.upper()):
+        out = _mistral(FakeTransport(200, _mistral_result(near)), monkeypatch, served_ids=served)
+        assert out["failure"] == {"reason": "served_model_differs"}
+
+
+def test_d0d_r2_batch_cancel_posts_cancel_through_the_door(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from benchmark.runners import gemini_api
+
+    seen: list[tuple[str, str, Any]] = []
+
+    def transport(config: Any, method: str, body: Any, headers: dict[str, str], **kw: Any) -> Any:
+        seen.append((method, config.endpoint, body))
+        return 200, "application/json", b"{}"
+
+    monkeypatch.setattr(gemini_api, "request_bytes", transport)
+    monkeypatch.setenv("GEMINI_API_KEY", KEY)
+    out = gemini_api.batch_cancel("batches/b1", allow_network=True)
+    assert out["http_status"] == 200
+    base_url = "https://generativelanguage.googleapis.com/v1beta"
+    assert seen == [("POST", f"{base_url}/batches/b1:cancel", b"{}")]
+    with pytest.raises(RunnerUnavailable, match="batch job name"):
+        gemini_api.batch_cancel("batches/b1:cancel", allow_network=True)
+    assert len(seen) == 1

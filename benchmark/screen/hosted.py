@@ -1,8 +1,20 @@
 """Hosted arm ``d10-hosted-arm-v1``: the door, the spend stop, submission, collection, resume.
 
 CLI: ``python -m benchmark.screen.hosted {prepaid,dry,rehearsal,full,collect,score} ...``.
-Exit codes: 0 done, 2 refused (a ``ContractError``; nothing further was sent), 3 pending
-(a batch is not terminal yet: rerun ``collect``).
+Exit codes: 0 done, 2 refused (a ``ContractError`` or an immutable-output conflict; nothing
+further was sent; this includes a stopped arm whose stage cannot finish: the lead decides),
+3 pending (a batch is not terminal yet, a page has no outcome yet, or a provider did not
+answer: rerun ``collect``), 1 an unexpected error (its type only; no traceback is printed,
+since one could carry a URL).
+
+* **Completion.** One function (``stage_gaps``) decides whether a paid stage is complete: every
+  page of the stage's dry plan has a terminal outcome (a collected result, a failure row, or a
+  ``page_refused:*`` settlement; a Mistral half stopped by a 401/403 marks its remaining pages
+  not run) and every job of the stage is closed (``job.accepted.v1`` or
+  ``hosted.job.terminal.v1``). ``_finish_stage`` refuses otherwise.
+* **The dry plan binds.** A paid stage sends the dry receipt's Gemini and Mistral page lists
+  (restricted to the stage's pages) minus the collected pages, each page with the image sha256
+  the dry plan rendered; ``full``'s page list must equal the dry receipt's admitted list.
 
 * **Door.** ``admit`` lets through only a dev document whose rights class is on
   ``HOSTED_RIGHTS`` (a code constant). The page-list builder calls it, and the Gemini submit
@@ -25,9 +37,11 @@ import argparse
 import base64
 import contextlib
 import hashlib
+import html
 import importlib
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -44,7 +58,13 @@ from benchmark.runners import base, gemini_api, mistral_ocr, vlm
 from benchmark.runners.base import RunnerConfig, RunnerUnavailable, build_provider_payload
 from benchmark.screen.campaign import Campaign, CampaignSpec, load_spec
 from benchmark.screen.manifest import HoldoutGuard, verify
-from benchmark.screen.run_screen import Candidate, _case, _write_once, run_screen
+from benchmark.screen.run_screen import (
+    Candidate,
+    ImmutableOutputError,
+    _case,
+    _write_once,
+    run_screen,
+)
 from benchmark.v6.contracts import ContractError, canonical_sha256
 from benchmark.v6.ledger import EvidenceLedger
 from infra.runpod.v6.authorized_budget import AuthorizedSpendBudget
@@ -69,6 +89,13 @@ PENDING = frozenset(
 )
 # ponytail: one re-attempt per Mistral page is reserved; a second one needs the lead.
 MISTRAL_ATTEMPTS_RESERVED = 2
+# Mistral attempt outcomes that leave the page without a terminal outcome (retried as n+1).
+MISTRAL_RETRY_OUTCOMES = frozenset({"unavailable", "no_outcome_at_restart"})
+EXHAUSTED = "provider_unavailable_exhausted"
+# Failure reasons that say what happened to the request, not what the model did: the score
+# step reports them apart from model failures.
+OPERATIONAL_REASONS = frozenset({EXHAUSTED, "batch_entry_error", base.CREDENTIAL_IN_RESULT})
+_SAFE_ID = re.compile(r"[A-Za-z0-9._:/@-]{1,128}")
 PUBLICATION = {
     MISTRAL: {"publishable": False, "reason": "mistral_tos_6_1_b"},
     GEMINI: {"publishable": False, "reason": "§9 claims rule"},
@@ -183,6 +210,16 @@ def load_hosted_spec(path: Path = SPEC_PATH) -> HostedSpec:
         raise ContractError(f"hosted pin refused: {exc}") from exc
     if mistral["options"]:
         raise ContractError("mistral_ocr_4 takes no runner options")
+    served = mistral.get("served_ids")
+    ids = served.get(mistral["model"]) if isinstance(served, dict) else None
+    if (
+        not isinstance(served, dict)
+        or set(served) != {mistral["model"]}
+        or not isinstance(ids, list)
+        or mistral["model"] not in ids
+        or not all(isinstance(i, str) and _SAFE_ID.fullmatch(i) for i in ids)
+    ):
+        raise ContractError("served_ids must map the pinned Mistral id to exact ids, itself among")
     _limit(gemini, "inline_max_bytes", "inline_request_bytes_documented")
     _limit(gemini, "max_requests_per_batch", "max_requests_per_batch_documented")
     _limit(gemini, "max_concurrent_batches", "concurrent_batches_documented")
@@ -196,6 +233,18 @@ def load_hosted_spec(path: Path = SPEC_PATH) -> HostedSpec:
             for field in ("source_url", "snapshot_file", "snapshot_sha256", "retrieved_at"):
                 if not isinstance(price.get(field), str) or not price[field]:
                     raise ContractError(f"price field {field} is missing")
+            anchor = price.get("anchor")
+            if not (
+                isinstance(anchor, list)
+                and anchor
+                and all(
+                    isinstance(step, dict)
+                    and set(step) == {"start", "end"}
+                    and all(isinstance(v, str) and v for v in step.values())
+                    for step in anchor
+                )
+            ):
+                raise ContractError("a price needs an anchor: steps of non-empty start and end")
     return HostedSpec(
         path=path,
         sha256="sha256:" + hashlib.sha256(data).hexdigest(),
@@ -208,8 +257,21 @@ def load_hosted_spec(path: Path = SPEC_PATH) -> HostedSpec:
     )
 
 
+def anchored(text: str, anchor: Sequence[Mapping[str, str]]) -> str | None:
+    """The text inside the anchor: each step keeps what lies from its ``start`` (exactly once in
+    the text so far) to the first ``end`` after it; None when a step does not hold."""
+    for step in anchor:
+        if text.count(step["start"]) != 1:
+            return None
+        text = text[text.index(step["start"]) + len(step["start"]) :]
+        end = text.find(step["end"])
+        text = text if end < 0 else text[:end]
+    return text
+
+
 def check_snapshots(spec: HostedSpec, snapshot_dir: Path) -> list[dict[str, Any]]:
-    """Each pinned price: its snapshot exists, has the pinned sha256 and contains "$" + value."""
+    """Each pinned price: its snapshot exists, has the pinned sha256 and holds "$" + value (not
+    followed by another digit) inside the price's anchor: that model's row for that mode."""
     rows = []
     for provider in PROVIDERS:
         for name, price in spec.block(provider)["prices"].items():
@@ -219,24 +281,33 @@ def check_snapshots(spec: HostedSpec, snapshot_dir: Path) -> list[dict[str, Any]
             data = path.read_bytes()
             if hashlib.sha256(data).hexdigest() != price["snapshot_sha256"]:
                 raise ContractError(f"price snapshot sha256 differs for {provider}.{name}")
-            if ("$" + price["value"]).encode() not in data:
+            text = html.unescape(data.decode("utf-8", "replace").replace("\r\n", "\n"))
+            row = anchored(text, price["anchor"])
+            value = re.compile(re.escape("$" + price["value"]) + r"(?![0-9]|\.[0-9])")
+            if row is None or value.search(row) is None:
                 raise ContractError(
-                    f"pinned price {provider}.{name} does not occur in its snapshot"
+                    f"pinned price {provider}.{name} does not occur in its snapshot's "
+                    "row for that model and mode"
                 )
             rows.append({"provider": provider, "price": name, **price})
     return rows
 
 
 def thinking_bound(spec: HostedSpec) -> int:
-    """The numeric thought-token bound; a thinkingLevel has none and is costed at the maximum."""
+    """The numeric thought-token bound: a thinkingBudget, or else the API's own cutoff
+    ``maxOutputTokens``, which covers thinking and output together (lead decision E)."""
     thinking = spec.gemini_config["generation"]["thinkingConfig"]
-    return int(thinking.get("thinkingBudget", gemini_api.MAX_THINKING_BUDGET))
+    cutoff = int(gemini_api.GENERATION["maxOutputTokens"])
+    return min(int(thinking.get("thinkingBudget", cutoff)), cutoff)
 
 
 def page_worst_usd(spec: HostedSpec, provider: str) -> Decimal:
+    """Mistral: one page at the list price. Gemini: input_tokens_bound x input price +
+    maxOutputTokens x output price; maxOutputTokens bounds thinking and output combined and
+    the output price includes thinking, so there is no second thinking term."""
     if provider == MISTRAL:
         return spec.price(MISTRAL, "usd_per_1000_pages") / 1000
-    out_tokens = gemini_api.GENERATION["maxOutputTokens"] + thinking_bound(spec)
+    out_tokens = gemini_api.GENERATION["maxOutputTokens"]
     return (
         Decimal(spec.gemini["input_tokens_bound"]) * spec.price(GEMINI, "input_usd_per_1m_tokens")
         + Decimal(out_tokens) * spec.price(GEMINI, "output_usd_per_1m_tokens")
@@ -470,6 +541,8 @@ class GeminiBatches:
             token = page.get("nextPageToken") or None
             if token is None:
                 return operations
+            if not (isinstance(token, str) and base.QUERY_VALUES["pageToken"].fullmatch(token)):
+                raise ContractError("the listing's page token is outside the accepted shape")
         raise ContractError("batch listing did not end")
 
     def tagged_resource_ids(self, run_tag: str) -> Sequence[str]:
@@ -482,9 +555,10 @@ class GeminiBatches:
         return ids
 
     def delete(self, resource_id: str) -> None:
+        """DELETE; a 404 means an earlier teardown already removed it (``exists`` proves it)."""
         name = "batches/" + resource_id
         status, _ = _rest(gemini_api.batch_delete(name, allow_network=self.allow_network))
-        if status != 200:
+        if status not in (200, 404):
             raise RunnerUnavailable("batch delete did not answer 200")
 
     def exists(self, resource_id: str) -> bool:
@@ -516,7 +590,13 @@ class Arm:
         return [e.payload for e in self.ledger.iter_type(kind)]
 
     def stop(self, reason: str, **detail: Any) -> None:
-        self.ledger.append("campaign.stopped.v1", {"reason": reason, **detail})
+        """Stop the arm; the same stop is recorded once however often its cause is met."""
+        payload = {"reason": reason, **detail}
+        if payload not in self.events("campaign.stopped.v1"):
+            self.ledger.append("campaign.stopped.v1", payload)
+
+    def provider_stopped(self, provider: str) -> bool:
+        return any(p["provider"] == provider for p in self.events("hosted.provider_stopped.v1"))
 
     def _credit_budget(self) -> AuthorizedSpendBudget | None:
         records = self.events("hosted.credit.recorded.v1")
@@ -590,6 +670,36 @@ def _closed(arm: Arm) -> set[str]:
     return keys | {str(p["idempotency_key"]) for p in arm.events("hosted.job.terminal.v1")}
 
 
+def _close(
+    arm: Arm,
+    intent: Mapping[str, Any],
+    *,
+    state: str,
+    reason: str,
+    name: str | None = None,
+    **extra: Any,
+) -> None:
+    """Close a Gemini job once with ``hosted.job.terminal.v1``, its credit left at worst case."""
+    key = str(intent["idempotency_key"])
+    if key in _closed(arm):
+        return
+    arm.ledger.append(
+        "hosted.job.terminal.v1",
+        {
+            "idempotency_key": key,
+            "provider": GEMINI,
+            "provider_job_id": name,
+            "state": state,
+            "reason": reason,
+            "actual_usd": str(intent["reserved_usd"]),
+            "flagged": "no_usage_reported_charged_worst_case",
+            **extra,
+        },
+    )
+    if arm.credit is not None:
+        _settle(arm.credit, key, intent["reserved_usd"])
+
+
 def _dispatched(arm: Arm) -> dict[str, str]:
     return {
         str(p["idempotency_key"]): str(p["provider_job_id"])
@@ -656,19 +766,25 @@ def _build_create(
 def submit_chunk(
     arm: Arm, stage: str, chunk: Chunk, pages: Mapping[str, Page], corpus_root: Path
 ) -> None:
-    if arm.campaign.stopped:
-        raise ContractError("the arm is stopped; nothing is submitted")
+    """Create a chunk's batch once. On a stopped arm only what was already paid for moves on:
+    a dispatched job is left to ``poll``, and an intent without a dispatch is looked up and
+    adopted; nothing new is created."""
     for info in chunk.pages:  # the door first: a list that skipped the builder stops here
         admit(pages[info["page_id"]].doc)
     if chunk.key in _dispatched(arm) or chunk.key in _closed(arm):
         return  # polled, never created again
     intent = _intents(arm, GEMINI).get(chunk.key)
+    if intent is None and arm.campaign.stopped:
+        raise ContractError("the arm is stopped; nothing is submitted")
     if intent is not None:  # crashed between intent and dispatch
         for op in GeminiBatches().list_all():
             if _meta(op).get("displayName") == chunk.display_name:
                 found = gemini_api.job_name(op.get("name"))
                 _dispatch(arm, chunk, found, str(intent["input_sha256"]), adopted=True)
                 return
+        if arm.campaign.stopped:  # not created again; charged its worst case to stay safe
+            _close(arm, intent, state="NOT_FOUND", reason="absent_and_arm_stopped")
+            return
         body, request_sha = _build_create(arm, chunk, pages, corpus_root)
         if request_sha != intent["input_sha256"]:
             raise ContractError("the recreated request differs from its intent")
@@ -778,8 +894,16 @@ def _collect_job(arm: Arm, stage: str, intent: Mapping[str, Any], name: str, raw
     op = _loads(raw)
     sent = [str(p["case_id"]) for p in intent["pages"]]
     mapped = _mapping(_entries(op), sent)
-    if mapped is None:
+    if mapped is None:  # closed once: never polled again, credit left at worst case
         arm.ledger.append("hosted.batch.mapping_failed.v1", {"idempotency_key": key, "job": name})
+        _close(
+            arm,
+            intent,
+            state="MAPPING_FAILED",
+            reason="mapping_failed",
+            name=name,
+            batch_raw_sha256=_sha(raw),
+        )
         arm.stop("mapping_failed", job=name)
         return
     model = spec.gemini["model"]
@@ -792,6 +916,7 @@ def _collect_job(arm: Arm, stage: str, intent: Mapping[str, Any], name: str, raw
         "render": None,
     }
     total, flagged, stops = Decimal(0), [], set()
+    per_page: list[dict[str, Any]] = []
     for info in intent["pages"]:
         index, entry = mapped[str(info["case_id"])]
         payload = {"benchmark_case_id": info["case_id"]}
@@ -822,10 +947,22 @@ def _collect_job(arm: Arm, stage: str, intent: Mapping[str, Any], name: str, raw
         reason = (result.get("failure") or {}).get("reason")
         if reason in ("served_model_differs", base.CREDENTIAL_IN_RESULT):
             stops.add(str(reason))
+        if reason in gemini_api.CUTOFF_REASONS and stage == "rehearsal":
+            stops.add("rehearsal_page_cut_off")  # the lead decides before anything else runs
         if _count(usage, "thoughtsTokenCount") > thinking_bound(spec):
             stops.add("thoughts_over_budget")
         if _count(usage, "promptTokenCount") > spec.gemini["input_tokens_bound"]:
             stops.add("prompt_tokens_over_bound")
+        per_page.append(
+            {
+                "page_id": str(info["page_id"]),
+                "prompt_tokens": _count(usage, "promptTokenCount"),
+                "candidates_tokens": _count(usage, "candidatesTokenCount"),
+                "thoughts_tokens": _count(usage, "thoughtsTokenCount"),
+                "cost_usd": str(cost),
+                "failure": reason,
+            }
+        )
         _store(_collected(arm, GEMINI, str(info["case_id"])), result)
     meta = op.get("metadata") if isinstance(op.get("metadata"), dict) else {}
     if meta.get("model") != f"models/{model}":
@@ -840,6 +977,7 @@ def _collect_job(arm: Arm, stage: str, intent: Mapping[str, Any], name: str, raw
             "stage": stage,
             "actual_usd": str(total),
             "flagged_no_usage": flagged,
+            "pages": per_page,
             "batch_raw_sha256": _sha(raw),
         },
     )
@@ -849,6 +987,15 @@ def _collect_job(arm: Arm, stage: str, intent: Mapping[str, Any], name: str, raw
         stops.add("chunk_cost_over_reservation")
     for reason in sorted(stops):
         arm.stop(reason, job=name)
+
+
+def _cancel_once(arm: Arm, name: str) -> None:
+    """``POST :cancel`` once per job (the reference: DELETE does not cancel); recorded with the
+    status it answered. The job is still polled until it is terminal."""
+    if any(p["job"] == name for p in arm.events("hosted.job.cancel_requested.v1")):
+        return
+    status, _ = _rest(gemini_api.batch_cancel(name, allow_network=True))
+    arm.ledger.append("hosted.job.cancel_requested.v1", {"job": name, "http_status": status})
 
 
 def poll(
@@ -889,23 +1036,13 @@ def poll(
                 if op.get("done") is True:  # otherwise: not complete yet, poll again
                     _collect_job(arm, stage, intent, name, raw)
             elif state in TERMINAL:
-                arm.ledger.append(
-                    "hosted.job.terminal.v1",
-                    {
-                        "idempotency_key": intent["idempotency_key"],
-                        "provider": GEMINI,
-                        "provider_job_id": name,
-                        "state": str(state),
-                        "actual_usd": str(intent["reserved_usd"]),
-                        "flagged": "no_usage_reported_charged_worst_case",
-                    },
-                )
-                if arm.credit is not None:
-                    _settle(arm.credit, str(intent["idempotency_key"]), intent["reserved_usd"])
+                _close(arm, intent, state=str(state), reason="job_not_succeeded", name=name)
                 arm.stop("job_not_succeeded", job=name, state=str(state))
             elif state not in PENDING:
                 arm.stop("unknown_batch_state", job=name)
                 return len(open_jobs)
+            elif arm.campaign.stopped:
+                _cancel_once(arm, name)  # paid for and still running: cancel, keep polling
         remaining = [
             k
             for k, _ in _dispatched(arm).items()
@@ -937,6 +1074,52 @@ def settle_open_mistral(arm: Arm, stage: str) -> None:
             )
 
 
+def _mistral_attempts(arm: Arm, page_id: str) -> list[str]:
+    """The idempotency keys of every Mistral attempt at a page, in order."""
+    return [k for k, p in _intents(arm, MISTRAL).items() if p.get("page_id") == page_id]
+
+
+def mistral_terminal(arm: Arm, page: Page) -> bool:
+    """A Mistral page has a terminal outcome: a collected result or failure row, a
+    ``page_refused:*`` settlement, or a Mistral half stopped (its remaining pages not run)."""
+    if _collected(arm, MISTRAL, page.case_id).exists() or arm.provider_stopped(MISTRAL):
+        return True
+    return mistral_refused(arm, page)
+
+
+def mistral_refused(arm: Arm, page: Page) -> bool:
+    """An attempt at the page was refused before sending (``page_refused:*``)."""
+    keys = set(_mistral_attempts(arm, page.page_id))
+    return any(
+        str(p["idempotency_key"]) in keys and str(p["outcome"]).startswith("page_refused:")
+        for p in arm.events("hosted.page.settled.v1")
+    )
+
+
+def _exhaust(arm: Arm, page: Page, keys: Sequence[str]) -> None:
+    """Every reserved attempt ended without an outcome: a terminal failure row, never a model
+    error (the score step reports it apart)."""
+    model = arm.spec.mistral["model"]
+    config = RunnerConfig(MISTRAL, model, arm.spec.endpoint(MISTRAL))
+    receipt = {
+        "config_sha256": vlm.config_sha256(dict(arm.spec.mistral_config)),
+        "attempts": len(keys),
+        "attempt_idempotency_keys": list(keys),
+    }
+    row = vlm.failure(config, {"benchmark_case_id": page.case_id}, EXHAUSTED, receipt)
+    _store(_collected(arm, MISTRAL, page.case_id), row)
+
+
+def _observed_model(result: Mapping[str, Any]) -> str:
+    """The id a response named, from its kept raw bytes, if it is a plain id; else a marker."""
+    try:
+        raw = base64.b64decode(result["receipt"]["raw_response_b64"])
+        model = _loads(raw).get("model")
+    except Exception:
+        return "<unreadable>"
+    return model if isinstance(model, str) and _SAFE_ID.fullmatch(model) else "<not_an_id>"
+
+
 def call_mistral(
     arm: Arm,
     stage: str,
@@ -944,14 +1127,18 @@ def call_mistral(
     corpus_root: Path,
     *,
     call: Callable[..., dict[str, Any]] = mistral_ocr.run,
-) -> None:
+) -> str:
+    """One attempt at one page; returns its outcome. A page whose reserved attempts are used
+    up without an outcome gets the terminal failure row ``provider_unavailable_exhausted``."""
     if arm.campaign.stopped:
         raise ContractError("the arm is stopped; nothing is submitted")
     admit(page.doc)  # the door, before the request is built
     spec = arm.spec
-    attempt = 1 + sum(
-        1 for p in _intents(arm, MISTRAL).values() if p.get("page_id") == page.page_id
-    )
+    done = _mistral_attempts(arm, page.page_id)
+    if len(done) >= MISTRAL_ATTEMPTS_RESERVED:
+        _exhaust(arm, page, done)
+        return EXHAUSTED
+    attempt = 1 + len(done)
     key = canonical_sha256(
         {
             "campaign": spec.campaign.campaign_id,
@@ -984,6 +1171,7 @@ def call_mistral(
             payload,
             endpoint=spec.endpoint(MISTRAL),
             model=spec.mistral["model"],
+            served_ids=spec.mistral["served_ids"][spec.mistral["model"]],
             allow_network=True,
         )
     except vlm.PageRefused as exc:
@@ -1007,16 +1195,32 @@ def call_mistral(
             "idempotency_key": key,
             "provider": MISTRAL,
             "stage": stage,
+            "page_id": page.page_id,
             "actual_usd": str(actual),
             "outcome": outcome,
             "flagged": flagged,
         },
     )
+    if outcome == "unavailable" and attempt >= MISTRAL_ATTEMPTS_RESERVED:
+        _exhaust(arm, page, [*done, key])
+        return EXHAUSTED
     reason = ((result or {}).get("failure") or {}).get("reason")
-    if reason in ("served_model_differs", "malformed_response", base.CREDENTIAL_IN_RESULT) or (
+    if reason in ("http_401", "http_403"):  # the key cannot call: the Mistral half is not run
+        arm.ledger.append(
+            "hosted.provider_stopped.v1",
+            {"provider": MISTRAL, "reason": reason, "page_id": page.page_id},
+        )
+    elif reason == "served_model_differs" and result is not None:
+        arm.stop(
+            "mistral_served_model_differs",
+            page_id=page.page_id,
+            observed_model=_observed_model(result),
+        )
+    elif reason in ("malformed_response", base.CREDENTIAL_IN_RESULT) or (
         isinstance(reason, str) and reason.startswith("http_4") and reason != "http_429"
     ):
         arm.stop(f"mistral_{reason}", page_id=page.page_id)
+    return outcome
 
 
 # --- stages ---------------------------------------------------------------------------------
@@ -1383,6 +1587,95 @@ def run_paid(
         raise
 
 
+@dataclass(frozen=True)
+class StagePages:
+    """A paid stage's pages, bound to the dry plan: the Gemini and Mistral lists the dry plan
+    kept for the stage's pages, the dry plan's page refusals among them, and the image sha256
+    the dry plan rendered for each."""
+
+    gemini: tuple[Page, ...]
+    mistral: tuple[Page, ...]
+    refusals: tuple[Mapping[str, Any], ...]
+    image_sha256: Mapping[str, str]
+
+
+def stage_pages(stage: str, admitted: Sequence[Page], dry: Mapping[str, Any]) -> StagePages:
+    """The dry plan binds: ``full`` takes exactly the dry receipt's admitted list, the rehearsal
+    a subset of the dry lists; each provider gets only the pages its dry list kept."""
+    rendered = {str(r["page_id"]): r for r in dry.get("pages") or []}
+    refusals = list(dry.get("page_refusals") or [])
+    no_gemini = {str(r["page_id"]) for r in refusals if r.get("provider") in (GEMINI, "both")}
+    gemini_plan = set(rendered) - no_gemini
+    mistral_plan = {str(page_id) for page_id in dry.get("mistral_pages") or []}
+    if stage == "rehearsal":
+        chosen = rehearsal_pages(admitted)
+        if not {p.page_id for p in chosen} <= gemini_plan | mistral_plan:
+            raise ContractError("the stage's pages are not a subset of the dry list")
+    else:
+        chosen = list(admitted)
+        dry_admitted = set((dry.get("admitted") or {}).get("page_ids") or [])
+        if {p.page_id for p in chosen} != dry_admitted:
+            raise ContractError("the stage's page list differs from the dry receipt's")
+    ids = {p.page_id for p in chosen}
+    return StagePages(
+        gemini=tuple(p for p in chosen if p.page_id in gemini_plan),
+        mistral=tuple(p for p in chosen if p.page_id in mistral_plan),
+        refusals=tuple(r for r in refusals if r.get("page_id") in ids),
+        image_sha256={i: str(rendered[i]["image_sha256"]) for i in ids if i in rendered},
+    )
+
+
+def _bind(plan: Plan, pages: StagePages) -> None:
+    """The paid stage renders what the dry plan rendered: same images, no new refusal."""
+    known = {(r.get("page_id"), r.get("provider")) for r in pages.refusals}
+    new = [r for r in plan.page_refusals if (r["page_id"], r["provider"]) not in known]
+    if new:
+        raise ContractError(f"{new[0]['page_id']}: refused now but not in the dry plan")
+    for row in plan.rendered:
+        if row["image_sha256"] != pages.image_sha256.get(row["page_id"]):
+            raise ContractError(f"{row['page_id']}: the page image differs from the dry plan's")
+
+
+def stage_gaps(arm: Arm, stage: str, pages: StagePages) -> list[str]:
+    """What keeps a stage from being complete; empty when every page of its dry plan has a
+    terminal outcome and every job of the stage is closed. The one completeness test."""
+    gaps = [
+        f"{GEMINI}:{p.page_id}"
+        for p in pages.gemini
+        if not _collected(arm, GEMINI, p.case_id).exists()
+    ]
+    gaps += [f"{MISTRAL}:{p.page_id}" for p in pages.mistral if not mistral_terminal(arm, p)]
+    closed = _closed(arm)
+    gaps += [
+        f"job:{k}"
+        for k, intent in _intents(arm, GEMINI).items()
+        if intent.get("stage") == stage and k not in closed
+    ]
+    return gaps
+
+
+def _stage_jobs(arm: Arm, stage: str) -> list[dict[str, Any]]:
+    intents = _intents(arm, GEMINI)
+    return [
+        {"job": n, "idempotency_key": k}
+        for k, n in _dispatched(arm).items()
+        if intents.get(k, {}).get("stage") == stage
+    ]
+
+
+def _teardown_stopped(arm: Arm, stage: str) -> None:
+    """A stopped stage that cannot finish still deletes its jobs and proves the 404, once."""
+    proven = {
+        rid
+        for p in arm.events("campaign.teardown.v1")
+        if p["stage"] == stage
+        for rid in p["confirmed_404"]
+    }
+    ids = [_resource_id(j["job"]) for j in _stage_jobs(arm, stage)]
+    if any(rid not in proven for rid in ids):
+        arm.campaign.teardown(stage, [rid for rid in ids if rid not in proven])
+
+
 def _run_paid(
     arm: Arm,
     stage: str,
@@ -1404,14 +1697,11 @@ def _run_paid(
     snapshots = check_snapshots(spec, snapshot_dir)
     manifest = _load_manifest(manifest_path, corpus_root)
     admitted, refused = page_list(manifest["documents"])
-    dry_ids = set(json.loads((out / "dry" / "receipt.json").read_bytes())["mistral_pages"] or [])
-    dry_ids |= {
-        p["page_id"] for p in json.loads((out / "dry" / "receipt.json").read_bytes())["pages"]
-    }
-    chosen = rehearsal_pages(admitted) if stage == "rehearsal" else admitted
-    if not {p.page_id for p in chosen} <= dry_ids:
-        raise ContractError("the stage's pages are not a subset of the dry list")
+    pages = stage_pages(stage, admitted, json.loads((out / "dry" / "receipt.json").read_bytes()))
     settle_open_mistral(arm, stage)
+    reserved = any(p["stage"] == stage for p in arm.events("campaign.stage_reserved.v1"))
+    if arm.campaign.stopped and not reserved:
+        raise ContractError("the arm is stopped; nothing is submitted")
     open_pages = {
         str(i["page_id"])
         for k, p in _intents(arm, GEMINI).items()
@@ -1420,46 +1710,71 @@ def _run_paid(
     }
     todo_g = [
         p
-        for p in chosen
+        for p in pages.gemini
         if not _collected(arm, GEMINI, p.case_id).exists() and p.page_id not in open_pages
     ]
-    todo_m = [p for p in chosen if not _collected(arm, MISTRAL, p.case_id).exists()]
+    todo_m = [p for p in pages.mistral if not mistral_terminal(arm, p)]
     before = _budgets(arm)
-    reserve = page_worst_usd(spec, MISTRAL) * max(len(todo_m), 1) * MISTRAL_ATTEMPTS_RESERVED
-    arm.ensure_reserved(stage, reserve)
+    plan = build_plan(spec, todo_g, corpus_root)  # renders only; nothing is sent
+    _bind(plan, pages)
+    if not arm.campaign.stopped:
+        if arm.credit is None:
+            raise ContractError("no prepaid credit is recorded; nothing paid runs")
+        new = [c for c in plan.chunks if c.key not in _intents(arm, GEMINI)]
+        worst = page_worst_usd(spec, GEMINI) * sum(len(c.pages) for c in new)
+        if worst > arm.credit.remaining_usd:  # the whole remainder, before the first chunk
+            raise ContractError("the stage's remaining Gemini worst case is above the credit left")
+        reserve = page_worst_usd(spec, MISTRAL) * max(len(todo_m), 1) * MISTRAL_ATTEMPTS_RESERVED
+        arm.ensure_reserved(stage, reserve)
     by_id = {p.page_id: p for p in admitted}
     for intent in [p for k, p in _intents(arm, GEMINI).items() if k not in _closed(arm)]:
         chunk = Chunk(str(intent["idempotency_key"]), tuple(intent["pages"]))
         submit_chunk(arm, str(intent["stage"]), chunk, by_id, corpus_root)
-    plan = build_plan(spec, todo_g, corpus_root)
     for chunk in plan.chunks:
-        submit_chunk(arm, stage, chunk, by_id, corpus_root)
-    for page in todo_m:
         if arm.campaign.stopped:
             break
-        call_mistral(arm, stage, page, corpus_root, call=mistral_call)
-    pending = poll(arm, stage, max_wait=max_wait, interval=interval, sleep=sleep)
-    if pending:
+        submit_chunk(arm, stage, chunk, by_id, corpus_root)
+    for page in todo_m:
+        if arm.campaign.stopped or arm.provider_stopped(MISTRAL):
+            break
+        outcome = call_mistral(arm, stage, page, corpus_root, call=mistral_call)
+        if outcome in MISTRAL_RETRY_OUTCOMES or outcome == EXHAUSTED:
+            break  # the provider did not answer: back off; collect resumes from this page
+    if poll(arm, stage, max_wait=max_wait, interval=interval, sleep=sleep):
         return 3
-    return _finish_stage(arm, stage, env, snapshots, manifest, refused, before)
+    gaps = stage_gaps(arm, stage, pages)
+    if gaps and arm.campaign.stopped:
+        _teardown_stopped(arm, stage)
+        raise ContractError(
+            f"the arm is stopped and {len(gaps)} page(s) or job(s) of the {stage} stage have "
+            "no outcome; the lead decides"
+        )
+    if gaps:
+        return 3
+    return _finish_stage(arm, stage, pages, env, snapshots, manifest, refused, before)
+
+
+def operational(reason: str) -> bool:
+    """A failure that says what happened to the request, not what the model wrote."""
+    return reason in OPERATIONAL_REASONS or reason.startswith("http_")
 
 
 def _finish_stage(
     arm: Arm,
     stage: str,
+    pages: StagePages,
     env: dict[str, Any],
     snapshots: list[dict[str, Any]],
     manifest: Mapping[str, Any],
     refused: list[dict[str, str]],
     before: dict[str, Any],
 ) -> int:
+    gaps = stage_gaps(arm, stage, pages)
+    if gaps:
+        raise ContractError(f"the {stage} stage is not complete: {len(gaps)} without outcome")
     settled = [p for p in arm.events("hosted.page.settled.v1") if p.get("stage") == stage]
     actual = sum((Decimal(str(p["actual_usd"])) for p in settled), Decimal(0))
-    jobs: list[dict[str, Any]] = [
-        {"job": n, "idempotency_key": k}
-        for k, n in _dispatched(arm).items()
-        if _intents(arm, GEMINI).get(k, {}).get("stage") == stage
-    ]
+    jobs = _stage_jobs(arm, stage)
     arm.campaign.complete_stage(
         stage,
         actual_cost_usd=actual,
@@ -1472,6 +1787,12 @@ def _finish_stage(
         job["states"] = [p["state"] for p in timeline if p["job"] == job["job"]]
     scan = scan_credentials(arm, [arm.out / stage, arm.out / "collected"])
     arm = Arm(arm.spec, arm.out, NoNetwork())
+    keys = {j["idempotency_key"] for j in jobs}
+    not_run = [
+        p.page_id
+        for p in pages.mistral
+        if not _collected(arm, MISTRAL, p.case_id).exists() and not mistral_refused(arm, p)
+    ]
     receipt = _receipt(
         arm,
         stage,
@@ -1479,11 +1800,23 @@ def _finish_stage(
         environment=env,
         snapshots=snapshots,
         refused_documents=refused,
+        page_refusals=list(pages.refusals),
+        pages={GEMINI: [p.page_id for p in pages.gemini]},
+        mistral_pages=[p.page_id for p in pages.mistral],
         jobs=jobs,
         results={
             "accepted": [p for p in arm.events("job.accepted.v1") if p.get("stage") == stage],
+            "terminal": [
+                p for p in arm.events("hosted.job.terminal.v1") if p["idempotency_key"] in keys
+            ],
             "mistral": settled,
             "mistral_actual_usd": str(actual),
+            "mistral_not_run": not_run if arm.provider_stopped(MISTRAL) else [],
+            "mistral_stopped": arm.events("hosted.provider_stopped.v1"),
+            "failures": {
+                GEMINI: _failure_split(arm.out / "collected" / GEMINI, pages.gemini),
+                MISTRAL: _failure_split(arm.out / "collected" / MISTRAL, pages.mistral),
+            },
             "stops": arm.events("campaign.stopped.v1"),
         },
         budget_before=before,
@@ -1570,9 +1903,12 @@ def score(
         {"documents": docs, "manifest_sha256": manifest["manifest_sha256"]},
         out / "score" / "holdout-access.log",
     )
-    lookup = collected_lookup(collected_root or out / "collected")
-    files = {}
+    root = collected_root or out / "collected"
+    lookup = collected_lookup(root)
+    files, failures = {}, {}
+    pages, _ = page_list(docs)
     for provider in PROVIDERS:
+        failures[provider] = _failure_split(root / provider, pages)
         records = out / "score" / f"{provider}.jsonl"
         run_screen(
             guard=guard,
@@ -1586,7 +1922,28 @@ def score(
             call=lookup,
         )
         files[provider] = _sha(records.read_bytes())
-    return {"records_sha256": files, "publication": PUBLICATION, "gold_eligible": False}
+    return {
+        "records_sha256": files,
+        "failures": failures,
+        "publication": PUBLICATION,
+        "gold_eligible": False,
+    }
+
+
+def _failure_split(root: Path, pages: Sequence[Page]) -> dict[str, Any]:
+    """Pages that are not a model's answer, reported apart from model failures: operational
+    failure rows (e.g. ``provider_unavailable_exhausted``) and pages never collected."""
+    out: dict[str, Any] = {"operational": {}, "model": {}, "not_collected": []}
+    for page in pages:
+        path = root / f"{page.case_id}.json"
+        if not path.is_file():
+            out["not_collected"].append(page.page_id)
+            continue
+        reason = (json.loads(path.read_bytes()).get("failure") or {}).get("reason")
+        if isinstance(reason, str):
+            kind = "operational" if operational(reason) else "model"
+            out[kind][reason] = out[kind].get(reason, 0) + 1
+    return out
 
 
 # --- CLI ------------------------------------------------------------------------------------
@@ -1648,9 +2005,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         if code == 3:
             print("pending: rerun collect")
         return code
-    except ContractError as exc:
+    except (ContractError, ImmutableOutputError) as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
+    except RunnerUnavailable:  # its text is not printed: a provider's words stay out of logs
+        print("pending: a provider did not answer; rerun collect later", file=sys.stderr)
+        return 3
+    except Exception as exc:  # no traceback leaves: one could carry a URL
+        print(f"error: {type(exc).__name__}; nothing more is printed", file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":

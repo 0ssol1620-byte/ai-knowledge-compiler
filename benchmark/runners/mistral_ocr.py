@@ -14,7 +14,7 @@ run instead of being frozen as a failure row. Mistral Batch is not used.
 from __future__ import annotations
 
 import base64
-from collections.abc import Callable
+from collections.abc import Callable, Collection
 from typing import Any
 
 from .base import RunnerConfig, RunnerUnavailable, guarded
@@ -46,9 +46,15 @@ def config(*, revision: str | None = None, model: str | None = None) -> dict[str
     }
 
 
-def _extract(model: str) -> Callable[[dict[str, Any]], tuple[str, Any, bool]]:
+def _extract(
+    model: str, served_ids: Collection[str] | None = None
+) -> Callable[[dict[str, Any]], tuple[str, Any, bool]]:
+    """``served_ids``: the closed set of ids the response may name for ``model`` (exact strings
+    from the hosted spec, never a pattern); by default the pinned id alone."""
+    accepted = frozenset(served_ids) if served_ids else frozenset({model})
+
     def extract(response: dict[str, Any]) -> tuple[str, Any, bool]:
-        if response.get("model") != model:
+        if response.get("model") not in accepted:
             raise ResponseRefused("served_model_differs")
         pages = response.get("pages")
         usage = response.get("usage_info")
@@ -72,6 +78,7 @@ def run(
     revision: str | None = None,
     allow_network: bool = False,
     model: str | None = None,
+    served_ids: Collection[str] | None = None,
 ) -> dict[str, Any]:
     def body(key: str | None) -> dict[str, Any]:  # after the door, inside the exit guard
         if not key:
@@ -92,7 +99,7 @@ def run(
             run_config,
             case,
             build=build,
-            extract=_extract(pinned["model"]),
+            extract=_extract(pinned["model"], served_ids),
             receipt_base=pinned,
             unavailable_statuses=frozenset({429}),
         )

@@ -17,6 +17,8 @@ from typing import Any
 
 import pytest
 import yaml
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from benchmark.runners import gemini_api, vlm
 from benchmark.runners.base import RunnerUnavailable
@@ -26,7 +28,18 @@ from benchmark.v6.contracts import ContractError, canonical_sha256
 MODEL = "gemini-4-hydrogen"
 MISTRAL_MODEL = "mistral-ocr-4-1"
 ENV = {"module_origins": {}, "renderer_version": "4.30.0"}
-SNAPSHOT = b"<html>Batch $0.75 ... $3.75 ... OCR 4.1 Input $4 /1000 Pages</html>"
+# The shape of the kept snapshots, small: each pinned price sits in its model's row for its
+# mode (the repository spec's anchors), and the same strings also occur in other rows.
+SNAPSHOT = (
+    b"<html>\n## Gemini 4 Hydrogen  {% id=&quot;gemini-4-hydrogen&quot; %}\n"
+    b"{% tab title=&quot;Standard&quot; %}\n* Input price\n* $1.50\n---\n{% /tab %}\n"
+    b"{% tab title=&quot;Batch&quot; %}\n* Input price\n* $0.75\n---\n"
+    b"* Output price (including thinking tokens)\n* $3.75\n---\n{% /tab %}\n"
+    b"\n## Gemini 3.8 Flash  {% id=&quot;gemini-3.8-flash&quot; %}\n"
+    b"{% tab title=&quot;Batch&quot; %}\n* Input price\n* $0.75\n---\n{% /tab %}\n"
+    b"| [OCR 4.1](/models/ocr-4-1) | `mistral-ocr-4-1` | Input $4 /1000 Pages |\n"
+    b"| [OCR 3](/models/ocr-3) | `mistral-ocr-2512` | Input $2 /1000 Pages |\n</html>"
+)
 GOOD_USAGE = {"promptTokenCount": 1200, "candidatesTokenCount": 300, "thoughtsTokenCount": 100}
 
 
@@ -114,11 +127,14 @@ class FakeGemini:
         self.fail_create: str | None = None  # "before" or "after": the connection drops
 
     def creates(self) -> int:
-        return sum(1 for m, p, _ in self.calls if m == "POST")
+        return sum(1 for m, p, _ in self.calls if m == "POST" and not p.endswith(":cancel"))
+
+    def cancels(self) -> list[str]:
+        return [p for m, p, _ in self.calls if m == "POST" and p.endswith(":cancel")]
 
     def add(self, display: str, keys: list[str]) -> str:
         name = f"batches/b{len(self.batches) + 1}"
-        self.batches[name] = {"display": display, "keys": keys, "deleted": False}
+        self.batches[name] = {"display": display, "keys": keys, "deleted": False, "state": None}
         return name
 
     def op(self, name: str) -> dict[str, Any]:
@@ -143,7 +159,7 @@ class FakeGemini:
             "metadata": {
                 "model": f"models/{MODEL}",
                 "displayName": batch["display"],
-                "state": self.state,
+                "state": batch["state"] or self.state,
             },
             "done": True,
             "response": {"inlinedResponses": {"inlinedResponses": entries}},
@@ -162,6 +178,11 @@ class FakeGemini:
         assert headers["x-goog-api-key"]
         path = config.endpoint.split("/v1beta", 1)[1]
         self.calls.append((method, path, dict(query or {})))
+        if method == "POST" and path.endswith(":cancel"):
+            self.batches[path.lstrip("/").removesuffix(":cancel")]["state"] = (
+                "BATCH_STATE_CANCELLED"
+            )
+            return 200, "application/json", b"{}"
         if method == "POST":
             if self.fail_create == "before":
                 raise RunnerUnavailable("benchmark provider is unavailable")
@@ -388,12 +409,15 @@ def test_20_admitted_rights_classes_are_exactly_the_hosted_list() -> None:
 
 
 def test_21_the_worst_case_is_the_formula_in_decimal(tmp_path: Path) -> None:
+    # Lead decision E (round 2): maxOutputTokens bounds thinking and output combined, so the
+    # worst case is 2500 x 0.75 + 8192 x 3.75 per 1M tokens, with no second thinking term,
+    # whether the spec pins a budget or a level (was 0.036435 / 0.155475 before the decision).
     budget = _spec(tmp_path, thinking={"thinkingBudget": 1024})
-    # 2500 x 0.75 + (8192 + 1024) x 3.75, per 1M tokens
-    assert hosted.page_worst_usd(budget, "gemini_api") == Decimal("0.036435")
+    assert hosted.page_worst_usd(budget, "gemini_api") == Decimal("0.032595")
+    assert hosted.thinking_bound(budget) == 1024
     level = _spec(tmp_path, thinking={"thinkingLevel": "LOW"})
-    # a level has no numeric bound: costed at MAX_THINKING_BUDGET (32768)
-    assert hosted.page_worst_usd(level, "gemini_api") == Decimal("0.155475")
+    assert hosted.page_worst_usd(level, "gemini_api") == Decimal("0.032595")
+    assert hosted.thinking_bound(level) == 8192
     assert hosted.page_worst_usd(level, "mistral_ocr_4") == Decimal("0.004")
 
 
@@ -403,7 +427,9 @@ def test_22_a_chunk_over_the_credit_left_is_refused_before_any_write(
     spec = _spec(tmp_path)
     fake = FakeGemini()
     monkeypatch.setattr(gemini_api, "request_bytes", fake)
-    arm, chunks, pages, corpus = _arm_with_chunk(tmp_path, spec, [_doc(1)], draw="0.10")
+    # a draw below one page's worst case (0.032595 since lead decision E; it was 0.10 against
+    # the old 0.155475)
+    arm, chunks, pages, corpus = _arm_with_chunk(tmp_path, spec, [_doc(1)], draw="0.03")
     with pytest.raises(ContractError):
         hosted.submit_chunk(arm, "dry", chunks[0], pages, corpus)
     assert fake.creates() == 0 and not arm.events("job.dispatch.intent.v1")
@@ -766,3 +792,580 @@ def test_34_the_environment_check_refuses_a_foreign_module_or_renderer(tmp_path:
         hosted.check_environment(
             tmp_path, "4.30.0", origin=lambda _: inside, version=lambda: "5.15.2"
         )
+
+
+# --- round 2: a stage finishes only when every page and job has a terminal outcome ----------
+
+
+class MistralScript:
+    """vlm.post_bytes for Mistral: answers in call order from ``answers``, then 200. An int is
+    an HTTP status; a str is a 200 naming that served model id."""
+
+    def __init__(self, answers: list[Any]) -> None:
+        self.answers, self.calls = list(answers), 0
+
+    def __call__(
+        self, config: Any, body: bytes, headers: dict[str, str], **_: Any
+    ) -> tuple[int, str, bytes]:
+        answer = self.answers[self.calls] if self.calls < len(self.answers) else 200
+        self.calls += 1
+        if answer == 200:
+            return _mistral_ok(config, body, headers)
+        if isinstance(answer, str):
+            doc = {
+                "model": answer,
+                "pages": [{"index": 0, "markdown": "x"}],
+                "usage_info": {"pages_processed": 1},
+            }
+            return 200, "application/json", json.dumps(doc).encode()
+        return int(answer), "application/json", b'{"message": "no"}'
+
+
+def _ledger_size(spec: hosted.HostedSpec, out: Path) -> int:
+    return len(hosted.Arm(spec, out).ledger.replay())
+
+
+def _manifest_page(tmp_path: Path, doc_id: str) -> hosted.Page:
+    docs = json.loads((tmp_path / "manifest.json").read_text())["documents"]
+    return hosted.Page(f"{doc_id}#0", next(d for d in docs if d["doc_id"] == doc_id), 0)
+
+
+def _receipt_of(out: Path, stage: str) -> dict[str, Any]:
+    return dict(json.loads((out / stage / "receipt.json").read_bytes()))
+
+
+def _main(tmp_path: Path, out: Path, stage: str) -> int:
+    return hosted.main(
+        [
+            stage,
+            "--out",
+            str(out),
+            "--spec",
+            str(tmp_path / "spec.yaml"),
+            "--manifest",
+            str(tmp_path / "manifest.json"),
+            "--corpus-root",
+            str(tmp_path / "corpus"),
+            "--snapshot-dir",
+            str(tmp_path / "snap"),
+            "--max-wait",
+            "0",
+            "--interval",
+            "0",
+        ]
+    )
+
+
+def test_r2_a_mistral_429_in_full_is_pending_and_collect_sends_attempt_2(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec, out, _ = _rehearse(tmp_path, monkeypatch)
+    monkeypatch.setattr(hosted, "check_environment", lambda *a, **k: ENV)
+    script = MistralScript([429])
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    assert _paid(spec, out, tmp_path, "full") == 3
+    assert not (out / "full" / "receipt.json").exists()
+    assert hosted.in_progress_stage(hosted.Arm(spec, out, hosted.NoNetwork())) == "full"
+    assert _main(tmp_path, out, "collect") == 0
+    intents = [
+        p
+        for p in hosted.Arm(spec, out).events("job.dispatch.intent.v1")
+        if p["provider"] == "mistral_ocr_4" and p["stage"] == "full"
+    ]
+    assert [(p["page_id"], p["attempt"]) for p in intents] == [("d4.png#0", 1), ("d4.png#0", 2)]
+    assert len(list((out / "collected" / "mistral_ocr_4").iterdir())) == 4
+    receipt = _receipt_of(out, "full")
+    assert receipt["results"]["failures"]["mistral_ocr_4"] == {
+        "operational": {},
+        "model": {},
+        "not_collected": [],
+    }
+    assert script.calls == 2
+
+
+def test_r2_a_mistral_429_backs_off_the_rest_of_the_run_and_collect_resumes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    script = MistralScript([429])
+    monkeypatch.setattr(gemini_api, "request_bytes", FakeGemini())
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    assert _paid(spec, out, tmp_path, "rehearsal") == 3
+    assert script.calls == 1  # the rate-limited provider is not called again in this run
+    assert _paid(spec, out, tmp_path, "rehearsal") == 0
+    assert script.calls == 4  # attempt 2 of the first page, then the two others
+    assert len(list((out / "collected" / "mistral_ocr_4").iterdir())) == 3
+
+
+def test_r2_reserved_attempts_used_up_give_a_terminal_row_reported_apart_from_model_errors(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec, out, _ = _rehearse(tmp_path, monkeypatch)
+    script = MistralScript([429, 429])
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    assert _paid(spec, out, tmp_path, "full") == 3
+    assert _paid(spec, out, tmp_path, "full") == 0  # attempt 2 also 429: exhausted, terminal
+    case = _manifest_page(tmp_path, "d4.png").case_id
+    row = json.loads((out / "collected" / "mistral_ocr_4" / f"{case}.json").read_bytes())
+    assert row["failure"] == {"reason": hosted.EXHAUSTED}
+    assert row["receipt"]["attempts"] == hosted.MISTRAL_ATTEMPTS_RESERVED == script.calls
+    failures = _receipt_of(out, "full")["results"]["failures"]["mistral_ocr_4"]
+    assert failures["operational"] == {hosted.EXHAUSTED: 1} and failures["model"] == {}
+    docs = json.loads((tmp_path / "manifest.json").read_text())["documents"]
+    gold = {
+        f"{d['doc_id']}#0": {"text": "x", "blocks": [], "critical_fields": []}
+        for d in docs
+        if d["split"] == "dev"
+    }
+    scored = hosted.score(spec, out, tmp_path / "manifest.json", tmp_path / "corpus", gold)
+    assert scored["failures"]["mistral_ocr_4"]["operational"] == {hosted.EXHAUSTED: 1}
+    assert scored["failures"]["mistral_ocr_4"]["model"] == {}
+
+
+def test_r2_finish_refuses_a_stage_with_a_page_without_outcome(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec, out, _ = _rehearse(tmp_path, monkeypatch)
+    page = _manifest_page(tmp_path, "d4.png")  # never sent: not collected
+    pages = hosted.StagePages((page,), (page,), (), {})
+    with pytest.raises(ContractError, match="not complete"):
+        hosted._finish_stage(hosted.Arm(spec, out), "full", pages, ENV, [], {}, [], {})
+    assert hosted.stage_gaps(hosted.Arm(spec, out), "full", pages) == [
+        "gemini_api:d4.png#0",
+        "mistral_ocr_4:d4.png#0",
+    ]
+
+
+def test_r2_a_stopped_arm_cancels_what_runs_collects_nothing_new_and_tears_down_once(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    fake = FakeGemini(state="BATCH_STATE_RUNNING")
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", _mistral_ok)
+    assert _paid(spec, out, tmp_path, "rehearsal") == 3
+    hosted.Arm(spec, out).stop("some_other_stop")
+    creates = fake.creates()
+    assert _paid(spec, out, tmp_path, "rehearsal") == 3  # polled; still running: cancelled
+    assert fake.cancels() == ["/batches/b1:cancel"]
+    with pytest.raises(ContractError, match="lead decides"):
+        _paid(spec, out, tmp_path, "rehearsal")
+    arm = hosted.Arm(spec, out)
+    terminal = arm.events("hosted.job.terminal.v1")
+    assert [(t["state"], t["reason"]) for t in terminal] == [
+        ("BATCH_STATE_CANCELLED", "job_not_succeeded")
+    ]
+    assert arm.events("campaign.teardown.v1")[-1]["confirmed_404"] == ["b1"]
+    assert fake.batches["batches/b1"]["deleted"] and fake.creates() == creates
+    size = _ledger_size(spec, out)
+    for _ in range(3):  # idempotent once everything is terminal
+        with pytest.raises(ContractError, match="lead decides"):
+            _paid(spec, out, tmp_path, "rehearsal")
+    assert _ledger_size(spec, out) == size and len(fake.cancels()) == 1
+
+
+def test_r2_a_stopped_arm_still_collects_a_job_it_paid_for(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    fake = FakeGemini(state="BATCH_STATE_RUNNING")
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", _mistral_ok)
+    assert _paid(spec, out, tmp_path, "rehearsal") == 3
+    hosted.Arm(spec, out).stop("some_other_stop")
+    fake.state = "BATCH_STATE_SUCCEEDED"
+    assert _paid(spec, out, tmp_path, "rehearsal") == 0
+    assert len(list((out / "collected" / "gemini_api").iterdir())) == 3
+    receipt = _receipt_of(out, "rehearsal")
+    assert [s["reason"] for s in receipt["results"]["stops"]] == ["some_other_stop"]
+    assert receipt["teardown"]["confirmed_404"] == ["b1"] and fake.cancels() == []
+
+
+def test_r2_a_mapping_failure_closes_the_job_once(
+    tmp_path: Path, keys: dict[str, str], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    fake = FakeGemini(tweak=_drop)
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    arm, chunks, pages, corpus = _arm_with_chunk(tmp_path, spec, [_doc(1), _doc(2)])
+    hosted.submit_chunk(arm, "dry", chunks[0], pages, corpus)
+    now = [0.0]
+
+    def sleep(seconds: float) -> None:
+        now[0] += seconds
+
+    assert (
+        hosted.poll(arm, "dry", max_wait=600, interval=60, sleep=sleep, clock=lambda: now[0]) == 0
+    )
+    gets = [c for c in fake.calls if c[0] == "GET" and c[1] != "/batches"]
+    assert len(gets) == 1
+    assert len(arm.events("hosted.batch.mapping_failed.v1")) == 1
+    assert len(arm.events("campaign.stopped.v1")) == 1
+    (closed,) = arm.events("hosted.job.terminal.v1")
+    assert closed["reason"] == "mapping_failed"
+    assert Decimal(closed["actual_usd"]) == 2 * hosted.page_worst_usd(spec, "gemini_api")
+    size = _ledger_size(spec, arm.out)
+    for _ in range(3):
+        hosted.poll(arm, "dry", max_wait=600, interval=60, sleep=sleep, clock=lambda: now[0])
+    assert _ledger_size(spec, arm.out) == size and len(fake.calls) == len(gets) + 1
+
+
+def test_r2_main_maps_every_failure_to_a_documented_exit_without_a_traceback(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    fake = FakeGemini()
+
+    def limited(config: Any, method: str, body: Any, headers: Any, **kw: Any) -> Any:
+        if method == "POST":
+            return 429, "application/json", b"{}"
+        return fake(config, method, body, headers, **kw)
+
+    monkeypatch.setattr(gemini_api, "request_bytes", limited)
+    monkeypatch.setattr(vlm, "post_bytes", _mistral_ok)
+    monkeypatch.setattr(hosted, "check_environment", lambda *a, **k: ENV)
+    assert _main(tmp_path, out, "rehearsal") == 3
+    assert "rerun collect later" in capsys.readouterr().err
+    url = "https://generativelanguage.googleapis.com/v1beta/batches/x"
+    for error, code in [
+        (RunnerUnavailable(url), 3),
+        (hosted.ImmutableOutputError("x.json: raw output differs"), 2),
+        (KeyError(url), 1),
+        (ValueError(url), 1),
+    ]:
+
+        def boom(*_a: Any, error: Exception = error, **_k: Any) -> int:
+            raise error
+
+        monkeypatch.setattr(hosted, "run_paid", boom)
+        assert _main(tmp_path, out, "rehearsal") == code
+        err = capsys.readouterr().err
+        assert url not in err and "Traceback" not in err
+
+
+def test_r2_the_paid_stage_takes_the_dry_plans_pages_and_records_its_refusals(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    path = out / "dry" / "receipt.json"
+    dry = json.loads(path.read_bytes())
+    dry["mistral_pages"].remove("d1.png#0")
+    dry["page_refusals"].append(
+        {"page_id": "d1.png#0", "provider": "mistral_ocr_4", "reason": "page_over_image_limit"}
+    )
+    path.write_text(json.dumps(dry), encoding="utf-8")
+    script = MistralScript([])
+    monkeypatch.setattr(gemini_api, "request_bytes", FakeGemini())
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    assert _paid(spec, out, tmp_path, "rehearsal") == 0
+    receipt = _receipt_of(out, "rehearsal")
+    assert script.calls == 2 and "d1.png#0" not in receipt["mistral_pages"]
+    assert receipt["page_refusals"] == [dry["page_refusals"][-1]]
+
+
+@pytest.mark.parametrize("damage", ["admitted", "image"])
+def test_r2_a_paid_stage_whose_pages_differ_from_the_dry_plan_is_refused(
+    damage: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    fake = FakeGemini()
+    monkeypatch.setattr(gemini_api, "request_bytes", fake)
+    monkeypatch.setattr(vlm, "post_bytes", _mistral_ok)
+    path = out / "dry" / "receipt.json"
+    dry = json.loads(path.read_bytes())
+    if damage == "image":
+        dry["pages"][0]["image_sha256"] = "sha256:" + "0" * 64
+        path.write_text(json.dumps(dry), encoding="utf-8")
+        with pytest.raises(ContractError, match="dry plan"):
+            _paid(spec, out, tmp_path, "rehearsal")
+        assert fake.calls == []
+        return
+    assert _paid(spec, out, tmp_path, "rehearsal") == 0
+    dry["admitted"]["page_ids"] = dry["admitted"]["page_ids"][:-1]
+    path.write_text(json.dumps(dry), encoding="utf-8")
+    calls = len(fake.calls)
+    with pytest.raises(ContractError, match="differs from the dry receipt"):
+        _paid(spec, out, tmp_path, "full")
+    assert len(fake.calls) == calls
+
+
+def test_r2_full_rechecks_the_whole_remaining_gemini_worst_case_before_its_first_chunk(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec, out, fake = _rehearse(tmp_path, monkeypatch)
+    arm = hosted.Arm(spec, out)
+    assert arm.credit is not None
+    spent = arm.credit.remaining_usd - hosted.page_worst_usd(spec, "gemini_api") / 2
+    # an earlier job charged at its worst case (e.g. one that failed): the credit left now
+    # holds half of the one remaining page's worst case
+    arm.ledger.append(
+        "job.dispatch.intent.v1",
+        {
+            "idempotency_key": "sha256:" + "e" * 64,
+            "logical_work_id": "gemini_api:sha256:" + "e" * 64,
+            "input_sha256": "sha256:" + "e" * 64,
+            "provider": "gemini_api",
+            "stage": "rehearsal",
+            "reserved_usd": str(spent),
+            "pages": [],
+        },
+    )
+    arm.ledger.append(
+        "hosted.job.terminal.v1",
+        {
+            "idempotency_key": "sha256:" + "e" * 64,
+            "provider": "gemini_api",
+            "actual_usd": str(spent),
+        },
+    )
+    creates = fake.creates()
+    with pytest.raises(ContractError, match="above the credit left"):
+        _paid(spec, out, tmp_path, "full")
+    assert fake.creates() == creates
+    assert not [
+        p
+        for p in hosted.Arm(spec, out).events("campaign.stage_reserved.v1")
+        if p["stage"] == "full"
+    ]
+
+
+def _spec_with_snapshot(tmp_path: Path, data: bytes) -> hosted.HostedSpec:
+    spec = _spec(tmp_path)
+    sha = hashlib.sha256(data).hexdigest()
+    (tmp_path / "snap" / f"{sha}.html").write_bytes(data)
+    raw = yaml.safe_load(spec.path.read_text(encoding="utf-8"))
+    for block in raw["hosted"].values():
+        for price in block["prices"].values():
+            price.update(snapshot_file=f"{sha}.html", snapshot_sha256=sha)
+    spec.path.write_text(yaml.safe_dump(raw, sort_keys=False), encoding="utf-8")
+    return hosted.load_hosted_spec(spec.path)
+
+
+@pytest.mark.parametrize(
+    ("old", "new"),
+    [
+        # hydrogen's Batch input price differs; "$0.75" stays only in Flash's Batch row
+        (b"* Input price\n* $0.75\n---\n* Output", b"* Input price\n* $0.80\n---\n* Output"),
+        # the value sits in hydrogen's Standard tab, not its Batch tab
+        (b"* $1.50", b"* $0.75 x"),
+        # OCR 4.1 reads $40; "$4" alone is not in its row
+        (b"Input $4 /1000", b"Input $40 /1000"),
+        # the anchor's start occurs twice: not one row
+        (b"<html>", b"<html>| `mistral-ocr-4-1` |"),
+    ],
+)
+def test_r2_a_price_is_confirmed_only_in_its_models_row_for_its_mode(
+    old: bytes, new: bytes, tmp_path: Path
+) -> None:
+    damaged = SNAPSHOT.replace(old, new, 1)
+    if old == b"* $1.50":  # Standard holds $0.75 and Batch no longer does
+        batch_row = b"* Input price\n* $0.75\n---\n* Output"
+        damaged = damaged.replace(batch_row, batch_row.replace(b"$0.75", b"$0.9"))
+    assert damaged != SNAPSHOT
+    ok = tmp_path / "ok"
+    ok.mkdir()
+    assert len(hosted.check_snapshots(_spec(ok), ok / "snap")) == 3
+    spec = _spec_with_snapshot(tmp_path, damaged)
+    with pytest.raises(ContractError, match="row for that model and mode"):
+        hosted.check_snapshots(spec, tmp_path / "snap")
+
+
+@pytest.mark.parametrize(
+    ("tweak_name", "reason"),
+    [("cutoff", "output_token_cutoff"), ("over", "output_tokens_over_bound")],
+)
+def test_r2_a_cut_off_rehearsal_page_is_a_failure_row_counted_and_stops_the_arm(
+    tweak_name: str, reason: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def tweak(entries: list[Any]) -> list[Any]:
+        response = entries[0]["response"]
+        if tweak_name == "cutoff":
+            response["candidates"][0]["finishReason"] = "MAX_TOKENS"
+        else:  # 300 candidate + 8000 thought tokens: over maxOutputTokens 8192
+            response["usageMetadata"]["thoughtsTokenCount"] = 8000
+        return entries
+
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    monkeypatch.setattr(gemini_api, "request_bytes", FakeGemini(tweak=tweak))
+    monkeypatch.setattr(vlm, "post_bytes", _mistral_ok)
+    assert _paid(spec, out, tmp_path, "rehearsal") == 0
+    receipt = _receipt_of(out, "rehearsal")
+    assert receipt["results"]["failures"]["gemini_api"]["model"] == {reason: 1}
+    assert [s["reason"] for s in receipt["results"]["stops"]] == ["rehearsal_page_cut_off"]
+    (job,) = receipt["results"]["accepted"]
+    assert [p["thoughts_tokens"] for p in job["pages"]] == [
+        8000 if tweak_name == "over" else 100,
+        100,
+        100,
+    ]
+    with pytest.raises(ContractError, match="stopped"):
+        _paid(spec, out, tmp_path, "full")
+
+
+def test_r2_served_ids_are_a_closed_map_holding_the_pinned_id(tmp_path: Path) -> None:
+    spec = _spec(tmp_path)
+    assert spec.mistral["served_ids"] == {"mistral-ocr-4-1": ["mistral-ocr-4-1"]}
+    for served in (
+        {"mistral-ocr-4-1": ["mistral-ocr-2512"]},
+        {"mistral-ocr-4-1": ["mistral-ocr-4-1"], "mistral-ocr-4": ["mistral-ocr-4"]},
+        {"mistral-ocr-4-1": "mistral-ocr-4-1"},
+        None,
+    ):
+        raw = yaml.safe_load(spec.path.read_text(encoding="utf-8"))
+        raw["hosted"]["mistral_ocr_4"]["served_ids"] = served
+        spec.path.write_text(yaml.safe_dump(raw, sort_keys=False), encoding="utf-8")
+        with pytest.raises(ContractError, match="served_ids"):
+            hosted.load_hosted_spec(spec.path)
+
+
+def test_r2_a_dated_served_id_stops_the_arm_with_the_observed_id(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    monkeypatch.setattr(gemini_api, "request_bytes", FakeGemini())
+    monkeypatch.setattr(vlm, "post_bytes", MistralScript(["mistral-ocr-2512"]))
+    with pytest.raises(ContractError, match="lead decides"):
+        _paid(spec, out, tmp_path, "rehearsal")
+    (stop,) = hosted.Arm(spec, out).events("campaign.stopped.v1")
+    assert stop["reason"] == "mistral_served_model_differs"
+    assert stop["observed_model"] == "mistral-ocr-2512"
+
+
+@pytest.mark.parametrize("status", [401, 403])
+def test_r2_a_mistral_401_or_403_stops_the_mistral_half_and_gemini_proceeds(
+    status: int, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    spec = _spec(tmp_path)
+    out = _through_dry(tmp_path, spec, monkeypatch)
+    script = MistralScript([status])
+    monkeypatch.setattr(gemini_api, "request_bytes", FakeGemini())
+    monkeypatch.setattr(vlm, "post_bytes", script)
+    assert _paid(spec, out, tmp_path, "rehearsal") == 0
+    receipt = _receipt_of(out, "rehearsal")
+    assert script.calls == 1 and len(receipt["results"]["mistral_not_run"]) == 2
+    assert receipt["results"]["failures"]["mistral_ocr_4"]["operational"] == {f"http_{status}": 1}
+    assert receipt["results"]["stops"] == []
+    assert _paid(spec, out, tmp_path, "full") == 0  # Gemini only; Mistral recorded not run
+    assert script.calls == 1
+    # full owns every admitted page: the two the rehearsal did not run, and d4
+    assert _receipt_of(out, "full")["results"]["mistral_not_run"] == [
+        "d2.png#0",
+        "d3.png#0",
+        "d4.png#0",
+    ]
+
+
+def test_r2_a_listing_token_outside_the_accepted_shape_is_refused(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pages = iter(
+        [
+            {"operations": [], "nextPageToken": "abc+/=="},
+            {"operations": [], "nextPageToken": "a b"},
+        ]
+    )
+    seen: list[Any] = []
+
+    def listing(token: Any, *, allow_network: bool) -> dict[str, Any]:
+        seen.append(token)
+        raw = json.dumps(next(pages)).encode()
+        return {"http_status": 200, "raw_b64": base64.b64encode(raw).decode()}
+
+    monkeypatch.setattr(gemini_api, "batch_list", listing)
+    with pytest.raises(ContractError, match="page token"):
+        hosted.GeminiBatches().list_all()
+    assert seen == [None, "abc+/=="]
+
+
+# --- round 2: fuzzing the paid stages over provider answers ----------------------------------
+
+
+@pytest.fixture(scope="module")
+def dried(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    root = tmp_path_factory.mktemp("dried")
+    with pytest.MonkeyPatch.context() as mp:
+        _through_dry(root, _spec(root), mp)
+    return root
+
+
+_GEMINI_CASES = {
+    "ok": None,
+    "drop": _drop,
+    "failed": "BATCH_STATE_FAILED",
+    "cutoff": lambda entries: [
+        {**e, "response": {**e["response"], "candidates": [{"finishReason": "MAX_TOKENS"}]}}
+        if i == 0
+        else e
+        for i, e in enumerate(entries)
+    ],
+}
+
+
+@settings(max_examples=25, deadline=None, derandomize=True)
+@given(
+    gemini=st.sampled_from(sorted(_GEMINI_CASES)),
+    answers=st.lists(
+        st.sampled_from([200, 200, 429, 500, 401, 400, "mistral-ocr-2512"]), max_size=8
+    ),
+)
+def test_r2_fuzz_every_paid_run_ends_complete_pending_or_refused_and_terminal_runs_add_nothing(
+    dried: Path, gemini: str, answers: list[Any]
+) -> None:
+    import shutil
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp, pytest.MonkeyPatch.context() as mp:
+        root = Path(tmp) / "r"
+        shutil.copytree(dried, root)
+        spec = hosted.load_hosted_spec(root / "spec.yaml")
+        out = root / "out"
+        mp.setenv("GEMINI_API_KEY", _marker())
+        mp.setenv("MISTRAL_API_KEY", _marker("mk"))
+        case = _GEMINI_CASES[gemini]
+        fake = FakeGemini(state=case) if isinstance(case, str) else FakeGemini(tweak=case)
+        mp.setattr(gemini_api, "request_bytes", fake)
+        mp.setattr(vlm, "post_bytes", MistralScript(answers))
+        for stage in ("rehearsal", "full"):
+            code = 3
+            for _ in range(8):
+                try:
+                    code = _paid(spec, out, root, stage)
+                except ContractError:
+                    code = 2
+                assert code in (0, 2, 3)
+                assert (out / stage / "receipt.json").exists() == (code == 0)
+                attempts: dict[str, int] = {}
+                for p in hosted.Arm(spec, out).events("job.dispatch.intent.v1"):
+                    if p["provider"] == "mistral_ocr_4":
+                        attempts[p["page_id"]] = attempts.get(p["page_id"], 0) + 1
+                assert max(attempts.values(), default=0) <= hosted.MISTRAL_ATTEMPTS_RESERVED
+                if code != 3:
+                    break
+            assert code != 3, "a stage stayed pending with nothing left to wait for"
+            if code == 0:
+                receipt = _receipt_of(out, stage)
+                dry = json.loads((out / "dry" / "receipt.json").read_bytes())
+                admitted, _ = hosted.page_list(
+                    json.loads((root / "manifest.json").read_bytes())["documents"]
+                )
+                pages = hosted.stage_pages(stage, admitted, dry)
+                assert hosted.stage_gaps(hosted.Arm(spec, out), stage, pages) == []
+                for row in (out / "collected" / "mistral_ocr_4").iterdir():
+                    reason = (json.loads(row.read_bytes()).get("failure") or {}).get("reason")
+                    assert reason != "http_429"
+                assert set(receipt["results"]["failures"]) == {"gemini_api", "mistral_ocr_4"}
+            size = _ledger_size(spec, out)
+            for _ in range(2):  # a terminal stage: running it again appends nothing
+                with pytest.raises(ContractError):
+                    _paid(spec, out, root, stage)
+            assert _ledger_size(spec, out) == size
+            if code == 2:
+                break

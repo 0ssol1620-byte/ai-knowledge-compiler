@@ -46,6 +46,8 @@ REFUSAL_REASONS = frozenset(
         "served_model_differs",
         "finish_reason_not_stop",
         "prompt_blocked",
+        "output_token_cutoff",  # finishReason MAX_TOKENS: the API's own cutoff was reached
+        "output_tokens_over_bound",  # candidates + thoughts above maxOutputTokens
     }
 )
 

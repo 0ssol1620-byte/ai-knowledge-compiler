@@ -15,7 +15,7 @@ malformed response.
 
 One request body for sync and batch: ``request_body`` builds the ``GenerateContentRequest``
 the sync call posts and every inline batch request carries, byte for byte. The batch helpers
-(create, get, list, delete) each go through the door and the exit guard; their endpoints are
+(create, get, list, cancel, delete) each go through the door and the exit guard; their endpoints are
 built here from the pinned base and a job name of the documented shape ``batches/<id>``, so a
 name a provider returns cannot steer a request elsewhere. Inline requests only: the Files-API
 upload path (its upload URL carries a query string) is not used.
@@ -35,6 +35,8 @@ from .vlm import GENERIC_PROMPT, ResponseRefused, exchange, render_settings
 PROVIDER = "gemini_api"
 PROMPT = GENERIC_PROMPT
 GENERATION = {"temperature": 0.0, "maxOutputTokens": 8192}
+# maxOutputTokens bounds thinking and output combined: a page that met it is a failure row.
+CUTOFF_REASONS = frozenset({"output_token_cutoff", "output_tokens_over_bound"})
 MAX_THINKING_BUDGET = 32_768
 # ThinkingConfig.thinkingLevel, REST reference (THINKING_LEVEL_UNSPECIFIED is not a bound)
 THINKING_LEVELS = frozenset({"MINIMAL", "LOW", "MEDIUM", "HIGH", "XHIGH"})
@@ -151,8 +153,18 @@ def _extract(model: str) -> Callable[[dict[str, Any]], tuple[str, Any, bool]]:
         if feedback is not None and feedback.get("blockReason"):
             raise ResponseRefused("prompt_blocked")
         candidate = response["candidates"][0]
+        if candidate.get("finishReason") == "MAX_TOKENS":
+            raise ResponseRefused("output_token_cutoff")  # the API's own cutoff was reached
         if candidate.get("finishReason") != "STOP":
             raise ResponseRefused("finish_reason_not_stop")
+        usage = response.get("usageMetadata")
+        spent = (
+            [usage.get(k, 0) for k in ("candidatesTokenCount", "thoughtsTokenCount")]
+            if isinstance(usage, dict)
+            else []
+        )
+        if all(type(n) is int for n in spent) and sum(spent) > GENERATION["maxOutputTokens"]:
+            raise ResponseRefused("output_tokens_over_bound")
         parts = candidate["content"]["parts"]
         if not isinstance(parts, list):
             raise ResponseRefused("empty_completion")
@@ -301,3 +313,8 @@ def batch_list(page_token: str | None, *, allow_network: bool) -> dict[str, Any]
 
 def batch_delete(name: str, *, allow_network: bool) -> dict[str, Any]:
     return _rest("DELETE", "/" + job_name(name), None, allow_network=allow_network)
+
+
+def batch_cancel(name: str, *, allow_network: bool) -> dict[str, Any]:
+    """``POST batches/{id}:cancel``; the reference says DELETE does not cancel a running job."""
+    return _rest("POST", "/" + job_name(name) + ":cancel", b"{}", allow_network=allow_network)
