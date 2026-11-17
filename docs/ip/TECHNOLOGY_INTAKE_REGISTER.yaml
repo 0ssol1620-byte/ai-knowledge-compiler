@@ -966,13 +966,27 @@ arena_intake:
     classification: GREEN
     status: EVALUATION_ONLY
     deciding_axis: code
-    use: "Serves C5 Nemotron-3.5-Parse (registry row nemotron_3_5_parse, runtime.serving) in the A0-6 attempt: the first vLLM release whose supported-models page lists RadioMBartPrefixForCausalLM. Pulled on the pod by digest; not built, not modified."
+    use: >-
+      Serves C5 Nemotron-3.5-Parse (registry row nemotron_3_5_parse,
+      runtime.serving) in the A0-6 attempt: the first vLLM release whose
+      supported-models page lists RadioMBartPrefixForCausalLM. Pulled on the
+      pod by digest; not built, not modified. Not the arena's common stack:
+      that is vllm/vllm-openai@sha256:e1668bce... = tag v0.22.1-cu129 (vLLM
+      0.22.1+cu129, CUDA 12.9, PyTorch 2.11); this image is CUDA 13.0 only
+      with PyTorch 2.14.0 (v0.33.0rc3 release notes). Host precondition: a
+      driver of the R580 branch or newer (NVIDIA: CUDA 13.x needs >= 580);
+      the pod is limited to hosts with CUDA 13.0 or newer, and a start
+      failure from a driver mismatch is an operational failure, not A0-6's
+      model verdict.
     snapshot_url: "https://raw.githubusercontent.com/vllm-project/vllm/v0.33.0/LICENSE"
     snapshot_sha256: "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
     fetched_at: "2026-11-17T12:24:29.648803+00:00"
     other_snapshots:
       - { axis: code, url: "https://raw.githubusercontent.com/vllm-project/vllm/v0.33.0/docs/models/supported_models.md", sha256: "66c77abb76a21e3e184c49ef889be91debb43c823c45e7decce531d46d719134", note: "lists RadioMBartPrefixForCausalLM (Nemotron Parse 3.5); the v0.32.0 page (sha256 bd5879be29836d74b2e974d107f1a9fe50706ba5f9a0d854edc497981d98fb94) does not" }
       - { axis: code, url: "https://hub.docker.com/v2/repositories/vllm/vllm-openai/tags/v0.33.0", sha256: "65ce1a00a72f2a41908aa7a97b07996fadb1324772280cad94db0254d3855e2c", note: "registry metadata: index and per-platform digests" }
+      - { axis: code, url: "https://api.github.com/repos/vllm-project/vllm/releases?per_page=40", sha256: "65ab2830c18aedb2312d7ac1560157aea2447c70c5ca9606a90cf3b0f4e5f10a", note: "v0.33.0rc3: CUDA 12.9 dropped, images CUDA 13.0 only; PyTorch 2.14.0, torchvision 0.29.0, Triton 3.8.0. v0.20.0: PyTorch 2.11 for CUDA" }
+      - { axis: code, url: "https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html", sha256: "ad6659640c0ce3153dcca0e4cf87731eccf298ac88751df20848df23c99dff52", note: "Table 2: CUDA 13.0 = driver branch R580; Table 3: CUDA 13.x minor-version compatibility >= 580" }
+      - { axis: code, url: "https://hub.docker.com/v2/repositories/vllm/vllm-openai/tags/v0.22.1-cu129", sha256: "d711dcdb0e3a08bab1d25c54b30c0e5c112906927104a1082c00ecd7da08d928", note: "the arena's existing pin sha256:e1668bce... is this tag's index digest; registry manifest read by digest, content sha256 matches" }
     axes:
       code:
         verdict: cleared_evaluation_only
@@ -996,41 +1010,55 @@ arena_intake:
   - id: tool_minicpm_ocr_vendor_image
     kind: tool
     arena_slot: C4_vendor_image_candidate
-    reference: "openbmbofficial/minicpm-ocr@sha256:3cfeaf0d251ecb4e5615cf5ce97cb8c90583cfb70dc21d6978ca50a4bfc6fdd9 (tags 105-vlm-with-model and latest, Docker Hub 2026-11-16; amd64, 11,207,282,798 B)"
+    reference: "openbmbofficial/minicpm-ocr@sha256:3cfeaf0d251ecb4e5615cf5ce97cb8c90583cfb70dc21d6978ca50a4bfc6fdd9 (tags 105-vlm-with-model and latest, Docker Hub 2026-11-16; amd64 manifest sha256:42773d0ece292c0d8abe9edd92d5a405f37849db134c094554532880ab0d7a12, 11,207,282,798 B; config sha256:eaca12947aceac14cd4ffd7aba3e8ef255d8fbdb2376df4874a2572fc0c51343)"
     publisher: "OpenBMB"
     upstream_id: openbmbofficial/minicpm-ocr
     upstream_tag: 105-vlm-with-model
     classification: ORANGE
     status: HELD
     held_reason: >-
-      The README at OpenBMB/MiniCPM-OCR sdk-v1.0.5 names this image as the
-      official deployment and says it bundles the model weights, the SDK and
-      vLLM. Its licence, its start command, the vLLM build inside it and the
-      revision of the bundled weights are not in any document WO-D10-0H was
-      allowed to read, so nothing about running it is settled.
+      Image licence unread (WO-D10-0H round 2, lead decision B). The Docker
+      Hub page states Apache-2.0 for MiniCPM-OCR code and weights and says
+      "Third-party components retain their respective licenses" without
+      naming them; the config document has no labels and the index has no
+      SBOM attestation. The bundled third-party contents (from the config
+      history: a vendor-staged vLLM 0.31.1rc1.dev379+g484a12539 over the
+      precompiled wheel of vLLM commit 5555a2d8, a vendor-staged
+      transformers 5.19.0.dev0, PyTorch for CUDA 12.9, paddlepaddle-gpu,
+      paddlex[ocr] 3.7.2, opencv-contrib-python 4.10.0.84, torchcodec, a
+      requirements.lock, a layout model and the PP-LCNet_x1_0_doc_ori
+      orientation model) have no licence in any document read. Separately,
+      its vllm wrapper fixes the served name minicpm-ocr-1.0 and serves the
+      bundled weights of unstated revision, so the runner's attestation
+      cannot be met through it (registry row minicpm_ocr_1_0).
     deciding_axis: code
-    use: "None until released from HELD. Recorded because it is the C4 card's documented serving path and the only one with a pinnable artifact."
+    use: "None until released from HELD. C4 is not attempted in A0-6 (verdict not_attempted_image_licence_unread in registry row minicpm_ocr_1_0)."
     snapshot_url: "https://hub.docker.com/v2/repositories/openbmbofficial/minicpm-ocr/tags?page_size=50"
     snapshot_sha256: "38489be93c57706eea8369552c05e8df96034337fe0fea309186b9b88c9b121b"
     fetched_at: "2026-11-17T12:24:18.617489+00:00"
     other_snapshots:
       - { axis: code, url: "https://raw.githubusercontent.com/OpenBMB/MiniCPM-OCR/sdk-v1.0.5/README.md", sha256: "67a8a3edbb61273d129591c7390086e1b99e69bbdc2df6204df3f43543aa61f4", note: "Docker Deployment section" }
+      - { axis: code, url: "https://hub.docker.com/v2/repositories/openbmbofficial/minicpm-ocr/", sha256: "38974d2226fab5c9373bb08fad40c4572f536a61fe4bb0ef832b95009c0bcf0b", note: "overview: start command, wrapper, served name minicpm-ocr-1.0, weight sync, licence sentence" }
+      - { axis: code, url: "https://registry-1.docker.io/v2/openbmbofficial/minicpm-ocr/blobs/sha256:eaca12947aceac14cd4ffd7aba3e8ef255d8fbdb2376df4874a2572fc0c51343", sha256: "eaca12947aceac14cd4ffd7aba3e8ef255d8fbdb2376df4874a2572fc0c51343", note: "image config: env, entrypoint, build history; no labels" }
+      - { axis: code, url: "https://registry-1.docker.io/v2/openbmbofficial/minicpm-ocr/manifests/sha256:baf1d4553906664e7b69e1f5bc5411bdfd4b05ef8d7ebd4e1938049e5886ff07", sha256: "baf1d4553906664e7b69e1f5bc5411bdfd4b05ef8d7ebd4e1938049e5886ff07", note: "attestation manifest: one SLSA provenance v0.2 layer, no SBOM; layer not read" }
+      - { axis: code, url: "https://raw.githubusercontent.com/OpenBMB/MiniCPM-OCR/sdk-v1.0.5/docs/minicpm_ocr_tutorial_en.md", sha256: "8d3346c371378076ce735d8b8d564606393c2621a8f38c8ed67ea53e55d6fe08", note: "vendor deployment guide: source build of vLLM and transformers, vllm serve command" }
+      - { axis: code, url: "https://raw.githubusercontent.com/OpenBMB/MiniCPM-OCR/sdk-v1.0.5/scripts/install.sh", sha256: "5b0b8f2690dcabae82aeb4b74231a271689670dd109658f21205afa2610c61ff", note: "named by the guide; pins vLLM and transformers sources by commit from pyproject.toml (not read)" }
     axes:
       code:
         verdict: review_required
         basis: >-
-          The image's licence and contents were not read. The README says it
-          bundles weights, the minicpm-ocr SDK (Apache-2.0 per PyPI 1.0.5),
-          vLLM and a document-parsing backend, and needs a driver compatible
-          with CUDA 12.9; the SDK's layout stage depends on PaddleX/PaddleOCR,
-          whose presence in the image is unread.
+          MiniCPM-OCR code (the SDK 1.0.5 from commit f5357c72 and the web
+          backend under /opt/app) is Apache-2.0 per the Docker Hub page. Every
+          other component listed in held_reason has no licence in any
+          document read, and the vLLM and transformers builds are from
+          vendor-staged sources whose changes are unread.
       weights:
         verdict: review_required
-        basis: "Bundled weights of unread revision; the pinned C4 weights (883ca368) would be mounted instead, but that the image's server accepts them is unread."
+        basis: "Bundled /opt/models/ocr of unstated revision (copied 2026-10-20), replaced at start from Hugging Face or ModelScope unless HF_WEIGHT_SYNC=0; Apache-2.0 per the Docker Hub page. The layout and orientation models have no stated licence. The documented wrapper cannot serve the pinned C4 weights (883ca368)."
       dataset:
         verdict: not_applicable
         basis: "No dataset."
       hosted:
         verdict: not_applicable
         basis: "Self-hosted."
-    not_cleared: "Any use: licence, start command, bundled vLLM version and bundled weight revision are unread."
+    not_cleared: "Any use: the licences of the bundled third-party components; the revision of the bundled weights; a documented way to set the served name."

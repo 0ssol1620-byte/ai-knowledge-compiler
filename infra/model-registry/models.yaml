@@ -347,28 +347,99 @@ releases:
       engine: vllm_or_transformers
       version: null
       image_digest: null
-      # WO-D10-0H: no serving recipe could be written from the documentation
-      # this work order may read, so A0-6's one attempt has nothing to run yet.
-      # The card and the SDK README send serving to the vendor deployment guide
-      # and the vendor Docker image page; neither is on the work order's read
-      # list. The vendor image is pinned below by digest and HELD in the intake
-      # register (tool_minicpm_ocr_vendor_image).
+      # WO-D10-0H round 2, from the vendor deployment guide
+      # (docs/minicpm_ocr_tutorial_en.md at sdk-v1.0.5, sha256 8d3346c3...),
+      # scripts/install.sh it names (sha256 5b0b8f26...), the Docker Hub
+      # overview of openbmbofficial/minicpm-ocr (sha256 38974d22...) and the
+      # image's config document (sha256 eaca1294...; no layer pulled). Not
+      # attempted: the image's bundled third-party components have no licence
+      # in any of these documents, and an evaluation run of an image whose
+      # licence is unknown is not made (lead decision B). The image stays HELD
+      # in the intake register (tool_minicpm_ocr_vendor_image).
       serving:
         runner: minicpm_ocr_1
-        verdict: no_recipe_from_permitted_documentation
+        verdict: not_attempted_image_licence_unread
         a0_exception: >-
-          vllm/vllm-openai@sha256:e1668bce... (vLLM 0.22.1, transformers 5.10.2):
+          vllm/vllm-openai@sha256:e1668bce... (tag v0.22.1-cu129; vLLM 0.22.1,
+          transformers 5.10.2):
           "Value error, The checkpoint you are trying to load has model type
           `minicpm_ocr` but Transformers does not recognize this architecture."
           (pydantic ValidationError for ModelConfig, before any weight loaded).
+        documented_paths:
+          - >-
+            Guide (tutorial step 2-3): bash scripts/install.sh vllm checks out
+            vLLM and Transformers source at commits pinned in the repository's
+            pyproject.toml (not read) and builds vLLM in .venv-vllm (about 40 min
+            on 96 cores; driver >= 580, CUDA 13). Start: vllm serve
+            openbmb/MiniCPM-OCR-1.0 --served-model-name minicpm-ocr --port 18499
+            --max-model-len 40960 --max-num-batched-tokens 40960 --max-num-seqs 32
+            --limit-mm-per-prompt '{"image":36,"video":0}' --attention-backend
+            FLASH_ATTN --mm-encoder-attn-backend FLASH_ATTN --mm-processor-kwargs
+            '{"downsample_mode":"4x"}' --gpu-memory-utilization 0.85
+            --trust-request-mm-kwargs --default-chat-template-kwargs
+            '{"enable_thinking":false}', with --speculative-config (DSpark draft
+            openbmb/MiniCPM-OCR-1.0-DSpark) removed for standard decoding as the
+            guide allows. A source build is a new image this work order may not
+            make; not usable for A0-6 as it stands.
+          - >-
+            Image (Docker Hub, OCR-only quick start): docker run ... -p 8000:8000
+            openbmbofficial/minicpm-ocr:latest vllm serve /opt/models/ocr. In the
+            image /usr/local/bin/vllm is a wrapper that execs /entrypoint.sh
+            (config history step 32); the page says it "does not forward
+            arbitrary vLLM arguments" and serves the name minicpm-ocr-1.0
+            (env OCR_SERVED_NAME=minicpm-ocr-1.0). No documented option sets the
+            served name, so through the wrapper the runner's attestation
+            <repo>@<revision> cannot be met: cannot be attested as launched.
+        weights: >-
+          The wrapper serves /opt/models/ocr, copied into the image on
+          2026-10-20 (history step 24); a build step bakes a fingerprint with the
+          sha256 of every weights file to /opt/models/.hf-ocr-manifest.json. The
+          revision of those files is not stated in any document read, and at
+          start the wrapper checks Hugging Face, then ModelScope, for newer
+          weights and replaces them unless HF_WEIGHT_SYNC=0. The pinned weights
+          (883ca368, largest file sha256 83f4e433...) are therefore served only
+          by pointing a vLLM server at a launcher-downloaded directory, which the
+          wrapper does not allow (above).
+        image_contents: >-
+          From the config history: Debian trixie with Python 3.12.15; one venv
+          /opt/venv holding vLLM 0.31.1rc1.dev379+g484a12539 installed from
+          vendor-staged source over the precompiled wheel of vLLM commit
+          5555a2d8f7116b2b4877f66516f4128176cf722a (VLLM_MAIN_CUDA_VERSION 12.9),
+          transformers 5.19.0.dev0 from vendor-staged source, PyTorch for CUDA
+          12.9 (asserted at build), paddlepaddle-gpu (cu129), paddlex[ocr] 3.7.2,
+          opencv-contrib-python 4.10.0.84, torchcodec and a requirements.lock
+          (not read); the layout model at /opt/models/layout and the orientation
+          model PP-LCNet_x1_0_doc_ori at /opt/models/paddle_upright; the SDK
+          1.0.5 from OpenBMB/MiniCPM-OCR commit f5357c72.... The checkpoint's
+          config.json names transformers 5.21.0; the image has 5.19.0.dev0.
+        licence: >-
+          Docker Hub page: "MiniCPM-OCR code and model weights are released under
+          the Apache License 2.0. Third-party components retain their respective
+          licenses." No document read names those licences; the image has no
+          labels and no SBOM attestation (its index carries one SLSA provenance
+          attestation, not read). The staged vLLM and transformers sources are
+          the vendor's and their changes are unread.
+        request_shape: >-
+          The runner sends POST /v1/chat/completions with model
+          <repo>@<revision>, one user message [image_url data URL, text "Text
+          Recognition:"], temperature 0.0 and max_tokens 8192, an optional
+          Bearer header, and requires the echoed model and finish_reason stop.
+          The Docker Hub example has the same message shape, prompt and
+          temperature on port 8000, health GET /health, models GET /v1/models.
+          Not in the guides: max_tokens; a model value other than
+          minicpm-ocr-1.0; the Bearer header (no --api-key is documented for
+          the image); a whole page as one image (the page says full pages and
+          PDFs go through the SDK pipeline, and the guide's server runs with
+          --mm-processor-kwargs downsample_mode 4x and enable_thinking false,
+          whose values in the image's wrapper are unread).
         findings:
           - "config.json at the pin: architectures [MiniCPMOcrForConditionalGeneration], model_type minicpm_ocr, transformers_version 5.21.0, no auto_map; the 14-file weights repository has no Python file, so no remote-code path exists."
           - "vLLM supported-models docs at v0.22.1, v0.26.0, v0.30.0, v0.32.0, v0.33.0, v0.34.0 and main (read 2026-11-17) list no MiniCPMOcrForConditionalGeneration; MiniCPM-V 4.6/4.7 are listed under MiniCPMV, a different architecture name."
           - "Whether a public transformers release registers minicpm_ocr is UNVERIFIED (not read). vLLM's Transformers modeling backend is documented for full and sliding attention only; the text model has linear_attention layers."
           - "PyPI minicpm-ocr 1.0.5 (Apache-2.0) requires no vLLM and no transformers: it is the client of a separately started service."
         candidate_image: "openbmbofficial/minicpm-ocr@sha256:3cfeaf0d251ecb4e5615cf5ce97cb8c90583cfb70dc21d6978ca50a4bfc6fdd9"
-        candidate_image_note: "tags 105-vlm-with-model and latest (Docker Hub, 2026-11-16). README at sdk-v1.0.5: bundles model weights, the SDK and vLLM; needs a driver compatible with CUDA 12.9. Its start command, vLLM version, licence and the revision of the bundled weights are unread."
-        missing: "the start command for an OpenAI-compatible service, from docs/minicpm_ocr_tutorial_en.md#3-start-the-service at sdk-v1.0.5 or the Docker Hub page of openbmbofficial/minicpm-ocr"
+        candidate_image_note: "tags 105-vlm-with-model and latest (Docker Hub, 2026-11-16); amd64 manifest sha256:42773d0ece292c0d8abe9edd92d5a405f37849db134c094554532880ab0d7a12, config sha256:eaca12947aceac14cd4ffd7aba3e8ef255d8fbdb2376df4874a2572fc0c51343. CUDA 12.9 runtime; the page's verification names this digest (printed one hex digit short) on an RTX 5090 with driver 590.48.01."
+        missing: "a licence for the image's third-party contents (vLLM and transformers builds, PyTorch, Paddle packages and models, requirements.lock); then either a documented served-name option for the image or a server started outside the wrapper on a launcher-downloaded pinned directory, which would be a new decision"
     claimed_languages: [zh, en]
     internal_validation:
       corpus: d10-screen-v1
@@ -425,11 +496,47 @@ releases:
           (OpenMDW-1.1), as the A0 attempt already did.
         a0_exception: "vLLM 0.22.1: \"Model architectures ['RadioMBartPrefixForCausalLM'] are not supported for now.\" (ModelConfig validation, before any weight loaded)."
         serving_stack_note: >-
-          vLLM 0.33.0, not the 0.22.1 every other served candidate runs. Its
-          latency and cost are not same-stack with theirs; an output difference
-          may come from the engine version as well as the model. The A2a receipt
-          states this for C5. The card's reference hardware is H100/H200; the
-          arena's RTX 4090 / A40 / L4 hosts are UNVERIFIED for it.
+          Not the stack every other served candidate runs. Theirs is
+          vllm/vllm-openai@sha256:e1668bce... = tag v0.22.1-cu129 (Docker Hub
+          tag metadata and the registry index manifest read 2026-11-17; amd64
+          manifest sha256:e3443c4b...; the plain v0.22.1 tag is the CUDA 13.0
+          build 953d3a06...): vLLM 0.22.1+cu129, CUDA 12.9, PyTorch 2.11 (the
+          v0.20.0 release notes move CUDA builds to 2.11 and no later note
+          before v0.27.0 changes it), transformers 5.10.2 (A0 log). C5's is
+          v0.33.0: vLLM 0.33.0, CUDA 13.0 only ("CUDA 12.9 dropped: release
+          wheels and images are CUDA 13.0 only", v0.33.0rc3 notes; GitHub
+          releases snapshot sha256 65ab2830c18aedb2312d7ac1560157aea2447c70c5ca9606a90cf3b0f4e5f10a),
+          PyTorch 2.14.0 with torchvision 0.29.0 and Triton 3.8.0 (same notes;
+          v0.34.0 says PyTorch stays at 2.14.0); its transformers version is
+          unread. Engine, CUDA major and PyTorch all differ, so C5's latency,
+          cost and output are not same-stack with the others: a difference may
+          come from the stack as well as the model. The A2a receipt states this
+          for C5. The card's reference hardware is H100/H200; the arena's RTX
+          4090 / A40 / L4 hosts are UNVERIFIED for it.
+        host_precondition: >-
+          A host driver that runs CUDA 13.0: NVIDIA's CUDA Toolkit release notes
+          (snapshot sha256 ad6659640c0ce3153dcca0e4cf87731eccf298ac88751df20848df23c99dff52,
+          2026-11-17) give R580 as CUDA 13.0's driver branch and >= 580 as the
+          minimum for CUDA 13.x minor-version compatibility. Measured on the A0
+          hosts (receipts/d10-screen-v1/A0/pods/): A40 with driver 595.112.07
+          (C2, C5) and 595.91.07 (C4, C6), RTX PRO 6000 with 595.91.07 (C7, C8),
+          host CUDA 13.2 (C2 receipt). The pod is created with RunPod
+          allowedCudaVersions limited to 13.0 and newer, and the launch command
+          prints nvidia-smi name,driver_version first and exits with its own
+          marker, before vLLM starts, when the driver major is below 580.
+        failure_classification: >-
+          Operational, not A0-6's model verdict, and recorded as such: the image
+          was not pulled (no A0-START line; the pod's own status names the
+          pull); the driver check above failed, or the CUDA runtime reports the
+          driver too old; download or checksum failed before the manifest and
+          checksum verdict (as C7's A0-PREP-FAILED); out of memory (a CUDA
+          out-of-memory error, or vLLM finding no memory for the KV cache after
+          the weights loaded). The model does not load, which is A0-6's
+          verdict: after a MATCH checksum, a passing driver check and the vLLM
+          0.33.0 banner, a traceback in model-config validation (architecture
+          not supported), in importing or initialising the repository's code
+          under --trust-remote-code, or in weight loading (missing, unexpected
+          or mis-shaped parameters), before "Application startup complete".
     claimed_languages: [multilingual]
     internal_validation:
       corpus: d10-screen-v1
