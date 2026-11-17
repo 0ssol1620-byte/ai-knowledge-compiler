@@ -175,7 +175,17 @@ def deterministic_local_mock(case: dict[str, Any]) -> dict[str, Any]:
     return result
 
 
-def run_external(config: RunnerConfig, payload: dict[str, Any]) -> dict[str, Any]:
+def post_bytes(
+    config: RunnerConfig,
+    body: bytes,
+    headers: dict[str, str],
+    *,
+    max_response_bytes: int = 10 * 1024 * 1024,
+) -> tuple[int, str, bytes]:
+    """POST over the pinned, allowlisted HTTPS path; returns (status, content type, raw bytes).
+
+    Nothing is interpreted here: the caller decides what a status or body means.
+    """
     if not config.allow_network:
         raise RunnerUnavailable("network runner requires explicit --allow-network")
     if not config.endpoint:
@@ -202,6 +212,28 @@ def run_external(config: RunnerConfig, payload: dict[str, Any]) -> dict[str, Any
         validated_endpoint = validate_resolved_url(config.endpoint, addresses)
     except (OSError, UnsafeUrlError) as exc:
         raise RunnerUnavailable("benchmark endpoint did not resolve to a public address") from exc
+    connection = _PinnedHTTPSConnection(
+        validated_endpoint.hostname_ascii,
+        pinned_ip=validated_endpoint.resolved_ips[0],
+        timeout=config.timeout_seconds,
+    )
+    target = urlunsplit(("", "", parsed.path or "/", parsed.query, ""))
+    try:
+        connection.request("POST", target, body=body, headers=headers)
+        response = connection.getresponse()
+        status = response.status
+        content_type = response.headers.get_content_type()
+        raw = response.read(max_response_bytes + 1)
+    except (OSError, TimeoutError, http.client.HTTPException) as exc:
+        raise RunnerUnavailable("benchmark provider is unavailable") from exc
+    finally:
+        connection.close()
+    if len(raw) > max_response_bytes:
+        raise RunnerUnavailable("provider response exceeds the configured bound")
+    return status, content_type, raw
+
+
+def run_external(config: RunnerConfig, payload: dict[str, Any]) -> dict[str, Any]:
     body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
     headers = {
         "Content-Type": "application/json",
@@ -212,26 +244,11 @@ def run_external(config: RunnerConfig, payload: dict[str, Any]) -> dict[str, Any
     bearer_token = os.getenv("AKC_BENCHMARK_PROVIDER_TOKEN")
     if bearer_token:
         headers["Authorization"] = f"Bearer {bearer_token}"
-    connection = _PinnedHTTPSConnection(
-        validated_endpoint.hostname_ascii,
-        pinned_ip=validated_endpoint.resolved_ips[0],
-        timeout=config.timeout_seconds,
-    )
-    target = urlunsplit(("", "", parsed.path or "/", parsed.query, ""))
-    try:
-        connection.request("POST", target, body=body, headers=headers)
-        response = connection.getresponse()
-        if response.status != 200:
-            raise RunnerUnavailable(f"provider returned HTTP {response.status}")
-        if response.headers.get_content_type() != "application/json":
-            raise RunnerUnavailable("provider response must be application/json")
-        raw = response.read(10 * 1024 * 1024 + 1)
-    except (OSError, TimeoutError, http.client.HTTPException) as exc:
-        raise RunnerUnavailable("benchmark provider is unavailable") from exc
-    finally:
-        connection.close()
-    if len(raw) > 10 * 1024 * 1024:
-        raise RunnerUnavailable("provider response exceeds the configured bound")
+    status, content_type, raw = post_bytes(config, body, headers)
+    if status != 200:
+        raise RunnerUnavailable(f"provider returned HTTP {status}")
+    if content_type != "application/json":
+        raise RunnerUnavailable("provider response must be application/json")
     result = json.loads(raw)
     if not isinstance(result, dict):
         raise RunnerUnavailable("provider response must be a JSON object")
