@@ -446,14 +446,21 @@ arena_intake:
     # metadata of each pinned version, read 2026-11-17 (index sha256
     # 3f91e0781664fb8882c74cf1dce48f74215fad430a45a6e49bc98dc8ab1c3647,
     # kept outside the repository in receipts/WO-D10-0F/doc-snapshots/); no
-    # licence file inside a wheel was read.
+    # licence file inside a wheel was read. WO-D10-0U adds six 1.17.0, which MinerU 3.4.4
+    # imports without declaring it: PyPI metadata of six 1.17.0 read 2026-11-17T23:36Z,
+    # sha256 d8de39dd52b73048d81a8fd78022ee2bc72f8b568bcf0d88e5d5069c302b1208, outside the
+    # repository in receipts/WO-D10-0U/doc-snapshots/pypi/six-1.17.0.json (byte-identical to
+    # the WO-D10-0I copy); the wheel's published sha256 4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274
+    # is the one requirements.lock pins.
     image:
       recipe: infra/runpod/v6/images/mineru-pipeline-akc
       provenance: "rebuilt from the 3.4.4 release; not the production digest, which the repository does not record"
       use: evaluation_only
       base: "python:3.11-slim-bookworm@sha256:e8c69d86735f6df3efa06b324694fe51f0422785f83a3bd463052636c2421944 (amd64); Debian libgl1 and libglib2.0-0 from snapshot 20261116T000000Z, their licences not read"
-      python_packages: "98, version and sha256 in requirements.lock"
+      python_packages: "99, version and sha256 in requirements.lock (98 until WO-D10-0U added six)"
       licences: >-
+        six 1.17.0: MIT (licence field; classifier OSI Approved MIT
+        License).
         mineru 3.4.4: LicenseRef-MinerU-Open-Source-License (the code axis
         above). 14 nvidia-* CUDA 12.8 wheels pulled by torch 2.8.0: metadata
         says NVIDIA proprietary (for nvidia-nccl-cu12 and nvidia-nvtx-cu12 the
@@ -671,7 +678,7 @@ arena_intake:
       provenance: "Dockerfile target c3: the rebuilt C0 image plus requirements-c3.lock"
       use: evaluation_only
       base: "the C0 image (model_mineru_pipeline.image)"
-      python_packages: "the C0 image's 98, plus accelerate 1.14.0 and psutil 7.2.2 by version and sha256 in requirements-c3.lock"
+      python_packages: "the C0 image's 99 (six included, WO-D10-0U), plus accelerate 1.14.0 and psutil 7.2.2 by version and sha256 in requirements-c3.lock"
       licences: >-
         accelerate 1.14.0: Apache (licence field; classifier Apache Software
         License). psutil 7.2.2: BSD-3-Clause (licence field). The rest as

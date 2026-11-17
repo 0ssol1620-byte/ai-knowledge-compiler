@@ -35,6 +35,13 @@ RUN python -m pip install --require-hashes --only-binary=:all: --no-deps \
       -r /opt/akc/requirements.lock \
     && python -m pip check
 
+# Import gate (WO-D10-0U): what C0's recipe imports by its first page, imported here, so a module
+# the lock does not install fails the build. `pip check` cannot see one: MinerU 3.4.4 imports six
+# without declaring it, and its pipeline imports it only at the first parse. The per-page command
+# (mineru), the service (mineru-api) and the lazy imports of the pipeline path in
+# mineru/cli/common.py (_process_pipeline, _process_output) and pipeline_analyze.py.
+RUN python -c "import mineru.cli.client, mineru.cli.fast_api, mineru.backend.pipeline.pipeline_analyze, mineru.backend.pipeline.batch_analyze, mineru.backend.pipeline.pipeline_middle_json_mkcontent"
+
 COPY weights-manifest.json mineru.json mineru-vlm.json mineru_akc_weights.py /opt/akc/
 RUN python /opt/akc/mineru_akc_weights.py /opt/akc/weights-manifest.json \
       /opt/akc/models/PDF-Extract-Kit-1.0
@@ -66,6 +73,12 @@ RUN python -m pip install --require-hashes --only-binary=:all: --no-deps \
       -r /opt/akc/requirements-c3.lock \
     && python -m pip check \
     && install -d -o 10001 -g 10001 /opt/akc/models/MinerU2.5-Pro-2605-1.2B
+# Import gate (WO-D10-0U), C3's part (C0's gate ran in the stage this one is built on): the lazy
+# imports of `-b vlm-engine` on the transformers engine -- mineru/backend/vlm/vlm_analyze.py
+# (transformers' AutoProcessor and Qwen2VLForConditionalGeneration, device_map through accelerate)
+# and mineru-vl-utils (its transformers client, the cross-page table merge and the MinerU module
+# that merge imports inside a try, which would otherwise switch the merge off without an error).
+RUN python -c "import accelerate, mineru.utils.table_merge, mineru_vl_utils.vlm_client.transformers_client, mineru_vl_utils.post_process.cross_page_table; from transformers import AutoProcessor, Qwen2VLForConditionalGeneration"
 USER 10001
 # Download at the revision (the only step with network), check every file, then serve offline.
 CMD ["sh", "-c", "HF_HUB_OFFLINE=0 python /opt/akc/mineru_akc_weights.py /opt/akc/recipes/c3-weights-manifest.json /opt/akc/models/MinerU2.5-Pro-2605-1.2B && exec python /opt/akc/mineru_akc_server.py --recipe /opt/akc/recipes/c3-mineru-vlm.json"]

@@ -1570,3 +1570,61 @@ def test_a_mapped_exit_is_a_page_failure_with_its_reason_and_no_restart(tmp_path
     with pytest.raises(srv.PageFailure) as caught:
         run(SOURCE, ".pdf", 0, None)
     assert (caught.value.reason, service.recovered) == ("pipeline_exit_nonzero", 1)
+
+
+# --- what each image installs (WO-D10-0U) --------------------------------------------------
+# A recipe's pinned package or a top-level pin that its image's lock does not install. The
+# undeclared-import class (MinerU 3.4.4 and six) is the build-time import gate's, tested in
+# benchmark/tests/v6/test_arena_page_server_workflow.py.
+
+_PIN = re.compile(r"^([A-Za-z0-9._-]+)==(\S+) \\$")
+_TOP_LEVEL = re.compile(r"^([A-Za-z0-9._-]+)(?:\[[A-Za-z0-9,._-]+\])?==(\S+)$")
+_C1_DOCKERFILE = _HERE.parent / "paddleocr-vl-akc" / "Dockerfile"
+
+
+def _norm(name: str) -> str:
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def _lock(name: str) -> dict[str, str]:
+    pins: dict[str, str] = {}
+    for line in (_HERE / name).read_text(encoding="utf-8").splitlines():
+        match = _PIN.match(line)
+        if match:
+            assert _norm(match[1]) not in pins, line
+            pins[_norm(match[1])] = match[2]
+    assert pins, name
+    return pins
+
+
+def _c1_pins() -> dict[str, str]:
+    """C1 is not hash-locked (README, C1): its pins are the quoted ones its installs name."""
+    text = _C1_DOCKERFILE.read_text(encoding="utf-8")
+    found = re.findall(r'"([A-Za-z0-9._-]+)(?:\[[^\]"]*\])?==([^"\s]+)"', text)
+    return {_norm(name): version for name, version in found}
+
+
+def test_every_top_level_pin_resolves_in_the_lock_at_its_version() -> None:
+    lock = _lock("requirements.lock")
+    lines = [line.strip() for line in (_HERE / "requirements.in").read_text("utf-8").splitlines()]
+    pins = [line for line in lines if line and not line.startswith("#")]
+    assert pins
+    for line in pins:
+        match = _TOP_LEVEL.fullmatch(line)
+        assert match, f"a requirements.in line this test cannot read: {line!r}"
+        assert lock.get(_norm(match[1])) == match[2], line
+    assert lock["six"] == "1.17.0"
+
+
+def test_each_recipes_packages_are_pinned_where_its_image_is_built_from() -> None:
+    c0, layer = _lock("requirements.lock"), _lock("requirements-c3.lock")
+    assert not set(c0) & set(layer), "C3 installs a second version of a C0 package"
+    built_from = {"c0": c0, "c3": {**c0, **layer}, "c1": _c1_pins()}
+    for path in RECIPES:
+        recipe = srv.load_recipe(path)
+        pins = built_from[path.name.split("-", 1)[0]]  # a recipe of a new slot must be mapped
+        assert recipe["packages"], path.name
+        for name, version in recipe["packages"].items():
+            assert isinstance(version, str) and pins.get(_norm(name)) == version, (path, name)
+        for name in recipe["absent_packages"]:
+            assert _norm(name) not in pins, (path.name, name)

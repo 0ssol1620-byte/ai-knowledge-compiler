@@ -7,6 +7,7 @@ import posixpath
 import re
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -475,3 +476,123 @@ def test_guard_refuses_a_dockerfile_with_no_copy(tmp_path: Path) -> None:
     result = _run_guard(tree, {"dockerfile": "Dockerfile", "context": "."})
     assert result.returncode != 0
     assert "no COPY source found in Dockerfile" in result.stderr
+
+
+# WO-D10-0U: each stage imports what its recipe reaches by the first page, right after its
+# install. The class: a module the recipe's path imports that the image does not install, which
+# `pip check` cannot see when the vendor does not declare it (MinerU 3.4.4 and six).
+
+_IMAGES = ROOT / "infra/runpod/v6/images"
+
+
+def _stages(dockerfile: Path) -> dict[str, list[str]]:
+    """Instructions per build stage, continuation lines joined; an unnamed stage is ``""``."""
+    stages: dict[str, list[str]] = {}
+    current = None
+    joined = re.sub(r"\\\r?\n", " ", dockerfile.read_text(encoding="utf-8"))
+    for raw in joined.splitlines():
+        line = " ".join(raw.split())
+        if line.startswith("FROM "):
+            words = line.split()
+            current = words[3] if len(words) == 4 and words[2].upper() == "AS" else ""
+            stages[current] = []
+        elif current is not None and line and not line.startswith("#"):
+            stages[current].append(line)
+    return stages
+
+
+def _gate(dockerfile: Path, stage: str) -> str:
+    (run,) = [s for s in _stages(dockerfile)[stage] if s.startswith("RUN ") and ' -c "' in s]
+    return run.split(' -c "', 1)[1].split('"', 1)[0]
+
+
+def _gate_imports(code: str) -> list[tuple[str, list[str]]]:
+    """(module, names) per import in the gate; anything but an import statement fails."""
+    out: list[tuple[str, list[str]]] = []
+    for statement in (s.strip() for s in code.split(";")):
+        if statement.startswith("import "):
+            out += [(module.strip(), []) for module in statement[7:].split(",")]
+            continue
+        match = re.fullmatch(r"from ([\w.]+) import ([\w, ]+)", statement)
+        assert match, f"not an import statement: {statement!r}"
+        out.append((match[1], [name.strip() for name in match[2].split(",")]))
+    return out
+
+
+_GATES = [
+    (
+        _IMAGES / "mineru-pipeline-akc/Dockerfile",
+        "c0",
+        "pip install",
+        {"mineru.cli.client", "mineru.cli.fast_api", "mineru.backend.pipeline.pipeline_analyze"},
+    ),
+    (
+        _IMAGES / "mineru-pipeline-akc/Dockerfile",
+        "c3",
+        "pip install",
+        {
+            "mineru_vl_utils.vlm_client.transformers_client",
+            "transformers.Qwen2VLForConditionalGeneration",
+        },
+    ),
+    (_IMAGES / "paddleocr-vl-akc/Dockerfile", "", "uv pip install", {"paddleocr.PaddleOCRVL"}),
+]
+
+
+@pytest.mark.parametrize(("dockerfile", "stage", "install", "required"), _GATES)
+def test_each_stage_imports_its_recipes_path_after_its_install(
+    dockerfile: Path, stage: str, install: str, required: set[str]
+) -> None:
+    steps = _stages(dockerfile)[stage]
+    installs = [i for i, s in enumerate(steps) if s.startswith("RUN ") and install in s]
+    gates = [i for i, s in enumerate(steps) if s.startswith("RUN ") and ' -c "' in s]
+    assert installs and len(gates) == 1 and gates[0] > max(installs), (stage, steps)
+    imports = _gate_imports(_gate(dockerfile, stage))
+    named = {m for m, _ in imports} | {f"{m}.{n}" for m, names in imports for n in names}
+    assert required <= named, required - named
+
+
+def _fake_tree(root: Path, imports: list[tuple[str, list[str]]], broken: str | None) -> None:
+    """Each module the gate names as a package; ``broken`` imports a module nobody installs."""
+    for module, _ in imports:
+        parts = module.split(".")
+        for depth in range(1, len(parts) + 1):
+            package = root.joinpath(*parts[:depth])
+            package.mkdir(exist_ok=True)
+            (package / "__init__.py").touch()
+    for module, names in imports:
+        body = "".join(f"{name} = None\n" for name in names)
+        if module == broken:
+            body = "import akc_gate_test_absent_module\n" + body
+        (root.joinpath(*module.split(".")) / "__init__.py").write_text(body, encoding="utf-8")
+
+
+@pytest.mark.parametrize(("dockerfile", "stage"), [(g[0], g[1]) for g in _GATES])
+def test_the_gate_fails_on_a_missing_import_inside_any_module_it_names(
+    tmp_path: Path, dockerfile: Path, stage: str
+) -> None:
+    """The gate's own code, on a synthetic tree of the modules it names: it passes when every
+    module imports, and exits non-zero when any one of them imports a module that is absent
+    (a check that only looks a module up, such as ``find_spec``, would pass that)."""
+    code = _gate(dockerfile, stage)
+    imports = _gate_imports(code)
+
+    def run(broken: str | None) -> subprocess.CompletedProcess[str]:
+        tree = tmp_path / (broken or "whole")
+        tree.mkdir()
+        _fake_tree(tree, imports, broken)
+        prefix = f"import sys; sys.path.insert(0, {str(tree)!r}); "
+        return subprocess.run(
+            [sys.executable, "-I", "-c", prefix + code],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+        )
+
+    whole = run(None)
+    assert whole.returncode == 0, whole.stderr
+    for module, _ in imports:
+        result = run(module)
+        assert result.returncode != 0, module
+        assert "No module named 'akc_gate_test_absent_module'" in result.stderr, module

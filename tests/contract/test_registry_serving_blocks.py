@@ -323,6 +323,44 @@ def test_image_build_names_a_dockerfile_inside_the_repository(tmp_path: Path) ->
     assert _problems(row) == []
 
 
+def test_not_serving_binds_the_c0_and_c3_digests_and_not_the_next_one() -> None:
+    """WO-D10-0U: the C0 and C3 builds of run 44145574050 stay ``built`` but are marked not to
+    be launched; the mark names the exact image, so recording a rebuilt digest without
+    deciding about the mark fails, as does a mark without a reason or on an unbuilt block."""
+    rows = _built_rows()
+    marked = {k for k, r in rows.items() if "not_serving" in r["runtime"]["serving"]}
+    assert marked == {"mineru", "mineru_vlm"}
+    for runner in marked:
+        row = rows[runner]
+        serving = row["runtime"]["serving"]
+        assert serving["built"] is True and _problems(row) == [], runner
+        assert serving["not_serving"]["image"] == serving["image"], runner
+        assert "six" in serving["not_serving"]["reason"], runner
+        rebuilt = copy.deepcopy(serving)
+        rebuilt["image"] = serving["image"].split("@")[0] + "@sha256:" + "a" * 64
+        assert _build_problems(rebuilt) == ["not_serving names another image than this block's"]
+        for mark in (
+            None,
+            "do not launch",
+            [],
+            {"image": serving["image"]},
+            {"image": serving["image"], "reason": ""},
+            {"image": serving["image"], "reason": "  "},
+            {"image": serving["image"], "reason": 7},
+            {"image": serving["image"], "reason": "x", "until": "later"},
+        ):
+            bad = copy.deepcopy(serving)
+            bad["not_serving"] = mark
+            assert _build_problems(bad) == [
+                "not_serving is not exactly an image and a non-empty reason"
+            ], (runner, mark)
+        unbuilt = copy.deepcopy(serving)
+        unbuilt.update(built=False, image=None)
+        for field in _PROVENANCE:
+            del unbuilt[field]
+        assert _build_problems(unbuilt) == ["not_serving given while built is false"], runner
+
+
 def test_a_drifted_variant_is_caught() -> None:
     row = next(r for r in _rows() if r["runtime"].get("serving_variants"))
     bad = copy.deepcopy(row)

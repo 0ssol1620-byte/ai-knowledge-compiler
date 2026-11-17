@@ -332,6 +332,12 @@ releases:
         image_build: infra/runpod/v6/images/mineru-pipeline-akc/Dockerfile
         image_target: c3
         built: true
+        # WO-D10-0U: the build completed, but this digest is not to be launched until the
+        # lead records the rebuilt one (validate_registry.py binds not_serving to this image).
+        # The lock digests below are those of this build, before six was added.
+        not_serving:
+          image: "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/arena-mineru-pipeline-akc-c3@sha256:78146880edb1121ae51be005b4e65d21522f03220d85f789c554f2b9ea966a5c"
+          reason: "Built on the C0 stage whose first launch failed (pod i60idf9j1yqe48, 2026-11-18: first page pipeline_exit_nonzero, ModuleNotFoundError: No module named 'six', which MinerU 3.4.4 imports without declaring it; the lock is installed --no-deps). This image carries the same layer without six and without the build-time import gates; it was not launched."
         source_commit: "9754168c92969e17a12c3877c3c0ba44de690918"
         workflow_run_id: "44145574050"
         package_listing_sha256: "sha256:1b8ebf35e002904fefa8edc2c6a512ae780ae48799d66ea65d206c577d1a0028"
@@ -399,6 +405,12 @@ releases:
         image_build: infra/runpod/v6/images/mineru-pipeline-akc/Dockerfile
         image_target: c0
         built: true
+        # WO-D10-0U: the build completed, but its first launch failed; not to be launched until
+        # the lead records the rebuilt digest (validate_registry.py binds not_serving to this
+        # image). The lock digest below is this build's, before six was added.
+        not_serving:
+          image: "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/arena-mineru-pipeline-akc-c0@sha256:c798e46e5181b76b2cb98982669f289fba1bbd2682de47d5839058c370134298"
+          reason: "First launch failed (pod i60idf9j1yqe48, 2026-11-18): the server became ready and the first page failed pipeline_exit_nonzero with ModuleNotFoundError: No module named 'six' (mineru/model/utils/pytorchocr/data/imaug/operators.py, reached from mineru.backend.pipeline.pipeline_analyze at the first parse). MinerU 3.4.4 imports six without declaring it and the lock is installed --no-deps, so pip check passed."
         source_commit: "9754168c92969e17a12c3877c3c0ba44de690918"
         workflow_run_id: "44145574050"
         package_listing_sha256: "sha256:e93a753676e0a4c3d1d044c1c5f8cdaf8450fe7f5bef2e3ebc6d2fc8764a4bd6"

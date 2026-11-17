@@ -45,6 +45,16 @@ RUN python3 -m pip install --break-system-packages "uv==0.13.4" \
     && echo "AKC listing, the last command of this step: uv pip list --format json (UNVERIFIED offline)" \
     && uv pip list --python /app/.venv/bin/python --format json
 
+# Import gate (WO-D10-0U): the import paddleocr_vl_service.py makes when the service loads
+# (`importlib.import_module("paddleocr").PaddleOCRVL`), so a module the install lacks fails the
+# build. What PaddleX imports later, while it builds the pipeline and runs a page, is not
+# determined without running the image: the lead's first-pod check is in the README of
+# mineru-pipeline-akc ("Import gate"). HOME
+# points at a directory removed in the same step, so no cache PaddleX writes stays in the image.
+RUN HOME=/tmp/akc-import-gate PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True \
+      /app/.venv/bin/python -c "from paddleocr import PaddleOCRVL" \
+    && rm -rf /tmp/akc-import-gate
+
 COPY infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_server.py \
      infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_weights.py \
      infra/runpod/v6/images/paddleocr-vl-akc/paddleocr_vl_service.py /opt/akc/

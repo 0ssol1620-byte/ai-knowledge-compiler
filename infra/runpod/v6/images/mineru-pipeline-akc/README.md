@@ -30,7 +30,7 @@ the PaddleOCR production workers (`infra/runpod/v6/pool-registry.yaml`:
 | `recipes/c1-layout-weights-manifest.json` | Every file of `PaddlePaddle/PP-DocLayoutV3` at `241f8bdf` (5 files, 132,018,611 B), from the Hub API read at that revision (snapshot sha256 `6f73f857…`) |
 | `weights-manifest.json` | The 40 files (2,595,586,833 B) of PDF-Extract-Kit-1.0 @ `ed6b654c` that MinerU 3.4.4 loads (C0) |
 | `Dockerfile` | Targets `c0` and `c3`. Base by digest, Debian packages by version from a dated snapshot, Python packages by version and sha256 |
-| `requirements.in` / `requirements.lock` | C0: top-level pins / the full hashed closure (98 packages) |
+| `requirements.in` / `requirements.lock` | C0: top-level pins / the full hashed closure (99 packages; `six` is pinned at the top level because MinerU imports it without declaring it, WO-D10-0U) |
 | `requirements-c3.lock` | C3 layer: the two packages MinerU's `[vlm]` extra adds (accelerate 1.14.0, psutil 7.2.2), hashed |
 | `mineru.json` / `mineru-vlm.json` | MinerU config for C0 / C3: local models only, LLM-aided titles off |
 | `test_mineru_akc_server.py` | The real client against the server, in process, for every recipe |
@@ -247,12 +247,56 @@ names, the health URL has a valid loopback port, the output pattern is relative 
 the output directory. The registry contract test requires `image_build` to be a file named
 `Dockerfile` whose resolved path is inside the repository.
 
+## Import gate (WO-D10-0U)
+
+The first launch of the C0 image (`…-c0@sha256:c798e46e…`) failed its first page:
+`ModuleNotFoundError: No module named 'six'`, raised in
+`mineru/model/utils/pytorchocr/data/imaug/operators.py` on the import chain
+`pipeline_analyze → model_init → ocr/pytorch_paddle → predict_system → predict_det →
+pytorchocr.data → imaug → operators`, which MinerU imports only when it parses. The lock is
+installed `--no-deps` and `pip check` passed, because MinerU does not declare `six`; the server
+recorded it as the page failure `pipeline_exit_nonzero`. `six==1.17.0` is now a top-level pin
+(wheel sha256 `4721f391…3274`, the digest PyPI publishes), compiled into `requirements.lock` by
+the command in its header; C3 is built on the C0 stage and inherits it once
+(`requirements-c3.lock` is unchanged: compiling `requirements.in` plus `accelerate==1.14.0` still
+adds exactly accelerate and psutil).
+
+Each stage now imports, right after its install, the modules its recipe reaches by the first
+page, so a module the image lacks fails the build:
+
+| Stage | Imported at build | Where the list comes from |
+|---|---|---|
+| `c0` | `mineru.cli.client`, `mineru.cli.fast_api`, `mineru.backend.pipeline.pipeline_analyze`, `…batch_analyze`, `…pipeline_middle_json_mkcontent` | the recipe's command and service (the `mineru` and `mineru-api` entry points), and the function-local imports of the pipeline path: `_process_pipeline` and `_process_output` in `mineru/cli/common.py`, `batch_image_analyze` in `pipeline_analyze.py` |
+| `c3` | `accelerate`, `mineru.utils.table_merge`, `mineru_vl_utils.vlm_client.transformers_client`, `mineru_vl_utils.post_process.cross_page_table`, `transformers.AutoProcessor`, `transformers.Qwen2VLForConditionalGeneration` | `-b vlm-engine` resolves to `transformers` when vllm and lmdeploy are absent (`mineru/utils/engine_utils.py`); the transformers branch of `mineru/backend/vlm/vlm_analyze.py` (model class, processor, `device_map`); `MinerUClient` builds the transformers client and imports the cross-page merge, which imports `mineru.utils.table_merge` inside a `try` and would switch the merge off silently without it |
+| C1 (`../paddleocr-vl-akc`) | `paddleocr.PaddleOCRVL` | what `paddleocr_vl_service.py` imports when the service loads |
+
+The lists were read from the vendor's source at the release tags `mineru-3.4.4-released` and
+`mineru_vl_utils-1.0.5-released` (whose `version.py` still read 3.4.3 / 1.0.4: the release
+workflow writes the version at publish), not from the wheels; a name the wheel does not have
+fails the build, visibly. Of the ten top-level modules the static walk on the C0 pod found
+missing, C3's path reaches none: `vllm` and `lmdeploy` are probed inside `try … except
+ImportError` and their absence is what selects transformers (the server refuses to start if
+either is installed); `mlx_vlm` is probed on macOS only; `torch_npu` is imported inside `try`
+and used only for an `npu` device; `boto3`/`botocore` belong to the S3 reader and `gradio`/
+`gradio_pdf` to `mineru-gradio`, neither of which the recipe runs; `flash_attn` is not named
+in any file read on this path (the transformers branch passes no `attn_implementation`).
+
+**C1: the chain is not determined without running the image.** The service's own import is
+gated; what PaddleX imports while it builds the pipeline (at service start, before `/health` is
+200) and while it runs a page is not. The lead's check on the first C1 pod, before any corpus
+page: a synthetic one-page PDF through `POST /parse` with the recipe, which must return a
+transcription row (any `pipeline_raised` with an `ImportError` / `ModuleNotFoundError` in the
+service's trace is an image defect, not a model result).
+
 ## Open before real pages (not checked here)
 
 - The three images are built (GitHub Actions run 44145574050, source commit 9754168c, digests
-  in their registry blocks) but none has been launched: the weights, the launch checks and the
-  server's behaviour on a page are verified only by a launch. The C1 image's transitive packages
-  are known only from its package listing and build log (hashes in its registry block).
+  in their registry blocks). C0's launched once and failed its first page (above); its and
+  C3's digests carry `not_serving` in their registry blocks until the rebuilt digests are
+  recorded. C1 has not been launched. The weights, the launch checks and the server's behaviour
+  on a page are verified only by a launch; the import gates of WO-D10-0U have not run (no build
+  since). The C1 image's transitive packages are known only from its package listing and build
+  log (hashes in its registry block).
 - C3's runner key `mineru_vlm` is registered (`benchmark/runners/registry.py`, round 2).
 - "No outbound request at inference" is configured (`HF_HUB_OFFLINE`, `TRANSFORMERS_OFFLINE`,
   `MINERU_MODEL_SOURCE=local`), not proven. PaddleX may check its model hosters at import; A0 runs
