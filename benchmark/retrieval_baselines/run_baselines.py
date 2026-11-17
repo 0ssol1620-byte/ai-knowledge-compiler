@@ -5,7 +5,8 @@ evidence_id, text, authority) + optional ``metadata`` (valid_from, valid_to, rec
 available_at; ISO-8601 with offset). Logical ids are globally unique. Every row is a candidate
 (WO-D14-8, decision D14-D9); claims the product compiles from a row stay attached to it. Task
 JSONL: see metrics.Task. Exit 1 when any cut-applied retriever returns a future-leaking hit, any
-retriever returns an other-tenant hit, or an answerable task's gold cannot be reached.
+retriever returns an other-tenant hit, the independent cut oracle (violates_cut) flags a row
+the harness admitted, or an answerable task's gold cannot be reached.
 """
 
 from __future__ import annotations
@@ -40,7 +41,17 @@ from akc_product_core.semantics import (
     semantic_tokens,
 )
 
-from .metrics import CUT_KEYS, KINDS, Task, load_tasks, mean, ratio, score_task, violates_cut
+from .metrics import (
+    CUT_KEYS,
+    KINDS,
+    Task,
+    TaskError,
+    load_tasks,
+    mean,
+    ratio,
+    score_task,
+    violates_cut,
+)
 
 try:  # WO-D14-1; absent -> temporal tasks are not_run, never silently uncut.
     from akc_retrieval.temporal import admit as _admit
@@ -202,16 +213,26 @@ def hybrid_current(query: str, candidates: Candidates, k: int) -> tuple[str, ...
 
 
 def graph_entity(query: str, candidates: Candidates, k: int) -> tuple[str, ...]:
-    # graph_score depends only on (query, candidate), so slicing is exact.
+    # graph_score is 0 for a row with no entity names and depends only on (query, candidate), so
+    # only entity-bearing rows are scored (in slices, exact) and the zero-score rest fills the
+    # remaining slots by logical_id ascending, as the full sort did.
+    bearing = [c for c in candidates if c.entity_names]
     hits = [
         h
-        for i in range(0, len(candidates), RANK_CAP)
+        for i in range(0, len(bearing), RANK_CAP)
         for h in rank_semantic_candidates(
-            query, candidates[i : i + RANK_CAP], top_k=len(candidates[i : i + RANK_CAP])
+            query, tuple(bearing[i : i + RANK_CAP]), top_k=len(bearing[i : i + RANK_CAP])
         )
+        if h.graph_score > 0
     ]
     ordered = sorted(hits, key=lambda h: (-h.graph_score, h.logical_id))
-    return tuple(h.logical_id for h in ordered[:k])
+    top = [h.logical_id for h in ordered[:k]]
+    if len(top) < k:
+        scored = {h.logical_id for h in ordered}
+        top += heapq.nsmallest(
+            k - len(top), (c.logical_id for c in candidates if c.logical_id not in scored)
+        )
+    return tuple(top)
 
 
 BASELINES: dict[str, Retriever] = {
@@ -225,8 +246,12 @@ BASELINES: dict[str, Retriever] = {
 # A plain current-state retriever: gets the tenant's whole row set, the cut is NOT applied, so
 # its future_leaks is a measured number and is kept out of the stop-the-line gate.
 NO_CUT = frozenset({"no_cut_bm25_rows"})
+# Floor arm: bm25_rows on the task's own ``label_blind_query`` (the query without the concept
+# label). Added by run() only when blind queries are supplied; it is not a BASELINES entry.
+LABEL_BLIND = "label_blind"
+NO_BLIND_QUERY = "task carries no label_blind_query"
 # Retrievers with no score threshold: they return min(k, candidates).
-THRESHOLD_FREE = frozenset(BASELINES)
+THRESHOLD_FREE = frozenset(BASELINES) | {LABEL_BLIND}
 BY_CONSTRUCTION_ABSTENTION = (
     "this retriever returns min(k, candidates); abstention equals an empty candidate set"
 )
@@ -381,6 +406,21 @@ def _labelled(name: str, abstention: dict[str, float | None]) -> dict[str, Any]:
     return dict(abstention)
 
 
+@dataclass
+class _Arm:
+    by_kind: dict[str, _Tally] = field(default_factory=lambda: defaultdict(_Tally))
+    by_stratum: dict[str, _Tally] = field(default_factory=lambda: defaultdict(_Tally))
+    pooled: _Tally = field(default_factory=_Tally)
+    reasons: dict[str, int] = field(default_factory=lambda: defaultdict(int))
+    leaks: int = 0
+    denied: int = 0
+    ran: int = 0
+    skipped: int = 0
+    cut_tasks: int = 0
+    leaking_tasks: int = 0
+    seconds: float = 0.0
+
+
 def run(
     corpus: Corpus,
     tasks: Sequence[Task],
@@ -389,8 +429,12 @@ def run(
     top_k: int = TOP_K,
     admit: Callable[..., Any] | None = None,
     not_run: Mapping[str, str] | None = None,
+    blind_queries: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
     admit = admit if admit is not None else _admit
+    arms_in: dict[str, Retriever] = dict(retrievers)
+    if blind_queries is not None:
+        arms_in[LABEL_BLIND] = bm25_rows
     report: dict[str, Any] = {
         "top_k": top_k,
         "rows_total": corpus.rows_total,
@@ -403,83 +447,109 @@ def run(
     }
     for name, reason in (not_run or {}).items():
         report["retrievers"][name] = {"status": "not_run", "reason": reason}
-    gate_leaks = denied_total = 0
-    for name, retriever in retrievers.items():
-        cut_applied = name not in NO_CUT
-        by_kind: dict[str, _Tally] = defaultdict(_Tally)
-        by_stratum: dict[str, _Tally] = defaultdict(_Tally)
-        pooled = _Tally()
-        leaks = denied = ran = skipped = cut_tasks = leaking_tasks = 0
-        reasons: dict[str, int] = defaultdict(int)
-        started = time.perf_counter()
-        for task in tasks:
-            candidates = corpus.candidates.get(task.tenant, ())
-            if task.cut is not None and cut_applied:
-                if admit is None:
-                    skipped += 1
-                    reasons["akc_retrieval.temporal unavailable"] += 1
+    arms = {name: _Arm() for name in arms_in}
+    oracle_rows = oracle_tasks = oracle_bad = 0
+    admit_seconds = 0.0
+    for task in tasks:
+        all_candidates = corpus.candidates.get(task.tenant, ())
+        admitted: Candidates | None = None  # ONE admitted set per task, shared by its arms
+        if task.cut is not None and admit is not None:
+            started = time.perf_counter()
+            cut = _cut(task.cut)
+            admitted = tuple(
+                c for c in all_candidates if admit(corpus.metadata[c.logical_id], cut).admitted
+            )
+            admit_seconds += time.perf_counter() - started
+            # independent predicate over EVERY admitted row, whatever any arm returns
+            oracle_tasks += 1
+            oracle_rows += len(admitted)
+            oracle_bad += sum(
+                violates_cut(corpus.metadata[c.logical_id], task.cut) for c in admitted
+            )
+        for name, retriever in arms_in.items():
+            arm = arms[name]
+            started = time.perf_counter()
+            candidates = all_candidates
+            query = task.query
+            if name == LABEL_BLIND:
+                blind = (blind_queries or {}).get(task.task_id)
+                if blind is None:
+                    arm.skipped += 1
+                    arm.reasons[NO_BLIND_QUERY] += 1
                     continue
-                cut = _cut(task.cut)
-                candidates = tuple(
-                    c for c in candidates if admit(corpus.metadata[c.logical_id], cut).admitted
-                )
+                query = blind
+            if task.cut is not None and name not in NO_CUT:
+                if admitted is None:
+                    arm.skipped += 1
+                    arm.reasons["akc_retrieval.temporal unavailable"] += 1
+                    continue
+                candidates = admitted
             try:
-                hits = tuple(retriever(task.query, candidates, top_k))[:top_k]
+                hits = tuple(retriever(query, candidates, top_k))[:top_k]
             except NotRun as exc:
-                skipped += 1
-                reasons[str(exc)] += 1
+                arm.skipped += 1
+                arm.reasons[str(exc)] += 1
                 continue
-            ran += 1
+            arm.ran += 1
             task_leaks = 0
             for hit in hits:
                 owner = corpus.tenant_of.get(hit)
-                denied += owner is not None and owner != task.tenant
+                arm.denied += owner is not None and owner != task.tenant
                 # an id the corpus does not hold has no dates: violates_cut counts it as a leak
                 task_leaks += task.cut is not None and violates_cut(
                     corpus.metadata.get(hit, {}), task.cut
                 )
-            leaks += task_leaks
-            cut_tasks += task.cut is not None
-            leaking_tasks += task_leaks > 0
+            arm.leaks += task_leaks
+            arm.cut_tasks += task.cut is not None
+            arm.leaking_tasks += task_leaks > 0
             scores = score_task(hits, task.gold_evidence_ids, corpus.evidence_of)
-            for tally in (pooled, by_kind[task.kind]):
+            for tally in (arm.pooled, arm.by_kind[task.kind]):
                 tally.add(task, hits, scores)
             if task.stratum is not None:
-                by_stratum[task.stratum].add(task, hits, scores)
+                arm.by_stratum[task.stratum].add(task, hits, scores)
+            arm.seconds += time.perf_counter() - started
+    gate_leaks = denied_total = 0
+    for name, arm in arms.items():
+        cut_applied = name not in NO_CUT
         entry: dict[str, Any] = {
             "status": "ran",
             "cut": "applied by the harness before retrieval" if cut_applied else "not applied",
-            "wall_seconds": time.perf_counter() - started,
-            "tasks": ran,
-            "not_run_tasks": skipped,
-            "not_run_reason": "; ".join(sorted(reasons)) or None,
-            "not_run_reasons": dict(sorted(reasons.items())),
-            "recall_at_k": {k: by_kind[k].quality()["recall_at_k"] for k in sorted(KINDS)},
+            "wall_seconds": arm.seconds,
+            "tasks": arm.ran,
+            "not_run_tasks": arm.skipped,
+            "not_run_reason": "; ".join(sorted(arm.reasons)) or None,
+            "not_run_reasons": dict(sorted(arm.reasons.items())),
+            "recall_at_k": {k: arm.by_kind[k].quality()["recall_at_k"] for k in sorted(KINDS)},
             "source_precision_at_k": {
-                k: by_kind[k].quality()["source_precision_at_k"] for k in sorted(KINDS)
+                k: arm.by_kind[k].quality()["source_precision_at_k"] for k in sorted(KINDS)
             },
             "by_stratum": {
                 s: {**t.quality(), **_labelled(name, t.abstention())}
-                for s, t in sorted(by_stratum.items())
+                for s, t in sorted(arm.by_stratum.items())
             },
-            **_labelled(name, pooled.abstention()),
-            "denied_content": denied,
+            **_labelled(name, arm.pooled.abstention()),
+            "denied_content": arm.denied,
         }
         if not cut_applied:
-            entry["future_leaks"] = leaks
-            entry["cut_tasks"] = cut_tasks
-            entry["cut_tasks_with_a_leak"] = leaking_tasks
+            entry["future_leaks"] = arm.leaks
+            entry["cut_tasks"] = arm.cut_tasks
+            entry["cut_tasks_with_a_leak"] = arm.leaking_tasks
         elif name in THRESHOLD_FREE:
-            entry["by_construction"]["future_leaks"] = leaks
+            entry["by_construction"]["future_leaks"] = arm.leaks
             entry["by_construction"]["future_leaks_note"] = BY_CONSTRUCTION_LEAKS
-            gate_leaks += leaks
+            gate_leaks += arm.leaks
         else:
-            entry["future_leaks"] = leaks
-            gate_leaks += leaks
-        denied_total += denied
+            entry["future_leaks"] = arm.leaks
+            gate_leaks += arm.leaks
+        denied_total += arm.denied
         report["retrievers"][name] = entry
     report["future_leaks"] = gate_leaks
     report["denied_content"] = denied_total
+    # A count, not an accuracy: admitted rows that violates_cut says could not be known at the cut.
+    report["cut_oracle_disagreements"] = oracle_bad
+    report["cut_oracle_rows_checked"] = oracle_rows
+    report["cut_oracle_tasks"] = oracle_tasks
+    report["admit_wall_seconds"] = admit_seconds
     blocking = []
     if report["gold_unreachable_tasks"]:
         blocking.append(
@@ -494,10 +564,31 @@ def run(
         )
     if gate_leaks:
         blocking.append(f"future_leaks: {gate_leaks} hits violate the task's cut")
+    if oracle_bad:
+        blocking.append(
+            f"cut_oracle_disagreements: {oracle_bad} rows admitted by the harness filter "
+            "violate the task's cut"
+        )
     if denied_total:
         blocking.append(f"denied_content: {denied_total} hits come from another tenant")
     report["blocking"] = blocking
     return report
+
+
+def _blind_queries(lines: Sequence[str]) -> dict[str, str]:
+    """task_id -> label_blind_query for rows that carry one; a present bad value is refused."""
+    out: dict[str, str] = {}
+    for line in lines:
+        if not line.strip():
+            continue
+        row = json.loads(line)
+        if "label_blind_query" not in row:
+            continue
+        value = row["label_blind_query"]
+        if not isinstance(value, str) or not value.strip():
+            raise TaskError("label_blind_query must be a non-empty string when present")
+        out[str(row["task_id"])] = value
+    return out
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -510,7 +601,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     with open(args.corpus, encoding="utf-8") as handle:
         corpus = Corpus([json.loads(line) for line in handle if line.strip()])
     with open(args.tasks, encoding="utf-8") as handle:
-        tasks = load_tasks(handle)
+        lines = handle.readlines()
+    tasks = load_tasks(lines)
+    blind = _blind_queries(lines)
     retrievers: dict[str, Retriever] = dict(BASELINES)
     not_run: dict[str, str] = {}
     pin: dict[str, str] | None = None
@@ -518,7 +611,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         retrievers["dense"], pin = load_dense(args.embeddings)
     else:
         not_run["dense"] = "no pinned embedding provider"
-    report = run(corpus, tasks, retrievers, not_run=not_run)
+    if not blind:
+        not_run[LABEL_BLIND] = "no task row carries a label_blind_query"
+    report = run(corpus, tasks, retrievers, not_run=not_run, blind_queries=blind or None)
     report["host"] = {
         "cpu": platform.processor() or platform.machine(),
         "python": platform.python_version(),
