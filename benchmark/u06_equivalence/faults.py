@@ -275,7 +275,9 @@ FAULT_CLASSES: dict[str, tuple[_Mutation, Literal["equal_or_hold", "hold"]]] = {
     "delete_source": (_delete, "equal_or_hold"),
     "add_source": (_add, "equal_or_hold"),
     "reorder_regions": (_reorder, "equal_or_hold"),
-    "duplicate_region_text": (_duplicate, "hold"),
+    # D12-D13r: the verdict may be EQUAL or HOLD; the runner also requires that the case lose no
+    # abstention and add no join (LINEAGE_CLASS), which a verdict cannot show.
+    "duplicate_region_text": (_duplicate, "equal_or_hold"),
     "unicode_nfc_nfd_variant": (_nfd, "equal_or_hold"),
     "whitespace_only": (_whitespace, "equal_or_hold"),
     "numeric_change": (_numeric, "equal_or_hold"),
@@ -289,11 +291,14 @@ FAULT_CLASSES: dict[str, tuple[_Mutation, Literal["equal_or_hold", "hold"]]] = {
     "swap_two_regions_text": (_swap, "equal_or_hold"),
     "revert_to_before": (_revert, "equal_or_hold"),
 }
+LINEAGE_CLASS = "duplicate_region_text"
 
 
 def generate(
     base_pairs: Sequence[tuple[Docs, Docs]], *, n: int = 1000, seed: int
 ) -> list[FaultCase]:
+    """Case i is class i mod 16. A class that applies to none of the base pairs gets no case at
+    its indices (ids keep their index; nothing is redistributed): see `not_applicable`."""
     if not base_pairs:
         raise ValueError("no base pairs supplied")
     for k, (before, after) in enumerate(base_pairs):
@@ -314,11 +319,18 @@ def generate(
             if result is not None:
                 break
         else:
-            raise ValueError(f"fault class {name} applies to none of the base pairs")
+            continue  # applies to none of the base pairs: not_applicable, never redistributed
         cases.append(
             FaultCase(f"u06-fault-{i:04d}", name, case_seed, k, tuple(before), result, expected)
         )
     return cases
+
+
+def not_applicable(cases: Sequence[FaultCase], n: int) -> list[str]:
+    """Classes `generate(..., n=n)` attempted and skipped: a mutation's eligibility does not depend
+    on the random draw, so an attempted class without a case applied to none of the base pairs."""
+    attempted = set(list(FAULT_CLASSES)[: max(n, 0)])
+    return sorted(attempted - {c.fault_class for c in cases})
 
 
 def _doc_hash(doc: ProductCoreDocument) -> str:
@@ -363,9 +375,12 @@ def main(argv: Sequence[str] | None = None) -> int:
         for x in raw
     ]
     cases = generate(pairs, n=a.n, seed=a.seed)
+    out = manifest(cases, a.seed)
+    if skipped := not_applicable(cases, a.n):  # absent when every class applies: same bytes
+        out["notApplicable"] = skipped
     a.out.mkdir(parents=True, exist_ok=True)
     (a.out / "faults_manifest.json").write_text(
-        json.dumps(manifest(cases, a.seed), indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        json.dumps(out, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     return 0
 
