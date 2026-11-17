@@ -878,45 +878,50 @@ class ProductCoreCompiler:
                         payload={"text": block.raw_text, "blockType": block.type.value},
                     )
                 )
-        block_by_evidence = {
-            evidence_id(
-                document_version=document.document_version_id,
-                page_number1=ref.page_number1,
-                bbox1000=(ref.bbox1000.as_tuple() if ref.bbox1000 else None),
-                span_text=block.raw_text,
-            ): block
+        # evidence_id has no anchor: regions of one version with the same normalised text, page
+        # and quantised box share it. Blocks are therefore found by region (an anchor is unique
+        # per version: a repeated one already fails CanonicalDocument's unique block IDs), and
+        # one evidence object carries the references of every region that shares its id.
+        block_by_region = {
+            (document.document_version_id, block.source_refs[0].native_object_id): block
             for document in documents
             for block in document.blocks
-            for ref in block.source_refs[:1]
         }
         unit_by_logical = {unit.logical_id: unit for unit in units}
-        refs_by_evidence: dict[str, tuple[SourceRef, ...]] = {}
-        evidence_object_by_id: dict[str, str] = {}
+        refs_by_logical = {
+            unit.logical_id: block_by_region[(unit.source_version_id, unit.anchor)].source_refs
+            for unit in units
+        }
+        units_by_evidence: dict[str, list[PreviousUnit]] = {}
         for unit in units:
+            units_by_evidence.setdefault(unit.evidence_id, []).append(unit)
+        evidence_object_by_id: dict[str, str] = {}
+        for shared_evidence_id, sharing in units_by_evidence.items():
             verification_state = (
                 KnowledgeVerificationState.UNRESOLVED
-                if unit.identity_state == "unresolved"
+                if any(unit.identity_state == "unresolved" for unit in sharing)
                 else KnowledgeVerificationState.VERIFIED_WITH_WARNING
             )
-            block = block_by_evidence[unit.evidence_id]
-            evidence_object_id = _stable_id("ko_evidence", unit.evidence_id)
-            refs_by_evidence[unit.evidence_id] = block.source_refs
-            evidence_object_by_id[unit.evidence_id] = evidence_object_id
+            evidence_object_id = _stable_id("ko_evidence", shared_evidence_id)
+            evidence_object_by_id[shared_evidence_id] = evidence_object_id
             objects.append(
                 build_knowledge_object(
                     stable_id=evidence_object_id,
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.EVIDENCE,
-                    source_refs=block.source_refs,
+                    source_refs=tuple(
+                        ref for unit in sharing for ref in refs_by_logical[unit.logical_id]
+                    ),
                     origin=KnowledgeOrigin.VISUAL_EXTRACTED,
                     verification_state=verification_state,
                     created_by_activity=activity,
                     version=1,
-                    payload={"evidenceId": unit.evidence_id},
+                    payload={"evidenceId": shared_evidence_id},
                 )
             )
 
+        claim_by_id = {claim.claim_id: claim for claim in semantics.claims}
         for claim in semantics.claims:
             unit = unit_by_logical[claim.logical_id]
             verification_state = (
@@ -930,7 +935,7 @@ class ProductCoreCompiler:
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.CLAIM,
-                    source_refs=refs_by_evidence[claim.evidence_id],
+                    source_refs=refs_by_logical[claim.logical_id],
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=verification_state,
                     created_by_activity=activity,
@@ -940,7 +945,6 @@ class ProductCoreCompiler:
                 )
             )
 
-        claim_by_id = {claim.claim_id: claim for claim in semantics.claims}
         for entity in semantics.entities:
             first_claim = claim_by_id[entity.claim_ids[0]]
             objects.append(
@@ -949,7 +953,7 @@ class ProductCoreCompiler:
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.ENTITY,
-                    source_refs=refs_by_evidence[first_claim.evidence_id],
+                    source_refs=refs_by_logical[first_claim.logical_id],
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=KnowledgeVerificationState.VERIFIED_WITH_WARNING,
                     created_by_activity=activity,
@@ -965,7 +969,7 @@ class ProductCoreCompiler:
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.RELATION,
-                    source_refs=refs_by_evidence[relation.evidence_id],
+                    source_refs=refs_by_logical[claim_by_id[relation.subject_id].logical_id],
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=KnowledgeVerificationState.VERIFIED_WITH_WARNING,
                     created_by_activity=activity,
@@ -985,8 +989,8 @@ class ProductCoreCompiler:
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.VALIDATION_RECORD,
                     source_refs=(
-                        *refs_by_evidence[left.evidence_id],
-                        *refs_by_evidence[right.evidence_id],
+                        *refs_by_logical[left.logical_id],
+                        *refs_by_logical[right.logical_id],
                     ),
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=KnowledgeVerificationState.UNRESOLVED,
@@ -1396,12 +1400,12 @@ class ProductCoreCompiler:
             + "\n"
             for item in canonical_documents
         )
-        evidence_refs = {
-            item["payload"]["evidenceId"]: item["sourceRefs"][0]
+        # Keyed by region, not evidence id: one evidence object can carry several regions.
+        region_refs = {
+            (ref["documentVersionId"], ref["nativeObjectId"]): ref
             for item in objects
             if item["kind"] == "evidence"
-            and item["sourceRefs"]
-            and isinstance(item["payload"].get("evidenceId"), str)
+            for ref in item["sourceRefs"]
         }
         claims_by_logical: defaultdict[str, list[SemanticClaim]] = defaultdict(list)
         for claim in semantics.claims:
@@ -1411,11 +1415,8 @@ class ProductCoreCompiler:
         for group in _retrieval_groups(units):
             text = "\n".join(unit.text.strip() for unit in group if unit.text.strip())
             group_claims = [claim for unit in group for claim in claims_by_logical[unit.logical_id]]
-            bboxes = [
-                evidence_refs[unit.evidence_id].get("bbox1000")
-                for unit in group
-                if evidence_refs[unit.evidence_id].get("bbox1000")
-            ]
+            evidence = [region_refs[(unit.source_version_id, unit.anchor)] for unit in group]
+            bboxes = [ref["bbox1000"] for ref in evidence if ref.get("bbox1000")]
             bbox = (
                 [
                     min(item[0] for item in bboxes),
@@ -1440,7 +1441,6 @@ class ProductCoreCompiler:
             authority_name_tier, authority_score = authority_tier(authority_name)
             logical_ids = list(dict.fromkeys(unit.logical_id for unit in group))
             evidence_ids = list(dict.fromkeys(unit.evidence_id for unit in group))
-            evidence = [evidence_refs[evidence_id] for evidence_id in evidence_ids]
             chunk_records.append(
                 {
                     "chunkId": _stable_id("chunk", *logical_ids),

@@ -102,7 +102,10 @@ def main(argv: list[str] | None = None) -> int:
     }
     (args.out / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(json.dumps(summary, indent=2))
-    return 1 if summary["diverged"] or summary["phantom_total"] else 0
+    compile_error = any(
+        reason.startswith("COMPILE_ERROR:") for _, r in rows for reason in r.hold_reasons
+    )
+    return 1 if summary["diverged"] or summary["phantom_total"] or compile_error else 0
 
 
 if __name__ == "__main__":

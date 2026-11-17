@@ -214,5 +214,15 @@ def run_case(
     requested_at: datetime,
     **kwargs: object,
 ) -> CaseResult:
-    incremental, cold = compile_pair(before_docs, after_docs, requested_at=requested_at, **kwargs)  # type: ignore[arg-type]
+    """A compile that raises becomes this case's HOLD. The reason names the exception type and
+    never its message, which can carry document text. Judging is not caught."""
+    try:
+        incremental, cold = compile_pair(
+            before_docs,
+            after_docs,
+            requested_at=requested_at,
+            **kwargs,  # type: ignore[arg-type]
+        )
+    except Exception as exc:
+        return CaseResult(verdict="HOLD", hold_reasons=(f"COMPILE_ERROR:{type(exc).__name__}",))
     return judge(incremental, cold)
