@@ -11,6 +11,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from benchmark.local_public import sources as S
 from benchmark.local_public import terms
 from benchmark.local_public.sources import SourceError
 
@@ -150,13 +151,11 @@ def test_st_louis_fed_named_and_refused_under_a_sec_id(tmp_path: Path) -> None:
 
 
 def test_upper_case_sec_host_is_the_same_host() -> None:
-    assert (
-        terms._request_url("https://WWW.SEC.GOV/a", terms.ALLOWED_HOSTS) == "https://www.sec.gov/a"
-    )
+    assert S._request_url("https://WWW.SEC.GOV/a", S.TERMS_HOSTS) == "https://www.sec.gov/a"
 
 
 def test_allowed_hosts_are_the_declared_sources_only() -> None:
-    assert {"www.sec.gov"} == terms.ALLOWED_HOSTS
+    assert {"www.sec.gov"} == S.TERMS_HOSTS
 
 
 def test_redirect_is_not_followed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -176,10 +175,10 @@ def test_redirect_is_not_followed(tmp_path: Path, monkeypatch: pytest.MonkeyPatc
 def test_accepted_implies_client_host_in_set(host: str) -> None:
     url = f"https://{host}/a"
     try:
-        sent = terms._request_url(url, terms.ALLOWED_HOSTS)
+        sent = S._request_url(url, S.TERMS_HOSTS)
     except SourceError:
         return
-    assert httpx.URL(sent).host in terms.ALLOWED_HOSTS
+    assert httpx.URL(sent).host in S.TERMS_HOSTS
 
 
 @settings(max_examples=300, deadline=None)
@@ -188,4 +187,24 @@ def test_accepted_implies_client_host_in_set(host: str) -> None:
 )
 def test_fred_like_hosts_never_accepted(host: str) -> None:
     with pytest.raises(SourceError):
-        terms._request_url(f"https://{host}/a", terms.ALLOWED_HOSTS)
+        S._request_url(f"https://{host}/a", S.TERMS_HOSTS)
+
+
+@pytest.mark.parametrize(
+    "sid", ["data_alfred_vintages", "DATA_ALFRED_VINTAGES", "Data_Alfred_Vintages/UNRATE"]
+)
+def test_excluded_id_refused_in_any_case_before_any_request(tmp_path: Path, sid: str) -> None:
+    seen: list[str] = []
+
+    def h(req: httpx.Request) -> httpx.Response:
+        seen.append(str(req.url))
+        return httpx.Response(200)
+
+    with pytest.raises(SourceError, match="rights denied"):
+        terms.snapshot(
+            tmp_path / "lic",
+            sources=[(sid, "https://www.sec.gov/ok")],
+            user_agent="ua",
+            transport=httpx.MockTransport(h),
+        )
+    assert seen == [] and not (tmp_path / "lic").exists()

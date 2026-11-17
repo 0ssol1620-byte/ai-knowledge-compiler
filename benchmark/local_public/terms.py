@@ -17,46 +17,32 @@ from typing import Any
 
 import httpx
 
-from benchmark.local_public.sources import SourceError, _inside_git_tree
+# The sources, their host allow-list and the host check live in sources.py, which build() shares.
+from benchmark.local_public.sources import (
+    TERMS_HOSTS,
+    TERMS_SOURCES,
+    SourceError,
+    _excluded,
+    _inside_git_tree,
+    _request_url,
+)
 from benchmark.screen.acquire import AcquireError, PacedClient
 
 DEFAULT_OUT = Path("D:/CodexProjects/v34-lanes/corpus/licences")
-_SEC = "https://www.sec.gov/about/privacy-information#copyright"
-# FRED/ALFRED content is denied for every action (D21-L1, register row data_alfred_vintages;
-# FRED legal terms API prohibitions (k) and (l)): no request to fred.stlouisfed.org is made.
-DENIED_SOURCE_PREFIXES = ("data_alfred_vintages",)
-# (source_id, snapshot_url) from the register rows of WO-LPC-0.
-SOURCES: list[tuple[str, str]] = [
-    ("data_sec_fsds", _SEC),
-    ("data_sec_edgar_filings", _SEC),
-]
-# Closed set of hosts the module may ask, derived from the sources it declares. Anything else,
-# the St. Louis Fed hosts included, is refused by construction (D21-L1).
-ALLOWED_HOSTS = frozenset(httpx.URL(u).host for _, u in SOURCES)
-
-
-def _request_url(url: str, allowed: frozenset[str]) -> str:
-    """The URL string to send, decided on the host httpx itself will use; SourceError otherwise."""
-    try:  # .host decodes IDNA lazily, so it belongs inside the try
-        u = httpx.URL(url)
-        ok = u.scheme == "https" and not u.userinfo and u.port is None and u.host in allowed
-    except (httpx.InvalidURL, UnicodeError) as exc:  # idna errors are UnicodeError
-        raise SourceError(f"host not allowed, no request made: {url!r}: {exc}") from exc
-    if not ok:
-        raise SourceError(f"host not allowed, no request made: {url!r}")
-    return str(u)
 
 
 def snapshot(
     out: Path,
     *,
-    sources: list[tuple[str, str]] = SOURCES,
+    sources: list[tuple[str, str]] = TERMS_SOURCES,
     user_agent: str | None = None,
     transport: httpx.BaseTransport | None = None,
-    allowed_hosts: frozenset[str] = ALLOWED_HOSTS,
+    allowed_hosts: frozenset[str] = TERMS_HOSTS,
 ) -> list[dict[str, Any]]:
     """Fetch each distinct URL once. Raises SourceError, writing no terms.json, on any failure."""
-    denied = [i for i, _ in sources if i.startswith(DENIED_SOURCE_PREFIXES)]
+    # FRED/ALFRED content is denied for every action (D21-L1, register row data_alfred_vintages;
+    # FRED legal terms API prohibitions (k) and (l)): no request to fred.stlouisfed.org is made.
+    denied = [i for i, _ in sources if _excluded(f"terms/{i}")]
     if denied:
         raise SourceError(f"rights denied for every action, no request made: {denied}")
     sends = {u: _request_url(u, allowed_hosts) for _, u in sources}

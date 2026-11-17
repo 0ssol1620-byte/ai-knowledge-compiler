@@ -94,10 +94,30 @@ def manifest_for(tmp: Path, csv_path: Path) -> Path:
     return p
 
 
-def test_changed_csv_is_hash_mismatch_and_writes_nothing(
+def _shut(monkeypatch: pytest.MonkeyPatch) -> None:
+    def boom(*_a: object, **_k: object) -> None:
+        raise AssertionError("the ALFRED file was opened or hashed")
+
+    monkeypatch.setattr(S, "_sha256_file", boom)
+    monkeypatch.setattr(Path, "read_bytes", boom)
+    monkeypatch.setattr(Path, "is_file", boom)
+
+
+# WO-D21-9: with the rights patched to pass, the loader is the second wall: `alfred_vintages` is in
+# sources.EXCLUDED, so `Loader.resolve` raises ExcludedSource before the hash check. Everything in
+# `alfred_local.main` after `loader.verified_path("alfred_vintages")` (outputs, receipt) is
+# unreachable while ALFRED is excluded. What these two tests used to prove moved to the SEC path,
+# which runs the same code: the hash check and "nothing recorded" to
+# test_local_public_sources.py::test_missing_and_one_byte_change, the receipt's manifest sha,
+# inputs and output hashes to ::test_receipt_verify_and_changed_input, the refusal to overwrite a
+# receipt to ::test_receipt_never_overwritten. Not moved: alfred_local's own `open("x")` on its two
+# output files - no allowed source goes through that code.
+
+
+def test_changed_csv_is_excluded_before_the_hash_check_and_writes_nothing(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(al, "DEFAULT_RIGHTS", REGISTER)  # rights pass, so the hash check is reached
+    monkeypatch.setattr(al, "DEFAULT_RIGHTS", REGISTER)  # rights pass: the loader must refuse
     csv_path = write(tmp_path)
     m = manifest_for(tmp_path, csv_path)
     write(
@@ -105,28 +125,26 @@ def test_changed_csv_is_hash_mismatch_and_writes_nothing(
         [*LINES, "CPIAUCSL,2024-03-01,2024-04-01,2024-04-01,2024-04-01,9.9,alfred_vintage"],
     )
     out = tmp_path / "o"
-    with pytest.raises(S.HashMismatch):
+    _shut(monkeypatch)
+    with pytest.raises(S.ExcludedSource, match="D21-L1"):
         al.main(["--manifest", str(m), "--out", str(out)])
     assert not out.exists()
 
 
-def test_receipt_carries_manifest_sha_and_output_hashes(
+def test_no_receipt_and_nothing_consumed_when_the_loader_refuses(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     m = manifest_for(tmp_path, write(tmp_path))
     monkeypatch.setattr(al, "DEFAULT_RIGHTS", REGISTER)
     out = tmp_path / "o"
     monkeypatch.setattr(S, "_inside_git_tree", lambda _p: False)
-    assert al.main(["--manifest", str(m), "--out", str(out)]) == 0
-    rec = json.loads((out / "receipt.json").read_text())
-    assert rec["lpc_manifest_sha256"] == json.loads(m.read_text())["manifest_sha256"]
-    assert [i["name"] for i in rec["inputs_consumed"]] == ["alfred_vintages"]
-    assert {Path(o["path"]).name for o in rec["outputs"]} == {
-        "corpus_alfred.jsonl",
-        "tasks_alfred.jsonl",
-    }
-    with pytest.raises(FileExistsError):  # never overwritten
+    _shut(monkeypatch)
+    with pytest.raises(S.ExcludedSource, match="D21-L1"):
         al.main(["--manifest", str(m), "--out", str(out)])
+    assert not out.exists() and not (out / "receipt.json").exists()
+    loader = S._loader()
+    assert loader.manifest["manifest_sha256"] == json.loads(m.read_text())["manifest_sha256"]
+    assert loader.ledger.consumed == []
 
 
 def test_mapping_and_lagged_rows(tmp_path: Path) -> None:
@@ -228,7 +246,7 @@ def test_terms_snapshot_refuses_alfred_sources_without_a_request(tmp_path: Path)
             transport=httpx.MockTransport(handler),
         )
     assert calls == []
-    assert all(s.startswith("data_sec") for s, _ in terms.SOURCES)
+    assert all(s.startswith("data_sec") for s, _ in S.TERMS_SOURCES)
 
 
 def test_main_refuses_on_rights_before_any_file_is_resolved_hashed_or_opened(
