@@ -269,7 +269,10 @@ This machine has no Docker, so the images are built on GitHub Actions by
 `build-ovis-runtime.yml`: the same pinned actions, `contents: read` and `packages: write`, the
 workflow's own token for GHCR and no other secret. It runs on `workflow_dispatch` and on a push to
 `codex/v34-c-arena-build` that touches this directory, `../paddleocr-vl-akc/`, the two
-`workers/gpu-common` files the C1 image copies, or the workflow itself.
+`workers/gpu-common` files the C1 image copies, or the workflow itself. Each job checks out only
+those two image directories and two files (a sparse checkout; the whole tree does not fit on the
+runner's root disk once the Docker volume is carved out), and its next step fails, naming the
+path, if any `COPY` source of its Dockerfile is not there (WO-D10-0K2).
 
 | Slot | Dockerfile, target | Build context, and why | Tag |
 |---|---|---|---|
