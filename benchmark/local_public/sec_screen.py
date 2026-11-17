@@ -345,7 +345,9 @@ def build(
                 for adsh in plan[cik]:
                     quarter, sub = subs[adsh]
                     with gzip.open(loader.open_verified(f"sec_filing/{adsh}")) as g:
-                        html = g.read()
+                        html, tagged = sec_pages.strip_delivery_tag(g.read())
+                    rows["filings_read"] += 1
+                    rows["delivery_tag_stripped"] += tagged
                     page = pick_page(
                         sub,
                         nums.get(adsh, []),
@@ -405,7 +407,13 @@ def build(
     sel.write_text(json.dumps({"ciks": union}, indent=1), "utf-8")
     outputs.append(sel)
     ledger = loader.ledger
-    rec = sources.receipt(ledger, outputs, list(STATEMENTS))
+    delivery = (
+        "The stored bytes of each SEC filing are the filed document plus at most one script tag "
+        "that sec.gov's delivery network appended when they were downloaded; that tag is set "
+        "aside before any reading (filing_content_sha256 stays the hash of the stored bytes). "
+        f"{rows['delivery_tag_stripped']} of the {rows['filings_read']} filings read carried it."
+    )
+    rec = sources.receipt(ledger, outputs, [*STATEMENTS, delivery])
     pr = rows["presented_rows"] or 1
     rec["census"] = {
         "reasons": dict(sorted(reasons.items())),

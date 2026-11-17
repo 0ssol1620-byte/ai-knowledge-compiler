@@ -52,6 +52,36 @@ def has_script(html_bytes: bytes) -> bool:
     return re.search(rb"<script", html_bytes, re.I) is not None
 
 
+_TAG_HEAD = b'<script type="text/javascript"  src="/'
+# from just after `src="/`: path segments, the empty element, the closing tags, to the end.
+# Segments cannot contain `/`, so the match is unambiguous and runs in linear time.
+_TAG_REST = re.compile(
+    rb'[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*"></script>'
+    rb"[ \t\n\f\r]*</body>[ \t\n\f\r]*</html>[ \t\n\f\r]*"
+)
+
+
+def strip_delivery_tag(html_bytes: bytes) -> tuple[bytes, bool]:
+    """The filed document without the one tag sec.gov's delivery network appended (WO-LPC-4B).
+
+    Every stored filing ends `<script type="text/javascript"  src="/…"></script></body></html>`:
+    the delivery network added it when the bytes were downloaded; no filer wrote it. Only the
+    LAST tag of exactly that shape, followed by nothing but ASCII whitespace and `</body>`,
+    `</html>`, is removed; every byte before it keeps its offset. Anything else is returned
+    unchanged with False, and `has_script` still refuses whatever `<script` remains.
+
+    A forged tag of this shape is harmless: what is printed is `excerpt_html`, which never carries
+    `<script>`, `<link>` or `<base>`, and the removed tag has an empty body and a host-relative
+    `src` that cannot resolve from a `file://` excerpt under
+    `--host-resolver-rules=MAP * ~NOTFOUND`.
+    """
+    i = html_bytes.rfind(_TAG_HEAD)
+    if i < 0 or not _TAG_REST.fullmatch(html_bytes, i + len(_TAG_HEAD)):
+        return html_bytes, False
+    end = html_bytes.index(b"</script>", i) + len(b"</script>")
+    return html_bytes[:i] + html_bytes[end:], True
+
+
 def segments(html_bytes: bytes) -> list[Segment]:
     """Split the filed HTML at page-break markers; a marker inside a table does not split."""
     root = etree.fromstring(html_bytes, etree.XMLParser(huge_tree=True, recover=True))

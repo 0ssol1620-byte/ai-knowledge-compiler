@@ -254,9 +254,10 @@ def test_every_gold_passes_gold_value_and_keeps_the_shown_sign(tmp_path: Path) -
     gold = lines(out / "screen/gold.sealed.jsonl")
     assert len(gold) == 1 and gold[0]["page_id"].endswith(".pdf#0")
     fields = gold[0]["truth"]["critical_fields"]
-    assert len(fields) == 3
-    # the page shows "$ (700)", which the scorer cannot read: no gold, counted, never rewritten
-    assert all("700" not in f["value"] for f in fields)
+    assert len(fields) == 4
+    # the page shows "$ (700)": frozen reader v1 (WO-D08-1G) reads it; gold keeps it as shown
+    loss = [f for f in fields if "700" in f["value"]]
+    assert [f["value"] for f in loss] == ["$ (700)"] and gold_value(loss[0])[0] == "-700"
     for f in fields:
         gold_value(f)
         assert f["fsds"]["ddate_precision"] == "month_rounded" and f["fsds"]["quarter"] == "2025q3"
@@ -421,8 +422,8 @@ def test_receipt_has_statements_verbatim_and_census(tmp_path: Path) -> None:
     assert "Pre-training exposure cannot be controlled." in rec["statements"][0]
     assert rec["lpc_manifest_sha256"] == "sha256:" + "f" * 64
     y = rec["census"]["yield_over_presented_non_dimensional_rows"]
-    assert y["denominator"] == 4 and y["gold"] == 0.75 and y["aligned"] == 0.75
-    assert rec["census"]["reasons"]["gold_unparseable"] == 1
+    assert y["denominator"] == 4 and y["gold"] == 1.0 and y["aligned"] == 1.0
+    assert "gold_unparseable" not in rec["census"]["reasons"]
     assert rec["census"]["filer_agent_prefix_by_profile"]["screen"] == {"0000000001": 1}
     assert {o["path"].rsplit("/", 1)[-1] for o in rec["outputs"]} >= {
         "records.jsonl",
@@ -523,8 +524,9 @@ def test_signed_adapter_is_strict_and_never_rewrites_the_shown_value() -> None:
     f = {"kind": "number", "anchor": "a"}
     read = sec_screen.signed(gold_value)
     assert read({**f, "value": "($ 700)"}) == -700 and read({**f, "value": "1,234"}) == 1234
-    with pytest.raises(ValueError):  # what the page shows, "$ (700)", is not a readable gold
-        read({**f, "value": "$ (700)"})
+    assert read({**f, "value": "$ (700)"}) == -700  # frozen reader v1 (WO-D08-1G) reads it
+    with pytest.raises(ValueError):  # an unbalanced parenthesis is not a readable gold
+        read({**f, "value": "$ (700"})
     with pytest.raises(ValueError):
         sec_screen.signed(lambda _f: 5)({**f, "value": "5"})
     with pytest.raises(ValueError):
@@ -542,4 +544,47 @@ def test_rows_of_dom_refused_filings_stay_in_the_yield_denominator(tmp_path: Pat
     census, _ = run(w, tmp_path, pool=50, screen_pages=2)
     assert census["reasons"]["no_filer_page_breaks"] == 1
     y = census["yield_over_presented_non_dimensional_rows"]
-    assert y["denominator"] == 8 and y["gold"] == 0.375
+    assert y["denominator"] == 8 and y["gold"] == 0.5
+
+
+DELIVERY = b'<script type="text/javascript"  src="/7VAEeeTCJ/EoKUL1mR/Xrme"></script>'
+
+
+def delivered(html: bytes, tail: bytes = b"</body> </html>\n") -> bytes:
+    """The stored shape: the filed document, plus sec.gov's tag before the closing tags."""
+    assert html.endswith(b"</body></html>")
+    return html[: -len(b"</body></html>")] + DELIVERY + tail
+
+
+def test_delivery_tag_is_set_aside_once_and_the_filing_is_read(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    stored = delivered(page_html("a"))
+    w.filing("0000000001-25-000001", "111", html=stored)
+    w.filing("0000000002-25-000002", "222", html=delivered(page_html("b", script=True)))
+    census, out = run(w, tmp_path, screen_pages=2, pool=50)
+    assert census["rows"]["delivery_tag_stripped"] == 2
+    assert census["reasons"]["script_refused"] == 1  # stripped, and a filer <script> remains
+    assert census["documents"]["screen"] == 1
+    rec = lines(out / "screen/records.jsonl")[0]
+    assert rec["provenance"]["filing_content_sha256"] == hashlib.sha256(stored).hexdigest()
+    pdf = (out / "screen/corpus" / rec["doc_id"]).read_bytes()
+    assert b"<script" not in pdf.lower() and b"7VAEeeTCJ" not in pdf
+    gold = lines(out / "screen/gold.sealed.jsonl")[0]["truth"]
+    plain = World(tmp_path / "plain")
+    (tmp_path / "plain").mkdir()
+    plain.filing("0000000001-25-000001", "111", html=page_html("a"))
+    _, out2 = run(plain, tmp_path / "plain")
+    same = lines(out2 / "screen/gold.sealed.jsonl")[0]["truth"]
+    assert gold["critical_fields"] == same["critical_fields"] and gold["text"] == same["text"]
+    receipt = json.loads((out / "receipt.json").read_text("utf-8"))
+    said = [s for s in receipt["statements"] if "delivery network" in s]
+    assert len(said) == 1 and "2 of the 2 filings" in said[0]
+
+
+def test_no_delivery_tag_is_counted_zero_and_still_stated(tmp_path: Path) -> None:
+    w = World(tmp_path)
+    w.filing("0000000001-25-000001", "111")
+    census, out = run(w, tmp_path)
+    assert census["rows"]["delivery_tag_stripped"] == 0 and census["documents"]["screen"] == 1
+    receipt = json.loads((out / "receipt.json").read_text("utf-8"))
+    assert any("0 of the 1 filings" in s for s in receipt["statements"])

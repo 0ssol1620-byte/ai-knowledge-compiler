@@ -8,6 +8,8 @@ import sys
 from pathlib import Path
 
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 from lxml import etree
 
 from benchmark.local_public import sec_pages
@@ -206,3 +208,130 @@ def test_anchor_inside_earlier_row_label_shadows() -> None:
     d = html(p, page(row("Other", 9)))
     ok, bad = accept(segments(d)[0], cands(d))
     assert reasons((ok, bad)) == ["anchor_shadowed", "anchor_shadowed"] and len(ok) == 3
+
+
+# ---------------------------------------------------------------- WO-LPC-4B delivery tag
+
+TAG = b'<script type="text/javascript"  src="/7VAEeeTCJ/EoKUL1mR/Xrme"></script>'
+FILED = b"<html><body><p>filed</p><table><tr><td>Revenue</td><td>1</td></tr></table>"
+
+
+def tag(src: bytes = b"/a/b", head: bytes = b'<script type="text/javascript"  src="') -> bytes:
+    return head + src + b'"></script>'
+
+
+def gate(x: bytes) -> tuple[bytes, bool, bool]:
+    """(bytes after the strip, stripped?, accepted by the script gate?)"""
+    out, stripped = sec_pages.strip_delivery_tag(x)
+    return out, stripped, not has_script(out)
+
+
+@pytest.mark.parametrize(
+    "tail",
+    [b"</body></html>", b"</body> </html>\n", b"</body>\r\n</html>\r\n", b"\n</body>\t</html>"],
+)
+def test_delivery_tag_at_the_end_is_stripped_and_offsets_kept(tail: bytes) -> None:
+    out, stripped, ok = gate(FILED + TAG + tail)
+    assert (out, stripped, ok) == (FILED + tail, True, True)
+
+
+REFUSED = {
+    "second script earlier": b"<html><body><script>x=1</script><p>a</p>" + TAG + b"</body></html>",
+    "two exact tags": FILED + TAG + TAG + b"</body></html>",
+    "tag with a body": FILED + tag(b"/a/b").replace(b"></", b">x</") + b"</body></html>",
+    "network path": FILED + tag(b"//evil.example/a") + b"</body></html>",
+    "scheme": FILED + tag(b"http://evil.example/a") + b"</body></html>",
+    "dot": FILED + tag(b"/a/b.js") + b"</body></html>",
+    "query": FILED + tag(b"/a?b") + b"</body></html>",
+    "dot segment": FILED + tag(b"/a/../b") + b"</body></html>",
+    "empty src": FILED + tag(b"") + b"</body></html>",
+    "root src": FILED + tag(b"/") + b"</body></html>",
+    "empty segment": FILED + tag(b"/a//b") + b"</body></html>",
+    "trailing slash": FILED + tag(b"/a/b/") + b"</body></html>",
+    "async": FILED + tag(head=b'<script type="text/javascript"  async src="') + b"</body></html>",
+    "onload": FILED
+    + tag(head=b'<script type="text/javascript" onload="x" src="')
+    + b"</body></html>",
+    "defer": FILED + tag(head=b'<script defer type="text/javascript"  src="') + b"</body></html>",
+    "single quotes": FILED + b"<script type='text/javascript'  src='/a/b'></script></body></html>",
+    "one space": FILED + tag(head=b'<script type="text/javascript" src="') + b"</body></html>",
+    "upper case": FILED + tag(head=b'<SCRIPT type="text/javascript"  src="') + b"</body></html>",
+    "upper close": FILED + TAG.replace(b"</script>", b"</SCRIPT>") + b"</body></html>",
+    "module": FILED + tag(head=b'<script type="module"  src="') + b"</body></html>",
+    "text after": FILED + TAG + b"x</body></html>",
+    "comment after": FILED + TAG + b"<!-- c --></body></html>",
+    "element after": FILED + TAG + b"<p>a</p></body></html>",
+    "after html": FILED + TAG + b"</body></html>x",
+    "comment after html": FILED + TAG + b"</body></html><!-- c -->",
+    "middle of body": b"<html><body>" + TAG + b"<p>real content</p></body></html>",
+    "in a comment": FILED + b"<!--" + TAG + b"--></body></html>",
+    "in CDATA": FILED + b"<![CDATA[" + TAG + b"]]></body></html>",
+    "no closing body": FILED + TAG + b"</html>",
+    "no closing html": FILED + TAG + b"</body>",
+    "vertical tab is not ASCII whitespace": FILED + TAG + b"\v</body></html>",
+}
+
+
+@pytest.mark.parametrize("name", sorted(REFUSED))
+def test_delivery_tag_counter_examples_are_refused(name: str) -> None:
+    assert gate(REFUSED[name])[2] is False
+
+
+def test_no_script_is_unchanged_and_accepted() -> None:
+    x = FILED + b"</body></html>"
+    assert gate(x) == (x, False, True)
+
+
+@pytest.mark.parametrize(
+    "x",
+    [
+        b'<script type="text/javascript"  src="/' + b"a/" * 500_000,
+        (b'<script type="text/javascript"  src="/a/a/a/a' * 25_000) + b"</body></html>",
+        b'<script type="text/javascript"  src="/'
+        + b"a" * 1_000_000
+        + b'"></script>'
+        + b" " * 100_000
+        + b"x</body></html>",
+    ],
+    ids=["unterminated", "repeated", "trailing text"],
+)
+def test_unterminated_megabyte_is_refused_in_linear_time(x: bytes) -> None:
+    import time
+
+    t = time.perf_counter()
+    out, stripped, ok = gate(x)
+    assert time.perf_counter() - t < 1.0
+    assert (out, stripped, ok) == (x, False, False)
+
+
+_WS = rb"[ \t\n\f\r]*"
+_ORACLE = re.compile(
+    rb'(.*)<script type="text/javascript"  src="/[A-Za-z0-9_-]+(?:/[A-Za-z0-9_-]+)*"></script>'
+    + rb"("
+    + _WS
+    + rb"</body>"
+    + _WS
+    + rb"</html>"
+    + _WS
+    + rb")",
+    re.S,
+)
+_SRC = st.text(alphabet="/aZ9_-.?:", max_size=6).map(str.encode)
+_BODY = st.sampled_from([b"", b"y"])
+_PIECE = st.one_of(
+    st.sampled_from(
+        [TAG, b"<p>a</p>", b"text", b"<script>", b"<SCRIPT ", b"</script>", b" ", b"\n", b"\v",
+         b"</body>", b"</html>", b"<!--", b"-->", b"<![CDATA[", b"]]>", b"x"]
+    ),
+    st.builds(lambda s, b: tag(s).replace(b"></", b">" + b + b"</"), _SRC, _BODY),
+)  # fmt: skip
+
+
+@settings(max_examples=400, deadline=None)
+@given(st.lists(_PIECE, max_size=12))
+def test_strip_removes_at_most_one_tail_tag_and_gate_is_no_script_left(parts: list[bytes]) -> None:
+    x = b"".join(parts)
+    out, stripped, ok = gate(x)
+    m = _ORACLE.fullmatch(x)
+    assert (out, stripped) == ((m[1] + m[2], True) if m else (x, False))
+    assert ok is (re.search(rb"<script", out, re.I) is None)
