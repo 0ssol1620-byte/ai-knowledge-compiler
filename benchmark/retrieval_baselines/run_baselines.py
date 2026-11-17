@@ -9,14 +9,17 @@ retriever returns an other-tenant hit, the independent cut oracle (violates_cut)
 the harness admitted, or an answerable task's gold cannot be reached.
 
 WO-D17-4: ``--prereg`` (with ``--prereg-sha256`` and ``--rows-index``) adds the ranked arena
-section (benchmark.retrieval_baselines.arena); ``--holdout`` is the single blind run, refused
-when its receipt already exists.
+section (benchmark.retrieval_baselines.arena); ``--holdout`` is the single blind run (WO-D17-4b):
+its receipt lives in ``--holdout-receipt-dir``, named by the pre-registration's sha256, and is
+refused when it exists. Under --prereg the hybrid_current cap (0 = none) is the
+pre-registration's hybrid_cap; a differing --hybrid-cap is refused.
 """
 
 from __future__ import annotations
 
 import argparse
 import asyncio
+import functools
 import hashlib
 import heapq
 import json
@@ -210,11 +213,13 @@ def bm25_rows_scored(query: str, candidates: Candidates, k: int) -> list[tuple[f
     return [(scores.get(i, 0.0), candidates[i].logical_id) for i in top]
 
 
-def hybrid_current(query: str, candidates: Candidates, k: int) -> tuple[str, ...]:
-    if len(candidates) > HYBRID_CAP:
+def hybrid_current(
+    query: str, candidates: Candidates, k: int, cap: int = HYBRID_CAP
+) -> tuple[str, ...]:
+    if cap and len(candidates) > cap:  # cap 0 = no cap
         # Slicing would change the BM25 normalisation, so over the cap the task is not run.
         raise NotRun(
-            f"candidate set exceeds the hybrid_current cap of {HYBRID_CAP}; "
+            f"candidate set exceeds the hybrid_current cap of {cap}; "
             "rank_semantic_candidates' BM25 is quadratic in the candidate set"
         )
     if not candidates:
@@ -454,6 +459,7 @@ def run(
     admit: Callable[..., Any] | None = None,
     not_run: Mapping[str, str] | None = None,
     blind_queries: Mapping[str, str] | None = None,
+    hybrid_cap: int = HYBRID_CAP,
 ) -> dict[str, Any]:
     seen_ids: set[str] = set()
     for task in tasks:
@@ -474,7 +480,7 @@ def run(
         "rows_without_claim": corpus.rows_total - corpus.rows_with_claim,
         **reachability(corpus, tasks, admit),
         "bm25_rows": BM25_ROWS_PARAMS,
-        "candidate_caps": {"hybrid_current": HYBRID_CAP},
+        "candidate_caps": {"hybrid_current": hybrid_cap},
         "retired": RETIRED,
         "retrievers": {},
         "exactness": arena.EXACTNESS_NOT_MEASURED,
@@ -687,6 +693,31 @@ def _sha256(path: str) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def _holdout_paths(args: argparse.Namespace, digest: str) -> tuple[Path, Path]:
+    """(receipt, pending) of the holdout run; every refusal comes before the corpus is read."""
+    receipt_dir, out = Path(args.holdout_receipt_dir), Path(args.out)
+    pending = out.with_name(out.name + arena.HOLDOUT_PENDING_SUFFIX)
+    if not receipt_dir.is_dir():
+        raise arena.ArenaError("--holdout-receipt-dir must be an existing directory")
+    receipt = receipt_dir / (digest + arena.HOLDOUT_RECEIPT_SUFFIX)
+    if receipt.exists():
+        state = (
+            f"; the report is still at {pending.name}: check its sha256 against the receipt "
+            "and rename it by hand"
+            if pending.exists() and not out.exists()
+            else ""
+        )
+        raise arena.ArenaError(
+            f"holdout refused: the receipt for pre-registration {digest} already exists "
+            f"({receipt.name}); the holdout runs once, a void run needs a new "
+            f"pre-registration{state}"
+        )
+    for path, what in ((out, "--out"), (pending, "a pending holdout report")):
+        if path.exists():
+            raise arena.ArenaError(f"holdout refused: {what} {path.name} already exists")
+    return receipt, pending
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--corpus", required=True)
@@ -699,25 +730,45 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--holdout",
         action="store_true",
-        help="the single blind run; refused when <prereg>.holdout-receipt.json exists",
+        help="the single blind run; its receipt is named by the pre-registration's sha256",
+    )
+    parser.add_argument("--holdout-receipt-dir", help="directory of holdout receipts (--holdout)")
+    parser.add_argument(
+        "--hybrid-cap",
+        type=int,
+        default=None,
+        help=f"hybrid_current candidate cap, 0 = none (default {HYBRID_CAP} without --prereg); "
+        "under --prereg the cap is the pre-registration's hybrid_cap; a differing flag is refused",
     )
     args = parser.parse_args(argv)
-    if args.holdout and not args.prereg:
-        parser.error("--holdout requires --prereg")
+    if (
+        args.prereg_sha256 is not None or args.rows_index is not None or args.holdout
+    ) and not args.prereg:
+        parser.error("--prereg-sha256, --rows-index and --holdout require --prereg")
     if args.prereg and not (args.prereg_sha256 and args.rows_index):
         parser.error("--prereg requires --prereg-sha256 and --rows-index")
+    if args.holdout != bool(args.holdout_receipt_dir):
+        parser.error("--holdout and --holdout-receipt-dir go together")
+    if args.hybrid_cap is not None and args.hybrid_cap < 0:
+        parser.error("--hybrid-cap must be 0 (no cap) or a positive integer")
     prereg: dict[str, Any] | None = None
+    digest = ""
     receipt: Path | None = None
+    pending: Path | None = None
     try:  # every refusal before any corpus is read; nothing is written on refusal
+        if not Path(args.out).parent.is_dir():
+            raise arena.ArenaError("--out must be in an existing directory")
         if args.prereg:
-            prereg = arena.load_prereg(Path(args.prereg).read_bytes(), args.prereg_sha256)
-        if args.holdout:
-            receipt = Path(args.prereg + arena.HOLDOUT_RECEIPT_SUFFIX)
-            if receipt.exists():
+            raw = Path(args.prereg).read_bytes()
+            prereg = arena.load_prereg(raw, args.prereg_sha256)
+            digest = hashlib.sha256(raw).hexdigest()  # the computed digest, not the typed one
+            if args.hybrid_cap is not None and args.hybrid_cap != prereg["hybrid_cap"]:
                 raise arena.ArenaError(
-                    f"holdout refused: a holdout receipt already exists ({receipt.name}); the "
-                    "holdout runs once, a void run needs a new pre-registration"
+                    f"--hybrid-cap {args.hybrid_cap} differs from the pre-registration's "
+                    f"hybrid_cap {prereg['hybrid_cap']}"
                 )
+        if args.holdout:
+            receipt, pending = _holdout_paths(args, digest)
     except (arena.ArenaError, OSError) as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 1
@@ -737,13 +788,19 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 1
     blind = _blind_queries(lines)
     retrievers: dict[str, Retriever] = {**BASELINES, A0: A0_RETRIEVER}
+    cap = (
+        prereg["hybrid_cap"]
+        if prereg is not None
+        else (HYBRID_CAP if args.hybrid_cap is None else args.hybrid_cap)
+    )
+    retrievers["hybrid_current"] = functools.partial(hybrid_current, cap=cap)
     not_run: dict[str, str] = {}
     pin: dict[str, str] | None = None
     if args.embeddings:
         retrievers["dense"], pin = load_dense(args.embeddings)
     else:
         not_run["dense"] = "no pinned embedding provider"
-    report = run(corpus, tasks, retrievers, not_run=not_run, blind_queries=blind)
+    report = run(corpus, tasks, retrievers, not_run=not_run, blind_queries=blind, hybrid_cap=cap)
     report["host"] = {
         "cpu": platform.processor() or platform.machine(),
         "python": platform.python_version(),
@@ -760,30 +817,44 @@ def main(argv: Sequence[str] | None = None) -> int:
         except arena.ArenaError as exc:  # an integrity failure: nothing is written
             print(f"refused: {exc}", file=sys.stderr)
             return 1
-        report["arena"]["prereg_sha256"] = args.prereg_sha256.lower()
+        report["arena"]["prereg_sha256"] = digest
         report["arena"]["run"] = "holdout" if args.holdout else "dev"
         report["arena"]["binding"] = (
             arena.HOLDOUT_BINDING if args.holdout else arena.DEV_NOT_BINDING
         )
-    payload = json.dumps(report, indent=2, sort_keys=True)
-    if receipt is not None:
-        record = {
-            "prereg_sha256": args.prereg_sha256.lower(),
-            "report_sha256": hashlib.sha256(payload.encode("utf-8")).hexdigest(),
-            "corpus_sha256": _sha256(args.corpus),
-            "tasks_sha256": _sha256(args.tasks),
-            "rows_index_sha256": _sha256(args.rows_index),
-            "report_file": Path(args.out).name,
-            "outcome": report["arena"]["outcome"],
-            "blocking": report["blocking"],
-        }
-        try:  # exclusive create: a concurrent second holdout loses here and writes nothing
+    payload = json.dumps(report, indent=2, sort_keys=True).encode("utf-8")  # the file's bytes
+    if receipt is None or pending is None:
+        Path(args.out).write_bytes(payload)
+        return 1 if report["blocking"] else 0
+    # Holdout. Crash points and what the same command does next: before the pending report is
+    # written, nothing is on disk and it reruns; pending only (no receipt), it refuses and the
+    # lead inspects, deletes the pending report and reruns; pending + receipt (no --out), it
+    # refuses on the receipt and the message names the rename that finishes the run by hand;
+    # all three present, it refuses. A receipt never exists without its report beside it.
+    record = {
+        "prereg_sha256": digest,
+        "report_sha256": hashlib.sha256(payload).hexdigest(),
+        "corpus_sha256": _sha256(args.corpus),
+        "tasks_sha256": _sha256(args.tasks),
+        "rows_index_sha256": _sha256(args.rows_index),
+        "hybrid_cap": cap,
+        "report_file": Path(args.out).name,
+        "outcome": report["arena"]["outcome"],
+        "blocking": report["blocking"],
+    }
+    try:  # exclusive creates: a concurrent second holdout loses here
+        with open(pending, "xb") as handle:
+            handle.write(payload)
+        try:
             with open(receipt, "x", encoding="utf-8") as handle:
-                json.dump(record, handle, indent=2, sort_keys=True)
+                handle.write(json.dumps(record, indent=2, sort_keys=True))  # one write
         except FileExistsError:
-            print("refused: a holdout receipt appeared during the run", file=sys.stderr)
-            return 1
-    Path(args.out).write_bytes(payload.encode("utf-8"))  # bytes: report_sha256 is of the file
+            pending.unlink()
+            raise
+        pending.rename(args.out)
+    except FileExistsError:
+        print("refused: a holdout file appeared during the run", file=sys.stderr)
+        return 1
     return 1 if report["blocking"] else 0
 
 
