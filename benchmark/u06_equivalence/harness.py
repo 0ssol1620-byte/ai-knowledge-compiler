@@ -16,6 +16,7 @@ from akc_product_core.contracts import (
     ProductCoreDocument,
     ProductCoreRoute,
 )
+from akc_product_core.fact_keys import FactKeyDeclaration
 
 from benchmark.u06_equivalence.normalize import (
     NormalizationAmbiguous,
@@ -25,6 +26,7 @@ from benchmark.u06_equivalence.normalize import (
 
 Verdict = Literal["EQUAL", "HOLD", "DIVERGED"]
 DEFAULT_RELEASE = "sha256:" + "a" * 64
+DEFAULT_TENANT = "tenant-foundation-pilot"
 
 
 @dataclass(frozen=True)
@@ -174,14 +176,23 @@ def compile_pair(
     after_docs: Sequence[ProductCoreDocument],
     *,
     requested_at: datetime,
-    tenant_id: str = "tenant-foundation-pilot",
+    tenant_id: str = DEFAULT_TENANT,
     workspace_id: str = "workspace-foundation-pilot",
     collection_id: str = "collection-mixed-corpus",
     core_release_digest: str = DEFAULT_RELEASE,
     tamper_previous: Callable[[PreviousWorldSnapshot], PreviousWorldSnapshot] | None = None,
+    fact_key_mode: Literal["off", "candidate"] = "off",
+    fact_key_declarations: Sequence[FactKeyDeclaration] = (),
 ) -> tuple[ProductCoreCompileResponse, ProductCoreCompileResponse]:
-    """Return (incremental, cold) for revision B. `tamper_previous` exists for negative controls."""
-    compiler = ProductCoreCompiler(core_release_digest=core_release_digest)
+    """Return (incremental, cold) for revision B. `tamper_previous` exists for negative controls.
+
+    `fact_key_mode` and `fact_key_declarations` go to every compile of the pair unchanged (ADR-010);
+    the compiler refuses an unknown mode and candidate without a declaration."""
+    compiler = ProductCoreCompiler(
+        core_release_digest=core_release_digest,
+        fact_key_mode=fact_key_mode,
+        fact_key_declarations=fact_key_declarations,
+    )
     scope = {
         "requested_at": requested_at,
         "tenant_id": tenant_id,
