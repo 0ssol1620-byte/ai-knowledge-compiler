@@ -7,7 +7,7 @@ import hashlib
 import io
 import json
 import re
-from collections import defaultdict
+from collections import Counter, defaultdict
 from collections.abc import Iterable
 from dataclasses import replace
 from functools import partial
@@ -102,6 +102,14 @@ class CoreOutputTooLargeError(Exception):
             f"{detail['object']} of {detail['bytes']} B exceeds budget {detail['budget']} B"
         )
         self.detail = detail
+
+
+class LogicalIdCollision(ValueError):
+    """Two current units of one compile carry the same logical id. Carries ids only, no text."""
+
+    def __init__(self, logical_ids: list[str]) -> None:
+        super().__init__(f"logical ids held by more than one current unit: {logical_ids}")
+        self.logical_ids = logical_ids
 
 
 # The goal every compile plans its architecture for; corpus_reduce plans the corpus with it too.
@@ -360,6 +368,12 @@ class ProductCoreCompiler:
             current_units.extend(units)
             all_changes.extend(changes)
             review_reasons.extend(reviews)
+        # Invariant: every later lookup is keyed by logical id, so a duplicate is refused here by
+        # name instead of surfacing as a KeyError or a silently overwritten entry downstream.
+        held = Counter(unit.logical_id for unit in current_units)
+        duplicated = sorted(logical for logical, count in held.items() if count > 1)
+        if duplicated:
+            raise LogicalIdCollision(duplicated)
 
         if previous is not None:
             current_sources = {
@@ -692,19 +706,26 @@ class ProductCoreCompiler:
                 if decision.match is LogicalMatch.MATCHED and decision.logical_id:
                     resolved.append(replace(seed, logical_id=decision.logical_id))
                     identity_states.append("matched")
-                elif decision.match is LogicalMatch.AMBIGUOUS:
-                    resolved.append(
-                        replace(
-                            seed,
-                            logical_id=_stable_id("ku_unresolved", derived_version_id, seed.anchor),
-                        )
-                    )
-                    identity_states.append("unresolved")
                 else:
                     resolved.append(seed)
-                    identity_states.append("new")
-                if decision.match is LogicalMatch.AMBIGUOUS:
-                    reviews.append(f"IDENTITY_AMBIGUOUS:{derived_source_id}:{seed.anchor}")
+                    ambiguous = decision.match is LogicalMatch.AMBIGUOUS
+                    identity_states.append("unresolved" if ambiguous else "new")
+        # A logical id belongs to one current unit. A NEW seed can re-create an id the matcher
+        # handed to another unit (F-D12-2: X's id goes to a moved unit while X's old anchor, now
+        # holding other text, seeds X's id again), and two anchors that normalise alike seed one
+        # id. A NEW unit whose id another unit also claims is held like an ambiguous one.
+        holders = Counter(
+            unit.logical_id
+            for unit, state in zip(resolved, identity_states, strict=True)
+            if state != "unresolved"
+        )
+        for index, (unit, state) in enumerate(zip(resolved, identity_states, strict=True)):
+            if state == "unresolved" or (state == "new" and holders[unit.logical_id] > 1):
+                resolved[index] = replace(
+                    unit, logical_id=_stable_id("ku_unresolved", derived_version_id, unit.anchor)
+                )
+                identity_states[index] = "unresolved"
+                reviews.append(f"IDENTITY_AMBIGUOUS:{derived_source_id}:{unit.anchor}")
 
         before_sha = previous[0].source_content_sha256 if previous else content_hash("absent")
         document_diff = diff_documents(

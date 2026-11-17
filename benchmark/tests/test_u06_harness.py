@@ -305,3 +305,18 @@ def test_a_document_that_repeats_a_text_is_judged_not_a_compile_error() -> None:
     result = run_case((plain,), (twice,), requested_at=NOW)
     assert not any(reason.startswith("COMPILE_ERROR:") for reason in result.hold_reasons)
     assert result.incremental_status and result.cold_status
+    # The verdict, not only the absence of a compile error. Region 1 now repeats region 0's text
+    # under region 1's anchor: its identity is ambiguous, so the case holds; nothing is phantom.
+    assert result.verdict == "HOLD"
+    assert "IDENTITY_UNRESOLVED" in result.hold_reasons
+    assert result.phantom == 0
+    # Same pair with the boxes already absent before: the repetition alone, and only its hold.
+    # (With boxes, removing them changes the evidence id of unchanged text; the compiler's own
+    # equivalence check rejects that separately - EQUIVALENCE_FAILED, not this test's subject.)
+    unboxed = plain.model_copy(
+        update={"regions": tuple(r.model_copy(update={"bbox1000": None}) for r in plain.regions)}
+    )
+    isolated = run_case((unboxed,), (twice,), requested_at=NOW)
+    assert isolated.verdict == "HOLD"
+    assert isolated.hold_reasons == ("IDENTITY_UNRESOLVED",)
+    assert isolated.phantom == 0
