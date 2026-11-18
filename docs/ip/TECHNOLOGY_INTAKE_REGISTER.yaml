@@ -157,6 +157,28 @@ founder_decisions_pending:
       research, not commerce, so the blueprint permits comparative analysis now —
       but Family A's claim scope depends on the IBM reading, and the IP track has
       already found the blueprint's summary of that patent to be imprecise.
+    founder_answer:
+      date: "2026-11-18"
+      verbatim: "보류풀고 상용경로에 넣어야지."
+      asked_about: >-
+        Whether three things stay held from customers until counsel has reviewed
+        the RED families: incremental recompilation for customers, the
+        Arena-selected two-reader recipe in production, and a scanned-table reader.
+      effect: >-
+        The founder does not wait for an external counsel review (FTO-1B) before
+        these enter the commercial path. No counsel claim chart exists and none
+        was made: this is the founder accepting that risk, not a clearance.
+        Nothing may be described as legally reviewed, cleared, or free to operate.
+      unchanged:
+        - "Every RED entry keeps status DESIGN_AROUND: the avoided shapes are still not implemented, and nothing is marketed in terms that read onto a RED family."
+        - "YELLOW stays clean-room; a repository without a licence is still not copied, translated, ported or vendored."
+        - "Code, model weights, dataset and hosted-API terms are still four separate licences owned by third parties; ORANGE and evaluation-only rows are not changed by this answer."
+        - "Claim-level analysis stays out of version control."
+      follow_up: >-
+        An engineering conformance check of the shipped shape against each RED
+        entry's `avoid` text runs before each of the three is opened to customers
+        (FTO-1A in docs/research/ABSORPTION_EXPERIMENT_CONTRACTS_BATCH1.md). It is
+        an engineering check, not a legal opinion.
   - id: FTO-2
     question: "Are any of the nine workstreams to be opened, and in what order?"
     blocks: "nothing today"
