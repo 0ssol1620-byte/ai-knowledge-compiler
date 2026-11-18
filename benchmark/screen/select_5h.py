@@ -22,7 +22,8 @@ at, the dev gold and the frozen manifest behind a ``HoldoutGuard``.
   all wrong) and gives the rescue matrix on H, R and pooled with its denominators, then picks
   the second and third member by rescued fields on H per measured USD per page. A candidate
   adding fewer than MIN_MARGINAL_FIELDS of the fields the chosen members all miss is not a
-  member; the pick stops when no candidate remains.
+  member; the pick stops when no candidate remains. A candidate named ineligible (5H-13) is
+  measured and listed in every step, never chosen, and the output records it under a digest.
 * S3 raises its signals from the anchor alone (the field's question: id, kind, anchor); the
   gold value is read only afterwards, to score them.
 * The recipe carries one digest over everything section 5H freezes before the holdout.
@@ -539,6 +540,38 @@ def _texts_sha(texts: Mapping[str, str], records: Iterable[dict[str, Any]]) -> s
     return canonical_sha256({k: texts[k] for k in sorted(used) if k in texts})
 
 
+MAX_INELIGIBLE_REASON = 500
+
+
+def _eligibility(ineligible: Any, s1: Mapping[str, Any]) -> dict[str, str]:
+    """5H-13: candidate id -> why it may not take a member place. Only a kept candidate other
+    than the primary, each with a non-empty reason; None or an empty mapping names none."""
+    if ineligible is None:
+        return {}
+    if not isinstance(ineligible, Mapping):
+        raise ContractError("ineligible is not a mapping of candidate id to reason")
+    out: dict[str, str] = {}
+    for c, why in ineligible.items():
+        if not isinstance(c, str) or c not in s1["kept"]:
+            raise ContractError(f"ineligible {str(c)[:40]!r} is not in S1's kept")
+        if c == s1["leader"]:
+            raise ContractError(
+                f"the primary {c!r} is named ineligible: stop and report (5H-13); S2 does not "
+                "route around its primary"
+            )
+        if not (isinstance(why, str) and why.strip() and len(why) <= MAX_INELIGIBLE_REASON):
+            raise ContractError(
+                f"ineligible {c!r} needs a non-empty reason of at most {MAX_INELIGIBLE_REASON} "
+                "characters"
+            )
+        out[c] = why
+    return dict(sorted(out.items()))
+
+
+def _s2_body(s2: Mapping[str, Any]) -> dict[str, Any]:
+    return {k: v for k, v in s2.items() if k != "s2_sha256"}
+
+
 def complementarity_s2(
     records: Sequence[dict[str, Any]],
     texts: Mapping[str, str],
@@ -546,8 +579,14 @@ def complementarity_s2(
     *,
     guard: HoldoutGuard,
     s1: Mapping[str, Any],
+    ineligible: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
-    """S2: field rescue matrix on H / R / pooled; second and third member per rescued USD."""
+    """S2: field rescue matrix on H / R / pooled; second and third member per rescued USD.
+
+    ``ineligible`` (5H-13) names kept candidates that may not take a member place: each stays
+    in the matrix and in every step's options with its measured marginal and cost, marked
+    ``excluded: "ineligible"``, and is never chosen. The output then records them and a digest
+    of its own body (``s2_sha256``); without any, the output is what it was before 5H-13."""
     if canonical_sha256(_s1_body(s1)) != s1.get("s1_sha256"):
         raise ContractError("the S1 body does not match its own s1_sha256: S1 was edited")
     scope = _scope(guard, "dev", "calibrate")
@@ -557,6 +596,7 @@ def complementarity_s2(
         or s1["inputs"]["manifest_sha256"] != guard._manifest["manifest_sha256"]
     ):
         raise ContractError("S1 was computed from other records or another manifest than S2's")
+    barred = _eligibility(ineligible, s1)
     kept, leader = list(s1["kept"]), s1["leader"]
     _, right = _reads(by, texts, gold, kept)
     matrix = {
@@ -580,7 +620,9 @@ def complementarity_s2(
             marginal = sum(right[c][k] for k in missed)
             usd = cost[c]["usd"]
             reason = (
-                "marginal_below_minimum"
+                "ineligible"
+                if c in barred
+                else "marginal_below_minimum"
                 if marginal < MIN_MARGINAL_FIELDS
                 else "cost_unknown"
                 if usd is None
@@ -619,7 +661,7 @@ def complementarity_s2(
         if chosen is None:
             break
         members.append(chosen)
-    return {
+    out = {
         "stage": "S2",
         "inputs": {
             "records_sha256": _records_sha(records),
@@ -637,6 +679,30 @@ def complementarity_s2(
         "cited_not_reused": "akc_router.complementarity MEASURED_RESCUES (page edit distance, "
         "another benchmark)",
     }
+    if barred:
+        out["ineligible"] = barred
+        out["s2_sha256"] = canonical_sha256(out)
+    return out
+
+
+def _check_eligibility(s2: Mapping[str, Any], s1: Mapping[str, Any]) -> None:
+    """An S2 whose eligibility was edited after it was computed is refused: a recorded
+    ``ineligible`` needs the body digest, and the marks in every step are exactly those ids."""
+    barred: dict[str, str] = {}
+    if "ineligible" in s2 or "s2_sha256" in s2:
+        if canonical_sha256(_s2_body(s2)) != s2.get("s2_sha256"):
+            raise ContractError("the S2 body does not match its own s2_sha256: S2 was edited")
+        barred = _eligibility(s2.get("ineligible"), s1)
+        if not barred:
+            raise ContractError("S2's s2_sha256 covers no well-formed ineligible record")
+    for step in s2["pick_steps"]:
+        if step["chosen"] in barred:
+            raise ContractError(f"S2 chose the ineligible {step['chosen']!r}")
+        for o in step["options"]:
+            if (o["excluded"] == "ineligible") != (o["candidate"] in barred):
+                raise ContractError(
+                    f"S2 marks {o['candidate']!r} against its ineligible record: S2 was edited"
+                )
 
 
 def _signals(p: Any, peers: Sequence[Any], reread: Any, measured: bool) -> dict[str, Any]:
@@ -817,6 +883,7 @@ def build_recipe(
         or names != [s2["primary"], *(c for c in chosen if c is not None)]
     ):
         raise ContractError("S2 members are not the chain of S1's leader and pick_steps[].chosen")
+    _check_eligibility(s2, s1)
     members = []
     for c in names:
         pins = {

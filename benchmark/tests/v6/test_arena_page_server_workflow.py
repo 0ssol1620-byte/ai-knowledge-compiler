@@ -591,6 +591,10 @@ _GATES = [
 # What only a GPU host can import, so the pod's preflight imports it and the build does not
 # (lead decision B): C1's service import and the paddle core it loads.
 _GPU_ONLY = {"c0": set[str](), "c3": set[str](), "": {"paddle", "paddleocr.PaddleOCRVL"}}
+# The environment each pod preflight sets before its interpreter, exactly (WO-D10-0X, round-3
+# review): C1 sets PaddleX's switch for its model-source check (the README: PaddleX may check
+# its model hosters at import); C0 and C3 set nothing.
+_PREFLIGHT_ENV = {"c0": "", "c3": "", "": "PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True "}
 _README = _IMAGES / "mineru-pipeline-akc/README.md"
 _README_ROW = {"c0": "| `c0` |", "c3": "| `c3` |", "": "| C1 (`../paddleocr-vl-akc`) |"}
 
@@ -644,6 +648,7 @@ def test_the_pod_preflight_is_the_build_gate_plus_only_what_needs_a_gpu(
     of those."""
     match = _COMMAND.fullmatch(_preflight(stage))
     assert match, _preflight(stage)
+    assert match[1] == _PREFLIGHT_ENV[stage], (stage, match[1])
     gate_code = _gate(dockerfile, stage)
     gate_python = _gate_run(dockerfile, stage).split(' -c "', 1)[0].split()[-1]
     assert match[2] == gate_python

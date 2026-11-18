@@ -136,11 +136,36 @@ def _built_rows() -> dict[str, dict[str, Any]]:
 
 
 # (source commit, run) per slot: C0 and C3 rebuilt by run 44216487886 (WO-D10-0U r3, their
-# import gates passed on the CPU runner); C1's job failed in that run, so C1 keeps its first build.
+# import gates passed on the CPU runner); C1 rebuilt by run 44226313508 (WO-D10-0X). Each of
+# these three images served the 99 dev pages of S0.
 _RUNS = {
-    "paddleocr_vl_1_6": ("9754168c92969e17a12c3877c3c0ba44de690918", "44145574050"),
+    "paddleocr_vl_1_6": ("c8d85435bf1cead0a8285d1236d071c305d3fcd1", "44226313508"),
     "mineru": ("b5b349f1897d3f0d34a9ce749e358835d31f44d3", "44216487886"),
     "mineru_vlm": ("b5b349f1897d3f0d34a9ce749e358835d31f44d3", "44216487886"),
+}
+_NAMESPACE = "ghcr.io/0ssol1620-byte/ai-knowledge-compiler"
+# (image, package listing, build log) per slot, as each run's build-receipt.json records them
+# and as the files it uploaded hash (receipts/d10-screen-v1/images/run4-artifacts for C0 and
+# C3, run5-artifacts for C1); the image is the one S0 read back (s0-summary.json pins).
+_BUILDS = {
+    "paddleocr_vl_1_6": (
+        f"{_NAMESPACE}/arena-paddleocr-vl-akc@sha256:"
+        "7abc709407612a9426be695d19c2a998f10dd597eaeb2c6dda3ac47964c285b5",
+        "sha256:ac0f0c54a3ff5569a98eeda781e65ccbf7ebb258eba9329cc7c24a020eb8d97f",
+        "sha256:e984ea56c4de7996d73c9e50002f371af4c1db95fb7820d451ac214da1a65385",
+    ),
+    "mineru": (
+        f"{_NAMESPACE}/arena-mineru-pipeline-akc-c0@sha256:"
+        "e89143bcc86d7dc0b2c9e105cf01c0fed85b7801299d2eecb7adc3414f2f615b",
+        "sha256:e07368593ef1b8f4ed058f9b6cb030a2d5b2e754cfd40d497ae095a3a40fee2c",
+        "sha256:89a074cda22bd1fa469dc2b9a07fded6acba5e0b4495bc183f00c2e85d34ab4c",
+    ),
+    "mineru_vlm": (
+        f"{_NAMESPACE}/arena-mineru-pipeline-akc-c3@sha256:"
+        "00a88750fca76b492ac84cea4e95ae30afb96fe4af041ae7219af6a317debdba",
+        "sha256:88ed42f2dddadbc33b2cc74c4c7c4bd3d8837c0eb04ea7797219a977139b83cc",
+        "sha256:9558a4c02188f955fb1f82bd0d1377b20de6790be8fe7cfccfd6d5ee9bc29710",
+    ),
 }
 _MINERU_IMAGE = _ROOT / "infra/runpod/v6/images/mineru-pipeline-akc"
 
@@ -151,6 +176,11 @@ def test_the_three_arena_images_are_built_and_pinned_to_their_run() -> None:
     for runner, row in rows.items():
         serving = row["runtime"]["serving"]
         assert (serving["source_commit"], serving["workflow_run_id"]) == _RUNS[runner], runner
+        assert (
+            serving["image"],
+            serving["package_listing_sha256"],
+            serving["build_log_sha256"],
+        ) == _BUILDS[runner], runner
         assert serving["enabled"] is False and row["rollout"]["traffic_percent"] == 0, runner
     # The rebuilt C0 and C3 were built from this tree's locks (b5b349f; unchanged since), so
     # their recorded lock digests are those files' digests.
@@ -233,7 +263,7 @@ def test_a_built_image_is_in_this_repositorys_namespace() -> None:
             assert any("image of this block" in p for p in _problems(bad)), (runner, other)
     text = _REGISTRY.read_text(encoding="utf-8")
     first = next(iter(_built_rows().values()))["runtime"]["serving"]["image"]
-    # every mention of that image, so its not_serving mark moves with it
+    # every mention of that image (a not_serving mark, when one is recorded, moves with it)
     bad_text = text.replace(f'"{first}"', '"ghcr.io/evil/' + first.split("/", 3)[3] + '"')
     assert bad_text != text
     validate = validator["validate"]
@@ -351,40 +381,19 @@ def test_image_build_names_a_dockerfile_inside_the_repository(tmp_path: Path) ->
     assert _problems(row) == []
 
 
-def test_not_serving_binds_the_c0_c1_and_c3_digests_and_not_the_next_one() -> None:
-    """WO-D10-0U: every recorded arena build stays ``built`` and is marked not to be launched
-    (C1, run 44145574050: libgomp and protobuf; C0 and C3, r3: rebuilt by run 44216487886 and
-    not yet launched, the lead removes the mark once a page has been served); the mark names
-    the exact image, so recording a rebuilt digest without deciding about the mark fails, as
-    does a mark without a reason or on an unbuilt block."""
+def test_no_arena_image_is_marked_and_a_mark_still_binds_its_digest() -> None:
+    """WO-D10-0X: C0, C3 and C1 each served the 99 dev pages of S0 from the image their block
+    records, so no block carries ``not_serving``. The rule stays: a mark names the exact image
+    with a non-empty reason, so recording a rebuilt digest without deciding about the mark
+    fails, as does a malformed mark or one on an unbuilt block."""
     rows = _built_rows()
-    rebuilt_reason = "rebuilt in run 44216487886; not yet launched"
-    causes = {
-        "mineru": [rebuilt_reason],
-        "mineru_vlm": [rebuilt_reason],
-        "paddleocr_vl_1_6": ["libgomp", "protobuf 6.33.4", "sentencepiece 0.2.3"],
-    }
-    # The digests run 44216487886 read back from GHCR (its build-receipt.json per slot).
-    namespace = "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/arena-mineru-pipeline-akc"
-    images = {
-        "mineru": f"{namespace}-c0@sha256:"
-        "e89143bcc86d7dc0b2c9e105cf01c0fed85b7801299d2eecb7adc3414f2f615b",
-        "mineru_vlm": f"{namespace}-c3@sha256:"
-        "00a88750fca76b492ac84cea4e95ae30afb96fe4af041ae7219af6a317debdba",
-    }
+    assert set(rows) == set(_BUILDS)
     marked = {k for k, r in rows.items() if "not_serving" in r["runtime"]["serving"]}
-    assert marked == set(causes)  # every recorded build (C1 added by the closing round)
-    for runner, image in images.items():
-        serving = rows[runner]["runtime"]["serving"]
-        assert serving["image"] == image, runner
-        assert serving["not_serving"] == {"image": image, "reason": rebuilt_reason}, runner
-    for runner in marked:
-        row = rows[runner]
-        serving = row["runtime"]["serving"]
-        assert serving["built"] is True and _problems(row) == [], runner
-        assert serving["not_serving"]["image"] == serving["image"], runner
-        for cause in causes[runner]:
-            assert cause in serving["not_serving"]["reason"], (runner, cause)
+    assert marked == set()
+    for runner, row in rows.items():
+        serving = copy.deepcopy(row["runtime"]["serving"])
+        serving["not_serving"] = {"image": serving["image"], "reason": "first launch failed"}
+        assert _build_problems(serving) == [], runner
         rebuilt = copy.deepcopy(serving)
         rebuilt["image"] = serving["image"].split("@")[0] + "@sha256:" + "a" * 64
         assert _build_problems(rebuilt) == ["not_serving names another image than this block's"]
