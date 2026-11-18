@@ -15,7 +15,13 @@ concurrency:
 jobs:
   python-core:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    # Re-derived from a measurement, not raised to go green (WO-D10-1A). Run 44245132548
+    # (2408535): the 3.13 job took 1144 s (pytest step 1103 s); at the same head the 3.12
+    # coverage step reached 80% at 1245 s against 689 s for 3.13 (x1.81), so 3.12 needs about
+    # 1103 x 1.81 + 41 = 2034 s. Run 44258241194 reached 80% 1.41x later than 44245132548 on
+    # the same suite; factor 1.5 over 2034 s = 3051 s -> 51 min. pytest-xdist is not in uv.lock,
+    # and a directory split needs a cross-job coverage combine this workflow has no action for.
+    timeout-minutes: 51
     strategy:
       fail-fast: false
       matrix:

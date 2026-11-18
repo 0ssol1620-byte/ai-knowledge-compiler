@@ -10,7 +10,8 @@ candidate with the benchmark's declarations, and writes `results.<arm>.jsonl` an
 per-arm counts, the off -> candidate transition table and a `by_construction` block. `--faults N`
 (candidate only) also runs N generated fault cases (`faults.generate`, `--fault-seed`) built from
 the manifest's pairs on both arms, into `faults.<arm>.jsonl`. Without these flags the run is
-today's, byte for byte. Nothing here is identity accuracy and nothing is a gate result.
+today's, byte for byte. Every file is written with LF line ends on every platform (WO-D10-1A).
+Nothing here is identity accuracy and nothing is a gate result.
 
 Fault outcomes per case (WO-D12-16r): `parent_already_held` (a HOLD that adds no reason to its
 parent pair's HOLD; never counted as met, nor as exercise: its declared documents are counted
@@ -401,7 +402,7 @@ def _run_faults(
     touched_paths: dict[str, Counter[str]] = defaultdict(Counter)
     results: list[CaseResult] = []
     keyed_documents = 0
-    with sink_path.open("w", encoding="utf-8") as sink:
+    with sink_path.open("w", encoding="utf-8", newline="\n") as sink:
         for case in cases:
             measured = _arm_case(
                 case.before_docs, case.after_docs, arm=arm, requested_at=requested_at, scope=scope
@@ -515,7 +516,7 @@ def _both_arms(
         parents: list[Measured] = []
         total: Counter[str] = Counter()
         without = 0
-        with (out / f"results.{arm}.jsonl").open("w", encoding="utf-8") as sink:
+        with (out / f"results.{arm}.jsonl").open("w", encoding="utf-8", newline="\n") as sink:
             for case, before, after in loaded:
                 measured = _arm_case(before, after, arm=arm, requested_at=requested_at, scope=scope)
                 parents.append(measured)
@@ -693,18 +694,22 @@ def main(argv: list[str] | None = None) -> int:
             report["fault_cases"], report["fault_seed"] = len(faults), args.fault_seed
             report["fault_cases_requested"] = args.faults
         report.update(_provenance(raw))
-        (args.out / "summary.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
+        (args.out / "summary.json").write_text(
+            json.dumps(report, indent=2), encoding="utf-8", newline="\n"
+        )
         print(json.dumps(report, indent=2))
         return 1 if failed else 0
     args.out.mkdir(parents=True, exist_ok=True)
-    with (args.out / "results.jsonl").open("w", encoding="utf-8") as sink:
+    with (args.out / "results.jsonl").open("w", encoding="utf-8", newline="\n") as sink:
         for case, before, after in loaded:
             result = run_case(before, after, requested_at=requested_at, **scope)
             rows.append((case["stratum"], result))
             line = {"case_id": case["case_id"], "stratum": case["stratum"], **asdict(result)}
             sink.write(json.dumps(line) + "\n")
     summary = {**summarize(rows), **_provenance(raw)}
-    (args.out / "summary.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    (args.out / "summary.json").write_text(
+        json.dumps(summary, indent=2), encoding="utf-8", newline="\n"
+    )
     print(json.dumps(summary, indent=2))
     compile_error = _compile_error([r for _, r in rows])
     return 1 if summary["diverged"] or summary["phantom_total"] or compile_error else 0

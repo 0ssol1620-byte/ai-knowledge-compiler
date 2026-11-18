@@ -35,9 +35,11 @@ NOW = datetime(2026, 8, 29, 12, 0, tzinfo=UTC)
 # judge's source as of 55a9a38 (WO-D12-12); this work order may not change it.
 JUDGE_SHA256 = "3f47cdb8e66eccaf47aa66416d9c667c26c6991a988d8065b719b3c5d854875c"
 # today's (55a9a38) runner on `_manifest`: results.jsonl, and summary.json with the four
-# environment values (git sha, manifest sha, python, host) blanked.
-OFF_RESULTS_SHA256 = "d5ba07add23a62b5699d2e32b45ee4006d83720117b64de97225a84db3081764"
-OFF_SUMMARY_SHA256 = "78dc960b843b281a6135101348cac44ae312bd8dd2bf6537ed6a9dad93e0ec12"
+# environment values (git sha, manifest sha, python, host) blanked. Re-derived once (WO-D10-1A)
+# from the Windows pins d5ba07ad…1764 / 78dc960b…ec12 by the one change the writer made, CRLF ->
+# LF; b89c25e9…00a4 is what the Linux runner wrote in CI run 44245132548 before the fix.
+OFF_RESULTS_SHA256 = "b89c25e90cff9712ce24c494b54ea86535be8dab0d0defc96698c065fa2100a4"
+OFF_SUMMARY_SHA256 = "8f54d00abc9628484ba02130190f929666b4f744db16fd1025077ce5cdd9d9ee"
 
 
 def _row(label: str, value: int, end: str, quarters: int = 1) -> str:
@@ -210,6 +212,22 @@ def test_without_the_new_flags_the_run_is_todays_byte_for_byte(
     assert sorted(p.name for p in out.iterdir()) == ["results.jsonl", "summary.json"]
     assert _sha((out / "results.jsonl").read_bytes()) == OFF_RESULTS_SHA256
     assert _sha(_blank_environment((out / "summary.json").read_bytes())) == OFF_SUMMARY_SHA256
+
+
+@pytest.mark.parametrize(
+    "flags", [(), ("--fact-key-mode", "candidate", "--faults", "8", "--fault-seed", "1")]
+)
+def test_every_file_the_runner_writes_has_the_same_bytes_on_every_platform(
+    tmp_path: Path, flags: tuple[str, ...]
+) -> None:
+    # WO-D10-1A: a text-mode write turned every "\n" into "\r\n" on Windows, so the same run
+    # pinned one digest there and another on the Linux runner. Every artifact is LF only.
+    _, out = _run(tmp_path, *flags)
+    written = sorted(out.iterdir())
+    assert len(written) == (2 if not flags else 5)
+    for path in written:
+        data = path.read_bytes()
+        assert b"\n" in data and b"\r" not in data, path.name
 
 
 def test_compile_pair_passes_mode_and_declarations_through() -> None:
