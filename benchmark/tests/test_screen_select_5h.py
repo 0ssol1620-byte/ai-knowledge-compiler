@@ -1370,3 +1370,229 @@ def test_recipe_refuses_an_s2_whose_eligibility_was_edited(tmp_path: Path) -> No
     assert s5.build_recipe(**args, s2=free)["member_order"] == ["L", "B", "C"]
     with pytest.raises(ContractError, match="no well-formed ineligible"):
         s5.build_recipe(**args, s2=sealed(free))
+
+
+# ---------------------------------------------------------------- WO-D10-0Y (Decision S3-1)
+
+_PAIR = "Decision S3-1: the third member removes no false accept on the calibration set"
+_STOP_PLANS = {
+    "L": wrong(HF[:8]),
+    "cheap": wrong(HF[2:8], 2) | wrong(HF[20:30], 3),
+    "dear": wrong(HF[:3], 2) | wrong(HF[20:30], 3),
+    "C0": wrong(HF) | wrong(RF),
+}
+_STOP_COST = {"L": 0.01, "cheap": 0.001, "dear": 0.5, "C0": 0.01}
+_RECIPE_ARGS: dict[str, Any] = {
+    "escalate_on": ["disagreement"],
+    "degradation": {"seed": 1, "parameters": {}},
+    "scoring_commit": "1" * 40,
+    "section_sha256": "sha256:" + "2" * 64,
+}
+
+
+def _sealed(edit: dict[str, Any]) -> dict[str, Any]:
+    """An edit whose author also recomputed s2_sha256."""
+    body = {k: v for k, v in edit.items() if k != "s2_sha256"}
+    return {**body, "s2_sha256": canonical_sha256(body)}
+
+
+def test_s2_without_max_members_is_byte_identical_to_before_s3_1(tmp_path: Path) -> None:
+    """Digests from select_5h at 2408535 (sha256 6757889f..., the code S2b was computed
+    with), before the parameter existed; with and without an ineligible candidate."""
+    pinned = [
+        (
+            _BAR_PLANS,
+            _BAR_COST,
+            None,
+            "d4488ab650bf7ea3def933668267ff0b785c824ea810b478bc6bbf9e84c7276a",
+        ),
+        (
+            _BAR_PLANS,
+            _BAR_COST,
+            {"B": _WHY},
+            "30c89e775093521a85dc9b2ab06d046bfa0295e7703364959b2e265ed4d39d8c",
+        ),
+        (
+            _STOP_PLANS,
+            _STOP_COST,
+            None,
+            "ec3589dc909ea5dd2df508f3bf1074df9eaffe473198628549e3b869fd7c9499",
+        ),
+        (
+            _STOP_PLANS,
+            _STOP_COST,
+            {"cheap": _WHY},
+            "695e3ae567acf80fe498b9fb65c99f215f173b76a55fac21161a4a5e23c8433d",
+        ),
+    ]
+    for plans, cost, inel, digest in pinned:
+        recs, texts = world(plans, cost=cost)
+        g = guard(tmp_path)
+        s1 = s5.select_s1(recs, guard=g, baseline="C0")
+        nones: list[dict[str, Any]] = [
+            {},
+            {"max_members": None},
+            {"max_members": None, "max_members_reason": None},
+        ]
+        for none in nones:
+            out = s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1, ineligible=inel, **none)
+            assert hashlib.sha256(s5.dump(out)).hexdigest() == digest, (inel, none)
+            assert "max_members" not in out and "max_members_reason" not in out
+            assert ("s2_sha256" in out) == bool(inel)
+
+
+def test_s2_closed_at_a_length_stops_there_and_records_it(tmp_path: Path) -> None:
+    recs, texts, g, s1 = _bar_world(tmp_path)
+    args = {**_RECIPE_ARGS, "records": recs, "s1": s1}
+    free = s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1)
+    barred = s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1, ineligible={"B": _WHY})
+    cases = [
+        ({}, free, ["L", "B"]),
+        ({"ineligible": {"B": _WHY}}, barred, ["L", "C"]),
+    ]
+    for extra, open_chain, pair in cases:
+        out = s5.complementarity_s2(
+            recs, texts, GOLD, guard=g, s1=s1, max_members=2, max_members_reason=_PAIR, **extra
+        )
+        assert out["members"] == pair
+        # The step after the second member is not computed; the one before is today's.
+        assert out["pick_steps"] == open_chain["pick_steps"][:1]
+        assert out["matrix"] == open_chain["matrix"]
+        assert (out["max_members"], out["max_members_reason"]) == (2, _PAIR)
+        assert out.get("ineligible") == extra.get("ineligible")
+        body = {k: v for k, v in out.items() if k != "s2_sha256"}
+        assert out["s2_sha256"] == canonical_sha256(body)
+        assert s5.build_recipe(**args, s2=out)["member_order"] == pair
+    # Closed at MAX_MEMBERS: today's chain, recorded and sealed.
+    three = s5.complementarity_s2(
+        recs, texts, GOLD, guard=g, s1=s1, max_members=3, max_members_reason=_PAIR
+    )
+    assert three["members"] == free["members"] == ["L", "B", "C"]
+    assert three["pick_steps"] == free["pick_steps"]
+    assert (three["max_members"], "s2_sha256" in three) == (3, True)
+    assert s5.build_recipe(**args, s2=three)["member_order"] == ["L", "B", "C"]
+    # A chain the rule stops before the recorded length ends on a step that chose nobody.
+    recs2, texts2 = world(_STOP_PLANS, cost=_STOP_COST)
+    (tmp_path / "stop").mkdir()
+    g2 = guard(tmp_path / "stop")
+    s1b = s5.select_s1(recs2, guard=g2, baseline="C0")
+    short = s5.complementarity_s2(
+        recs2, texts2, GOLD, guard=g2, s1=s1b, max_members=3, max_members_reason=_PAIR
+    )
+    assert short["members"] == ["L", "dear"]
+    assert [s["chosen"] for s in short["pick_steps"]] == ["dear", None]
+    args2 = {**_RECIPE_ARGS, "records": recs2, "s1": s1b}
+    assert s5.build_recipe(**args2, s2=short)["member_order"] == ["L", "dear"]
+
+
+@pytest.mark.parametrize(
+    ("max_members", "reason", "match"),
+    [
+        (1, _PAIR, "an int from 2 to 3"),
+        (0, _PAIR, "an int from 2 to 3"),
+        (4, _PAIR, "an int from 2 to 3"),
+        (True, _PAIR, "an int from 2 to 3"),
+        (2.0, _PAIR, "an int from 2 to 3"),
+        ("2", _PAIR, "an int from 2 to 3"),
+        (2, None, "non-empty max_members_reason"),
+        (2, "", "non-empty max_members_reason"),
+        (2, "   ", "non-empty max_members_reason"),
+        (2, 7, "non-empty max_members_reason"),
+        (2, "x" * (s5.MAX_INELIGIBLE_REASON + 1), "non-empty max_members_reason"),
+        (None, _PAIR, "max_members_reason without max_members"),
+    ],
+)
+def test_s2_refuses_a_length_it_cannot_honour(
+    tmp_path: Path, max_members: Any, reason: Any, match: str
+) -> None:
+    recs, texts, g, s1 = _bar_world(tmp_path)
+    with pytest.raises(ContractError, match=match):
+        s5.complementarity_s2(
+            recs, texts, GOLD, guard=g, s1=s1, max_members=max_members, max_members_reason=reason
+        )
+
+
+def test_recipe_refuses_an_s2_whose_length_was_edited(tmp_path: Path) -> None:
+    recs, texts, g, s1 = _bar_world(tmp_path)
+    args = {**_RECIPE_ARGS, "records": recs, "s1": s1}
+    free = s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1)
+    pair = s5.complementarity_s2(
+        recs, texts, GOLD, guard=g, s1=s1, max_members=2, max_members_reason=_PAIR
+    )
+    both = s5.complementarity_s2(
+        recs,
+        texts,
+        GOLD,
+        guard=g,
+        s1=s1,
+        ineligible={"B": _WHY},
+        max_members=2,
+        max_members_reason=_PAIR,
+    )
+    unrecorded = {k: v for k, v in pair.items() if k not in ("max_members", "max_members_reason")}
+    unsealed = {k: v for k, v in unrecorded.items() if k != "s2_sha256"}
+    both_unrecorded = {
+        k: v for k, v in both.items() if k not in ("max_members", "max_members_reason")
+    }
+    past = {**free["pick_steps"][-1], "position": 4, "chosen": None}
+    edits: dict[str, tuple[dict[str, Any], str]] = {
+        "length raised": ({**pair, "max_members": 3}, "S2 was edited"),
+        "reason edited": ({**pair, "max_members_reason": "other"}, "S2 was edited"),
+        "seal dropped, record kept": (
+            {k: v for k, v in pair.items() if k != "s2_sha256"},
+            "S2 was edited",
+        ),
+        "record and seal dropped": (unsealed, "does not end where S2 stops it"),
+        "record dropped, resealed": (_sealed(unrecorded), "no well-formed ineligible or max_"),
+        "length raised, resealed": (
+            _sealed({**pair, "max_members": 3}),
+            "does not end where S2 stops it",
+        ),
+        "length 4, resealed": (_sealed({**pair, "max_members": 4}), "an int from 2 to 3"),
+        "reason only, resealed": (
+            _sealed({k: v for k, v in pair.items() if k != "max_members"}),
+            "max_members_reason without max_members",
+        ),
+        "blank reason, resealed": (
+            _sealed({**pair, "max_members_reason": " "}),
+            "non-empty max_members_reason",
+        ),
+        "length record dropped, ineligible kept, resealed": (
+            _sealed(both_unrecorded),
+            "does not end where S2 stops it",
+        ),
+        "length None, ineligible kept, resealed": (
+            _sealed({**both_unrecorded, "max_members": None}),
+            "no well-formed ineligible or max_",
+        ),
+        "chain longer than the recorded length": (
+            _sealed({**free, "max_members": 2, "max_members_reason": _PAIR}),
+            "chain of 3 does not end",
+        ),
+        "open chain cut by hand": (
+            {**free, "members": ["L", "B"], "pick_steps": free["pick_steps"][:1]},
+            "chain of 2 does not end",
+        ),
+        "a step past the length": (
+            {**free, "pick_steps": [*free["pick_steps"], past]},
+            "chain of 3 does not end",
+        ),
+        "no step at all": ({**free, "members": ["L"], "pick_steps": []}, "chain of 1 does not end"),
+    }
+    for name, (edited, match) in edits.items():
+        with pytest.raises(ContractError, match=match):
+            s5.build_recipe(**args, s2=edited)
+        assert name
+    # Not detectable here, said plainly: an open chain cut by hand with a length record added
+    # and the seal recomputed is the same dict as an S2 computed with that length. The S2 file
+    # digest the lead pins in the ledger is what tells them apart.
+    forged = _sealed(
+        {
+            **free,
+            "members": ["L", "B"],
+            "pick_steps": free["pick_steps"][:1],
+            "max_members": 2,
+            "max_members_reason": _PAIR,
+        }
+    )
+    assert forged == pair

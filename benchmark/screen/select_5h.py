@@ -24,6 +24,8 @@ at, the dev gold and the frozen manifest behind a ``HoldoutGuard``.
   adding fewer than MIN_MARGINAL_FIELDS of the fields the chosen members all miss is not a
   member; the pick stops when no candidate remains. A candidate named ineligible (5H-13) is
   measured and listed in every step, never chosen, and the output records it under a digest.
+  A chain closed at ``max_members`` (Decision S3-1) stops there, and the output records the
+  length and the caller's reason under the same digest.
 * S3 raises its signals from the anchor alone (the field's question: id, kind, anchor); the
   gold value is read only afterwards, to score them.
 * The recipe carries one digest over everything section 5H freezes before the holdout.
@@ -543,6 +545,10 @@ def _texts_sha(texts: Mapping[str, str], records: Iterable[dict[str, Any]]) -> s
 MAX_INELIGIBLE_REASON = 500
 
 
+def _is_reason(why: Any) -> bool:
+    return isinstance(why, str) and bool(why.strip()) and len(why) <= MAX_INELIGIBLE_REASON
+
+
 def _eligibility(ineligible: Any, s1: Mapping[str, Any]) -> dict[str, str]:
     """5H-13: candidate id -> why it may not take a member place. Only a kept candidate other
     than the primary, each with a non-empty reason; None or an empty mapping names none."""
@@ -559,13 +565,30 @@ def _eligibility(ineligible: Any, s1: Mapping[str, Any]) -> dict[str, str]:
                 f"the primary {c!r} is named ineligible: stop and report (5H-13); S2 does not "
                 "route around its primary"
             )
-        if not (isinstance(why, str) and why.strip() and len(why) <= MAX_INELIGIBLE_REASON):
+        if not _is_reason(why):
             raise ContractError(
                 f"ineligible {c!r} needs a non-empty reason of at most {MAX_INELIGIBLE_REASON} "
                 "characters"
             )
         out[c] = why
     return dict(sorted(out.items()))
+
+
+def _closed_at(max_members: Any, reason: Any) -> int | None:
+    """Decision S3-1: the length S2's chain is closed at, 2 to MAX_MEMBERS, with the caller's
+    reason; None (and no reason) is the open chain."""
+    if max_members is None:
+        if reason is not None:
+            raise ContractError("max_members_reason without max_members")
+        return None
+    if type(max_members) is not int or not 2 <= max_members <= MAX_MEMBERS:
+        raise ContractError(f"max_members must be an int from 2 to {MAX_MEMBERS}")
+    if not _is_reason(reason):
+        raise ContractError(
+            f"max_members needs a non-empty max_members_reason of at most "
+            f"{MAX_INELIGIBLE_REASON} characters"
+        )
+    return max_members
 
 
 def _s2_body(s2: Mapping[str, Any]) -> dict[str, Any]:
@@ -580,13 +603,19 @@ def complementarity_s2(
     guard: HoldoutGuard,
     s1: Mapping[str, Any],
     ineligible: Mapping[str, str] | None = None,
+    max_members: int | None = None,
+    max_members_reason: str | None = None,
 ) -> dict[str, Any]:
     """S2: field rescue matrix on H / R / pooled; second and third member per rescued USD.
 
     ``ineligible`` (5H-13) names kept candidates that may not take a member place: each stays
     in the matrix and in every step's options with its measured marginal and cost, marked
     ``excluded: "ineligible"``, and is never chosen. The output then records them and a digest
-    of its own body (``s2_sha256``); without any, the output is what it was before 5H-13."""
+    of its own body (``s2_sha256``); without any, the output is what it was before 5H-13.
+
+    ``max_members`` (Decision S3-1, 2 to MAX_MEMBERS, with a ``max_members_reason``) closes the
+    chain at that many members: the step after is not computed. Both are recorded under
+    ``s2_sha256``; without them the output is what it was before."""
     if canonical_sha256(_s1_body(s1)) != s1.get("s1_sha256"):
         raise ContractError("the S1 body does not match its own s1_sha256: S1 was edited")
     scope = _scope(guard, "dev", "calibrate")
@@ -597,6 +626,7 @@ def complementarity_s2(
     ):
         raise ContractError("S1 was computed from other records or another manifest than S2's")
     barred = _eligibility(ineligible, s1)
+    cap = _closed_at(max_members, max_members_reason)
     kept, leader = list(s1["kept"]), s1["leader"]
     _, right = _reads(by, texts, gold, kept)
     matrix = {
@@ -611,7 +641,7 @@ def complementarity_s2(
     hard = _keys(right[leader], scope[0], H)
     cost = {c: _cost_per_page(by[c][p] for p in sorted(scope[0]) if scope[0][p] == H) for c in kept}
     members, steps = [leader], []
-    while len(members) < MAX_MEMBERS:
+    while len(members) < (MAX_MEMBERS if cap is None else cap):
         missed = [k for k in hard if not any(right[m][k] for m in members)]
         options = []
         for c in kept:
@@ -681,20 +711,38 @@ def complementarity_s2(
     }
     if barred:
         out["ineligible"] = barred
+    if cap is not None:
+        out["max_members"] = cap
+        out["max_members_reason"] = max_members_reason
+    if barred or cap is not None:
         out["s2_sha256"] = canonical_sha256(out)
     return out
 
 
-def _check_eligibility(s2: Mapping[str, Any], s1: Mapping[str, Any]) -> None:
-    """An S2 whose eligibility was edited after it was computed is refused: a recorded
-    ``ineligible`` needs the body digest, and the marks in every step are exactly those ids."""
+def _check_sealed(s2: Mapping[str, Any], s1: Mapping[str, Any], names: Sequence[str]) -> None:
+    """An S2 whose eligibility or length was edited after it was computed is refused: a recorded
+    ``ineligible`` or ``max_members`` needs the body digest, the marks in every step are exactly
+    the ineligible ids, and the chain ends where S2 stops it: at the recorded length (MAX_MEMBERS
+    without one), or earlier on a step that chose nobody."""
     barred: dict[str, str] = {}
-    if "ineligible" in s2 or "s2_sha256" in s2:
+    cap = None
+    closed = "max_members" in s2 or "max_members_reason" in s2
+    if "ineligible" in s2 or closed or "s2_sha256" in s2:
         if canonical_sha256(_s2_body(s2)) != s2.get("s2_sha256"):
             raise ContractError("the S2 body does not match its own s2_sha256: S2 was edited")
         barred = _eligibility(s2.get("ineligible"), s1)
-        if not barred:
-            raise ContractError("S2's s2_sha256 covers no well-formed ineligible record")
+        cap = _closed_at(s2.get("max_members"), s2.get("max_members_reason"))
+        if ("ineligible" in s2 and not barred) or (closed and cap is None) or not (barred or cap):
+            raise ContractError(
+                "S2's s2_sha256 covers no well-formed ineligible or max_members record"
+            )
+    limit = MAX_MEMBERS if cap is None else cap
+    chosen = [step["chosen"] for step in s2["pick_steps"]]
+    if len(names) > limit or not chosen or (chosen[-1] is None) != (len(names) < limit):
+        raise ContractError(
+            f"S2's chain of {len(names)} does not end where S2 stops it (at {limit} members, "
+            "or earlier on a step that chose nobody): S2 was edited"
+        )
     for step in s2["pick_steps"]:
         if step["chosen"] in barred:
             raise ContractError(f"S2 chose the ineligible {step['chosen']!r}")
@@ -883,7 +931,7 @@ def build_recipe(
         or names != [s2["primary"], *(c for c in chosen if c is not None)]
     ):
         raise ContractError("S2 members are not the chain of S1's leader and pick_steps[].chosen")
-    _check_eligibility(s2, s1)
+    _check_sealed(s2, s1, names)
     members = []
     for c in names:
         pins = {
