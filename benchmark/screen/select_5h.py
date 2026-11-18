@@ -220,6 +220,25 @@ def _reason(r: Mapping[str, Any], raw_dir: Path | None) -> str | None:
     return str(reason)
 
 
+def _one_normaliser(raws: Iterable[Any]) -> None:
+    """WO-D10-0V: the answers of one selection that went through a markup normaliser all name
+    the same one (S0 records on v1 and re-derived records on v2 are never mixed). An answer
+    without a ``metrics.normaliser`` block (a failure row, a candidate S0 did not run) names
+    none; a block without a digest refuses."""
+    seen: set[str] = set()
+    for raw in raws:
+        metrics = raw.get("metrics") if isinstance(raw, dict) else None
+        norm = metrics.get("normaliser") if isinstance(metrics, dict) else None
+        if norm is None:
+            continue
+        sha = norm.get("module_sha256") if isinstance(norm, dict) else None
+        if not isinstance(sha, str):
+            raise ContractError("a normaliser block names no module digest")
+        seen.add(sha)
+    if len(seen) > 1:
+        raise ContractError(f"the records mix {len(seen)} normalisers; one selection reads one")
+
+
 def dump(obj: Any) -> bytes:
     """The bytes a stage output is written as; identical inputs give identical bytes."""
     return canonical_json_bytes(obj)
@@ -325,11 +344,15 @@ def select_s1(
     raw_dir: Path | None = None,
 ) -> dict[str, Any]:
     """S1: mechanical outs (5H-12), leader on H, clear losers on H and R, keep rules (5H-16),
-    McNemar against the leader. ``raw_dir`` is read only for contract failures with stored
-    output, to class them by the failure.reason the page server answered with; such a record
-    without ``raw_dir`` is refused."""
+    McNemar against the leader. ``raw_dir`` is read for contract failures with stored output,
+    to class them by the failure.reason the page server answered with (such a record without
+    ``raw_dir`` is refused), and, when given, for the one-normaliser rule (WO-D10-0V)."""
     scope = _scope(guard, "dev", "tune")
     by = _check(records, scope)
+    if raw_dir is not None:
+        _one_normaliser(
+            json.loads(_read_raw(r, raw_dir)) for r in records if r["raw_sha256"] is not None
+        )
     if baseline not in by:
         raise ValueError(f"baseline {baseline!r} has no records")
     reasons = {c: {p: _reason(r, raw_dir) for p, r in pages.items()} for c, pages in by.items()}
@@ -417,11 +440,14 @@ def select_s1(
 def load_texts(records: Sequence[dict[str, Any]], raw_dir: Path) -> dict[str, str]:
     """raw_sha256 -> output text, read from run_screen's raw files; a changed byte refuses."""
     out: dict[str, str] = {}
+    raws: list[Any] = []
     for r in records:
         if r["raw_sha256"] is None:
             continue
         raw = json.loads(_read_raw(r, raw_dir))  # a non-object is a contract failure: no text
         out[r["raw_sha256"]] = str(raw.get("text") or "") if isinstance(raw, dict) else ""
+        raws.append(raw)
+    _one_normaliser(raws)
     return out
 
 
