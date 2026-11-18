@@ -52,17 +52,17 @@ RUN python3 -m pip install --break-system-packages "uv==0.13.4" \
     && echo "AKC listing, the last command of this step: uv pip list --format json (UNVERIFIED offline)" \
     && uv pip list --python /app/.venv/bin/python --format json
 
-# Import gate (WO-D10-0U): the import paddleocr_vl_service.py makes when the service loads
-# (`importlib.import_module("paddleocr").PaddleOCRVL`), so a module the install lacks fails the
-# build; and, from the C1 image's first launch (closing round), `paddle` itself (its core loads
-# libgomp.so.1, which the image lacked), `cv2` (opencv's shared libraries) and sentencepiece's
-# generated protobuf code (the line that raised VersionError against protobuf 6.33.4, reached
-# lazily from PaddleX's tokenizer). What PaddleX imports beyond that while it builds the pipeline
-# and runs a page is not determined without running the image: the lead's first-pod check is in
-# the README of mineru-pipeline-akc ("Import gate"). HOME points at a directory removed in the
-# same step, so no cache PaddleX writes stays in the image.
-RUN HOME=/tmp/akc-import-gate PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True \
-      /app/.venv/bin/python -c "import paddle, cv2, sentencepiece.sentencepiece_model_pb2; from paddleocr import PaddleOCRVL" \
+# Import gate (WO-D10-0U r3): what a CPU build runner can check, one line per measured defect of
+# the C1 image's first launch: the image's interpreter loads libgomp.so.1 by name (libpaddle.so
+# failed on it), imports cv2 (opencv's shared libraries) and sentencepiece's generated protobuf
+# code (VersionError against protobuf 6.33.4, reached lazily from PaddleX's tokenizer). Not
+# `import paddle` and not paddleocr: the GPU wheel's core needs libcuda.so.1, the driver library
+# the NVIDIA container runtime injects on a GPU host, so on the runner the import fails however
+# the image is built (run 44216487886). Those two imports are the pod preflight, which the lead's
+# launch script runs before the weights are downloaded (README of mineru-pipeline-akc, "Import
+# gate"). HOME points at a directory removed in the same step, so no cache stays in the image.
+RUN HOME=/tmp/akc-import-gate \
+      /app/.venv/bin/python -c "import ctypes; ctypes.CDLL('libgomp.so.1'); import cv2, sentencepiece.sentencepiece_model_pb2" \
     && rm -rf /tmp/akc-import-gate
 
 COPY infra/runpod/v6/images/mineru-pipeline-akc/mineru_akc_server.py \

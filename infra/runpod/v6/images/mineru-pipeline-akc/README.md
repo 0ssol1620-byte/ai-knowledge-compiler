@@ -6,7 +6,8 @@ the server side of the external-runner protocol the registered runners speak
 as a recipe says; no vendor code is in this repository. **Evaluation only.** None of this is the
 production endpoint, and the production endpoint is not used for benchmark load.
 
-Nothing here has been built, pushed or run on a pod.
+Built on GitHub Actions; no image recorded in the registry has served a page yet ("Open before
+real pages", below).
 
 | Slot | Recipe | Vendor command | Weights | Image |
 |---|---|---|---|---|
@@ -263,13 +264,19 @@ the command in its header; C3 is built on the C0 stage and inherits it once
 adds exactly accelerate and psutil).
 
 Each stage now imports, right after its install, the modules its recipe reaches by the first
-page, so a module the image lacks fails the build:
+page, so a module the image lacks fails the build. What only a GPU host can import (C1's paddle
+core needs `libcuda.so.1`, below) is the slot's **pod preflight** instead: a command, given here
+per slot, that the lead's launch script runs on the pod before the weights are downloaded and
+that stops the launch with `S0-OPERATIONAL-IMPORT` when it fails. Each preflight is the slot's
+build gate, verbatim and under the same interpreter, plus only the GPU-only imports (none for
+C0 and C3); the C0 preflight covers both C0 recipes (one image). It lives in this table, not in
+the recipes: a recipe's bytes are S0's config pin.
 
-| Stage | Imported at build | Where the list comes from |
-|---|---|---|
-| `c0` | `cv2`, `onnxruntime`, `mineru.cli.client`, `mineru.cli.fast_api`, `mineru.backend.pipeline.pipeline_analyze`, `mineru.backend.pipeline.batch_analyze`, `mineru.backend.pipeline.pipeline_middle_json_mkcontent` | the recipe's command and service (the `mineru` and `mineru-api` entry points), and the function-local imports of the pipeline path: `_process_pipeline` and `_process_output` in `mineru/cli/common.py`, `batch_image_analyze` in `pipeline_analyze.py`; and the locked wheels on that path that load shared libraries (closing round): opencv-python (libGL, GLib) and onnxruntime (the table recognisers under `mineru/model/table/rec`, the lock's only requirer of protobuf) |
-| `c3` | `accelerate`, `mineru.utils.table_merge`, `mineru_vl_utils.vlm_client.transformers_client`, `mineru_vl_utils.post_process.cross_page_table`, `transformers.AutoProcessor`, `transformers.Qwen2VLForConditionalGeneration` | `-b vlm-engine` resolves to `transformers` when vllm and lmdeploy are absent (`mineru/utils/engine_utils.py`); the transformers branch of `mineru/backend/vlm/vlm_analyze.py` (model class, processor, `device_map`); `MinerUClient` builds the transformers client and imports the cross-page merge, which imports `mineru.utils.table_merge` inside a `try` and would switch the merge off silently without it |
-| C1 (`../paddleocr-vl-akc`) | `paddle`, `cv2`, `sentencepiece.sentencepiece_model_pb2`, `paddleocr.PaddleOCRVL` | what `paddleocr_vl_service.py` imports when the service loads; and, from the C1 image's first launch (closing round), `paddle` (its core needs `libgomp.so.1`), opencv's shared libraries, and sentencepiece's generated protobuf code (it raised `VersionError` against protobuf 6.33.4 when PaddleX loaded the VLM tokenizer) |
+| Stage | Imported at build | Pod preflight (the lead's launch script, before the weights) | Where the list comes from |
+|---|---|---|---|
+| `c0` | `cv2`, `onnxruntime`, `mineru.cli.client`, `mineru.cli.fast_api`, `mineru.backend.pipeline.pipeline_analyze`, `mineru.backend.pipeline.batch_analyze`, `mineru.backend.pipeline.pipeline_middle_json_mkcontent` | `python -c "import cv2, onnxruntime, mineru.cli.client, mineru.cli.fast_api, mineru.backend.pipeline.pipeline_analyze, mineru.backend.pipeline.batch_analyze, mineru.backend.pipeline.pipeline_middle_json_mkcontent"` | the recipe's command and service (the `mineru` and `mineru-api` entry points), and the function-local imports of the pipeline path: `_process_pipeline` and `_process_output` in `mineru/cli/common.py`, `batch_image_analyze` in `pipeline_analyze.py`; and the locked wheels on that path that load shared libraries (closing round): opencv-python (libGL, GLib) and onnxruntime (the table recognisers under `mineru/model/table/rec`, the lock's only requirer of protobuf) |
+| `c3` | `accelerate`, `mineru.utils.table_merge`, `mineru_vl_utils.vlm_client.transformers_client`, `mineru_vl_utils.post_process.cross_page_table`, `transformers.AutoProcessor`, `transformers.Qwen2VLForConditionalGeneration` | `python -c "import accelerate, mineru.utils.table_merge, mineru_vl_utils.vlm_client.transformers_client, mineru_vl_utils.post_process.cross_page_table; from transformers import AutoProcessor, Qwen2VLForConditionalGeneration"` | `-b vlm-engine` resolves to `transformers` when vllm and lmdeploy are absent (`mineru/utils/engine_utils.py`); the transformers branch of `mineru/backend/vlm/vlm_analyze.py` (model class, processor, `device_map`); `MinerUClient` builds the transformers client and imports the cross-page merge, which imports `mineru.utils.table_merge` inside a `try` and would switch the merge off silently without it |
+| C1 (`../paddleocr-vl-akc`) | `ctypes` loading `libgomp.so.1` by name, `cv2`, `sentencepiece.sentencepiece_model_pb2` | `PADDLE_PDX_DISABLE_MODEL_SOURCE_CHECK=True /app/.venv/bin/python -c "import ctypes; ctypes.CDLL('libgomp.so.1'); import cv2, sentencepiece.sentencepiece_model_pb2; import paddle; from paddleocr import PaddleOCRVL"` | at build, one line per defect the C1 image's first launch measured (closing round): the library `libpaddle.so` failed on (`libgomp.so.1`), opencv's shared libraries, and sentencepiece's generated protobuf code (it raised `VersionError` against protobuf 6.33.4 when PaddleX loaded the VLM tokenizer); on the pod, also `paddle` and what `paddleocr_vl_service.py` imports when the service loads (`paddleocr.PaddleOCRVL`), which need the GPU host's driver library (r3, below) |
 
 Every gate runs with `HOME` pointed at a directory the same `RUN` removes, so no cache an import
 writes is left in a layer.
@@ -286,8 +293,8 @@ and used only for an `npu` device; `boto3`/`botocore` belong to the S3 reader an
 in any file read on this path (the transformers branch passes no `attn_implementation`).
 
 **C1: the chain is not determined without running the image.** The service's own import is
-gated; what PaddleX imports while it builds the pipeline (at service start, before `/health` is
-200) and while it runs a page is not. The lead's check on the first C1 pod, before any corpus
+the pod preflight's; what PaddleX imports while it builds the pipeline (at service start, before
+`/health` is 200) and while it runs a page is not. The lead's check on the first C1 pod, before any corpus
 page: a synthetic one-page PDF through `POST /parse` with the recipe, which must return a
 transcription row (an import failure in the service's trace is now answered `503 image_defect`
 by the server itself, never as `pipeline_raised`).
@@ -317,6 +324,23 @@ apt line and one pin, `protobuf==7.36.1`, in the PyPI install:
   `libgomp1`. Production's own Dockerfile (`workers/gpu-parser`) has the same two-step install
   and apt list and is not changed by this work order.
 
+### The C1 gate on a CPU build runner (r3)
+
+Run 44216487886 (source `b5b349f`) built C0 and C3, their gates passing on the runner, and failed
+C1's job at its gate: `import paddle` raised `ImportError: libcuda.so.1: cannot open shared object
+file` (`Error: Can not import paddle core while this file exists: …/paddle/base/libpaddle.so`).
+The import got past `libgomp.so.1` (the apt package is in) and stopped at `libcuda.so.1`, the
+driver library the NVIDIA container runtime injects on a GPU host; it is not on the runner and is
+not something the image ships. So `import paddle`, and `from paddleocr import PaddleOCRVL`, which
+imports it, cannot be a build-time check of the GPU wheel. The build gate now checks each
+measured defect by itself (`libgomp.so.1` loaded by name with `ctypes`, `cv2`, sentencepiece's
+generated code) and the two GPU-only imports are C1's pod preflight (table above).
+
+A stricter build check was considered and not added: that every library `libpaddle.so` needs
+and the loader cannot find on the runner is on a short named list of driver libraries. The
+failed log names only the first unresolved library (`libcuda.so.1`), and the package listings
+name packages, not ELF dependencies, so the list could not be shown without running the image.
+
 ### C0 and C3: generated protobuf code and system libraries (closing round)
 
 - Generated protobuf code: the C0 lock carries `protobuf==7.35.1`, required by onnxruntime alone;
@@ -338,13 +362,14 @@ apt line and one pin, `protobuf==7.36.1`, in the PyPI install:
 
 ## Open before real pages (not checked here)
 
-- The three images are built (GitHub Actions run 44145574050, source commit 9754168c, digests
-  in their registry blocks). C0's launched once and failed its first page, C1's launched once
-  and failed to load (above); all three digests carry `not_serving` in their registry blocks
-  until the rebuilt digests are recorded. C3 has not been launched. The weights, the launch checks and the server's behaviour
-  on a page are verified only by a launch; the import gates of WO-D10-0U have not run (no build
-  since). The C1 image's transitive packages are known only from its package listing and build
-  log (hashes in its registry block).
+- C0 and C3 were rebuilt by GitHub Actions run 44216487886 (source commit b5b349f), their
+  import gates passing on the runner; neither rebuilt image has been launched, and both carry
+  `not_serving` ("rebuilt in run 44216487886; not yet launched") until a page has been served.
+  C1's recorded image is still the first build (run 44145574050, source 9754168c), which
+  launched once and failed to load (above), and keeps its `not_serving`; its rebuild with the
+  r3 gate has not run. The weights, the launch checks and the server's behaviour on a page are
+  verified only by a launch. The C1 image's transitive packages are known only from its package
+  listing and build log (hashes in its registry block).
 - C3's runner key `mineru_vlm` is registered (`benchmark/runners/registry.py`, round 2).
 - "No outbound request at inference" is configured (`HF_HUB_OFFLINE`, `TRANSFORMERS_OFFLINE`,
   `MINERU_MODEL_SOURCE=local`), not proven. PaddleX may check its model hosters at import; A0 runs

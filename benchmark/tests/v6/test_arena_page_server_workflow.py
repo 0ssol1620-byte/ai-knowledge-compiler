@@ -501,26 +501,58 @@ def _stages(dockerfile: Path) -> dict[str, list[str]]:
     return stages
 
 
-def _gate(dockerfile: Path, stage: str) -> str:
+def _gate_run(dockerfile: Path, stage: str) -> str:
     (run,) = [s for s in _stages(dockerfile)[stage] if s.startswith("RUN ") and ' -c "' in s]
-    return run.split(' -c "', 1)[1].split('"', 1)[0]
+    return run
 
 
-def _gate_imports(code: str) -> list[tuple[str, list[str]]]:
-    """(module, names) per import in the gate; anything but an import statement fails."""
-    out: list[tuple[str, list[str]]] = []
+def _gate(dockerfile: Path, stage: str) -> str:
+    return _gate_run(dockerfile, stage).split(' -c "', 1)[1].split('"', 1)[0]
+
+
+# A shared library loaded by name (WO-D10-0U r3: C1's libgomp.so.1, the library libpaddle.so
+# failed on at the first launch), in the form a gate inside `-c "..."` can carry.
+_LIBRARY = re.compile(r"ctypes\.CDLL\('([\w.+-]+)'\)")
+
+
+def _gate_statements(code: str) -> tuple[list[tuple[str, list[str]]], list[str]]:
+    """(module, names) per import, and the libraries loaded by name; anything else fails."""
+    imports: list[tuple[str, list[str]]] = []
+    libraries: list[str] = []
     for statement in (s.strip() for s in code.split(";")):
         if statement.startswith("import "):
-            out += [(module.strip(), []) for module in statement[7:].split(",")]
+            imports += [(module.strip(), []) for module in statement[7:].split(",")]
+            continue
+        library = _LIBRARY.fullmatch(statement)
+        if library:
+            libraries.append(library[1])
             continue
         match = re.fullmatch(r"from ([\w.]+) import ([\w, ]+)", statement)
-        assert match, f"not an import statement: {statement!r}"
-        out.append((match[1], [name.strip() for name in match[2].split(",")]))
-    return out
+        assert match, f"not an import or a library load: {statement!r}"
+        imports.append((match[1], [name.strip() for name in match[2].split(",")]))
+    return imports, libraries
+
+
+def _names(code: str) -> set[str]:
+    """What the code imports and loads: each module, each name taken from a module as
+    module.name, and each library loaded by name."""
+    imports, libraries = _gate_statements(code)
+    return (
+        {m for m, names in imports if not names}
+        | {f"{m}.{n}" for m, names in imports for n in names}
+        | set(libraries)
+    )
+
+
+def _is_stdlib(module: str) -> bool:
+    return module.split(".")[0] in sys.stdlib_module_names
 
 
 # Each stage's gate is exactly this list, which is also the README's table (closing round: a
-# name dropped from a gate, or a table that says more than the gate runs, fails).
+# name dropped from a gate, or a table that says more than the gate runs, fails). C1's gate
+# checks what a CPU build runner can check (WO-D10-0U r3, lead decision A): `import paddle`
+# needs libcuda.so.1, the driver library the NVIDIA runtime injects on a GPU host, so paddle
+# and paddleocr are imported by the pod preflight instead (_GPU_ONLY).
 _GATES = [
     (
         _IMAGES / "mineru-pipeline-akc/Dockerfile",
@@ -553,19 +585,34 @@ _GATES = [
         _IMAGES / "paddleocr-vl-akc/Dockerfile",
         "",
         "uv pip install",
-        {"paddle", "cv2", "sentencepiece.sentencepiece_model_pb2", "paddleocr.PaddleOCRVL"},
+        {"ctypes", "libgomp.so.1", "cv2", "sentencepiece.sentencepiece_model_pb2"},
     ),
 ]
+# What only a GPU host can import, so the pod's preflight imports it and the build does not
+# (lead decision B): C1's service import and the paddle core it loads.
+_GPU_ONLY = {"c0": set[str](), "c3": set[str](), "": {"paddle", "paddleocr.PaddleOCRVL"}}
 _README = _IMAGES / "mineru-pipeline-akc/README.md"
 _README_ROW = {"c0": "| `c0` |", "c3": "| `c3` |", "": "| C1 (`../paddleocr-vl-akc`) |"}
 
 
-def _gate_names(dockerfile: Path, stage: str) -> set[str]:
-    """What the gate imports: each module, and each name taken from a module as module.name."""
-    imports = _gate_imports(_gate(dockerfile, stage))
-    return {m for m, names in imports if not names} | {
-        f"{m}.{n}" for m, names in imports for n in names
-    }
+def _readme_cells(stage: str) -> list[str]:
+    (row,) = [
+        line
+        for line in _README.read_text(encoding="utf-8").splitlines()
+        if line.startswith(_README_ROW[stage])
+    ]
+    return row.split("|")
+
+
+def _preflight(stage: str) -> str:
+    """The pod preflight the README's row gives the lead (the "Pod preflight" column)."""
+    commands: list[str] = re.findall(r"`([^`]+)`", _readme_cells(stage)[3])
+    (command,) = commands
+    return command
+
+
+# `[VAR=value ...] <python> -c "<code>"` and nothing after it.
+_COMMAND = re.compile(r'((?:[A-Z_]+=\S+ )*)(\S+) -c "([^"]*)"')
 
 
 @pytest.mark.parametrize(("dockerfile", "stage", "install", "required"), _GATES)
@@ -576,32 +623,48 @@ def test_each_stage_imports_its_recipes_path_after_its_install(
     installs = [i for i, s in enumerate(steps) if s.startswith("RUN ") and install in s]
     gates = [i for i, s in enumerate(steps) if s.startswith("RUN ") and ' -c "' in s]
     assert installs and len(gates) == 1 and gates[0] > max(installs), (stage, steps)
-    assert _gate_names(dockerfile, stage) == required
+    assert _names(_gate(dockerfile, stage)) == required
 
 
 @pytest.mark.parametrize(("dockerfile", "stage", "install", "required"), _GATES)
 def test_the_readme_table_lists_exactly_what_each_gate_imports(
     dockerfile: Path, stage: str, install: str, required: set[str]
 ) -> None:
-    (row,) = [
-        line
-        for line in _README.read_text(encoding="utf-8").splitlines()
-        if line.startswith(_README_ROW[stage])
-    ]
-    imported = row.split("|")[2]  # the "Imported at build" column
+    imported = _readme_cells(stage)[2]  # the "Imported at build" column
     assert set(re.findall(r"`([\w.]+)`", imported)) == required
+
+
+@pytest.mark.parametrize(("dockerfile", "stage"), [(g[0], g[1]) for g in _GATES])
+def test_the_pod_preflight_is_the_build_gate_plus_only_what_needs_a_gpu(
+    dockerfile: Path, stage: str
+) -> None:
+    """Lead decision B: the README gives each slot a preflight the launch script runs before
+    the weights. It is the build gate's own line, verbatim and first, under the same
+    interpreter, plus only the GPU-only imports (none for C0 and C3); the build gate holds none
+    of those."""
+    match = _COMMAND.fullmatch(_preflight(stage))
+    assert match, _preflight(stage)
+    gate_code = _gate(dockerfile, stage)
+    gate_python = _gate_run(dockerfile, stage).split(' -c "', 1)[0].split()[-1]
+    assert match[2] == gate_python
+    assert match[3].startswith(gate_code)
+    assert _names(match[3]) == _names(gate_code) | _GPU_ONLY[stage]
+    assert _names(gate_code).isdisjoint(_GPU_ONLY[stage])
+    if not _GPU_ONLY[stage]:
+        assert match[3] == gate_code
 
 
 @pytest.mark.parametrize(("dockerfile", "stage"), [(g[0], g[1]) for g in _GATES])
 def test_each_gate_keeps_no_cache_in_a_layer(dockerfile: Path, stage: str) -> None:
     """HOME points at a directory the same RUN removes, after the import succeeded."""
-    (run,) = [s for s in _stages(dockerfile)[stage] if s.startswith("RUN ") and ' -c "' in s]
+    run = _gate_run(dockerfile, stage)
     assert run.startswith("RUN HOME=/tmp/akc-import-gate "), run
     assert run.endswith(" && rm -rf /tmp/akc-import-gate"), run
 
 
-# How a broken module fails: an import of a module nobody installs (C0's six), and generated
-# protobuf code whose runtime check raises (C1's sentencepiece_model_pb2: not an ImportError).
+# How a broken module fails: an import of a module nobody installs (C0's six), generated
+# protobuf code whose runtime check raises (C1's sentencepiece_model_pb2: not an ImportError),
+# and the module itself not installed (C1's cv2 in r3's list).
 _BREAKAGES = {
     "absent": (
         "import akc_gate_test_absent_module\n",
@@ -612,53 +675,125 @@ _BREAKAGES = {
         "raise VersionError('Detected incompatible Protobuf Gencode/Runtime versions')\n",
         "VersionError: Detected incompatible Protobuf Gencode/Runtime versions",
     ),
+    "missing": ("", "No module named '{module}'"),
 }
 
 
 def _fake_tree(
     root: Path, imports: list[tuple[str, list[str]]], broken: str | None, how: str = "absent"
 ) -> None:
-    """Each module the gate names as a package; ``broken`` fails the way ``how`` names."""
-    for module, _ in imports:
+    """Each module the gate names as a package (the standard library's own are left to the
+    interpreter); ``broken`` fails the way ``how`` names."""
+    own = [(m, names) for m, names in imports if not _is_stdlib(m)]
+    for module, _ in own:
         parts = module.split(".")
         for depth in range(1, len(parts) + 1):
             package = root.joinpath(*parts[:depth])
             package.mkdir(exist_ok=True)
             (package / "__init__.py").touch()
-    for module, names in imports:
+    for module, names in own:
         body = "".join(f"{name} = None\n" for name in names)
         if module == broken:
             body = _BREAKAGES[how][0] + body
         (root.joinpath(*module.split(".")) / "__init__.py").write_text(body, encoding="utf-8")
+    if broken is not None and how == "missing":
+        shutil.rmtree(root.joinpath(*broken.split(".")))
+
+
+def _loader_stand_in(present: list[str]) -> str:
+    """Code that makes ctypes.CDLL load exactly ``present`` and refuse any other name the way
+    the dynamic loader does; the build runner's loader is not this machine's."""
+    return (
+        "import ctypes\n"
+        "def _akc_load(name, *args, **kwargs):\n"
+        f"    if name not in {present!r}:\n"
+        "        raise OSError(\n"
+        "            name + ': cannot open shared object file: No such file or directory')\n"
+        "ctypes.CDLL = _akc_load\n"
+    )
+
+
+def _codes() -> list[Any]:
+    """Every gate, and every pod preflight, as code the class tests run."""
+    out = []
+    for dockerfile, stage, _, _ in _GATES:
+        out.append(pytest.param(_gate(dockerfile, stage), id=f"build-{stage or 'c1'}"))
+        match = _COMMAND.fullmatch(_preflight(stage))
+        assert match, stage
+        out.append(pytest.param(match[3], id=f"preflight-{stage or 'c1'}"))
+    return out
+
+
+def _run_code(code: str, tree: Path, present: list[str]) -> subprocess.CompletedProcess[str]:
+    """Run ``code`` where only the standard library and ``tree`` can be imported (``-S``: no
+    site-packages, so a module this host happens to have installed cannot stand in for one the
+    tree leaves out)."""
+    prefix = f"import sys\nsys.path.insert(0, {str(tree)!r})\n" + _loader_stand_in(present)
+    return subprocess.run(
+        [sys.executable, "-I", "-S", "-c", prefix + code],
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
 
 
 @pytest.mark.parametrize("how", sorted(_BREAKAGES))
-@pytest.mark.parametrize(("dockerfile", "stage"), [(g[0], g[1]) for g in _GATES])
+@pytest.mark.parametrize("code", _codes())
 def test_the_gate_fails_on_a_missing_import_inside_any_module_it_names(
-    tmp_path: Path, dockerfile: Path, stage: str, how: str
+    tmp_path: Path, code: str, how: str
 ) -> None:
-    """The gate's own code, on a synthetic tree of the modules it names: it passes when every
-    module imports, and exits non-zero when any one of them imports a module that is absent
-    (a check that only looks a module up, such as ``find_spec``, would pass that)."""
-    code = _gate(dockerfile, stage)
-    imports = _gate_imports(code)
+    """The gate's own code (and each preflight's), on a synthetic tree of the modules it
+    names: it passes when every module imports and every library loads, and exits non-zero
+    when any one module imports an absent module, raises a non-ImportError at import, or is
+    not installed (a check that only looks a module up, such as ``find_spec``, would pass the
+    first two), and when any library it names cannot be loaded."""
+    imports, libraries = _gate_statements(code)
 
-    def run(broken: str | None) -> subprocess.CompletedProcess[str]:
-        tree = tmp_path / (broken or "whole")
+    def run(broken: str | None, missing_library: str | None = None) -> Any:
+        tree = tmp_path / f"{broken or 'whole'}-{missing_library or 'all'}"
         tree.mkdir()
         _fake_tree(tree, imports, broken, how)
-        prefix = f"import sys; sys.path.insert(0, {str(tree)!r}); "
-        return subprocess.run(
-            [sys.executable, "-I", "-c", prefix + code],
-            capture_output=True,
-            text=True,
-            timeout=60,
-            check=False,
-        )
+        return _run_code(code, tree, [lib for lib in libraries if lib != missing_library])
 
     whole = run(None)
     assert whole.returncode == 0, whole.stderr
     for module, _ in imports:
+        if _is_stdlib(module):
+            continue
         result = run(module)
         assert result.returncode != 0, module
-        assert _BREAKAGES[how][1] in result.stderr, module
+        assert _BREAKAGES[how][1].format(module=module) in result.stderr, module
+    for library in libraries:
+        result = run(None, library)
+        assert result.returncode != 0, library
+        assert f"{library}: cannot open shared object file" in result.stderr, library
+
+
+def test_the_c1_gate_fails_through_the_real_loader_on_a_library_it_cannot_find(
+    tmp_path: Path,
+) -> None:
+    """The C1 gate's library line through the real ctypes and the real loader of this machine
+    (no stand-in), with the name swapped for one nobody ships: the gate exits non-zero naming
+    it. libgomp.so.1 itself is not asserted absent here: on a Linux test host it exists."""
+    code = _gate(_IMAGES / "paddleocr-vl-akc/Dockerfile", "")
+    imports, libraries = _gate_statements(code)
+    assert libraries == ["libgomp.so.1"]
+    absent = "libakc_gate_test_absent.so.1"
+    _fake_tree(tmp_path, imports, None)
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-I",
+            "-S",
+            "-c",
+            f"import sys; sys.path.insert(0, {str(tmp_path)!r}); "
+            + code.replace("'libgomp.so.1'", repr(absent)),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=60,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert absent in result.stderr
