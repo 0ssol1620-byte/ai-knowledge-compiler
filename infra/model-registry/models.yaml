@@ -63,24 +63,20 @@ releases:
       # orientation and unwarping switched off by option. Round 3: a loopback service
       # (paddleocr_vl_service.py) keeps the object loaded, as production does, so the models
       # load once at start and a page's time is its request (receipt includes_model_load:
-      # false). Built by GitHub Actions run 44145574050 from source_commit; the image
-      # is still evaluation-only (enabled: false, zero traffic): the text of
-      # paddlepaddle-gpu 3.2.1's licence files is uncleared (docs/ip intake row).
+      # false). Rebuilt by GitHub Actions run 44226313508 from source_commit (libgomp1 and
+      # protobuf 7.36.1, after the first build of run 44145574050 failed to load); that image
+      # served the 99 dev pages of S0 (receipts/d10-screen-v1/S0/C1/s0-summary.json). It is
+      # still evaluation-only (enabled: false, zero traffic): the text of paddlepaddle-gpu
+      # 3.2.1's licence files is uncleared (docs/ip intake row).
       serving:
         enabled: false
-        image: "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/arena-paddleocr-vl-akc@sha256:58ea9013f47ccaace013f6df86faeeac0870365bfa4fdf186913748e0866137f"
+        image: "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/arena-paddleocr-vl-akc@sha256:7abc709407612a9426be695d19c2a998f10dd597eaeb2c6dda3ac47964c285b5"
         image_build: infra/runpod/v6/images/paddleocr-vl-akc/Dockerfile
         built: true
-        # WO-D10-0U (closing round): the build completed, but its first launch failed; not to
-        # be launched until the lead records the rebuilt digest (validate_registry.py binds
-        # not_serving to this image).
-        not_serving:
-          image: "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/arena-paddleocr-vl-akc@sha256:58ea9013f47ccaace013f6df86faeeac0870365bfa4fdf186913748e0866137f"
-          reason: "First launch failed (pod iudz8ckctjubfx, 2026-11-18): both weight sets downloaded and checked, then the service did not load, before any page. Two causes, both in the image: (1) libgomp.so.1 is not installed (ImportError at import paddle; the apt list has no libgomp1); (2) protobuf 6.33.4 against sentencepiece 0.2.3, whose generated code needs runtime 7.36.1 or newer (google.protobuf.runtime_version.VersionError when the VLM tokenizer loads). uv pip check passed: sentencepiece declares no protobuf requirement."
-        source_commit: "9754168c92969e17a12c3877c3c0ba44de690918"
-        workflow_run_id: "44145574050"
-        package_listing_sha256: "sha256:ed9a4ef84920eeaad56fb3e2c04c658a3bcb95943d639f745852f6779516d729"
-        build_log_sha256: "sha256:04a8c087430c495e37972e35ff7044f9c7bb6dca8d02b7a37dfd0efa8c357681"
+        source_commit: "c8d85435bf1cead0a8285d1236d071c305d3fcd1"
+        workflow_run_id: "44226313508"
+        package_listing_sha256: "sha256:ac0f0c54a3ff5569a98eeda781e65ccbf7ebb258eba9329cc7c24a020eb8d97f"
+        build_log_sha256: "sha256:e984ea56c4de7996d73c9e50002f371af4c1db95fb7820d451ac214da1a65385"
         recipes: [c1-paddleocr-vl]
         default_recipe: c1-paddleocr-vl
         runner: paddleocr_vl_1_6
@@ -338,13 +334,10 @@ releases:
         image_build: infra/runpod/v6/images/mineru-pipeline-akc/Dockerfile
         image_target: c3
         built: true
-        # WO-D10-0U r3: rebuilt by run 44216487886 from b5b349f (six in the C0 layer, both
-        # stages' import gates passed on the build runner); not launched yet, so marked until
-        # a page has been served (the lead removes the mark in the ledger-recorded follow-up).
-        # The previous build (78146880..., run 44145574050) lacked six and was never launched.
-        not_serving:
-          image: "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/arena-mineru-pipeline-akc-c3@sha256:00a88750fca76b492ac84cea4e95ae30afb96fe4af041ae7219af6a317debdba"
-          reason: "rebuilt in run 44216487886; not yet launched"
+        # WO-D10-0U r3: rebuilt by run 44216487886 from b5b349f; this image served the 99 dev
+        # pages of S0 (receipts/d10-screen-v1/S0/C3/s0-summary.json), so its not_serving
+        # mark is removed (WO-D10-0X). Run 44226313508 rebuilt this slot again from c8d8543;
+        # that image is not the one recorded here and has served no page.
         source_commit: "b5b349f1897d3f0d34a9ce749e358835d31f44d3"
         workflow_run_id: "44216487886"
         package_listing_sha256: "sha256:88ed42f2dddadbc33b2cc74c4c7c4bd3d8837c0eb04ea7797219a977139b83cc"
@@ -412,13 +405,10 @@ releases:
         image_build: infra/runpod/v6/images/mineru-pipeline-akc/Dockerfile
         image_target: c0
         built: true
-        # WO-D10-0U r3: rebuilt by run 44216487886 from b5b349f (six in the lock, the import
-        # gate passed on the build runner); not launched yet, so marked until a page has been
-        # served (the lead removes the mark in the ledger-recorded follow-up). The previous
-        # build (c798e46e..., run 44145574050) failed its first page on the missing six.
-        not_serving:
-          image: "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/arena-mineru-pipeline-akc-c0@sha256:e89143bcc86d7dc0b2c9e105cf01c0fed85b7801299d2eecb7adc3414f2f615b"
-          reason: "rebuilt in run 44216487886; not yet launched"
+        # WO-D10-0U r3: rebuilt by run 44216487886 from b5b349f; this image served the 99 dev
+        # pages of S0 (receipts/d10-screen-v1/S0/C0/s0-summary.json), so its not_serving
+        # mark is removed (WO-D10-0X). Run 44226313508 rebuilt this slot again from c8d8543;
+        # that image is not the one recorded here and has served no page.
         source_commit: "b5b349f1897d3f0d34a9ce749e358835d31f44d3"
         workflow_run_id: "44216487886"
         package_listing_sha256: "sha256:e07368593ef1b8f4ed058f9b6cb030a2d5b2e754cfd40d497ae095a3a40fee2c"

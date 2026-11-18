@@ -25,7 +25,7 @@ from benchmark.screen import select_5h as s5
 from benchmark.screen.critical_fields import score_critical_fields
 from benchmark.screen.manifest import HoldoutGuard, HoldoutSealedError
 from benchmark.screen.run_screen import Candidate, run_screen
-from benchmark.v6.contracts import ContractError
+from benchmark.v6.contracts import ContractError, canonical_sha256
 
 H_PAGES = [f"h{i:02d}.pdf#0" for i in range(20)]
 R_PAGES = [f"r{i:02d}.pdf#0" for i in range(10)]
@@ -1186,3 +1186,187 @@ def test_s3_refuses_a_member_without_records_before_the_guard_is_touched(
             recipe=recipe,
         )
     assert not (tmp_path / "holdout-access.jsonl").exists()
+
+
+# ---------------------------------------------------------------- WO-D10-0X (5H-13)
+
+# L misses HF 0-7; B rescues HF 0-3 cheaply, C all eight at five times the cost, D's cost is
+# unknown. Unbarred, S2 picks L, B, C; with B ineligible it must go on to C.
+_BAR_PLANS = {
+    "L": wrong(HF[:8]),
+    "B": wrong(HF[4:15], 2),
+    "C": wrong(HF[20:30], 3),
+    "D": wrong(HF[30:40], 4),
+    "C0": wrong(HF) | wrong(RF),
+}
+_BAR_COST = {"L": 0.01, "B": 0.02, "C": 0.10, "D": None, "C0": 0.01}
+_WHY = "weights repository has no LICENSE at the pinned revision; publisher not verified"
+
+
+def _bar_world(
+    tmp_path: Path,
+) -> tuple[list[dict[str, Any]], dict[str, str], HoldoutGuard, dict[str, Any]]:
+    recs, texts = world(_BAR_PLANS, cost=_BAR_COST)
+    g = guard(tmp_path)
+    return recs, texts, g, s5.select_s1(recs, guard=g, baseline="C0")
+
+
+def _option(s2: dict[str, Any], step: int, cand: str) -> dict[str, Any]:
+    return next(o for o in s2["pick_steps"][step]["options"] if o["candidate"] == cand)
+
+
+def test_s2_without_ineligible_is_byte_identical_to_before_5h13(tmp_path: Path) -> None:
+    """The digests were taken from select_5h at aebcd1d (sha256 825f63cc..., the code
+    S2/s2.json was computed with), before the parameter existed."""
+    pinned = {
+        "bar": (
+            _BAR_PLANS,
+            _BAR_COST,
+            "d4488ab650bf7ea3def933668267ff0b785c824ea810b478bc6bbf9e84c7276a",
+        ),
+        "stop": (
+            {
+                "L": wrong(HF[:8]),
+                "cheap": wrong(HF[2:8], 2) | wrong(HF[20:30], 3),
+                "dear": wrong(HF[:3], 2) | wrong(HF[20:30], 3),
+                "C0": wrong(HF) | wrong(RF),
+            },
+            {"L": 0.01, "cheap": 0.001, "dear": 0.5, "C0": 0.01},
+            "ec3589dc909ea5dd2df508f3bf1074df9eaffe473198628549e3b869fd7c9499",
+        ),
+    }
+    for name, (plans, cost, digest) in pinned.items():
+        recs, texts = world(plans, cost=cost)
+        g = guard(tmp_path)
+        s1 = s5.select_s1(recs, guard=g, baseline="C0")
+        nones: list[dict[str, Any]] = [{}, {"ineligible": None}, {"ineligible": {}}]
+        for none in nones:
+            out = s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1, **none)
+            assert hashlib.sha256(s5.dump(out)).hexdigest() == digest, (name, none)
+            assert "ineligible" not in out and "s2_sha256" not in out
+
+
+def test_an_ineligible_candidate_is_measured_marked_and_never_chosen(tmp_path: Path) -> None:
+    recs, texts, g, s1 = _bar_world(tmp_path)
+    free = s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1)
+    assert free["members"] == ["L", "B", "C"]
+    out = s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1, ineligible={"B": _WHY})
+    assert out["members"] == ["L", "C"]  # the rule's next option takes B's place
+    assert out["matrix"] == free["matrix"]  # B stays in the rescue matrix
+    # B in every step with its measured marginal and cost, marked, never chosen.
+    assert _option(out, 0, "B") == {**_option(free, 0, "B"), "excluded": "ineligible"}
+    assert (_option(out, 0, "B")["marginal_fields"], _option(out, 0, "B")["cost_per_page_usd"]) == (
+        4,
+        0.02,
+    )
+    assert _option(out, 0, "C") == _option(free, 0, "C")
+    assert _option(out, 0, "C")["excluded"] is None
+    assert [s["chosen"] for s in out["pick_steps"]] == ["C", None]
+    # The next step is computed against the members chosen (L, C), not L, B: nothing is left
+    # missed, and ineligibility is the reason shown over every other.
+    assert out["pick_steps"][1]["fields_missed_by_members"] == 0
+    assert free["pick_steps"][1]["fields_missed_by_members"] == 4
+    assert _option(out, 1, "B")["marginal_fields"] == 0
+    assert _option(out, 1, "B")["excluded"] == "ineligible"
+    assert _option(out, 1, "D")["excluded"] == "marginal_below_minimum"
+    # Recorded inside the body its own digest covers.
+    assert out["ineligible"] == {"B": _WHY}
+    body = {k: v for k, v in out.items() if k != "s2_sha256"}
+    assert out["s2_sha256"] == canonical_sha256(body)
+
+
+@pytest.mark.parametrize(
+    ("ineligible", "match"),
+    [
+        ({"C5": _WHY}, "not in S1's kept"),  # no such candidate
+        ({7: _WHY}, "not in S1's kept"),
+        ({"L": _WHY}, "primary 'L' is named ineligible: stop and report"),
+        ({"B": ""}, "non-empty reason"),
+        ({"B": "   "}, "non-empty reason"),
+        ({"B": None}, "non-empty reason"),
+        ({"B": 7}, "non-empty reason"),
+        ({"B": "x" * (s5.MAX_INELIGIBLE_REASON + 1)}, "non-empty reason"),
+        (["B"], "not a mapping"),
+        ("B", "not a mapping"),
+    ],
+)
+def test_s2_refuses_an_ineligible_it_cannot_honour(
+    tmp_path: Path, ineligible: Any, match: str
+) -> None:
+    recs, texts, g, s1 = _bar_world(tmp_path)
+    with pytest.raises(ContractError, match=match):
+        s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1, ineligible=ineligible)
+
+
+def test_s2_refuses_a_dropped_candidate_as_ineligible(tmp_path: Path) -> None:
+    """A candidate S1 dropped is not in kept, although it has records."""
+    plans = {f"c{i}": wrong(HF[:i]) for i in range(7)}
+    plans["C0"] = wrong(HF[:20]) | wrong(RF[:10])
+    recs, texts = world(plans)
+    g = guard(tmp_path)
+    s1 = s5.select_s1(recs, guard=g, baseline="C0")
+    assert "c5" in s1["dropped"]
+    with pytest.raises(ContractError, match="not in S1's kept"):
+        s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1, ineligible={"c5": _WHY})
+
+
+def test_recipe_refuses_an_s2_whose_eligibility_was_edited(tmp_path: Path) -> None:
+    recs, texts, g, s1 = _bar_world(tmp_path)
+    s2 = s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1, ineligible={"B": _WHY})
+    args: dict[str, Any] = {
+        "records": recs,
+        "s1": s1,
+        "escalate_on": ["disagreement"],
+        "degradation": {"seed": 1, "parameters": {}},
+        "scoring_commit": "1" * 40,
+        "section_sha256": "sha256:" + "2" * 64,
+    }
+    recipe = s5.build_recipe(**args, s2=s2)
+    assert recipe["member_order"] == ["L", "C"]
+    # S3 reads S2 only through the recipe, whose digest binds the S2 bytes, ineligible included.
+    assert recipe["s2_matrix_sha256"] == canonical_sha256(s2)
+
+    def sealed(edit: dict[str, Any]) -> dict[str, Any]:
+        """An edit whose author also recomputed s2_sha256."""
+        body = {k: v for k, v in edit.items() if k != "s2_sha256"}
+        return {**body, "s2_sha256": canonical_sha256(body)}
+
+    unmarked = copy.deepcopy(s2["pick_steps"])
+    for step in unmarked:
+        for o in step["options"]:
+            if o["candidate"] == "B":
+                o["excluded"] = None
+    chose_b = copy.deepcopy(s2["pick_steps"])
+    chose_b[0]["chosen"] = "B"
+    no_record = {k: v for k, v in s2.items() if k != "ineligible"}
+    no_seal = {k: v for k, v in s2.items() if k not in ("ineligible", "s2_sha256")}
+    edits: dict[str, tuple[dict[str, Any], str]] = {
+        "reason edited": ({**s2, "ineligible": {"B": "settled"}}, "S2 was edited"),
+        "record dropped": (no_record, "S2 was edited"),
+        "record and seal dropped": (no_seal, "marks 'B' against its ineligible record"),
+        "another id, resealed": (
+            sealed({**s2, "ineligible": {"B": _WHY, "D": _WHY}}),
+            "marks 'D' against its ineligible record",
+        ),
+        "mark removed, resealed": (
+            sealed({**s2, "pick_steps": unmarked}),
+            "marks 'B' against its ineligible record",
+        ),
+        "primary, resealed": (sealed({**s2, "ineligible": {"L": _WHY}}), "stop and report"),
+        "empty record, resealed": (
+            sealed({**s2, "ineligible": {}}),
+            "no well-formed ineligible",
+        ),
+        "chose B, resealed": (
+            sealed({**s2, "pick_steps": chose_b, "members": ["L", "B"]}),
+            "chose the ineligible 'B'",
+        ),
+    }
+    for edited, match in edits.values():
+        with pytest.raises(ContractError, match=match):
+            s5.build_recipe(**args, s2=edited)
+    # An S2 computed without ineligible carries no seal; one added afterwards is refused.
+    free = s5.complementarity_s2(recs, texts, GOLD, guard=g, s1=s1)
+    assert s5.build_recipe(**args, s2=free)["member_order"] == ["L", "B", "C"]
+    with pytest.raises(ContractError, match="no well-formed ineligible"):
+        s5.build_recipe(**args, s2=sealed(free))
