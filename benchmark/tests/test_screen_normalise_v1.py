@@ -7,10 +7,12 @@ and rank nothing. The other fixtures are constructed strings.
 
 from __future__ import annotations
 
-import gc
 import hashlib
+import json
+import math
 import re
-import time
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -323,21 +325,52 @@ def _shape(name: str, size: int) -> str:
     return body
 
 
+# The timed call runs in a fresh isolated interpreter, on the file of the module imported above.
+# Measured (WO-D10-0T, 2026-11-18, receipts/WO-D10-0T/): fcel at 1 MB makes ~300 k tracked
+# objects, so one automatic full collection runs inside the timer, and a full collection walks
+# the whole process heap, not the input. After pytest has collected the joint check's 3,590
+# tests the heap holds 482,675 tracked objects and that one collection costs ~0.2 s: 1 MB reads
+# 0.33-0.36 s (0.14-0.16 s with the collector off) against 0.17-0.20 s in a fresh interpreter.
+_CHILD = (
+    "import gc, importlib.util, json, sys, time\n"
+    "job = json.loads(sys.stdin.buffer.read())\n"
+    "spec = importlib.util.spec_from_file_location('normalise_v1', job['module'])\n"
+    "n1 = importlib.util.module_from_spec(spec)\n"
+    "spec.loader.exec_module(n1)\n"
+    "gc.collect()\n"
+    "start = time.process_time()\n"
+    "n1.normalise(job['provider'], job['text'])\n"
+    "print(json.dumps(time.process_time() - start))\n"
+)
+CHILD_TIMEOUT_S = 60.0  # a bound on one measurement, not a limit: 2 MB takes at most ~3.3 s
+
+
 def _cpu_seconds(provider: str, text: str) -> float:
-    gc.collect()
-    start = time.process_time()
-    n1.normalise(provider, text)
-    return time.process_time() - start
+    job = json.dumps({"module": n1.__file__, "provider": provider, "text": text})
+    done = subprocess.run(
+        [sys.executable, "-I", "-c", _CHILD],
+        input=job.encode("ascii"),
+        capture_output=True,
+        timeout=CHILD_TIMEOUT_S,
+        check=False,
+    )
+    if done.returncode != 0:
+        tail = done.stderr.decode("utf-8", "replace")[-2000:]
+        raise RuntimeError(f"measuring interpreter exited {done.returncode}: {tail}")
+    took = json.loads(done.stdout)
+    if not isinstance(took, float) or not math.isfinite(took) or took < 0:
+        raise RuntimeError(f"measuring interpreter printed {done.stdout[:200]!r}")
+    return took
 
 
 @pytest.mark.parametrize("provider", ["mineru", "xiaomi_ocr_0", "nemotron_parse_3_5"])
 @pytest.mark.parametrize("shape", list(UNITS))
 def test_normalise_is_linear_in_its_input(provider: str, shape: str) -> None:
     """Doubling the input at most roughly doubles the time (ratio 3; below FLOOR_S a timer
-    tick is noise), and 1 MB finishes inside 5 s. CPU time of this process, so other load on
-    the machine does not count; contention only ever adds time, so a size over the ratio is
-    measured again, up to RETRIES more times, and the minimum is judged (a spike is not a trend,
-    a quadratic step is over the ratio in every measurement)."""
+    tick is noise), and 1 MB finishes inside 5 s. CPU time of a fresh interpreter (_CHILD), so
+    neither other load on the machine nor this process's heap counts; contention only ever adds
+    time, so a size over the ratio is measured again, up to RETRIES more times, and the minimum
+    is judged (a spike is not a trend, a quadratic step is over the ratio in every measurement)."""
     took: list[float] = []
     for size in SIZES:
         text = _shape(shape, size)
@@ -350,6 +383,22 @@ def test_normalise_is_linear_in_its_input(provider: str, shape: str) -> None:
             assert took[-1] <= RATIO * max(took[-2], FLOOR_S), (size, took)
         if size == 1_000_000:
             assert took[-1] < ONE_MB_S, took
+
+
+def test_the_timed_call_never_runs_in_this_process(monkeypatch: pytest.MonkeyPatch) -> None:
+    """The class: nothing this pytest process holds (heap, collector state, a patched module
+    attribute) reaches the figure; only the normaliser's file does."""
+
+    def in_process(*_args: object) -> None:
+        raise AssertionError("timed in the pytest process")
+
+    monkeypatch.setattr(n1, "normalise", in_process)
+    assert _cpu_seconds("xiaomi_ocr_0", _shape("fcel", 1_000)) >= 0.0
+
+
+def test_a_failed_measurement_is_an_error_not_a_time() -> None:
+    with pytest.raises(RuntimeError, match="no normaliser profile"):
+        _cpu_seconds("gemini_api", "x")
 
 
 JOINED = [  # what the round-2 join (7c9514f) wrote; the linear join writes the same bytes
