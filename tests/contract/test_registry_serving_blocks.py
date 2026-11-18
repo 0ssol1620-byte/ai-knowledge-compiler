@@ -122,6 +122,7 @@ def _unbuilt_row() -> dict[str, Any]:
     serving.update(built=False, image=None)
     for field in _PROVENANCE:
         del serving[field]
+    serving.pop("not_serving", None)  # a mark on a build goes with the build it marks
     return row
 
 
@@ -208,7 +209,9 @@ def test_a_built_image_is_in_this_repositorys_namespace() -> None:
             bad["runtime"]["serving"]["image"] = f"{other}@{digest}"
             assert any("image of this block" in p for p in _problems(bad)), (runner, other)
     text = _REGISTRY.read_text(encoding="utf-8")
-    bad_text = text.replace(f'"{namespace}/', '"ghcr.io/evil/', 1)
+    first = next(iter(_built_rows().values()))["runtime"]["serving"]["image"]
+    # every mention of that image, so its not_serving mark moves with it
+    bad_text = text.replace(f'"{first}"', '"ghcr.io/evil/' + first.split("/", 3)[3] + '"')
     assert bad_text != text
     validate = validator["validate"]
     original = validate.__globals__["load_yaml"]
@@ -323,19 +326,26 @@ def test_image_build_names_a_dockerfile_inside_the_repository(tmp_path: Path) ->
     assert _problems(row) == []
 
 
-def test_not_serving_binds_the_c0_and_c3_digests_and_not_the_next_one() -> None:
-    """WO-D10-0U: the C0 and C3 builds of run 44145574050 stay ``built`` but are marked not to
-    be launched; the mark names the exact image, so recording a rebuilt digest without
-    deciding about the mark fails, as does a mark without a reason or on an unbuilt block."""
+def test_not_serving_binds_the_c0_c1_and_c3_digests_and_not_the_next_one() -> None:
+    """WO-D10-0U: the three builds of run 44145574050 stay ``built`` but are marked not to be
+    launched (C0 and C3: six; C1, closing round: libgomp and protobuf); the mark names the exact
+    image, so recording a rebuilt digest without deciding about the mark fails, as does a mark
+    without a reason or on an unbuilt block."""
     rows = _built_rows()
+    causes = {
+        "mineru": ["six"],
+        "mineru_vlm": ["six"],
+        "paddleocr_vl_1_6": ["libgomp", "protobuf 6.33.4", "sentencepiece 0.2.3"],
+    }
     marked = {k for k, r in rows.items() if "not_serving" in r["runtime"]["serving"]}
-    assert marked == {"mineru", "mineru_vlm"}
+    assert marked == set(causes)  # every image of the run (C1 added by the closing round)
     for runner in marked:
         row = rows[runner]
         serving = row["runtime"]["serving"]
         assert serving["built"] is True and _problems(row) == [], runner
         assert serving["not_serving"]["image"] == serving["image"], runner
-        assert "six" in serving["not_serving"]["reason"], runner
+        for cause in causes[runner]:
+            assert cause in serving["not_serving"]["reason"], (runner, cause)
         rebuilt = copy.deepcopy(serving)
         rebuilt["image"] = serving["image"].split("@")[0] + "@sha256:" + "a" * 64
         assert _build_problems(rebuilt) == ["not_serving names another image than this block's"]

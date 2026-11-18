@@ -463,6 +463,9 @@ def test_a_malformed_request_is_a_400_and_runs_nothing(tmp_path: Path, body: byt
 class FakeServerService:
     def __init__(self) -> None:
         self.recovered = 0
+        # the server reads a service's stderr for an image defect (WO-D10-0U); this service
+        # runs in-process and its trace goes to this process's stderr, so it follows nothing
+        self.stderr = srv.StderrWatch()
 
     def available(self) -> bool:
         return True

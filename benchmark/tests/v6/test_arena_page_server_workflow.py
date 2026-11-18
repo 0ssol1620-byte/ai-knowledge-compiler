@@ -519,24 +519,53 @@ def _gate_imports(code: str) -> list[tuple[str, list[str]]]:
     return out
 
 
+# Each stage's gate is exactly this list, which is also the README's table (closing round: a
+# name dropped from a gate, or a table that says more than the gate runs, fails).
 _GATES = [
     (
         _IMAGES / "mineru-pipeline-akc/Dockerfile",
         "c0",
         "pip install",
-        {"mineru.cli.client", "mineru.cli.fast_api", "mineru.backend.pipeline.pipeline_analyze"},
+        {
+            "cv2",
+            "onnxruntime",
+            "mineru.cli.client",
+            "mineru.cli.fast_api",
+            "mineru.backend.pipeline.pipeline_analyze",
+            "mineru.backend.pipeline.batch_analyze",
+            "mineru.backend.pipeline.pipeline_middle_json_mkcontent",
+        },
     ),
     (
         _IMAGES / "mineru-pipeline-akc/Dockerfile",
         "c3",
         "pip install",
         {
+            "accelerate",
+            "mineru.utils.table_merge",
             "mineru_vl_utils.vlm_client.transformers_client",
+            "mineru_vl_utils.post_process.cross_page_table",
+            "transformers.AutoProcessor",
             "transformers.Qwen2VLForConditionalGeneration",
         },
     ),
-    (_IMAGES / "paddleocr-vl-akc/Dockerfile", "", "uv pip install", {"paddleocr.PaddleOCRVL"}),
+    (
+        _IMAGES / "paddleocr-vl-akc/Dockerfile",
+        "",
+        "uv pip install",
+        {"paddle", "cv2", "sentencepiece.sentencepiece_model_pb2", "paddleocr.PaddleOCRVL"},
+    ),
 ]
+_README = _IMAGES / "mineru-pipeline-akc/README.md"
+_README_ROW = {"c0": "| `c0` |", "c3": "| `c3` |", "": "| C1 (`../paddleocr-vl-akc`) |"}
+
+
+def _gate_names(dockerfile: Path, stage: str) -> set[str]:
+    """What the gate imports: each module, and each name taken from a module as module.name."""
+    imports = _gate_imports(_gate(dockerfile, stage))
+    return {m for m, names in imports if not names} | {
+        f"{m}.{n}" for m, names in imports for n in names
+    }
 
 
 @pytest.mark.parametrize(("dockerfile", "stage", "install", "required"), _GATES)
@@ -547,13 +576,49 @@ def test_each_stage_imports_its_recipes_path_after_its_install(
     installs = [i for i, s in enumerate(steps) if s.startswith("RUN ") and install in s]
     gates = [i for i, s in enumerate(steps) if s.startswith("RUN ") and ' -c "' in s]
     assert installs and len(gates) == 1 and gates[0] > max(installs), (stage, steps)
-    imports = _gate_imports(_gate(dockerfile, stage))
-    named = {m for m, _ in imports} | {f"{m}.{n}" for m, names in imports for n in names}
-    assert required <= named, required - named
+    assert _gate_names(dockerfile, stage) == required
 
 
-def _fake_tree(root: Path, imports: list[tuple[str, list[str]]], broken: str | None) -> None:
-    """Each module the gate names as a package; ``broken`` imports a module nobody installs."""
+@pytest.mark.parametrize(("dockerfile", "stage", "install", "required"), _GATES)
+def test_the_readme_table_lists_exactly_what_each_gate_imports(
+    dockerfile: Path, stage: str, install: str, required: set[str]
+) -> None:
+    (row,) = [
+        line
+        for line in _README.read_text(encoding="utf-8").splitlines()
+        if line.startswith(_README_ROW[stage])
+    ]
+    imported = row.split("|")[2]  # the "Imported at build" column
+    assert set(re.findall(r"`([\w.]+)`", imported)) == required
+
+
+@pytest.mark.parametrize(("dockerfile", "stage"), [(g[0], g[1]) for g in _GATES])
+def test_each_gate_keeps_no_cache_in_a_layer(dockerfile: Path, stage: str) -> None:
+    """HOME points at a directory the same RUN removes, after the import succeeded."""
+    (run,) = [s for s in _stages(dockerfile)[stage] if s.startswith("RUN ") and ' -c "' in s]
+    assert run.startswith("RUN HOME=/tmp/akc-import-gate "), run
+    assert run.endswith(" && rm -rf /tmp/akc-import-gate"), run
+
+
+# How a broken module fails: an import of a module nobody installs (C0's six), and generated
+# protobuf code whose runtime check raises (C1's sentencepiece_model_pb2: not an ImportError).
+_BREAKAGES = {
+    "absent": (
+        "import akc_gate_test_absent_module\n",
+        "No module named 'akc_gate_test_absent_module'",
+    ),
+    "gencode": (
+        "class VersionError(Exception):\n    pass\n"
+        "raise VersionError('Detected incompatible Protobuf Gencode/Runtime versions')\n",
+        "VersionError: Detected incompatible Protobuf Gencode/Runtime versions",
+    ),
+}
+
+
+def _fake_tree(
+    root: Path, imports: list[tuple[str, list[str]]], broken: str | None, how: str = "absent"
+) -> None:
+    """Each module the gate names as a package; ``broken`` fails the way ``how`` names."""
     for module, _ in imports:
         parts = module.split(".")
         for depth in range(1, len(parts) + 1):
@@ -563,13 +628,14 @@ def _fake_tree(root: Path, imports: list[tuple[str, list[str]]], broken: str | N
     for module, names in imports:
         body = "".join(f"{name} = None\n" for name in names)
         if module == broken:
-            body = "import akc_gate_test_absent_module\n" + body
+            body = _BREAKAGES[how][0] + body
         (root.joinpath(*module.split(".")) / "__init__.py").write_text(body, encoding="utf-8")
 
 
+@pytest.mark.parametrize("how", sorted(_BREAKAGES))
 @pytest.mark.parametrize(("dockerfile", "stage"), [(g[0], g[1]) for g in _GATES])
 def test_the_gate_fails_on_a_missing_import_inside_any_module_it_names(
-    tmp_path: Path, dockerfile: Path, stage: str
+    tmp_path: Path, dockerfile: Path, stage: str, how: str
 ) -> None:
     """The gate's own code, on a synthetic tree of the modules it names: it passes when every
     module imports, and exits non-zero when any one of them imports a module that is absent
@@ -580,7 +646,7 @@ def test_the_gate_fails_on_a_missing_import_inside_any_module_it_names(
     def run(broken: str | None) -> subprocess.CompletedProcess[str]:
         tree = tmp_path / (broken or "whole")
         tree.mkdir()
-        _fake_tree(tree, imports, broken)
+        _fake_tree(tree, imports, broken, how)
         prefix = f"import sys; sys.path.insert(0, {str(tree)!r}); "
         return subprocess.run(
             [sys.executable, "-I", "-c", prefix + code],
@@ -595,4 +661,4 @@ def test_the_gate_fails_on_a_missing_import_inside_any_module_it_names(
     for module, _ in imports:
         result = run(module)
         assert result.returncode != 0, module
-        assert "No module named 'akc_gate_test_absent_module'" in result.stderr, module
+        assert _BREAKAGES[how][1] in result.stderr, module

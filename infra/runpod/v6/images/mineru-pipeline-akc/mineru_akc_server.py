@@ -18,6 +18,12 @@ or digest; a page already running; the pipeline recovering) gets a 4xx or 503 wi
 error code and runs nothing. The revision it reports is the recipe's, which ``main`` checks
 against the weights on disk before serving; never the request header echoed back. Standard
 library only. TLS is terminated by the pod proxy in front of it.
+
+An image that cannot import or load its own code is not a page result (WO-D10-0U): when a
+failed page's command, or the recipe's service while that page ran, printed an import failure
+(``IMAGE_DEFECT_SIGNATURES``), the server answers 503 ``image_defect`` to that page and every
+later one and reports ``ready: false``, which the S0 driver stops on as operational; no failure
+row is written for it.
 """
 
 from __future__ import annotations
@@ -47,7 +53,7 @@ from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib import metadata
 from pathlib import Path
-from typing import Any, TypeGuard
+from typing import IO, Any, TypeGuard
 from urllib.parse import urlsplit
 
 ROUTE = "/parse"
@@ -66,6 +72,25 @@ MAX_CASE_ID_BYTES = 256  # the case id is echoed in every result, so it is bound
 MAX_PAGE_INDEX = 9999  # a page index is passed to the vendor command, so it is bounded
 MAX_CONTENT_TYPE_BYTES = 128  # echoed in the receipt
 CONTENT_SUFFIX = {"application/pdf": ".pdf", "image/png": ".png", "image/jpeg": ".jpg"}
+# What a Python process prints when the image cannot import or load its own code. Measured on
+# the 2026-11-18 launches: C0's ``ModuleNotFoundError: No module named 'six'`` (the API's task
+# error carries only "No module named …"), C1's ``ImportError: libgomp.so.1: cannot open shared
+# object file`` and ``google.protobuf.runtime_version.VersionError: Detected incompatible
+# Protobuf Gencode/Runtime versions …`` (generated code newer than the installed runtime). Each
+# entry is the class name or the message text, so either form of the report is caught.
+IMAGE_DEFECT_SIGNATURES = (
+    "ModuleNotFoundError",
+    "ImportError",
+    "No module named ",
+    "cannot open shared object file",
+    "google.protobuf.runtime_version.VersionError",
+    "Protobuf Gencode/Runtime",
+)
+_IMAGE_DEFECT = re.compile("|".join(map(re.escape, IMAGE_DEFECT_SIGNATURES)))
+_SIGNATURE_CARRY = max(map(len, IMAGE_DEFECT_SIGNATURES)) - 1  # a signature split across reads
+STDERR_READ_BYTES = 8192  # one read of a child's stderr; a longer line arrives in pieces
+STDERR_JOIN_S = 5.0  # after the command's group is killed, its stderr reaches EOF at once
+SERVICE_SETTLE_S = 1.0  # a service may log its trace just after answering the failed page
 _SHA256 = re.compile(r"[0-9a-f]{64}")
 _REVISION = re.compile(r"[0-9a-f]{40}")
 _RECIPE_KEYS = {
@@ -97,6 +122,66 @@ class PageFailure(Exception):
 
 class ServiceDown(Exception):
     """The pipeline cannot run now (operational): 503, nothing is recorded for the page."""
+
+
+class ImageDefect(ServiceDown):
+    """The image cannot import or load its own code: operational, and permanent for this image.
+    ``signature`` is the fixed text that showed it (one of ``IMAGE_DEFECT_SIGNATURES``)."""
+
+    def __init__(self, signature: str) -> None:
+        super().__init__(signature)
+        self.signature = signature
+
+
+class StderrWatch:
+    """A child's stderr, forwarded to ours as it arrives (the pod log, as when it was inherited),
+    with each read numbered and the number of the last read that completed an image-defect
+    signature kept, so a page can ask whether one was printed while it ran. The bytes are
+    decoded here with replacement, read in bounded pieces, and nothing else is kept: no output
+    of any length grows memory. One watch follows a service across its restarts."""
+
+    def __init__(self) -> None:
+        self._lock = threading.Lock()
+        self._reads = 0
+        self._hit: tuple[int, str] | None = None
+        self._carry = ""
+
+    def follow(self, stream: IO[bytes]) -> threading.Thread:
+        thread = threading.Thread(target=self._pump, args=(stream,), daemon=True)
+        thread.start()
+        return thread
+
+    def _pump(self, stream: IO[bytes]) -> None:
+        with stream:
+            while piece := stream.readline(STDERR_READ_BYTES):
+                self.feed(piece)
+
+    def feed(self, piece: bytes) -> None:
+        text = piece.decode("utf-8", "replace")
+        with contextlib.suppress(OSError, ValueError):  # a closed pod log must not stop the pump
+            sys.stderr.write(text)
+            sys.stderr.flush()
+        with self._lock:
+            self._reads += 1
+            window = self._carry + text
+            # only a signature that ends in this read: one inside the carry was counted before
+            found = next(
+                (m[0] for m in _IMAGE_DEFECT.finditer(window) if m.end() > len(self._carry)),
+                None,
+            )
+            if found is not None:
+                self._hit = (self._reads, found)
+            self._carry = window[-_SIGNATURE_CARRY:]
+
+    def mark(self) -> int:
+        with self._lock:
+            return self._reads
+
+    def since(self, mark: int) -> str | None:
+        """The signature of the last image-defect report read after ``mark``, if any."""
+        with self._lock:
+            hit = self._hit
+        return hit[1] if hit is not None and hit[0] > mark else None
 
 
 class Refused(Exception):
@@ -342,6 +427,7 @@ def make_server(
     ready: Callable[[], bool] = lambda: True,
 ) -> ThreadingHTTPServer:
     busy = threading.Lock()  # one page at a time; a second one is refused, never queued
+    defect = threading.Event()  # set once by an ImageDefect: no page runs on this image again
     provider = settings.provider
 
     def failure(case_id: str, receipt: dict[str, Any], reason: str) -> dict[str, Any]:
@@ -375,6 +461,10 @@ def make_server(
             encoded = text.encode("utf-8")  # a lone surrogate cannot be stored
         except ServiceDown:
             raise
+        except ImportError as exc:  # raised in this process: the image's defect, not the page's
+            traceback.print_exc(file=sys.stderr)
+            missing = isinstance(exc, ModuleNotFoundError)
+            raise ImageDefect("ModuleNotFoundError" if missing else "ImportError") from None
         except Exception as exc:
             if not isinstance(exc, PageFailure):
                 traceback.print_exc(file=sys.stderr)  # the pod log, never the response body
@@ -433,7 +523,7 @@ def make_server(
                     "recipe": settings.recipe["name"],
                     "receipt_sha256": canonical_sha256(settings.receipt),
                     "busy": busy.locked(),
-                    "ready": ready(),
+                    "ready": ready() and not defect.is_set(),
                 },
             )
 
@@ -500,6 +590,8 @@ def make_server(
                 unread = unread - len(chunk) if chunk else 0
 
         def _run(self, body: bytes) -> dict[str, Any]:
+            if defect.is_set():
+                raise Refused(503, "image_defect")
             declared = self.headers.get("X-AKC-Input-SHA256") or ""
             if not _SHA256.fullmatch(declared) or not hmac.compare_digest(
                 hashlib.sha256(body).hexdigest(), declared
@@ -511,6 +603,14 @@ def make_server(
                 raise Refused(400, "payload_not_json") from None
             try:
                 return run_page(payload, declared)
+            except ImageDefect as exc:
+                defect.set()
+                print(
+                    f"image defect ({exc.signature}): answering 503 image_defect from now on",
+                    file=sys.stderr,
+                    flush=True,
+                )
+                raise Refused(503, "image_defect") from None
             except ServiceDown:
                 raise Refused(503, "pipeline_unavailable") from None
 
@@ -539,6 +639,7 @@ class Service:
         self.child: subprocess.Popen[bytes] | None = None
         self.recovering = threading.Event()
         self.gave_up = False
+        self.stderr = StderrWatch()  # every child's, across restarts
 
     def _healthy(self) -> bool:
         url = urlsplit(self.spec["health_url"])
@@ -553,8 +654,11 @@ class Service:
 
     def start(self) -> bool:
         self.child = subprocess.Popen(  # noqa: S603 - argv comes from the image's own recipe file checked by load_recipe, never from a request
-            self.spec["argv"], env=self.env, start_new_session=True
+            self.spec["argv"], env=self.env, stderr=subprocess.PIPE, start_new_session=True
         )
+        if self.child.stderr is None:  # stderr=PIPE always gives one
+            raise RuntimeError("the service's stderr was not captured")
+        self.stderr.follow(self.child.stderr)
         deadline = time.monotonic() + self.spec["startup_timeout_s"]
         while not self._healthy():
             if self.child.poll() is not None or time.monotonic() > deadline:
@@ -597,6 +701,9 @@ class Service:
 class NoService:
     """A recipe whose command loads the models itself: idle as soon as the command is gone."""
 
+    def __init__(self) -> None:
+        self.stderr = StderrWatch()  # follows nothing: no process of its own prints
+
     def ready(self) -> bool:
         return True
 
@@ -633,8 +740,11 @@ def command_pipeline(
     """The recipe's vendor command for one page, in a fresh temporary directory. An exit code the
     recipe's service maps to a reason (``page_failure_exits``) means the service answered that
     the page failed and is idle again: a failure row with that reason, no restart. Any other
-    non-zero exit may leave the service working, so it is restarted."""
+    non-zero exit may leave the service working, so it is restarted. Before either, a non-zero
+    exit is checked for an image defect: an import failure the command printed, or the service
+    printed while the page ran, is ``ImageDefect`` (operational), never a page failure."""
     page_failures: dict[str, str] = (recipe["service"] or {}).get("page_failure_exits", {})
+    service_stderr: StderrWatch = service.stderr
 
     def run(data: bytes, suffix: str, page: int | None, lang: str | None) -> str:
         if not service.available():
@@ -645,9 +755,20 @@ def command_pipeline(
             out = Path(work) / "out"
             out.mkdir()
             argv = vendor_argv(recipe, source, out, page, lang)
+            mark = service_stderr.mark()
+            own = StderrWatch()
             process = subprocess.Popen(  # noqa: S603 - argv comes from the image's own recipe file checked by load_recipe, never from a request
-                argv, env=env, cwd=work, stdin=subprocess.DEVNULL, start_new_session=True
+                argv,
+                env=env,
+                cwd=work,
+                stdin=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                start_new_session=True,
             )
+            if process.stderr is None:  # stderr=PIPE always gives one
+                _kill_group(process)
+                raise RuntimeError("the command's stderr was not captured")
+            pump = own.follow(process.stderr)
             try:
                 code = process.wait(timeout=recipe["timeout_s"])
             except subprocess.TimeoutExpired:
@@ -655,6 +776,14 @@ def command_pipeline(
                 service.recover()
                 raise PageFailure("page_timeout") from None
             _kill_group(process)  # whatever the command left running dies with it
+            pump.join(STDERR_JOIN_S)
+            if code != 0:
+                defect = own.since(0)
+                if defect is None:
+                    time.sleep(SERVICE_SETTLE_S)
+                    defect = service_stderr.since(mark)
+                if defect is not None:
+                    raise ImageDefect(defect)
             if str(code) in page_failures:
                 raise PageFailure(page_failures[str(code)])
             if code != 0:

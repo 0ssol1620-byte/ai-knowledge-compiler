@@ -39,8 +39,14 @@ RUN python -m pip install --require-hashes --only-binary=:all: --no-deps \
 # the lock does not install fails the build. `pip check` cannot see one: MinerU 3.4.4 imports six
 # without declaring it, and its pipeline imports it only at the first parse. The per-page command
 # (mineru), the service (mineru-api) and the lazy imports of the pipeline path in
-# mineru/cli/common.py (_process_pipeline, _process_output) and pipeline_analyze.py.
-RUN python -c "import mineru.cli.client, mineru.cli.fast_api, mineru.backend.pipeline.pipeline_analyze, mineru.backend.pipeline.batch_analyze, mineru.backend.pipeline.pipeline_middle_json_mkcontent"
+# mineru/cli/common.py (_process_pipeline, _process_output) and pipeline_analyze.py; and the two
+# locked wheels on that path that load shared libraries a slim base may lack (closing round):
+# cv2 (opencv-python: libGL and GLib, from the apt line above) and onnxruntime (MinerU's table
+# recognisers, the only requirer of protobuf in the lock). HOME points at a directory removed in
+# the same step, so no cache an import writes stays in the image.
+RUN HOME=/tmp/akc-import-gate \
+      python -c "import cv2, onnxruntime, mineru.cli.client, mineru.cli.fast_api, mineru.backend.pipeline.pipeline_analyze, mineru.backend.pipeline.batch_analyze, mineru.backend.pipeline.pipeline_middle_json_mkcontent" \
+    && rm -rf /tmp/akc-import-gate
 
 COPY weights-manifest.json mineru.json mineru-vlm.json mineru_akc_weights.py /opt/akc/
 RUN python /opt/akc/mineru_akc_weights.py /opt/akc/weights-manifest.json \
@@ -78,7 +84,10 @@ RUN python -m pip install --require-hashes --only-binary=:all: --no-deps \
 # (transformers' AutoProcessor and Qwen2VLForConditionalGeneration, device_map through accelerate)
 # and mineru-vl-utils (its transformers client, the cross-page table merge and the MinerU module
 # that merge imports inside a try, which would otherwise switch the merge off without an error).
-RUN python -c "import accelerate, mineru.utils.table_merge, mineru_vl_utils.vlm_client.transformers_client, mineru_vl_utils.post_process.cross_page_table; from transformers import AutoProcessor, Qwen2VLForConditionalGeneration"
+# HOME as in C0's gate.
+RUN HOME=/tmp/akc-import-gate \
+      python -c "import accelerate, mineru.utils.table_merge, mineru_vl_utils.vlm_client.transformers_client, mineru_vl_utils.post_process.cross_page_table; from transformers import AutoProcessor, Qwen2VLForConditionalGeneration" \
+    && rm -rf /tmp/akc-import-gate
 USER 10001
 # Download at the revision (the only step with network), check every file, then serve offline.
 CMD ["sh", "-c", "HF_HUB_OFFLINE=0 python /opt/akc/mineru_akc_weights.py /opt/akc/recipes/c3-weights-manifest.json /opt/akc/models/MinerU2.5-Pro-2605-1.2B && exec python /opt/akc/mineru_akc_server.py --recipe /opt/akc/recipes/c3-mineru-vlm.json"]

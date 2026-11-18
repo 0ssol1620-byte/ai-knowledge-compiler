@@ -14,6 +14,7 @@ import copy
 import hashlib
 import http.client
 import importlib.util
+import io
 import itertools
 import json
 import math
@@ -562,6 +563,14 @@ if mode == "grandchild":  # outlives the command, in the command's process group
     subprocess.Popen([sys.executable, "-c", late, os.environ["FAKE_LATE"]])
 if mode == "exit3":
     sys.exit(3)
+if mode.startswith("stderr:"):  # FAKE_STDERR (hex) to stderr, then exit with the given code
+    if os.environ.get("FAKE_GO"):  # held until the test says go
+        deadline = time.monotonic() + 20
+        while not os.path.exists(os.environ["FAKE_GO"]) and time.monotonic() < deadline:
+            time.sleep(0.02)
+    sys.stderr.buffer.write(bytes.fromhex(os.environ.get("FAKE_STDERR", "")))
+    sys.stderr.flush()
+    sys.exit(int(mode.split(":")[1]))
 """
 
 
@@ -569,6 +578,7 @@ class FakeService:
     def __init__(self) -> None:
         self.up = True
         self.recovered = 0
+        self.stderr = srv.StderrWatch()  # the real watch; a test feeds it what a service prints
 
     def ready(self) -> bool:
         return self.up
@@ -1628,3 +1638,322 @@ def test_each_recipes_packages_are_pinned_where_its_image_is_built_from() -> Non
             assert isinstance(version, str) and pins.get(_norm(name)) == version, (path, name)
         for name in recipe["absent_packages"]:
             assert _norm(name) not in pins, (path.name, name)
+
+
+def test_c1_pins_protobuf_at_the_gencode_of_its_sentencepiece_and_installs_libgomp() -> None:
+    """WO-D10-0U closing round: the C1 image's first launch failed on both. One explicit
+    protobuf pin, in the PyPI install (the paddle index's step brings 6.33.4), and libgomp1 in
+    the apt line. Mutants: the pin dropped or below 7.36.1; libgomp1 dropped."""
+    pins = _c1_pins()
+    assert pins["protobuf"] == "7.36.1"  # sentencepiece 0.2.3's generated code: gencode 7.36.1
+    assert "sentencepiece" not in pins  # one pin, not both (lead decision B)
+    joined = re.sub(r"\\\r?\n", " ", _C1_DOCKERFILE.read_text(encoding="utf-8"))
+    (apt,) = [line for line in joined.splitlines() if "apt-get install" in line]
+    assert "libgomp1" in apt.split()
+    (pypi,) = [line for line in joined.split("&&") if '"paddlex==3.7.2"' in line]
+    assert '"protobuf==7.36.1"' in pypi and "--index-url" not in pypi
+
+
+# --- WO-D10-0U closing round: an image defect is operational, never a page failure -----------
+# The class: the vendor stack cannot import or load its own code (a module, a shared library,
+# generated protobuf code newer than its runtime), printed by the per-page command or by the
+# recipe's service while the page ran, whatever the command's exit code. Each measured report
+# below is the line a launch printed (C0 and C1, 2026-11-18).
+
+_MEASURED_REPORTS = [
+    'Traceback (most recent call last):\n  File "operators.py", line 23, in <module>\n'
+    "ModuleNotFoundError: No module named 'six'\n",
+    "2026-11-18 | ERROR | Task failed: No module named 'six'\n",  # the API's task error, str(exc)
+    "ImportError: libgomp.so.1: cannot open shared object file: No such file or directory\n",
+    "google.protobuf.runtime_version.VersionError: Detected incompatible Protobuf "
+    "Gencode/Runtime versions when loading sentencepiece_model.proto: gencode 7.36.1 runtime "
+    "6.33.4. Runtime version cannot be older than the linked gencode version.\n",
+]
+
+
+def _stderr_env(
+    tmp_path: Path, code: int, text: str | bytes, go: Path | None = None
+) -> dict[str, str]:
+    data = text.encode("utf-8") if isinstance(text, str) else text
+    env = {**_env(tmp_path, f"stderr:{code}"), "FAKE_STDERR": data.hex()}
+    if go is not None:
+        env["FAKE_GO"] = str(go)
+    return env
+
+
+@pytest.mark.parametrize("code", [1, 3, 4])
+@pytest.mark.parametrize("report", _MEASURED_REPORTS)
+def test_an_import_failure_the_command_prints_is_an_image_defect(
+    tmp_path: Path, report: str, code: int
+) -> None:
+    """Through the real command pipeline and a real child process; exits 3 and 4 are the ones
+    C1's recipe maps to page failures. Mutant: classifying after the exit-code map."""
+    service = FakeService()
+    recipe = _faked(_recipe("c1-paddleocr-vl"), tmp_path)
+    run = srv.command_pipeline(recipe, service, _stderr_env(tmp_path, code, report))
+    with pytest.raises(srv.ImageDefect) as caught:
+        run(SOURCE, ".pdf", None, None)
+    assert caught.value.signature in srv.IMAGE_DEFECT_SIGNATURES
+    assert service.recovered == 0  # a restart reloads the same image: nothing to recover
+
+
+@pytest.mark.parametrize(("code", "reason"), [(1, "pipeline_exit_nonzero"), (3, "pipeline_raised")])
+def test_any_other_failed_exit_keeps_its_page_failure(
+    tmp_path: Path, code: int, reason: str
+) -> None:
+    """The other branch: stderr that holds no import failure, however large or malformed (a
+    trace of another error, invalid UTF-8, a line longer than one read)."""
+    noise = (
+        b"Traceback (most recent call last):\nRuntimeError: CUDA error: out of memory\n"
+        + b"\xff\xfe\xe2\x82" * 5000
+        + b"Import"
+        + b"x" * 20000
+        + b"Error is not this\n"
+    )
+    service = FakeService()
+    recipe = _faked(_recipe("c1-paddleocr-vl"), tmp_path)
+    run = srv.command_pipeline(recipe, service, _stderr_env(tmp_path, code, noise))
+    with pytest.raises(srv.PageFailure) as caught:
+        run(SOURCE, ".pdf", None, None)
+    assert caught.value.reason == reason
+
+
+def test_a_successful_exit_is_a_page_even_if_its_stderr_names_an_import_error(
+    tmp_path: Path,
+) -> None:
+    """A warning about an optional module on a page that worked is not a defect."""
+    service = FakeService()
+    run = srv.command_pipeline(
+        _faked(_recipe(), tmp_path), service, _stderr_env(tmp_path, 0, _MEASURED_REPORTS[0])
+    )
+    assert run(SOURCE, ".pdf", 0, None) == "# page from the fake tool\n"
+
+
+@pytest.mark.parametrize("late", [False, True], ids=["while_running", "just_after_exit"])
+def test_an_import_failure_the_service_prints_during_the_page_is_an_image_defect(
+    tmp_path: Path, late: bool
+) -> None:
+    """C0's case: mineru-api imports the pipeline at the first parse and logs the trace, after
+    it has marked the task failed, so the report may reach the log just after the command
+    exits (``late``); C1's: the service logs the trace and the client exits 3
+    (``pipeline_raised``). A report printed before the page started is not this page's (the
+    mark), so that page keeps its reason."""
+    recipe = _faked(_recipe("c1-paddleocr-vl"), tmp_path)
+
+    before = FakeService()
+    before.stderr.feed(_MEASURED_REPORTS[2].encode())  # an earlier page's trace
+    run = srv.command_pipeline(recipe, before, _stderr_env(tmp_path, 3, "page failure\n"))
+    with pytest.raises(srv.PageFailure) as caught:
+        run(SOURCE, ".pdf", None, None)
+    assert caught.value.reason == "pipeline_raised"
+
+    during = FakeService()
+    go = tmp_path / "go"
+    run = srv.command_pipeline(recipe, during, _stderr_env(tmp_path, 3, "page failure\n", go))
+    result: dict[str, BaseException] = {}
+
+    def page() -> None:
+        try:
+            run(SOURCE, ".pdf", None, None)
+        except BaseException as exc:  # handed to the test thread
+            result["exc"] = exc
+
+    thread = threading.Thread(target=page)
+    thread.start()
+    assert _wait(lambda: len(_calls(tmp_path)) == 2)  # the command is running this page
+    reader, writer = os.pipe()
+    pump = during.stderr.follow(os.fdopen(reader, "rb"))  # a real pipe, as the service's is
+
+    def service_logs() -> None:
+        with os.fdopen(writer, "wb") as service_log:
+            service_log.write(_MEASURED_REPORTS[3].encode())
+
+    if late:  # the command exits on go; the service's line follows within the settle time
+        go.touch()
+        logger = threading.Timer(srv.SERVICE_SETTLE_S * 0.3, service_logs)
+        logger.start()
+        logger.join(10)
+    else:
+        service_logs()
+        pump.join(10)
+        go.touch()
+    thread.join(30)
+    pump.join(10)
+    assert isinstance(result.get("exc"), srv.ImageDefect), result
+
+
+SERVICE_TRACE = r"""
+import http.server, sys, traceback
+class H(http.server.BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/page":
+            try:
+                import akc_test_absent_module  # noqa: F401
+            except ImportError:
+                traceback.print_exc()
+                sys.stderr.flush()
+        self.send_response(200)
+        self.end_headers()
+    def log_message(self, *a):
+        pass
+http.server.HTTPServer(("127.0.0.1", int(sys.argv[1])), H).serve_forever()
+"""
+
+
+def test_the_real_service_stderr_reaches_the_watch(tmp_path: Path) -> None:
+    """``Service.start`` captures the child's stderr: a trace the real child prints after the
+    mark is found, one printed before it is not."""
+    script = tmp_path / "service.py"
+    script.write_text(SERVICE_TRACE, encoding="utf-8")
+    with socket.socket() as probe:
+        probe.bind(("127.0.0.1", 0))
+        port = probe.getsockname()[1]
+    spec = {
+        "argv": [sys.executable, str(script), str(port)],
+        "health_url": f"http://127.0.0.1:{port}/",
+        "startup_timeout_s": 20,
+    }
+    service = srv.Service(spec, dict(os.environ))
+
+    def get(path: str) -> None:
+        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
+        try:
+            connection.request("GET", path)
+            connection.getresponse().read()
+        finally:
+            connection.close()
+
+    try:
+        assert service.start()
+        get("/page")
+        assert _wait(lambda: service.stderr.since(0) is not None)
+        mark = service.stderr.mark()
+        assert service.stderr.since(mark) is None
+        get("/page")
+        assert _wait(lambda: service.stderr.since(mark) == "ModuleNotFoundError")
+    finally:
+        if service.child is not None:
+            srv._kill_group(service.child)
+
+
+def test_the_server_answers_an_image_defect_with_503_and_runs_no_later_page(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Through the real client: no failure row, 503 ``image_defect``, ``ready: false`` (the
+    S0 driver's operational stop), and the vendor command is not started again."""
+    monkeypatch.delenv(base.PROVIDER_CREDENTIAL, raising=False)
+    service = FakeService()
+    env = _stderr_env(tmp_path, 1, _MEASURED_REPORTS[0])
+    pipeline = srv.command_pipeline(_faked(_recipe(), tmp_path), service, env)
+    payload = _case(tmp_path)
+    for server in _serve(_settings(), pipeline, service.ready):
+        transport = Loopback(server.server_address[1])
+        monkeypatch.setattr(base, "post_bytes", transport)
+        for _ in range(2):
+            with pytest.raises(RunnerUnavailable):
+                _client(payload)
+        assert [(s, json.loads(raw)) for s, raw, _ in transport.seen] == [
+            (503, {"error": "image_defect"})
+        ] * 2
+        connection = http.client.HTTPConnection("127.0.0.1", server.server_address[1], timeout=10)
+        try:
+            connection.request("GET", "/health")
+            health = json.loads(connection.getresponse().read())
+        finally:
+            connection.close()
+        assert health["ready"] is False and service.ready() is True
+    assert len(_calls(tmp_path)) == 1
+
+
+@pytest.mark.parametrize(
+    "harness",
+    [dict(pipeline=FakePipeline(error=ModuleNotFoundError("No module named 'six'")))],
+    indirect=True,
+)
+def test_an_import_error_raised_in_process_is_an_image_defect(harness: Any) -> None:
+    pipeline, transport, payload = harness
+    for _ in range(2):
+        with pytest.raises(RunnerUnavailable):
+            _client(payload)
+    assert [json.loads(raw) for _, raw, _ in transport.seen] == [{"error": "image_defect"}] * 2
+    assert len(pipeline.calls) == 1
+
+
+# The watch by property: what it reports equals a search of the whole byte stream, for any
+# bytes, any line length and any split of a report across reads or across the mark.
+
+
+class _Draw:
+    """Deterministic draws for the property test: sha256 in counter mode (never for secrets)."""
+
+    def __init__(self, seed: str) -> None:
+        self.seed, self.count = seed.encode(), 0
+
+    def bytes(self, k: int) -> bytes:
+        out = b""
+        while len(out) < k:
+            self.count += 1
+            out += hashlib.sha256(self.seed + self.count.to_bytes(8, "big")).digest()
+        return out[:k]
+
+    def below(self, n: int) -> int:
+        return int.from_bytes(self.bytes(8), "big") % n
+
+    def between(self, low: int, high: int) -> int:
+        return low + self.below(high - low + 1)
+
+    def choice(self, items: Any) -> Any:
+        return items[self.below(len(items))]
+
+
+def _random_stream(rng: _Draw) -> bytes:
+    parts: list[bytes] = []
+    for _ in range(rng.between(0, 12)):
+        kind = rng.below(7)
+        if kind == 0:
+            parts.append(rng.bytes(rng.between(0, 300)))
+        elif kind == 1:
+            parts.append(b"\n")
+        elif kind == 2:
+            parts.append(rng.choice(srv.IMAGE_DEFECT_SIGNATURES).encode())
+        elif kind == 3:  # a near miss: a report cut by a newline
+            sig = rng.choice(srv.IMAGE_DEFECT_SIGNATURES).encode()
+            cut = rng.between(1, len(sig) - 1)
+            parts.append(sig[:cut] + b"\n" + sig[cut:])
+        elif kind == 4:  # a report straddling a read boundary
+            sig = rng.choice(srv.IMAGE_DEFECT_SIGNATURES).encode()
+            cut = rng.between(1, len(sig) - 1)
+            parts.append(b"y" * (srv.STDERR_READ_BYTES - cut) + sig + b"\n")
+        elif kind == 5:
+            parts.append(b"x" * rng.between(0, 3 * srv.STDERR_READ_BYTES))
+        else:
+            parts.append(rng.choice([b"Import", b"Error", b"No module", b"Protobuf ", b"\xe2\x82"]))
+    return b"".join(parts)
+
+
+def _expected(before: bytes, after: bytes) -> bool:
+    whole = before + after
+    return any(
+        start + len(sig) > len(before)
+        for sig in (s.encode() for s in srv.IMAGE_DEFECT_SIGNATURES)
+        for start in (m.start() for m in re.finditer(re.escape(sig), whole))
+    )
+
+
+def test_the_watch_reports_exactly_the_signatures_in_the_stream_by_property(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rng = _Draw("WO-D10-0U r2")
+    seen = {True: 0, False: 0}
+    for case in range(400):
+        before, after = _random_stream(rng), _random_stream(rng)
+        watch = srv.StderrWatch()
+        watch.follow(io.BytesIO(before)).join(10)
+        mark = watch.mark()
+        watch.follow(io.BytesIO(after)).join(10)
+        expected = _expected(before, after)
+        assert (watch.since(mark) is not None) is expected, (case, before[-80:], after[:80])
+        assert (watch.since(0) is not None) is _expected(b"", before + after), case
+        seen[expected] += 1
+    assert min(seen.values()) > 50, seen  # both outcomes were exercised
+    capsys.readouterr()  # what the watch forwarded to the pod log

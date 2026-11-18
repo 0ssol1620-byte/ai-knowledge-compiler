@@ -528,11 +528,16 @@ arena_intake:
       recipe: infra/runpod/v6/images/paddleocr-vl-akc
       provenance: "the production stage's base, apt packages, uv lock and package versions; not hash-locked, as production is not"
       use: evaluation_only
-      base: "nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04@sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802; Ubuntu python3, python3-pip, ca-certificates, libglib2.0-0, libgl1 unpinned; the NVIDIA container licence and the Ubuntu package licences not read"
+      base: "nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04@sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802; Ubuntu python3, python3-pip, ca-certificates, libglib2.0-0, libgl1, libgomp1 unpinned (libgomp1 added by WO-D10-0U: paddle's core loads libgomp.so.1); the NVIDIA container licence and the Ubuntu package licences not read"
       python_packages: >-
         workers/gpu-common/uv.lock (uv sync --locked); paddlepaddle-gpu 3.2.1 from
         the PaddlePaddle cu126 index; paddleocr[doc-parser] 3.7.0 with paddlex
-        3.7.2, and whatever they resolve to at build time. Not hash-locked: for this
+        3.7.2 and protobuf 7.36.1 (pinned by WO-D10-0U: sentencepiece 0.2.3's
+        generated code needs runtime 7.36.1 or newer; PyPI metadata of protobuf
+        7.36.1 read 2026-11-18, sha256
+        4aa5063828ecab5ddb4e41c9a098f8e460002098206dbbfd831feb4dce4e9bc3, outside the
+        repository in receipts/WO-D10-0U/r2/doc-snapshots/pypi/; licence field
+        "3-Clause BSD License"), and whatever they resolve to at build time. Not hash-locked: for this
         evaluation-only image the pin is the built digest plus the `uv pip freeze`
         and `uv pip list --format json` output the build prints, saved by the lead
         as a receipt;
