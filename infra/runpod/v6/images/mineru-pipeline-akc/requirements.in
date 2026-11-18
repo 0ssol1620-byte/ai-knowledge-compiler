@@ -7,3 +7,6 @@ torch==2.8.0
 torchvision==0.23.0
 transformers==4.57.3
 pypdfium2==4.30.0
+# Imported by MinerU 3.4.4's pipeline OCR (mineru/model/utils/pytorchocr/data/imaug/
+# operators.py) but not declared by it, so --no-deps never installed it (WO-D10-0U).
+six==1.17.0

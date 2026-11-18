@@ -103,7 +103,9 @@ def verify_revision_source(
 
 def serving_build_problems(serving: dict[str, Any]) -> list[str]:
     """Rules for a serving block that carries ``built``: the image was built from
-    ``image_build`` (a Dockerfile of this repository) or it was not, and nothing between."""
+    ``image_build`` (a Dockerfile of this repository) or it was not, and nothing between.
+    ``not_serving`` marks a built image that must not be launched: it names that exact image
+    and why, so it cannot carry over to the next digest recorded in the block."""
     if "built" not in serving:
         return []
     built, image = serving["built"], serving.get("image")
@@ -111,8 +113,19 @@ def serving_build_problems(serving: dict[str, Any]) -> list[str]:
     out = []
     if "image_target" in serving and not (isinstance(target, str) and target):
         out.append("image_target is not a non-empty string")
+    if "not_serving" in serving:
+        mark = serving["not_serving"]
+        if not (
+            isinstance(mark, dict)
+            and set(mark) == {"image", "reason"}
+            and isinstance(mark["reason"], str)
+            and mark["reason"].strip()
+        ):
+            out.append("not_serving is not exactly an image and a non-empty reason")
+        elif built is True and mark["image"] != image:
+            out.append("not_serving names another image than this block's")
     if built is False:
-        found = [f for f in BUILD_PROVENANCE if f in serving]
+        found = [f for f in (*BUILD_PROVENANCE, "not_serving") if f in serving]
         out += ["image named while built is false"] if image is not None else []
         return out + [f"{f} given while built is false" for f in found]
     if built is not True:

@@ -15,6 +15,7 @@ block carries zero traffic.
 from __future__ import annotations
 
 import copy
+import hashlib
 import re
 import runpy
 from pathlib import Path
@@ -122,6 +123,7 @@ def _unbuilt_row() -> dict[str, Any]:
     serving.update(built=False, image=None)
     for field in _PROVENANCE:
         del serving[field]
+    serving.pop("not_serving", None)  # a mark on a build goes with the build it marks
     return row
 
 
@@ -133,14 +135,36 @@ def _built_rows() -> dict[str, dict[str, Any]]:
     }
 
 
+# (source commit, run) per slot: C0 and C3 rebuilt by run 44216487886 (WO-D10-0U r3, their
+# import gates passed on the CPU runner); C1's job failed in that run, so C1 keeps its first build.
+_RUNS = {
+    "paddleocr_vl_1_6": ("9754168c92969e17a12c3877c3c0ba44de690918", "44145574050"),
+    "mineru": ("b5b349f1897d3f0d34a9ce749e358835d31f44d3", "44216487886"),
+    "mineru_vlm": ("b5b349f1897d3f0d34a9ce749e358835d31f44d3", "44216487886"),
+}
+_MINERU_IMAGE = _ROOT / "infra/runpod/v6/images/mineru-pipeline-akc"
+
+
 def test_the_three_arena_images_are_built_and_pinned_to_their_run() -> None:
     rows = _built_rows()
-    assert set(rows) == {"paddleocr_vl_1_6", "mineru", "mineru_vlm"}
+    assert set(rows) == set(_RUNS)
     for runner, row in rows.items():
         serving = row["runtime"]["serving"]
-        assert serving["source_commit"] == "9754168c92969e17a12c3877c3c0ba44de690918", runner
-        assert serving["workflow_run_id"] == "44145574050", runner
+        assert (serving["source_commit"], serving["workflow_run_id"]) == _RUNS[runner], runner
         assert serving["enabled"] is False and row["rollout"]["traffic_percent"] == 0, runner
+    # The rebuilt C0 and C3 were built from this tree's locks (b5b349f; unchanged since), so
+    # their recorded lock digests are those files' digests.
+    for runner, fields in {
+        "mineru": {"requirements_lock_sha256": "requirements.lock"},
+        "mineru_vlm": {
+            "requirements_lock_sha256": "requirements.lock",
+            "layer_lock_sha256": "requirements-c3.lock",
+        },
+    }.items():
+        serving = rows[runner]["runtime"]["serving"]
+        for field, name in fields.items():
+            digest = hashlib.sha256((_MINERU_IMAGE / name).read_bytes()).hexdigest()
+            assert serving[field] == f"sha256:{digest}", (runner, field)
     # C1 stays evaluation-only: its paddlepaddle-gpu licence file text is uncleared
     assert rows["paddleocr_vl_1_6"]["internal_validation"]["status"] == "candidate_unverified"
 
@@ -208,7 +232,9 @@ def test_a_built_image_is_in_this_repositorys_namespace() -> None:
             bad["runtime"]["serving"]["image"] = f"{other}@{digest}"
             assert any("image of this block" in p for p in _problems(bad)), (runner, other)
     text = _REGISTRY.read_text(encoding="utf-8")
-    bad_text = text.replace(f'"{namespace}/', '"ghcr.io/evil/', 1)
+    first = next(iter(_built_rows().values()))["runtime"]["serving"]["image"]
+    # every mention of that image, so its not_serving mark moves with it
+    bad_text = text.replace(f'"{first}"', '"ghcr.io/evil/' + first.split("/", 3)[3] + '"')
     assert bad_text != text
     validate = validator["validate"]
     original = validate.__globals__["load_yaml"]
@@ -263,7 +289,9 @@ def test_the_real_validate_refuses_a_built_block_with_a_broken_field() -> None:
     validate = validator["validate"]
     assert validate() == []
     text = _REGISTRY.read_text(encoding="utf-8")
-    bad = text.replace('build_log_sha256: "sha256:03a5', 'build_log_sha256: "x03a5', 1)
+    # A recorded value read from the registry, not typed here: a rebuild changes every one.
+    value = next(iter(_built_rows().values()))["runtime"]["serving"]["build_log_sha256"]
+    bad = text.replace(f'build_log_sha256: "{value}"', f'build_log_sha256: "x{value[7:]}"', 1)
     assert bad != text
     original = validate.__globals__["load_yaml"]
 
@@ -321,6 +349,65 @@ def test_image_build_names_a_dockerfile_inside_the_repository(tmp_path: Path) ->
         bad["runtime"]["serving"]["image_build"] = build
         assert "image_build is not a Dockerfile in this repository" in _problems(bad), build
     assert _problems(row) == []
+
+
+def test_not_serving_binds_the_c0_c1_and_c3_digests_and_not_the_next_one() -> None:
+    """WO-D10-0U: every recorded arena build stays ``built`` and is marked not to be launched
+    (C1, run 44145574050: libgomp and protobuf; C0 and C3, r3: rebuilt by run 44216487886 and
+    not yet launched, the lead removes the mark once a page has been served); the mark names
+    the exact image, so recording a rebuilt digest without deciding about the mark fails, as
+    does a mark without a reason or on an unbuilt block."""
+    rows = _built_rows()
+    rebuilt_reason = "rebuilt in run 44216487886; not yet launched"
+    causes = {
+        "mineru": [rebuilt_reason],
+        "mineru_vlm": [rebuilt_reason],
+        "paddleocr_vl_1_6": ["libgomp", "protobuf 6.33.4", "sentencepiece 0.2.3"],
+    }
+    # The digests run 44216487886 read back from GHCR (its build-receipt.json per slot).
+    namespace = "ghcr.io/0ssol1620-byte/ai-knowledge-compiler/arena-mineru-pipeline-akc"
+    images = {
+        "mineru": f"{namespace}-c0@sha256:"
+        "e89143bcc86d7dc0b2c9e105cf01c0fed85b7801299d2eecb7adc3414f2f615b",
+        "mineru_vlm": f"{namespace}-c3@sha256:"
+        "00a88750fca76b492ac84cea4e95ae30afb96fe4af041ae7219af6a317debdba",
+    }
+    marked = {k for k, r in rows.items() if "not_serving" in r["runtime"]["serving"]}
+    assert marked == set(causes)  # every recorded build (C1 added by the closing round)
+    for runner, image in images.items():
+        serving = rows[runner]["runtime"]["serving"]
+        assert serving["image"] == image, runner
+        assert serving["not_serving"] == {"image": image, "reason": rebuilt_reason}, runner
+    for runner in marked:
+        row = rows[runner]
+        serving = row["runtime"]["serving"]
+        assert serving["built"] is True and _problems(row) == [], runner
+        assert serving["not_serving"]["image"] == serving["image"], runner
+        for cause in causes[runner]:
+            assert cause in serving["not_serving"]["reason"], (runner, cause)
+        rebuilt = copy.deepcopy(serving)
+        rebuilt["image"] = serving["image"].split("@")[0] + "@sha256:" + "a" * 64
+        assert _build_problems(rebuilt) == ["not_serving names another image than this block's"]
+        for mark in (
+            None,
+            "do not launch",
+            [],
+            {"image": serving["image"]},
+            {"image": serving["image"], "reason": ""},
+            {"image": serving["image"], "reason": "  "},
+            {"image": serving["image"], "reason": 7},
+            {"image": serving["image"], "reason": "x", "until": "later"},
+        ):
+            bad = copy.deepcopy(serving)
+            bad["not_serving"] = mark
+            assert _build_problems(bad) == [
+                "not_serving is not exactly an image and a non-empty reason"
+            ], (runner, mark)
+        unbuilt = copy.deepcopy(serving)
+        unbuilt.update(built=False, image=None)
+        for field in _PROVENANCE:
+            del unbuilt[field]
+        assert _build_problems(unbuilt) == ["not_serving given while built is false"], runner
 
 
 def test_a_drifted_variant_is_caught() -> None:
