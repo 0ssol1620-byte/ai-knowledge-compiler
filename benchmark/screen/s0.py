@@ -21,7 +21,12 @@ a new pod). A wrong served model, provider, revision or recipe, in a page answer
 answer, is an integrity stop (exit 4). A failure is classed by the selection's one table
 (``select_5h``, decision 5H-18), read the way S1 reads it; a token outside that table refuses
 the summary (exit 4), never a class of its own. Nothing printed carries page text, a doc id,
-gold or a credential: progress lines name the page by its ordinal only.
+gold or a credential: progress lines name the page by its ordinal only. A manifest with no
+page of the driver's split is refused (exit 2), never a run of zero pages.
+
+The S4 collection on the holdout (``benchmark.screen.s4 collect``) is this driver with the
+hooks below set otherwise: the split and recipe digest it opens, its access log, no gold, and
+the pins it adds to ``s0-run.json``. Their defaults here are the dev run S0 made.
 """
 
 from __future__ import annotations
@@ -174,6 +179,9 @@ def parse_args(argv: list[str] | None) -> argparse.Namespace:
 class Driver:
     """Pre-checks, readiness and the per-page ``call`` passed to ``run_screen``."""
 
+    split, purpose = "dev", "tune"  # what the guard opens
+    frozen_recipe_sha256: str | None = None
+
     def __init__(
         self,
         args: argparse.Namespace,
@@ -252,7 +260,11 @@ class Driver:
             verify(manifest, Path(a.corpus_root))
         except Exception as exc:  # the message may name a document: print the type only
             raise Exit(EXIT_REFUSED, f"manifest verify failed ({type(exc).__name__})") from None
-        self.guard = HoldoutGuard(manifest, self.out / "holdout-access.jsonl")
+        if not any(
+            d.get("split") == self.split and d["page_count"] > 0 for d in manifest["documents"]
+        ):
+            raise Exit(EXIT_REFUSED, f"the manifest has no {self.split} page: zero pages refused")
+        self.guard = HoldoutGuard(manifest, self._access_log())
         allow = {
             h.strip().lower()
             for h in os.getenv("AKC_BENCHMARK_ENDPOINT_ALLOWLIST", "").split(",")
@@ -264,7 +276,8 @@ class Driver:
         if token is None:
             raise Exit(EXIT_REFUSED, f"{PROVIDER_CREDENTIAL} is not set")
         self.auth = {"Authorization": f"Bearer {token}"}
-        self.gold = self._gold(Path(a.gold))
+        extra = self._frozen_pins()
+        self.gold = self._read_gold()
         self.out.mkdir(parents=True, exist_ok=True)
         pins = {
             "candidate_id": self.cid,
@@ -273,6 +286,7 @@ class Driver:
             "image_digest": a.image_digest,
             "config_sha256": config,
             "normaliser_sha256": MODULE_SHA256,
+            **extra,
         }
         run_file = self.out / "s0-run.json"
         if run_file.is_file():
@@ -285,7 +299,7 @@ class Driver:
             for line in self.transport.read_text(encoding="utf-8").splitlines():
                 if line.strip():
                     self.attempts[json.loads(line)["case"]] += 1
-        docs = self.guard.load("dev", "tune")
+        docs = self.guard.load(self.split, self.purpose, self.frozen_recipe_sha256)
         self.case_of = {
             f"{d['doc_id']}#{p}": _case(d, p)["benchmark_case_id"]
             for d in docs
@@ -301,6 +315,17 @@ class Driver:
                 "started_utc": self.now().isoformat(),
             },
         )
+
+    def _access_log(self) -> Path:
+        return self.out / "holdout-access.jsonl"
+
+    def _frozen_pins(self) -> dict[str, Any]:
+        """Checked after the candidate is built and before anything is written or the guard is
+        opened; what it returns is added to the run's pins. S0 adds nothing."""
+        return {}
+
+    def _read_gold(self) -> dict[str, dict[str, Any]] | None:
+        return self._gold(Path(self.args.gold))
 
     @staticmethod
     def _gold(path: Path) -> dict[str, dict[str, Any]]:
@@ -615,8 +640,9 @@ class Driver:
                 break
             records = run_screen(
                 guard=self.guard,
-                split="dev",
-                purpose="tune",
+                split=self.split,
+                purpose=self.purpose,
+                frozen_recipe_sha256=self.frozen_recipe_sha256,
                 candidate=self.candidate,
                 corpus_root=Path(self.args.corpus_root),
                 gold=self.gold,
@@ -647,11 +673,11 @@ class Driver:
             self.out / "s0-summary.json",
             (json.dumps(summary, indent=2, sort_keys=True) + "\n").encode(),
         )
-        print(
-            f"S0 {self.cid} done pages={summary['pages']} accepted={summary['accepted']}",
-            flush=True,
-        )
+        print(self._done_line(summary), flush=True)
         return EXIT_OK
+
+    def _done_line(self, summary: dict[str, Any]) -> str:
+        return f"S0 {self.cid} done pages={summary['pages']} accepted={summary['accepted']}"
 
     def _raw(self, record: dict[str, Any]) -> Path:
         return self.out / "raw" / (str(record["record_key"]).removeprefix("sha256:") + ".json")

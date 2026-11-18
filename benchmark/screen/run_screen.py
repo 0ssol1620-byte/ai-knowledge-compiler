@@ -10,6 +10,12 @@ document); it is null when the call returned. A missing or changed source file i
 integrity violation and stops the run before any call.
 Raw output is written once per (page, candidate, revision, image digest, config); the
 same bytes are a cache hit, different bytes raise ``ImmutableOutputError``.
+
+``gold=None`` collects without scoring (S4, decision D-6: no gold in the collecting process):
+no gold is read, ``critical`` and ``accepted`` are null, ``metrics`` is empty and
+``hard_failures`` holds only the failure of the call or of the output contract, never a
+scorer flag. The holder of the gold scores the stored outputs afterwards
+(``benchmark.screen.s4 report``).
 """
 
 from __future__ import annotations
@@ -152,7 +158,7 @@ def run_screen(
     purpose: str,
     candidate: Candidate,
     corpus_root: Path,
-    gold: Mapping[str, dict[str, Any]],
+    gold: Mapping[str, dict[str, Any]] | None,
     raw_dir: Path,
     records_path: Path,
     frozen_recipe_sha256: str | None = None,
@@ -160,19 +166,21 @@ def run_screen(
 ) -> list[dict[str, Any]]:
     """Run one candidate over a split; returns the latest record of every page.
 
-    ``gold`` maps ``doc_id#page`` to the page ground truth (kept outside the repository).
+    ``gold`` maps ``doc_id#page`` to the page ground truth (kept outside the repository);
+    None collects without scoring (module docstring).
     ``records_path`` is an append-only JSONL ledger: a rerun skips pages that already hold
     raw output (verifying its hash) and retries pages that failed before producing any.
     """
     candidate.validate()
     docs = guard.load(split, purpose, frozen_recipe_sha256)
     pages = [(d, p) for d in docs for p in range(d["page_count"])]
-    missing = [f"{d['doc_id']}#{p}" for d, p in pages if f"{d['doc_id']}#{p}" not in gold]
-    if missing:
-        raise ContractError(f"gold missing for {len(missing)} page(s), first {missing[0]!r}")
-    for d, p in pages:  # an unparseable gold field must stop the run before any paid call
-        for f in gold[f"{d['doc_id']}#{p}"].get("critical_fields") or []:
-            gold_value(f)
+    if gold is not None:
+        missing = [f"{d['doc_id']}#{p}" for d, p in pages if f"{d['doc_id']}#{p}" not in gold]
+        if missing:
+            raise ContractError(f"gold missing for {len(missing)} page(s), first {missing[0]!r}")
+        for d, p in pages:  # an unparseable gold field must stop the run before any paid call
+            for f in gold[f"{d['doc_id']}#{p}"].get("critical_fields") or []:
+                gold_value(f)
     for d in docs:  # integrity violation, not a page failure: stop before any call
         src = corpus_root / d["doc_id"]
         if not src.is_file() or _sha(src.read_bytes()) != d["source_sha256"]:
@@ -205,8 +213,8 @@ def run_screen(
             out.append(prior)
             continue
         case = _case(doc, page)
-        truth = gold[page_id]
-        fields = truth.get("critical_fields") or []
+        truth = None if gold is None else gold[page_id]
+        fields = [] if truth is None else truth.get("critical_fields") or []
         started = time.perf_counter()
         parsed: Any = None
         failures: list[str] = []
@@ -257,14 +265,16 @@ def run_screen(
                 failures = ["contract_failed"]
             else:
                 output = parsed
-        crit = {"n": len(fields), "exact": 0, "accepted_errors": 0}
+        crit: dict[str, int] | None = None
         metrics: dict[str, Any] = {}
-        if output is not None:
-            metrics, failures = score_case(truth, output, output.get("metrics"))
-            score = score_critical_fields(fields, str(output.get("text") or ""))
-            crit["exact"] = score.exact
-            if not failures:
-                crit["accepted_errors"] = score.n - score.exact
+        if truth is not None:
+            crit = {"n": len(fields), "exact": 0, "accepted_errors": 0}
+            if output is not None:
+                metrics, failures = score_case(truth, output, output.get("metrics"))
+                score = score_critical_fields(fields, str(output.get("text") or ""))
+                crit["exact"] = score.exact
+                if not failures:
+                    crit["accepted_errors"] = score.n - score.exact
         runtime = output.get("metrics") if output else None
         latency = _num(runtime, "latency_ms")
         record = {
@@ -281,7 +291,7 @@ def run_screen(
             "critical": crit,
             "hard_failures": sorted(set(failures)),
             "provider_error_type": error_type,
-            "accepted": output is not None and not failures,
+            "accepted": None if truth is None else output is not None and not failures,
             "gpu_seconds": _num(runtime, "gpu_seconds"),
             "provider_cost_usd": _num(runtime, "estimated_cost_usd"),
             "latency_ms": latency if latency is not None else wall_ms,
