@@ -40,6 +40,9 @@ function world({ remote = false, fault = "" } = {}) {
     throw new Error(`unexpected bearer for ${resource}`);
   };
   const runConsumer = async (script, args) => {
+    if (live.key && fault === "pre_cli_503" && script === "tavonel-cli.mjs") throw new Error("tavonel-cli.mjs exited 1: tavonel: 503 {\"code\":\"CORE_UNAVAILABLE\"}");
+    if (live.key && fault === "pre_stdio_503" && script === "tavonel-mcp.mjs") return `${JSON.stringify({ jsonrpc: "2.0", id: 2, result: { isError: true, content: [{ type: "text", text: "API_ERROR_503: CORE_UNAVAILABLE" }] } })}
+`;
     if (live.key) return script === "tavonel-cli.mjs" ? "{}" : `${JSON.stringify({ jsonrpc: "2.0", id: 2, result: { isError: false, content: [{ type: "text", text: "{}" }] } })}\n`;
     if (fault === "key_still_works") return script === "tavonel-cli.mjs" ? "{}" : `${JSON.stringify({ jsonrpc: "2.0", id: 2, result: { isError: false, content: [{ type: "text", text: "{}" }] } })}\n`;
     if (script === "tavonel-cli.mjs") throw new Error(`tavonel-cli.mjs exited 1: tavonel: ${fault === "key_500" ? 500 : 401} {"code":"API_KEY_INVALID"}`);
@@ -127,6 +130,15 @@ test("a remote MCP call that still works after the revoke route fails the phase 
   assert.equal(out.remote_mcp, "not_refused");
   assert.ok(!Object.hasOwn(out, "remote_mcp_refusal_seconds"));
 });
+
+for (const fault of ["pre_cli_503", "pre_stdio_503"]) {
+  test(`a consumer that fails with 503 before the revoke (${fault}) is a broken control, not a held one`, async () => {
+    const w = world({ fault });
+    const out = await runPhase(revokePhase, w.input());
+    assert.deepEqual(out, { outcome: "failed", control: "broken", connector_revoke: "simulated" });
+    assert.ok(!w.calls.some(call => call.startsWith("DELETE")), "nothing was revoked");
+  });
+}
 
 test("a broken control stops before anything is revoked", async () => {
   const w = world();

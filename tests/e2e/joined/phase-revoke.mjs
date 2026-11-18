@@ -70,17 +70,17 @@ export function judgeRefusal(result, probes) {
   return probes.some(probe => seen.includes(probe.toLowerCase())) ? "bad_body" : "refused";
 }
 
-/** CLI: refused only when it exited 1 with the API's own 401. Any other failure (timeout, spawn) is operational and rethrown. */
+/** CLI: "ok" answered, "refused" exited 1 with the API's own 401, "other" any other API status. Timeout/spawn failures are operational and rethrown. */
 async function cliRefusal(s) {
-  try { await s.runConsumer("tavonel-cli.mjs", ["ask_world", s.collectionId, s.question], ""); return "not_refused"; }
+  try { await s.runConsumer("tavonel-cli.mjs", ["ask_world", s.collectionId, s.question], ""); return "ok"; }
   catch (error) {
     const status = /^tavonel-cli\.mjs exited 1: tavonel: (\d{3}) /.exec(String(error?.message))?.[1];
     if (status === undefined) throw error;
-    return status === "401" ? "refused" : "not_refused";
+    return status === "401" ? "refused" : "other";
   }
 }
 
-/** MCP stdio: the tool failure travels in a result, text starts with API_ERROR_<status>. */
+/** MCP stdio: the tool failure travels in a result, text starts with API_ERROR_<status>. Same three values as the CLI. */
 async function stdioRefusal(s) {
   const frames = [
     { jsonrpc: "2.0", id: 1, method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "tavonel-joined-e2e", version: "1" } } },
@@ -90,8 +90,8 @@ async function stdioRefusal(s) {
   const out = await s.runConsumer("tavonel-mcp.mjs", [], `${frames.map(frame => JSON.stringify(frame)).join("\n")}\n`);
   const reply = out.trim().split("\n").filter(Boolean).map(line => JSON.parse(line)).find(frame => frame.id === 2);
   if (!isObject(reply?.result) || typeof reply.result.isError !== "boolean") throw new Error("MCP stdio gave no tool result");
-  if (!reply.result.isError) return "not_refused";
-  return /^API_ERROR_401(:|$)/.test(String(reply.result.content?.[0]?.text)) ? "refused" : "not_refused";
+  if (!reply.result.isError) return "ok";
+  return /^API_ERROR_401(:|$)/.test(String(reply.result.content?.[0]?.text)) ? "refused" : "other";
 }
 
 const memberCalls = s => ({
@@ -128,7 +128,7 @@ export const revokePhase = definePhase({
       const members = await Promise.all(Object.values(calls).map(async spec => (await callAs(s.member.token, spec())).status === 200));
       const reads = [await cliRefusal(s), await stdioRefusal(s)];
       const remoteOk = s.remoteEndpoint === "off" ? true : (await remote(s.remoteToken)).status === 200;
-      return members.every(Boolean) && reads.every(read => read === "not_refused") && remoteOk && await ownerAnswers();
+      return members.every(Boolean) && reads.every(read => read === "ok") && remoteOk && await ownerAnswers();
     });
     result.control = control ? "held" : "broken";
     if (!control) return result;
@@ -143,8 +143,9 @@ export const revokePhase = definePhase({
     // API key revoke: the owner session is unaffected, the key is refused by both shipped consumers.
     const key = await run("api-key-revoke", () => app(`/api/developer/keys/${s.apiKeyId}`, s.ownerToken, undefined, "DELETE"));
     check("owner revokes the API key", key.status, 204);
-    result.api_key_cli = await run("api-key-cli", () => cliRefusal(s));
-    result.api_key_mcp_stdio = await run("api-key-mcp-stdio", () => stdioRefusal(s));
+    const summary = value => (value === "refused" ? "refused" : "not_refused");  // "ok" and "other" are both not a refusal
+    result.api_key_cli = summary(await run("api-key-cli", () => cliRefusal(s)));
+    result.api_key_mcp_stdio = summary(await run("api-key-mcp-stdio", () => stdioRefusal(s)));
 
     // Remote MCP grant: the shipped revoke route, then the next tools/call.
     if (s.remoteEndpoint === "off") result.remote_mcp = "off_not_exercised";
