@@ -1,7 +1,8 @@
 /**
  * Joined phase `modify` (D20 WO-D20-2): a new source revision arrives after revision 1 is the active World.
  *
- *  1. until revision 2's candidate is promoted, ask answers from revision 1's manifest;
+ *  1. until revision 2's candidate is promoted, ask, search and the World lens all read revision 1's manifest (before
+ *     and after revision 2's candidate compiles), and once it is promoted all three read revision 2's;
  *  2. a candidate compiled from revision 1 after revision 2 arrived is refused at promote (a catalogued 409) and the
  *     active pointer does not move;
  *  3. revision 2's candidate promotes; the changed value is answered from revision 2 with evidence bound to revision 2,
@@ -15,6 +16,10 @@
  * functions: uploadRevision2() -> {versionKey} and compileCandidate({revision: 1|2}) -> {manifestDigest, path} with
  * path "revision_compile" | "full_compile". A semantic miss is outcome `not_met` with the stage it failed at; an
  * operational error (a rejected request, a timeout) is rethrown, never turned into a verdict.
+ *
+ * Reads: POST /api/v1/collections/{id}/ask, POST /api/collections/{id}/search, GET /api/v1/world/{id}/evidence?limit=1
+ * (neither of the last two reads a feature flag at Foundation 8e7a593c), POST /api/collections/{id}/promote, GET
+ * /api/collections/{id}/world, and the pointer row by SQL.
  */
 import { AssertionError } from "node:assert";
 import { randomUUID } from "node:crypto";
@@ -28,7 +33,7 @@ export const STALE_PROMOTE_CODES = Object.freeze({
   WORLD_VERSION_BINDING_CONFLICT: "world_version_binding_conflict",
 });
 const STAGES = ["none", "rev1_served_before_promote", "stale_promote_refused", "stale_pointer_unchanged", "rev1_served_after_compile", "rev2_promoted",
-  "rev2_value_answered", "rev2_evidence_bound", "unchanged_region_bound", "history_kept"];
+  "rev2_served_after_promote", "rev2_value_answered", "rev2_evidence_bound", "unchanged_region_bound", "history_kept"];
 const COMPILE_PATHS = ["revision_compile", "full_compile"];
 const KEY = /^[A-Za-z0-9_-]{1,128}$/;
 const DIGEST = /^sha256:[0-9a-f]{64}$/;
@@ -45,7 +50,7 @@ const candidate = (value, which) => {
 export const phaseModify = definePhase({
   name: "modify",
   fields: {
-    failed_at: STAGES, search_lens: ["not_exercised"], revision_compile_flag: ["on", "off"], rev2_compile_path: COMPILE_PATHS,
+    failed_at: STAGES, revision_compile_flag: ["on", "off"], rev2_compile_path: COMPILE_PATHS,
     stale_refusal_code: Object.values(STALE_PROMOTE_CODES), active_revision_after: COUNT, history_versions: COUNT,
   },
   async run({ app, sql, check, hop, step, state }) {
@@ -55,37 +60,55 @@ export const phaseModify = definePhase({
     const active = need(state, "activeManifestDigest", v => typeof v === "string" && DIGEST.test(v));
     const revision = need(state, "activeRevision", v => Number.isSafeInteger(v) && v > 0);
     const rev1VersionKey = need(state, "rev1VersionKey", v => typeof v === "string" && v.length > 0);
-    const [changedQuestion, unchangedQuestion] = ["changedQuestion", "unchangedQuestion"].map(key => need(state, key, v => typeof v === "string" && v.length > 0));
+    // Exactly what the ask and search routes admit (3+ characters after NFKC and whitespace folding, at most 500, a body of
+    // at most 2,048 bytes), so a route's 400 can never be read as the World answering from the wrong revision.
+    const [changedQuestion, unchangedQuestion] = ["changedQuestion", "unchangedQuestion"].map(key => need(state, key, v => typeof v === "string"
+      && v.normalize("NFKC").replace(/\s+/g, " ").trim().length >= 3 && v.length <= 500 && Buffer.byteLength(JSON.stringify({ question: v })) <= 2_048));
     const [rev1Value, rev2Value, unchangedPattern] = ["rev1Value", "rev2Value", "unchangedPattern"].map(key => need(state, key, v => v instanceof RegExp));
-    const region = need(state, "unchangedRegion", v => v && Number.isSafeInteger(v.pageNumber1) && Array.isArray(v.bbox1000) && v.bbox1000.length === 4);
+    const region = need(state, "unchangedRegion", v => v && Number.isSafeInteger(v.pageNumber1) && v.pageNumber1 > 0
+      && Array.isArray(v.bbox1000) && v.bbox1000.length === 4 && v.bbox1000.every(n => Number.isFinite(n)));
     const upload = need(state, "uploadRevision2", v => typeof v === "function");
     const compile = need(state, "compileCandidate", v => typeof v === "function");
     const flag = booleanFlagState(need(state, "revisionCompileEnabled", v => typeof v === "boolean"), "revision_compile");
-    // search/fetch is flag-gated and off by default (LD-20-7) and lens is not driven here: reported, not silently skipped.
-    const result = { revision_compile_flag: flag, search_lens: "not_exercised" };
+    const result = { revision_compile_flag: flag };
 
     const pointer = () => sql(`select manifest_digest||'@'||revision from public.foundation_active_worlds where workspace_key='${workspace}' and collection_id='${collectionId}'`);
-    const ask = async question => (await app(`/api/v1/collections/${collectionId}/ask`, token, { question })).body;
+    // Every read is judged on its status as well as its body: a non-200 is never read as an answer.
+    // The harness's app resolves {status, body} or rejects; anything else is a harness fault, thrown, never judged.
+    const read = async (...args) => {
+      const response = await app(...args);
+      if (!(response !== null && typeof response === "object" && Number.isSafeInteger(response.status))) throw new TypeError("phase modify: app returned no response");
+      return response;
+    };
+    const ask = question => read(`/api/v1/collections/${collectionId}/ask`, token, { question });
     const says = (body, pattern) => typeof body?.answer === "string" && pattern.test(body.answer);
-    const promote = manifestDigest => app(`/api/collections/${collectionId}/promote`, token, {
+    const promote = manifestDigest => read(`/api/collections/${collectionId}/promote`, token, {
       operationId: randomUUID(), manifestDigest, expectedCurrentManifest: active, expectedCurrentRevision: revision,
       reason: "Joined E2E modify phase: promote a reviewed revision.",
     });
-    const bound = (c, versionKey) => [c?.sourceId, c?.sourceVersionId].some(v => String(v).includes(versionKey));
+    // A citation names its source version exactly (sourceVersionId = the upload's versionKey); a key that is a prefix or a
+    // substring of another, or an id coerced to a string, is not that version.
+    const bound = (c, versionKey) => typeof c?.sourceVersionId === "string" && c.sourceVersionId === versionKey;
     let stage = "none";
     // Only a failed verdict names a stage; an AssertionError from anywhere else (upload, compile, harness check) is rethrown below.
     const verdict = (name, actual, expected) => { try { check(`modify/${name}`, actual, expected); } catch (error) { stage = name; throw error; } };
-    const servedFromActive = async name => {
-      const body = await ask(changedQuestion);
-      verdict(name, [body?.code, body?.activeWorld?.manifestDigest, says(body, rev2Value), pointer()],
-        ["GROUNDED_ANSWER", active, false, `${active}@${revision}`]);
+    /** The three read surfaces build item 1 names -- ask, collection search and a World lens -- and the pointer, all on one
+     * World: `digest` at `rev`. Before the promote the answer must also not carry revision 2's value. Returns the ask body. */
+    const servedFrom = async (name, digest, rev, beforePromote) => {
+      const asked = await ask(changedQuestion);
+      const searched = await read(`/api/collections/${collectionId}/search`, token, { query: changedQuestion });
+      const lens = await read(`/api/v1/world/${collectionId}/evidence?limit=1`, token);
+      verdict(name, [asked?.status, asked?.body?.code, asked?.body?.activeWorld?.manifestDigest, searched?.status, searched?.body?.activeWorld?.manifestDigest,
+        lens?.status, lens?.body?.world?.manifestDigest, pointer(), ...(beforePromote ? [says(asked?.body, rev2Value)] : [])],
+      [200, "GROUNDED_ANSWER", digest, 200, digest, 200, digest, `${digest}@${rev}`, ...(beforePromote ? [false] : [])]);
+      return asked.body;
     };
     try {
       hop("modify");
       const rev2 = await step("upload-rev2", STEP_MS, upload);
       if (!(typeof rev2?.versionKey === "string" && rev2.versionKey.length > 0)) throw new TypeError("phase modify: uploadRevision2 returned no versionKey");
 
-      await servedFromActive("rev1_served_before_promote");
+      await servedFrom("rev1_served_before_promote", active, revision, true);
 
       const stale = candidate(await step("compile-stale", STEP_MS, () => compile({ revision: 1 })), 1);
       const refused = await promote(stale.manifestDigest);
@@ -95,24 +118,23 @@ export const phaseModify = definePhase({
 
       const fresh = candidate(await step("compile-rev2", STEP_MS, () => compile({ revision: 2 })), 2);
       result.rev2_compile_path = fresh.path;
-      await servedFromActive("rev1_served_after_compile");
+      await servedFrom("rev1_served_after_compile", active, revision, true);
       const promoted = await promote(fresh.manifestDigest);
       verdict("rev2_promoted", [promoted.status, promoted.body?.code, pointer()], [200, "WORLD_ACTIVE", `${fresh.manifestDigest}@${revision + 1}`]);
       result.active_revision_after = revision + 1;
 
-      const after = await ask(changedQuestion);
-      verdict("rev2_value_answered", [after?.code, after?.activeWorld?.manifestDigest, says(after, rev2Value), says(after, rev1Value)],
-        ["GROUNDED_ANSWER", fresh.manifestDigest, true, false]);
+      const after = await servedFrom("rev2_served_after_promote", fresh.manifestDigest, revision + 1, false);
+      verdict("rev2_value_answered", [says(after, rev2Value), says(after, rev1Value)], [true, false]);
       const cited = (after.citations ?? []).filter(c => rev2Value.test(c?.excerpt ?? ""));
       verdict("rev2_evidence_bound", [cited.length > 0, cited.every(c => bound(c, rev2.versionKey)), cited.some(c => bound(c, rev1VersionKey))], [true, true, false]);
 
-      const unchanged = await ask(unchangedQuestion);
+      const { status: unchangedStatus, body: unchanged } = await ask(unchangedQuestion);
       const kept = (unchanged?.citations ?? []).filter(c => unchangedPattern.test(c?.excerpt ?? ""));
-      verdict("unchanged_region_bound", [unchanged?.activeWorld?.manifestDigest, kept.length > 0,
+      verdict("unchanged_region_bound", [unchangedStatus, unchanged?.activeWorld?.manifestDigest, kept.length > 0,
         kept.every(c => c.pageNumber1 === region.pageNumber1 && JSON.stringify(c.bbox1000) === JSON.stringify(region.bbox1000))],
-        [fresh.manifestDigest, true, true]);
+        [200, fresh.manifestDigest, true, true]);
 
-      const world = await app(`/api/collections/${collectionId}/world`, token);
+      const world = await read(`/api/collections/${collectionId}/world`, token);
       const versions = Array.isArray(world.body?.versions) ? world.body.versions : [];
       const lifecycle = digest => versions.find(v => v?.manifest_digest === digest)?.lifecycle_status;
       verdict("history_kept", [world.status, lifecycle(active), lifecycle(fresh.manifestDigest)], [200, "superseded", "active"]);
