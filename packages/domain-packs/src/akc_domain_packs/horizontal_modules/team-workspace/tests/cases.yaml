@@ -1,0 +1,7 @@
+blueprint: team-workspace
+kind: conformance-cases
+version: 1.0.0
+cases:
+  - {id: decision_with_minutes, fixture: meeting_minutes, expected: pass}
+  - {id: owner_not_stated, fixture: action_without_owner, expected: unresolved}
+  - {id: cross_team_scope, fixture: cross_team_mix, expected: quarantine}

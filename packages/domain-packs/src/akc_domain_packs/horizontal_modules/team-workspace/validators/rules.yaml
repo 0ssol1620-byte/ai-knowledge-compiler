@@ -1,0 +1,8 @@
+blueprint: team-workspace
+kind: validation-rules
+version: 1.0.0
+rules:
+  - {id: source_coverage, severity: critical, minimum: 1.0}
+  - {id: privacy_scope, severity: critical, minimum: 1.0}
+  - {id: owner_evidence, severity: high, minimum: 1.0}
+  - {id: date_fidelity, severity: high, minimum: 1.0}

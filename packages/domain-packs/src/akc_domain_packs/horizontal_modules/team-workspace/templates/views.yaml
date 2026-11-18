@@ -1,0 +1,8 @@
+blueprint: team-workspace
+kind: view-templates
+version: 1.0.0
+views:
+  - {name: Meetings, primary_type: Meeting, sort: source_date_desc}
+  - {name: Decisions, primary_type: Decision, sort: source_date_desc}
+  - {name: Actions, primary_type: ActionItem, sort: source_date_desc}
+  - {name: Milestones, primary_type: Milestone, sort: stable_title}

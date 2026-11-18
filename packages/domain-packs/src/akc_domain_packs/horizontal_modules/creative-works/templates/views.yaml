@@ -1,0 +1,8 @@
+blueprint: creative-works
+kind: view-templates
+version: 1.0.0
+views:
+  - {name: Works, primary_type: Work, sort: stable_title}
+  - {name: Characters, primary_type: Character, sort: stable_title}
+  - {name: Settings, primary_type: Setting, sort: stable_title}
+  - {name: Scenes, primary_type: Scene, sort: source_order}

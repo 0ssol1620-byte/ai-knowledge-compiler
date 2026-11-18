@@ -39,6 +39,7 @@ from akc_cir.knowledge_model import (
 )
 from akc_cir.models import SourceRef
 from akc_domain_packs import ArchitectureProfile, plan_architecture
+from akc_domain_packs.horizontal import horizontal_blueprints
 
 from .compiler import (
     ARCHITECTURE_USER_GOAL,
@@ -574,7 +575,8 @@ def corpus_reduce(parts: Sequence[ReducePart]) -> tuple[dict[str, Any], dict[str
             corpus_size=len(order),
             temporal_structure=semantics.temporal_structure,
             requested_blueprint=first.requested_blueprint,
-        )
+        ),
+        registry=horizontal_blueprints(),
     )
 
     all_refs = tuple(

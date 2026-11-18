@@ -16,10 +16,12 @@ Identifier = Annotated[str, Field(pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,255}$"
 BlueprintId = Literal[
     "corporate-filings",
     "course-materials",
+    "creative-works",
     "generic-mixed-corpus",
     "legal-contracts",
     "personal-knowledge",
     "research-library",
+    "team-workspace",
     "technical-documentation",
 ]
 

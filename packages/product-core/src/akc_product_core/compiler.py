@@ -54,6 +54,7 @@ from akc_cir.semantic_diff import (
     diff_documents,
 )
 from akc_domain_packs import ArchitecturePlan, ArchitectureProfile, plan_architecture
+from akc_domain_packs.horizontal import horizontal_blueprints
 from pydantic import BaseModel
 
 from .contracts import (
@@ -403,7 +404,8 @@ class ProductCoreCompiler:
                 corpus_size=len(canonical_documents),
                 temporal_structure=semantics.temporal_structure,
                 requested_blueprint=request.requested_blueprint,
-            )
+            ),
+            registry=horizontal_blueprints(),
         )
         if not semantics.claims:
             review_reasons.append("SEMANTIC_CLAIMS_EMPTY")

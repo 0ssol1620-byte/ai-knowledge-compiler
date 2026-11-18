@@ -89,6 +89,8 @@ KnowledgeBlueprintId = Literal[
     "personal-knowledge",
     "legal-contracts",
     "generic-mixed-corpus",
+    "creative-works",
+    "team-workspace",
 ]
 
 
