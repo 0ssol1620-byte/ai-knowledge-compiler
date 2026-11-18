@@ -27,7 +27,7 @@ export const STALE_PROMOTE_CODES = Object.freeze({
   WORLD_CANDIDATE_SCOPE_CHANGED: "world_candidate_scope_changed",
   WORLD_VERSION_BINDING_CONFLICT: "world_version_binding_conflict",
 });
-const STAGES = ["none", "rev1_served_before_promote", "stale_promote_refused", "stale_pointer_unchanged", "rev2_promoted",
+const STAGES = ["none", "rev1_served_before_promote", "stale_promote_refused", "stale_pointer_unchanged", "rev1_served_after_compile", "rev2_promoted",
   "rev2_value_answered", "rev2_evidence_bound", "unchanged_region_bound", "history_kept"];
 const COMPILE_PATHS = ["revision_compile", "full_compile"];
 const KEY = /^[A-Za-z0-9_-]{1,128}$/;
@@ -45,7 +45,7 @@ const candidate = (value, which) => {
 export const phaseModify = definePhase({
   name: "modify",
   fields: {
-    failed_at: STAGES, revision_compile_flag: ["on", "off"], rev2_compile_path: COMPILE_PATHS,
+    failed_at: STAGES, search_lens: ["not_exercised"], revision_compile_flag: ["on", "off"], rev2_compile_path: COMPILE_PATHS,
     stale_refusal_code: Object.values(STALE_PROMOTE_CODES), active_revision_after: COUNT, history_versions: COUNT,
   },
   async run({ app, sql, check, hop, step, state }) {
@@ -61,7 +61,8 @@ export const phaseModify = definePhase({
     const upload = need(state, "uploadRevision2", v => typeof v === "function");
     const compile = need(state, "compileCandidate", v => typeof v === "function");
     const flag = booleanFlagState(need(state, "revisionCompileEnabled", v => typeof v === "boolean"), "revision_compile");
-    const result = { revision_compile_flag: flag };
+    // search/fetch is flag-gated and off by default (LD-20-7) and lens is not driven here: reported, not silently skipped.
+    const result = { revision_compile_flag: flag, search_lens: "not_exercised" };
 
     const pointer = () => sql(`select manifest_digest||'@'||revision from public.foundation_active_worlds where workspace_key='${workspace}' and collection_id='${collectionId}'`);
     const ask = async question => (await app(`/api/v1/collections/${collectionId}/ask`, token, { question })).body;
@@ -72,15 +73,19 @@ export const phaseModify = definePhase({
     });
     const bound = (c, versionKey) => [c?.sourceId, c?.sourceVersionId].some(v => String(v).includes(versionKey));
     let stage = "none";
-    const verdict = (name, actual, expected) => { stage = name; check(`modify/${name}`, actual, expected); };
+    // Only a failed verdict names a stage; an AssertionError from anywhere else (upload, compile, harness check) is rethrown below.
+    const verdict = (name, actual, expected) => { try { check(`modify/${name}`, actual, expected); } catch (error) { stage = name; throw error; } };
+    const servedFromActive = async name => {
+      const body = await ask(changedQuestion);
+      verdict(name, [body?.code, body?.activeWorld?.manifestDigest, says(body, rev2Value), pointer()],
+        ["GROUNDED_ANSWER", active, false, `${active}@${revision}`]);
+    };
     try {
       hop("modify");
       const rev2 = await step("upload-rev2", STEP_MS, upload);
       if (!(typeof rev2?.versionKey === "string" && rev2.versionKey.length > 0)) throw new TypeError("phase modify: uploadRevision2 returned no versionKey");
 
-      const before = await ask(changedQuestion);
-      verdict("rev1_served_before_promote", [before?.code, before?.activeWorld?.manifestDigest, says(before, rev2Value), pointer()],
-        ["GROUNDED_ANSWER", active, false, `${active}@${revision}`]);
+      await servedFromActive("rev1_served_before_promote");
 
       const stale = candidate(await step("compile-stale", STEP_MS, () => compile({ revision: 1 })), 1);
       const refused = await promote(stale.manifestDigest);
@@ -90,6 +95,7 @@ export const phaseModify = definePhase({
 
       const fresh = candidate(await step("compile-rev2", STEP_MS, () => compile({ revision: 2 })), 2);
       result.rev2_compile_path = fresh.path;
+      await servedFromActive("rev1_served_after_compile");
       const promoted = await promote(fresh.manifestDigest);
       verdict("rev2_promoted", [promoted.status, promoted.body?.code, pointer()], [200, "WORLD_ACTIVE", `${fresh.manifestDigest}@${revision + 1}`]);
       result.active_revision_after = revision + 1;
@@ -111,9 +117,8 @@ export const phaseModify = definePhase({
       const lifecycle = digest => versions.find(v => v?.manifest_digest === digest)?.lifecycle_status;
       verdict("history_kept", [world.status, lifecycle(active), lifecycle(fresh.manifestDigest)], [200, "superseded", "active"]);
       result.history_versions = versions.length;
-      stage = "none";
     } catch (error) {
-      if (!(error instanceof AssertionError)) throw error;
+      if (!(error instanceof AssertionError) || stage === "none") throw error;
     }
     return { ...result, failed_at: stage, outcome: stage === "none" ? "met" : "not_met" };
   },

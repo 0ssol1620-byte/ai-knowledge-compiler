@@ -3,7 +3,7 @@
  * rev 1 served after promote, evidence still bound to rev 1, ...) makes the phase report `not_met` at its own stage. An
  * operational error is rethrown, and the real runPhase/validatePhaseSummary path bounds what comes out.
  */
-import assert from "node:assert/strict";
+import assert, { AssertionError } from "node:assert/strict";
 import test from "node:test";
 import { runPhase, PhaseContractError } from "./phase-contract.mjs";
 import { phaseModify, STALE_PROMOTE_CODES } from "./phase-modify.mjs";
@@ -21,6 +21,7 @@ function world(faults = {}) {
     if (resource.endsWith("/ask")) {
       const rev2 = s.pointer.startsWith(D2);
       if (body.question === "changed?") {
+        if (faults.earlyRev2AfterCompile && s.compiled2 && !rev2) return { status: 200, body: { code: "GROUNDED_ANSWER", activeWorld: { manifestDigest: D1 }, answer: "value is NEW", citations: [] } };
         const isNew = rev2 ? !faults.rev1AnswerAfterPromote : Boolean(faults.earlyRev2);
         return { status: 200, body: { code: "GROUNDED_ANSWER", activeWorld: { manifestDigest: rev2 ? D2 : D1 },
           answer: isNew ? "value is NEW" : "value is OLD",
@@ -58,7 +59,7 @@ function run(faults, stateOverrides = {}) {
     rev1VersionKey: V1, changedQuestion: "changed?", unchangedQuestion: "unchanged?", rev1Value: /OLD/, rev2Value: /NEW/,
     unchangedPattern: /SAME/, unchangedRegion: REGION,
     uploadRevision2: async () => ({ versionKey: V2 }),
-    compileCandidate: async ({ revision }) => ({ manifestDigest: revision === 1 ? DSTALE : D2, path: "full_compile" }),
+    compileCandidate: async ({ revision }) => { w.s.compiled2 = revision === 2; return ({ manifestDigest: revision === 1 ? DSTALE : D2, path: "full_compile" }); },
     ...stateOverrides,
   };
   const input = { app: w.app, sql: w.sql, check, hop: () => {}, step: (_n, _ms, op) => op(), state, deadline: Date.now() + 60_000 };
@@ -67,9 +68,9 @@ function run(faults, stateOverrides = {}) {
 
 test("the happy path is met and the summary is bounded enums and counts", async () => {
   const { done, checks, w } = run();
-  assert.deepEqual({ ...await done }, { outcome: "met", revision_compile_flag: "off", stale_refusal_code: "source_version_changed",
+  assert.deepEqual({ ...await done }, { outcome: "met", search_lens: "not_exercised", revision_compile_flag: "off", stale_refusal_code: "source_version_changed",
     rev2_compile_path: "full_compile", active_revision_after: 2, history_versions: 2, failed_at: "none" });
-  assert.equal(checks.length, 8);
+  assert.equal(checks.length, 9);
   assert.equal(w.s.pointer, `${D2}@2`);
 });
 
@@ -82,6 +83,7 @@ const cases = [
   ["evidence bound to rev 1 for the changed value", { evidenceRev1: true }, "rev2_evidence_bound"],
   ["an unchanged region whose evidence moved", { regionMoved: true }, "unchanged_region_bound"],
   ["history rewritten (rev 1 not superseded)", { historyRewritten: true }, "history_kept"],
+  ["rev 2 served after its candidate compiled but before promote", { earlyRev2AfterCompile: true }, "rev1_served_after_compile"],
   ["rev 2's promote refused", { rev2Refused: true }, "rev2_promoted"],
 ];
 for (const [name, faults, stage] of cases) {
@@ -101,6 +103,13 @@ test("every stale-refusal code in the table is accepted and reported as its own 
 
 test("an operational error is rethrown, not turned into a verdict", async () => {
   await assert.rejects(run({}, { uploadRevision2: async () => { throw new Error("connection reset"); } }).done, /connection reset/);
+});
+
+test("an AssertionError from upload or compile is rethrown, never a verdict (met or not_met)", async () => {
+  const boom = () => assert.equal(409, 200);
+  await assert.rejects(run({}, { uploadRevision2: async () => { boom(); } }).done, AssertionError);
+  await assert.rejects(run({}, { compileCandidate: async ({ revision }) => { if (revision === 2) boom(); return { manifestDigest: DSTALE, path: "full_compile" }; } }).done, AssertionError);
+  await assert.rejects(run({}, { compileCandidate: async () => { boom(); } }).done, AssertionError);
 });
 
 test("a missing or mistyped state entry or helper result is refused, never defaulted", async () => {
