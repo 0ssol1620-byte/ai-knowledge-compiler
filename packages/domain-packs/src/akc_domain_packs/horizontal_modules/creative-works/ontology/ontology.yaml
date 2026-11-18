@@ -1,0 +1,9 @@
+blueprint: creative-works
+kind: ontology
+version: 1.0.0
+classes: [Work, Character, Setting, Scene, Draft, Reference]
+relations:
+  - {type: appears_in, source: Character, target: Scene, authority: source_explicit}
+  - {type: set_in, source: Scene, target: Setting, authority: source_explicit}
+  - {type: revision_of, source: Draft, target: Work, authority: structured_derived}
+  - {type: cites_reference, source: Work, target: Reference, authority: source_explicit}

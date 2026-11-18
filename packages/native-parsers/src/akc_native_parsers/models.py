@@ -25,6 +25,21 @@ from akc_cir import (
 )
 from pydantic import field_validator
 
+# What `page_index0` means per format. Only PDF pages are layout pages; for
+# reflowable formats the value is a container ordinal, never a printed page.
+LOCATOR_PAGE_SEMANTICS: dict[str, str] = {
+    "pdf": "layout_page",
+    "pptx": "slide",
+    "xlsx": "sheet",
+    "docx": "container_ordinal",
+    "html": "container_ordinal",
+    "srt": "container_ordinal",
+    "vtt": "container_ordinal",
+    "hwp": "container_ordinal",
+    "hwpx": "container_ordinal",
+    "hwpml": "container_ordinal",
+}
+
 
 class StructuredParseError(ValueError):
     """A stable, body-free parser failure safe to expose at a job boundary."""
@@ -381,11 +396,15 @@ class CirBuilder:
         )
 
     def build(self, *, title: str) -> CanonicalDocument:
+        semantics = LOCATOR_PAGE_SEMANTICS.get(self.document_type)
+        if semantics is None:
+            raise StructuredParseError("LOCATOR_SEMANTICS_UNKNOWN")
         metadata: dict[str, Any] = {
             "documentType": self.document_type,
             "nativeParser": "akc-native-parsers",
             "nativeParserVersion": "1.1.0",
             "sourceLocationScheme": _location_scheme(self.document_type),
+            "locatorPageSemantics": semantics,
             "warnings": sorted(self.warnings),
             **self.metadata,
         }

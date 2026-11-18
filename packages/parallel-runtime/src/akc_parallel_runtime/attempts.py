@@ -45,6 +45,7 @@ _ALLOWED_TRANSITIONS: dict[AttemptStatus, frozenset[AttemptStatus]] = {
             AttemptStatus.RUNNING,
             AttemptStatus.RETRYABLE_FAILED,
             AttemptStatus.TERMINAL_FAILED,
+            AttemptStatus.SUPERSEDED,
             AttemptStatus.QUARANTINED,
         }
     ),
@@ -53,11 +54,17 @@ _ALLOWED_TRANSITIONS: dict[AttemptStatus, frozenset[AttemptStatus]] = {
             AttemptStatus.OUTPUT_RECEIVED,
             AttemptStatus.RETRYABLE_FAILED,
             AttemptStatus.TERMINAL_FAILED,
+            AttemptStatus.SUPERSEDED,
             AttemptStatus.QUARANTINED,
         }
     ),
     AttemptStatus.OUTPUT_RECEIVED: frozenset(
-        {AttemptStatus.VALIDATING, AttemptStatus.REJECTED, AttemptStatus.QUARANTINED}
+        {
+            AttemptStatus.VALIDATING,
+            AttemptStatus.REJECTED,
+            AttemptStatus.SUPERSEDED,
+            AttemptStatus.QUARANTINED,
+        }
     ),
     AttemptStatus.VALIDATING: frozenset(
         {
@@ -76,6 +83,11 @@ _ALLOWED_TRANSITIONS: dict[AttemptStatus, frozenset[AttemptStatus]] = {
     AttemptStatus.SUPERSEDED: frozenset(),
     AttemptStatus.QUARANTINED: frozenset(),
 }
+
+
+_LIVE_SIBLING_STATUSES = frozenset(
+    {AttemptStatus.QUEUED, AttemptStatus.RUNNING, AttemptStatus.OUTPUT_RECEIVED}
+)
 
 
 @dataclass(slots=True)
@@ -101,6 +113,8 @@ class AcceptanceResult:
     winner: AttemptSnapshot
     challenger: AttemptSnapshot | None
     accepted_new: bool
+    # In-flight siblings superseded by the winner; the caller must ask the provider to cancel them.
+    cancel_attempt_ids: tuple[str, ...] = ()
 
 
 class AttemptStore:
@@ -111,6 +125,7 @@ class AttemptStore:
         self._creation_keys: dict[str, str] = {}
         self._acceptance_keys: dict[str, tuple[str, AcceptanceResult]] = {}
         self._accepted_by_shard: dict[str, str] = {}
+        self._superseded_by_winner: dict[str, list[str]] = {}
         self._events = events
         self._lock = RLock()
 
@@ -498,6 +513,48 @@ class AttemptStore:
                     ),
                 )
             return result
+
+    def supersede_siblings(
+        self, shard_id: str, winner_attempt_id: str, occurred_at: datetime
+    ) -> tuple[str, ...]:
+        """Supersede live siblings of the accepted winner; return every id needing provider cancel.
+
+        Idempotent: a replay supersedes nothing new and returns the same ids. The transition
+        log carries reason ``superseded_by_verified_winner``; no ``attempt.superseded.v1``
+        event is emitted: that type is not registered in ``contracts.PARALLEL_RUNTIME_EVENT_TYPES``.
+        """
+        with self._lock:
+            winner = self._records.get(winner_attempt_id)
+            if winner is None:
+                raise AttemptNotFoundError(winner_attempt_id)
+            if (
+                winner.attempt.shard_id != shard_id
+                or winner.status is not AttemptStatus.ACCEPTED
+                or self._accepted_by_shard.get(shard_id) != winner_attempt_id
+            ):
+                raise AttemptConflictError("siblings can only be superseded by the accepted winner")
+            done = self._superseded_by_winner.setdefault(winner_attempt_id, [])
+            live = sorted(
+                (
+                    record
+                    for record in self._records.values()
+                    if record.attempt.shard_id == shard_id
+                    and record.attempt.attempt_id != winner_attempt_id
+                    and record.status in _LIVE_SIBLING_STATUSES
+                ),
+                key=lambda item: (item.attempt.created_at, item.attempt.attempt_id),
+            )
+            for record in live:
+                attempt_id = record.attempt.attempt_id
+                self.transition(
+                    attempt_id,
+                    expected_status=record.status,
+                    to_status=AttemptStatus.SUPERSEDED,
+                    occurred_at=occurred_at,
+                    reason_code="superseded_by_verified_winner",
+                )
+                done.append(attempt_id)
+            return tuple(done)
 
     def quarantine(
         self, attempt_id: str, *, occurred_at: datetime, reason_code: str

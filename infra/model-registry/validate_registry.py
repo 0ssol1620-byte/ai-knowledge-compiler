@@ -22,6 +22,18 @@ LICENSE_FIELDS = {
     "runtime_license",
     "license_snapshot_sha256",
 }
+BUILT_IMAGE = re.compile(r"^ghcr\.io/[a-z0-9._/-]+@sha256:[0-9a-f]{64}$")
+# Where .github/workflows/build-arena-page-servers.yml pushes ("ghcr.io/${GITHUB_REPOSITORY,,}/
+# <image>"): this repository's own namespace. A built image anywhere else is not ours.
+ARENA_IMAGE_NAMESPACE = "ghcr.io/0ssol1620-byte/ai-knowledge-compiler"
+COMMIT = re.compile(r"^[0-9a-f]{40}$")
+RUN_ID = re.compile(r"^[0-9]{1,20}$")
+BUILD_PROVENANCE = (
+    "source_commit",
+    "workflow_run_id",
+    "package_listing_sha256",
+    "build_log_sha256",
+)
 PRODUCTION_VALIDATION_STATUSES = {"champion", "canary", "fallback", "shadow"}
 
 
@@ -72,7 +84,8 @@ def verify_revision_source(
         if not isinstance(models, dict):
             return "revision source registry has no model records"
         matches = [
-            model for model in models.values()
+            model
+            for model in models.values()
             if isinstance(model, dict) and model.get("repo") == release.get("upstream_id")
         ]
         if len(matches) != 1:
@@ -86,6 +99,54 @@ def verify_revision_source(
         if weights.get("file_count") != source.get("weights_file_count"):
             return "revision source weights file count mismatch"
     return None
+
+
+def serving_build_problems(serving: dict[str, Any]) -> list[str]:
+    """Rules for a serving block that carries ``built``: the image was built from
+    ``image_build`` (a Dockerfile of this repository) or it was not, and nothing between.
+    ``not_serving`` marks a built image that must not be launched: it names that exact image
+    and why, so it cannot carry over to the next digest recorded in the block."""
+    if "built" not in serving:
+        return []
+    built, image = serving["built"], serving.get("image")
+    target = serving.get("image_target")
+    out = []
+    if "image_target" in serving and not (isinstance(target, str) and target):
+        out.append("image_target is not a non-empty string")
+    if "not_serving" in serving:
+        mark = serving["not_serving"]
+        if not (
+            isinstance(mark, dict)
+            and set(mark) == {"image", "reason"}
+            and isinstance(mark["reason"], str)
+            and mark["reason"].strip()
+        ):
+            out.append("not_serving is not exactly an image and a non-empty reason")
+        elif built is True and mark["image"] != image:
+            out.append("not_serving names another image than this block's")
+    if built is False:
+        found = [f for f in (*BUILD_PROVENANCE, "not_serving") if f in serving]
+        out += ["image named while built is false"] if image is not None else []
+        return out + [f"{f} given while built is false" for f in found]
+    if built is not True:
+        return [*out, "built is not a boolean"]
+    if not (isinstance(image, str) and BUILT_IMAGE.fullmatch(image)):
+        return [*out, "built image is not a digest-pinned ghcr.io reference"]
+    build = serving.get("image_build")
+    if not isinstance(build, str) or "/" not in build:
+        out.append("built image without image_build")
+    else:
+        slot = f"{ARENA_IMAGE_NAMESPACE}/arena-{build.rsplit('/', 2)[-2]}" + (
+            f"-{target}" if target else ""
+        )
+        if image.split("@")[0] != slot:
+            out.append(f"built image is not {slot}, the image of this block")
+    for field in BUILD_PROVENANCE:
+        value = serving.get(field)
+        pattern = {"source_commit": COMMIT, "workflow_run_id": RUN_ID}.get(field, SHA256_DIGEST)
+        if not (isinstance(value, str) and pattern.fullmatch(value)):
+            out.append(f"{field} missing or malformed")
+    return out
 
 
 def validate(strict: bool = False) -> list[str]:
@@ -137,6 +198,11 @@ def validate(strict: bool = False) -> list[str]:
             isinstance(license_snapshot, str) and SHA256_DIGEST.fullmatch(license_snapshot)
         ):
             errors.append(f"{prefix}: license snapshot must be a sha256 digest or null")
+        runtime = release.get("runtime") or {}
+        for serving in [runtime.get("serving"), *(runtime.get("serving_variants") or [])]:
+            if isinstance(serving, dict):
+                for problem in serving_build_problems(serving):
+                    errors.append(f"{prefix}: serving: {problem}")
         if traffic < 0 or traffic > 100:
             errors.append(f"{prefix}: rollout traffic must be 0..100")
         if traffic > 0 and not release_is_attested(release):

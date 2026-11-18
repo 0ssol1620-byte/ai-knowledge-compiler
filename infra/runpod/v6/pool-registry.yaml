@@ -225,3 +225,68 @@ pools:
     provider_retry_count: 0
     secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
     cache_namespace: gemma-4-12b-it
+
+  - id: screen-qwen3-5-4b-page-parse
+    model_family: qwen3-5
+    candidate_ids: [qwen3.5-4b]
+    enabled: false
+    identity_state: pending_exact_image_digest
+    image_digest: null
+    gpu_classes: [L4, RTX_4090_PRO, A6000]
+    min_workers: 0
+    max_workers: 8
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: qwen3-5-4b-page-parse
+
+  - id: screen-qwen3-5-9b-page-parse
+    model_family: qwen3-5
+    candidate_ids: [qwen3.5-9b-page-parse]
+    enabled: false
+    identity_state: pending_exact_image_digest
+    image_digest: null
+    gpu_classes: [L4, RTX_4090_PRO, A6000]
+    min_workers: 0
+    max_workers: 8
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: qwen3-5-9b-page-parse
+
+  - id: screen-gemma4-page-parse
+    model_family: gemma4
+    candidate_ids: [gemma-4-12b-it-page-parse]
+    enabled: false
+    identity_state: pending_exact_image_digest
+    image_digest: null
+    gpu_classes: [A6000, A40, A100_80GB]
+    min_workers: 0
+    max_workers: 8
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: gemma-4-12b-it-page-parse
+
+  - id: screen-qwen3-6-page-parse
+    model_family: qwen3-6
+    candidate_ids: [qwen3.6-27b-page-parse]
+    enabled: false
+    identity_state: pending_exact_image_digest
+    image_digest: null
+    gpu_classes: [A100_80GB, H100_80GB]
+    min_workers: 0
+    max_workers: 8
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: qwen3-6-27b-page-parse
+
+  - id: verifier-minicpm-ocr-jev
+    model_family: minicpm-ocr-jev
+    candidate_ids: [minicpm-ocr-jev]
+    enabled: false
+    identity_state: pending_exact_image_digest
+    image_digest: null
+    gpu_classes: [L4, RTX_4090_PRO, A6000]
+    min_workers: 0
+    max_workers: 8
+    provider_retry_count: 0
+    secret_names: [HF_TOKEN, CALLBACK_HMAC_SECRET]
+    cache_namespace: minicpm-ocr-jev

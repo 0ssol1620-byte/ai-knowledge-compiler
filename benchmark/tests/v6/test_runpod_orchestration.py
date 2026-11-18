@@ -27,7 +27,7 @@ def test_pool_registry_is_model_isolated_disabled_and_secret_name_only(
     registry = PoolRegistry.load(repo_root / "infra/runpod/v6/pool-registry.yaml")
     pools = registry.pools
 
-    assert len(pools) == 16
+    assert len(pools) == 21
     assert all(not pool.enabled for pool in pools)
     assert all(pool.provider_retry_count == 0 for pool in pools)
     assert len({candidate for pool in pools for candidate in pool.candidate_ids}) == sum(

@@ -7,7 +7,7 @@ import uuid
 from enum import StrEnum
 from typing import Annotated, Any
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 _REVISION_PATTERN = r"^[0-9a-f]{40,64}$"
 _HASH_PATTERN = r"^[0-9a-f]{64}$"
@@ -137,6 +137,10 @@ class RetrievalQuery(WireModel):
     filters: RetrievalFilters = RetrievalFilters()
     candidate_k: Annotated[int, Field(ge=30, le=100)] = 50
     top_k: Annotated[int, Field(ge=5, le=15)] = 10
+    valid_at: AwareDatetime | None = None
+    known_at: AwareDatetime | None = None
+    available_at: AwareDatetime | None = None
+    include_unknown_validity: bool = False
 
     @field_validator("vector")
     @classmethod

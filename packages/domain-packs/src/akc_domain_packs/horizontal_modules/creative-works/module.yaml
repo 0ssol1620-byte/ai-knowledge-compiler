@@ -1,0 +1,13 @@
+id: creative-works
+version: 1.0.0
+display_name: Creative Works
+domains: [creative, writing, media]
+object_types: [work, character, setting, scene, draft]
+root_views: [Works, Characters, Settings, Scenes]
+moc_templates: [Works, Characters, Settings]
+folder_depth: 3
+naming_policy: stable-title
+source_preservation: true
+relation_policy: [source_explicit, structured_derived, rule_derived]
+validators: [source_coverage, privacy_scope, entity_identity, relation_evidence]
+export_profiles: [obsidian, ontology, rag]

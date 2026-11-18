@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.ai-knowledge-compiler.example/benchmark/screen-manifest-1.0.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["profile", "salt", "counts", "documents", "manifest_sha256"],
+  "properties": {
+    "profile": { "enum": ["screen", "eg04", "lpc_sec"] },
+    "salt": { "type": "string" },
+    "manifest_sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "disjoint_from_sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "counts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+    "documents": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["doc_id", "source_sha256", "byte_size", "page_count", "stratum", "language", "document_class", "rights"],
+        "properties": {
+          "doc_id": { "type": "string", "minLength": 1 },
+          "source_sha256": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+          "byte_size": { "type": "integer", "minimum": 1 },
+          "page_count": { "type": "integer", "minimum": 1 },
+          "stratum": { "type": "string", "minLength": 1 },
+          "language": { "type": "string", "minLength": 1 },
+          "document_class": { "type": "string", "minLength": 1 },
+          "split": { "enum": ["dev", "holdout"] },
+          "provenance": { "type": "object" },
+          "page_origin": { "type": "string", "minLength": 1 },
+          "notes": { "type": "string" },
+          "derived_from": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+          "degradation": {
+            "type": "object",
+            "required": ["level", "seed", "renderer"],
+            "properties": {
+              "level": { "enum": ["scan_fair", "scan_poor"] },
+              "seed": { "type": "string", "minLength": 1 },
+              "renderer": {
+                "type": "object",
+                "minProperties": 1,
+                "additionalProperties": { "type": "string", "minLength": 1 }
+              }
+            }
+          },
+          "rights": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["source_url", "licence_id", "licence_snapshot_sha256", "rights_class", "redistribution", "recorded_by", "recorded_at"],
+            "properties": {
+              "source_url": { "type": "string", "minLength": 1 },
+              "licence_id": { "type": "string", "minLength": 1 },
+              "licence_snapshot_sha256": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+              "rights_class": { "enum": ["owned", "public_domain", "public_record", "permissive_licence", "synthetic"] },
+              "redistribution": { "type": "boolean" },
+              "recorded_by": { "type": "string", "minLength": 1 },
+              "recorded_at": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  }
+}

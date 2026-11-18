@@ -118,10 +118,24 @@ class GmailAdapter:
         if self.label_filter:
             params["labelId"] = self.label_filter
         query = urllib.parse.urlencode(params)
-        history = get_json(f"{self.api_base}/history?{query}", self.token_provider)
+        records: list[dict[str, Any]] = []
+        new_history_id: Any = None
+        while True:
+            history = get_json(
+                f"{self.api_base}/history?{query}",
+                self.token_provider,
+                cursor_request=True,
+            )
+            records.extend(history.get("history", []))
+            if "historyId" in history:
+                new_history_id = history["historyId"]
+            next_page = history.get("nextPageToken")
+            if not next_page:
+                break
+            query = urllib.parse.urlencode({**params, "pageToken": str(next_page)})
 
         seen: set[str] = set()
-        for record in history.get("history", []):
+        for record in records:
             for removed in record.get("messagesDeleted", []):
                 mid = (removed.get("message") or {}).get("id", "")
                 if mid and mid not in seen:
@@ -144,8 +158,8 @@ class GmailAdapter:
                     )
                     seen.add(mid)
 
-        if "historyId" in history:
-            state["history_id"] = history["historyId"]
+        if new_history_id is not None:  # only after the last page
+            state["history_id"] = new_history_id
         state["last_polled_at"] = observed_at.isoformat()
         self._history_id = state["history_id"]
         cursor_out = Cursor(provider=PROVIDER, source_id=self.source_id, state=state)

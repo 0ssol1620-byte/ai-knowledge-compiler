@@ -270,7 +270,7 @@ jobs:
       - name: Migration chain has a single head
         run: python -m uv run --locked --extra dev python scripts/check_migration_chain.py
       - name: Run benchmark metric tests
-        run: python -m uv run --locked --extra dev python -m unittest discover -s benchmark/tests -v
+        run: PYTHONPATH="$(python -c "import tomllib,os;print(os.pathsep.join(tomllib.load(open('pyproject.toml','rb'))['tool']['pytest']['ini_options']['pythonpath']))")" python -m uv run --locked --extra dev python -m unittest discover -s benchmark/tests -v
       - name: Run GPU handler tests
         working-directory: workers/gpu-common
         run: ../../.venv/bin/python -m unittest -v test_runtime.py

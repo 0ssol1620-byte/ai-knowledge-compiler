@@ -2,13 +2,15 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import datetime
+from decimal import Decimal
 from threading import RLock
 
 from .arbitration import ArbitrationDecision
 from .attempts import AcceptanceResult, AttemptStore
 from .contracts import EventJournal
+from .credits import CreditLedger
 from .models import (
     ACCEPTED_VERIFICATION_STATES,
     AttemptOutput,
@@ -37,6 +39,15 @@ class DispatchSpec:
     decoding_sha256: str
 
 
+@dataclass(frozen=True, slots=True)
+class SettlementRequest:
+    """Where and how much to charge when a new winner is accepted."""
+
+    reservation_id: str
+    work_key: str
+    canonical_credits: Decimal
+
+
 class ParallelCoordinator:
     """Coordinates state changes without weakening the underlying fail-closed contracts."""
 
@@ -46,7 +57,9 @@ class ParallelCoordinator:
         events: EventJournal | None = None,
         attempts: AttemptStore | None = None,
         validator: ValidatorPipeline | None = None,
+        credits: CreditLedger | None = None,
     ) -> None:
+        self.credits = credits
         self.events = events or EventJournal()
         self.attempts = attempts or AttemptStore(events=self.events)
         self.validator = validator or ValidatorPipeline()
@@ -181,6 +194,7 @@ class ParallelCoordinator:
         *,
         occurred_at: datetime,
         idempotency_key: str,
+        settlement: SettlementRequest | None = None,
     ) -> AcceptanceResult:
         if not decision.accepted or decision.selected_attempt_id is None:
             raise RuntimeError("unresolved arbitration cannot be accepted")
@@ -196,11 +210,52 @@ class ParallelCoordinator:
             or snapshot.output.prediction_sha256 != decision.selected_prediction_sha256
         ):
             raise RuntimeError("arbitration prediction identity does not match immutable output")
-        return self.attempts.accept(
+        if snapshot.status is AttemptStatus.REJECTED:
+            raise RuntimeError("arbitration names an attempt that failed validation")
+        if settlement is not None and self.credits is None:
+            raise RuntimeError("settlement requested without a credit ledger")
+        if settlement is None and self.credits is not None:
+            raise RuntimeError("credit ledger configured but no settlement requested")
+        result = self.attempts.accept(
             decision.selected_attempt_id,
             occurred_at=occurred_at,
             idempotency_key=idempotency_key,
         )
+        winner = result.winner.attempt
+        cancel = self.attempts.supersede_siblings(
+            winner.shard_id, winner.attempt_id, occurred_at
+        )
+        if self.credits is not None and settlement is not None:
+            if result.accepted_new:
+                self.credits.settle_work(
+                    reservation_id=settlement.reservation_id,
+                    work_key=settlement.work_key,
+                    attempt_id=winner.attempt_id,
+                    attempt_kind=winner.kind,
+                    verification_state=decision.verification_state,
+                    canonical_credits=settlement.canonical_credits,
+                    occurred_at=occurred_at,
+                    idempotency_key=f"settle:{winner.attempt_id}",
+                )
+            losers = cancel + (
+                (result.challenger.attempt.attempt_id,) if result.challenger else ()
+            )
+            for loser_id in losers:
+                loser = self.attempts.get(loser_id)
+                if loser.output is None:
+                    # no measured cost: record nothing rather than invent a zero
+                    continue
+                cost = loser.output.cost
+                self.credits.record_compute_telemetry(
+                    reservation_id=settlement.reservation_id,
+                    attempt_id=loser_id,
+                    attempt_kind=loser.attempt.kind,
+                    gpu_seconds=cost.gpu_seconds,
+                    provider_cost=cost.provider_cost,
+                    occurred_at=occurred_at,
+                    idempotency_key=f"loser-telemetry:{loser_id}",
+                )
+        return replace(result, cancel_attempt_ids=cancel)
 
 
-__all__ = ["DispatchSpec", "ParallelCoordinator"]
+__all__ = ["DispatchSpec", "ParallelCoordinator", "SettlementRequest"]

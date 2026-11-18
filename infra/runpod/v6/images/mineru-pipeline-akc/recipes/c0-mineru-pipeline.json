@@ -1,0 +1,44 @@
+{
+ "name": "c0-mineru-pipeline",
+ "provider": "mineru",
+ "model": {
+  "repo_id": "opendatalab/PDF-Extract-Kit-1.0",
+  "revision": "ed6b654c018d742e65a17671e379c5e6ecc87ec9",
+  "dir": "/opt/akc/models/PDF-Extract-Kit-1.0",
+  "manifest": "/opt/akc/weights-manifest.json"
+ },
+ "aux_models": [],
+ "packages": {
+  "mineru": "3.4.4",
+  "torch": "2.8.0",
+  "torchvision": "0.23.0",
+  "transformers": "4.57.3",
+  "pypdfium2": "4.30.0"
+ },
+ "absent_packages": [],
+ "service": {
+  "argv": ["/usr/local/bin/mineru-api", "--host", "127.0.0.1", "--port", "8000"],
+  "health_url": "http://127.0.0.1:8000/health",
+  "startup_timeout_s": 600
+ },
+ "argv": [
+  "/usr/local/bin/mineru", "-p", "{source}", "-o", "{out}",
+  "--api-url", "http://127.0.0.1:8000",
+  "-b", "pipeline", "-m", "ocr", "-f", "true", "-t", "true"
+ ],
+ "page_argv": ["-s", "{page}", "-e", "{page}"],
+ "lang_argv": null,
+ "lang_by_language": {},
+ "env": {"MINERU_TOOLS_CONFIG_JSON": "/opt/akc/mineru.json"},
+ "output_glob": "**/*.md",
+ "timeout_s": 90,
+ "options": {
+  "tool": "mineru 3.4.4",
+  "backend": "pipeline",
+  "method": "ocr",
+  "formula": true,
+  "table": true,
+  "lang": "MinerU default (no -l), as the recorded recipe",
+  "page_selection": "-s N -e N"
+ }
+}

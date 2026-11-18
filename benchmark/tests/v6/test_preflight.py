@@ -25,7 +25,7 @@ def test_local_preflight_passes_contracts_but_rejects_production(repo_root: Path
     assert result["model_revisions_pinned_count"] == 20
     assert result["required_model_revisions_pinned_count"] == 18
     assert result["required_candidates_promotion_eligible"] == 0
-    assert result["model_pool_count"] == 16
+    assert result["model_pool_count"] == 21
     assert result["public_core_required_repetitions"] == 3
     assert result["public_core_initial_full_runs"] == 1
     assert result["public_core_stratified_audit_runs"] == 3
@@ -90,3 +90,63 @@ def test_champion_matrix_rejects_incoherent_primary_status_and_evidence(repo_roo
     _rehash(primary_without_evidence)
     with pytest.raises(ContractError, match="lacks signed evidence"):
         _validate_champion_matrix(primary_without_evidence, schema)
+
+
+_PREFLIGHT_FILES = (
+    "benchmark/v6/candidate-registry.yaml",
+    "infra/runpod/v6/pool-registry.yaml",
+    "benchmark/benchmark-registry.lock.yaml",
+    "benchmark/v6/dataset-registry.lock.yaml",
+    "benchmark/v6/champion-matrix.yaml",
+    "benchmark/v6/schemas/champion-matrix.schema.json",
+)
+
+
+def _stage_preflight_inputs(repo_root: Path, dest: Path) -> None:
+    for rel in _PREFLIGHT_FILES:
+        target = dest / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes((repo_root / rel).read_bytes())
+
+
+def test_screen_and_verifier_pools_are_disabled_with_no_digest(repo_root: Path) -> None:
+    pools = yaml.safe_load(
+        (repo_root / "infra/runpod/v6/pool-registry.yaml").read_text(encoding="utf-8")
+    )["pools"]
+    added = {
+        "screen-qwen3-5-4b-page-parse",
+        "screen-qwen3-5-9b-page-parse",
+        "screen-gemma4-page-parse",
+        "screen-qwen3-6-page-parse",
+        "verifier-minicpm-ocr-jev",
+    }
+    rows = {row["id"]: row for row in pools if row["id"] in added}
+    assert set(rows) == added
+    for row in rows.values():
+        assert row["enabled"] is False
+        assert row["image_digest"] is None
+        assert row["identity_state"] == "pending_exact_image_digest"
+        assert row["provider_retry_count"] == 0
+        assert row["max_workers"] == 8
+    candidates = yaml.safe_load(
+        (repo_root / "benchmark/v6/candidate-registry.yaml").read_text(encoding="utf-8")
+    )["candidates"]
+    jev = next(row for row in candidates if row["id"] == "minicpm-ocr-jev")
+    assert jev["required"] is False
+    assert jev["promotion_eligible"] is False
+    assert jev["license"]["status"] == "review_required"
+    assert jev["identity"]["revision"] is None
+    assert jev["identity"]["artifact_sha256"] is None
+
+
+def test_preflight_rejects_pool_with_unknown_candidate(repo_root: Path, tmp_path: Path) -> None:
+    _stage_preflight_inputs(repo_root, tmp_path)
+    pool_path = tmp_path / "infra/runpod/v6/pool-registry.yaml"
+    text = pool_path.read_text(encoding="utf-8")
+    assert "candidate_ids: [minicpm-ocr-jev]" in text
+    pool_path.write_text(
+        text.replace("candidate_ids: [minicpm-ocr-jev]", "candidate_ids: [no-such-candidate]"),
+        encoding="utf-8",
+    )
+    with pytest.raises(ContractError, match="unknown candidates"):
+        run_local_preflight(tmp_path)

@@ -134,6 +134,7 @@ from akc_api.collection_schemas import (
     SourceRootResponse,
 )
 from akc_api.collection_semantic_runtime import (
+    commit_then_sweep_superseded,
     load_collection_semantic_compile_input,
     prepare_collection_semantic_runtime,
     run_collection_semantic_runtime,
@@ -6798,6 +6799,7 @@ async def compile_collection(
 
     semantic_result = None
     semantic_exception_reason: str | None = None
+    compile_started_at = utcnow()
     if payload.mode == "collection_processing_runtime":
         assert semantic_indexer is not None
         try:
@@ -6812,7 +6814,9 @@ async def compile_collection(
             prepared = prepare_collection_semantic_runtime(compile_input)
             retrieval_batch: RetrievalIndexBatch | None = None
             if prepared.ready_for_index:
-                batch_candidate = cast(Any, semantic_batch_factory)(prepared)
+                batch_candidate = cast(Any, semantic_batch_factory)(
+                    prepared, recorded_at=compile_started_at
+                )
                 if inspect.isawaitable(batch_candidate):
                     batch_candidate = await batch_candidate
                 if not isinstance(batch_candidate, RetrievalIndexBatch):
@@ -7077,6 +7081,7 @@ async def compile_collection(
             note_count=len(notes),
             relation_count=relation_count,
             output_sha256=compile_output_sha,
+            started_at=compile_started_at,
             limitations=(
                 list(semantic_result.reason_codes)
                 if semantic_result is not None
@@ -7135,7 +7140,17 @@ async def compile_collection(
             "execution_scope": "existing_verified_artifacts_only",
         },
     )
-    await session.commit()
+    if semantic_result is not None and semantic_indexer is not None:
+        await commit_then_sweep_superseded(
+            session,
+            semantic_indexer,
+            tenant_id=principal.tenant_id,
+            project_id=collection.project_id,
+            collection_id=collection.id,
+            canonical_model_sha256=semantic_result.canonical_model_sha256,
+        )
+    else:
+        await session.commit()
     return await _architecture_response(session, plan)
 
 

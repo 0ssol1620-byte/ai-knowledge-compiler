@@ -34,8 +34,10 @@ from .models import (
     VectorRecord,
     VerificationState,
 )
+from .temporal import admit
 
 _HASH_PATTERN = r"^[0-9a-f]{64}$"
+_PREFIXED_HASH_PATTERN = r"^sha256:[0-9a-f]{64}$"
 _REVISION_PATTERN = r"^[0-9a-f]{40,64}$"
 _ATTESTATION_ALGORITHM = "hmac-sha256"
 _KEY_ID = re.compile(r"^[a-z0-9][a-z0-9_-]{0,31}$")
@@ -110,6 +112,27 @@ filtered AS MATERIALIZED (
           THEN record.entity_id = CAST(:entity_id AS text) ELSE TRUE END
       AND CASE WHEN CAST(:has_source_type AS boolean)
           THEN record.source_type = CAST(:source_type AS text) ELSE TRUE END
+      AND CASE WHEN CAST(:has_known_at AS boolean)
+          THEN (record.metadata->>'recorded_at') IS NOT NULL
+              AND (record.metadata->>'recorded_at')::timestamptz
+                  <= CAST(:known_at AS timestamptz)
+          ELSE TRUE END
+      AND CASE WHEN CAST(:has_available_at AS boolean)
+          THEN (record.metadata->>'available_at') IS NOT NULL
+              AND (record.metadata->>'available_at')::timestamptz
+                  <= CAST(:available_at AS timestamptz)
+          ELSE TRUE END
+      AND CASE WHEN CAST(:has_valid_at AS boolean)
+          THEN ((record.metadata->>'valid_from') IS NOT NULL
+                  OR (record.metadata->>'valid_to') IS NOT NULL
+                  OR CAST(:include_unknown_validity AS boolean))
+              AND ((record.metadata->>'valid_from') IS NULL
+                  OR (record.metadata->>'valid_from')::timestamptz
+                      <= CAST(:valid_at AS timestamptz))
+              AND ((record.metadata->>'valid_to') IS NULL
+                  OR (record.metadata->>'valid_to')::timestamptz
+                      > CAST(:valid_at AS timestamptz))
+          ELSE TRUE END
 ),
 vector_candidates AS MATERIALIZED (
     SELECT
@@ -579,6 +602,45 @@ _UPSERT_RETRIEVAL_EDGE = text(
     RETURNING from_stable_id
     """
 )
+_SWEEP_TERMS = text(
+    """
+    DELETE FROM knowledge_retrieval_term_frequencies AS term
+    USING knowledge_retrieval_records AS record
+    WHERE term.tenant_id = CAST(:tenant_id AS uuid)
+      AND term.project_id = CAST(:project_id AS uuid)
+      AND record.tenant_id = term.tenant_id
+      AND record.project_id = term.project_id
+      AND record.stable_id = term.stable_id
+      AND record.collection_id = CAST(:collection_id AS uuid)
+      AND (record.metadata->>'canonical_model_sha256') IS DISTINCT FROM CAST(:keep_sha256 AS text)
+    """
+)
+_SWEEP_EDGES = text(
+    """
+    DELETE FROM knowledge_retrieval_edges AS edge
+    USING knowledge_retrieval_records AS record
+    WHERE edge.tenant_id = CAST(:tenant_id AS uuid)
+      AND edge.project_id = CAST(:project_id AS uuid)
+      AND record.tenant_id = edge.tenant_id
+      AND record.project_id = edge.project_id
+      AND record.stable_id IN (edge.from_stable_id, edge.to_stable_id)
+      AND record.collection_id = CAST(:collection_id AS uuid)
+      AND (record.metadata->>'canonical_model_sha256') IS DISTINCT FROM CAST(:keep_sha256 AS text)
+    """
+)
+_SWEEP_RECORDS = text(
+    """
+    WITH removed AS (
+        DELETE FROM knowledge_retrieval_records
+        WHERE tenant_id = CAST(:tenant_id AS uuid)
+          AND project_id = CAST(:project_id AS uuid)
+          AND collection_id = CAST(:collection_id AS uuid)
+          AND (metadata->>'canonical_model_sha256') IS DISTINCT FROM CAST(:keep_sha256 AS text)
+        RETURNING 1
+    )
+    SELECT count(*)::text FROM removed
+    """
+)
 _DELETE_TERM_STATS = text(
     "DELETE FROM knowledge_retrieval_term_stats WHERE tenant_id = CAST(:tenant_id AS uuid)"
 )
@@ -749,6 +811,52 @@ class PostgresHybridIndexer:
             indexed_edges=len(batch.edges),
             batch_sha256=_index_batch_digest(batch),
         )
+
+    async def sweep_superseded(
+        self,
+        *,
+        tenant_id: uuid.UUID,
+        project_id: uuid.UUID,
+        collection_id: uuid.UUID,
+        keep_canonical_model_sha256: str,
+    ) -> int:
+        """Delete the collection's rows built from any other canonical model.
+
+        One transaction under the tenant lock; idempotent (a second call removes 0).
+        """
+        if not re.fullmatch(_PREFIXED_HASH_PATTERN, keep_canonical_model_sha256):
+            raise ValueError(
+                "keep_canonical_model_sha256 must be the stored 'sha256:<hex>' digest"
+            )
+        scope = {
+            "tenant_id": str(tenant_id),
+            "project_id": str(project_id),
+            "collection_id": str(collection_id),
+            "keep_sha256": keep_canonical_model_sha256,
+        }
+        tenant = {"tenant_id": str(tenant_id)}
+        mutations = (
+            PostgreSQLMutation(statement=_LOCK_TENANT_INDEX, parameters=tenant),
+            PostgreSQLMutation(statement=_SWEEP_TERMS, parameters=scope),
+            PostgreSQLMutation(statement=_SWEEP_EDGES, parameters=scope),
+            PostgreSQLMutation(
+                statement=_SWEEP_RECORDS, parameters=scope, requires_returned_row=True
+            ),
+            PostgreSQLMutation(statement=_DELETE_TERM_STATS, parameters=tenant),
+            PostgreSQLMutation(statement=_REBUILD_TERM_STATS, parameters=tenant),
+            # No required row: sweeping a tenant's last records leaves nothing to aggregate.
+            PostgreSQLMutation(statement=_UPSERT_CORPUS_STATS, parameters=tenant),
+        )
+        try:
+            results = await self._executor.execute_transaction(mutations)
+        except Exception as exc:
+            raise RetrievalUnavailable("PostgreSQL superseded-row sweep failed closed") from exc
+        if len(results) != len(mutations):
+            raise RetrievalUnavailable("PostgreSQL sweep returned an invalid receipt")
+        removed = results[3]
+        if removed is None:
+            raise RetrievalRowAttestationError("retrieval sweep returned no removed count")
+        return int(removed)
 
 
 def canonical_attestation_payload(payload: AttestedRetrievalPayload) -> bytes:
@@ -952,6 +1060,8 @@ class PostgresHybridStore:
             raise RetrievalRowAttestationError("attested embedding dimension mismatch")
         _validate_row_matches_payload(row, payload)
         _validate_payload_matches_query(payload, query)
+        if not admit(payload.metadata, query).admitted:
+            raise RetrievalRowAttestationError("retrieval row violates the temporal cut")
 
         try:
             vector_score = _bounded_score(row["vector_score"], lower=-1.0, upper=1.0)
@@ -1025,6 +1135,11 @@ def _query_parameters(
     for name, value in exact.items():
         parameters[name] = value
         parameters[f"has_{name}"] = value is not None
+    for name in ("valid_at", "known_at", "available_at"):
+        moment = getattr(query, name)
+        parameters[name] = None if moment is None else moment.isoformat()
+        parameters[f"has_{name}"] = moment is not None
+    parameters["include_unknown_validity"] = query.include_unknown_validity
     return parameters
 
 

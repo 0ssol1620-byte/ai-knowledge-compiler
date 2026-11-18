@@ -7,11 +7,11 @@ import hashlib
 import io
 import json
 import re
-from collections import defaultdict
-from collections.abc import Iterable
+from collections import Counter, defaultdict
+from collections.abc import Iterable, Sequence
 from dataclasses import replace
 from functools import partial
-from typing import Any
+from typing import Any, Literal
 
 from akc_cir.base import canonical_json, sha256_digest
 from akc_cir.dependency import DependencyEdge, DependencyGraph, EdgeType
@@ -67,6 +67,13 @@ from .contracts import (
     ProductCoreDocument,
     ProductCoreReceipt,
 )
+from .fact_keys import (
+    FactKeyDeclaration,
+    keyed_decisions,
+    keyed_document_changes,
+    refusal,
+    relocations,
+)
 from .semantics import (
     SemanticClaim,
     SemanticCompilation,
@@ -102,6 +109,14 @@ class CoreOutputTooLargeError(Exception):
             f"{detail['object']} of {detail['bytes']} B exceeds budget {detail['budget']} B"
         )
         self.detail = detail
+
+
+class LogicalIdCollision(ValueError):
+    """Two current units of one compile carry the same logical id. Carries ids only, no text."""
+
+    def __init__(self, logical_ids: list[str]) -> None:
+        super().__init__(f"logical ids held by more than one current unit: {logical_ids}")
+        self.logical_ids = logical_ids
 
 
 # The goal every compile plans its architecture for; corpus_reduce plans the corpus with it too.
@@ -316,9 +331,32 @@ class ProductCoreCompiler:
         *,
         core_release_digest: str,
         output_budget_bytes: int = OUTPUT_BUDGET_BYTES,
+        fact_key_mode: Literal["off", "candidate"] = "off",
+        fact_key_declarations: Sequence[FactKeyDeclaration] = (),
     ) -> None:
         if not core_release_digest.startswith("sha256:") or len(core_release_digest) != 71:
             raise ValueError("core release digest must be sha256:")
+        # ADR-010. "off" runs no keyed code, declarations or not. "candidate" is reachable only by
+        # constructing the compiler directly (benchmarks); the served app never passes either.
+        if fact_key_mode not in ("off", "candidate"):
+            raise ValueError(f"fact key mode must be off or candidate, got {fact_key_mode!r}")
+        declarations = tuple(fact_key_declarations)
+        if not all(isinstance(item, FactKeyDeclaration) for item in declarations):
+            raise ValueError("fact key declarations must be FactKeyDeclaration instances")
+        connectors = [item.connector_type for item in declarations]
+        if len(set(connectors)) != len(connectors):
+            raise ValueError("fact key declarations name one connector type more than once")
+        if fact_key_mode == "candidate" and not declarations:
+            raise ValueError("fact key mode candidate needs at least one declaration")
+        self.fact_key_mode = fact_key_mode
+        self._fact_keys = (
+            {item.connector_type: item for item in declarations}
+            if fact_key_mode == "candidate"
+            else {}
+        )
+        self._matching_policy: Literal["legacy", "fact_key_v1"] = (
+            "fact_key_v1" if fact_key_mode == "candidate" else "legacy"
+        )
         # Lowering the budget is a deployment's call; raising it past the bound the site can
         # store is not, because the site would only refuse the same package later.
         if not 0 < output_budget_bytes <= OUTPUT_BUDGET_BYTES:
@@ -360,6 +398,12 @@ class ProductCoreCompiler:
             current_units.extend(units)
             all_changes.extend(changes)
             review_reasons.extend(reviews)
+        # Invariant: every later lookup is keyed by logical id, so a duplicate is refused here by
+        # name instead of surfacing as a KeyError or a silently overwritten entry downstream.
+        held = Counter(unit.logical_id for unit in current_units)
+        duplicated = sorted(logical for logical, count in held.items() if count > 1)
+        if duplicated:
+            raise LogicalIdCollision(duplicated)
 
         if previous is not None:
             current_sources = {
@@ -483,6 +527,9 @@ class ProductCoreCompiler:
             )
         )
         impact = graph.impact_of(diff.changed_logical_ids)
+        review_reasons.extend(
+            f"DEPENDENCY_CYCLE:{'->'.join(cycle)}" for cycle in impact.cycles_detected
+        )
         project = partial(
             self._package_projection,
             request=request,
@@ -567,7 +614,7 @@ class ProductCoreCompiler:
                 "status": "passed" if lifecycle == "candidate" else lifecycle,
                 **checks,
                 "fullRebuildEquivalence": equivalence,
-                "matchingPolicy": "legacy",
+                "matchingPolicy": self._matching_policy,
             },
             diff={
                 "level": diff.level.value,
@@ -607,6 +654,7 @@ class ProductCoreCompiler:
             input_sha256=input_sha256,
             output_sha256=sha256_digest(candidate_bytes),
             core_release_digest=self.core_release_digest,
+            matching_policy=self._matching_policy,
             equivalence=equivalence,
             total_artifacts=len(full_hashes),
             rebuilt_artifacts=len(rebuilt),
@@ -676,45 +724,105 @@ class ProductCoreCompiler:
                 )
             )
 
+        # ADR-010: a declared connector's changed document takes the keyed path unless a
+        # document-level detector refuses it; refusals and relocated units are recorded by id.
+        keyed = False
+        declaration = self._fact_keys.get(document.connector_type)
+        if (
+            declaration is not None
+            and previous
+            and previous[0].source_content_sha256 != document.content_sha256
+        ):
+            ordered = sorted(document.regions, key=lambda item: item.order)
+            detector = refusal(
+                declaration,
+                [region.native_object_id for region in ordered],
+                [unit.anchor for unit in previous],
+            )
+            if detector is not None:
+                reviews.append(f"IDENTITY_FACT_KEY_REFUSED:{derived_source_id}:{detector}")
+            else:
+                keyed = True
+                reviews.extend(
+                    f"IDENTITY_FACT_KEY_RELOCATED:{derived_source_id}:{before}->{after}"
+                    for before, after in relocations(
+                        # on this path every anchor is the region's declared key
+                        [(seed.anchor, seed.text) for seed in seeds],
+                        [(unit.anchor, unit.text) for unit in previous],
+                    )
+                )
+
         resolved = list(seeds)
         identity_states = ["new"] * len(seeds)
-        if previous_snapshots:
+        partners: list[int | None] = []
+        if keyed:
+            decisions, partners = keyed_decisions(
+                [_fingerprint(item, derived_source_id) for item in seeds],
+                [_fingerprint(item, derived_source_id) for item in previous_snapshots],
+            )
+        elif previous_snapshots:
             decisions = assign_one_to_one(
                 [_fingerprint(item, derived_source_id) for item in seeds],
                 [_fingerprint(item, derived_source_id) for item in previous_snapshots],
             )
+        if previous_snapshots:
             resolved = []
             identity_states = []
             for seed, decision in zip(seeds, decisions, strict=True):
                 if decision.match is LogicalMatch.MATCHED and decision.logical_id:
                     resolved.append(replace(seed, logical_id=decision.logical_id))
                     identity_states.append("matched")
-                elif decision.match is LogicalMatch.AMBIGUOUS:
-                    resolved.append(
-                        replace(
-                            seed,
-                            logical_id=_stable_id("ku_unresolved", derived_version_id, seed.anchor),
-                        )
-                    )
-                    identity_states.append("unresolved")
                 else:
                     resolved.append(seed)
-                    identity_states.append("new")
-                if decision.match is LogicalMatch.AMBIGUOUS:
-                    reviews.append(f"IDENTITY_AMBIGUOUS:{derived_source_id}:{seed.anchor}")
+                    ambiguous = decision.match is LogicalMatch.AMBIGUOUS
+                    identity_states.append("unresolved" if ambiguous else "new")
+        # A logical id belongs to one current unit. A NEW seed can re-create an id the matcher
+        # handed to another unit (F-D12-2: X's id goes to a moved unit while X's old anchor, now
+        # holding other text, seeds X's id again), and two anchors that normalise alike seed one
+        # id. A NEW unit whose id another unit also claims is held like an ambiguous one.
+        # D-SEED (keyed documents): a NEW keyed seed equal to any previous unit's id is held too;
+        # legacy history can hand one key's seed id to another key's unit.
+        taken_before = {unit.logical_id for unit in previous_snapshots} if keyed else set()
+        holders = Counter(
+            unit.logical_id
+            for unit, state in zip(resolved, identity_states, strict=True)
+            if state != "unresolved"
+        )
+        for index, (unit, state) in enumerate(zip(resolved, identity_states, strict=True)):
+            if state == "unresolved" or (
+                state == "new" and (holders[unit.logical_id] > 1 or unit.logical_id in taken_before)
+            ):
+                resolved[index] = replace(
+                    unit, logical_id=_stable_id("ku_unresolved", derived_version_id, unit.anchor)
+                )
+                identity_states[index] = "unresolved"
+                reviews.append(f"IDENTITY_AMBIGUOUS:{derived_source_id}:{unit.anchor}")
 
         before_sha = previous[0].source_content_sha256 if previous else content_hash("absent")
-        document_diff = diff_documents(
-            before_sha256=before_sha,
-            after_sha256=document.content_sha256,
-            level=DiffLevel.GRAPH,
-            before_shape=_shape(previous_snapshots),
-            after_shape=_shape(resolved),
-            before_units=previous_snapshots,
-            after_units=resolved,
-            source=derived_source_id,
-        )
-        document_changes = list(document_diff.changes)
+        if keyed:
+            document_changes = keyed_document_changes(
+                before_sha256=before_sha,
+                after_sha256=document.content_sha256,
+                before_shape=_shape(previous_snapshots),
+                after_shape=_shape(resolved),
+                previous=previous_snapshots,
+                resolved=resolved,
+                decisions=decisions,
+                partners=partners,
+                source=derived_source_id,
+            )
+        else:
+            document_diff = diff_documents(
+                before_sha256=before_sha,
+                after_sha256=document.content_sha256,
+                level=DiffLevel.GRAPH,
+                before_shape=_shape(previous_snapshots),
+                after_shape=_shape(resolved),
+                before_units=previous_snapshots,
+                after_units=resolved,
+                source=derived_source_id,
+            )
+            document_changes = list(document_diff.changes)
         for unit, identity_state in zip(resolved, identity_states, strict=True):
             if identity_state == "unresolved":
                 document_changes.append(
@@ -790,7 +898,7 @@ class ProductCoreCompiler:
                 "immutableObjectKey": document.immutable_object_key,
                 "ocrObjectKey": document.ocr_object_key,
                 "pageCount": document.page_count,
-                "matchingPolicy": "legacy",
+                "matchingPolicy": self._matching_policy,
             },
             created_at=request.requested_at,
         )
@@ -875,45 +983,50 @@ class ProductCoreCompiler:
                         payload={"text": block.raw_text, "blockType": block.type.value},
                     )
                 )
-        block_by_evidence = {
-            evidence_id(
-                document_version=document.document_version_id,
-                page_number1=ref.page_number1,
-                bbox1000=(ref.bbox1000.as_tuple() if ref.bbox1000 else None),
-                span_text=block.raw_text,
-            ): block
+        # evidence_id has no anchor: regions of one version with the same normalised text, page
+        # and quantised box share it. Blocks are therefore found by region (an anchor is unique
+        # per version: a repeated one already fails CanonicalDocument's unique block IDs), and
+        # one evidence object carries the references of every region that shares its id.
+        block_by_region = {
+            (document.document_version_id, block.source_refs[0].native_object_id): block
             for document in documents
             for block in document.blocks
-            for ref in block.source_refs[:1]
         }
         unit_by_logical = {unit.logical_id: unit for unit in units}
-        refs_by_evidence: dict[str, tuple[SourceRef, ...]] = {}
-        evidence_object_by_id: dict[str, str] = {}
+        refs_by_logical = {
+            unit.logical_id: block_by_region[(unit.source_version_id, unit.anchor)].source_refs
+            for unit in units
+        }
+        units_by_evidence: dict[str, list[PreviousUnit]] = {}
         for unit in units:
+            units_by_evidence.setdefault(unit.evidence_id, []).append(unit)
+        evidence_object_by_id: dict[str, str] = {}
+        for shared_evidence_id, sharing in units_by_evidence.items():
             verification_state = (
                 KnowledgeVerificationState.UNRESOLVED
-                if unit.identity_state == "unresolved"
+                if any(unit.identity_state == "unresolved" for unit in sharing)
                 else KnowledgeVerificationState.VERIFIED_WITH_WARNING
             )
-            block = block_by_evidence[unit.evidence_id]
-            evidence_object_id = _stable_id("ko_evidence", unit.evidence_id)
-            refs_by_evidence[unit.evidence_id] = block.source_refs
-            evidence_object_by_id[unit.evidence_id] = evidence_object_id
+            evidence_object_id = _stable_id("ko_evidence", shared_evidence_id)
+            evidence_object_by_id[shared_evidence_id] = evidence_object_id
             objects.append(
                 build_knowledge_object(
                     stable_id=evidence_object_id,
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.EVIDENCE,
-                    source_refs=block.source_refs,
+                    source_refs=tuple(
+                        ref for unit in sharing for ref in refs_by_logical[unit.logical_id]
+                    ),
                     origin=KnowledgeOrigin.VISUAL_EXTRACTED,
                     verification_state=verification_state,
                     created_by_activity=activity,
                     version=1,
-                    payload={"evidenceId": unit.evidence_id},
+                    payload={"evidenceId": shared_evidence_id},
                 )
             )
 
+        claim_by_id = {claim.claim_id: claim for claim in semantics.claims}
         for claim in semantics.claims:
             unit = unit_by_logical[claim.logical_id]
             verification_state = (
@@ -927,7 +1040,7 @@ class ProductCoreCompiler:
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.CLAIM,
-                    source_refs=refs_by_evidence[claim.evidence_id],
+                    source_refs=refs_by_logical[claim.logical_id],
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=verification_state,
                     created_by_activity=activity,
@@ -937,7 +1050,6 @@ class ProductCoreCompiler:
                 )
             )
 
-        claim_by_id = {claim.claim_id: claim for claim in semantics.claims}
         for entity in semantics.entities:
             first_claim = claim_by_id[entity.claim_ids[0]]
             objects.append(
@@ -946,7 +1058,7 @@ class ProductCoreCompiler:
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.ENTITY,
-                    source_refs=refs_by_evidence[first_claim.evidence_id],
+                    source_refs=refs_by_logical[first_claim.logical_id],
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=KnowledgeVerificationState.VERIFIED_WITH_WARNING,
                     created_by_activity=activity,
@@ -962,7 +1074,7 @@ class ProductCoreCompiler:
                     tenant_id=request.tenant_id,
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.RELATION,
-                    source_refs=refs_by_evidence[relation.evidence_id],
+                    source_refs=refs_by_logical[claim_by_id[relation.subject_id].logical_id],
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=KnowledgeVerificationState.VERIFIED_WITH_WARNING,
                     created_by_activity=activity,
@@ -982,8 +1094,8 @@ class ProductCoreCompiler:
                     collection_id=request.collection_id,
                     kind=KnowledgeObjectKind.VALIDATION_RECORD,
                     source_refs=(
-                        *refs_by_evidence[left.evidence_id],
-                        *refs_by_evidence[right.evidence_id],
+                        *refs_by_logical[left.logical_id],
+                        *refs_by_logical[right.logical_id],
                     ),
                     origin=KnowledgeOrigin.RULE_DERIVED,
                     verification_state=KnowledgeVerificationState.UNRESOLVED,
@@ -1393,12 +1505,12 @@ class ProductCoreCompiler:
             + "\n"
             for item in canonical_documents
         )
-        evidence_refs = {
-            item["payload"]["evidenceId"]: item["sourceRefs"][0]
+        # Keyed by region, not evidence id: one evidence object can carry several regions.
+        region_refs = {
+            (ref["documentVersionId"], ref["nativeObjectId"]): ref
             for item in objects
             if item["kind"] == "evidence"
-            and item["sourceRefs"]
-            and isinstance(item["payload"].get("evidenceId"), str)
+            for ref in item["sourceRefs"]
         }
         claims_by_logical: defaultdict[str, list[SemanticClaim]] = defaultdict(list)
         for claim in semantics.claims:
@@ -1408,11 +1520,8 @@ class ProductCoreCompiler:
         for group in _retrieval_groups(units):
             text = "\n".join(unit.text.strip() for unit in group if unit.text.strip())
             group_claims = [claim for unit in group for claim in claims_by_logical[unit.logical_id]]
-            bboxes = [
-                evidence_refs[unit.evidence_id].get("bbox1000")
-                for unit in group
-                if evidence_refs[unit.evidence_id].get("bbox1000")
-            ]
+            evidence = [region_refs[(unit.source_version_id, unit.anchor)] for unit in group]
+            bboxes = [ref["bbox1000"] for ref in evidence if ref.get("bbox1000")]
             bbox = (
                 [
                     min(item[0] for item in bboxes),
@@ -1437,7 +1546,6 @@ class ProductCoreCompiler:
             authority_name_tier, authority_score = authority_tier(authority_name)
             logical_ids = list(dict.fromkeys(unit.logical_id for unit in group))
             evidence_ids = list(dict.fromkeys(unit.evidence_id for unit in group))
-            evidence = [evidence_refs[evidence_id] for evidence_id in evidence_ids]
             chunk_records.append(
                 {
                     "chunkId": _stable_id("chunk", *logical_ids),
@@ -1606,7 +1714,7 @@ class ProductCoreCompiler:
             "validation/report.json": canonical_json(
                 {
                     "status": "passed" if lifecycle == "candidate" else lifecycle,
-                    "matchingPolicy": "legacy",
+                    "matchingPolicy": self._matching_policy,
                     "candidatePromotion": False,
                     **({"checks": checks} if checks is not None else {}),
                     "reviewReasons": sorted(set(review_reasons)),

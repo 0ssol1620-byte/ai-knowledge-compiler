@@ -71,6 +71,10 @@ class RecompilationPlan:
     truncated_at_depth: bool = False
 
     @property
+    def closure_uncertain(self) -> bool:
+        return self.truncated_at_depth
+
+    @property
     def stale(self) -> tuple[str, ...]:
         return tuple(t.artifact_id for t in self.targets if t.state is ArtifactState.STALE)
 
@@ -199,6 +203,15 @@ def plan_recompilation(
                         "reached only through an identity the diff could not settle: "
                         + unresolved_reached[artifact]
                     ),
+                )
+            )
+        elif report.truncated_at_depth:
+            # The walk stopped early, so "not reached" proves nothing.
+            targets.append(
+                RecompilationTarget(
+                    artifact_id=artifact,
+                    state=ArtifactState.UNRESOLVED,
+                    reason="closure truncated at max_depth; rebuilt rather than assumed current",
                 )
             )
         else:

@@ -96,6 +96,11 @@ class _Pending:
     root: _Root
     changed_at: float
     deleted: bool = False
+    attempt: int = 0  # locked-file retry count; the stability window doubles per attempt
+    skip: str | None = None  # visible skip reason handled on the scheduler thread
+
+
+MAX_READ_ATTEMPTS = 3
 
 
 def _glob_to_regex(pattern: str) -> re.Pattern[str]:
@@ -185,6 +190,7 @@ class DesktopWatcher:
         self._manifest_revision = config.initial_manifest_revision
         self._sequence = 0
         self._stats = WatcherStats()
+        self._skipped_seen: set[tuple[str, str, int]] = set()
         self._journal: Journal | None = None
         # watchdog.observers.Observer is a platform-selected runtime alias,
         # not a static type, so the attribute is intentionally loosely typed.
@@ -308,12 +314,29 @@ class DesktopWatcher:
             return None
         return rel if rel.parts else None
 
+    def _relative_lexical(self, path: Path, root: _Root) -> Path | None:
+        try:
+            rel = path.relative_to(root.config.path)
+        except ValueError:
+            return None
+        return rel if rel.parts else None
+
     def _schedule_file(self, raw: str | bytes | Path, root: _Root) -> None:
         resolved = self._resolve(raw)
         if resolved is None:
             return
         rel = self._relative(resolved, root)
         if rel is None:
+            # Containment holds (the target is never read); visibility is
+            # restored by a skipped record, written on the scheduler thread.
+            lexical = Path(os.path.abspath(os.fsdecode(raw)))
+            lexical_rel = self._relative_lexical(lexical, root)
+            if lexical_rel is None or self._matchers[root.key].matches(lexical_rel.as_posix()):
+                return
+            with self._lock:
+                self._pending[str(lexical)] = _Pending(
+                    root=root, changed_at=self._clock(), skip="symlink_outside_root"
+                )
             return
         if self._matchers[root.key].matches(rel.as_posix()):
             return
@@ -357,15 +380,21 @@ class DesktopWatcher:
             due: list[tuple[str, _Pending]] = []
             with self._lock:
                 for path_str, item in list(self._pending.items()):
-                    if item.deleted or now - item.changed_at >= window:
+                    if (
+                        item.deleted
+                        or item.skip
+                        or now - item.changed_at >= window * 2**item.attempt
+                    ):
                         due.append((path_str, item))
                         del self._pending[path_str]
             for path_str, item in due:
                 try:
                     if item.deleted:
                         self._apply_removal(Path(path_str), item)
+                    elif item.skip:
+                        self._emit_skipped_path(Path(path_str), item)
                     else:
-                        self._process_stable(Path(path_str), item.root)
+                        self._process_stable(Path(path_str), item.root, item.attempt)
                 except Exception:
                     logger.exception("failed processing pending path %s", path_str)
 
@@ -405,6 +434,15 @@ class DesktopWatcher:
             return
         assert self._journal is not None
         for key, entry in cleared:
+            rel_out = rel.as_posix() + key[1][len(rel_cf) :]
+            self._emit_local(
+                "removed",
+                item.root,
+                key[1],
+                generation=entry.generation,
+                relative_path=rel_out,
+                previous_content_sha256=entry.content_sha256,
+            )
             self._journal.append_state(
                 root=key[0],
                 rel=key[1],
@@ -415,12 +453,89 @@ class DesktopWatcher:
             )
         self._stats.removals_cleared += len(cleared)
 
-    def _process_stable(self, resolved: Path, root: _Root) -> None:
+    def _emit_local(
+        self,
+        kind: str,
+        root: _Root,
+        rel_cf: str,
+        *,
+        generation: int,
+        reason: str | None = None,
+        **fields: Any,
+    ) -> None:
+        """Journal + deliver + ack one watcher-local record (no contract envelope).
+
+        ``watcher.file.<kind>.v1`` is not a collection-event contract type
+        (decision D-4); sinks dedup by ``event_key`` exactly as for discovery.
+        """
+        parts = (kind, root.key, rel_cf) + ((reason,) if reason else ()) + (generation,)
+        event_key = build_event_key(*parts)
+        with self._lock:
+            sequence, revision = self._sequence, self._manifest_revision
+        record: dict[str, Any] = {
+            "event_key": event_key,
+            "event_type": f"watcher.file.{kind}.v1",
+            "collection_id": self._config.collection_id,
+            "job_id": self._config.job_id,
+            "source_root_id": root.key,
+            "sequence": sequence,
+            "manifest_revision": revision,
+            "timestamp": datetime.now(UTC).isoformat(),
+            "generation": generation,
+            "envelope": None,
+            **fields,
+        }
+        if reason:
+            record["reason"] = reason
+        assert self._journal is not None
+        self._journal.append_event(record)
+        try:
+            self._sink.deliver(record)
+        except Exception:
+            self._stats.delivery_failures += 1
+            logger.exception("sink delivery failed for %s; left unacknowledged", event_key)
+            return
+        self._journal.append_ack(event_key)
+
+    def _emit_skipped(self, root: _Root, rel_posix: str, reason: str) -> None:
+        rel_cf = rel_posix.casefold()
+        with self._lock:
+            previous = self._dedup.get((root.key, rel_cf))
+            generation = previous.generation if previous is not None else 0
+            if (rel_cf, reason, generation) in self._skipped_seen:
+                return
+            self._skipped_seen.add((rel_cf, reason, generation))
+        self._emit_local(
+            "skipped", root, rel_cf, generation=generation, reason=reason, relative_path=rel_posix
+        )
+
+    def _emit_skipped_path(self, path: Path, item: _Pending) -> None:
+        rel = self._relative_lexical(path, item.root)
+        if rel is not None and item.skip:
+            self._emit_skipped(item.root, rel.as_posix(), item.skip)
+
+    def _process_stable(self, resolved: Path, root: _Root, attempt: int = 0) -> None:
         try:
             size = resolved.stat().st_size
             digest = _sha256_file(resolved)
-        except OSError:
+        except FileNotFoundError:
             return  # vanished while pending; nothing to emit
+        except OSError:
+            # Locked / unreadable: say so, retry with a doubling window, give up visibly.
+            rel = self._relative(resolved, root)
+            if rel is None:
+                return
+            last = attempt + 1 >= MAX_READ_ATTEMPTS
+            self._emit_skipped(
+                root, rel.as_posix(), "unreadable_gave_up" if last else "unreadable_locked"
+            )
+            if not last:
+                with self._lock:
+                    self._pending.setdefault(
+                        str(resolved),
+                        _Pending(root=root, changed_at=self._clock(), attempt=attempt + 1),
+                    )
+            return
         rel = self._relative(resolved, root)
         if rel is None:
             return

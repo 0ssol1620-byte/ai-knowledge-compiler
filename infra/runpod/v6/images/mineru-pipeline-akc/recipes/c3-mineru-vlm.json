@@ -1,0 +1,49 @@
+{
+ "name": "c3-mineru-vlm",
+ "provider": "mineru_vlm",
+ "model": {
+  "repo_id": "opendatalab/MinerU2.5-Pro-2605-1.2B",
+  "revision": "bff20d4ae2bf202df9f45284b4d43681555a97ed",
+  "dir": "/opt/akc/models/MinerU2.5-Pro-2605-1.2B",
+  "manifest": "/opt/akc/recipes/c3-weights-manifest.json"
+ },
+ "aux_models": [],
+ "packages": {
+  "mineru": "3.4.4",
+  "mineru-vl-utils": "1.0.5",
+  "torch": "2.8.0",
+  "torchvision": "0.23.0",
+  "transformers": "4.57.3",
+  "accelerate": "1.14.0",
+  "pypdfium2": "4.30.0"
+ },
+ "absent_packages": ["vllm", "lmdeploy"],
+ "service": {
+  "argv": [
+   "/usr/local/bin/mineru-api", "--host", "127.0.0.1", "--port", "8000",
+   "--enable-vlm-preload", "true"
+  ],
+  "health_url": "http://127.0.0.1:8000/health",
+  "startup_timeout_s": 900
+ },
+ "argv": [
+  "/usr/local/bin/mineru", "-p", "{source}", "-o", "{out}",
+  "--api-url", "http://127.0.0.1:8000",
+  "-b", "vlm-engine", "-f", "true", "-t", "true", "--image-analysis", "true"
+ ],
+ "page_argv": ["-s", "{page}", "-e", "{page}"],
+ "lang_argv": null,
+ "lang_by_language": {},
+ "env": {"MINERU_TOOLS_CONFIG_JSON": "/opt/akc/mineru-vlm.json"},
+ "output_glob": "**/*.md",
+ "timeout_s": 90,
+ "options": {
+  "tool": "mineru 3.4.4",
+  "backend": "vlm-engine",
+  "inference_engine": "transformers: the documented engine modules vllm and lmdeploy are not installed (the server refuses to start if either is), as the recorded C1 bootstrap",
+  "formula": true,
+  "table": true,
+  "image_analysis": true,
+  "page_selection": "-s N -e N"
+ }
+}

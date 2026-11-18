@@ -43,6 +43,7 @@ __all__ = [
     "MergeRecord",
     "MergeVerdict",
     "ResolutionTier",
+    "SplitRecord",
     "resolve_mention",
 ]
 
@@ -159,6 +160,18 @@ class MergeRecord:
     decided_by: str = "system"
 
 
+@dataclass(frozen=True, slots=True)
+class SplitRecord:
+    """What a split has to keep so `unsplit` restores the exact prior state."""
+
+    split_id: str
+    entity_id: str
+    new_entity_id: str
+    moved_members: tuple[str, ...]
+    previous_members: tuple[str, ...]
+    decided_by: str
+
+
 def _composite_key(mention: EntityMention) -> tuple[str, ...] | None:
     """A key made of the attributes, when there are enough to be a key.
 
@@ -188,7 +201,58 @@ def _context_overlap(left: EntityMention, right: EntityMention) -> float:
     return len(shared) / len(left.context_ids | right.context_ids)
 
 
+def _types_compatible(left: EntityMention, right: EntityMention) -> bool:
+    """Same type, or one side does not know its type. Apple/product is not Apple/organization."""
+    return not left.type_candidate or not right.type_candidate or (
+        left.type_candidate == right.type_candidate
+    )
+
+
 def resolve_mention(
+    mention: EntityMention,
+    candidates: Sequence[tuple[str, EntityMention]],
+    *,
+    aliases: Mapping[str, str] | None = None,
+    name_threshold: float = 0.85,
+    context_threshold: float = 0.60,
+    model_proposals: Iterable[str] = (),
+) -> MergeDecision:
+    """Resolve by `_resolve_tiers`, but never merge into a candidate whose system
+    identifier contradicts the mention's: that would give one entity two
+    authoritative records. Tier 1 is untouched; every lower tier is blocked."""
+    decision = _resolve_tiers(
+        mention,
+        candidates,
+        aliases=aliases,
+        name_threshold=name_threshold,
+        context_threshold=context_threshold,
+        model_proposals=model_proposals,
+    )
+    if (
+        decision.merged
+        and decision.tier is not ResolutionTier.SYSTEM_OF_RECORD
+        and any(
+            system in other.external_ids and other.external_ids[system] != value
+            for entity_id, other in candidates
+            if entity_id == decision.entity_id
+            for system, value in mention.external_ids.items()
+        )
+    ):
+        return MergeDecision(
+            verdict=MergeVerdict.REVIEW,
+            entity_id=None,
+            tier=ResolutionTier.SYSTEM_OF_RECORD,
+            score=decision.score,
+            reason=(
+                "conflicting system identifiers: a merge would give one "
+                "entity two authoritative records"
+            ),
+            candidates=(decision.entity_id or "",),
+        )
+    return decision
+
+
+def _resolve_tiers(
     mention: EntityMention,
     candidates: Sequence[tuple[str, EntityMention]],
     *,
@@ -261,7 +325,9 @@ def resolve_mention(
         matches = [
             entity_id
             for entity_id, other in candidates
-            if _composite_key(other) == key and other.normalized == mention.normalized
+            if _composite_key(other) == key
+            and other.normalized == mention.normalized
+            and _types_compatible(mention, other)
         ]
         if len(matches) == 1:
             return MergeDecision(
@@ -306,7 +372,11 @@ def resolve_mention(
 
     # Tier 5 -- the names look alike. The weakest evidence that is still evidence.
     similar = sorted(
-        ((_name_similarity(mention, other), entity_id) for entity_id, other in candidates),
+        (
+            (_name_similarity(mention, other), entity_id)
+            for entity_id, other in candidates
+            if _types_compatible(mention, other)
+        ),
         reverse=True,
     )
     if similar and similar[0][0] > 0.0 and similar[0][0] >= name_threshold:
@@ -376,6 +446,7 @@ class EntityRegistry:
     def __init__(self) -> None:
         self._members: dict[str, list[str]] = {}
         self._merges: list[MergeRecord] = []
+        self._splits: list[SplitRecord] = []
 
     def add(self, entity_id: str, mention_id: str) -> None:
         self._members.setdefault(entity_id, []).append(mention_id)
@@ -439,6 +510,72 @@ class EntityRegistry:
             del self._merges[index]
             return
         raise KeyError(f"no merge {merge_id} to undo")
+
+    def split(
+        self,
+        *,
+        split_id: str,
+        entity_id: str,
+        new_entity_id: str,
+        mention_ids: Sequence[str],
+        decided_by: str,
+    ) -> SplitRecord:
+        """Move the named mentions to a new entity. A human decision, never the system's."""
+        if decided_by == "system":
+            raise ValueError("a split needs a named human reviewer, not the system")
+        if entity_id not in self._members:
+            raise KeyError(f"no entity {entity_id} to split")
+        if new_entity_id in self._members:
+            raise ValueError(f"entity {new_entity_id} already exists")
+        moved = tuple(mention_ids)
+        if len(set(moved)) != len(moved):
+            raise ValueError("a mention can be moved only once")
+        current = self._members[entity_id]
+        if not moved or any(m not in current for m in moved):
+            raise ValueError("every moved mention must be a member of the entity")
+        remaining = [m for m in current if m not in moved]
+        if not remaining:
+            raise ValueError("a split cannot empty the source entity")
+        record = SplitRecord(
+            split_id=split_id,
+            entity_id=entity_id,
+            new_entity_id=new_entity_id,
+            moved_members=moved,
+            previous_members=tuple(current),
+            decided_by=decided_by,
+        )
+        self._members[entity_id] = remaining
+        self._members[new_entity_id] = list(moved)
+        self._splits.append(record)
+        return record
+
+    @property
+    def splits(self) -> tuple[SplitRecord, ...]:
+        return tuple(self._splits)
+
+    def unsplit(self, split_id: str) -> None:
+        """Restore the source entity exactly and drop the entity the split created."""
+        for index in range(len(self._splits) - 1, -1, -1):
+            record = self._splits[index]
+            if record.split_id != split_id:
+                continue
+            if self._members.get(record.new_entity_id) != list(record.moved_members):
+                raise ValueError(
+                    "the split-off entity has changed since the split; undo what "
+                    "followed it first"
+                )
+            if self._members.get(record.entity_id) != [
+                m for m in record.previous_members if m not in record.moved_members
+            ]:
+                raise ValueError(
+                    "the source entity has changed since the split; undo what "
+                    "followed it first"
+                )
+            self._members[record.entity_id] = list(record.previous_members)
+            del self._members[record.new_entity_id]
+            del self._splits[index]
+            return
+        raise KeyError(f"no split {split_id} to undo")
 
     def high_risk_auto_merges(self, types: Mapping[str, str]) -> tuple[str, ...]:
         """Merges of a high-risk type that no identifier supported.

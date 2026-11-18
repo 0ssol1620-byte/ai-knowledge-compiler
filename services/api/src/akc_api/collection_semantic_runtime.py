@@ -9,9 +9,10 @@ is accepted.
 
 from __future__ import annotations
 
+import logging
 import uuid
 from collections.abc import Mapping, Sequence
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 from functools import lru_cache
 from typing import Annotated, Any, Literal, Protocol, runtime_checkable
@@ -62,6 +63,7 @@ from akc_retrieval import (
     NumericFactKey,
     PostgresHybridIndexer,
     PostgresHybridStore,
+    ProviderAttestationError,
     RetrievalFilters,
     RetrievalIndexBatch,
     RetrievalIndexDocument,
@@ -2805,9 +2807,16 @@ def build_collection_retrieval_batch(
     embeddings: Mapping[str, Sequence[float]],
     model_id: str,
     model_revision: str,
+    recorded_at: datetime,
 ) -> RetrievalIndexBatch:
-    """Bind real 1024-d embeddings to canonical note hashes and evidence."""
+    """Bind real 1024-d embeddings to canonical note hashes and evidence.
 
+    Rows carry `recorded_at` only: the collection path has no source-declared
+    valid or availability dates, so strict `available_at` queries abstain.
+    """
+
+    if recorded_at.tzinfo is None or recorded_at.utcoffset() is None:
+        raise ValueError("retrieval recorded_at must be timezone-aware")
     expected_ids = {item.stable_id for item in prepared.index_expectations}
     if set(embeddings) != expected_ids:
         missing = sorted(expected_ids - set(embeddings))
@@ -2832,6 +2841,7 @@ def build_collection_retrieval_batch(
                 metadata={
                     "object_kind": KnowledgeObjectKind.NOTE.value,
                     "canonical_model_sha256": prepared.canonical_model_sha256,
+                    "recorded_at": recorded_at.isoformat(),
                 },
             ),
             lexical_text=expectation.lexical_text,
@@ -3058,6 +3068,9 @@ async def search_collection_semantic_runtime(
     graph_seed_ids: tuple[str, ...] = (),
     candidate_k: int = 50,
     top_k: int = 10,
+    valid_at: datetime | None = None,
+    known_at: datetime | None = None,
+    available_at: datetime | None = None,
 ) -> tuple[VectorCandidate, ...]:
     """Run retrieval with mandatory tenant, project, collection and state filters."""
 
@@ -3075,6 +3088,9 @@ async def search_collection_semantic_runtime(
         ),
         candidate_k=candidate_k,
         top_k=top_k,
+        valid_at=valid_at,
+        known_at=known_at,
+        available_at=available_at,
     )
     candidates = tuple(await store.search(query))
     for candidate in candidates:
@@ -3082,6 +3098,52 @@ async def search_collection_semantic_runtime(
         if metadata.get("collection_id") != str(collection_id):
             raise RetrievalUnavailable("collection retrieval escaped its mandatory scope")
     return candidates[:top_k]
+
+
+_LOGGER = logging.getLogger(__name__)
+_SWEEP_ATTEMPTS = 2
+
+
+async def commit_then_sweep_superseded(
+    session: AsyncSession,
+    indexer: PostgresHybridIndexer,
+    *,
+    tenant_id: uuid.UUID,
+    project_id: uuid.UUID,
+    collection_id: uuid.UUID,
+    canonical_model_sha256: str,
+) -> int | None:
+    """Commit the completion receipt, then delete rows of every other canonical model.
+
+    The sweep runs only after the commit. A failed commit leaves mixed rows (the new
+    rows are already indexed and overwrite by stable_id), so search fails closed
+    with 503 RECEIPT_MISMATCH until a later compile completes.
+    A failed sweep never un-completes the compile; it is
+    retried once, then logged with a code, and the next compile sweeps again.
+    Returns the removed row count, or None when the sweep failed.
+    """
+
+    await session.commit()
+    for attempt in range(1, _SWEEP_ATTEMPTS + 1):
+        try:
+            return await indexer.sweep_superseded(
+                tenant_id=tenant_id,
+                project_id=project_id,
+                collection_id=collection_id,
+                keep_canonical_model_sha256=canonical_model_sha256,
+            )
+        except (ProviderAttestationError, RetrievalUnavailable):
+            _LOGGER.error(
+                "COLLECTION_RETRIEVAL_SWEEP_FAILED",
+                extra={
+                    "code": "COLLECTION_RETRIEVAL_SWEEP_FAILED",
+                    "attempt": attempt,
+                    "collection_id": str(collection_id),
+                    "canonical_model_sha256": canonical_model_sha256,
+                },
+                exc_info=True,
+            )
+    return None
 
 
 def verify_collection_numeric_answer(
@@ -3114,6 +3176,7 @@ __all__ = [
     "build_collection_retrieval_batch",
     "builtin_semantic_blueprint_manifests",
     "canonical_object_id",
+    "commit_then_sweep_superseded",
     "load_collection_semantic_compile_input",
     "prepare_collection_semantic_runtime",
     "run_collection_semantic_runtime",

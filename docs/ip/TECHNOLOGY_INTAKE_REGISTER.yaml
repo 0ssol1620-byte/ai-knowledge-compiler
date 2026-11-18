@@ -162,3 +162,1046 @@ founder_decisions_pending:
     blocks: "nothing today"
   - id: FTO-3
     question: "Who owns the intake record for each new dependency going forward (§15.1 requires an owner)?"
+
+# ---------------------------------------------------------------------------
+# Datasets read for EVALUATION ONLY (SCOPE-FOUNDER-20261116, Amendments 3-4).
+# Dataset terms only: code, model-weight, dataset and hosted-API terms are four
+# separate licences, and these rows clear none of the others. Local copies belong
+# to another project; they are pinned by absolute path + sha256 in
+# D:/CodexProjects/v34-lanes/corpus/lpc-sources.v1.json. The other project's hash
+# list is a COLLECTOR MANIFEST: it proves the bytes are unchanged since collection,
+# not their provenance. Nothing is copied into this repository. Common limits:
+# internal benchmark use; no redistribution of documents, pages, rows or
+# renderings; a published number is an aggregate score bound to a receipt; no
+# trading, investment-advice or government-endorsement claim.
+# Every `basis` below was read from the snapshot bytes its row names by sha256
+# (run WO-LPC-R0: D:/CodexProjects/v34-lanes/corpus/licences/terms.json, bytes in
+# <sha256>.html beside it) for WO-LPC-0 on 2026-11-17, not from the live site.
+# A row whose terms the snapshot does not settle is HELD, and says why.
+# ---------------------------------------------------------------------------
+datasets_evaluation_only:
+  - id: data_sec_fsds
+    reference: "SEC Financial Statement Data Sets, quarterly ZIPs 2009q1-2026q1"
+    publisher: "U.S. Securities and Exchange Commission (DERA)"
+    classification: ORANGE
+    status: EVALUATION_ONLY
+    use: "Gold values for screen critical fields; revision pairs; point-in-time tasks."
+    snapshot_url: "https://www.sec.gov/about/privacy-information#copyright"
+    snapshot_sha256: "8947260f51dc2be0fd82832cc6b4b31dac9e55cf31c2f92e7060895037045a3d"
+    fetched_at: "2026-11-16T19:59:45.522493+00:00"
+    basis: >-
+      Page "SEC Web Site Privacy and Security Policy", section "Website
+      Dissemination" (element id `dissemination`; page last reviewed Nov. 29,
+      2023). Its first sentence says information presented on sec.gov is
+      "considered public information and may be copied or further distributed"
+      by site users without the SEC's permission. The same section asks users to
+      consider citing the SEC as the source and not to use the SEC seal, logos or
+      artwork; says SEC, EDGAR, the EDGAR logo and the EDGARLink names are SEC
+      registered trademarks that need an SEC licence for use in the trade name,
+      trademark or domain name of an SEC- or EDGAR-related business; and allows mentioning EDGAR in text
+      without a licence as long as no SEC affiliation or approval is implied. The
+      word copyright does not occur on the page, and the URL fragment `#copyright`
+      matches no element in the snapshot. The page does not name the Financial
+      Statement Data Sets or any other data set, so this row rests on the general
+      sec.gov statement; the common limits above (no redistribution) apply
+      regardless.
+    not_cleared: "Redistribution of the ZIPs or rows; any claim that values are SEC-verified."
+
+  - id: data_sec_edgar_filings
+    reference: "EDGAR primary documents (10-K, 10-Q, 10-K/A, 20-F, 10-KT), 23,482 filings 2017-2026, and bulk submissions.zip of 2026-08-16"
+    publisher: "Authored by each registrant; disseminated by the SEC through EDGAR"
+    classification: ORANGE
+    status: EVALUATION_ONLY
+    rights_class: public_record   # published by a regulator, authored by a third party, redistribution not assumed
+    use: "Renderings parsed by benchmark candidates (filer-page excerpts printed locally); acceptance-time witness."
+    snapshot_url: "https://www.sec.gov/about/privacy-information#copyright"
+    snapshot_sha256: "8947260f51dc2be0fd82832cc6b4b31dac9e55cf31c2f92e7060895037045a3d"
+    fetched_at: "2026-11-16T19:59:45.522493+00:00"
+    basis: >-
+      The page is silent on registrant-authored content. Deciding text: the first
+      sentence of section "Website Dissemination" (element id `dissemination`),
+      which lets site users copy and redistribute information on sec.gov
+      "without the SEC’s permission". The permission it gives is the SEC's own.
+      Nothing in that section, or elsewhere on the page, mentions registrants,
+      the authors of filings, third-party content or copyright. Outside the site
+      menu, filings appear once, in section "Information Collected and Stored
+      Automatically", as an example of information visitors read or download;
+      that privacy statement says nothing about who holds rights in them.
+      Filings and our renderings of them are therefore treated as not
+      redistributable, and no record calls them public domain.
+    not_cleared: "Publishing any page, excerpt, image or text of a filing; 'public domain' as a legal claim about filer content."
+
+  - id: data_alfred_vintages
+    reference: "FRED/ALFRED vintage observations, local CSV sha256 f01bc6cff96e4582fbac059c08dee7dc93fe9a81ce3463f2187c1a41fa8e8d40 (a derived CSV of another project; API responses not retained)"
+    publisher: "Federal Reserve Bank of St. Louis (FRED/ALFRED); series owned by their original sources"
+    classification: ORANGE
+    status: DENIED
+    denied_on: "2026-11-17"
+    denied_reason: >-
+      The FRED legal terms prohibit this use. Snapshot "https://fred.stlouisfed.org/legal/"
+      (WO-D21-5 receipt fetch_log.jsonl, sha256 7d032ef70fb1e934f5ca76dc69e0ba941f09620078c7d138d4c39dc664abc8b4),
+      API prohibitions: (k) "Use the FRED® API to access the FRED® Services or FRED® Content in
+      connection with the development or training of any software program or system or machine learning,
+      including, but not limited to, large language models, deep learning, generative artificial
+      intelligence, or any other program or process commonly known as artificial intelligence."
+      (l) "Use the FRED® API in connection with storing, caching, or archiving any portion of the FRED®
+      Services or FRED® Content; providing any stored, cached, or archived portion of the FRED®
+      Services or FRED® Content to any third party; or incorporating any FRED® Content in any
+      database, compilation, archive, cache, or other medium." The same page's general prohibition
+      repeats (k)'s text for the FRED® Services and FRED® Content without the API qualifier.
+    decision: >-
+      D21-L1 (WO-D21-6): FRED/ALFRED content is not used by this program. Every ALFRED action is deny
+      in the rights register, no FRED or ALFRED request is made, and the local vintage CSV is not read
+      for any purpose. Point-in-time ground truth is the EDGAR acceptance timestamp only. Written
+      permission from the Bank would be a new intake row, a founder matter. Nothing was fetched and
+      nothing is in a build, so there is nothing to roll back.
+    held_for: "Nothing; the rows below record what was read before the denial and are kept as history."
+    history:   # keys from before the denial (D21-L1): what was read, kept as history, no longer in force
+        snapshot_url: "https://fred.stlouisfed.org/docs/api/terms_of_use.html"
+        snapshot_sha256: "1b363c108142640f7e3a450169808cf195117fa3d7771651ae52bea5e515935c"
+        fetched_at: "2026-11-16T19:59:46.070812+00:00"
+        basis: >-
+          Page "FRED® API Terms of Use". Section "Property Rights": series offered
+          through the API may belong to third parties and carry copyright
+          restrictions that the API does not override; using a third-party series
+          for more than personal use needs the owner's permission, which the St.
+          Louis Fed says it cannot give; and "Copyrighted series contain the word
+          'Copyright' in their notes." The same section extends the St. Louis Fed's
+          rights to all output of the API. Section "Prohibitions" bars implying St.
+          Louis Fed endorsement and removing proprietary notices attached to data
+          obtained through the API; section "Requirements" obliges an application
+          that uses the API to display a non-endorsement notice. The terms also
+          incorporate the St. Louis Fed web site Legal Terms and Privacy Policy;
+          neither is among the R0 snapshots, and neither was read.
+        series_allowed:   # one snapshot per series page; ownership read from the page, not assumed
+          - series: CPIAUCSL
+            snapshot_url: "https://fred.stlouisfed.org/series/CPIAUCSL"
+            snapshot_sha256: "e756010b9e1463cde5f3287fd2843e694c3f2897e91f26aa43ccdcad6dfaa7b3"
+            fetched_at: "2026-11-16T19:59:46.770489+00:00"
+            source: "U.S. Bureau of Labor Statistics (release: Consumer Price Index)"
+          - series: UNRATE
+            snapshot_url: "https://fred.stlouisfed.org/series/UNRATE"
+            snapshot_sha256: "9148769c9b45f9eebacbda635e1494350082372938e8125c5493e9597f7ef7eb"
+            fetched_at: "2026-11-16T19:59:47.099640+00:00"
+            source: "U.S. Bureau of Labor Statistics (release: Employment Situation)"
+          - series: INDPRO
+            snapshot_url: "https://fred.stlouisfed.org/series/INDPRO"
+            snapshot_sha256: "0b7cec64885e5d2cc3f3601aefffc485c10007e7230b85351fd796ebb89d7744"
+            fetched_at: "2026-11-16T19:59:47.835400+00:00"
+            source: "Board of Governors of the Federal Reserve System (US) (release: G.17 Industrial Production and Capacity Utilization)"
+          - series: DFF
+            snapshot_url: "https://fred.stlouisfed.org/series/DFF"
+            snapshot_sha256: "fbc6f44098b4e3b9990dcaef4925c7eef3d8fd62ee7fd0b39099cf87b0ade72a"
+            fetched_at: "2026-11-16T19:59:48.463833+00:00"
+            source: "Board of Governors of the Federal Reserve System (US) (release: H.15 Selected Interest Rates)"
+          - series: DGS10
+            snapshot_url: "https://fred.stlouisfed.org/series/DGS10"
+            snapshot_sha256: "39f43bd1bd9cc686be799f644e82e8c3252384c250172c3feee3fa59e0518773"
+            fetched_at: "2026-11-16T19:59:48.931883+00:00"
+            source: "Board of Governors of the Federal Reserve System (US) (release: H.15 Selected Interest Rates)"
+          - series: DGS2
+            snapshot_url: "https://fred.stlouisfed.org/series/DGS2"
+            snapshot_sha256: "b22e8c573fe3a767d46122fc2af51653d8e731dfdd3d1e1dcef1210412ff15fa"
+            fetched_at: "2026-11-16T19:59:49.470548+00:00"
+            source: "Board of Governors of the Federal Reserve System (US) (release: H.15 Selected Interest Rates)"
+        series_pages_basis: >-
+          Read the same way on all six pages. The Notes panel names as Source the
+          body listed per series above (U.S. Bureau of Labor Statistics, or Board of
+          Governors of the Federal Reserve System); none names a third-party owner.
+          The series notes do not contain the word Copyright, which the API terms
+          give as the mark of a copyrighted series. Each page's Suggested Citation
+          credits that source and names FRED at the St. Louis Fed as where the data
+          was retrieved, with the series URL. Each page also carries a copyright
+          banner for shared graphs inside markup of class `hide` (hidden in the page as
+          served), and head metadata (keywords and a JSON-LD
+          licence link to fred.stlouisfed.org/legal/#copyright-public-domain) that
+          labels the series public domain with citation requested. That legal page
+          was not snapshotted, so this register does not itself call the series
+          public domain. No series moves to series_excluded.
+        series_excluded:   # no R0 snapshot was taken for these; the reasons come from the founder's scope (SCOPE-FOUNDER-20261116), not from a page reading
+          - { series: BAMLH0A0HYM2, reason: "third-party owned (ICE Data Indices)" }
+          - { series: VIXCLS,       reason: "third-party owned (Cboe)" }
+          - { series: DTWEXBGS,     reason: "terms not read" }
+        verify_at_merge_separately:
+          - question: "Reuse of data retrieved under ANOTHER project's FRED API key: do the terms bind the key holder only, or the data?"
+            state: MOOT_DENIED
+            finding: >-
+              Superseded by the denial above (clauses (k) and (l) bind regardless of whose key retrieved the data). Earlier reading: not settled by the R0 snapshot. The opening paragraph binds whoever uses
+              the API. Section "API Key" issues each key to one registrant and makes
+              that registrant alone answerable to the St. Louis Fed for its use of
+              the API. Section "Property Rights" extends the St. Louis Fed's rights
+              to all API output. Section "Term and Termination" requires destroying
+              copies of the API when the licence ends and says nothing about
+              retrieved data. No section addresses stored or derived data, or a
+              party that holds API output without having used the API. The
+              incorporated Legal Terms were not snapshotted, so whether they address
+              it is unknown.
+    not_cleared: "Redistribution of series values; any FRED/Federal Reserve endorsement claim."
+
+  - id: tool_chrome_headless_shell
+    reference: "chrome-headless-shell 149.0.7827.55 (Playwright chromium_headless_shell-1228), exe sha256 28016df6864d302434c9231e1f9f1a8a7ecc512cb2fe3faabb2a36130b96bcf1"
+    classification: ORANGE   # the work order proposed GREEN_PENDING_VERIFY; `classifications` above is a closed vocabulary, so ORANGE with this note
+    status: LOCAL_TOOL_NOT_SHIPPED
+    snapshot_file: "LICENSE.headless_shell sha256 273fdb2b9a87aecb3e7a719c42ce6d045459dc6efb398d3baaaedc18f4a3c21f"
+    snapshot_file_location: "%LOCALAPPDATA%/ms-playwright/chromium_headless_shell-1228/chrome-headless-shell-win64/LICENSE.headless_shell (2,037,413 bytes); its sha256 and the exe sha256 were re-computed on 2026-11-17 and equal the values in this row"
+    basis: >-
+      The file concatenates 274 notice sections, each headed by a component
+      name. The first, "The Chromium Project", is a three-condition BSD-style
+      licence ("Copyright 2015 The Chromium Authors"): source and binary
+      redistributions keep the copyright notice and disclaimer, and Google's or
+      the contributors' names may not endorse derived products without
+      permission. A phrase scan of the other sections finds Apache-2.0, MIT-,
+      BSD- and ISC-style and Unicode texts in most, and GNU GPL, LGPL or Mozilla
+      Public License wording in 14 (among them ffmpeg, WebKit,
+      hyphenation-patterns, icu and the symphonia packages); 9 sections match none
+      of the scanned phrases (among them FreeType, harfbuzz and sqlite). Those
+      sections were scanned, not read line by line, and the scan does not settle
+      which licence governs each component. The binary is a local renderer that
+      is never shipped or distributed; this row clears no redistribution.
+    not_cleared: "Shipping, bundling or redistributing the binary or any part of it; a GREEN classification before the copyleft-worded sections are read."
+
+# ---------------------------------------------------------------------------
+# Arena intake (WO-D10-0A, 2026-11-17). Models, tools, a dataset and hosted
+# APIs read for the D10 screen. EVALUATION ONLY: no row admits production use,
+# and every registry row an entry names carries zero traffic.
+#
+# Snapshots: public licence texts, model cards and terms pages, fetched on
+# 2026-11-17 with User-Agent "TAVONEL-research/1.0 (https://tavonel.com/contact)".
+# No weights, no clone, no install, no account, no key, no call. The bytes are
+# kept OUTSIDE this repository, as the dataset rows above keep theirs:
+# D:/CodexProjects/v34-lanes/receipts/WO-D10-0A/licence-snapshots/<sha256>.<ext>,
+# index terms.json beside them, every digest recomputed by verify_snapshots.py
+# (output kept as verify_snapshots.out.txt). docs/ip/licence-snapshots/ was the
+# intended home; docs/ip/ is privileged-by-default (docs/ip/.gitignore and
+# scripts/ip_privilege_guard.py) and admitting a subdirectory is a guard change,
+# so it is proposed separately rather than made here.
+#
+# The four licence axes are judged separately (code, weights, dataset terms,
+# hosted terms); clearing one clears none of the others. A licence is copyright
+# permission from its contributor, not patent freedom to operate. A capability
+# (vision, Korean, a format) is quoted with its source class (VENDOR =
+# the model's own maker, MAINTAINER = a benchmark's maintainer, THIRD-PARTY) or
+# marked UNVERIFIED; none is inferred from a name. No public score below is a
+# result of ours.
+#
+# Axis verdicts: cleared_evaluation_only | review_required | not_applicable | blocked.
+# deciding_axis names the licence the row's use rests on and follows from the
+# row's kind (model: weights, hosted: hosted, dataset: dataset, tool: code); a
+# row is EVALUATION_ONLY only when that axis is cleared_evaluation_only and the
+# row is not RED, and any other status says why in held_reason. Every cleared
+# axis rests on a captured snapshot of that axis (the main snapshot for the
+# deciding axis); every blocked axis names the repository it blocks.
+# ---------------------------------------------------------------------------
+arena_intake:
+  - id: model_mineru_pipeline
+    kind: model
+    arena_slot: C0
+    reference: "MinerU pipeline weights opendatalab/PDF-Extract-Kit-1.0 (incumbent control; production image digest, MinerU 3.4.4)"
+    publisher: "OpenDataLab (MinerU Team)"
+    upstream_id: opendatalab/PDF-Extract-Kit-1.0
+    upstream_revision: "ed6b654c018d742e65a17671e379c5e6ecc87ec9"
+    registry_provider_key: mineru
+    classification: ORANGE
+    status: EVALUATION_ONLY
+    deciding_axis: weights
+    use: "A2a/A2b incumbent control only."
+    snapshot_url: "https://huggingface.co/opendatalab/PDF-Extract-Kit-1.0/raw/ed6b654c018d742e65a17671e379c5e6ecc87ec9/README.md"
+    snapshot_sha256: "96da5ddde73c3f578b9eab235ac59cbb5f512755090779a14461863767b70f34"
+    fetched_at: "2026-11-17T04:51:44.993176+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/opendatalab/MinerU/mineru-3.4.4-released/LICENSE.md", sha256: "2d9aeb5d15159329a20dd804f251c64860ba954fbd26ec02f802220e6d71cf5c", note: "byte-identical at mineru-4.2.3-released" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: >-
+          MinerU Open Source License (LICENSE.md, 3,301 B, identical at the
+          3.4.4 and 4.2.3 release tags): Apache-2.0 plus three added terms -- a
+          separate commercial licence above 100 million MAU or USD 20 million
+          monthly revenue (consolidated with affiliates), an obligation to state
+          prominently that MinerU is used when offering an online service on it,
+          and automatic termination if either is not met.
+      weights:
+        verdict: cleared_evaluation_only
+        basis: >-
+          The weights repository has no LICENSE file. Its model card (835 B) has
+          no front matter: a `license: agpl-3.0` block appears as card body text
+          after the download instructions, so it is not parsed as metadata (the
+          API revision JSON at the pin has cardData null and no license tag),
+          and the card carries no licence text. Sub-model cards
+          for UniMERNet variants and StructEqTable say apache-2.0. The
+          subdirectories MinerU 3.4.4 loads (mineru/utils/enum_class.py ModelPath
+          at the tag) are PP-DocLayoutV2, unimernet_hf_small_2503,
+          pp_formulanet_plus_m, paddleocr_torch, SlanetPlus, UnetStructure and
+          paddle_table_cls; their own licences were not read. Evaluation use
+          rests on the founder's 2026-09-03 research-run decision
+          (receipts/registry-updates/license-mineru_pipeline.json, cited by the
+          shortlist), not on a licence text.
+      dataset:
+        verdict: review_required
+        basis: "Training-data terms are not published in either repository read."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    # What the arena C0 image installs (WO-D10-0F). Licences are the PyPI
+    # metadata of each pinned version, read 2026-11-17 (index sha256
+    # 3f91e0781664fb8882c74cf1dce48f74215fad430a45a6e49bc98dc8ab1c3647,
+    # kept outside the repository in receipts/WO-D10-0F/doc-snapshots/); no
+    # licence file inside a wheel was read. WO-D10-0U adds six 1.17.0, which MinerU 3.4.4
+    # imports without declaring it: PyPI metadata of six 1.17.0 read 2026-11-17T23:36Z,
+    # sha256 d8de39dd52b73048d81a8fd78022ee2bc72f8b568bcf0d88e5d5069c302b1208, outside the
+    # repository in receipts/WO-D10-0U/doc-snapshots/pypi/six-1.17.0.json (byte-identical to
+    # the WO-D10-0I copy); the wheel's published sha256 4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274
+    # is the one requirements.lock pins.
+    image:
+      recipe: infra/runpod/v6/images/mineru-pipeline-akc
+      provenance: "rebuilt from the 3.4.4 release; not the production digest, which the repository does not record"
+      use: evaluation_only
+      base: "python:3.11-slim-bookworm@sha256:e8c69d86735f6df3efa06b324694fe51f0422785f83a3bd463052636c2421944 (amd64); Debian libgl1 and libglib2.0-0 from snapshot 20261116T000000Z, their licences not read"
+      python_packages: "99, version and sha256 in requirements.lock (98 until WO-D10-0U added six)"
+      licences: >-
+        six 1.17.0: MIT (licence field; classifier OSI Approved MIT
+        License).
+        mineru 3.4.4: LicenseRef-MinerU-Open-Source-License (the code axis
+        above). 14 nvidia-* CUDA 12.8 wheels pulled by torch 2.8.0: metadata
+        says NVIDIA proprietary (for nvidia-nccl-cu12 and nvidia-nvtx-cu12 the
+        licence field says BSD-3-Clause / Apache 2.0 while the classifier says
+        Other/Proprietary); the NVIDIA licence text was not read. pypdfium2
+        4.30.0: (Apache-2.0 OR BSD-3-Clause) AND LicenseRef-PdfiumThirdParty.
+        fsspec 2026.7.0: no licence in its PyPI metadata, UNVERIFIED. certifi
+        and tqdm: MPL-2.0 (tqdm MPL-2.0 AND MIT). The rest state MIT, BSD,
+        Apache-2.0, PSF-2.0, MIT-CMU, CNRI-Python (regex), 0BSD, Zlib or
+        CC0-1.0 (numpy), or a combination of them, in their metadata (field,
+        expression or classifier).
+    not_cleared: >-
+      Production use (code thresholds and the attribution duty need a recorded
+      decision; the AGPL statement in the weights card body needs counsel); redistribution of
+      the weights; any licence claim for sub-models whose cards were not read;
+      redistribution of the C0 image (NVIDIA wheels, Debian packages, fsspec and
+      the weights inside it); any use of the image outside the arena.
+
+  - id: model_paddleocr_vl_1_6
+    kind: model
+    arena_slot: C1
+    reference: "PaddlePaddle/PaddleOCR-VL-1.6"
+    publisher: "PaddlePaddle (Baidu)"
+    upstream_id: PaddlePaddle/PaddleOCR-VL-1.6
+    upstream_revision: "c5630abae1d940eafe0697512a0325494b02ab42"
+    registry_provider_key: paddleocr_vl_1_6
+    classification: GREEN
+    status: EVALUATION_ONLY
+    deciding_axis: weights
+    use: "A2a 30-page smoke; A2b if a finalist."
+    snapshot_url: "https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6/raw/c5630abae1d940eafe0697512a0325494b02ab42/LICENSE"
+    snapshot_sha256: "b8c4d7deccd236af023af1c88c4d4e8f0fc2f41914e0fb23a3ec9678fb5a8456"
+    fetched_at: "2026-11-17T04:51:38.949601+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/PaddlePaddle/PaddleOCR/v3.7.0/LICENSE", sha256: "3840c5c0c61c294264d2dd77b8777be6ddd90121ef4e0e64abcd22edea581d6e" }
+      - { axis: weights, url: "https://huggingface.co/PaddlePaddle/PaddleOCR-VL-1.6/raw/c5630abae1d940eafe0697512a0325494b02ab42/README.md", sha256: "d6c5b77a660577f6e18021defccd835bdc93a8c6538f5a479d597f3e94288abf", note: "model card" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: "PaddleOCR LICENSE at tag v3.7.0 (latest release, 2026-06-11): Apache License 2.0 text."
+      weights:
+        verdict: cleared_evaluation_only
+        basis: >-
+          LICENSE file (11,376 B) in the weights repository at the pin: Apache
+          License 2.0 text. The repository also ships remote code
+          (modeling_paddleocr_vl.py), covered by the same file. Card front
+          matter names base ERNIE4.5; the base model's own licence was not read.
+      dataset:
+        verdict: review_required
+        basis: "Training data is not disclosed on the card."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    # What the arena C1 image installs (WO-D10-0I): the production stage of
+    # workers/gpu-parser/Dockerfile, wrapped as it is, plus paddlex pinned to 3.7.2
+    # (round 2). paddlepaddle-gpu 3.2.1's METADATA read 2026-11-17 from the cp312 wheel
+    # on the PaddlePaddle cu126 index by HTTP range requests (the wheel was not
+    # downloaded), sha256 dd212a7daa6096e03fe86d24adab878b41a335046e49b8cd7d29bcd2192c553d,
+    # in receipts/WO-D10-0I/round2/snap/. PyPI metadata read 2026-11-17,
+    # kept outside the repository in receipts/WO-D10-0I/doc-snapshots/ (paddleocr 3.7.0
+    # 4c639433fe1162458c51df797e0190b5fa7141b276dc4c3e3da86fce22f25be5, paddlex 3.7.0
+    # 9ce4d641fe3b5b773de2521bd6f5935c639260a5665807833e67277f08c6c116); no licence file
+    # inside a wheel was read.
+    image:
+      recipe: infra/runpod/v6/images/paddleocr-vl-akc
+      provenance: "the production stage's base, apt packages, uv lock and package versions; not hash-locked, as production is not"
+      use: evaluation_only
+      base: "nvidia/cuda:12.9.1-cudnn-runtime-ubuntu24.04@sha256:d02c4310b6d57ca0b16cd80298bdb33a74187baafe2eccd8a6a16180ddc90802; Ubuntu python3, python3-pip, ca-certificates, libglib2.0-0, libgl1, libgomp1 unpinned (libgomp1 added by WO-D10-0U: paddle's core loads libgomp.so.1); the NVIDIA container licence and the Ubuntu package licences not read"
+      python_packages: >-
+        workers/gpu-common/uv.lock (uv sync --locked); paddlepaddle-gpu 3.2.1 from
+        the PaddlePaddle cu126 index; paddleocr[doc-parser] 3.7.0 with paddlex
+        3.7.2 and protobuf 7.36.1 (pinned by WO-D10-0U: sentencepiece 0.2.3's
+        generated code needs runtime 7.36.1 or newer; PyPI metadata of protobuf
+        7.36.1 read 2026-11-18, sha256
+        4aa5063828ecab5ddb4e41c9a098f8e460002098206dbbfd831feb4dce4e9bc3, outside the
+        repository in receipts/WO-D10-0U/r2/doc-snapshots/pypi/; licence field
+        "3-Clause BSD License"), and whatever they resolve to at build time. Not hash-locked: for this
+        evaluation-only image the pin is the built digest plus the `uv pip freeze`
+        and `uv pip list --format json` output the build prints, saved by the lead
+        as a receipt;
+        a hash-locked requirements file comes before any production use
+      licences: >-
+        paddleocr 3.7.0: "Apache License 2.0" (PyPI licence field). paddlex
+        3.7.0: Apache-2.0 (licence expression); 3.7.2 is pinned, its LICENSE at
+        tag v3.7.2 is Apache License 2.0 text (sha256
+        accc36c817ac5ede473d05732e14afc11cb6e55ef5919bc826b653f631165043).
+        paddlepaddle-gpu 3.2.1 (not on PyPI): its wheel METADATA says
+        "License: Apache Software License" and "Classifier: License :: OSI
+        Approved :: Apache Software License" and names License-File LICENSE and
+        AUTHORS.md, which were not read. Every transitive package: UNVERIFIED
+        until the build log's freeze is read.
+    not_cleared: "Production use; the text of paddlepaddle-gpu 3.2.1's licence files (LICENSE and AUTHORS.md, which its METADATA names and which were not read; the METADATA licence field is recorded under licences); Korean capability (card language tags: en, zh, multilingual -- Korean not named, UNVERIFIED); the C1 image's transitive packages; redistribution of the C1 image. The layout model is its own row (model_pp_doclayoutv3)."
+
+  # The layout model C1's page pipeline loads (WO-D10-0I round 2). PaddleX 3.7.0, 3.7.1
+  # and 3.7.2 name it in paddlex/configs/pipelines/PaddleOCR-VL-1.6.yaml (byte-identical,
+  # sha256 af89f00e3a470066d88f429ac9d3f905cdbcddf954ee41e516bfd9767696dbd6):
+  # SubModules.LayoutDetection.model_name PP-DocLayoutV3. Its doc-preprocessor models
+  # (PP-LCNet_x1_0_doc_ori, UVDoc) are switched off by the recipe and get no row.
+  # Snapshots in receipts/WO-D10-0I/round2/snap/; no weights read.
+  - id: model_pp_doclayoutv3
+    kind: model
+    arena_slot: C1-layout
+    reference: "PaddlePaddle/PP-DocLayoutV3"
+    publisher: "PaddlePaddle (Baidu)"
+    upstream_id: PaddlePaddle/PP-DocLayoutV3
+    upstream_revision: "241f8bdfc77a7c7bee915a5057aaee58c235a8d3"
+    classification: GREEN
+    status: EVALUATION_ONLY
+    deciding_axis: weights
+    use: "Layout model of the C1 page pipeline (recipe c1-paddleocr-vl), loaded from a launcher-downloaded directory checked against recipes/c1-layout-weights-manifest.json."
+    snapshot_url: "https://huggingface.co/PaddlePaddle/PP-DocLayoutV3/raw/241f8bdfc77a7c7bee915a5057aaee58c235a8d3/README.md"
+    snapshot_sha256: "08b60d8d7a14ddfbe29bcef9e2c2c75bf012bb0412f4e41a2bdfe5687a741dc7"
+    fetched_at: "2026-11-17T14:08:32.929286+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/PaddlePaddle/PaddleX/v3.7.2/LICENSE", sha256: "accc36c817ac5ede473d05732e14afc11cb6e55ef5919bc826b653f631165043" }
+      - { axis: weights, url: "https://huggingface.co/api/models/PaddlePaddle/PP-DocLayoutV3/revision/241f8bdfc77a7c7bee915a5057aaee58c235a8d3?blobs=true", sha256: "6f73f8576cbb83e79dbbff10abd0ed689848d754225065cb4907e1da6e981f70", note: "file list and LFS digests; the manifest's source" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: "Run by PaddleX 3.7.2 inside paddleocr 3.7.0: PaddleX LICENSE at tag v3.7.2 is Apache License 2.0 text."
+      weights:
+        verdict: cleared_evaluation_only
+        basis: >-
+          Card front matter at the pin: license apache-2.0, and an Apache 2.0 badge
+          linking ./LICENSE. The repository has no LICENSE file at the pin (five
+          files: .gitattributes, README.md, inference.json, inference.pdiparams,
+          inference.yml), so the licence rests on the card's metadata only.
+      dataset:
+        verdict: review_required
+        basis: "Training data is not named in the card read."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    not_cleared: "Production use (the weights licence is card metadata only; no LICENSE file in the repository); redistribution of the weights."
+
+  - id: model_ovisocr2
+    kind: model
+    arena_slot: C2
+    reference: "ATH-MaaS/OvisOCR2"
+    publisher: "ATH-MaaS"
+    upstream_id: ATH-MaaS/OvisOCR2
+    upstream_revision: "1fc9221b7823a371d6e97f92d527cc847e24e107"
+    registry_provider_key: ovisocr2
+    classification: GREEN
+    status: EVALUATION_ONLY
+    deciding_axis: weights
+    use: "A2a 30-page smoke; A2b if a finalist."
+    snapshot_url: "https://huggingface.co/ATH-MaaS/OvisOCR2/raw/1fc9221b7823a371d6e97f92d527cc847e24e107/LICENSE"
+    snapshot_sha256: "bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a"
+    fetched_at: "2026-11-17T04:51:40.691030+00:00"
+    other_snapshots:
+      - { axis: weights, url: "https://huggingface.co/ATH-MaaS/OvisOCR2/raw/1fc9221b7823a371d6e97f92d527cc847e24e107/README.md", sha256: "03c876522bb7be5e8410eed758854dbb933204935afa898758d929c10725945d", note: "model card" }
+      - { axis: code, url: "https://raw.githubusercontent.com/vllm-project/vllm/v0.22.1/LICENSE", sha256: "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4", note: "vLLM runtime" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: "No code repository is published; served by vLLM, whose LICENSE at tag v0.22.1 is Apache License 2.0 text."
+      weights:
+        verdict: cleared_evaluation_only
+        basis: >-
+          LICENSE file (11,544 B) at the pin: Apache License 2.0 text; the card's
+          License section says the same. Card front matter names base
+          Qwen/Qwen3.5-0.8B; that base model's licence was not read.
+      dataset:
+        verdict: review_required
+        basis: "Training data is not disclosed on the card."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    not_cleared: "Production use; any language capability (the card names none, UNVERIFIED)."
+
+  - id: model_mineru_vlm
+    kind: model
+    arena_slot: C3
+    reference: "opendatalab/MinerU2.5-Pro-2605-1.2B"
+    publisher: "OpenDataLab (MinerU Team)"
+    upstream_id: opendatalab/MinerU2.5-Pro-2605-1.2B
+    upstream_revision: "bff20d4ae2bf202df9f45284b4d43681555a97ed"
+    registry_provider_key: mineru_vlm
+    classification: ORANGE
+    status: EVALUATION_ONLY
+    deciding_axis: weights
+    use: "A2a 30-page smoke at concurrency 1 on the async engine; A2b if a finalist."
+    snapshot_url: "https://huggingface.co/opendatalab/MinerU2.5-Pro-2605-1.2B/raw/bff20d4ae2bf202df9f45284b4d43681555a97ed/README.md"
+    snapshot_sha256: "8f829b69be518375b02023f795b3898adec98f5ac37208239884ad88e9a21cb7"
+    fetched_at: "2026-11-17T04:51:42.348826+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/opendatalab/mineru-vl-utils/mineru_vl_utils-2.0.9-released/LICENSE.md", sha256: "0b0c9cbb9e9f032856deef12e761c0661f14fdbaf88753bb1e1c68d1f7e5a3da" }
+      - { axis: code, url: "https://raw.githubusercontent.com/opendatalab/MinerU/mineru-4.2.3-released/LICENSE.md", sha256: "2d9aeb5d15159329a20dd804f251c64860ba954fbd26ec02f802220e6d71cf5c" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: >-
+          mineru-vl-utils LICENSE.md at tag mineru_vl_utils-2.0.9-released:
+          Apache License 2.0 text. If served through MinerU itself, the MinerU
+          Open Source License terms in model_mineru_pipeline apply instead.
+      weights:
+        verdict: cleared_evaluation_only
+        basis: >-
+          No LICENSE file in the weights repository (file list at the pin). The
+          card's front matter says `license: apache-2.0`; the card has no licence
+          text. Evaluation use rests on that metadata and the founder's
+          2026-09-03 research-run decision (license-mineru_vlm.json, cited by the
+          shortlist).
+      dataset:
+        verdict: review_required
+        basis: "The card describes a training data engine; no data terms are published."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    # What the arena C3 image installs (WO-D10-0I): the C0 image of model_mineru_pipeline
+    # (target c3 of the same Dockerfile, so the code axis is MinerU's own licence, as the
+    # basis above says) plus MinerU 3.4.4's [vlm] extra, which adds two packages. PyPI
+    # metadata read 2026-11-17, outside the repository in receipts/WO-D10-0I/doc-snapshots/pypi/
+    # (accelerate fa2e4204b2ac4c95770d9d016c76a55f591f3e030adff66aaa0863db9366c0d6, psutil
+    # 84f9d2597c3c15fe19d1ce069bfdbf25951dc423dc51d67c3979468c029b6415). The weights are
+    # downloaded at launch, not baked.
+    image:
+      recipe: infra/runpod/v6/images/mineru-pipeline-akc
+      provenance: "Dockerfile target c3: the rebuilt C0 image plus requirements-c3.lock"
+      use: evaluation_only
+      base: "the C0 image (model_mineru_pipeline.image)"
+      python_packages: "the C0 image's 99 (six included, WO-D10-0U), plus accelerate 1.14.0 and psutil 7.2.2 by version and sha256 in requirements-c3.lock"
+      licences: >-
+        accelerate 1.14.0: Apache (licence field; classifier Apache Software
+        License). psutil 7.2.2: BSD-3-Clause (licence field). The rest as
+        model_mineru_pipeline.image.
+    not_cleared: "Production use (weights licence is metadata only); redistribution of the weights; redistribution of the C3 image (as the C0 image)."
+
+  - id: model_minicpm_ocr_1_0
+    kind: model
+    arena_slot: C4
+    reference: "openbmb/MiniCPM-OCR-1.0"
+    publisher: "OpenBMB"
+    upstream_id: openbmb/MiniCPM-OCR-1.0
+    upstream_revision: "883ca368d17335b9ce5aa6fef4d000ef0684fcaa"
+    registry_provider_key: minicpm_ocr_1_0
+    classification: ORANGE
+    status: EVALUATION_ONLY
+    deciding_axis: weights
+    use: "A2a 30-page smoke; A2b if a finalist. Same family as the Jev verifier: A3 gives its crops a second reader of another family."
+    snapshot_url: "https://huggingface.co/openbmb/MiniCPM-OCR-1.0/raw/883ca368d17335b9ce5aa6fef4d000ef0684fcaa/README.md"
+    snapshot_sha256: "41397755907ff633bc4aa689c3660a1ef8e1e62b642e0944c0abccc97004ad27"
+    fetched_at: "2026-11-17T04:51:45.585311+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/OpenBMB/MiniCPM-OCR/sdk-v1.0.5/LICENSE", sha256: "186c8635e1f88660ec113f4935867a612e35b3124aca5c712d97e2e33d7eb677" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: "OpenBMB/MiniCPM-OCR LICENSE at tag sdk-v1.0.5 (latest release, 2026-11-09): Apache License 2.0 text."
+      weights:
+        verdict: cleared_evaluation_only
+        basis: >-
+          No LICENSE file in the weights repository. The card at the pin, section
+          "License": "Model weights, code, and documentation are released under
+          the Apache License 2.0", linking the GitHub LICENSE above. Card text,
+          not a licence file -- hence ORANGE.
+      dataset:
+        verdict: review_required
+        basis: "Training data not disclosed. Card: base MiniCPM-V 4.6 (SigLIP + Qwen3.5); base-model licences not read."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    not_cleared: "Production use; Korean (card: primary languages Chinese and English, VENDOR; Korean UNVERIFIED)."
+
+  - id: model_nemotron_3_5_parse
+    kind: model
+    arena_slot: C5
+    reference: "nvidia/Nemotron-3.5-Parse (single pass)"
+    publisher: "NVIDIA"
+    upstream_id: nvidia/Nemotron-3.5-Parse
+    upstream_revision: "ea2e1fe486bea3e7d0d505df9bafa4ad562407a0"
+    registry_provider_key: nemotron_3_5_parse
+    classification: GREEN
+    status: EVALUATION_ONLY
+    deciding_axis: weights
+    use: "A2a 30-page smoke, single pass; A2b if a finalist."
+    snapshot_url: "https://huggingface.co/nvidia/Nemotron-3.5-Parse/raw/ea2e1fe486bea3e7d0d505df9bafa4ad562407a0/LICENSE"
+    snapshot_sha256: "3375384ee1050a54d69c98c74d6499841166cd7db823ed90358f430df8c39856"
+    fetched_at: "2026-11-17T04:51:46.794517+00:00"
+    other_snapshots:
+      - { axis: weights, url: "https://huggingface.co/nvidia/Nemotron-3.5-Parse/raw/ea2e1fe486bea3e7d0d505df9bafa4ad562407a0/TOKENIZER_ATTRIBUTION.md", sha256: "9a1cb165c21860d78a05a8b4aacb24de025719e2c3ed33ee86d1722ccaec442a" }
+      - { axis: code, url: "https://huggingface.co/nvidia/Nemotron-3.5-Parse/raw/ea2e1fe486bea3e7d0d505df9bafa4ad562407a0/THIRD_PARTY_NOTICES.md", sha256: "3ffde205eb8d5d6458dcd1b6bc3d59b2b92d650b95e1e56f75dbed2bbed78b64" }
+      - { axis: dataset, url: "https://huggingface.co/nvidia/Nemotron-3.5-Parse/raw/ea2e1fe486bea3e7d0d505df9bafa4ad562407a0/README.md", sha256: "e9cc208ef6b406b39178306a3af299f80d4387ab46878949a7a6802ff513d330", note: "model card" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: "NVIDIA-provided source code in the repository is under OpenMDW-1.1 (same LICENSE file). THIRD_PARTY_NOTICES.md (730,187 B) covers separately installed dependencies and was captured, not read line by line."
+      weights:
+        verdict: cleared_evaluation_only
+        basis: >-
+          LICENSE (3,051 B): weights, NVIDIA code and docs under OpenMDW-1.1 --
+          permission to deal without restriction under copyright, patent,
+          database and trade-secret rights embodied in the materials; keep the
+          agreement and notices when distributing; no restriction on outputs;
+          rights end if the licensee sues asserting the materials violate a
+          patent or copyright. The licensee must clear other persons' rights
+          itself. The tokenizer is MIT (Nougat tokenizer, modified by NVIDIA).
+          A patent permission from NVIDIA is not freedom to operate against
+          third parties.
+      dataset:
+        verdict: review_required
+        basis: "Card 'Training Dataset': millions of items from document, table and layout datasets, third-party OCR services and synthetic renders; constituent datasets and their terms are not named."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    not_cleared: "Production use; Korean beyond the card's own synthetic test (Hangul 50 pages, BoC F1 99.62, CER 0.43 -- VENDOR, synthetic; scans and handwriting UNVERIFIED)."
+
+  - id: model_teleocr
+    kind: model
+    arena_slot: C6
+    reference: "XingChen-AGI/TeleOCR (served through vLLM only)"
+    publisher: "China Telecom AI Technology Co., Ltd. (copyright line in LICENSE)"
+    upstream_id: XingChen-AGI/TeleOCR
+    upstream_revision: "a32e21d4f766317a6f42f341be57d374362bf843"
+    registry_provider_key: teleocr
+    classification: ORANGE
+    status: EVALUATION_ONLY
+    deciding_axis: weights
+    use: "Out of the smoke (A0-6): WO-D10-0H found no documented vLLM setting that serves the weights without the repository's own modeling code (registry row teleocr, runtime.serving). The licence verdicts below are unchanged."
+    snapshot_url: "https://huggingface.co/XingChen-AGI/TeleOCR/raw/a32e21d4f766317a6f42f341be57d374362bf843/LICENSE"
+    snapshot_sha256: "b57e12ce9b9129b792539c7b1c259ea1d5c058a63866f16296787a1aaf80e2a6"
+    fetched_at: "2026-11-17T04:51:49.757580+00:00"
+    other_snapshots:
+      - { axis: weights, url: "https://huggingface.co/XingChen-AGI/TeleOCR/raw/a32e21d4f766317a6f42f341be57d374362bf843/README.md", sha256: "176c705cd92eeb9006c048e72274741e839f2bafa2bae858e64c3277264eb0db", note: "model card" }
+    axes:
+      code:
+        verdict: blocked
+        repository: "github.com/caipeng328/NaviDC-OCR (formerly caipeng328/TeleOCR)"
+        basis: >-
+          The pipeline repository the card links (github.com/caipeng328/TeleOCR,
+          now caipeng328/NaviDC-OCR) has no licence: GitHub API
+          /repos/caipeng328/NaviDC-OCR/license returned 404 on 2026-11-17.
+          Readable, not reusable -- nothing from it is copied, ported or run.
+          The weights repository's own modeling_naviocr.py is under the
+          repository LICENSE (weights axis).
+      weights:
+        verdict: cleared_evaluation_only
+        basis: >-
+          LICENSE (11,444 B) at the pin: "Copyright (c) 2026 China Telecom AI
+          Technology Co., Ltd." followed by Apache License 2.0 text. Config
+          model_type qwen2_5_vl with an auto_map to the repository's own
+          modeling_naviocr.py; whether vLLM's native Qwen2.5-VL path reproduces
+          that code is UNVERIFIED.
+      dataset:
+        verdict: review_required
+        basis: "Training data not disclosed on the card."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    not_cleared: "Any use of the NaviDC-OCR code; production use; Korean (card language tags zh, en; Korean UNVERIFIED)."
+
+  - id: model_ovisocr3
+    kind: model
+    arena_slot: C7
+    reference: "ATH-MaaS/OvisOCR3 (blueprint 'Ovis3'; OvisOCR2 HEAD card front matter: new_version ATH-MaaS/OvisOCR3)"
+    publisher: "ATH-MaaS"
+    upstream_id: ATH-MaaS/OvisOCR3
+    upstream_revision: "5b252386ba615bd464a5a26597560eaba87dae5c"
+    registry_provider_key: ovisocr3
+    classification: GREEN
+    status: EVALUATION_ONLY
+    deciding_axis: weights
+    use: "A2a 30-page smoke (admitted by the lead, §5E); A2b if a finalist. Does not replace C2. Download 1.73 GB on the GPU pod, stated to the founder before it starts."
+    snapshot_url: "https://huggingface.co/ATH-MaaS/OvisOCR3/raw/5b252386ba615bd464a5a26597560eaba87dae5c/LICENSE"
+    snapshot_sha256: "bbedc3fda3305820b977265f01b8619d87570a6739de3a5582c3464840f1e57a"
+    fetched_at: "2026-11-17T04:53:18.444362+00:00"
+    other_snapshots:
+      - { axis: weights, url: "https://huggingface.co/ATH-MaaS/OvisOCR3/raw/5b252386ba615bd464a5a26597560eaba87dae5c/README.md", sha256: "43dd8104e1c78fe851f3b2954378dd8e3b6448bd2e8b02b0754611aca9a7e6b8", note: "model card" }
+      - { axis: code, url: "https://raw.githubusercontent.com/vllm-project/vllm/v0.22.1/LICENSE", sha256: "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4", note: "vLLM runtime (the card pins vllm==0.22.1)" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: "No separate code repository; the card's examples use vLLM 0.22.1, whose LICENSE at that tag is Apache License 2.0 text."
+      weights:
+        verdict: cleared_evaluation_only
+        basis: "LICENSE at the pin is byte-identical to OvisOCR2's (Apache License 2.0 text); card License section says Apache-2.0. Base Qwen/Qwen3.5-0.8B per card."
+      dataset:
+        verdict: review_required
+        basis: "Training data not disclosed."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    not_cleared: "Production use; Korean (no mention on the card, UNVERIFIED)."
+
+  - id: model_xiaomi_ocr_0
+    kind: model
+    arena_slot: C8
+    reference: "xiaomi-research/Xiaomi-OCR-0 (blueprint 'Xiaomi OCR0'; SeerRay-Lab/Xiaomi-OCR-0 resolves to it on Hugging Face and GitHub)"
+    publisher: "Hugging Face organisation 'Xiaomi Research' (isVerified: false)"
+    upstream_id: xiaomi-research/Xiaomi-OCR-0
+    upstream_revision: "bbd8cf8d21f256b3644b44cb860f3a7cecb93c30"
+    registry_provider_key: xiaomi_ocr_0
+    classification: ORANGE
+    status: EVALUATION_ONLY
+    deciding_axis: weights
+    use: >-
+      A2a 30-page smoke only (admitted by the lead, §5E, on the same footing as
+      C3 and C4). If it reaches the finalists, its weights licence and its
+      publisher are resolved before A2b; otherwise it is dropped there and the
+      next candidate moves up. Download 1.77 GB on the GPU pod, stated to the
+      founder before it starts.
+    snapshot_url: "https://huggingface.co/xiaomi-research/Xiaomi-OCR-0/raw/bbd8cf8d21f256b3644b44cb860f3a7cecb93c30/README.md"
+    snapshot_sha256: "54f2dbecfe9aa354da5a568ec555f2ca5c2d9b06ec2c8cd54b882af516625d46"
+    fetched_at: "2026-11-17T04:53:17.787235+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/xiaomi-research/Xiaomi-OCR-0/4abc240285b69a2965cf64762101ddb4ab35f32d/LICENSE", sha256: "d80a818703c6914967aaa71eb6238e78d7a97f689ed59cc3285edaef5814a204" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: "GitHub xiaomi-research/Xiaomi-OCR-0 LICENSE at commit 4abc2402: Apache License 2.0 (GitHub API licence key apache-2.0)."
+      weights:
+        verdict: cleared_evaluation_only
+        basis: >-
+          Smoke evaluation only. No LICENSE file in the weights repository (28
+          files at the pin, Hugging Face API revision JSON). Card front matter
+          `license: apache-2.0` (parsed as metadata: API cardData.license
+          apache-2.0), no licence text in the card. Base Qwen/Qwen3.5-0.8B-Base
+          per card. The clearance rests on that metadata and the lead's §5E
+          admission decision, not on a licence file, and does not reach A2b.
+      dataset:
+        verdict: review_required
+        basis: "Card front matter `datasets: custom-ocr-centric-corpus`; terms not published."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    not_cleared: "Any use beyond the A2a smoke (A2b needs the weights licence and the publisher resolved); production use; Korean (no mention on the card, UNVERIFIED)."
+
+  - id: tool_kordoc
+    kind: tool
+    arena_slot: hwp_lane_qualification_candidate
+    reference: "chrisryugj/kordoc v4.24.82 (npm kordoc 4.24.82), Node >= 20"
+    publisher: "chrisryugj (individual)"
+    upstream_id: chrisryugj/kordoc
+    upstream_tag: v4.24.82
+    classification: ORANGE
+    status: EVALUATION_ONLY
+    deciding_axis: code
+    use: "HWP lane qualification candidate, run with KORDOC_OFFLINE=1 and side-loaded, digest-checked models. Not an arena GPU candidate. Not qualified."
+    snapshot_url: "https://raw.githubusercontent.com/chrisryugj/kordoc/v4.24.82/LICENSE"
+    snapshot_sha256: "af5f2aced9ce13fa964a5ec9f7ab3271b139f10a1950f5c5408b7b3012369571"
+    fetched_at: "2026-11-17T04:53:46.700199+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/chrisryugj/kordoc/v4.24.82/NOTICE", sha256: "953465f26ce5e8869a5e86f789d88afa09757dec6e5c2f594637ba7a52e70d39" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: >-
+          LICENSE at tag v4.24.82: MIT; package.json "license": "MIT". Bundles
+          src/pdf/hayro-pdf.wasm (4,124,364 B), a Rust build whose crates are
+          listed in THIRD_PARTY/hayro-pdf.txt (Apache-2.0/MIT/BSD/Zlib choices).
+          Optional npm dependencies: onnxruntime-node (MIT, has a postinstall
+          script), @hyzyla/pdfium (MIT), sharp (Apache-2.0), zxing-wasm (MIT),
+          @huggingface/tokenizers (Apache-2.0); peers @rhwp/core (MIT),
+          puppeteer-core (Apache-2.0) and libheif-js (LGPL-3.0) -- registry
+          metadata only, their packages were not read.
+      weights:
+        verdict: review_required
+        basis: >-
+          Nothing is bundled; models download at run time from huggingface.co
+          and are checked against sha256 constants (src/ocr/models.ts,
+          src/pdf/formula/models.ts). Default OCR path: PP-OCRv5 mobile det +
+          korean_PP-OCRv5 mobile rec + dict (PaddlePaddle ONNX repositories,
+          card metadata apache-2.0, no LICENSE files). Optional: PP-OCRv5 server
+          det, PP-OCRv6 medium det, a Korean handwriting rec (third-party repo
+          Rebeccaaaaaaaa/korean-handwriting-rec, LICENSE file present, trained
+          further on AI Hub data per kordoc's notes), Pix2Text MFD/MFR (card
+          metadata mit; kordoc's THIRD_PARTY/pix2text.txt says MFD was trained on
+          Ultralytics YOLOv8, an AGPL-3.0 architecture). All URLs except the
+          handwriting model use `resolve/main`, a floating revision held only by
+          the digest check.
+      dataset:
+        verdict: review_required
+        basis: "PP-OCRv5 training data undisclosed; AI Hub terms for the handwriting model not read."
+      hosted:
+        verdict: not_applicable
+        basis: "Local library/CLI/MCP server; outbound traffic only for first model download and an opt-in webhook (src/shared/offline.ts)."
+    not_cleared: "Use with network enabled; the handwriting model (AI Hub data terms); production use; any claim that kordoc is qualified."
+
+  - id: tool_syhwp
+    kind: tool
+    arena_slot: hwp_comparison_reader
+    reference: "sysphere/syhwp v0.0.8 (PyPI syhwp 0.0.8), pure Python"
+    publisher: "sysphere"
+    upstream_id: sysphere/syhwp
+    upstream_tag: v0.0.8
+    classification: GREEN
+    status: EVALUATION_ONLY
+    deciding_axis: code
+    use: "Comparison reader for HWP 5 / HWPX text and tables. HWP 3.x is not supported (README, Limitations)."
+    snapshot_url: "https://raw.githubusercontent.com/sysphere/syhwp/v0.0.8/LICENSE"
+    snapshot_sha256: "3b48a57a828cd79a107c4917755eb3d94f3ebe7e642ec882c1c0bd0c34dc2da2"
+    fetched_at: "2026-11-17T04:55:06.156102+00:00"
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: "LICENSE at tag v0.0.8: MIT. PyPI 0.0.8 requires olefile>=0.46 (BSD per README), cryptography optional; no model files and no HTTP client among the dependencies. The 10 source files were listed, not read line by line."
+      weights:
+        verdict: not_applicable
+        basis: "No model."
+      dataset:
+        verdict: not_applicable
+        basis: "No model."
+      hosted:
+        verdict: not_applicable
+        basis: "Local library."
+    not_cleared: "Production use before an SBOM entry; HWP 3.x."
+
+  - id: data_koocr_bench
+    kind: dataset
+    arena_slot: external_korean_check
+    reference: "schift-io/koocr-bench-v2 (v2.0c) @ 19398b587c2182f4207eba7e9258e93a828a82fa; v1.2 at schift-io/KoOCR-Bench @ 4475141a8d94f20093c93b679e21f962e7b642e3"
+    publisher: "schift-io (publishes its own OCR engine on the same board)"
+    upstream_id: schift-io/koocr-bench-v2
+    classification: ORANGE
+    status: HELD
+    held_reason: >-
+      No dataset licence text exists (card metadata `license: other`); the card
+      says evaluation only and not for training but grants nothing, and is
+      silent on commercial users. Per-item rights are the publisher's labels:
+      of 877 public pages, 166 are labelled KOGL type 1 (tables 86, kostat_wide
+      80), 87 DART disclosures, 81 official gazette, 80 MFDS drug labels
+      labelled "KOGL not attached -- consult the department before use", 85
+      KIPO patent gazette labelled "check terms before public distribution", 87
+      KICE exam (owner-provided, eval only), 78 KDI and 58 user documents
+      (owner-cleared), 47 synthetic, 108 handwriting rows labelled "rights per
+      source" or "rights per AIHub terms". None of those labels was checked
+      against the original sources. Held until the founder decides whether an
+      evaluation-only run on the KOGL-1 slices, after checking their source
+      marks, is acceptable.
+    deciding_axis: dataset
+    use: "None until released from HELD."
+    snapshot_url: "https://huggingface.co/datasets/schift-io/koocr-bench-v2/raw/19398b587c2182f4207eba7e9258e93a828a82fa/README.md"
+    snapshot_sha256: "1d8a73b5bdc94d78a2a62df272d24fc738cfcbea95cad0b1109f1ab591e3b41d"
+    fetched_at: "2026-11-17T04:55:35.836885+00:00"
+    other_snapshots:
+      - { axis: dataset, url: "https://huggingface.co/datasets/schift-io/koocr-bench-v2/raw/19398b587c2182f4207eba7e9258e93a828a82fa/manifest.jsonl", sha256: "34c28cbabbb5715f30f62628b7cca63b4d50692dab1b4755864d36f3b15f502e", note: "per-item source and licence labels" }
+      - { axis: dataset, url: "https://huggingface.co/datasets/schift-io/KoOCR-Bench/raw/4475141a8d94f20093c93b679e21f962e7b642e3/README.md", sha256: "69252120780ac3c44675754418c97df3a12df7f3341eb5e5b3abe9ecf3cb95f8", note: "v1.2 card" }
+    axes:
+      code:
+        verdict: blocked
+        repository: "huggingface.co/datasets/schift-io/koocr-bench-v2 (scorer scripts)"
+        basis: "The scorer scripts carry no licence of their own (repository `license: other`); readable, not reusable. The vendored table_transformer grits.py has an MIT LICENSE file."
+      weights:
+        verdict: not_applicable
+        basis: "A dataset."
+      dataset:
+        verdict: review_required
+        basis: "See held_reason."
+      hosted:
+        verdict: not_applicable
+        basis: "Downloaded files, no service."
+    not_cleared: "Training on any page; redistribution of pages, images or truth; publishing a number from it; running the publisher's scorer code; the 193-page holdout (not public)."
+
+  - id: hosted_mistral_ocr
+    kind: hosted
+    arena_slot: hosted_arm_H1
+    reference: "Mistral OCR 4.1, model id mistral-ocr-4-1 (GA, released 2026-07-16; USD 4 per 1,000 pages, USD 5 per 1,000 annotated pages)"
+    publisher: "Mistral AI"
+    registry_provider_key: mistral_ocr_4
+    provider_model_id: mistral-ocr-4-1
+    classification: ORANGE
+    status: EVALUATION_ONLY
+    deciding_axis: hosted
+    use: "Hosted arm d10-hosted-arm-v1 (cap USD 25) on dev pages with rights_class public_record, permissive_licence or synthetic; never holdout, owned scans or handwriting. Needs a founder-typed key."
+    snapshot_url: "https://legal.mistral.ai/terms/commercial-terms-of-service"
+    snapshot_sha256: "d4cf7cd0bd3b81cbfa43a2b0e41d3c774f46b17ea1593d1f27934aaa2e8506dc"
+    fetched_at: "2026-11-17T04:57:44.053984+00:00"
+    other_snapshots:
+      - { axis: hosted, url: "https://docs.mistral.ai/models/ocr-4-1", sha256: "005a517746b5719ef843877e5cdfad8b821e403bdabd797b2d6e42014b2bd2a9", note: "model card: GA, id, price" }
+      - { axis: hosted, url: "https://docs.mistral.ai/getting-started/models", sha256: "6155ede17a4262fecd14e4d8b4161c46161906d23c2d7b05816753020ee6a944", note: "mistral-ocr-4-0 deprecated 2026-09-29, retired 2026-09-30, replacement OCR 4.1" }
+    axes:
+      code:
+        verdict: not_applicable
+        basis: "No code is distributed."
+      weights:
+        verdict: not_applicable
+        basis: "Weights are not distributed."
+      dataset:
+        verdict: not_applicable
+        basis: "Customer Data is ours; the terms govern its use (hosted axis)."
+      hosted:
+        verdict: cleared_evaluation_only
+        basis: >-
+          Commercial Terms of Service, effective 2026-09-25. §4.2: Customer Data
+          and Outputs are not used for training except on opt-in/opt-out product
+          settings, Feedback, an Order Form, or Labs/Preview models; §4.3: Labs
+          or Preview models (prefix "labs") may train on inputs and ignore
+          opt-outs -- mistral-ocr-4-1 is listed GA, not Labs. §6.1(b): Mistral's
+          Confidential Information includes "technical, operational, or
+          commercial information (including performance information)". §3.1:
+          the customer owns Output.
+    not_cleared: "Publishing any Mistral performance number before §6.1(b) is resolved; sending holdout, owned or customer pages; using outputs as gold or training data; the aliases mistral-ocr-latest / mistral-ocr-4."
+
+  - id: hosted_google_gemini
+    kind: hosted
+    arena_slot: hosted_arm_H2
+    reference: "Gemini API, paid tier: gemini-4-hydrogen (listed 'Stable'); gemini-3.8-flash is not run (founder, §5D)"
+    publisher: "Google"
+    provider_model_id: gemini-4-hydrogen
+    classification: ORANGE
+    status: EVALUATION_ONLY
+    deciding_axis: hosted
+    use: "Hosted arm d10-hosted-arm-v1, same pages and limits as hosted_mistral_ocr. Paid tier only. Needs a founder-typed key."
+    snapshot_url: "https://ai.google.dev/gemini-api/terms"
+    snapshot_sha256: "a47d4bcf627d84d6424a6393bb1ebf5b674fcd782a739ff1a921b5cbd6a0b830"
+    fetched_at: "2026-11-17T04:57:49.802762+00:00"
+    other_snapshots:
+      - { axis: hosted, url: "https://ai.google.dev/gemini-api/docs/pricing", sha256: "fd0cbe16dd4484ce1c97c0cd0342d6ee671267967ae7e4bbe2bc139b2bd20346", note: "price snapshot" }
+      - { axis: hosted, url: "https://ai.google.dev/gemini-api/docs/models/gemini-4-hydrogen", sha256: "6e6dfe730df6008639f56634f1dcbdee1267a579716f7b1c5ba933fc9647a454" }
+      - { axis: hosted, url: "https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash", sha256: "9d662430e88ccd2a1a72795fac76bd5f3aab8ce78ccf14bbea654e644252676a" }
+      - { axis: hosted, url: "https://ai.google.dev/gemini-api/docs/models", sha256: "8f7c8f0611a41d030f35f4f808b6d6e653bd31283beb11394d17e9844050cb3b" }
+      - { axis: hosted, url: "https://developers.google.com/terms", sha256: "2c7b8351bbecf002c62c49799e3a0e7f47a5be9cc4bec31d2d543d627429ae7f", note: "Google APIs Terms of Service, incorporated; captured, not read" }
+    axes:
+      code:
+        verdict: not_applicable
+        basis: "No code is distributed."
+      weights:
+        verdict: not_applicable
+        basis: "Weights are not distributed."
+      dataset:
+        verdict: not_applicable
+        basis: "Customer content is ours; the terms govern its use (hosted axis)."
+      hosted:
+        verdict: cleared_evaluation_only
+        basis: >-
+          Gemini API Additional Terms, effective 2026-03-23: unpaid services use
+          submitted content to improve Google products; the pricing page lists
+          paid tier "Used to improve our products: No"; "You may not use the
+          Services to develop models that compete with the Services"; no
+          benchmark-publication clause was found. Prices (paid, per 1M tokens,
+          2026-11-17): gemini-3.8-flash input 0.75 / output 3.75 through
+          2026-12-31, then 1.50 / 7.50; gemini-4-hydrogen 1.50 / 7.50 (batch
+          0.75 / 3.75); gemini-4-argon and gemini-4-carbon 2.00 / 10.00 through
+          2026-11-30, then 4.00 / 20.00. No Gemini 4 lite tier is listed, so
+          gemini-4-hydrogen is the cheapest non-lite Gemini 4 tier.
+    not_cleared: "Free tier; using outputs as gold or training data; the Google APIs Terms (captured, not read); any capability claim before the hosted smoke measures it."
+
+  - id: tool_vllm_openai_0_33_0
+    kind: tool
+    arena_slot: C5_serving_image
+    reference: "vllm/vllm-openai@sha256:d825baf9ce4b1b6bfc5ecc7b79880c7e6748c65a72d697ce3d47607aafa84c6e (tag v0.33.0, Docker Hub 2026-11-02; amd64 manifest sha256:91ee972ab751fb7180bc71c175865e36b091686600dca783d52b2511399810b3)"
+    publisher: "vLLM project"
+    upstream_id: vllm-project/vllm
+    upstream_tag: v0.33.0
+    classification: GREEN
+    status: EVALUATION_ONLY
+    deciding_axis: code
+    use: >-
+      Serves C5 Nemotron-3.5-Parse (registry row nemotron_3_5_parse,
+      runtime.serving) in the A0-6 attempt: the first vLLM release whose
+      supported-models page lists RadioMBartPrefixForCausalLM. Pulled on the
+      pod by digest; not built, not modified. Not the arena's common stack:
+      that is vllm/vllm-openai@sha256:e1668bce... = tag v0.22.1-cu129 (vLLM
+      0.22.1+cu129, CUDA 12.9, PyTorch 2.11); this image is CUDA 13.0 only
+      with PyTorch 2.14.0 (v0.33.0rc3 release notes). Host precondition: a
+      driver of the R580 branch or newer (NVIDIA: CUDA 13.x needs >= 580);
+      the pod is limited to hosts with CUDA 13.0 or newer, and a start
+      failure from a driver mismatch is an operational failure, not A0-6's
+      model verdict.
+    snapshot_url: "https://raw.githubusercontent.com/vllm-project/vllm/v0.33.0/LICENSE"
+    snapshot_sha256: "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    fetched_at: "2026-11-17T12:24:29.648803+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/vllm-project/vllm/v0.33.0/docs/models/supported_models.md", sha256: "66c77abb76a21e3e184c49ef889be91debb43c823c45e7decce531d46d719134", note: "lists RadioMBartPrefixForCausalLM (Nemotron Parse 3.5); the v0.32.0 page (sha256 bd5879be29836d74b2e974d107f1a9fe50706ba5f9a0d854edc497981d98fb94) does not" }
+      - { axis: code, url: "https://hub.docker.com/v2/repositories/vllm/vllm-openai/tags/v0.33.0", sha256: "65ce1a00a72f2a41908aa7a97b07996fadb1324772280cad94db0254d3855e2c", note: "registry metadata: index and per-platform digests" }
+      - { axis: code, url: "https://api.github.com/repos/vllm-project/vllm/releases?per_page=40", sha256: "65ab2830c18aedb2312d7ac1560157aea2447c70c5ca9606a90cf3b0f4e5f10a", note: "v0.33.0rc3: CUDA 12.9 dropped, images CUDA 13.0 only; PyTorch 2.14.0, torchvision 0.29.0, Triton 3.8.0. v0.20.0: PyTorch 2.11 for CUDA" }
+      - { axis: code, url: "https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html", sha256: "ad6659640c0ce3153dcca0e4cf87731eccf298ac88751df20848df23c99dff52", note: "Table 2: CUDA 13.0 = driver branch R580; Table 3: CUDA 13.x minor-version compatibility >= 580" }
+      - { axis: code, url: "https://hub.docker.com/v2/repositories/vllm/vllm-openai/tags/v0.22.1-cu129", sha256: "d711dcdb0e3a08bab1d25c54b30c0e5c112906927104a1082c00ecd7da08d928", note: "the arena's existing pin sha256:e1668bce... is this tag's index digest; registry manifest read by digest, content sha256 matches" }
+    axes:
+      code:
+        verdict: cleared_evaluation_only
+        basis: >-
+          LICENSE at tag v0.33.0: Apache License 2.0 text, byte-identical to the
+          v0.22.1 LICENSE the arena already runs (sha256 c71d239d...). That covers
+          vLLM's own source. The image also carries PyTorch, CUDA libraries and
+          other packages under their own terms; none of those was read, and no
+          SBOM of the image exists.
+      weights:
+        verdict: not_applicable
+        basis: "No weights in the image; C5's weights are model_nemotron_3_5_parse."
+      dataset:
+        verdict: not_applicable
+        basis: "No dataset."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted server on a pod."
+    not_cleared: "Production use before an SBOM of the image; the bundled CUDA, PyTorch and other third-party components (unread); any claim that it serves C5 before A0 shows it."
+
+  - id: tool_minicpm_ocr_vendor_image
+    kind: tool
+    arena_slot: C4_vendor_image_candidate
+    reference: "openbmbofficial/minicpm-ocr@sha256:3cfeaf0d251ecb4e5615cf5ce97cb8c90583cfb70dc21d6978ca50a4bfc6fdd9 (tags 105-vlm-with-model and latest, Docker Hub 2026-11-16; amd64 manifest sha256:42773d0ece292c0d8abe9edd92d5a405f37849db134c094554532880ab0d7a12, 11,207,282,798 B; config sha256:eaca12947aceac14cd4ffd7aba3e8ef255d8fbdb2376df4874a2572fc0c51343)"
+    publisher: "OpenBMB"
+    upstream_id: openbmbofficial/minicpm-ocr
+    upstream_tag: 105-vlm-with-model
+    classification: ORANGE
+    status: HELD
+    held_reason: >-
+      Image licence unread (WO-D10-0H round 2, lead decision B). The Docker
+      Hub page states Apache-2.0 for MiniCPM-OCR code and weights and says
+      "Third-party components retain their respective licenses" without
+      naming them; the config document has no labels and the index has no
+      SBOM attestation. The bundled third-party contents (from the config
+      history: a vendor-staged vLLM 0.31.1rc1.dev379+g484a12539 over the
+      precompiled wheel of vLLM commit 5555a2d8, a vendor-staged
+      transformers 5.19.0.dev0, PyTorch for CUDA 12.9, paddlepaddle-gpu,
+      paddlex[ocr] 3.7.2, opencv-contrib-python 4.10.0.84, torchcodec, a
+      requirements.lock, a layout model and the PP-LCNet_x1_0_doc_ori
+      orientation model) have no licence in any document read. Separately,
+      its vllm wrapper fixes the served name minicpm-ocr-1.0 and serves the
+      bundled weights of unstated revision, so the runner's attestation
+      cannot be met through it (registry row minicpm_ocr_1_0).
+    deciding_axis: code
+    use: "None until released from HELD. C4 is not attempted in A0-6 (verdict not_attempted_image_licence_unread in registry row minicpm_ocr_1_0)."
+    snapshot_url: "https://hub.docker.com/v2/repositories/openbmbofficial/minicpm-ocr/tags?page_size=50"
+    snapshot_sha256: "38489be93c57706eea8369552c05e8df96034337fe0fea309186b9b88c9b121b"
+    fetched_at: "2026-11-17T12:24:18.617489+00:00"
+    other_snapshots:
+      - { axis: code, url: "https://raw.githubusercontent.com/OpenBMB/MiniCPM-OCR/sdk-v1.0.5/README.md", sha256: "67a8a3edbb61273d129591c7390086e1b99e69bbdc2df6204df3f43543aa61f4", note: "Docker Deployment section" }
+      - { axis: code, url: "https://hub.docker.com/v2/repositories/openbmbofficial/minicpm-ocr/", sha256: "38974d2226fab5c9373bb08fad40c4572f536a61fe4bb0ef832b95009c0bcf0b", note: "overview: start command, wrapper, served name minicpm-ocr-1.0, weight sync, licence sentence" }
+      - { axis: code, url: "https://registry-1.docker.io/v2/openbmbofficial/minicpm-ocr/blobs/sha256:eaca12947aceac14cd4ffd7aba3e8ef255d8fbdb2376df4874a2572fc0c51343", sha256: "eaca12947aceac14cd4ffd7aba3e8ef255d8fbdb2376df4874a2572fc0c51343", note: "image config: env, entrypoint, build history; no labels" }
+      - { axis: code, url: "https://registry-1.docker.io/v2/openbmbofficial/minicpm-ocr/manifests/sha256:baf1d4553906664e7b69e1f5bc5411bdfd4b05ef8d7ebd4e1938049e5886ff07", sha256: "baf1d4553906664e7b69e1f5bc5411bdfd4b05ef8d7ebd4e1938049e5886ff07", note: "attestation manifest: one SLSA provenance v0.2 layer, no SBOM; layer not read" }
+      - { axis: code, url: "https://raw.githubusercontent.com/OpenBMB/MiniCPM-OCR/sdk-v1.0.5/docs/minicpm_ocr_tutorial_en.md", sha256: "8d3346c371378076ce735d8b8d564606393c2621a8f38c8ed67ea53e55d6fe08", note: "vendor deployment guide: source build of vLLM and transformers, vllm serve command" }
+      - { axis: code, url: "https://raw.githubusercontent.com/OpenBMB/MiniCPM-OCR/sdk-v1.0.5/scripts/install.sh", sha256: "5b0b8f2690dcabae82aeb4b74231a271689670dd109658f21205afa2610c61ff", note: "named by the guide; pins vLLM and transformers sources by commit from pyproject.toml (not read)" }
+    axes:
+      code:
+        verdict: review_required
+        basis: >-
+          MiniCPM-OCR code (the SDK 1.0.5 from commit f5357c72 and the web
+          backend under /opt/app) is Apache-2.0 per the Docker Hub page. Every
+          other component listed in held_reason has no licence in any
+          document read, and the vLLM and transformers builds are from
+          vendor-staged sources whose changes are unread.
+      weights:
+        verdict: review_required
+        basis: "Bundled /opt/models/ocr of unstated revision (copied 2026-10-20), replaced at start from Hugging Face or ModelScope unless HF_WEIGHT_SYNC=0; Apache-2.0 per the Docker Hub page. The layout and orientation models have no stated licence. The documented wrapper cannot serve the pinned C4 weights (883ca368)."
+      dataset:
+        verdict: not_applicable
+        basis: "No dataset."
+      hosted:
+        verdict: not_applicable
+        basis: "Self-hosted."
+    not_cleared: "Any use: the licences of the bundled third-party components; the revision of the bundled weights; a documented way to set the served name."

@@ -175,17 +175,28 @@ def native_requires_visual_cross_check(metrics: PageMetrics) -> bool:
     )
 
 
-def preflight_difficulty(metrics: PageMetrics) -> float:
+def preflight_difficulty(
+    metrics: PageMetrics, *, unknown_metrics: frozenset[str] = frozenset()
+) -> float:
+    """Difficulty score; a metric named in ``unknown_metrics`` contributes 0, not its sentinel."""
     score = 0.0
     score += 22 if metrics.native_text_chars < 30 else 0
     score += 12 * min(1.0, metrics.image_coverage)
     score += 12 * min(1.0, metrics.table_density)
     score += 10 * min(1.0, metrics.formula_density * 4)
     score += 8 * min(1.0, metrics.chart_probability)
-    score += 10 * min(1.0, abs(metrics.skew_degrees) / 8)
-    score += 6 if metrics.rotation_degrees % 360 != 0 else 0
-    score += 8 * min(1.0, metrics.blur_score)
-    score += 6 * min(1.0, metrics.small_text_score)
+    score += (
+        10 * min(1.0, abs(metrics.skew_degrees) / 8) if "skew_degrees" not in unknown_metrics else 0
+    )
+    score += (
+        6
+        if "rotation_degrees" not in unknown_metrics and metrics.rotation_degrees % 360 != 0
+        else 0
+    )
+    score += 8 * min(1.0, metrics.blur_score) if "blur_score" not in unknown_metrics else 0
+    score += (
+        6 * min(1.0, metrics.small_text_score) if "small_text_score" not in unknown_metrics else 0
+    )
     score += (
         6
         if len([value for value in metrics.script_distribution.values() if value > 0.1]) >= 2
@@ -194,10 +205,15 @@ def preflight_difficulty(metrics: PageMetrics) -> float:
     return min(100.0, score)
 
 
-def classify_page(metrics: PageMetrics) -> PageTechnicalClass:
-    if metrics.handwriting_probability >= 0.50:
+def classify_page(
+    metrics: PageMetrics, *, unknown_metrics: frozenset[str] = frozenset()
+) -> PageTechnicalClass:
+    """Technical class; a rule whose input metric is in ``unknown_metrics`` is skipped."""
+    if "handwriting_probability" not in unknown_metrics and metrics.handwriting_probability >= 0.50:
         return PageTechnicalClass.HANDWRITTEN
-    if metrics.rotation_degrees or abs(metrics.skew_degrees) >= 3.0:
+    if ("rotation_degrees" not in unknown_metrics and metrics.rotation_degrees) or (
+        "skew_degrees" not in unknown_metrics and abs(metrics.skew_degrees) >= 3.0
+    ):
         return PageTechnicalClass.ROTATED_OR_WARPED
     if metrics.table_density >= 0.20:
         return PageTechnicalClass.TABLE_HEAVY
@@ -214,7 +230,7 @@ def classify_page(metrics: PageMetrics) -> PageTechnicalClass:
     if metrics.native_text_chars and metrics.image_coverage >= 0.25:
         return PageTechnicalClass.MIXED
     if metrics.native_text_chars < 30 and metrics.image_coverage >= 0.50:
-        if preflight_difficulty(metrics) >= 50:
+        if preflight_difficulty(metrics, unknown_metrics=unknown_metrics) >= 50:
             return PageTechnicalClass.SCAN_COMPLEX
         return PageTechnicalClass.SCAN_TEXT
     return PageTechnicalClass.UNKNOWN
