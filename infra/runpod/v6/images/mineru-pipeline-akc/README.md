@@ -362,14 +362,14 @@ name packages, not ELF dependencies, so the list could not be shown without runn
 
 ## Open before real pages (not checked here)
 
-- C0 and C3 were rebuilt by GitHub Actions run 44216487886 (source commit b5b349f), their
-  import gates passing on the runner; neither rebuilt image has been launched, and both carry
-  `not_serving` ("rebuilt in run 44216487886; not yet launched") until a page has been served.
-  C1's recorded image is still the first build (run 44145574050, source 9754168c), which
-  launched once and failed to load (above), and keeps its `not_serving`; its rebuild with the
-  r3 gate has not run. The weights, the launch checks and the server's behaviour on a page are
-  verified only by a launch. The C1 image's transitive packages are known only from its package
-  listing and build log (hashes in its registry block).
+- The registry records the image each slot served from: C0 (`…-c0@sha256:e89143bc…`) and C3
+  (`…-c3@sha256:00a88750…`) of GitHub Actions run 44216487886 (source commit b5b349f), C1
+  (`…paddleocr-vl-akc@sha256:7abc7094…`) of run 44226313508 (source c8d8543), rebuilt with the
+  r3 gate after the first build (run 44145574050) failed to load (above). Each has served the 99
+  dev pages of S0 (`receipts/d10-screen-v1/S0/{C0,C3,C1}/s0-summary.json`), so none carries
+  `not_serving`. The rows stay `enabled: false`: evaluation-only, no production traffic. The C1
+  image's transitive packages are known only from its package listing and build log (hashes in
+  its registry block).
 - C3's runner key `mineru_vlm` is registered (`benchmark/runners/registry.py`, round 2).
 - "No outbound request at inference" is configured (`HF_HUB_OFFLINE`, `TRANSFORMERS_OFFLINE`,
   `MINERU_MODEL_SOURCE=local`), not proven. PaddleX may check its model hosters at import; A0 runs
