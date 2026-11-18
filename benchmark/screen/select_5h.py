@@ -335,6 +335,20 @@ def _tally(
     }
 
 
+def relabel(r: Mapping[str, Any], reason: str | None, stratum: str) -> dict[str, Any]:
+    """A record as ``build_report`` reads it for 5H: placed in ``stratum``, failed only by its
+    5H-17 failure ``reason`` (scorer flags never zero its fields, 5H-10)."""
+    crit = dict(r["critical"])
+    if reason is None:
+        crit["accepted_errors"] = crit["n"] - crit["exact"]
+    return {
+        **r,
+        "stratum": stratum,
+        "hard_failures": [] if reason is None else [reason],
+        "critical": crit,
+    }
+
+
 def _s1_body(s1: Mapping[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in s1.items() if k != "s1_sha256"}
 
@@ -366,22 +380,11 @@ def select_s1(
     rejected = sorted(c for c in by if c != baseline and counts[c] > bound)
     if len(by) - len(rejected) < 2:
         raise ValueError("fewer than 2 candidates: stop and report (5H stop rule)")
-    relabelled = []
-    for r in records:
-        if r["candidate_id"] in rejected:
-            continue
-        reason = reasons[r["candidate_id"]][r["page_id"]]
-        crit = dict(r["critical"])
-        if reason is None:  # a scored page: scorer flags never zero its fields (5H-10)
-            crit["accepted_errors"] = crit["n"] - crit["exact"]
-        relabelled.append(
-            {
-                **r,
-                "stratum": scope[0][r["page_id"]],
-                "hard_failures": [] if reason is None else [reason],
-                "critical": crit,
-            }
-        )
+    relabelled = [
+        relabel(r, reasons[r["candidate_id"]][r["page_id"]], scope[0][r["page_id"]])
+        for r in records
+        if r["candidate_id"] not in rejected
+    ]
     first = build_report(relabelled, incumbent=baseline)
     if set(first["strata"]) != {H, R}:
         raise ValueError(f"dev pages must cover H and R, got {sorted(first['strata'])}")
@@ -763,6 +766,25 @@ def _signals(p: Any, peers: Sequence[Any], reread: Any, measured: bool) -> dict[
     }
 
 
+def field_signals(
+    read: Mapping[str, Mapping[_Key, Any]],
+    members: Sequence[str],
+    escalate_on: Sequence[str],
+    reread: Mapping[_Key, Any],
+    measured: bool,
+) -> dict[_Key, dict[str, Any]]:
+    """Per field of P (``members[0]``): its signals and ``escalate`` (any signal in
+    ``escalate_on`` raised). Raised from the values read only; no gold reaches it."""
+    p, peers = members[0], list(members[1:])
+    rows = {
+        k: _signals(read[p][k], [read[c][k] for c in peers], reread.get(k), measured)
+        for k in sorted(read[p])
+    }
+    for s in rows.values():
+        s["escalate"] = any(bool(s[name]) for name in escalate_on)
+    return rows
+
+
 def _score(rows: list[tuple[dict[str, Any], bool]], name: str) -> dict[str, Any]:
     flagged = [ok for s, ok in rows if s[name]]
     unflagged = [ok for s, ok in rows if not s[name]]
@@ -847,7 +869,7 @@ def signals_s3(
     scope = _scope(guard, split, purpose, frozen_recipe_sha256)
     mine = [r for r in records if r["candidate_id"] in members]
     by = _check(mine, scope)
-    p, peers = members[0], list(members[1:])
+    p = members[0]
     read, right = _reads(by, texts, gold, members)
     reread: dict[_Key, Any] = {}
     if reread_texts is not None:
@@ -860,14 +882,7 @@ def signals_s3(
                 reread[(page_id, str(f["field_id"]))] = (
                     None if text is None else value_after_anchor(q, text)
                 )
-    rows = {
-        k: _signals(
-            read[p][k], [read[c][k] for c in peers], reread.get(k), reread_texts is not None
-        )
-        for k in sorted(read[p])
-    }
-    for s in rows.values():
-        s["escalate"] = any(bool(s[name]) for name in escalate_on)
+    rows = field_signals(read, members, escalate_on, reread, reread_texts is not None)
     out: dict[str, Any] = {}
     for part in (H, R):
         scored = [(rows[k], right[p][k]) for k in _keys(right[p], scope[0], part)]
@@ -893,7 +908,7 @@ def signals_s3(
             "reader_v1_sha256": _reader_digest(),
         },
         "primary": p,
-        "peers": peers,
+        "peers": list(members[1:]),
         "signals": {k: SIGNALS[k] for k in SIGNALS if k in out[H]},
         "escalate_on": sorted(escalate_on),
         "scores": out,
