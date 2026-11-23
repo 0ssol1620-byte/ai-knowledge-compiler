@@ -11,6 +11,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 from dataclasses import replace
 from functools import partial
+from threading import Lock
 from typing import Any
 
 from akc_cir.base import canonical_json, sha256_digest
@@ -94,6 +95,20 @@ from .semantics import (
 # by name with its numbers. Compile time (28 s for twelve, locally) is not settled by it.
 OUTPUT_BUDGET_BYTES = 192 * 1024 * 1024
 
+# The longest field the validator reads back from a package CSV the compiler wrote. Python's csv
+# default (131,072 characters) is a library default, not a product bound: one entity named on
+# ~1,440 lines writes a longer `payload` and the read-back raised, an HTTP 500 (ADR 0011 §2.4).
+# Derivation: a field is a substring of a package file, a package over OUTPUT_BUDGET_BYTES is
+# refused before it is read back, and a character is at least one UTF-8 byte, so no admitted
+# package holds a longer field; one that does anyway is refused by name
+# (CoreOutputTooLargeError), never a 500.
+PACKAGE_CSV_FIELD_MAX_CHARS = OUTPUT_BUDGET_BYTES
+# csv has one process-wide field limit and no per-reader one: a package read sets it for that
+# read only and puts the previous value back, under this lock.
+# ponytail: a csv reader in another thread of the same process sees the raised limit for the
+# duration of one package read; give that reader its own bound if it ever shares a process.
+_CSV_FIELD_LIMIT_LOCK = Lock()
+
 
 class CoreOutputTooLargeError(Exception):
     """The compiled output exceeds the output budget. Nothing is truncated; nothing is sent."""
@@ -103,6 +118,45 @@ class CoreOutputTooLargeError(Exception):
             f"{detail['object']} of {detail['bytes']} B exceeds budget {detail['budget']} B"
         )
         self.detail = detail
+
+
+def _package_csv_rows(path: str, content: str) -> list[dict[str, str]]:
+    """Read a package CSV with the package bound as the field limit.
+
+    A field past the bound raises CoreOutputTooLargeError naming the file, the column and the
+    sizes (no text). Any other unreadable CSV raises ValueError: the check that needed it fails.
+    """
+    limit = PACKAGE_CSV_FIELD_MAX_CHARS
+    with _CSV_FIELD_LIMIT_LOCK:
+        previous = csv.field_size_limit(limit)
+        try:
+            try:
+                return list(csv.DictReader(io.StringIO(content)))
+            except csv.Error:
+                # Re-read only to name the field: none can be longer than the file in memory.
+                csv.field_size_limit(max(len(content), limit))
+                try:
+                    rows = list(csv.reader(io.StringIO(content)))
+                except csv.Error as exc:
+                    raise ValueError(f"unreadable package csv: {path}") from exc
+        finally:
+            csv.field_size_limit(previous)
+    header = rows[0] if rows else []
+    for row_number, row in enumerate(rows[1:], start=1):
+        for index, value in enumerate(row):
+            if len(value) > limit:
+                raise CoreOutputTooLargeError(
+                    {
+                        "object": "core-package-field",
+                        "file": path,
+                        "column": header[index] if index < len(header) else f"#{index + 1}",
+                        "row": row_number,
+                        "chars": len(value),
+                        "bytes": len(value.encode("utf-8")),
+                        "budget": limit,
+                    }
+                )
+    raise ValueError(f"unreadable package csv: {path}")
 
 
 # The goal every compile plans its architecture for; corpus_reduce plans the corpus with it too.
@@ -501,6 +555,13 @@ class ProductCoreCompiler:
         lifecycle, _ = settle(review_reasons)
         probe, _ = project(lifecycle=lifecycle, review_reasons=review_reasons)
 
+        refusal_counts = {
+            "regions": sum(len(item.regions) for item in request.documents),
+            "claims": len(semantics.claims),
+            "contradictionPairs": len(semantics.contradictions),
+            "files": len(probe.files),
+        }
+
         def refuse_if_over(measured: str, size: int) -> None:
             if size > self.output_budget_bytes:
                 raise CoreOutputTooLargeError(
@@ -508,23 +569,21 @@ class ProductCoreCompiler:
                         "object": measured,
                         "bytes": size,
                         "budget": self.output_budget_bytes,
-                        "counts": {
-                            "regions": sum(len(item.regions) for item in request.documents),
-                            "claims": len(semantics.claims),
-                            "contradictionPairs": len(semantics.contradictions),
-                            "files": len(probe.files),
-                        },
+                        "counts": refusal_counts,
                     }
                 )
 
         refuse_if_over("core-package", sum(file.size_bytes for file in probe.files))
-        checks = self._validation_checks(
-            request=request,
-            canonical_documents=canonical_documents,
-            knowledge_model=knowledge_model,
-            units=current_units,
-            package=probe,
-        )
+        try:
+            checks = self._validation_checks(
+                request=request,
+                canonical_documents=canonical_documents,
+                knowledge_model=knowledge_model,
+                units=current_units,
+                package=probe,
+            )
+        except CoreOutputTooLargeError as exc:
+            raise CoreOutputTooLargeError({**exc.detail, "counts": refusal_counts}) from None
         review_reasons.extend(
             VALIDATION_CHECK_REVIEW_REASON[name] for name, passed in checks.items() if not passed
         )
@@ -540,13 +599,16 @@ class ProductCoreCompiler:
         shipped_files = {
             f.path: f.sha256 for f in package.files if f.path != "validation/report.json"
         }
-        shipped_checks = self._validation_checks(
-            request=request,
-            canonical_documents=canonical_documents,
-            knowledge_model=knowledge_model,
-            units=current_units,
-            package=package,
-        )
+        try:
+            shipped_checks = self._validation_checks(
+                request=request,
+                canonical_documents=canonical_documents,
+                knowledge_model=knowledge_model,
+                units=current_units,
+                package=package,
+            )
+        except CoreOutputTooLargeError as exc:
+            raise CoreOutputTooLargeError({**exc.detail, "counts": refusal_counts}) from None
         if checked_files != shipped_files or shipped_checks != checks:
             raise ValueError("shipped package differs from the package that was checked")
         candidate = CandidateWorld(
@@ -1200,8 +1262,10 @@ class ProductCoreCompiler:
                     ttl_edges.add((edge_match[1], edge_match[2], edge_match[3]))
                 elif line and not line.startswith("@prefix"):
                     raise ValueError(f"unreadable turtle line: {line[:80]}")
-            node_rows = list(csv.DictReader(io.StringIO(text("graph/nodes.csv"))))
-            edge_rows = list(csv.DictReader(io.StringIO(text("graph/relationships.csv"))))
+            node_rows = _package_csv_rows("graph/nodes.csv", text("graph/nodes.csv"))
+            edge_rows = _package_csv_rows(
+                "graph/relationships.csv", text("graph/relationships.csv")
+            )
             deterministic = (
                 json.loads(text("canonical/model.json")) == expected_model
                 and all(
