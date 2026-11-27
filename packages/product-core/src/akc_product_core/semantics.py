@@ -328,6 +328,15 @@ _DOMAIN_OBJECT_TYPES: dict[str, tuple[str, ...]] = {
 # claim and pair counts instead. Nothing is dropped silently.
 MAX_CONTRADICTION_PAIRS_PER_GROUP = 496
 MAX_CONTRADICTION_PAIRS_PER_COMPILE = 1_024
+# Funnel only: a claim-excluded sentence longer than this is not scanned for entity mentions
+# (the scan is a counterfactual, and `_KOREAN_ORGANIZATION` is O(n^2) on a long unbroken
+# alphanumeric/Hangul run: 40k chars measured 14 s). Counted, never silent. Not calibrated.
+FUNNEL_MENTION_SCAN_MAX_CHARS = 1_000
+# Funnel only: total characters the counterfactual scan may read per compile. A per-sentence cap
+# alone still lets a 32 MiB request of capped lines spend minutes; at the measured ~7 ms per
+# 1,000-char unbroken line this bounds the extra work near 7 s. Past it, sentences are skipped
+# and counted as `budget_exhausted`. Not calibrated.
+FUNNEL_MENTION_SCAN_BUDGET_CHARS = 1_000_000
 
 
 def _stable_id(prefix: str, *parts: str) -> str:
@@ -357,36 +366,52 @@ def detect_language(value: str) -> Language:
     return nonzero[0][1]  # type: ignore[return-value]
 
 
-def _sentences(value: str) -> tuple[str, ...]:
+def _split_sentences(value: str) -> tuple[tuple[str, ...], int, int, bool]:
+    """Sentences, plus (segments seen, segments dropped, whole-text fallback used)."""
+
+    segments = [_normalized_space(item).strip("-•· \t") for item in _SENTENCE_BOUNDARY.split(value)]
     rows = tuple(
         sentence
-        for sentence in (
-            _normalized_space(item).strip("-•· \t") for item in _SENTENCE_BOUNDARY.split(value)
-        )
+        for sentence in segments
         if len(sentence) >= 3 and any(character.isalnum() for character in sentence)
     )
-    return rows or ((_normalized_space(value),) if value.strip() else ())
+    seen = sum(1 for segment in segments if segment)
+    if rows or not value.strip():
+        return rows, seen, seen - len(rows), False
+    return (_normalized_space(value),), seen, seen, True
+
+
+def _sentences(value: str) -> tuple[str, ...]:
+    return _split_sentences(value)[0]
+
+
+def _claim_rejection_reason(value: str) -> str | None:
+    """Why a sentence is not a claim candidate (a closed enum), or None when it is one."""
+
+    normalized = _normalized_space(value).strip()
+    if sum(character.isalpha() for character in normalized) < 2:
+        return "too_few_letters"
+    if re.match(r"[a-z]", normalized):
+        return "starts_lowercase"
+    if _METADATA_FRAGMENT.fullmatch(normalized):
+        return "metadata_fragment"
+    if re.fullmatch(r"https?://\S+", normalized, re.IGNORECASE):
+        return "bare_url"
+    if _QUESTION_END.search(normalized):
+        return "question"
+    if _ENGLISH_PREDICATE.search(normalized):
+        return None
+    # Unfinished OCR lines remain available as evidence-bound retrieval chunks. They
+    # do not become asserted graph claims merely because they are long.
+    if _CJK_PREDICATE_ENDING.search(normalized.rstrip(".!?\u3002\uff01\uff1f")):
+        return None
+    return "no_predicate"
 
 
 def _is_semantic_claim_candidate(value: str) -> bool:
     """Keep OCR provenance intact while rejecting index-like semantic projections."""
 
-    normalized = _normalized_space(value).strip()
-    if sum(character.isalpha() for character in normalized) < 2:
-        return False
-    if re.match(r"[a-z]", normalized):
-        return False
-    if _METADATA_FRAGMENT.fullmatch(normalized):
-        return False
-    if re.fullmatch(r"https?://\S+", normalized, re.IGNORECASE):
-        return False
-    if _QUESTION_END.search(normalized):
-        return False
-    if _ENGLISH_PREDICATE.search(normalized):
-        return True
-    # Unfinished OCR lines remain available as evidence-bound retrieval chunks. They
-    # do not become asserted graph claims merely because they are long.
-    return bool(_CJK_PREDICATE_ENDING.search(normalized.rstrip(".!?\u3002\uff01\uff1f")))
+    return _claim_rejection_reason(value) is None
 
 
 def _tokens(value: str) -> tuple[str, ...]:
@@ -439,18 +464,33 @@ def authority_tier(authority: str) -> tuple[str, float]:
     return "informal", 0.25
 
 
-def _entity_candidates(value: str) -> tuple[tuple[str, str], ...]:
+def _entity_candidates_counted(
+    value: str,
+) -> tuple[tuple[tuple[str, str], ...], Counter[str], int, int]:
+    """Entity rows, plus raw matches by pattern, rows dropped as too short, rows merged."""
+
     rows: list[tuple[str, str]] = []
     rows.extend((match.group(0), "organization") for match in _KOREAN_ORGANIZATION.finditer(value))
     rows.extend((match.group(0), "named_entity") for match in _TITLE_ENTITY.finditer(value))
     rows.extend((match.group(0), "acronym") for match in _ACRONYM.finditer(value))
     deduplicated: dict[str, tuple[str, str]] = {}
+    raw = Counter(entity_type for _, entity_type in rows)
+    too_short = 0
+    merged = 0
     for label, entity_type in rows:
         canonical = _normalized_space(label).strip(".,;:()[]{}")
         if len(canonical) < 2:
+            too_short += 1
             continue
+        if canonical.casefold() in deduplicated:
+            merged += 1
         deduplicated.setdefault(canonical.casefold(), (canonical, entity_type))
-    return tuple(deduplicated[key] for key in sorted(deduplicated))
+    ordered = tuple(deduplicated[key] for key in sorted(deduplicated))
+    return ordered, raw, too_short, merged
+
+
+def _entity_candidates(value: str) -> tuple[tuple[str, str], ...]:
+    return _entity_candidates_counted(value)[0]
 
 
 def _topic_key(value: str) -> str:
@@ -601,6 +641,8 @@ class SemanticCompilation:
     contradictions: tuple[ContradictionCandidate, ...]
     retrieval_profile: dict[str, object]
     contradiction_overflow: tuple[ContradictionGroupOverflow, ...] = ()
+    # Report-only counters (opt-in, see `compile_semantics`); None when not measured.
+    funnel: dict[str, object] | None = None
 
     def profile_record(self) -> dict[str, object]:
         return {
@@ -752,19 +794,93 @@ def contradiction_candidates(
     )
 
 
-def compile_semantics(sources: tuple[SemanticSource, ...]) -> SemanticCompilation:
+def _sorted_counts(counter: Counter[str]) -> dict[str, int]:
+    return {key: counter[key] for key in sorted(counter)}
+
+
+def _scanned_counts(
+    *,
+    scanned: int,
+    mentions: int,
+    by_reason: dict[str, int],
+    distinct: int,
+    only_excluded: int,
+    excluded: int,
+) -> dict[str, object]:
+    """The scan's counts; null (not measured) when sentences were excluded but none was scanned."""
+
+    measured = scanned > 0 or excluded == 0
+    return {
+        "mentions": mentions if measured else None,
+        "byReason": by_reason if measured else None,
+        "distinctEntities": distinct if measured else None,
+        "distinctEntitiesOnlyInExcluded": only_excluded if measured else None,
+    }
+
+
+def compile_semantics(
+    sources: tuple[SemanticSource, ...], *, funnel: bool = False
+) -> SemanticCompilation:
+    """Project sources into claims, entities and relations.
+
+    `funnel=True` also measures where sentences and entity mentions are lost and returns it as
+    `SemanticCompilation.funnel`. It is report-only: it reads values this function already
+    computes (plus one entity pass over claim-excluded sentences) and changes no claim, entity,
+    relation or contradiction. Counters are closed enums and integers, never source text.
+    """
+
     claim_rows: list[dict[str, object]] = []
     entity_mentions: defaultdict[str, list[tuple[str, str, str]]] = defaultdict(list)
     languages: Counter[str] = Counter()
+    sentence_totals: Counter[str] = Counter()
+    excluded_reasons: Counter[str] = Counter()
+    raw_patterns: Counter[str] = Counter()
+    mention_totals: Counter[str] = Counter()
+    excluded_mentions: Counter[str] = Counter()
+    excluded_entity_keys: set[str] = set()
+    scan_skipped: Counter[str] = Counter()
+    scanned_sentences = 0
+    scanned_chars = 0
+    included_entity_keys: set[str] = set()
     for source in sources:
         tier, authority_score = authority_tier(source.authority)
-        for index, sentence in enumerate(_sentences(source.text)):
-            if not _is_semantic_claim_candidate(sentence):
+        sentences, seen, dropped, fallback = _split_sentences(source.text)
+        if funnel:
+            sentence_totals["sources"] += 1
+            sentence_totals["emptyText"] += 0 if source.text.strip() else 1
+            sentence_totals["segments"] += seen
+            sentence_totals["droppedShortOrNonAlnum"] += dropped
+            sentence_totals["wholeTextFallback"] += int(fallback)
+            sentence_totals["kept"] += len(sentences)
+        for index, sentence in enumerate(sentences):
+            reason = _claim_rejection_reason(sentence)
+            if reason is not None:
+                if funnel:
+                    excluded_reasons[reason] += 1
+                    # The entity patterns are quadratic on a long unbroken run; the
+                    # counterfactual scan is optional, so it is skipped and counted.
+                    if len(sentence) > FUNNEL_MENTION_SCAN_MAX_CHARS:
+                        scan_skipped["over_length"] += 1
+                        continue
+                    if scanned_chars + len(sentence) > FUNNEL_MENTION_SCAN_BUDGET_CHARS:
+                        scan_skipped["budget_exhausted"] += 1
+                        continue
+                    scanned_chars += len(sentence)
+                    scanned_sentences += 1
+                    lost_rows = _entity_candidates_counted(sentence)[0]
+                    excluded_mentions[reason] += len(lost_rows)
+                    excluded_entity_keys.update(label.casefold() for label, _ in lost_rows)
                 continue
             language = detect_language(sentence)
             languages[language] += 1
             claim_id = _stable_id("claim", source.logical_id, str(index), sentence.casefold())
-            entity_candidates = _entity_candidates(sentence)
+            entity_candidates, raw, too_short, merged = _entity_candidates_counted(sentence)
+            if funnel:
+                raw_patterns.update(raw)
+                mention_totals["droppedTooShort"] += too_short
+                mention_totals["mergedWithinSentence"] += merged
+                mention_totals["emitted"] += len(entity_candidates)
+                included_entity_keys.update(label.casefold() for label, _ in entity_candidates)
             entity_ids = tuple(
                 _stable_id("entity", label.casefold()) for label, _ in entity_candidates
             )
@@ -824,6 +940,72 @@ def compile_semantics(sources: tuple[SemanticSource, ...]) -> SemanticCompilatio
     )
     domain = _domain(sources)
     contradictions, contradiction_overflow = contradiction_candidates(claims)
+    funnel_record: dict[str, object] | None = None
+    if funnel:
+        funnel_record = {
+            "schemaVersion": "tavonel.semantic_funnel.v1",
+            "enabled": True,
+            "sources": {
+                "total": sentence_totals["sources"],
+                "emptyText": sentence_totals["emptyText"],
+            },
+            "sentences": {
+                "segments": sentence_totals["segments"],
+                "droppedShortOrNonAlnum": sentence_totals["droppedShortOrNonAlnum"],
+                "wholeTextFallback": sentence_totals["wholeTextFallback"],
+                "kept": sentence_totals["kept"],
+            },
+            "claimFilter": {
+                "allowed": len(claims),
+                "excluded": sum(excluded_reasons.values()),
+                "excludedByReason": _sorted_counts(excluded_reasons),
+            },
+            "mentions": {
+                "rawByPattern": _sorted_counts(raw_patterns),
+                "droppedTooShort": mention_totals["droppedTooShort"],
+                "mergedWithinSentence": mention_totals["mergedWithinSentence"],
+                "emitted": mention_totals["emitted"],
+            },
+            # Entities are read only from sentences that passed the claim filter; these are the
+            # mentions the same patterns find in the sentences that did not.
+            "mentionsInClaimExcludedSentences": {
+                "mentionScanMaxChars": FUNNEL_MENTION_SCAN_MAX_CHARS,
+                "mentionScanBudgetChars": FUNNEL_MENTION_SCAN_BUDGET_CHARS,
+                # claimFilter.excluded == scannedSentences + sum(skippedByReason.values()).
+                "scannedSentences": scanned_sentences,
+                "skippedByReason": _sorted_counts(scan_skipped),
+                # False when any sentence was skipped: the counts below are then lower bounds.
+                "complete": not scan_skipped,
+                **_scanned_counts(
+                    scanned=scanned_sentences,
+                    mentions=sum(excluded_mentions.values()),
+                    by_reason=_sorted_counts(excluded_mentions),
+                    distinct=len(excluded_entity_keys),
+                    only_excluded=len(excluded_entity_keys - included_entity_keys),
+                    excluded=sum(excluded_reasons.values()),
+                ),
+            },
+            "grounding": {
+                "entitiesWithEvidence": sum(1 for e in semantic_entities if any(e.evidence_ids)),
+                "entitiesWithoutEvidence": sum(
+                    1 for e in semantic_entities if not any(e.evidence_ids)
+                ),
+            },
+            "dedup": {
+                "mentionRows": mention_totals["emitted"],
+                "distinctEntities": len(semantic_entities),
+                "mergedAcrossClaims": mention_totals["emitted"] - len(semantic_entities),
+                # No hold stage exists in this extractor: null (not measured), never 0.
+                "held": None,
+            },
+            "final": {
+                "claims": len(claims),
+                "entities": len(semantic_entities),
+                "relations": len(relations),
+                "topics": len({claim.topic_key for claim in claims if claim.topic_key}),
+                "contradictionCandidates": len(contradictions),
+            },
+        }
     return SemanticCompilation(
         domain=domain,
         object_types=_DOMAIN_OBJECT_TYPES[domain],
@@ -841,10 +1023,13 @@ def compile_semantics(sources: tuple[SemanticSource, ...]) -> SemanticCompilatio
             languages=languages,
         ),
         contradiction_overflow=contradiction_overflow,
+        funnel=funnel_record,
     )
 
 
 __all__ = [
+    "FUNNEL_MENTION_SCAN_BUDGET_CHARS",
+    "FUNNEL_MENTION_SCAN_MAX_CHARS",
     "MAX_CONTRADICTION_PAIRS_PER_COMPILE",
     "MAX_CONTRADICTION_PAIRS_PER_GROUP",
     "ContradictionCandidate",

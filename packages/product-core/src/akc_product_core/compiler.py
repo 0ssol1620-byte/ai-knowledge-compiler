@@ -371,6 +371,7 @@ class ProductCoreCompiler:
         *,
         core_release_digest: str,
         output_budget_bytes: int = OUTPUT_BUDGET_BYTES,
+        semantic_funnel: bool = False,
     ) -> None:
         if not core_release_digest.startswith("sha256:") or len(core_release_digest) != 71:
             raise ValueError("core release digest must be sha256:")
@@ -380,6 +381,9 @@ class ProductCoreCompiler:
             raise ValueError(f"output budget must be in (0, {OUTPUT_BUDGET_BYTES}] bytes")
         self.core_release_digest = core_release_digest
         self.output_budget_bytes = output_budget_bytes
+        # Report-only: when on, validation/report.json gains `semanticFunnel`. Off (default)
+        # leaves every artifact byte-identical.
+        self.semantic_funnel = semantic_funnel
 
     def compile(
         self,
@@ -448,7 +452,8 @@ class ProductCoreCompiler:
                     authority=unit.authority or "unclassified",
                 )
                 for unit in current_units
-            )
+            ),
+            funnel=self.semantic_funnel,
         )
         architecture = plan_architecture(
             ArchitectureProfile(
@@ -1683,6 +1688,9 @@ class ProductCoreCompiler:
                     "entityCount": len(semantics.entities),
                     "relationCount": len(semantics.relations),
                     "contradictionCandidateCount": len(semantics.contradictions),
+                    **(
+                        {"semanticFunnel": semantics.funnel} if semantics.funnel is not None else {}
+                    ),
                     "languages": dict(semantics.languages),
                     "blueprint": architecture.blueprint,
                     "architecturePlanSha256": architecture.plan_sha256,

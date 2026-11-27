@@ -72,6 +72,7 @@ class ProductCoreService:
         allow_customer_data: bool = False,
         output_budget_bytes: int = OUTPUT_BUDGET_BYTES,
         corpus_reduce_mode: CorpusReduceMode = "off",
+        semantic_funnel: bool = False,
     ) -> None:
         if corpus_reduce_mode not in ("off", "shadow"):
             raise ValueError(
@@ -83,6 +84,7 @@ class ProductCoreService:
         self.compiler = ProductCoreCompiler(
             core_release_digest=core_release_digest,
             output_budget_bytes=output_budget_bytes,
+            semantic_funnel=semantic_funnel,
         )
         self.allow_customer_data = allow_customer_data
         self._cache: OrderedDict[tuple[str, str, str], _CachedResponse] = OrderedDict()
@@ -286,6 +288,16 @@ class ProductCoreService:
             self._cache_bytes -= evicted.size_bytes
 
 
+def semantic_funnel_enabled(raw: str | None) -> bool:
+    """Only the exact value `on` turns the report-only funnel on; anything else is off.
+
+    Follows TAVONEL_CORE_ALLOW_CUSTOMER_DATA (an exact match, otherwise off), not the strict
+    sibling flags that refuse to start: a typo here must not take Core down.
+    """
+
+    return raw == "on"
+
+
 def create_product_core_app(
     *,
     hmac_secret: bytes,
@@ -293,6 +305,7 @@ def create_product_core_app(
     allow_customer_data: bool = False,
     output_budget_bytes: int = OUTPUT_BUDGET_BYTES,
     corpus_reduce_mode: CorpusReduceMode = "off",
+    semantic_funnel: bool = False,
 ) -> FastAPI:
     service = ProductCoreService(
         hmac_secret=hmac_secret,
@@ -300,6 +313,7 @@ def create_product_core_app(
         allow_customer_data=allow_customer_data,
         output_budget_bytes=output_budget_bytes,
         corpus_reduce_mode=corpus_reduce_mode,
+        semantic_funnel=semantic_funnel,
     )
     app = FastAPI(title="TAVONEL Product Core", version="2.0.0")
 
@@ -321,4 +335,4 @@ def create_product_core_app(
     return app
 
 
-__all__ = ["ProductCoreService", "create_product_core_app"]
+__all__ = ["ProductCoreService", "create_product_core_app", "semantic_funnel_enabled"]

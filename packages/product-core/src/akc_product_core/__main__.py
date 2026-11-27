@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 
-from .api import CorpusReduceMode, create_product_core_app
+from .api import CorpusReduceMode, create_product_core_app, semantic_funnel_enabled
 from .compiler import OUTPUT_BUDGET_BYTES
 
 
@@ -48,4 +48,5 @@ app = create_product_core_app(
     allow_customer_data=os.environ.get("TAVONEL_CORE_ALLOW_CUSTOMER_DATA") == "true",
     output_budget_bytes=_output_budget(),
     corpus_reduce_mode=_corpus_reduce_mode(),
+    semantic_funnel=semantic_funnel_enabled(os.environ.get("TAVONEL_CORE_SEMANTIC_FUNNEL")),
 )
